@@ -258,20 +258,13 @@ jobs:
   # ──────────────────────────────────────────────
   # Gate 4: pgTAP database tests
   # ──────────────────────────────────────────────
-  db-tests:
+   db-tests:
+    needs: lint-and-build
     runs-on: ubuntu-latest
-    if: ${{ vars.ENABLE_DB_TESTS == 'true' || github.ref == 'refs/heads/main' }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
-        with:
-          version: latest
-
-      - name: Start local Supabase (applies all migrations)
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+      - name: Start Supabase (local)
         run: supabase start
-
-      - name: Run pgTAP tests
+      - name: Run DB tests (local)
         run: supabase test db
