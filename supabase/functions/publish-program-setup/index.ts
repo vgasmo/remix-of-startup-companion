@@ -26,6 +26,7 @@ interface DraftData {
   };
   gates?: {
     id?: string;
+    __local_id?: string;
     name: string;
     description?: string;
     sort_order: number;
@@ -186,9 +187,30 @@ Deno.serve(async (req) => {
       const activeStages = draftData.stages?.filter(s => s.is_active) || [];
       if (activeStages.length === 0) validationErrors.push('At least one stage must be active');
     } else {
-      // Acceleration: require at least one gate
-      if (!draftData.gates || draftData.gates.length === 0) {
+      // Acceleration: stricter invariants
+      const gates = draftData.gates || [];
+      const weeks = draftData.weeks || [];
+      if (gates.length === 0) {
         validationErrors.push('At least one gate is required for acceleration programs');
+      }
+      if (weeks.length === 0) {
+        validationErrors.push('At least one week is required for acceleration programs');
+      }
+      for (const g of gates) {
+        if (!g.name || !g.name.trim()) {
+          validationErrors.push('All gates must have a non-empty name');
+          break;
+        }
+      }
+      for (const w of weeks) {
+        if (!Number.isInteger(w.week_number) || w.week_number < 1 || w.week_number > 104) {
+          validationErrors.push(`Week ${w.week_number} has an invalid week_number (must be integer 1-104)`);
+          break;
+        }
+      }
+      const wkNums = weeks.map(w => w.week_number);
+      if (new Set(wkNums).size !== wkNums.length) {
+        validationErrors.push('Duplicate week_number values are not allowed');
       }
     }
     
@@ -332,8 +354,9 @@ Deno.serve(async (req) => {
       await supabase.from('program_weeks').delete().eq('program_id', programId);
       await supabase.from('program_gates').delete().eq('program_id', programId);
 
-      // Insert gates
-      const gateIdMap: Record<string, string> = {}; // temp key -> real id
+      // Insert gates and build a stable-id → real-id map.
+      // Accepts either persisted DB id, the wizard's __local_id, or (legacy) `gate-<sort_order>`.
+      const gateIdMap: Record<string, string> = {};
       for (const gate of draftData.gates || []) {
         const { data: newGate, error: gateError } = await supabase
           .from('program_gates')
@@ -348,25 +371,30 @@ Deno.serve(async (req) => {
           .select('id')
           .single();
 
-        if (gateError || !newGate) {
-          console.error('[publish-program-setup] Failed to create gate:', gateError);
-          continue;
-        }
+          if (gateError || !newGate) {
+            throw new Error(`Failed to create gate "${gate.name}": ${gateError?.message ?? 'unknown error'}`);
+          }
+        if (gate.id) gateIdMap[gate.id] = newGate.id;
+        if (gate.__local_id) gateIdMap[gate.__local_id] = newGate.id;
+        // Backwards-compat with older drafts created before stable IDs landed.
         gateIdMap[`gate-${gate.sort_order}`] = newGate.id;
       }
-      console.log(`[publish-program-setup] Created ${Object.keys(gateIdMap).length} gates`);
+      console.log(`[publish-program-setup] Created ${(draftData.gates || []).length} gates (id map keys=${Object.keys(gateIdMap).length})`);
 
       // Insert weeks
       for (const week of draftData.weeks || []) {
-        const resolvedGateId = week.gate_id ? gateIdMap[week.gate_id] : null;
-        await supabase.from('program_weeks').insert({
+        const resolvedGateId = week.gate_id ? (gateIdMap[week.gate_id] ?? null) : null;
+        const { error: weekError } = await supabase.from('program_weeks').insert({
           program_id: programId,
-          gate_id: resolvedGateId || null,
+          gate_id: resolvedGateId,
           week_number: week.week_number,
           title: week.title,
           description: week.description || null,
           deliverables_json: week.deliverables_json || [],
         });
+        if (weekError) {
+          throw new Error(`Failed to create week ${week.week_number} "${week.title}": ${weekError.message}`);
+        }
       }
       console.log(`[publish-program-setup] Created ${draftData.weeks?.length || 0} weeks`);
     }
