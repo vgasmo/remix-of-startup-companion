@@ -133,17 +133,6 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
     }]);
   };
 
-  // Week CRUD
-  const addWeek = (gateIdx?: number) => {
-    const maxWeek = weeks.length > 0 ? Math.max(...weeks.map(w => w.week_number)) : 0;
-    setWeeks([...weeks, {
-      gate_id: gateIdx !== undefined ? `gate-${gateIdx}` : undefined,
-      week_number: maxWeek + 1,
-      title: '',
-      deliverables_json: [],
-    }]);
-  };
-
   const removeWeek = (idx: number) => {
     setWeeks(weeks.filter((_, i) => i !== idx));
   };
@@ -171,13 +160,13 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
   const sortedGates = [...gates].sort((a, b) => a.sort_order - b.sort_order);
   const sortedWeeks = [...weeks].sort((a, b) => a.week_number - b.week_number);
 
-  // Get weeks for a specific gate index
-  const getGateWeeks = (gateIdx: number) => {
-    const gate = sortedGates[gateIdx];
+  // Get weeks attached to a specific gate (by stable local id)
+  const getGateWeeks = (gateLocalId: string) => {
+    const gate = sortedGates.find(g => localId(g) === gateLocalId);
     if (!gate) return [];
     return sortedWeeks.filter(w => {
-      if (w.gate_id === `gate-${gateIdx}`) return true;
-      // Also match by week range
+      if (w.gate_id === gateLocalId) return true;
+      // Also match by week range when no explicit gate is set
       if (gate.target_start_week && gate.target_end_week && !w.gate_id) {
         return w.week_number >= gate.target_start_week && w.week_number <= gate.target_end_week;
       }
