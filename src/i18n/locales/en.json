@@ -109,7 +109,9 @@
     "titleRequired": "Title is required",
     "unassigned": "Unassigned",
     "unassignedActions": "Unassigned Actions",
-    "updatedCount": "Updated {{count}} actions"
+    "updatedCount": "Updated {{count}} actions",
+    "deliverableAlreadyLinked": "This document is already linked to this action",
+    "deliverableDocExistingHint": "If the document is already complete, it will be linked to this action and opened in the documents area."
   },
   "activityLog": {
     "action": "Action",
@@ -2075,7 +2077,8 @@
     "viewAll": "View all",
     "workspace": "Workspace",
     "years": "years",
-    "yes": "Yes"
+    "yes": "Yes",
+    "session": "Session"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -4899,7 +4902,12 @@
     "healthyMomentum": "Momentum saudável",
     "recentSessions": "Sessões recentes (30d)",
     "staleFollowup": "Follow-up em atraso",
-    "title": "O Seu Impacto"
+    "title": "O Seu Impacto",
+    "feedbackTitle": "Recent feedback",
+    "noFeedback": "No public session feedback yet.",
+    "noComment": "No written comment",
+    "pageTitle": "Your Impact",
+    "pageDesc": "Consolidated view of your sessions, active startups, open follow-ups and feedback received."
   },
   "mentorNda": {
     "accepted": "Accepted",
@@ -8228,5 +8236,27 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
+  },
+  "founderWizard": {
+    "welcome": "Welcome",
+    "stepOf": "Step {{n}} of {{total}}",
+    "skip": "Skip for now",
+    "next": "Next",
+    "done": "Done",
+    "step1": {
+      "title": "Complete your profile",
+      "desc": "Add a logo and contact details so the team can support you better.",
+      "cta": "Open settings"
+    },
+    "step2": {
+      "title": "Pick your first template",
+      "desc": "Lean Canvas or Pitch Deck — a solid starting point.",
+      "cta": "Open templates"
+    },
+    "step3": {
+      "title": "Schedule your first session",
+      "desc": "Book a conversation with your assigned consultant.",
+      "cta": "Open agenda"
+    }
   }
 }

@@ -92,6 +92,8 @@ export interface DraftHealthModel {
 
 export interface DraftGate {
   id?: string;
+  /** Stable client-side id used to attach weeks before publish (optional, mirrors id once persisted) */
+  __local_id?: string;
   name: string;
   description?: string;
   sort_order: number;

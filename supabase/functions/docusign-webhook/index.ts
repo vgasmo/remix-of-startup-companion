@@ -11,6 +11,7 @@
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { syncIntakeOnSent, syncIntakeOnCompleted } from '../_shared/lifecycleSync.ts'
+import { handleLifecycleSyncResult } from '../_shared/lifecycleSyncResultHandler.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -206,10 +207,20 @@ Deno.serve(async (req) => {
       .eq('id', contract.id)
 
     // === CANONICAL LIFECYCLE SYNC (shared helper) ===
+    // Webhook always returns 200 to avoid DocuSign retry storms, but failures
+    // are persisted to contract_lifecycle_events + staff are notified.
     if (status === 'sent_for_signature') {
-      await syncIntakeOnSent(supabase, contract.id, null, `docusign_webhook`)
+      const r = await syncIntakeOnSent(supabase, contract.id, null, `docusign_webhook`)
+      await handleLifecycleSyncResult(supabase, r, {
+        contractId: contract.id, workspaceId: contract.workspace_id,
+        source: 'docusign_webhook_sent', operation: 'sent',
+      })
     } else if (status === 'completed') {
-      await syncIntakeOnCompleted(supabase, contract.id, contract.workspace_id, null, `docusign_webhook`)
+      const r = await syncIntakeOnCompleted(supabase, contract.id, contract.workspace_id, null, `docusign_webhook`)
+      await handleLifecycleSyncResult(supabase, r, {
+        contractId: contract.id, workspaceId: contract.workspace_id,
+        source: 'docusign_webhook_completed', operation: 'completed',
+      })
     }
 
     // === AUTO-REGISTRATION on completion ===

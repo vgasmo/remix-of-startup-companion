@@ -26,6 +26,7 @@ interface DraftData {
   };
   gates?: {
     id?: string;
+    __local_id?: string;
     name: string;
     description?: string;
     sort_order: number;
@@ -186,9 +187,30 @@ Deno.serve(async (req) => {
       const activeStages = draftData.stages?.filter(s => s.is_active) || [];
       if (activeStages.length === 0) validationErrors.push('At least one stage must be active');
     } else {
-      // Acceleration: require at least one gate
-      if (!draftData.gates || draftData.gates.length === 0) {
+      // Acceleration: stricter invariants
+      const gates = draftData.gates || [];
+      const weeks = draftData.weeks || [];
+      if (gates.length === 0) {
         validationErrors.push('At least one gate is required for acceleration programs');
+      }
+      if (weeks.length === 0) {
+        validationErrors.push('At least one week is required for acceleration programs');
+      }
+      for (const g of gates) {
+        if (!g.name || !g.name.trim()) {
+          validationErrors.push('All gates must have a non-empty name');
+          break;
+        }
+      }
+      for (const w of weeks) {
+        if (!Number.isInteger(w.week_number) || w.week_number < 1 || w.week_number > 104) {
+          validationErrors.push(`Week ${w.week_number} has an invalid week_number (must be integer 1-104)`);
+          break;
+        }
+      }
+      const wkNums = weeks.map(w => w.week_number);
+      if (new Set(wkNums).size !== wkNums.length) {
+        validationErrors.push('Duplicate week_number values are not allowed');
       }
     }
     
@@ -237,22 +259,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    // --- ATOMIC PUBLISH TRANSACTION ---
+    // --- ATOMIC-STYLE PUBLISH ---
+    // NOTE: This is not a true SQL transaction (edge function uses PostgREST,
+    // not a single connection). Hardening: every write is now error-checked
+    // and the program is created/updated as 'draft' first; status flips to
+    // 'active' only after every child write succeeds (last step). On any
+    // failure the catch block marks the draft as 'publish_failed' so the
+    // staff sees a clear remediation surface instead of a half-published
+    // program. A future improvement is to move this whole orchestration
+    // into a single PostgreSQL function.
     let programId = draft.program_id;
-
-    // 1. Upsert program
-    const settingsJson = draftData.basics.settings || {
-      program_mode: 'standard',
-      enable_kpis: true,
-      enable_health: true,
-      enable_milestones: true,
-      enable_alerts: true,
-      enable_playbooks: true,
-      enable_financial_model: true,
-    };
+    const programTypeFinal = draftData.basics.program_type || 'incubation';
+    const isAccelerationFinal = programTypeFinal === 'acceleration';
 
     if (programId) {
-      // Update existing program
+      // Update existing program — keep current status, do not flip to active yet.
       const { error: updateError } = await supabase
         .from('programs')
         .update({
@@ -261,8 +282,7 @@ Deno.serve(async (req) => {
           start_date: draftData.basics.start_date || null,
           end_date: draftData.basics.end_date || null,
           settings_json: settingsJson,
-          program_type: draftData.basics.program_type || 'incubation',
-          status: 'active',
+          program_type: programTypeFinal,
           updated_at: new Date().toISOString(),
         })
         .eq('id', programId);
@@ -270,7 +290,7 @@ Deno.serve(async (req) => {
       if (updateError) throw new Error(`Failed to update program: ${updateError.message}`);
       console.log(`[publish-program-setup] Updated program ${programId}`);
     } else {
-      // Create new program
+      // Create new program in 'draft' status — flipped to 'active' on full success.
       const { data: newProgram, error: createError } = await supabase
         .from('programs')
         .insert({
@@ -279,16 +299,39 @@ Deno.serve(async (req) => {
           start_date: draftData.basics.start_date || null,
           end_date: draftData.basics.end_date || null,
           settings_json: settingsJson,
-          program_type: draftData.basics.program_type || 'incubation',
-          status: 'active',
-          is_active: true,
+          program_type: programTypeFinal,
+          status: 'draft',
+          is_active: false,
         })
         .select()
         .single();
 
       if (createError || !newProgram) throw new Error(`Failed to create program: ${createError?.message}`);
       programId = newProgram.id;
-      console.log(`[publish-program-setup] Created program ${programId}`);
+      console.log(`[publish-program-setup] Created program ${programId} (draft, will activate on success)`);
+    }
+
+    // ===== Quarantine incompatible config when program_type changed =====
+    // If publishing as 'acceleration', wipe stage-only artifacts (stages,
+    // playbooks, stage_kpi_defaults). If publishing as 'incubation', wipe
+    // acceleration artifacts (gates, weeks). Prevents drift between modes.
+    if (isAccelerationFinal) {
+      const stageWipes = await Promise.all([
+        supabase.from('stage_kpi_defaults').delete().eq('program_id', programId),
+        supabase.from('playbook_items').delete().in('playbook_id',
+          (await supabase.from('playbooks').select('id').eq('program_id', programId)).data?.map((p: any) => p.id) || []),
+        supabase.from('playbooks').delete().eq('program_id', programId),
+        supabase.from('stages').delete().eq('program_id', programId),
+      ]);
+      const wipeErrs = stageWipes.map(r => r.error).filter(Boolean);
+      if (wipeErrs.length) console.warn('[publish-program-setup] stage-side wipe warnings:', wipeErrs);
+    } else {
+      const accWipes = await Promise.all([
+        supabase.from('program_weeks').delete().eq('program_id', programId),
+        supabase.from('program_gates').delete().eq('program_id', programId),
+      ]);
+      const wipeErrs = accWipes.map(r => r.error).filter(Boolean);
+      if (wipeErrs.length) console.warn('[publish-program-setup] acceleration-side wipe warnings:', wipeErrs);
     }
 
     // 2. Upsert stages metadata (incubation only)
@@ -332,8 +375,9 @@ Deno.serve(async (req) => {
       await supabase.from('program_weeks').delete().eq('program_id', programId);
       await supabase.from('program_gates').delete().eq('program_id', programId);
 
-      // Insert gates
-      const gateIdMap: Record<string, string> = {}; // temp key -> real id
+      // Insert gates and build a stable-id → real-id map.
+      // Accepts either persisted DB id, the wizard's __local_id, or (legacy) `gate-<sort_order>`.
+      const gateIdMap: Record<string, string> = {};
       for (const gate of draftData.gates || []) {
         const { data: newGate, error: gateError } = await supabase
           .from('program_gates')
@@ -348,25 +392,30 @@ Deno.serve(async (req) => {
           .select('id')
           .single();
 
-        if (gateError || !newGate) {
-          console.error('[publish-program-setup] Failed to create gate:', gateError);
-          continue;
-        }
+          if (gateError || !newGate) {
+            throw new Error(`Failed to create gate "${gate.name}": ${gateError?.message ?? 'unknown error'}`);
+          }
+        if (gate.id) gateIdMap[gate.id] = newGate.id;
+        if (gate.__local_id) gateIdMap[gate.__local_id] = newGate.id;
+        // Backwards-compat with older drafts created before stable IDs landed.
         gateIdMap[`gate-${gate.sort_order}`] = newGate.id;
       }
-      console.log(`[publish-program-setup] Created ${Object.keys(gateIdMap).length} gates`);
+      console.log(`[publish-program-setup] Created ${(draftData.gates || []).length} gates (id map keys=${Object.keys(gateIdMap).length})`);
 
       // Insert weeks
       for (const week of draftData.weeks || []) {
-        const resolvedGateId = week.gate_id ? gateIdMap[week.gate_id] : null;
-        await supabase.from('program_weeks').insert({
+        const resolvedGateId = week.gate_id ? (gateIdMap[week.gate_id] ?? null) : null;
+        const { error: weekError } = await supabase.from('program_weeks').insert({
           program_id: programId,
-          gate_id: resolvedGateId || null,
+          gate_id: resolvedGateId,
           week_number: week.week_number,
           title: week.title,
           description: week.description || null,
           deliverables_json: week.deliverables_json || [],
         });
+        if (weekError) {
+          throw new Error(`Failed to create week ${week.week_number} "${week.title}": ${weekError.message}`);
+        }
       }
       console.log(`[publish-program-setup] Created ${draftData.weeks?.length || 0} weeks`);
     }
@@ -558,16 +607,23 @@ Deno.serve(async (req) => {
       console.log(`[publish-program-setup] Upserted health model`);
     }
 
-    // 8. Mark draft as published
-    await supabase
-      .from('program_setup_drafts')
-      .update({
-        status: 'published',
-        program_id: programId,
-      })
-      .eq('id', draft_id);
+    // 8. FINAL STEP — flip program to active and mark draft published.
+    // This is intentionally last so a partial failure leaves the program in
+    // 'draft' status (not visible to founders) and the catch block can mark
+    // the wizard draft as 'publish_failed' for staff remediation.
+    const { error: activateErr } = await supabase
+      .from('programs')
+      .update({ status: 'active', is_active: true, updated_at: new Date().toISOString() })
+      .eq('id', programId);
+    if (activateErr) throw new Error(`Failed to activate program: ${activateErr.message}`);
 
-    // Log activity
+    const { error: draftErr } = await supabase
+      .from('program_setup_drafts')
+      .update({ status: 'published', program_id: programId })
+      .eq('id', draft_id);
+    if (draftErr) throw new Error(`Failed to mark draft published: ${draftErr.message}`);
+
+    // Log activity with full audit metadata (program_type, gates/weeks/playbook/kpi counts)
     await supabase.from('activity_log').insert({
       user_id: user.id,
       entity_type: 'program',
@@ -576,8 +632,14 @@ Deno.serve(async (req) => {
       metadata: {
         via: 'setup_wizard',
         draft_id: draft_id,
+        program_type: programTypeFinal,
         stages_count: (draftData.stages?.filter(s => s.is_active) || []).length,
+        gates_count: (draftData.gates || []).length,
+        weeks_count: (draftData.weeks || []).length,
+        playbooks_count: (draftData.playbooks || []).length,
         kpi_count: Object.keys(kpiDefinitionMap).length,
+        alert_rules_count: (draftData.alertRules || []).length,
+        health_model_enabled: !!draftData.healthModel?.is_enabled,
       },
     });
 
@@ -593,10 +655,22 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('[publish-program-setup] Error:', error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Internal server error' 
-    }), {
+    const errMsg = error instanceof Error ? error.message : 'Internal server error';
+    console.error('[publish-program-setup] Error:', errMsg);
+
+    // Best-effort rollback marker — keep program in 'draft' (already not active)
+    // and mark the wizard draft as 'publish_failed' so staff sees the failure.
+    try {
+      const reqBody = await req.clone().json().catch(() => ({}));
+      if (reqBody?.draft_id) {
+        await supabase
+          .from('program_setup_drafts')
+          .update({ status: 'publish_failed' as any, last_publish_error: errMsg } as any)
+          .eq('id', reqBody.draft_id);
+      }
+    } catch (_) { /* non-fatal */ }
+
+    return new Response(JSON.stringify({ error: errMsg }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

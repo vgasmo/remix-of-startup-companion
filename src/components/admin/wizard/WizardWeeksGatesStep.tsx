@@ -18,6 +18,15 @@ import { Plus, Trash2, GripVertical, ChevronUp, ChevronDown, CalendarDays, Flag,
 import { useTranslation } from 'react-i18next';
 import type { DraftGate, DraftWeek } from '@/hooks/useProgramSetup';
 
+// Stable local ID generator: prefer existing DB id, otherwise mint a UUID.
+// Fixes prior bug where gate removal used `temp-${idx}` while assignment used
+// `gate-${idx}`, leaving weeks orphaned or attached to the wrong gate.
+function localId(g: { id?: string; __local_id?: string }): string {
+  return g.id || g.__local_id || (g.__local_id = (typeof crypto !== 'undefined' && (crypto as any).randomUUID)
+    ? (crypto as any).randomUUID()
+    : `lid-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`);
+}
+
 interface WizardWeeksGatesStepProps {
   gates: DraftGate[];
   weeks: DraftWeek[];
@@ -43,17 +52,24 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
     },
   });
 
-  const [gates, setGates] = useState<DraftGate[]>(initialGates.length > 0 ? initialGates : [
-    { name: t('programSetup.acceleration.defaultGate1', 'Discovery'), sort_order: 0, target_start_week: 1, target_end_week: 3 },
-    { name: t('programSetup.acceleration.defaultGate2', 'Build'), sort_order: 1, target_start_week: 4, target_end_week: 8 },
-    { name: t('programSetup.acceleration.defaultGate3', 'Launch'), sort_order: 2, target_start_week: 9, target_end_week: 12 },
-  ]);
-  const [weeks, setWeeks] = useState<DraftWeek[]>(initialWeeks.length > 0 ? initialWeeks : []);
+  // Default gates get stable local IDs immediately so weeks can attach to them
+  // by id (not by array index, which mutates on add/remove/reorder).
+  const [gates, setGates] = useState<DraftGate[]>(() => {
+    if (initialGates.length > 0) {
+      return initialGates.map(g => ({ ...g, __local_id: g.id || (g as any).__local_id || crypto.randomUUID() } as DraftGate));
+    }
+    return [
+      { name: t('programSetup.acceleration.defaultGate1', 'Discovery'), sort_order: 0, target_start_week: 1, target_end_week: 3, __local_id: crypto.randomUUID() } as DraftGate,
+      { name: t('programSetup.acceleration.defaultGate2', 'Build'),     sort_order: 1, target_start_week: 4, target_end_week: 8, __local_id: crypto.randomUUID() } as DraftGate,
+      { name: t('programSetup.acceleration.defaultGate3', 'Launch'),    sort_order: 2, target_start_week: 9, target_end_week: 12, __local_id: crypto.randomUUID() } as DraftGate,
+    ];
+  });
+  const [weeks, setWeeks] = useState<DraftWeek[]>(initialWeeks);
 
-  // Sync from parent
+  // Sync from parent — preserve / mint stable local IDs on incoming gates
   useEffect(() => {
     if (initialGates.length > 0 && JSON.stringify(initialGates) !== JSON.stringify(gates)) {
-      setGates(initialGates);
+      setGates(initialGates.map(g => ({ ...g, __local_id: g.id || (g as any).__local_id || crypto.randomUUID() } as DraftGate)));
     }
   }, [initialGates]);
 
@@ -82,14 +98,16 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
       sort_order: maxOrder,
       target_start_week: lastEndWeek + 1,
       target_end_week: lastEndWeek + 4,
-    }]);
+      __local_id: crypto.randomUUID(),
+    } as DraftGate]);
   };
 
   const removeGate = (idx: number) => {
     const gateToRemove = gates[idx];
+    const removedLocalId = localId(gateToRemove);
     setGates(gates.filter((_, i) => i !== idx).map((g, i) => ({ ...g, sort_order: i })));
-    // Unlink weeks from this gate
-    setWeeks(weeks.map(w => w.gate_id === `temp-${idx}` ? { ...w, gate_id: undefined } : w));
+    // Unlink weeks attached to this gate by its STABLE id (not array index).
+    setWeeks(weeks.map(w => w.gate_id === removedLocalId ? { ...w, gate_id: undefined } : w));
   };
 
   const updateGate = (idx: number, field: keyof DraftGate, value: string | number) => {
@@ -105,10 +123,10 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
   };
 
   // Week CRUD
-  const addWeek = (gateIdx?: number) => {
+  const addWeek = (gateLocalId?: string) => {
     const maxWeek = weeks.length > 0 ? Math.max(...weeks.map(w => w.week_number)) : 0;
     setWeeks([...weeks, {
-      gate_id: gateIdx !== undefined ? `gate-${gateIdx}` : undefined,
+      gate_id: gateLocalId,
       week_number: maxWeek + 1,
       title: '',
       deliverables_json: [],
@@ -142,13 +160,13 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
   const sortedGates = [...gates].sort((a, b) => a.sort_order - b.sort_order);
   const sortedWeeks = [...weeks].sort((a, b) => a.week_number - b.week_number);
 
-  // Get weeks for a specific gate index
-  const getGateWeeks = (gateIdx: number) => {
-    const gate = sortedGates[gateIdx];
+  // Get weeks attached to a specific gate (by stable local id)
+  const getGateWeeks = (gateLocalId: string) => {
+    const gate = sortedGates.find(g => localId(g) === gateLocalId);
     if (!gate) return [];
     return sortedWeeks.filter(w => {
-      if (w.gate_id === `gate-${gateIdx}`) return true;
-      // Also match by week range
+      if (w.gate_id === gateLocalId) return true;
+      // Also match by week range when no explicit gate is set
       if (gate.target_start_week && gate.target_end_week && !w.gate_id) {
         return w.week_number >= gate.target_start_week && w.week_number <= gate.target_end_week;
       }
@@ -328,11 +346,14 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">{t('programSetup.acceleration.noGate', 'No gate')}</SelectItem>
-                          {sortedGates.map((g, gIdx) => (
-                            <SelectItem key={gIdx} value={`gate-${gIdx}`}>
-                              {g.name || `Gate ${gIdx + 1}`}
-                            </SelectItem>
-                          ))}
+                          {sortedGates.map((g, gIdx) => {
+                            const lid = localId(g);
+                            return (
+                              <SelectItem key={lid} value={lid}>
+                                {g.name || `Gate ${gIdx + 1}`}
+                              </SelectItem>
+                            );
+                          })}
                         </SelectContent>
                       </Select>
                     </div>
