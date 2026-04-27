@@ -607,16 +607,23 @@ Deno.serve(async (req) => {
       console.log(`[publish-program-setup] Upserted health model`);
     }
 
-    // 8. Mark draft as published
-    await supabase
-      .from('program_setup_drafts')
-      .update({
-        status: 'published',
-        program_id: programId,
-      })
-      .eq('id', draft_id);
+    // 8. FINAL STEP — flip program to active and mark draft published.
+    // This is intentionally last so a partial failure leaves the program in
+    // 'draft' status (not visible to founders) and the catch block can mark
+    // the wizard draft as 'publish_failed' for staff remediation.
+    const { error: activateErr } = await supabase
+      .from('programs')
+      .update({ status: 'active', is_active: true, updated_at: new Date().toISOString() })
+      .eq('id', programId);
+    if (activateErr) throw new Error(`Failed to activate program: ${activateErr.message}`);
 
-    // Log activity
+    const { error: draftErr } = await supabase
+      .from('program_setup_drafts')
+      .update({ status: 'published', program_id: programId })
+      .eq('id', draft_id);
+    if (draftErr) throw new Error(`Failed to mark draft published: ${draftErr.message}`);
+
+    // Log activity with full audit metadata (program_type, gates/weeks/playbook/kpi counts)
     await supabase.from('activity_log').insert({
       user_id: user.id,
       entity_type: 'program',
@@ -625,8 +632,14 @@ Deno.serve(async (req) => {
       metadata: {
         via: 'setup_wizard',
         draft_id: draft_id,
+        program_type: programTypeFinal,
         stages_count: (draftData.stages?.filter(s => s.is_active) || []).length,
+        gates_count: (draftData.gates || []).length,
+        weeks_count: (draftData.weeks || []).length,
+        playbooks_count: (draftData.playbooks || []).length,
         kpi_count: Object.keys(kpiDefinitionMap).length,
+        alert_rules_count: (draftData.alertRules || []).length,
+        health_model_enabled: !!draftData.healthModel?.is_enabled,
       },
     });
 
@@ -642,10 +655,22 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('[publish-program-setup] Error:', error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Internal server error' 
-    }), {
+    const errMsg = error instanceof Error ? error.message : 'Internal server error';
+    console.error('[publish-program-setup] Error:', errMsg);
+
+    // Best-effort rollback marker — keep program in 'draft' (already not active)
+    // and mark the wizard draft as 'publish_failed' so staff sees the failure.
+    try {
+      const reqBody = await req.clone().json().catch(() => ({}));
+      if (reqBody?.draft_id) {
+        await supabase
+          .from('program_setup_drafts')
+          .update({ status: 'publish_failed' as any, last_publish_error: errMsg } as any)
+          .eq('id', reqBody.draft_id);
+      }
+    } catch (_) { /* non-fatal */ }
+
+    return new Response(JSON.stringify({ error: errMsg }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
