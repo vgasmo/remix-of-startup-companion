@@ -2,7 +2,7 @@
  * Run Ecosystem Snapshot
  * 
  * Cron: daily at 03:00 UTC
- * Auth: x-cron-secret OR staff JWT (manual trigger)
+ * Auth: x-cron-secret OR governance role (admin via requireCronOrGovernance) for manual triggers
  * 
  * Creates a periodic snapshot/export of critical ecosystem domains to
  * the private 'ecosystem-backups' storage bucket. Tracks metadata in

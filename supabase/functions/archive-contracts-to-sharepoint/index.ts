@@ -2,7 +2,7 @@
  * Archive Contracts to SharePoint
  * 
  * Cron: daily at 02:00 UTC
- * Auth: x-cron-secret OR staff JWT
+ * Auth: x-cron-secret OR governance role (admin via requireCronOrGovernance) for manual triggers
  * 
  * Finds contracts eligible for archival (signed_at + 7 days, not yet archived,
  * attempts < 5) and uploads the canonical PDF to SharePoint via MS Graph API.
