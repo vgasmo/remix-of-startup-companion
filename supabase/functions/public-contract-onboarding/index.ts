@@ -11,6 +11,7 @@
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { syncIntakeOnSent, syncIntakeOnCompleted } from '../_shared/lifecycleSync.ts'
+import { handleLifecycleSyncResult } from '../_shared/lifecycleSyncResultHandler.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -125,7 +126,11 @@ Deno.serve(async (req) => {
           .eq('id', contractId)
 
         // === CANONICAL SYNC (shared helper) ===
-        await syncIntakeOnSent(supabase, contractId, claims.user.id, `staff_submit_signing_${provider}`)
+        const sentSyncStaff = await syncIntakeOnSent(supabase, contractId, claims.user.id, `staff_submit_signing_${provider}`)
+        await handleLifecycleSyncResult(supabase, sentSyncStaff, {
+          contractId, workspaceId: (contract as any).workspace?.id ?? null,
+          source: `staff_submit_signing_${provider}`, operation: 'sent',
+        })
 
         let signingResult: any = { status: 'pending_manual', provider }
 
@@ -512,7 +517,11 @@ Deno.serve(async (req) => {
         .eq('id', contract.id)
 
       // === CANONICAL SYNC (shared helper) ===
-      await syncIntakeOnSent(supabase, contract.id, null, 'public_submit_signing')
+      const sentSyncPublic = await syncIntakeOnSent(supabase, contract.id, null, 'public_submit_signing')
+      await handleLifecycleSyncResult(supabase, sentSyncPublic, {
+        contractId: contract.id, workspaceId: (contract as any).workspace?.id ?? null,
+        source: 'public_submit_signing', operation: 'sent',
+      })
 
       let signingResult: any = { status: 'pending_manual', provider }
 
@@ -686,12 +695,27 @@ Deno.serve(async (req) => {
       }
       
       // === CANONICAL LIFECYCLE SYNC (shared helper): contract + workspace + intake + CRM ===
+      // Public digital signing has no provider to retry — surface failure to the
+      // founder so they can contact staff instead of silently appearing successful.
       await supabase
         .from('startup_contracts')
         .update({ status: 'active' })
         .eq('id', contract.id)
 
-      await syncIntakeOnCompleted(supabase, contract.id, (contract as any).workspace_id, null, 'digital_sign_onboarding')
+      const completedSync = await syncIntakeOnCompleted(supabase, contract.id, (contract as any).workspace_id, null, 'digital_sign_onboarding')
+      const syncOk = await handleLifecycleSyncResult(supabase, completedSync, {
+        contractId: contract.id, workspaceId: (contract as any).workspace_id ?? null,
+        source: 'digital_sign_onboarding', operation: 'completed',
+      })
+      if (!syncOk) {
+        return new Response(JSON.stringify({
+          error: 'lifecycle_sync_failed',
+          message: 'A assinatura foi registada, mas a ativação do workspace falhou. Contacte o staff.',
+          details: completedSync.errors,
+        }), {
+          status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
       
       // Notify staff
       const { data: staffUsers } = await supabase

@@ -12,6 +12,7 @@
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { syncIntakeOnSent, syncIntakeOnCompleted } from '../_shared/lifecycleSync.ts'
+import { handleLifecycleSyncResult } from '../_shared/lifecycleSyncResultHandler.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -139,10 +140,20 @@ Deno.serve(async (req) => {
         .eq('id', contract.id)
 
       // === CANONICAL LIFECYCLE SYNC (shared helper) ===
+      // Webhook always returns 200 to avoid PandaDoc retry storms, but failures
+      // are persisted to contract_lifecycle_events + staff are notified.
       if (canonicalStatus === 'sent_for_signature') {
-        await syncIntakeOnSent(supabase, contract.id, null, `pandadoc_webhook_${eventName}`)
+        const r = await syncIntakeOnSent(supabase, contract.id, null, `pandadoc_webhook_${eventName}`)
+        await handleLifecycleSyncResult(supabase, r, {
+          contractId: contract.id, workspaceId: contract.workspace_id,
+          source: `pandadoc_webhook_${eventName}_sent`, operation: 'sent',
+        })
       } else if (canonicalStatus === 'completed') {
-        await syncIntakeOnCompleted(supabase, contract.id, contract.workspace_id, null, `pandadoc_webhook_${eventName}`)
+        const r = await syncIntakeOnCompleted(supabase, contract.id, contract.workspace_id, null, `pandadoc_webhook_${eventName}`)
+        await handleLifecycleSyncResult(supabase, r, {
+          contractId: contract.id, workspaceId: contract.workspace_id,
+          source: `pandadoc_webhook_${eventName}_completed`, operation: 'completed',
+        })
       }
 
       // ═══ AUDIT: Log lifecycle event with full payload ═══
