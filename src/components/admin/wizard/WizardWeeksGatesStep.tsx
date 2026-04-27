@@ -346,11 +346,14 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">{t('programSetup.acceleration.noGate', 'No gate')}</SelectItem>
-                          {sortedGates.map((g, gIdx) => (
-                            <SelectItem key={gIdx} value={`gate-${gIdx}`}>
-                              {g.name || `Gate ${gIdx + 1}`}
-                            </SelectItem>
-                          ))}
+                          {sortedGates.map((g, gIdx) => {
+                            const lid = localId(g);
+                            return (
+                              <SelectItem key={lid} value={lid}>
+                                {g.name || `Gate ${gIdx + 1}`}
+                              </SelectItem>
+                            );
+                          })}
                         </SelectContent>
                       </Select>
                     </div>
