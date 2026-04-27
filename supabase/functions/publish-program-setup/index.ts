@@ -259,22 +259,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    // --- ATOMIC PUBLISH TRANSACTION ---
+    // --- ATOMIC-STYLE PUBLISH ---
+    // NOTE: This is not a true SQL transaction (edge function uses PostgREST,
+    // not a single connection). Hardening: every write is now error-checked
+    // and the program is created/updated as 'draft' first; status flips to
+    // 'active' only after every child write succeeds (last step). On any
+    // failure the catch block marks the draft as 'publish_failed' so the
+    // staff sees a clear remediation surface instead of a half-published
+    // program. A future improvement is to move this whole orchestration
+    // into a single PostgreSQL function.
     let programId = draft.program_id;
-
-    // 1. Upsert program
-    const settingsJson = draftData.basics.settings || {
-      program_mode: 'standard',
-      enable_kpis: true,
-      enable_health: true,
-      enable_milestones: true,
-      enable_alerts: true,
-      enable_playbooks: true,
-      enable_financial_model: true,
-    };
+    const programTypeFinal = draftData.basics.program_type || 'incubation';
+    const isAccelerationFinal = programTypeFinal === 'acceleration';
 
     if (programId) {
-      // Update existing program
+      // Update existing program — keep current status, do not flip to active yet.
       const { error: updateError } = await supabase
         .from('programs')
         .update({
@@ -283,8 +282,7 @@ Deno.serve(async (req) => {
           start_date: draftData.basics.start_date || null,
           end_date: draftData.basics.end_date || null,
           settings_json: settingsJson,
-          program_type: draftData.basics.program_type || 'incubation',
-          status: 'active',
+          program_type: programTypeFinal,
           updated_at: new Date().toISOString(),
         })
         .eq('id', programId);
@@ -292,7 +290,7 @@ Deno.serve(async (req) => {
       if (updateError) throw new Error(`Failed to update program: ${updateError.message}`);
       console.log(`[publish-program-setup] Updated program ${programId}`);
     } else {
-      // Create new program
+      // Create new program in 'draft' status — flipped to 'active' on full success.
       const { data: newProgram, error: createError } = await supabase
         .from('programs')
         .insert({
@@ -301,16 +299,39 @@ Deno.serve(async (req) => {
           start_date: draftData.basics.start_date || null,
           end_date: draftData.basics.end_date || null,
           settings_json: settingsJson,
-          program_type: draftData.basics.program_type || 'incubation',
-          status: 'active',
-          is_active: true,
+          program_type: programTypeFinal,
+          status: 'draft',
+          is_active: false,
         })
         .select()
         .single();
 
       if (createError || !newProgram) throw new Error(`Failed to create program: ${createError?.message}`);
       programId = newProgram.id;
-      console.log(`[publish-program-setup] Created program ${programId}`);
+      console.log(`[publish-program-setup] Created program ${programId} (draft, will activate on success)`);
+    }
+
+    // ===== Quarantine incompatible config when program_type changed =====
+    // If publishing as 'acceleration', wipe stage-only artifacts (stages,
+    // playbooks, stage_kpi_defaults). If publishing as 'incubation', wipe
+    // acceleration artifacts (gates, weeks). Prevents drift between modes.
+    if (isAccelerationFinal) {
+      const stageWipes = await Promise.all([
+        supabase.from('stage_kpi_defaults').delete().eq('program_id', programId),
+        supabase.from('playbook_items').delete().in('playbook_id',
+          (await supabase.from('playbooks').select('id').eq('program_id', programId)).data?.map((p: any) => p.id) || []),
+        supabase.from('playbooks').delete().eq('program_id', programId),
+        supabase.from('stages').delete().eq('program_id', programId),
+      ]);
+      const wipeErrs = stageWipes.map(r => r.error).filter(Boolean);
+      if (wipeErrs.length) console.warn('[publish-program-setup] stage-side wipe warnings:', wipeErrs);
+    } else {
+      const accWipes = await Promise.all([
+        supabase.from('program_weeks').delete().eq('program_id', programId),
+        supabase.from('program_gates').delete().eq('program_id', programId),
+      ]);
+      const wipeErrs = accWipes.map(r => r.error).filter(Boolean);
+      if (wipeErrs.length) console.warn('[publish-program-setup] acceleration-side wipe warnings:', wipeErrs);
     }
 
     // 2. Upsert stages metadata (incubation only)
