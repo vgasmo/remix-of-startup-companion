@@ -18,6 +18,15 @@ import { Plus, Trash2, GripVertical, ChevronUp, ChevronDown, CalendarDays, Flag,
 import { useTranslation } from 'react-i18next';
 import type { DraftGate, DraftWeek } from '@/hooks/useProgramSetup';
 
+// Stable local ID generator: prefer existing DB id, otherwise mint a UUID.
+// Fixes prior bug where gate removal used `temp-${idx}` while assignment used
+// `gate-${idx}`, leaving weeks orphaned or attached to the wrong gate.
+function localId(g: { id?: string; __local_id?: string }): string {
+  return g.id || g.__local_id || (g.__local_id = (typeof crypto !== 'undefined' && (crypto as any).randomUUID)
+    ? (crypto as any).randomUUID()
+    : `lid-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`);
+}
+
 interface WizardWeeksGatesStepProps {
   gates: DraftGate[];
   weeks: DraftWeek[];
