@@ -109,7 +109,9 @@
     "titleRequired": "Título é obrigatório",
     "unassigned": "Não atribuído",
     "unassignedActions": "Ações Não Atribuídas",
-    "updatedCount": "{{count}} ações atualizadas"
+    "updatedCount": "{{count}} ações atualizadas",
+    "deliverableAlreadyLinked": "Este documento já está ligado a esta ação",
+    "deliverableDocExistingHint": "Se o documento já estiver concluído, será ligado a esta ação e aberto na base de documentos."
   },
   "activityLog": {
     "action": "Ação",
@@ -2075,7 +2077,8 @@
     "viewAll": "Ver todas",
     "workspace": "Workspace",
     "years": "anos",
-    "yes": "Sim"
+    "yes": "Sim",
+    "session": "Sessão"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -4899,7 +4902,12 @@
     "healthyMomentum": "Momentum saudável",
     "recentSessions": "Sessões recentes (30d)",
     "staleFollowup": "Follow-up em atraso",
-    "title": "O Seu Impacto"
+    "title": "O Seu Impacto",
+    "feedbackTitle": "Feedback recente",
+    "noFeedback": "Ainda sem feedback público das sessões.",
+    "noComment": "Sem comentário escrito",
+    "pageTitle": "O Seu Impacto",
+    "pageDesc": "Visão consolidada das suas sessões, startups ativas, follow-ups por fechar e feedback recebido."
   },
   "mentorNda": {
     "accepted": "Aceite",
@@ -8228,5 +8236,27 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
+  },
+  "founderWizard": {
+    "welcome": "Bem-vindo",
+    "stepOf": "Passo {{n}} de {{total}}",
+    "skip": "Saltar por agora",
+    "next": "Seguinte",
+    "done": "Concluir",
+    "step1": {
+      "title": "Complete o seu perfil",
+      "desc": "Adicione logo e contacto para que a equipa o consiga apoiar melhor.",
+      "cta": "Abrir definições"
+    },
+    "step2": {
+      "title": "Escolha o seu primeiro template",
+      "desc": "Lean Canvas ou Pitch Deck — é um bom ponto de partida.",
+      "cta": "Ver templates"
+    },
+    "step3": {
+      "title": "Agende a primeira sessão",
+      "desc": "Marque uma conversa com o seu consultor responsável.",
+      "cta": "Abrir agenda"
+    }
   }
 }
