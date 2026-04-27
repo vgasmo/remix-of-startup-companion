@@ -52,17 +52,24 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
     },
   });
 
-  const [gates, setGates] = useState<DraftGate[]>(initialGates.length > 0 ? initialGates : [
-    { name: t('programSetup.acceleration.defaultGate1', 'Discovery'), sort_order: 0, target_start_week: 1, target_end_week: 3 },
-    { name: t('programSetup.acceleration.defaultGate2', 'Build'), sort_order: 1, target_start_week: 4, target_end_week: 8 },
-    { name: t('programSetup.acceleration.defaultGate3', 'Launch'), sort_order: 2, target_start_week: 9, target_end_week: 12 },
-  ]);
-  const [weeks, setWeeks] = useState<DraftWeek[]>(initialWeeks.length > 0 ? initialWeeks : []);
+  // Default gates get stable local IDs immediately so weeks can attach to them
+  // by id (not by array index, which mutates on add/remove/reorder).
+  const [gates, setGates] = useState<DraftGate[]>(() => {
+    if (initialGates.length > 0) {
+      return initialGates.map(g => ({ ...g, __local_id: g.id || (g as any).__local_id || crypto.randomUUID() } as DraftGate));
+    }
+    return [
+      { name: t('programSetup.acceleration.defaultGate1', 'Discovery'), sort_order: 0, target_start_week: 1, target_end_week: 3, __local_id: crypto.randomUUID() } as DraftGate,
+      { name: t('programSetup.acceleration.defaultGate2', 'Build'),     sort_order: 1, target_start_week: 4, target_end_week: 8, __local_id: crypto.randomUUID() } as DraftGate,
+      { name: t('programSetup.acceleration.defaultGate3', 'Launch'),    sort_order: 2, target_start_week: 9, target_end_week: 12, __local_id: crypto.randomUUID() } as DraftGate,
+    ];
+  });
+  const [weeks, setWeeks] = useState<DraftWeek[]>(initialWeeks);
 
-  // Sync from parent
+  // Sync from parent — preserve / mint stable local IDs on incoming gates
   useEffect(() => {
     if (initialGates.length > 0 && JSON.stringify(initialGates) !== JSON.stringify(gates)) {
-      setGates(initialGates);
+      setGates(initialGates.map(g => ({ ...g, __local_id: g.id || (g as any).__local_id || crypto.randomUUID() } as DraftGate)));
     }
   }, [initialGates]);
 
@@ -91,14 +98,16 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
       sort_order: maxOrder,
       target_start_week: lastEndWeek + 1,
       target_end_week: lastEndWeek + 4,
-    }]);
+      __local_id: crypto.randomUUID(),
+    } as DraftGate]);
   };
 
   const removeGate = (idx: number) => {
     const gateToRemove = gates[idx];
+    const removedLocalId = localId(gateToRemove);
     setGates(gates.filter((_, i) => i !== idx).map((g, i) => ({ ...g, sort_order: i })));
-    // Unlink weeks from this gate
-    setWeeks(weeks.map(w => w.gate_id === `temp-${idx}` ? { ...w, gate_id: undefined } : w));
+    // Unlink weeks attached to this gate by its STABLE id (not array index).
+    setWeeks(weeks.map(w => w.gate_id === removedLocalId ? { ...w, gate_id: undefined } : w));
   };
 
   const updateGate = (idx: number, field: keyof DraftGate, value: string | number) => {
@@ -111,6 +120,17 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
     const sorted = [...gates].sort((a, b) => a.sort_order - b.sort_order);
     [sorted[idx], sorted[newIdx]] = [sorted[newIdx], sorted[idx]];
     setGates(sorted.map((g, i) => ({ ...g, sort_order: i })));
+  };
+
+  // Week CRUD
+  const addWeek = (gateLocalId?: string) => {
+    const maxWeek = weeks.length > 0 ? Math.max(...weeks.map(w => w.week_number)) : 0;
+    setWeeks([...weeks, {
+      gate_id: gateLocalId,
+      week_number: maxWeek + 1,
+      title: '',
+      deliverables_json: [],
+    }]);
   };
 
   // Week CRUD
