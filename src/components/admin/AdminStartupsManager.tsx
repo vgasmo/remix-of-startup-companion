@@ -291,7 +291,10 @@ export function AdminStartupsManager() {
     const workspaceStage = startup.workspaces?.[0]?.stage;
     const matchesStage = stageFilter === 'all' || !stageFilter || workspaceStage === stageFilter;
     
-    return matchesSearch && matchesStage;
+    const isArchived = !!(startup as any).archived_at;
+    const matchesArchived = showArchived ? isArchived : !isArchived;
+
+    return matchesSearch && matchesStage && matchesArchived;
   });
 
   // Export to CSV
