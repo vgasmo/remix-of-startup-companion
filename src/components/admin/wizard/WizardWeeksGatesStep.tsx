@@ -252,6 +252,11 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
 
   const bulkRemoveDeliverables = () => {
     if (librarySelected.size === 0) return;
+    // Snapshot BEFORE mutating
+    const before = weeks;
+    const removedCount = librarySelected.size;
+    const label = t('programSetup.acceleration.undoLabelRemove', 'Remove {{n}} deliverables', { n: removedCount });
+
     // Group selections by weekIdx → set of delIdx to drop
     const drop = new Map<number, Set<number>>();
     librarySelected.forEach(key => {
@@ -267,9 +272,23 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
         deliverables_json: w.deliverables_json.filter((_, di) => !toDrop.has(di)),
       };
     });
+    pushUndo(label, before);
     setWeeks(next);
-    toast.success(t('programSetup.acceleration.bulkRemoved', '{{n}} deliverables removed', { n: librarySelected.size }));
     setLibrarySelected(new Set());
+    toast.success(
+      t('programSetup.acceleration.bulkRemoved', '{{n}} deliverables removed', { n: removedCount }),
+      {
+        duration: 8000,
+        action: {
+          label: t('programSetup.acceleration.undo', 'Undo'),
+          onClick: () => {
+            setWeeks(before);
+            setUndoStack(prev => prev.filter(e => e.ts !== prev[prev.length - 1]?.ts));
+            toast.success(t('programSetup.acceleration.undoneToast', 'Undone: {{label}}', { label }));
+          },
+        },
+      }
+    );
   };
 
   const bulkAddDeliverables = () => {
