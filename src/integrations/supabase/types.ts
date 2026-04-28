@@ -453,6 +453,148 @@ export type Database = {
         }
         Relationships: []
       }
+      bulk_import_batches: {
+        Row: {
+          committed_count: number
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          extracted_count: number
+          failed_count: number
+          id: string
+          notes: string | null
+          status: string
+          total_files: number
+          updated_at: string
+        }
+        Insert: {
+          committed_count?: number
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          extracted_count?: number
+          failed_count?: number
+          id?: string
+          notes?: string | null
+          status?: string
+          total_files?: number
+          updated_at?: string
+        }
+        Update: {
+          committed_count?: number
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          extracted_count?: number
+          failed_count?: number
+          id?: string
+          notes?: string | null
+          status?: string
+          total_files?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bulk_import_rows: {
+        Row: {
+          ai_confidence: number | null
+          batch_id: string
+          created_at: string
+          created_contract_id: string | null
+          edited_json: Json | null
+          error_message: string | null
+          extracted_json: Json | null
+          id: string
+          match_method: string | null
+          matched_startup_id: string | null
+          matched_workspace_id: string | null
+          pdf_filename: string
+          pdf_path: string
+          selected: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          ai_confidence?: number | null
+          batch_id: string
+          created_at?: string
+          created_contract_id?: string | null
+          edited_json?: Json | null
+          error_message?: string | null
+          extracted_json?: Json | null
+          id?: string
+          match_method?: string | null
+          matched_startup_id?: string | null
+          matched_workspace_id?: string | null
+          pdf_filename: string
+          pdf_path: string
+          selected?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          ai_confidence?: number | null
+          batch_id?: string
+          created_at?: string
+          created_contract_id?: string | null
+          edited_json?: Json | null
+          error_message?: string | null
+          extracted_json?: Json | null
+          id?: string
+          match_method?: string | null
+          matched_startup_id?: string | null
+          matched_workspace_id?: string | null
+          pdf_filename?: string
+          pdf_path?: string
+          selected?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_import_rows_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_import_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_import_rows_created_contract_id_fkey"
+            columns: ["created_contract_id"]
+            isOneToOne: false
+            referencedRelation: "startup_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_import_rows_created_contract_id_fkey"
+            columns: ["created_contract_id"]
+            isOneToOne: false
+            referencedRelation: "startup_contracts_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_import_rows_matched_startup_id_fkey"
+            columns: ["matched_startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_import_rows_matched_startup_id_fkey"
+            columns: ["matched_startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_import_rows_matched_workspace_id_fkey"
+            columns: ["matched_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cap_table_entries: {
         Row: {
           cliff_months: number | null
