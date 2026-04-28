@@ -531,6 +531,22 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
           <div className="flex gap-2">
             <Button
               type="button"
+              variant="ghost"
+              size="sm"
+              disabled={undoStack.length === 0}
+              onClick={undoLast}
+              title={undoStack.length > 0 ? undoStack[undoStack.length - 1].label : ''}
+            >
+              <Undo2 className="h-4 w-4 mr-1" />
+              {t('programSetup.acceleration.undo', 'Undo')}
+              {undoStack.length > 0 && (
+                <Badge variant="secondary" className="ml-2 h-4 px-1.5 text-[10px]">
+                  {undoStack.length}
+                </Badge>
+              )}
+            </Button>
+            <Button
+              type="button"
               variant="outline"
               size="sm"
               onClick={() => setBulkAddOpen(true)}
