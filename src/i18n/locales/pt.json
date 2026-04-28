@@ -5867,6 +5867,8 @@
       "undo": "Anular",
       "undoLabelAdd": "Adicionar {{n}} entregáveis",
       "undoLabelRemove": "Remover {{n}} entregáveis",
+      "undoLabelRemoveDeliverable": "Remover entregável",
+      "undoLabelRemoveWeek": "Remover Semana {{number}}",
       "undoneToast": "Anulado: {{label}}",
       "titleCol": "Título",
       "weekCol": "Semana",
