@@ -713,17 +713,23 @@ Deno.serve(async (req) => {
     const errMsg = error instanceof Error ? error.message : 'Internal server error';
     console.error('[publish-program-setup] Error:', errMsg);
 
-    // Best-effort rollback marker — keep program in 'draft' (already not active)
-    // and mark the wizard draft as 'publish_failed' so staff sees the failure.
-    try {
-      const reqBody = await req.clone().json().catch(() => ({}));
-      if (reqBody?.draft_id) {
+    // Mark the wizard draft as 'publish_failed' so staff sees the failure
+    // and can retry/continue. Uses the hoisted `draftIdForCatch` so this
+    // works even if the failure happened before the inner try logic ran.
+    if (draftIdForCatch) {
+      try {
         await supabase
           .from('program_setup_drafts')
-          .update({ status: 'publish_failed' as any, last_publish_error: errMsg } as any)
-          .eq('id', reqBody.draft_id);
+          .update({
+            status: 'publish_failed',
+            last_publish_error: errMsg.slice(0, 2000),
+            last_publish_failed_at: new Date().toISOString(),
+          })
+          .eq('id', draftIdForCatch);
+      } catch (markErr) {
+        console.error('[publish-program-setup] Failed to mark draft as publish_failed:', markErr);
       }
-    } catch (_) { /* non-fatal */ }
+    }
 
     return new Response(JSON.stringify({ error: errMsg }), {
       status: 500,
