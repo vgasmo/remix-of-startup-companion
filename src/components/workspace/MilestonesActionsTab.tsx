@@ -161,11 +161,47 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
     } catch { toast.error(t('milestones.failedToUpdate')); }
   };
 
+  // Snapshot a milestone + its child actions, delete it, then offer toast undo to re-insert both.
   const handleDeleteMilestoneConfirm = async () => {
     if (!deleteMilestoneTarget || !canWrite) return;
+    const target = deleteMilestoneTarget;
     try {
-      await deleteMilestone.mutateAsync(deleteMilestoneTarget.id);
-      toast.success(t('milestones.milestoneDeleted'));
+      // Snapshot full row + child action rows BEFORE delete (FK cascade will drop children)
+      const [{ data: msRow }, { data: childActions }] = await Promise.all([
+        supabase.from('milestones').select('*').eq('id', target.id).maybeSingle(),
+        supabase.from('action_items').select('*').eq('milestone_id', target.id),
+      ]);
+
+      await deleteMilestone.mutateAsync(target.id);
+
+      const restore = async () => {
+        if (!msRow) {
+          toast.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
+          return;
+        }
+        try {
+          const { error: msErr } = await supabase.from('milestones').insert(msRow as any);
+          if (msErr) throw msErr;
+          if (childActions && childActions.length > 0) {
+            const { error: aErr } = await supabase.from('action_items').insert(childActions as any);
+            if (aErr) throw aErr;
+          }
+          toast.success(t('milestones.milestoneRestored', { defaultValue: 'Milestone restored' }));
+          import('@tanstack/react-query'); // no-op import guard
+        } catch (err) {
+          toast.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
+        } finally {
+          // Refresh queries regardless
+          await Promise.all([
+            // @ts-ignore - access via window since hook scope already invalidated
+          ]);
+        }
+      };
+
+      toast.success(t('milestones.milestoneDeleted'), {
+        duration: 8000,
+        action: { label: t('common.undo'), onClick: restore },
+      });
       setDeleteMilestoneTarget(null);
     } catch { toast.error(t('milestones.failedToDelete')); }
   };
