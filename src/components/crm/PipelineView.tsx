@@ -109,6 +109,18 @@ export function PipelineView({
     return groups;
   }, [pipeline]);
 
+  // All hooks MUST be declared before any conditional return — moved up from
+  // below the loading guard to fix "Rendered more hooks than during the
+  // previous render" when transitioning from skeleton → loaded.
+  const flatItems = useMemo(
+    () => Object.values(groupedBySimple).flat(),
+    [groupedBySimple],
+  );
+  const selectAll = useCallback(
+    () => setSelectedIds(new Set(flatItems.map((i) => i.id))),
+    [flatItems],
+  );
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -203,14 +215,6 @@ export function PipelineView({
   }
 
   const totalItems = Object.values(groupedBySimple).reduce((sum, items) => sum + items.length, 0);
-  const flatItems = useMemo(
-    () => Object.values(groupedBySimple).flat(),
-    [groupedBySimple],
-  );
-  const selectAll = useCallback(
-    () => setSelectedIds(new Set(flatItems.map((i) => i.id))),
-    [flatItems],
-  );
 
   return (
     <DndContext
