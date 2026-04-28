@@ -29,6 +29,10 @@
   "actions": {
     "actionCreated": "Action item created",
     "actionDeleted": "Action item deleted",
+    "actionRestored_one": "{{count}} action restored",
+    "actionRestored_other": "{{count}} actions restored",
+    "statusReverted": "Status reverted",
+    "undoFailed": "Could not undo. Please try again.",
     "actionsBelongToMilestones": "Actions belong to milestones to track progress toward goals.",
     "actionsLabel": "actions",
     "addAction": "Add Action",
@@ -5103,6 +5107,7 @@
     "list": "List",
     "milestoneCreated": "Milestone created",
     "milestoneDeleted": "Milestone deleted",
+    "milestoneRestored": "Milestone restored",
     "milestoneTimeline": "Milestone Timeline",
     "newMilestone": "New Milestone",
     "noMilestones": "No milestones found",
