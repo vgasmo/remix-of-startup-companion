@@ -544,17 +544,26 @@ function TemplateEditorDialog({
     }
   }, [template?.id, instance?.id, instance?.data_json]);
 
+  const performClose = () => {
+    onClose();
+    setFormData({});
+    setHasChanges(false);
+  };
+
   // Handle dialog close with unsaved changes protection
   const handleOpenChange = (open: boolean) => {
-    if (!open && hasChanges) {
-      const confirmClose = window.confirm(t('templates.unsavedChangesWarning', 'You have unsaved changes. Are you sure you want to close?'));
-      if (!confirmClose) return;
+    if (open) return;
+    if (hasChanges) {
+      confirmClose({
+        title: t('templates.unsavedChangesTitle', 'Discard unsaved changes?'),
+        description: t('templates.unsavedChangesWarning', 'You have unsaved changes. Are you sure you want to close?'),
+        confirmLabel: t('common.discard', 'Discard'),
+        variant: 'destructive',
+        onConfirm: performClose,
+      });
+      return;
     }
-    if (!open) {
-      onClose();
-      setFormData({});
-      setHasChanges(false);
-    }
+    performClose();
   };
 
   const handleFieldChange = (fieldId: string, value: unknown) => {
