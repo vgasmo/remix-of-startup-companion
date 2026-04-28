@@ -129,6 +129,51 @@ export function AdminStartupsManager() {
     onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
   });
 
+  // Soft-archive mutation (default destructive action). Restorable via undo toast or
+  // by toggling "show archived" and clicking restore on the row.
+  const archiveMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data: userRes } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from('startups')
+        .update({
+          archived_at: new Date().toISOString(),
+          archived_by: userRes.user?.id ?? null,
+        })
+        .eq('id', id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: (id) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-startups'] });
+      toast.success(t('admin.startupsManager.startupArchived'), {
+        duration: 8000,
+        action: {
+          label: t('common.undo'),
+          onClick: () => restoreMutation.mutate(id),
+        },
+      });
+    },
+    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('startups')
+        .update({ archived_at: null, archived_by: null, archived_reason: null })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-startups'] });
+      toast.success(t('admin.startupsManager.startupRestored'));
+    },
+    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+  });
+
+  // Permanent delete remains available but is gated behind an explicit confirm
+  // and only offered for already-archived startups.
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('startups').delete().eq('id', id);
