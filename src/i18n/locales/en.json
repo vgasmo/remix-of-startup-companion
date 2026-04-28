@@ -2093,7 +2093,8 @@
     "workspace": "Workspace",
     "years": "years",
     "yes": "Yes",
-    "session": "Session"
+    "session": "Session",
+    "discard": "Discard"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -2692,7 +2693,8 @@
       "nextActionSuccess": "Next actions set for leads",
       "selectLeads": "Select leads to perform bulk actions",
       "selectedCount": "{{count}} selected",
-      "setNextAction": "Set Next Action (Tomorrow)"
+      "setNextAction": "Set Next Action (Tomorrow)",
+      "selectLead": "Select lead"
     },
     "cancelTask": "Cancel Task",
     "canceled": "Canceled",
@@ -3022,7 +3024,8 @@
     "viewAll": "View All",
     "viewSession": "View Session",
     "weighted": "EUR",
-    "winProbability": "Probabilidade (%)"
+    "winProbability": "Probabilidade (%)",
+    "dragToMove": "Drag to move"
   },
   "dashboard": {
     "acrossPrograms": "Across {{count}} program",
@@ -7788,7 +7791,8 @@
     "title": "Templates",
     "unitEconomics": "Unit Economics",
     "unsavedChangesWarning": "You have unsaved changes. Are you sure you want to close?",
-    "useTemplate": "Use Template"
+    "useTemplate": "Use Template",
+    "unsavedChangesTitle": "Discard unsaved changes?"
   },
   "tests": {
     "fail": "Fail",

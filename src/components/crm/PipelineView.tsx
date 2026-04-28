@@ -14,6 +14,7 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronRight, AlertTriangle, GripVertical, Flame, ThermometerSun, Snowflake } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -21,7 +22,9 @@ import { formatRelativeTime } from '@/lib/dateUtils';
 import { useCrmPipeline } from '@/hooks/useCrmPipeline';
 import { calculateLeadScore } from './LeadScoreCard';
 import { useUpdateFunnelItem } from '@/hooks/useFunnel';
-import { useState, useMemo } from 'react';
+import { useConsultors } from '@/hooks/useWorkspaceOwner';
+import { CrmBulkActions } from './CrmBulkActions';
+import { useState, useMemo, useCallback } from 'react';
 import {
   SIMPLE_PIPELINE_STAGES,
   SIMPLE_STAGE_SOURCES,
@@ -63,7 +66,8 @@ export function PipelineView({
 }: PipelineViewProps) {
   const { t } = useTranslation();
   const [activeItem, setActiveItem] = useState<CrmInboxItem | null>(null);
-  
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
   const { data: pipeline, isLoading } = useCrmPipeline({
     programId: programFilter !== 'all' ? programFilter : undefined,
     assigneeId: assigneeFilter !== 'all' ? assigneeFilter : undefined,
@@ -72,7 +76,20 @@ export function PipelineView({
     currentUserId,
   });
 
+  const { data: consultants = [] } = useConsultors();
+
   const updateFunnelItem = useUpdateFunnelItem();
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
 
   // Group all pipeline items by simplified stage
   const groupedBySimple = useMemo(() => {
@@ -186,6 +203,14 @@ export function PipelineView({
   }
 
   const totalItems = Object.values(groupedBySimple).reduce((sum, items) => sum + items.length, 0);
+  const flatItems = useMemo(
+    () => Object.values(groupedBySimple).flat(),
+    [groupedBySimple],
+  );
+  const selectAll = useCallback(
+    () => setSelectedIds(new Set(flatItems.map((i) => i.id))),
+    [flatItems],
+  );
 
   return (
     <DndContext
@@ -200,6 +225,15 @@ export function PipelineView({
           <span className="text-xs">{t('crm.dragDropHint', 'Arraste cards para mudar fase')}</span>
         </div>
 
+        <CrmBulkActions
+          items={flatItems}
+          selectedIds={selectedIds}
+          onToggleSelect={toggleSelect}
+          onSelectAll={selectAll}
+          onClearSelection={clearSelection}
+          consultants={consultants.map((c) => ({ id: c.id, full_name: c.full_name }))}
+        />
+
         <div className="overflow-x-auto pb-4">
           <div className="flex gap-4 min-w-max">
             {SIMPLE_PIPELINE_STAGES.map(simpleStage => (
@@ -209,6 +243,8 @@ export function PipelineView({
                 items={groupedBySimple[simpleStage] || []}
                 config={SIMPLE_STAGE_CONFIG[simpleStage]}
                 onOpenDrawer={onOpenDrawer}
+                selectedIds={selectedIds}
+                onToggleSelect={toggleSelect}
               />
             ))}
           </div>
@@ -232,9 +268,11 @@ interface PipelineColumnProps {
   items: CrmInboxItem[];
   config: { color: string; bgColor: string };
   onOpenDrawer: (item: CrmInboxItem) => void;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
 }
 
-function PipelineColumn({ simpleStage, items, config, onOpenDrawer }: PipelineColumnProps) {
+function PipelineColumn({ simpleStage, items, config, onOpenDrawer, selectedIds, onToggleSelect }: PipelineColumnProps) {
   const { t } = useTranslation();
   const { setNodeRef, isOver } = useDroppable({
     id: simpleStage,
@@ -277,6 +315,8 @@ function PipelineColumn({ simpleStage, items, config, onOpenDrawer }: PipelineCo
                     key={item.id} 
                     item={item} 
                     onOpenDrawer={onOpenDrawer}
+                    isSelected={selectedIds.has(item.id)}
+                    onToggleSelect={onToggleSelect}
                   />
                 ))}
               </div>
@@ -291,9 +331,11 @@ function PipelineColumn({ simpleStage, items, config, onOpenDrawer }: PipelineCo
 interface DraggableCardProps {
   item: CrmInboxItem;
   onOpenDrawer: (item: CrmInboxItem) => void;
+  isSelected: boolean;
+  onToggleSelect: (id: string) => void;
 }
 
-function DraggableCard({ item, onOpenDrawer }: DraggableCardProps) {
+function DraggableCard({ item, onOpenDrawer, isSelected, onToggleSelect }: DraggableCardProps) {
   const { t } = useTranslation();
   const now = new Date();
   const isOverdue = item.next_action_at && new Date(item.next_action_at) < now;
@@ -322,6 +364,7 @@ function DraggableCard({ item, onOpenDrawer }: DraggableCardProps) {
         'transition-[box-shadow,border-color,opacity] duration-150 ease-out',
         'hover:shadow-md hover:border-primary/20',
         isOverdue && 'border-l-2 border-l-amber-500',
+        isSelected && 'ring-2 ring-primary border-primary/40',
         isDragging && 'opacity-0'
       )}
       data-testid="crm-record"
@@ -330,11 +373,21 @@ function DraggableCard({ item, onOpenDrawer }: DraggableCardProps) {
       <CardContent className="p-3">
         <div className="flex items-start gap-2">
           <div
+            className="pt-0.5 shrink-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={() => onToggleSelect(item.id)}
+              aria-label={t('crm.bulk.selectLead', { defaultValue: 'Selecionar lead' })}
+            />
+          </div>
+          <div
             {...listeners}
             {...attributes}
             className="cursor-grab active:cursor-grabbing p-1 -ml-1 -mt-0.5 hover:bg-muted rounded shrink-0 touch-none"
             onClick={(e) => e.stopPropagation()}
-            aria-label="Arrastar para mover"
+            aria-label={t('crm.dragToMove', { defaultValue: 'Arrastar para mover' })}
           >
             <GripVertical className="h-4 w-4 text-muted-foreground" />
           </div>

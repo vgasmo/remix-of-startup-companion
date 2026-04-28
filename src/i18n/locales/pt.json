@@ -2093,7 +2093,8 @@
     "workspace": "Workspace",
     "years": "anos",
     "yes": "Sim",
-    "session": "Sessão"
+    "session": "Sessão",
+    "discard": "Descartar"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -2692,7 +2693,8 @@
       "nextActionSuccess": "Próximas ações definidas",
       "selectLeads": "Selecione leads para ações em massa",
       "selectedCount": "{{count}} selecionados",
-      "setNextAction": "Definir Próxima Ação (Amanhã)"
+      "setNextAction": "Definir Próxima Ação (Amanhã)",
+      "selectLead": "Selecionar lead"
     },
     "cancelTask": "Cancelar Tarefa",
     "canceled": "Canceladas",
@@ -3022,7 +3024,8 @@
     "viewAll": "Ver Tudo",
     "viewSession": "Ver Sessão",
     "weighted": "EUR",
-    "winProbability": "Probabilidade (%)"
+    "winProbability": "Probabilidade (%)",
+    "dragToMove": "Arrastar para mover"
   },
   "dashboard": {
     "acrossPrograms": "Em {{count}} programa",
@@ -7788,7 +7791,8 @@
     "title": "Templates",
     "unitEconomics": "Unit Economics",
     "unsavedChangesWarning": "Tem alterações não guardadas. Tem a certeza que deseja fechar?",
-    "useTemplate": "Usar Template"
+    "useTemplate": "Usar Template",
+    "unsavedChangesTitle": "Descartar alterações não guardadas?"
   },
   "tests": {
     "fail": "Falhou",
