@@ -48,6 +48,7 @@ const CRM = lazy(lazyWithRetry(() => import("./pages/CRM"), "lazy:crm"));
 const CrmDiagnostics = lazy(lazyWithRetry(() => import("./pages/CrmDiagnostics"), "lazy:crm-diagnostics"));
 const PublicBooking = lazy(lazyWithRetry(() => import("./pages/PublicBooking"), "lazy:public-booking"));
 const AdminDataImport = lazy(lazyWithRetry(() => import("./pages/AdminDataImport"), "lazy:admin-data-import"));
+const BulkContractImport = lazy(lazyWithRetry(() => import("./pages/BulkContractImport"), "lazy:bulk-contract-import"));
 const Ecosystem = lazy(lazyWithRetry(() => import("./pages/Ecosystem"), "lazy:ecosystem"));
 const Documents = lazy(lazyWithRetry(() => import("./pages/Documents"), "lazy:documents"));
 const Resources = lazy(lazyWithRetry(() => import("./pages/Resources"), "lazy:resources"));
@@ -180,6 +181,7 @@ function AppRoutes() {
         <Route path="/admin" element={<ProtectedRoute staffOnly><Admin /></ProtectedRoute>} />
         <Route path="/admin/datarooms" element={<ProtectedRoute staffOnly><AdminDatarooms /></ProtectedRoute>} />
             <Route path="/admin/data-import" element={<ProtectedRoute adminOnly><AdminDataImport /></ProtectedRoute>} />
+            <Route path="/admin/contracts/bulk-import" element={<ProtectedRoute adminOnly><BulkContractImport /></ProtectedRoute>} />
             <Route path="/admin/diagnostics" element={<ProtectedRoute adminOnly><AppDiagnostics /></ProtectedRoute>} />
         <Route path="/admin/programs/new" element={<ProtectedRoute staffOnly><ProgramSetupWizard /></ProtectedRoute>} />
         <Route path="/admin/programs/new/:draftId" element={<ProtectedRoute staffOnly><ProgramSetupWizard /></ProtectedRoute>} />
