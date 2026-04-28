@@ -167,6 +167,168 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
     updateWeek(weekIdx, 'deliverables_json', week.deliverables_json.filter((_, i) => i !== delIdx));
   };
 
+  // ============================================================
+  // Deliverables Library — flat cross-week view with bulk add/remove
+  // ============================================================
+  const [librarySelected, setLibrarySelected] = useState<Set<string>>(new Set());
+  const [bulkAddOpen, setBulkAddOpen] = useState(false);
+  const [bulkAddText, setBulkAddText] = useState('');
+  const [bulkAddTargetWeek, setBulkAddTargetWeek] = useState<string>('');
+  const [bulkAddTemplate, setBulkAddTemplate] = useState<string>('none');
+
+  // Flat list: { key: "weekIdx:delIdx", weekIdx, delIdx, weekNumber, weekTitle, deliverable }
+  const libraryRows = useMemo(() => {
+    const rows: Array<{
+      key: string;
+      weekIdx: number;
+      delIdx: number;
+      weekNumber: number;
+      weekTitle: string;
+      title: string;
+      description?: string;
+      template_id?: string | null;
+    }> = [];
+    weeks.forEach((w, wi) => {
+      (w.deliverables_json || []).forEach((d, di) => {
+        rows.push({
+          key: `${wi}:${di}`,
+          weekIdx: wi,
+          delIdx: di,
+          weekNumber: w.week_number,
+          weekTitle: w.title || '',
+          title: d.title || '',
+          description: d.description,
+          template_id: d.template_id,
+        });
+      });
+    });
+    return rows.sort((a, b) => a.weekNumber - b.weekNumber || a.delIdx - b.delIdx);
+  }, [weeks]);
+
+  const toggleLibraryRow = (key: string) => {
+    setLibrarySelected(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
+
+  const toggleSelectAllLibrary = () => {
+    if (librarySelected.size === libraryRows.length) {
+      setLibrarySelected(new Set());
+    } else {
+      setLibrarySelected(new Set(libraryRows.map(r => r.key)));
+    }
+  };
+
+  const bulkRemoveDeliverables = () => {
+    if (librarySelected.size === 0) return;
+    // Group selections by weekIdx → set of delIdx to drop
+    const drop = new Map<number, Set<number>>();
+    librarySelected.forEach(key => {
+      const [wi, di] = key.split(':').map(Number);
+      if (!drop.has(wi)) drop.set(wi, new Set());
+      drop.get(wi)!.add(di);
+    });
+    const next = weeks.map((w, wi) => {
+      const toDrop = drop.get(wi);
+      if (!toDrop) return w;
+      return {
+        ...w,
+        deliverables_json: w.deliverables_json.filter((_, di) => !toDrop.has(di)),
+      };
+    });
+    setWeeks(next);
+    toast.success(t('programSetup.acceleration.bulkRemoved', '{{n}} deliverables removed', { n: librarySelected.size }));
+    setLibrarySelected(new Set());
+  };
+
+  const bulkAddDeliverables = () => {
+    const lines = bulkAddText.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length === 0) {
+      toast.error(t('programSetup.acceleration.bulkAddEmpty', 'Add at least one deliverable line'));
+      return;
+    }
+    const tplId = bulkAddTemplate === 'none' ? null : bulkAddTemplate;
+
+    // Parse each line: "Week N | Title | Optional description"
+    // OR if a target week is selected, default any line without "Week N |" prefix to that week.
+    const defaultWeekNumber = bulkAddTargetWeek ? parseInt(bulkAddTargetWeek) : null;
+
+    type ParsedRow = { weekNumber: number; title: string; description?: string };
+    const parsed: ParsedRow[] = [];
+    const errors: string[] = [];
+
+    lines.forEach((line, idx) => {
+      const parts = line.split('|').map(p => p.trim());
+      let weekNumber: number | null = null;
+      let title = '';
+      let description: string | undefined;
+
+      if (parts.length >= 2 && /^week\s+\d+$/i.test(parts[0])) {
+        weekNumber = parseInt(parts[0].replace(/[^\d]/g, ''));
+        title = parts[1];
+        description = parts[2] || undefined;
+      } else if (defaultWeekNumber) {
+        weekNumber = defaultWeekNumber;
+        title = parts[0];
+        description = parts[1] || undefined;
+      } else {
+        errors.push(t('programSetup.acceleration.bulkAddLineErr', 'Line {{n}}: missing "Week N |" prefix and no default week selected', { n: idx + 1 }));
+        return;
+      }
+      if (!weekNumber || weekNumber < 1) {
+        errors.push(t('programSetup.acceleration.bulkAddLineErr', 'Line {{n}}: invalid week number', { n: idx + 1 }));
+        return;
+      }
+      if (!title) {
+        errors.push(t('programSetup.acceleration.bulkAddLineErr', 'Line {{n}}: missing title', { n: idx + 1 }));
+        return;
+      }
+      parsed.push({ weekNumber, title, description });
+    });
+
+    if (errors.length > 0) {
+      toast.error(errors.slice(0, 3).join(' • '));
+      return;
+    }
+
+    // Group by week number; auto-create weeks that don't exist
+    const next = [...weeks];
+    let added = 0;
+    let weeksCreated = 0;
+    parsed.forEach(({ weekNumber, title, description }) => {
+      let idx = next.findIndex(w => w.week_number === weekNumber);
+      if (idx === -1) {
+        next.push({
+          gate_id: undefined,
+          week_number: weekNumber,
+          title: '',
+          deliverables_json: [],
+        });
+        idx = next.length - 1;
+        weeksCreated += 1;
+      }
+      next[idx] = {
+        ...next[idx],
+        deliverables_json: [
+          ...next[idx].deliverables_json,
+          { title, description, template_id: tplId },
+        ],
+      };
+      added += 1;
+    });
+
+    setWeeks(next);
+    toast.success(
+      weeksCreated > 0
+        ? t('programSetup.acceleration.bulkAddedWithWeeks', '{{a}} deliverables added ({{w}} new weeks created)', { a: added, w: weeksCreated })
+        : t('programSetup.acceleration.bulkAdded', '{{a}} deliverables added', { a: added })
+    );
+    setBulkAddText('');
+    setBulkAddOpen(false);
+  };
+
   const sortedGates = [...gates].sort((a, b) => a.sort_order - b.sort_order);
   const sortedWeeks = [...weeks].sort((a, b) => a.week_number - b.week_number);
 
