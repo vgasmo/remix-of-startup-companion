@@ -66,7 +66,8 @@ export function PipelineView({
 }: PipelineViewProps) {
   const { t } = useTranslation();
   const [activeItem, setActiveItem] = useState<CrmInboxItem | null>(null);
-  
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
   const { data: pipeline, isLoading } = useCrmPipeline({
     programId: programFilter !== 'all' ? programFilter : undefined,
     assigneeId: assigneeFilter !== 'all' ? assigneeFilter : undefined,
@@ -75,7 +76,20 @@ export function PipelineView({
     currentUserId,
   });
 
+  const { data: consultants = [] } = useConsultors();
+
   const updateFunnelItem = useUpdateFunnelItem();
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
 
   // Group all pipeline items by simplified stage
   const groupedBySimple = useMemo(() => {
