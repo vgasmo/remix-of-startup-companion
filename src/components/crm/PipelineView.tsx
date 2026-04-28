@@ -335,7 +335,7 @@ interface DraggableCardProps {
   onToggleSelect: (id: string) => void;
 }
 
-function DraggableCard({ item, onOpenDrawer }: DraggableCardProps) {
+function DraggableCard({ item, onOpenDrawer, isSelected, onToggleSelect }: DraggableCardProps) {
   const { t } = useTranslation();
   const now = new Date();
   const isOverdue = item.next_action_at && new Date(item.next_action_at) < now;
@@ -364,6 +364,7 @@ function DraggableCard({ item, onOpenDrawer }: DraggableCardProps) {
         'transition-[box-shadow,border-color,opacity] duration-150 ease-out',
         'hover:shadow-md hover:border-primary/20',
         isOverdue && 'border-l-2 border-l-amber-500',
+        isSelected && 'ring-2 ring-primary border-primary/40',
         isDragging && 'opacity-0'
       )}
       data-testid="crm-record"
@@ -372,11 +373,21 @@ function DraggableCard({ item, onOpenDrawer }: DraggableCardProps) {
       <CardContent className="p-3">
         <div className="flex items-start gap-2">
           <div
+            className="pt-0.5 shrink-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={() => onToggleSelect(item.id)}
+              aria-label={t('crm.bulk.selectLead', { defaultValue: 'Selecionar lead' })}
+            />
+          </div>
+          <div
             {...listeners}
             {...attributes}
             className="cursor-grab active:cursor-grabbing p-1 -ml-1 -mt-0.5 hover:bg-muted rounded shrink-0 touch-none"
             onClick={(e) => e.stopPropagation()}
-            aria-label="Arrastar para mover"
+            aria-label={t('crm.dragToMove', { defaultValue: 'Arrastar para mover' })}
           >
             <GripVertical className="h-4 w-4 text-muted-foreground" />
           </div>
