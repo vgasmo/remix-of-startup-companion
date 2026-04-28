@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { 
   useTemplates, 
   useTemplateInstances, 
@@ -515,6 +517,7 @@ function TemplateEditorDialog({
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [hasChanges, setHasChanges] = useState(false);
   const [reviewNotes, setReviewNotes] = useState('');
+  const { confirm: confirmClose, dialogProps: confirmCloseProps } = useConfirmDialog();
   
   const canReview = roles.includes('admin') || roles.includes('consultor') || roles.includes('mentor_externo');
 
@@ -541,17 +544,26 @@ function TemplateEditorDialog({
     }
   }, [template?.id, instance?.id, instance?.data_json]);
 
+  const performClose = () => {
+    onClose();
+    setFormData({});
+    setHasChanges(false);
+  };
+
   // Handle dialog close with unsaved changes protection
   const handleOpenChange = (open: boolean) => {
-    if (!open && hasChanges) {
-      const confirmClose = window.confirm(t('templates.unsavedChangesWarning', 'You have unsaved changes. Are you sure you want to close?'));
-      if (!confirmClose) return;
+    if (open) return;
+    if (hasChanges) {
+      confirmClose({
+        title: t('templates.unsavedChangesTitle', 'Discard unsaved changes?'),
+        description: t('templates.unsavedChangesWarning', 'You have unsaved changes. Are you sure you want to close?'),
+        confirmLabel: t('common.discard', 'Discard'),
+        variant: 'destructive',
+        onConfirm: performClose,
+      });
+      return;
     }
-    if (!open) {
-      onClose();
-      setFormData({});
-      setHasChanges(false);
-    }
+    performClose();
   };
 
   const handleFieldChange = (fieldId: string, value: unknown) => {
@@ -638,20 +650,24 @@ function TemplateEditorDialog({
   const schema = template.schema_json;
   if (!schema?.sections) {
     return (
-      <Dialog open={!!template} onOpenChange={handleOpenChange}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{template.name}</DialogTitle>
-          </DialogHeader>
-          <div className="py-8 text-center text-muted-foreground">
-            {t('templates.noSchemaConfigured', 'This template has no form schema configured.')}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <>
+        <Dialog open={!!template} onOpenChange={handleOpenChange}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{template.name}</DialogTitle>
+            </DialogHeader>
+            <div className="py-8 text-center text-muted-foreground">
+              {t('templates.noSchemaConfigured', 'This template has no form schema configured.')}
+            </div>
+          </DialogContent>
+        </Dialog>
+        <ConfirmDialog {...confirmCloseProps} />
+      </>
     );
   }
 
   return (
+    <>
     <Dialog open={!!template} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
@@ -851,6 +867,8 @@ function TemplateEditorDialog({
         </div>
       </DialogContent>
     </Dialog>
+    <ConfirmDialog {...confirmCloseProps} />
+    </>
   );
 }
 
