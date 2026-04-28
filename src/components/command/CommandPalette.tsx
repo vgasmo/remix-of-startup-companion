@@ -162,6 +162,19 @@ export function CommandPalette() {
     }
   };
 
+  // Workspace jump — filter by query, cap to 6
+  const matchingWorkspaces = useMemo(() => {
+    if (copilotMode || !workspacesData) return [];
+    const q = query.trim().toLowerCase();
+    const list = workspacesData
+      .filter(w => w.startup?.name)
+      .filter(w => !q || w.startup!.name.toLowerCase().includes(q))
+      .slice(0, q ? 6 : 4);
+    return list;
+  }, [workspacesData, query, copilotMode]);
+
+  const showRecents = !query && !copilotMode && recentItems.length > 0;
+
   return (
     <CommandDialog open={open} onOpenChange={handleOpenChange}>
       <CommandInput
