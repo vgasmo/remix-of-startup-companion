@@ -341,6 +341,9 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
       return;
     }
 
+    // Snapshot BEFORE mutating
+    const before = weeks;
+
     // Group by week number; auto-create weeks that don't exist
     const next = [...weeks];
     let added = 0;
@@ -367,12 +370,25 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
       added += 1;
     });
 
+    const label = t('programSetup.acceleration.undoLabelAdd', 'Add {{n}} deliverables', { n: added });
+    pushUndo(label, before);
     setWeeks(next);
-    toast.success(
-      weeksCreated > 0
-        ? t('programSetup.acceleration.bulkAddedWithWeeks', '{{a}} deliverables added ({{w}} new weeks created)', { a: added, w: weeksCreated })
-        : t('programSetup.acceleration.bulkAdded', '{{a}} deliverables added', { a: added })
-    );
+
+    const successMsg = weeksCreated > 0
+      ? t('programSetup.acceleration.bulkAddedWithWeeks', '{{a}} deliverables added ({{w}} new weeks created)', { a: added, w: weeksCreated })
+      : t('programSetup.acceleration.bulkAdded', '{{a}} deliverables added', { a: added });
+
+    toast.success(successMsg, {
+      duration: 8000,
+      action: {
+        label: t('programSetup.acceleration.undo', 'Undo'),
+        onClick: () => {
+          setWeeks(before);
+          setUndoStack(prev => prev.filter(e => e.ts !== prev[prev.length - 1]?.ts));
+          toast.success(t('programSetup.acceleration.undoneToast', 'Undone: {{label}}', { label }));
+        },
+      },
+    });
     setBulkAddText('');
     setBulkAddOpen(false);
   };
