@@ -2093,7 +2093,8 @@
     "workspace": "Workspace",
     "years": "anos",
     "yes": "Sim",
-    "session": "Sessão"
+    "session": "Sessão",
+    "discard": "Descartar"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -7790,7 +7791,8 @@
     "title": "Templates",
     "unitEconomics": "Unit Economics",
     "unsavedChangesWarning": "Tem alterações não guardadas. Tem a certeza que deseja fechar?",
-    "useTemplate": "Usar Template"
+    "useTemplate": "Usar Template",
+    "unsavedChangesTitle": "Descartar alterações não guardadas?"
   },
   "tests": {
     "fail": "Falhou",
