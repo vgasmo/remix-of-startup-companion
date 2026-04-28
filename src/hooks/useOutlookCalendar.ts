@@ -48,8 +48,8 @@ export function useUpdateOutlookSettings(workspaceId?: string) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
       
-      // SECURITY: Strip any secret key from the payload - secrets are env-only
-      const { graph_secret_key: _stripped, ...safeSettings } = settings;
+      // SECURITY: Strip any legacy secret key from the payload - secrets are env-only
+      const { graph_secret_key: _stripped, ...safeSettings } = settings as Partial<OutlookCalendarSettings> & { graph_secret_key?: unknown };
       
       const upsertData = {
         ...safeSettings,
