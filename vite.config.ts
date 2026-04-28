@@ -29,6 +29,10 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
+      // 🛡️ Disable SW in dev — prevents stale cache while iterating in preview
+      devOptions: {
+        enabled: false,
+      },
       includeAssets: ['favicon.ico'],
       manifest: {
         name: 'Startup Leiria Portal',
@@ -66,6 +70,9 @@ export default defineConfig(({ mode }) => ({
         globIgnores: ['**/version.json'],
         // No navigateFallback — let the network serve fresh index.html every time
         navigateFallback: null,
+        // Safety net: never intercept Lovable internal/oauth routes if a fallback
+        // is later re-enabled.
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
         // Skip waiting for faster updates
         skipWaiting: true,
         clientsClaim: true,

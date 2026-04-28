@@ -22,7 +22,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
+import { WorkQueueBulkActions } from './WorkQueueBulkActions';
 import {
   Select,
   SelectContent,
@@ -85,6 +87,16 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
   const recomputeWorkQueue = useRecomputeWorkQueue();
 
   const [isRecomputing, setIsRecomputing] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const handleRecompute = async () => {
     setIsRecomputing(true);
@@ -175,6 +187,15 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
     if (item) {
       e.preventDefault();
       handleMarkDone(item.id);
+    }
+  }, [filteredItems, focusIdx]);
+
+  useHotkeys('x', (e) => {
+    if (skipInInput(e)) return;
+    const item = filteredItems[focusIdx];
+    if (item) {
+      e.preventDefault();
+      toggleSelect(item.id);
     }
   }, [filteredItems, focusIdx]);
 
@@ -279,16 +300,26 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
               const isDueToday = item.due_at && isToday(new Date(item.due_at));
               const isFocused = idx === focusIdx;
 
+              const isSelected = selectedIds.has(item.id);
               return (
                 <div
                   key={item.id}
                   className={`p-3 rounded-lg border transition-colors hover:bg-muted/50 cursor-pointer ${
                     isOverdue ? 'border-destructive/30 bg-destructive/5' : ''
-                  } ${isFocused ? 'ring-2 ring-primary/60' : ''}`}
+                  } ${isFocused ? 'ring-2 ring-primary/60' : ''} ${
+                    isSelected ? 'bg-primary/5 border-primary/40' : ''
+                  }`}
                   onClick={() => item.workspace_id && navigate(`/workspace/${item.workspace_id}`)}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <div onClick={(e) => e.stopPropagation()} className="pt-1">
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => toggleSelect(item.id)}
+                          aria-label={t('workQueue.selectItem')}
+                        />
+                      </div>
                       <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
                         isOverdue ? 'bg-destructive/10 text-destructive' : 'bg-muted'
                       }`}>
@@ -373,6 +404,14 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
           </div>
         )}
       </CardContent>
+      {!compact && (
+        <WorkQueueBulkActions
+          selectedIds={selectedIds}
+          totalCount={displayItems.length}
+          onDeselectAll={() => setSelectedIds(new Set())}
+          onSelectAll={() => setSelectedIds(new Set(displayItems.map((i) => i.id)))}
+        />
+      )}
     </Card>
   );
 }

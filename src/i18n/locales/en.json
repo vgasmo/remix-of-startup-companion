@@ -8072,6 +8072,13 @@
   "workQueue": {
     "actions": "Actions",
     "allTypes": "All types",
+    "bulkMarkedDone": "{{count}} items marked as done",
+    "bulkSnoozed": "{{count}} items snoozed for {{days}} days",
+    "bulkToolbar": "Bulk actions toolbar",
+    "clearSelection": "Clear selection",
+    "selectAll": "Select all",
+    "selectItem": "Select item",
+    "selectedCount": "{{count}} selected",
     "dueThisWeek": "due this week",
     "markDone": "Mark Done",
     "markedDone": "Marked as done",
