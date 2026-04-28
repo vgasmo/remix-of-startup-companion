@@ -1916,7 +1916,9 @@
     "navigation": "Navigation",
     "placeholder": "Search or type a command...",
     "quickActions": "Quick Actions",
-    "typeToSearch": "Type to search..."
+    "recent": "Recent",
+    "typeToSearch": "Type to search...",
+    "workspaces": "Workspaces"
   },
   "common": {
     "accessDenied": "Access Denied",

@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 import { Link2, Copy, Plus, Trash2, Calendar, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 interface BookingLink {
   id: string;
@@ -33,6 +35,7 @@ export function BookingLinksManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<string>('');
   const [expiresInDays, setExpiresInDays] = useState<string>('30');
+  const { confirm, dialogProps } = useConfirmDialog();
 
   // Fetch programs
   const { data: programs } = useQuery({
@@ -161,6 +164,8 @@ export function BookingLinksManager() {
   };
 
   return (
+    <>
+    <ConfirmDialog {...dialogProps} />
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -297,11 +302,12 @@ export function BookingLinksManager() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => {
-                            if (window.confirm(t('admin.confirmDeleteLink', 'Tem a certeza que quer apagar este link?'))) {
-                              deleteLink.mutate(link.id);
-                            }
-                          }}
+                          onClick={() => confirm({
+                            title: t('common.delete', 'Apagar'),
+                            description: t('admin.confirmDeleteLink', 'Tem a certeza que quer apagar este link?'),
+                            variant: 'destructive',
+                            onConfirm: () => deleteLink.mutate(link.id),
+                          })}
                           title={t('common.delete', 'Apagar')}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
@@ -316,5 +322,6 @@ export function BookingLinksManager() {
         )}
       </CardContent>
     </Card>
+    </>
   );
 }

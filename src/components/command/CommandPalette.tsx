@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Search, FileText, ListTodo, StickyNote, File, Target, MessageSquare,
   Calendar, CheckSquare, BarChart3, Users, Building2, Settings, Home,
   Briefcase, ArrowRight, Command as CommandIcon, Sparkles, Bot, Loader2,
-  AlertTriangle,
+  AlertTriangle, Clock, Rocket,
 } from 'lucide-react';
 import {
   CommandDialog, CommandInput, CommandList, CommandEmpty,
@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGlobalSearch, SearchResult } from '@/hooks/useGlobalSearch';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWorkspaces } from '@/hooks/useWorkspaces';
 
 const typeIcons: Record<string, React.ReactNode> = {
   session: <Calendar className="h-4 w-4 text-muted-foreground" />,
@@ -35,8 +36,26 @@ export function CommandPalette() {
   const [copilotMode, setCopilotMode] = useState(false);
   const [copilotThinking, setCopilotThinking] = useState(false);
   const [copilotAnswer, setCopilotAnswer] = useState<string | null>(null);
+  const [recentItems, setRecentItems] = useState<Array<{ path: string; label: string; type: string }>>([]);
 
   const { data: searchResults } = useGlobalSearch({ query: copilotMode ? '' : query });
+  const { data: workspacesData } = useWorkspaces({});
+
+  // Load recent items from localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('sl-command-palette-recents');
+      if (raw) setRecentItems(JSON.parse(raw).slice(0, 5));
+    } catch { /* ignore */ }
+  }, [open]);
+
+  const pushRecent = useCallback((item: { path: string; label: string; type: string }) => {
+    try {
+      const next = [item, ...recentItems.filter(r => r.path !== item.path)].slice(0, 5);
+      setRecentItems(next);
+      localStorage.setItem('sl-command-palette-recents', JSON.stringify(next));
+    } catch { /* ignore */ }
+  }, [recentItems]);
 
   // Keyboard shortcut
   useEffect(() => {
@@ -50,13 +69,14 @@ export function CommandPalette() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const runAction = useCallback((path: string) => {
+  const runAction = useCallback((path: string, label?: string, type: string = 'nav') => {
+    if (label) pushRecent({ path, label, type });
     navigate(path);
     setOpen(false);
     setQuery('');
     setCopilotMode(false);
     setCopilotAnswer(null);
-  }, [navigate]);
+  }, [navigate, pushRecent]);
 
   // Copilot: simulate AI response
   const handleCopilotSubmit = useCallback(async () => {
@@ -141,6 +161,19 @@ export function CommandPalette() {
       setCopilotThinking(false);
     }
   };
+
+  // Workspace jump — filter by query, cap to 6
+  const matchingWorkspaces = useMemo(() => {
+    if (copilotMode || !workspacesData) return [];
+    const q = query.trim().toLowerCase();
+    const list = workspacesData
+      .filter(w => w.startup?.name)
+      .filter(w => !q || w.startup!.name.toLowerCase().includes(q))
+      .slice(0, q ? 6 : 4);
+    return list;
+  }, [workspacesData, query, copilotMode]);
+
+  const showRecents = !query && !copilotMode && recentItems.length > 0;
 
   return (
     <CommandDialog open={open} onOpenChange={handleOpenChange}>
@@ -227,13 +260,52 @@ export function CommandPalette() {
               </>
             )}
 
+            {/* Recent items */}
+            {showRecents && (
+              <>
+                <CommandGroup heading={t('commandPalette.recent', { defaultValue: 'Recent' })}>
+                  {recentItems.map((item, i) => (
+                    <CommandItem
+                      key={`recent-${i}-${item.path}`}
+                      onSelect={() => runAction(item.path, item.label, item.type)}
+                      className="gap-3"
+                    >
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span className="flex-1 truncate">{item.label}</span>
+                      <Badge variant="outline" className="text-[10px]">{item.type}</Badge>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+                <CommandSeparator />
+              </>
+            )}
+
+            {/* Workspaces — jump-to */}
+            {matchingWorkspaces.length > 0 && (
+              <CommandGroup heading={t('commandPalette.workspaces', { defaultValue: 'Workspaces' })}>
+                {matchingWorkspaces.map(ws => (
+                  <CommandItem
+                    key={`ws-${ws.id}`}
+                    onSelect={() => runAction(`/workspace/${ws.id}`, ws.startup?.name || 'Workspace', 'workspace')}
+                    className="gap-3"
+                  >
+                    <Rocket className="h-4 w-4 text-primary" />
+                    <span className="flex-1 truncate">{ws.startup?.name}</span>
+                    {ws.program?.name && (
+                      <Badge variant="outline" className="text-[10px]">{ws.program.name}</Badge>
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
             {/* Search Results */}
             {hasSearchResults && !copilotMode && Object.entries(groupedResults).map(([type, items]) => (
               <CommandGroup key={type} heading={typeLabels[type] || type}>
                 {items.slice(0, 5).map(result => (
                   <CommandItem
                     key={result.id}
-                    onSelect={() => runAction(result.url)}
+                    onSelect={() => runAction(result.url, result.title, result.type)}
                     className="flex items-center gap-3"
                   >
                     {typeIcons[result.type]}
@@ -257,7 +329,7 @@ export function CommandPalette() {
                 {hasSearchResults && <CommandSeparator />}
                 <CommandGroup heading={t('commandPalette.quickActions')}>
                   {quickActions.map(action => (
-                    <CommandItem key={action.id} onSelect={() => runAction(action.path)} className="gap-3">
+                    <CommandItem key={action.id} onSelect={() => runAction(action.path, action.label, 'action')} className="gap-3">
                       {action.icon}
                       <span>{action.label}</span>
                       <ArrowRight className="ml-auto h-3 w-3 text-muted-foreground" />
@@ -273,7 +345,7 @@ export function CommandPalette() {
                 <CommandSeparator />
                 <CommandGroup heading={t('commandPalette.navigation')}>
                   {navItems.map(item => (
-                    <CommandItem key={item.id} onSelect={() => runAction(item.path)} className="gap-3">
+                    <CommandItem key={item.id} onSelect={() => runAction(item.path, item.label, 'nav')} className="gap-3">
                       {item.icon}
                       <span>{item.label}</span>
                     </CommandItem>
