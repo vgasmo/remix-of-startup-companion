@@ -404,6 +404,14 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
           </div>
         )}
       </CardContent>
+      {!compact && (
+        <WorkQueueBulkActions
+          selectedIds={selectedIds}
+          totalCount={displayItems.length}
+          onDeselectAll={() => setSelectedIds(new Set())}
+          onSelectAll={() => setSelectedIds(new Set(displayItems.map((i) => i.id)))}
+        />
+      )}
     </Card>
   );
 }
