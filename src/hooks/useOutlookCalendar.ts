@@ -13,8 +13,6 @@ export interface OutlookCalendarSettings {
   webhook_url: string | null;
   graph_tenant_id: string | null;
   graph_client_id: string | null;
-  /** @deprecated Client secrets are managed server-side only. This field should always be null. */
-  graph_secret_key: string | null;
   calendar_user_email: string | null;
   use_custom_calendar_email: boolean;
   created_at: string;
