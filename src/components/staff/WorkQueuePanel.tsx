@@ -22,7 +22,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
+import { WorkQueueBulkActions } from './WorkQueueBulkActions';
 import {
   Select,
   SelectContent,
@@ -85,6 +87,16 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
   const recomputeWorkQueue = useRecomputeWorkQueue();
 
   const [isRecomputing, setIsRecomputing] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const handleRecompute = async () => {
     setIsRecomputing(true);
@@ -175,6 +187,15 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
     if (item) {
       e.preventDefault();
       handleMarkDone(item.id);
+    }
+  }, [filteredItems, focusIdx]);
+
+  useHotkeys('x', (e) => {
+    if (skipInInput(e)) return;
+    const item = filteredItems[focusIdx];
+    if (item) {
+      e.preventDefault();
+      toggleSelect(item.id);
     }
   }, [filteredItems, focusIdx]);
 
