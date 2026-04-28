@@ -29,6 +29,10 @@
   "actions": {
     "actionCreated": "Item de ação criado",
     "actionDeleted": "Item de ação eliminado",
+    "actionRestored_one": "{{count}} ação restaurada",
+    "actionRestored_other": "{{count}} ações restauradas",
+    "statusReverted": "Estado revertido",
+    "undoFailed": "Não foi possível desfazer. Tente novamente.",
     "actionsBelongToMilestones": "As ações pertencem a marcos para acompanhar o progresso.",
     "actionsLabel": "ações",
     "addAction": "Adicionar Ação",
@@ -5103,6 +5107,7 @@
     "list": "Lista",
     "milestoneCreated": "Marco criado",
     "milestoneDeleted": "Marco eliminado",
+    "milestoneRestored": "Marco restaurado",
     "milestoneTimeline": "Linha do Tempo de Marcos",
     "newMilestone": "Novo Marco",
     "noMilestones": "Nenhum marco encontrado",
