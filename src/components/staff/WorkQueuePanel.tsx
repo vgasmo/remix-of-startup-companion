@@ -300,16 +300,26 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
               const isDueToday = item.due_at && isToday(new Date(item.due_at));
               const isFocused = idx === focusIdx;
 
+              const isSelected = selectedIds.has(item.id);
               return (
                 <div
                   key={item.id}
                   className={`p-3 rounded-lg border transition-colors hover:bg-muted/50 cursor-pointer ${
                     isOverdue ? 'border-destructive/30 bg-destructive/5' : ''
-                  } ${isFocused ? 'ring-2 ring-primary/60' : ''}`}
+                  } ${isFocused ? 'ring-2 ring-primary/60' : ''} ${
+                    isSelected ? 'bg-primary/5 border-primary/40' : ''
+                  }`}
                   onClick={() => item.workspace_id && navigate(`/workspace/${item.workspace_id}`)}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <div onClick={(e) => e.stopPropagation()} className="pt-1">
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => toggleSelect(item.id)}
+                          aria-label={t('workQueue.selectItem')}
+                        />
+                      </div>
                       <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
                         isOverdue ? 'bg-destructive/10 text-destructive' : 'bg-muted'
                       }`}>
