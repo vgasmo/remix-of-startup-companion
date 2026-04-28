@@ -232,6 +232,7 @@ export const ActionItemCard = memo(function ActionItemCard({
                 ) : null}
               </div>
             ))}
+            </div>
             {canWrite && (
               <Button variant="ghost" size="sm" className="h-6 text-xs text-muted-foreground px-1 gap-1" onClick={() => setAddDeliverableOpen(true)}>
                 <Plus className="h-3 w-3" />
