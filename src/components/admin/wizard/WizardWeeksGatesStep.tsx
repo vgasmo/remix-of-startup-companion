@@ -452,6 +452,158 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
         </div>
       </div>
 
+      {/* Deliverables Library — flat cross-week view with bulk operations */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="text-sm font-medium flex items-center gap-2">
+              <Library className="h-4 w-4 text-primary" />
+              {t('programSetup.acceleration.libraryTitle', 'Deliverables Library')}
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t('programSetup.acceleration.libraryDesc', 'Flat view of every deliverable across all weeks. Multi-select to bulk remove, or paste many at once.')}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setBulkAddOpen(true)}
+            >
+              <Upload className="h-4 w-4 mr-1" />
+              {t('programSetup.acceleration.bulkAdd', 'Bulk Add')}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              disabled={librarySelected.size === 0}
+              onClick={bulkRemoveDeliverables}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              {t('programSetup.acceleration.bulkRemoveN', 'Remove ({{n}})', { n: librarySelected.size })}
+            </Button>
+          </div>
+        </div>
+
+        <Card>
+          <CardContent className="p-0">
+            {libraryRows.length === 0 ? (
+              <div className="text-center py-8 text-sm text-muted-foreground">
+                {t('programSetup.acceleration.libraryEmpty', 'No deliverables yet. Add them inside weeks below or use Bulk Add.')}
+              </div>
+            ) : (
+              <div className="divide-y">
+                <div className="flex items-center gap-3 px-4 py-2 bg-muted/40 text-xs font-medium">
+                  <Checkbox
+                    checked={librarySelected.size === libraryRows.length && libraryRows.length > 0}
+                    onCheckedChange={toggleSelectAllLibrary}
+                    aria-label={t('common.selectAll', 'Select all')}
+                  />
+                  <span className="w-16 shrink-0">{t('programSetup.acceleration.weekCol', 'Week')}</span>
+                  <span className="flex-1">{t('programSetup.acceleration.titleCol', 'Title')}</span>
+                  <span className="w-32 shrink-0 hidden md:inline">{t('programSetup.acceleration.templateCol', 'Template')}</span>
+                </div>
+                {libraryRows.map(row => {
+                  const tpl = templates.find(t => t.id === row.template_id);
+                  return (
+                    <div
+                      key={row.key}
+                      className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-muted/30"
+                    >
+                      <Checkbox
+                        checked={librarySelected.has(row.key)}
+                        onCheckedChange={() => toggleLibraryRow(row.key)}
+                        aria-label={`Select ${row.title}`}
+                      />
+                      <Badge variant="outline" className="w-16 shrink-0 justify-center text-xs">
+                        W{row.weekNumber}
+                      </Badge>
+                      <div className="flex-1 min-w-0">
+                        <div className="truncate font-medium">{row.title || <span className="italic text-muted-foreground">{t('programSetup.acceleration.untitled', 'Untitled')}</span>}</div>
+                        {row.description && (
+                          <div className="truncate text-xs text-muted-foreground">{row.description}</div>
+                        )}
+                      </div>
+                      <div className="w-32 shrink-0 hidden md:block text-xs text-muted-foreground truncate">
+                        {tpl ? tpl.name : '—'}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bulk Add Dialog */}
+      <Dialog open={bulkAddOpen} onOpenChange={setBulkAddOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t('programSetup.acceleration.bulkAddTitle', 'Bulk Add Deliverables')}</DialogTitle>
+            <DialogDescription>
+              {t('programSetup.acceleration.bulkAddDesc', 'Paste one deliverable per line. Format: "Week N | Title | Optional description". If you select a default week below, you can omit the "Week N |" prefix.')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="space-y-1">
+                <Label className="text-xs">{t('programSetup.acceleration.bulkAddDefaultWeek', 'Default week (optional)')}</Label>
+                <Select value={bulkAddTargetWeek || 'none'} onValueChange={(v) => setBulkAddTargetWeek(v === 'none' ? '' : v)}>
+                  <SelectTrigger><SelectValue placeholder={t('programSetup.acceleration.bulkAddPickWeek', 'Pick a week')} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t('programSetup.acceleration.bulkAddNoDefault', 'No default — every line must start with "Week N |"')}</SelectItem>
+                    {sortedWeeks.map(w => (
+                      <SelectItem key={w.week_number} value={String(w.week_number)}>
+                        {t('programSetup.acceleration.weekN', 'Week {{n}}', { n: w.week_number })}{w.title ? ` — ${w.title}` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">{t('programSetup.acceleration.bulkAddTemplate', 'Link template (applies to all)')}</Label>
+                <Select value={bulkAddTemplate} onValueChange={setBulkAddTemplate}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t('programSetup.acceleration.noTemplate', 'No template')}</SelectItem>
+                    {templates.map(tpl => (
+                      <SelectItem key={tpl.id} value={tpl.id}>
+                        {tpl.category ? `${tpl.category} · ${tpl.name}` : tpl.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">{t('programSetup.acceleration.bulkAddLines', 'Deliverables (one per line)')}</Label>
+              <Textarea
+                rows={10}
+                value={bulkAddText}
+                onChange={(e) => setBulkAddText(e.target.value)}
+                placeholder={'Week 1 | Customer interviews | Conduct 5 problem interviews\nWeek 2 | Value proposition canvas\nWeek 3 | MVP scope document'}
+                className="font-mono text-xs"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('programSetup.acceleration.bulkAddHint', 'Missing weeks will be auto-created. Existing deliverables are not deduplicated.')}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkAddOpen(false)}>
+              {t('common.cancel', 'Cancel')}
+            </Button>
+            <Button onClick={bulkAddDeliverables}>
+              <Plus className="h-4 w-4 mr-1" />
+              {t('programSetup.acceleration.bulkAddConfirm', 'Add deliverables')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Weeks Section */}
       <div>
         <div className="flex items-center justify-between mb-4">
