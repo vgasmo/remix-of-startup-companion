@@ -470,8 +470,11 @@ Deno.serve(async (req) => {
       console.log(`[publish-program-setup] Created ${draftData.weeks?.length || 0} weeks`);
     }
 
-    // 3. Process KPIs - create definitions if needed, then upsert defaults
+    // 3-7. Stage-side artifacts (KPIs, core KPIs, playbooks, alerts, health)
+    // are only meaningful for incubation programs. Skip for acceleration so
+    // we don't reintroduce stage_kpi_defaults/playbooks we just quarantined.
     const kpiDefinitionMap: Record<string, string> = {}; // name -> id
+    if (!isAccelerationFinal) {
 
     // First pass: ensure all KPI definitions exist
     for (const stageKpis of draftData.kpis || []) {
