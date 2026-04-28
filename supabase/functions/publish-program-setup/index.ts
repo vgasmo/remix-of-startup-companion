@@ -398,15 +398,15 @@ Deno.serve(async (req) => {
     console.log(`[publish-program-setup] Upserted ${draftData.stages?.length || 0} stages`);
     } // end incubation-only stages block
 
-    // 2b. Upsert gates and weeks (acceleration only)
+    // 2b. Upsert gates and weeks (acceleration only).
+    // Note: gates/weeks were already wiped in the quarantine step above —
+    // do not re-delete here (would race with the inserts below).
     if (draftData.basics.program_type === 'acceleration') {
-      // Delete existing gates and weeks for this program
-      await supabase.from('program_weeks').delete().eq('program_id', programId);
-      await supabase.from('program_gates').delete().eq('program_id', programId);
-
       // Insert gates and build a stable-id → real-id map.
       // Accepts either persisted DB id, the wizard's __local_id, or (legacy) `gate-<sort_order>`.
       const gateIdMap: Record<string, string> = {};
+      // Track gate ranges for fallback gate_id resolution by week_number.
+      const gateRanges: { id: string; start: number | null; end: number | null }[] = [];
       for (const gate of draftData.gates || []) {
         const { data: newGate, error: gateError } = await supabase
           .from('program_gates')
@@ -428,12 +428,30 @@ Deno.serve(async (req) => {
         if (gate.__local_id) gateIdMap[gate.__local_id] = newGate.id;
         // Backwards-compat with older drafts created before stable IDs landed.
         gateIdMap[`gate-${gate.sort_order}`] = newGate.id;
+        gateRanges.push({
+          id: newGate.id,
+          start: gate.target_start_week ?? null,
+          end: gate.target_end_week ?? null,
+        });
       }
       console.log(`[publish-program-setup] Created ${(draftData.gates || []).length} gates (id map keys=${Object.keys(gateIdMap).length})`);
 
-      // Insert weeks
+      // Insert weeks. Resolve gate_id in this order:
+      //   1. explicit week.gate_id mapped through gateIdMap
+      //   2. fallback: pick the gate whose target_start_week..target_end_week
+      //      contains week.week_number
+      //   3. null (week is orphaned — logged for visibility)
+      const orphanWeeks: number[] = [];
       for (const week of draftData.weeks || []) {
-        const resolvedGateId = week.gate_id ? (gateIdMap[week.gate_id] ?? null) : null;
+        let resolvedGateId: string | null = week.gate_id ? (gateIdMap[week.gate_id] ?? null) : null;
+        if (!resolvedGateId) {
+          const match = gateRanges.find(g =>
+            g.start !== null && g.end !== null &&
+            week.week_number >= g.start && week.week_number <= g.end,
+          );
+          resolvedGateId = match?.id ?? null;
+        }
+        if (!resolvedGateId) orphanWeeks.push(week.week_number);
         const { error: weekError } = await supabase.from('program_weeks').insert({
           program_id: programId,
           gate_id: resolvedGateId,
@@ -445,6 +463,9 @@ Deno.serve(async (req) => {
         if (weekError) {
           throw new Error(`Failed to create week ${week.week_number} "${week.title}": ${weekError.message}`);
         }
+      }
+      if (orphanWeeks.length) {
+        console.warn(`[publish-program-setup] Orphan weeks (no gate match): ${orphanWeeks.join(', ')}`);
       }
       console.log(`[publish-program-setup] Created ${draftData.weeks?.length || 0} weeks`);
     }
