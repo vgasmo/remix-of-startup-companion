@@ -144,6 +144,11 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
   };
 
   const removeWeek = (idx: number) => {
+    const target = weeks[idx];
+    pushUndo(
+      t('programSetup.acceleration.undoLabelRemoveWeek', { number: target?.week_number ?? idx + 1, defaultValue: 'Remove Week {{number}}' }),
+      weeks,
+    );
     setWeeks(weeks.filter((_, i) => i !== idx));
   };
 
@@ -164,6 +169,10 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
 
   const removeDeliverable = (weekIdx: number, delIdx: number) => {
     const week = weeks[weekIdx];
+    pushUndo(
+      t('programSetup.acceleration.undoLabelRemoveDeliverable', { defaultValue: 'Remove deliverable' }),
+      weeks,
+    );
     updateWeek(weekIdx, 'deliverables_json', week.deliverables_json.filter((_, i) => i !== delIdx));
   };
 
