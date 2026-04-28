@@ -190,14 +190,11 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
             if (aErr) throw aErr;
           }
           toast.success(t('milestones.milestoneRestored', { defaultValue: 'Milestone restored' }));
-          import('@tanstack/react-query'); // no-op import guard
-        } catch (err) {
+        } catch {
           toast.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
         } finally {
-          // Refresh queries regardless
-          await Promise.all([
-            // @ts-ignore - access via window since hook scope already invalidated
-          ]);
+          queryClient.invalidateQueries({ queryKey: ['milestones', workspaceId] });
+          queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
         }
       };
 
