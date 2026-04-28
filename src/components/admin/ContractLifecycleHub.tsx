@@ -351,6 +351,15 @@ export function ContractLifecycleHub() {
                 {stats.criticalAlerts} {t('lifecycle.criticalAlerts')}
               </Badge>
             )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/admin/contracts/bulk-import')}
+              className="gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              {t('bulkImport.openWizard', 'Bulk import (PDF)')}
+            </Button>
           </div>
         </div>
         
