@@ -52,6 +52,7 @@ export function AdminStartupsManager() {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<string>('all');
+  const [showArchived, setShowArchived] = useState(false);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
   const [sendingInviteFor, setSendingInviteFor] = useState<string | null>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
