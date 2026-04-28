@@ -210,6 +210,7 @@ export const ActionItemCard = memo(function ActionItemCard({
         {/* Deliverables section */}
         {(totalDeliverables > 0 || canWrite) && (
           <div className="pl-10 space-y-1 pt-1">
+            <div className={totalDeliverables > 5 ? 'max-h-48 overflow-y-auto pr-1 space-y-1 rounded-md border border-border/40 bg-muted/20 p-1.5' : 'space-y-1'}>
             {deliverables.map(d => (
               <div key={d.id} className="flex items-center gap-2 text-xs group/del">
                 {d.type === 'platform_document' ? <Paperclip className="h-3 w-3 text-primary shrink-0" />
@@ -231,6 +232,7 @@ export const ActionItemCard = memo(function ActionItemCard({
                 ) : null}
               </div>
             ))}
+            </div>
             {canWrite && (
               <Button variant="ghost" size="sm" className="h-6 text-xs text-muted-foreground px-1 gap-1" onClick={() => setAddDeliverableOpen(true)}>
                 <Plus className="h-3 w-3" />
