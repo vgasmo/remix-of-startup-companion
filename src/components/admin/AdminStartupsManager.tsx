@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Plus, Pencil, Trash2, Download, Search, Phone, CheckCircle, Upload, FileText, Loader2, AlertTriangle, Mail, Send } from 'lucide-react';
+import { Plus, Pencil, Trash2, Download, Search, Phone, CheckCircle, Upload, FileText, Loader2, AlertTriangle, Mail, Send, Archive, ArchiveRestore } from 'lucide-react';
 import { toast } from 'sonner';
 import { startupSchema } from '@/lib/validations';
 import { logger } from '@/lib/logger';
@@ -52,6 +52,7 @@ export function AdminStartupsManager() {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<string>('all');
+  const [showArchived, setShowArchived] = useState(false);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
   const [sendingInviteFor, setSendingInviteFor] = useState<string | null>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
@@ -128,6 +129,51 @@ export function AdminStartupsManager() {
     onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
   });
 
+  // Soft-archive mutation (default destructive action). Restorable via undo toast or
+  // by toggling "show archived" and clicking restore on the row.
+  const archiveMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data: userRes } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from('startups')
+        .update({
+          archived_at: new Date().toISOString(),
+          archived_by: userRes.user?.id ?? null,
+        })
+        .eq('id', id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: (id) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-startups'] });
+      toast.success(t('admin.startupsManager.startupArchived'), {
+        duration: 8000,
+        action: {
+          label: t('common.undo'),
+          onClick: () => restoreMutation.mutate(id),
+        },
+      });
+    },
+    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('startups')
+        .update({ archived_at: null, archived_by: null, archived_reason: null })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-startups'] });
+      toast.success(t('admin.startupsManager.startupRestored'));
+    },
+    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+  });
+
+  // Permanent delete remains available but is gated behind an explicit confirm
+  // and only offered for already-archived startups.
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('startups').delete().eq('id', id);
@@ -245,7 +291,10 @@ export function AdminStartupsManager() {
     const workspaceStage = startup.workspaces?.[0]?.stage;
     const matchesStage = stageFilter === 'all' || !stageFilter || workspaceStage === stageFilter;
     
-    return matchesSearch && matchesStage;
+    const isArchived = !!(startup as any).archived_at;
+    const matchesArchived = showArchived ? isArchived : !isArchived;
+
+    return matchesSearch && matchesStage && matchesArchived;
   });
 
   // Export to CSV
@@ -393,6 +442,14 @@ export function AdminStartupsManager() {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            variant={showArchived ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setShowArchived(v => !v)}
+          >
+            <Archive className="h-4 w-4 mr-2" />
+            {showArchived ? t('admin.startupsManager.viewActive') : t('admin.startupsManager.viewArchived')}
+          </Button>
           <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
             {t('admin.startupsManager.exportCsv')}
@@ -670,9 +727,53 @@ export function AdminStartupsManager() {
                               </TooltipContent>
                             </Tooltip>
                           )}
-                          <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(startup.id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          {(startup as any).archived_at ? (
+                            <>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => restoreMutation.mutate(startup.id)}
+                                    disabled={restoreMutation.isPending}
+                                  >
+                                    <ArchiveRestore className="h-4 w-4 text-primary" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>{t('admin.startupsManager.restore')}</TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      if (window.confirm(t('admin.startupsManager.deleteForeverConfirm', { name: startup.name }))) {
+                                        deleteMutation.mutate(startup.id);
+                                      }
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>{t('admin.startupsManager.deleteForever')}</TooltipContent>
+                              </Tooltip>
+                            </>
+                          ) : (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => archiveMutation.mutate(startup.id)}
+                                  disabled={archiveMutation.isPending}
+                                >
+                                  <Archive className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>{t('admin.startupsManager.archive')}</TooltipContent>
+                            </Tooltip>
+                          )}
                         </div>
                       </TooltipProvider>
                     </TableCell>

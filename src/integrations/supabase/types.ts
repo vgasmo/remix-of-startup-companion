@@ -6254,6 +6254,9 @@ export type Database = {
       startups: {
         Row: {
           address: string | null
+          archived_at: string | null
+          archived_by: string | null
+          archived_reason: string | null
           created_at: string
           description: string | null
           founded_date: string | null
@@ -6272,6 +6275,9 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          archived_reason?: string | null
           created_at?: string
           description?: string | null
           founded_date?: string | null
@@ -6290,6 +6296,9 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          archived_reason?: string | null
           created_at?: string
           description?: string | null
           founded_date?: string | null
