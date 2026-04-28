@@ -8317,5 +8317,61 @@
       "desc": "Book a conversation with your assigned consultant.",
       "cta": "Open agenda"
     }
+  },
+  "bulkImport": {
+    "openWizard": "Bulk import (PDF)",
+    "title": "Bulk Contract Import",
+    "confirmCommit": "Import {{count}} contracts? This will create/update startups, workspaces, and contracts.",
+    "commitSuccess": "Imported {{committed}} contracts ({{failed}} failed)",
+    "extractComplete": "Extraction complete",
+    "noErrors": "No errors to export",
+    "committing": "Committing...",
+    "commit": "Commit import",
+    "downloadErrors": "Download errors CSV",
+    "adminOnly": { "title": "Admin only", "desc": "Only administrators can use this tool." },
+    "steps": { "upload": "1. Upload PDFs", "review": "2. Review extracted data", "done": "3. Done" },
+    "upload": {
+      "title": "Upload signed contract PDFs",
+      "desc": "Drop up to 50 PDFs at once. AI will extract startup name, NIF, dates, pricing, and more. You will review everything before committing.",
+      "drop": "Drag & drop PDFs here, or",
+      "browse": "Browse files",
+      "filesSelected": "{{count}} files selected",
+      "clearAll": "Clear all",
+      "uploading": "Uploading {{done}} / {{total}}...",
+      "start": "Upload & extract with AI"
+    },
+    "stats": {
+      "total": "Total", "willCreate": "Will create", "willUpdate": "Will update",
+      "errors": "Errors", "pending": "Processing", "committed": "Committed", "skipped": "Skipped"
+    },
+    "extracting": { "title": "AI is reading your contracts" },
+    "review": {
+      "title": "Review extracted data",
+      "desc": "Click any row to edit. Uncheck to skip. Errors won't be committed.",
+      "retryExtract": "Retry extraction",
+      "empty": "No rows yet."
+    },
+    "cols": {
+      "file": "File", "startup": "Startup", "nif": "NIF", "typology": "Typology",
+      "fee": "Monthly fee", "status": "Status", "action": "Action", "confidence": "AI confidence"
+    },
+    "edit": { "notes": "Notes", "viewPdf": "View PDF" },
+    "preview": { "title": "PDF preview" },
+    "done": {
+      "title": "Import complete",
+      "desc": "Your contracts have been imported. Review any errors below.",
+      "errorsTitle": "Some rows failed",
+      "errorsDesc": "Download the errors file, fix the issues, and re-upload.",
+      "startNew": "Start a new import",
+      "backAdmin": "Back to Backoffice"
+    },
+    "errors": {
+      "loadFailed": "Failed to load rows",
+      "noUploads": "No files uploaded successfully",
+      "uploadFailed": "Upload failed",
+      "previewFailed": "Cannot open PDF",
+      "nothingToCommit": "No rows ready to commit",
+      "commitFailed": "Commit failed"
+    }
   }
 }
