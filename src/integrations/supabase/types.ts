@@ -4268,6 +4268,8 @@ export type Database = {
           created_by: string
           draft_json: Json
           id: string
+          last_publish_error: string | null
+          last_publish_failed_at: string | null
           program_id: string | null
           status: string
           updated_at: string
@@ -4277,6 +4279,8 @@ export type Database = {
           created_by: string
           draft_json?: Json
           id?: string
+          last_publish_error?: string | null
+          last_publish_failed_at?: string | null
           program_id?: string | null
           status?: string
           updated_at?: string
@@ -4286,6 +4290,8 @@ export type Database = {
           created_by?: string
           draft_json?: Json
           id?: string
+          last_publish_error?: string | null
+          last_publish_failed_at?: string | null
           program_id?: string | null
           status?: string
           updated_at?: string
