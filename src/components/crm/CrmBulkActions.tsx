@@ -268,6 +268,14 @@ export function CrmBulkActions({
         setIsProcessing(true);
         try {
           const ids = Array.from(selectedIds);
+
+          const { data: currentItems } = await supabase
+            .from('funnel_items')
+            .select('id, stage')
+            .in('id', ids);
+
+          const stageMap = new Map<string, unknown>(currentItems?.map(i => [i.id, i.stage]) || []);
+
           const { error } = await supabase
             .from('funnel_items')
             .update({ stage: 'archived', updated_at: new Date().toISOString() })
@@ -275,7 +283,13 @@ export function CrmBulkActions({
 
           if (error) throw error;
 
-          toast.success(t('crm.bulk.archiveSuccess', { count: selectedCount }));
+          toast.success(t('crm.bulk.archiveSuccess', { count: selectedCount }), {
+            duration: 8000,
+            action: {
+              label: t('common.undo'),
+              onClick: () => restoreColumn('stage', stageMap, 'crm.bulk.archiveUndone'),
+            },
+          });
           queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
           queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
           onClearSelection();
