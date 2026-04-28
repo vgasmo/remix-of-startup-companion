@@ -650,16 +650,19 @@ function TemplateEditorDialog({
   const schema = template.schema_json;
   if (!schema?.sections) {
     return (
-      <Dialog open={!!template} onOpenChange={handleOpenChange}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{template.name}</DialogTitle>
-          </DialogHeader>
-          <div className="py-8 text-center text-muted-foreground">
-            {t('templates.noSchemaConfigured', 'This template has no form schema configured.')}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <>
+        <Dialog open={!!template} onOpenChange={handleOpenChange}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{template.name}</DialogTitle>
+            </DialogHeader>
+            <div className="py-8 text-center text-muted-foreground">
+              {t('templates.noSchemaConfigured', 'This template has no form schema configured.')}
+            </div>
+          </DialogContent>
+        </Dialog>
+        <ConfirmDialog {...confirmCloseProps} />
+      </>
     );
   }
 
