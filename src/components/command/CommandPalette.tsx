@@ -260,13 +260,52 @@ export function CommandPalette() {
               </>
             )}
 
+            {/* Recent items */}
+            {showRecents && (
+              <>
+                <CommandGroup heading={t('commandPalette.recent', { defaultValue: 'Recent' })}>
+                  {recentItems.map((item, i) => (
+                    <CommandItem
+                      key={`recent-${i}-${item.path}`}
+                      onSelect={() => runAction(item.path, item.label, item.type)}
+                      className="gap-3"
+                    >
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span className="flex-1 truncate">{item.label}</span>
+                      <Badge variant="outline" className="text-[10px]">{item.type}</Badge>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+                <CommandSeparator />
+              </>
+            )}
+
+            {/* Workspaces — jump-to */}
+            {matchingWorkspaces.length > 0 && (
+              <CommandGroup heading={t('commandPalette.workspaces', { defaultValue: 'Workspaces' })}>
+                {matchingWorkspaces.map(ws => (
+                  <CommandItem
+                    key={`ws-${ws.id}`}
+                    onSelect={() => runAction(`/workspace/${ws.id}`, ws.startup?.name || 'Workspace', 'workspace')}
+                    className="gap-3"
+                  >
+                    <Rocket className="h-4 w-4 text-primary" />
+                    <span className="flex-1 truncate">{ws.startup?.name}</span>
+                    {ws.program?.name && (
+                      <Badge variant="outline" className="text-[10px]">{ws.program.name}</Badge>
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
             {/* Search Results */}
             {hasSearchResults && !copilotMode && Object.entries(groupedResults).map(([type, items]) => (
               <CommandGroup key={type} heading={typeLabels[type] || type}>
                 {items.slice(0, 5).map(result => (
                   <CommandItem
                     key={result.id}
-                    onSelect={() => runAction(result.url)}
+                    onSelect={() => runAction(result.url, result.title, result.type)}
                     className="flex items-center gap-3"
                   >
                     {typeIcons[result.type]}
