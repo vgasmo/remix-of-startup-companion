@@ -442,6 +442,14 @@ export function AdminStartupsManager() {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            variant={showArchived ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setShowArchived(v => !v)}
+          >
+            <Archive className="h-4 w-4 mr-2" />
+            {showArchived ? t('admin.startupsManager.viewActive') : t('admin.startupsManager.viewArchived')}
+          </Button>
           <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
             {t('admin.startupsManager.exportCsv')}
