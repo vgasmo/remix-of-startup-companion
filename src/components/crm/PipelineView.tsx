@@ -203,6 +203,14 @@ export function PipelineView({
   }
 
   const totalItems = Object.values(groupedBySimple).reduce((sum, items) => sum + items.length, 0);
+  const flatItems = useMemo(
+    () => Object.values(groupedBySimple).flat(),
+    [groupedBySimple],
+  );
+  const selectAll = useCallback(
+    () => setSelectedIds(new Set(flatItems.map((i) => i.id))),
+    [flatItems],
+  );
 
   return (
     <DndContext
@@ -217,6 +225,15 @@ export function PipelineView({
           <span className="text-xs">{t('crm.dragDropHint', 'Arraste cards para mudar fase')}</span>
         </div>
 
+        <CrmBulkActions
+          items={flatItems}
+          selectedIds={selectedIds}
+          onToggleSelect={toggleSelect}
+          onSelectAll={selectAll}
+          onClearSelection={clearSelection}
+          consultants={consultants.map((c) => ({ id: c.id, full_name: c.full_name }))}
+        />
+
         <div className="overflow-x-auto pb-4">
           <div className="flex gap-4 min-w-max">
             {SIMPLE_PIPELINE_STAGES.map(simpleStage => (
@@ -226,6 +243,8 @@ export function PipelineView({
                 items={groupedBySimple[simpleStage] || []}
                 config={SIMPLE_STAGE_CONFIG[simpleStage]}
                 onOpenDrawer={onOpenDrawer}
+                selectedIds={selectedIds}
+                onToggleSelect={toggleSelect}
               />
             ))}
           </div>
