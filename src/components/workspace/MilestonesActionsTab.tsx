@@ -35,6 +35,8 @@ import { toast } from 'sonner';
 import { useQuickWinToast } from '@/hooks/useQuickWinToast';
 import { toTitleCase } from '@/lib/textUtils';
 import type { Database } from '@/integrations/supabase/types';
+import { supabase } from '@/lib/supabaseClient';
+import { useQueryClient } from '@tanstack/react-query';
 
 type ActionStatus = Database['public']['Enums']['action_status'];
 type MilestoneStatus = Database['public']['Enums']['milestone_status'];
