@@ -659,6 +659,8 @@ Deno.serve(async (req) => {
       }
       console.log(`[publish-program-setup] Upserted health model`);
     }
+    } // end !isAccelerationFinal stage-side block
+
 
     // 8. FINAL STEP — flip program to active and mark draft published.
     // This is intentionally last so a partial failure leaves the program in
