@@ -338,22 +338,29 @@ Deno.serve(async (req) => {
     // playbooks, stage_kpi_defaults). If publishing as 'incubation', wipe
     // acceleration artifacts (gates, weeks). Prevents drift between modes.
     if (isAccelerationFinal) {
+      const { data: pbRows } = await supabase.from('playbooks').select('id').eq('program_id', programId);
+      const pbIds = (pbRows || []).map((p: { id: string }) => p.id);
       const stageWipes = await Promise.all([
         supabase.from('stage_kpi_defaults').delete().eq('program_id', programId),
-        supabase.from('playbook_items').delete().in('playbook_id',
-          (await supabase.from('playbooks').select('id').eq('program_id', programId)).data?.map((p: any) => p.id) || []),
+        pbIds.length > 0
+          ? supabase.from('playbook_items').delete().in('playbook_id', pbIds)
+          : Promise.resolve({ error: null }),
         supabase.from('playbooks').delete().eq('program_id', programId),
         supabase.from('stages').delete().eq('program_id', programId),
       ]);
-      const wipeErrs = stageWipes.map(r => r.error).filter(Boolean);
-      if (wipeErrs.length) console.warn('[publish-program-setup] stage-side wipe warnings:', wipeErrs);
+      const wipeErrs = stageWipes.map(r => (r as { error: unknown }).error).filter(Boolean);
+      if (wipeErrs.length) {
+        throw new Error(`Failed to quarantine stage-side artifacts: ${JSON.stringify(wipeErrs)}`);
+      }
     } else {
       const accWipes = await Promise.all([
         supabase.from('program_weeks').delete().eq('program_id', programId),
         supabase.from('program_gates').delete().eq('program_id', programId),
       ]);
       const wipeErrs = accWipes.map(r => r.error).filter(Boolean);
-      if (wipeErrs.length) console.warn('[publish-program-setup] acceleration-side wipe warnings:', wipeErrs);
+      if (wipeErrs.length) {
+        throw new Error(`Failed to quarantine acceleration-side artifacts: ${JSON.stringify(wipeErrs)}`);
+      }
     }
 
     // 2. Upsert stages metadata (incubation only)
