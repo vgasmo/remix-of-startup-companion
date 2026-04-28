@@ -867,6 +867,8 @@ function TemplateEditorDialog({
         </div>
       </DialogContent>
     </Dialog>
+    <ConfirmDialog {...confirmCloseProps} />
+    </>
   );
 }
 
