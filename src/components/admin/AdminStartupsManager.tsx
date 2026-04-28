@@ -727,9 +727,53 @@ export function AdminStartupsManager() {
                               </TooltipContent>
                             </Tooltip>
                           )}
-                          <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(startup.id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          {(startup as any).archived_at ? (
+                            <>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => restoreMutation.mutate(startup.id)}
+                                    disabled={restoreMutation.isPending}
+                                  >
+                                    <ArchiveRestore className="h-4 w-4 text-primary" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>{t('admin.startupsManager.restore')}</TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      if (window.confirm(t('admin.startupsManager.deleteForeverConfirm', { name: startup.name }))) {
+                                        deleteMutation.mutate(startup.id);
+                                      }
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>{t('admin.startupsManager.deleteForever')}</TooltipContent>
+                              </Tooltip>
+                            </>
+                          ) : (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => archiveMutation.mutate(startup.id)}
+                                  disabled={archiveMutation.isPending}
+                                >
+                                  <Archive className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>{t('admin.startupsManager.archive')}</TooltipContent>
+                            </Tooltip>
+                          )}
                         </div>
                       </TooltipProvider>
                     </TableCell>
