@@ -5867,6 +5867,8 @@
       "undo": "Undo",
       "undoLabelAdd": "Add {{n}} deliverables",
       "undoLabelRemove": "Remove {{n}} deliverables",
+      "undoLabelRemoveDeliverable": "Remove deliverable",
+      "undoLabelRemoveWeek": "Remove Week {{number}}",
       "undoneToast": "Undone: {{label}}",
       "titleCol": "Title",
       "weekCol": "Week",
