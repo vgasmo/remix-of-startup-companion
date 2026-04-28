@@ -75,6 +75,8 @@ export default function ProgramSetupWizard() {
   const [activeDraftId, setActiveDraftId] = useState<string | null>(draftId || null);
   const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  // Holds the latest pending updates so Save/Publish can flush before navigating.
+  const pendingUpdatesRef = useRef<Partial<ProgramSetupDraft['draft_json']> | null>(null);
   const publishedRef = useRef(false);
 
   const { data: draft, isLoading: draftLoading } = useProgramSetupDraft(activeDraftId || undefined);
