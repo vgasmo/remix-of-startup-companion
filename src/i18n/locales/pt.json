@@ -29,6 +29,7 @@
   "actions": {
     "actionCreated": "Item de ação criado",
     "actionDeleted": "Item de ação eliminado",
+    "actionRestored": "{{count}} ações restauradas",
     "actionRestored_one": "{{count}} ação restaurada",
     "actionRestored_other": "{{count}} ações restauradas",
     "statusReverted": "Estado revertido",
