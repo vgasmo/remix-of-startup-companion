@@ -163,8 +163,29 @@ export default function ProgramSetupWizard() {
     }
   };
 
+  // Flush any pending debounced autosave immediately. Used before
+  // navigation/publish so we never lose the last few seconds of edits.
+  const flushAutosave = useCallback(async () => {
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+      autosaveTimerRef.current = undefined;
+    }
+    const pending = pendingUpdatesRef.current;
+    pendingUpdatesRef.current = null;
+    if (pending && activeDraftId) {
+      setAutosaveStatus('saving');
+      try {
+        await updateDraft.mutateAsync({ draftId: activeDraftId, draftJson: pending });
+        setAutosaveStatus('saved');
+        setTimeout(() => setAutosaveStatus('idle'), 1500);
+      } catch {
+        setAutosaveStatus('idle');
+      }
+    }
+  }, [activeDraftId, updateDraft]);
+
   const handleSaveAndContinue = async () => {
-    // Auto-save happens via step components
+    await flushAutosave();
     handleNext();
     toast.success(t('programSetup.progressSaved'));
   };
@@ -174,14 +195,17 @@ export default function ProgramSetupWizard() {
     await updateDraft.mutateAsync({ draftId: activeDraftId, draftJson: updates });
   }, [activeDraftId, updateDraft]);
 
-  // Autosave: debounced save after 2s of inactivity
+  // Autosave: debounced save after 2s of inactivity. Latest payload is also
+  // mirrored to pendingUpdatesRef so flushAutosave can persist it on demand.
   const handleUpdateDraftWithAutosave = useCallback((updates: Partial<ProgramSetupDraft['draft_json']>) => {
     if (!activeDraftId) return;
+    pendingUpdatesRef.current = updates;
     setAutosaveStatus('saving');
     if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
     autosaveTimerRef.current = setTimeout(async () => {
       try {
         await updateDraft.mutateAsync({ draftId: activeDraftId, draftJson: updates });
+        pendingUpdatesRef.current = null;
         setAutosaveStatus('saved');
         setTimeout(() => setAutosaveStatus('idle'), 2000);
       } catch {
@@ -200,6 +224,7 @@ export default function ProgramSetupWizard() {
     if (!activeDraftId || publishedRef.current) return;
     try {
       publishedRef.current = true;
+      await flushAutosave();
       triggerConfetti();
       await publishDraft.mutateAsync(activeDraftId);
       toast.success(t('programSetup.publishSuccess'));
