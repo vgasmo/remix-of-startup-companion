@@ -80,6 +80,36 @@ export function CrmBulkActions({
     { value: 'archived' as FunnelStage, label: t('pipeline.stages.archived') },
   ];
 
+  // Restore prior {id -> column value} map. Used by undo for stage / assignee bulk ops.
+  const restoreColumn = async (
+    column: 'stage' | 'owner_consultant_id',
+    map: Map<string, unknown>,
+    successKey: string,
+  ) => {
+    try {
+      // Group ids by their previous value so we can do one update per group
+      const groups = new Map<unknown, string[]>();
+      for (const [id, val] of map.entries()) {
+        const list = groups.get(val) || [];
+        list.push(id);
+        groups.set(val, list);
+      }
+      for (const [val, ids] of groups.entries()) {
+        const { error } = await supabase
+          .from('funnel_items')
+          .update({ [column]: val as any, updated_at: new Date().toISOString() })
+          .in('id', ids);
+        if (error) throw error;
+      }
+      toast.success(t(successKey, { defaultValue: 'Reverted' }));
+      queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
+    } catch (err) {
+      toast.error(t('crm.bulk.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
+      logger.error('crm_bulk_undo_failed', { column }, err);
+    }
+  };
+
   const handleBulkStageChange = async (newStage: FunnelStage) => {
     const stageLabel = getFunnelStageLabel(t, newStage);
     setConfirmDialog({
@@ -96,7 +126,7 @@ export function CrmBulkActions({
             .select('id, stage')
             .in('id', ids);
           
-          const stageMap = new Map(currentItems?.map(i => [i.id, i.stage]) || []);
+          const stageMap = new Map<string, unknown>(currentItems?.map(i => [i.id, i.stage]) || []);
           
           const { error } = await supabase
             .from('funnel_items')
@@ -106,7 +136,7 @@ export function CrmBulkActions({
           if (error) throw error;
 
           for (const id of ids) {
-            const oldStage = stageMap.get(id);
+            const oldStage = stageMap.get(id) as string | undefined;
             
             await supabase.from('funnel_events').insert({
               funnel_item_id: id,
@@ -123,7 +153,13 @@ export function CrmBulkActions({
             }
           }
 
-          toast.success(t('crm.bulk.moveSuccess', { count: selectedCount, stage: stageLabel }));
+          toast.success(t('crm.bulk.moveSuccess', { count: selectedCount, stage: stageLabel }), {
+            duration: 8000,
+            action: {
+              label: t('common.undo'),
+              onClick: () => restoreColumn('stage', stageMap, 'crm.bulk.moveUndone'),
+            },
+          });
           queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
           queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
           onClearSelection();
@@ -147,6 +183,16 @@ export function CrmBulkActions({
         setIsProcessing(true);
         try {
           const ids = Array.from(selectedIds);
+
+          const { data: currentItems } = await supabase
+            .from('funnel_items')
+            .select('id, owner_consultant_id')
+            .in('id', ids);
+
+          const ownerMap = new Map<string, unknown>(
+            currentItems?.map(i => [i.id, (i as any).owner_consultant_id ?? null]) || [],
+          );
+
           const { error } = await supabase
             .from('funnel_items')
             .update({ owner_consultant_id: consultantId, updated_at: new Date().toISOString() })
@@ -154,7 +200,13 @@ export function CrmBulkActions({
 
           if (error) throw error;
 
-          toast.success(t('crm.bulk.assignSuccess', { count: selectedCount, name: consultant?.full_name }));
+          toast.success(t('crm.bulk.assignSuccess', { count: selectedCount, name: consultant?.full_name }), {
+            duration: 8000,
+            action: {
+              label: t('common.undo'),
+              onClick: () => restoreColumn('owner_consultant_id', ownerMap, 'crm.bulk.assignUndone'),
+            },
+          });
           queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
           queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
           onClearSelection();
@@ -216,6 +268,14 @@ export function CrmBulkActions({
         setIsProcessing(true);
         try {
           const ids = Array.from(selectedIds);
+
+          const { data: currentItems } = await supabase
+            .from('funnel_items')
+            .select('id, stage')
+            .in('id', ids);
+
+          const stageMap = new Map<string, unknown>(currentItems?.map(i => [i.id, i.stage]) || []);
+
           const { error } = await supabase
             .from('funnel_items')
             .update({ stage: 'archived', updated_at: new Date().toISOString() })
@@ -223,7 +283,13 @@ export function CrmBulkActions({
 
           if (error) throw error;
 
-          toast.success(t('crm.bulk.archiveSuccess', { count: selectedCount }));
+          toast.success(t('crm.bulk.archiveSuccess', { count: selectedCount }), {
+            duration: 8000,
+            action: {
+              label: t('common.undo'),
+              onClick: () => restoreColumn('stage', stageMap, 'crm.bulk.archiveUndone'),
+            },
+          });
           queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
           queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
           onClearSelection();

@@ -35,6 +35,8 @@ import { toast } from 'sonner';
 import { useQuickWinToast } from '@/hooks/useQuickWinToast';
 import { toTitleCase } from '@/lib/textUtils';
 import type { Database } from '@/integrations/supabase/types';
+import { supabase } from '@/lib/supabaseClient';
+import { useQueryClient } from '@tanstack/react-query';
 
 type ActionStatus = Database['public']['Enums']['action_status'];
 type MilestoneStatus = Database['public']['Enums']['milestone_status'];
@@ -57,6 +59,7 @@ const MILESTONE_STATUS_ICONS = {
 
 export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId, programType, currentWeek }: MilestonesActionsTabProps) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const { data: milestones, isLoading: milestonesLoading } = useMilestones(workspaceId);
   const { data: actionItems, isLoading: actionsLoading } = useActionItems(workspaceId);
   // members removed - owner is always founder
@@ -161,11 +164,44 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
     } catch { toast.error(t('milestones.failedToUpdate')); }
   };
 
+  // Snapshot a milestone + its child actions, delete it, then offer toast undo to re-insert both.
   const handleDeleteMilestoneConfirm = async () => {
     if (!deleteMilestoneTarget || !canWrite) return;
+    const target = deleteMilestoneTarget;
     try {
-      await deleteMilestone.mutateAsync(deleteMilestoneTarget.id);
-      toast.success(t('milestones.milestoneDeleted'));
+      // Snapshot full row + child action rows BEFORE delete (FK cascade will drop children)
+      const [{ data: msRow }, { data: childActions }] = await Promise.all([
+        supabase.from('milestones').select('*').eq('id', target.id).maybeSingle(),
+        supabase.from('action_items').select('*').eq('milestone_id', target.id),
+      ]);
+
+      await deleteMilestone.mutateAsync(target.id);
+
+      const restore = async () => {
+        if (!msRow) {
+          toast.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
+          return;
+        }
+        try {
+          const { error: msErr } = await supabase.from('milestones').insert(msRow as any);
+          if (msErr) throw msErr;
+          if (childActions && childActions.length > 0) {
+            const { error: aErr } = await supabase.from('action_items').insert(childActions as any);
+            if (aErr) throw aErr;
+          }
+          toast.success(t('milestones.milestoneRestored', { defaultValue: 'Milestone restored' }));
+        } catch {
+          toast.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
+        } finally {
+          queryClient.invalidateQueries({ queryKey: ['milestones', workspaceId] });
+          queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
+        }
+      };
+
+      toast.success(t('milestones.milestoneDeleted'), {
+        duration: 8000,
+        action: { label: t('common.undo'), onClick: restore },
+      });
       setDeleteMilestoneTarget(null);
     } catch { toast.error(t('milestones.failedToDelete')); }
   };
@@ -215,10 +251,33 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
     } catch { toast.error(t('actions.failedToCompleteDeliverable', 'Erro ao validar entregável')); }
   }, [completeDeliverable, t]);
 
+  // Generic action-restore: re-insert previously-deleted action_items rows.
+  const restoreActions = async (rows: any[]) => {
+    if (!rows || rows.length === 0) return;
+    try {
+      const { error } = await supabase.from('action_items').insert(rows);
+      if (error) throw error;
+      toast.success(t('actions.actionRestored', { count: rows.length, defaultValue: '{{count}} action(s) restored' }));
+    } catch {
+      toast.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
+    } finally {
+      queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['milestones', workspaceId] });
+    }
+  };
+
   const handleDeleteActionConfirm = async () => {
     if (!deleteActionTarget || !canWrite) return;
-    try { await deleteAction.mutateAsync(deleteActionTarget.id); toast.success(t('actions.actionDeleted')); setDeleteActionTarget(null); }
-    catch { toast.error(t('actions.failedToDelete')); }
+    const target = deleteActionTarget;
+    try {
+      const { data: snapshot } = await supabase.from('action_items').select('*').eq('id', target.id).maybeSingle();
+      await deleteAction.mutateAsync(target.id);
+      toast.success(t('actions.actionDeleted'), {
+        duration: 8000,
+        action: snapshot ? { label: t('common.undo'), onClick: () => restoreActions([snapshot]) } : undefined,
+      });
+      setDeleteActionTarget(null);
+    } catch { toast.error(t('actions.failedToDelete')); }
   };
 
   const handleCreateAction = async () => {
@@ -245,13 +304,66 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
   };
 
   const handleBulkStatusChange = async (ids: string[], status: string) => {
-    try { await bulkUpdate.mutateAsync({ ids, status: status as ActionStatus }); toast.success(t('actions.updatedCount', { count: ids.length })); deselectAll(); }
-    catch { toast.error(t('actions.failedToUpdate')); }
+    try {
+      // Snapshot prior {id -> status, completed_at} so undo can restore exactly.
+      const { data: prior } = await supabase
+        .from('action_items')
+        .select('id, status, completed_at')
+        .in('id', ids);
+      await bulkUpdate.mutateAsync({ ids, status: status as ActionStatus });
+      toast.success(t('actions.updatedCount', { count: ids.length }), {
+        duration: 8000,
+        action: prior && prior.length > 0 ? {
+          label: t('common.undo'),
+          onClick: async () => {
+            try {
+              // Group by prior status for fewer round trips
+              const groups = new Map<string, string[]>();
+              const completedAtById = new Map<string, string | null>();
+              for (const r of prior) {
+                const list = groups.get(r.status as string) || [];
+                list.push(r.id);
+                groups.set(r.status as string, list);
+                completedAtById.set(r.id, (r as any).completed_at ?? null);
+              }
+              for (const [st, gIds] of groups.entries()) {
+                const { error } = await supabase
+                  .from('action_items')
+                  .update({ status: st as ActionStatus })
+                  .in('id', gIds);
+                if (error) throw error;
+              }
+              // Restore completed_at per row (rare path, do it sequentially for correctness)
+              for (const r of prior) {
+                await supabase.from('action_items').update({ completed_at: (r as any).completed_at ?? null }).eq('id', r.id);
+              }
+              toast.success(t('actions.statusReverted', { count: ids.length, defaultValue: 'Status reverted' }));
+            } catch {
+              toast.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
+            } finally {
+              queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
+              queryClient.invalidateQueries({ queryKey: ['milestones', workspaceId] });
+            }
+          },
+        } : undefined,
+      });
+      deselectAll();
+    } catch { toast.error(t('actions.failedToUpdate')); }
   };
 
   const handleBulkDelete = async (ids: string[]) => {
-    try { await bulkDelete.mutateAsync(ids); toast.success(t('actions.deletedCount', { count: ids.length })); deselectAll(); }
-    catch { toast.error(t('actions.failedToDelete')); }
+    try {
+      const { data: snapshots } = await supabase.from('action_items').select('*').in('id', ids);
+      await bulkDelete.mutateAsync(ids);
+      toast.success(t('actions.deletedCount', { count: ids.length }), {
+        duration: 8000,
+        action: snapshots && snapshots.length > 0 ? {
+          label: t('common.undo'),
+          onClick: () => restoreActions(snapshots),
+        } : undefined,
+      });
+      deselectAll();
+    } catch { toast.error(t('actions.failedToDelete')); }
   };
 
   const handleExport = async () => {
