@@ -667,6 +667,7 @@ function TemplateEditorDialog({
   }
 
   return (
+    <>
     <Dialog open={!!template} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
