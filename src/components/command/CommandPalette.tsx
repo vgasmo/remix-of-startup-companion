@@ -329,7 +329,7 @@ export function CommandPalette() {
                 {hasSearchResults && <CommandSeparator />}
                 <CommandGroup heading={t('commandPalette.quickActions')}>
                   {quickActions.map(action => (
-                    <CommandItem key={action.id} onSelect={() => runAction(action.path)} className="gap-3">
+                    <CommandItem key={action.id} onSelect={() => runAction(action.path, action.label, 'action')} className="gap-3">
                       {action.icon}
                       <span>{action.label}</span>
                       <ArrowRight className="ml-auto h-3 w-3 text-muted-foreground" />
@@ -345,7 +345,7 @@ export function CommandPalette() {
                 <CommandSeparator />
                 <CommandGroup heading={t('commandPalette.navigation')}>
                   {navItems.map(item => (
-                    <CommandItem key={item.id} onSelect={() => runAction(item.path)} className="gap-3">
+                    <CommandItem key={item.id} onSelect={() => runAction(item.path, item.label, 'nav')} className="gap-3">
                       {item.icon}
                       <span>{item.label}</span>
                     </CommandItem>
