@@ -95,10 +95,31 @@ interface DraftData {
   };
 }
 
+// Canonical defaults for program-mode settings. Used when a draft has no
+// settings_json yet (e.g. published from a very early draft) so we never
+// reference an undefined `settingsJson` during programs INSERT/UPDATE.
+const DEFAULT_PROGRAM_SETTINGS: ProgramModeSettings = {
+  program_mode: 'standard',
+  enable_kpis: true,
+  enable_health: true,
+  enable_milestones: true,
+  enable_alerts: true,
+  enable_playbooks: true,
+  enable_financial_model: false,
+};
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Hoisted so the catch block can mark the draft as 'publish_failed'
+  // even if the failure happened before the inner try logic finished.
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  );
+  let draftIdForCatch: string | null = null;
 
   try {
     const authHeader = req.headers.get('Authorization');
@@ -108,11 +129,6 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
 
     // Get user from token
     const userClient = createClient(
