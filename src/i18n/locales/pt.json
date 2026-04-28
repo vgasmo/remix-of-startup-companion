@@ -8317,5 +8317,61 @@
       "desc": "Marque uma conversa com o seu consultor responsável.",
       "cta": "Abrir agenda"
     }
+  },
+  "bulkImport": {
+    "openWizard": "Importação em massa (PDF)",
+    "title": "Importação em Massa de Contratos",
+    "confirmCommit": "Importar {{count}} contratos? Vai criar/atualizar startups, workspaces e contratos.",
+    "commitSuccess": "Importados {{committed}} contratos ({{failed}} falhados)",
+    "extractComplete": "Extração concluída",
+    "noErrors": "Sem erros para exportar",
+    "committing": "A importar...",
+    "commit": "Confirmar importação",
+    "downloadErrors": "Descarregar CSV de erros",
+    "adminOnly": { "title": "Apenas administradores", "desc": "Só administradores podem usar esta ferramenta." },
+    "steps": { "upload": "1. Carregar PDFs", "review": "2. Rever dados extraídos", "done": "3. Concluído" },
+    "upload": {
+      "title": "Carregar PDFs de contratos assinados",
+      "desc": "Arraste até 50 PDFs de uma vez. A IA extrai nome da startup, NIF, datas, valores e mais. Vai poder rever tudo antes de confirmar.",
+      "drop": "Arraste PDFs para aqui ou",
+      "browse": "Procurar ficheiros",
+      "filesSelected": "{{count}} ficheiros selecionados",
+      "clearAll": "Limpar tudo",
+      "uploading": "A carregar {{done}} / {{total}}...",
+      "start": "Carregar e extrair com IA"
+    },
+    "stats": {
+      "total": "Total", "willCreate": "A criar", "willUpdate": "A atualizar",
+      "errors": "Erros", "pending": "A processar", "committed": "Importados", "skipped": "Ignorados"
+    },
+    "extracting": { "title": "A IA está a ler os seus contratos" },
+    "review": {
+      "title": "Rever dados extraídos",
+      "desc": "Clique numa linha para editar. Desmarque para ignorar. Linhas com erro não serão importadas.",
+      "retryExtract": "Repetir extração",
+      "empty": "Sem linhas."
+    },
+    "cols": {
+      "file": "Ficheiro", "startup": "Startup", "nif": "NIF", "typology": "Tipologia",
+      "fee": "Mensalidade", "status": "Estado", "action": "Ação", "confidence": "Confiança IA"
+    },
+    "edit": { "notes": "Notas", "viewPdf": "Ver PDF" },
+    "preview": { "title": "Pré-visualização do PDF" },
+    "done": {
+      "title": "Importação concluída",
+      "desc": "Os contratos foram importados. Reveja eventuais erros abaixo.",
+      "errorsTitle": "Algumas linhas falharam",
+      "errorsDesc": "Descarregue o ficheiro de erros, corrija e volte a carregar.",
+      "startNew": "Iniciar nova importação",
+      "backAdmin": "Voltar ao Backoffice"
+    },
+    "errors": {
+      "loadFailed": "Falha ao carregar linhas",
+      "noUploads": "Nenhum ficheiro carregado com sucesso",
+      "uploadFailed": "Falha no carregamento",
+      "previewFailed": "Não foi possível abrir o PDF",
+      "nothingToCommit": "Sem linhas prontas para importar",
+      "commitFailed": "Falha na importação"
+    }
   }
 }
