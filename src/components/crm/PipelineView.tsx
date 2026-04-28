@@ -14,6 +14,7 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronRight, AlertTriangle, GripVertical, Flame, ThermometerSun, Snowflake } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -21,7 +22,9 @@ import { formatRelativeTime } from '@/lib/dateUtils';
 import { useCrmPipeline } from '@/hooks/useCrmPipeline';
 import { calculateLeadScore } from './LeadScoreCard';
 import { useUpdateFunnelItem } from '@/hooks/useFunnel';
-import { useState, useMemo } from 'react';
+import { useConsultors } from '@/hooks/useWorkspaceOwner';
+import { CrmBulkActions } from './CrmBulkActions';
+import { useState, useMemo, useCallback } from 'react';
 import {
   SIMPLE_PIPELINE_STAGES,
   SIMPLE_STAGE_SOURCES,
