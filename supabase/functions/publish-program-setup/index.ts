@@ -166,6 +166,7 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+    draftIdForCatch = draft_id;
 
     console.log(`[publish-program-setup] Publishing draft ${draft_id} by user ${user.id}`);
 
@@ -184,7 +185,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (draft.status !== 'draft') {
+    if (draft.status !== 'draft' && draft.status !== 'publish_failed') {
       return new Response(JSON.stringify({ error: 'Draft already published or discarded' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -192,6 +193,11 @@ Deno.serve(async (req) => {
     }
 
     const draftData = draft.draft_json as DraftData;
+    // Canonical settings — never undefined when we hit programs INSERT/UPDATE.
+    const settingsJson: ProgramModeSettings = {
+      ...DEFAULT_PROGRAM_SETTINGS,
+      ...(draftData.basics?.settings || {}),
+    };
 
     const validationErrors: string[] = [];
     if (!draftData.basics?.name?.trim()) validationErrors.push('Program name is required');
