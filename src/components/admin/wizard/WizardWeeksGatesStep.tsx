@@ -23,7 +23,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Plus, Trash2, GripVertical, ChevronUp, ChevronDown, CalendarDays, Flag, FileText, Library, Upload } from 'lucide-react';
+import { Plus, Trash2, GripVertical, ChevronUp, ChevronDown, CalendarDays, Flag, FileText, Library, Upload, Undo2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import type { DraftGate, DraftWeek } from '@/hooks/useProgramSetup';
@@ -176,6 +176,35 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
   const [bulkAddTargetWeek, setBulkAddTargetWeek] = useState<string>('');
   const [bulkAddTemplate, setBulkAddTemplate] = useState<string>('none');
 
+  // Undo stack — keeps last N snapshots of `weeks` taken right before a bulk
+  // mutation, plus a human-readable label for the toast/button.
+  const UNDO_LIMIT = 10;
+  type UndoEntry = { label: string; weeksBefore: DraftWeek[]; ts: number };
+  const [undoStack, setUndoStack] = useState<UndoEntry[]>([]);
+
+  const pushUndo = (label: string, snapshot: DraftWeek[]) => {
+    setUndoStack(prev => {
+      // Deep-ish clone so later mutations don't poison the snapshot
+      const copy: DraftWeek[] = snapshot.map(w => ({
+        ...w,
+        deliverables_json: w.deliverables_json.map(d => ({ ...d })),
+      }));
+      const next = [...prev, { label, weeksBefore: copy, ts: Date.now() }];
+      return next.slice(-UNDO_LIMIT);
+    });
+  };
+
+  const undoLast = () => {
+    setUndoStack(prev => {
+      if (prev.length === 0) return prev;
+      const last = prev[prev.length - 1];
+      setWeeks(last.weeksBefore);
+      setLibrarySelected(new Set());
+      toast.success(t('programSetup.acceleration.undoneToast', 'Undone: {{label}}', { label: last.label }));
+      return prev.slice(0, -1);
+    });
+  };
+
   // Flat list: { key: "weekIdx:delIdx", weekIdx, delIdx, weekNumber, weekTitle, deliverable }
   const libraryRows = useMemo(() => {
     const rows: Array<{
@@ -223,6 +252,11 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
 
   const bulkRemoveDeliverables = () => {
     if (librarySelected.size === 0) return;
+    // Snapshot BEFORE mutating
+    const before = weeks;
+    const removedCount = librarySelected.size;
+    const label = t('programSetup.acceleration.undoLabelRemove', 'Remove {{n}} deliverables', { n: removedCount });
+
     // Group selections by weekIdx → set of delIdx to drop
     const drop = new Map<number, Set<number>>();
     librarySelected.forEach(key => {
@@ -238,9 +272,23 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
         deliverables_json: w.deliverables_json.filter((_, di) => !toDrop.has(di)),
       };
     });
+    pushUndo(label, before);
     setWeeks(next);
-    toast.success(t('programSetup.acceleration.bulkRemoved', '{{n}} deliverables removed', { n: librarySelected.size }));
     setLibrarySelected(new Set());
+    toast.success(
+      t('programSetup.acceleration.bulkRemoved', '{{n}} deliverables removed', { n: removedCount }),
+      {
+        duration: 8000,
+        action: {
+          label: t('programSetup.acceleration.undo', 'Undo'),
+          onClick: () => {
+            setWeeks(before);
+            setUndoStack(prev => prev.filter(e => e.ts !== prev[prev.length - 1]?.ts));
+            toast.success(t('programSetup.acceleration.undoneToast', 'Undone: {{label}}', { label }));
+          },
+        },
+      }
+    );
   };
 
   const bulkAddDeliverables = () => {
@@ -293,6 +341,9 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
       return;
     }
 
+    // Snapshot BEFORE mutating
+    const before = weeks;
+
     // Group by week number; auto-create weeks that don't exist
     const next = [...weeks];
     let added = 0;
@@ -319,12 +370,25 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
       added += 1;
     });
 
+    const label = t('programSetup.acceleration.undoLabelAdd', 'Add {{n}} deliverables', { n: added });
+    pushUndo(label, before);
     setWeeks(next);
-    toast.success(
-      weeksCreated > 0
-        ? t('programSetup.acceleration.bulkAddedWithWeeks', '{{a}} deliverables added ({{w}} new weeks created)', { a: added, w: weeksCreated })
-        : t('programSetup.acceleration.bulkAdded', '{{a}} deliverables added', { a: added })
-    );
+
+    const successMsg = weeksCreated > 0
+      ? t('programSetup.acceleration.bulkAddedWithWeeks', '{{a}} deliverables added ({{w}} new weeks created)', { a: added, w: weeksCreated })
+      : t('programSetup.acceleration.bulkAdded', '{{a}} deliverables added', { a: added });
+
+    toast.success(successMsg, {
+      duration: 8000,
+      action: {
+        label: t('programSetup.acceleration.undo', 'Undo'),
+        onClick: () => {
+          setWeeks(before);
+          setUndoStack(prev => prev.filter(e => e.ts !== prev[prev.length - 1]?.ts));
+          toast.success(t('programSetup.acceleration.undoneToast', 'Undone: {{label}}', { label }));
+        },
+      },
+    });
     setBulkAddText('');
     setBulkAddOpen(false);
   };
@@ -465,6 +529,22 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
             </p>
           </div>
           <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={undoStack.length === 0}
+              onClick={undoLast}
+              title={undoStack.length > 0 ? undoStack[undoStack.length - 1].label : ''}
+            >
+              <Undo2 className="h-4 w-4 mr-1" />
+              {t('programSetup.acceleration.undo', 'Undo')}
+              {undoStack.length > 0 && (
+                <Badge variant="secondary" className="ml-2 h-4 px-1.5 text-[10px]">
+                  {undoStack.length}
+                </Badge>
+              )}
+            </Button>
             <Button
               type="button"
               variant="outline"
