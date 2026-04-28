@@ -176,6 +176,35 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
   const [bulkAddTargetWeek, setBulkAddTargetWeek] = useState<string>('');
   const [bulkAddTemplate, setBulkAddTemplate] = useState<string>('none');
 
+  // Undo stack — keeps last N snapshots of `weeks` taken right before a bulk
+  // mutation, plus a human-readable label for the toast/button.
+  const UNDO_LIMIT = 10;
+  type UndoEntry = { label: string; weeksBefore: DraftWeek[]; ts: number };
+  const [undoStack, setUndoStack] = useState<UndoEntry[]>([]);
+
+  const pushUndo = (label: string, snapshot: DraftWeek[]) => {
+    setUndoStack(prev => {
+      // Deep-ish clone so later mutations don't poison the snapshot
+      const copy: DraftWeek[] = snapshot.map(w => ({
+        ...w,
+        deliverables_json: w.deliverables_json.map(d => ({ ...d })),
+      }));
+      const next = [...prev, { label, weeksBefore: copy, ts: Date.now() }];
+      return next.slice(-UNDO_LIMIT);
+    });
+  };
+
+  const undoLast = () => {
+    setUndoStack(prev => {
+      if (prev.length === 0) return prev;
+      const last = prev[prev.length - 1];
+      setWeeks(last.weeksBefore);
+      setLibrarySelected(new Set());
+      toast.success(t('programSetup.acceleration.undoneToast', 'Undone: {{label}}', { label: last.label }));
+      return prev.slice(0, -1);
+    });
+  };
+
   // Flat list: { key: "weekIdx:delIdx", weekIdx, delIdx, weekNumber, weekTitle, deliverable }
   const libraryRows = useMemo(() => {
     const rows: Array<{
