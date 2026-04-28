@@ -517,6 +517,7 @@ function TemplateEditorDialog({
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [hasChanges, setHasChanges] = useState(false);
   const [reviewNotes, setReviewNotes] = useState('');
+  const { confirm: confirmClose, dialogProps: confirmCloseProps } = useConfirmDialog();
   
   const canReview = roles.includes('admin') || roles.includes('consultor') || roles.includes('mentor_externo');
 
