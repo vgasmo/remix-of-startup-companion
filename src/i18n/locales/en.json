@@ -2692,7 +2692,8 @@
       "nextActionSuccess": "Next actions set for leads",
       "selectLeads": "Select leads to perform bulk actions",
       "selectedCount": "{{count}} selected",
-      "setNextAction": "Set Next Action (Tomorrow)"
+      "setNextAction": "Set Next Action (Tomorrow)",
+      "selectLead": "Select lead"
     },
     "cancelTask": "Cancel Task",
     "canceled": "Canceled",
@@ -3022,7 +3023,8 @@
     "viewAll": "View All",
     "viewSession": "View Session",
     "weighted": "EUR",
-    "winProbability": "Probabilidade (%)"
+    "winProbability": "Probabilidade (%)",
+    "dragToMove": "Drag to move"
   },
   "dashboard": {
     "acrossPrograms": "Across {{count}} program",

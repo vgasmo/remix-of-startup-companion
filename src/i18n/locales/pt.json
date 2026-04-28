@@ -2692,7 +2692,8 @@
       "nextActionSuccess": "Próximas ações definidas",
       "selectLeads": "Selecione leads para ações em massa",
       "selectedCount": "{{count}} selecionados",
-      "setNextAction": "Definir Próxima Ação (Amanhã)"
+      "setNextAction": "Definir Próxima Ação (Amanhã)",
+      "selectLead": "Selecionar lead"
     },
     "cancelTask": "Cancelar Tarefa",
     "canceled": "Canceladas",
@@ -3022,7 +3023,8 @@
     "viewAll": "Ver Tudo",
     "viewSession": "Ver Sessão",
     "weighted": "EUR",
-    "winProbability": "Probabilidade (%)"
+    "winProbability": "Probabilidade (%)",
+    "dragToMove": "Arrastar para mover"
   },
   "dashboard": {
     "acrossPrograms": "Em {{count}} programa",
