@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Plus, Pencil, Trash2, Download, Search, Phone, CheckCircle, Upload, FileText, Loader2, AlertTriangle, Mail, Send } from 'lucide-react';
+import { Plus, Pencil, Trash2, Download, Search, Phone, CheckCircle, Upload, FileText, Loader2, AlertTriangle, Mail, Send, Archive, ArchiveRestore } from 'lucide-react';
 import { toast } from 'sonner';
 import { startupSchema } from '@/lib/validations';
 import { logger } from '@/lib/logger';
