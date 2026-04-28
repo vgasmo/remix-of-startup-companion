@@ -18,6 +18,8 @@ import { Plus, Pencil, Trash2, Download, Search, Phone, CheckCircle, Upload, Fil
 import { toast } from 'sonner';
 import { startupSchema } from '@/lib/validations';
 import { logger } from '@/lib/logger';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 interface FormState {
   name: string;
@@ -56,6 +58,7 @@ export function AdminStartupsManager() {
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
   const [sendingInviteFor, setSendingInviteFor] = useState<string | null>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
+  const { confirm, dialogProps } = useConfirmDialog();
   
   // Bulk selection state
   const [selectedStartups, setSelectedStartups] = useState<Set<string>>(new Set());
@@ -418,6 +421,8 @@ export function AdminStartupsManager() {
   const stages = ['ideation', 'validation', 'mvp', 'growth', 'scale'];
 
   return (
+    <>
+    <ConfirmDialog {...dialogProps} />
     <Card>
       <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-4">
         <CardTitle>{t('admin.startupsManager.title')}</CardTitle>
@@ -747,11 +752,13 @@ export function AdminStartupsManager() {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => {
-                                      if (window.confirm(t('admin.startupsManager.deleteForeverConfirm', { name: startup.name }))) {
-                                        deleteMutation.mutate(startup.id);
-                                      }
-                                    }}
+                                    onClick={() => confirm({
+                                      title: t('admin.startupsManager.deleteForever'),
+                                      description: t('admin.startupsManager.deleteForeverConfirm', { name: startup.name }),
+                                      variant: 'destructive',
+                                      confirmLabel: t('admin.startupsManager.deleteForever'),
+                                      onConfirm: () => deleteMutation.mutate(startup.id),
+                                    })}
                                   >
                                     <Trash2 className="h-4 w-4 text-destructive" />
                                   </Button>
@@ -788,5 +795,6 @@ export function AdminStartupsManager() {
         )}
       </CardContent>
     </Card>
+    </>
   );
 }
