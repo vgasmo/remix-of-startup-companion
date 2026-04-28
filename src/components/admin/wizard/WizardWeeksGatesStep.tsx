@@ -23,7 +23,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Plus, Trash2, GripVertical, ChevronUp, ChevronDown, CalendarDays, Flag, FileText, Library, Upload } from 'lucide-react';
+import { Plus, Trash2, GripVertical, ChevronUp, ChevronDown, CalendarDays, Flag, FileText, Library, Upload, Undo2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import type { DraftGate, DraftWeek } from '@/hooks/useProgramSetup';
