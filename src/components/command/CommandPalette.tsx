@@ -36,8 +36,26 @@ export function CommandPalette() {
   const [copilotMode, setCopilotMode] = useState(false);
   const [copilotThinking, setCopilotThinking] = useState(false);
   const [copilotAnswer, setCopilotAnswer] = useState<string | null>(null);
+  const [recentItems, setRecentItems] = useState<Array<{ path: string; label: string; type: string }>>([]);
 
   const { data: searchResults } = useGlobalSearch({ query: copilotMode ? '' : query });
+  const { data: workspacesData } = useWorkspaces({});
+
+  // Load recent items from localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('sl-command-palette-recents');
+      if (raw) setRecentItems(JSON.parse(raw).slice(0, 5));
+    } catch { /* ignore */ }
+  }, [open]);
+
+  const pushRecent = useCallback((item: { path: string; label: string; type: string }) => {
+    try {
+      const next = [item, ...recentItems.filter(r => r.path !== item.path)].slice(0, 5);
+      setRecentItems(next);
+      localStorage.setItem('sl-command-palette-recents', JSON.stringify(next));
+    } catch { /* ignore */ }
+  }, [recentItems]);
 
   // Keyboard shortcut
   useEffect(() => {
@@ -51,13 +69,14 @@ export function CommandPalette() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const runAction = useCallback((path: string) => {
+  const runAction = useCallback((path: string, label?: string, type: string = 'nav') => {
+    if (label) pushRecent({ path, label, type });
     navigate(path);
     setOpen(false);
     setQuery('');
     setCopilotMode(false);
     setCopilotAnswer(null);
-  }, [navigate]);
+  }, [navigate, pushRecent]);
 
   // Copilot: simulate AI response
   const handleCopilotSubmit = useCallback(async () => {
