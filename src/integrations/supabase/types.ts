@@ -3737,7 +3737,6 @@ export type Database = {
           created_by: string | null
           enabled: boolean
           graph_client_id: string | null
-          graph_secret_key: string | null
           graph_tenant_id: string | null
           id: string
           sync_mode: string
@@ -3752,7 +3751,6 @@ export type Database = {
           created_by?: string | null
           enabled?: boolean
           graph_client_id?: string | null
-          graph_secret_key?: string | null
           graph_tenant_id?: string | null
           id?: string
           sync_mode?: string
@@ -3767,7 +3765,6 @@ export type Database = {
           created_by?: string | null
           enabled?: boolean
           graph_client_id?: string | null
-          graph_secret_key?: string | null
           graph_tenant_id?: string | null
           id?: string
           sync_mode?: string
