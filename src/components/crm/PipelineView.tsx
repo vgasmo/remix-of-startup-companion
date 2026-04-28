@@ -268,9 +268,11 @@ interface PipelineColumnProps {
   items: CrmInboxItem[];
   config: { color: string; bgColor: string };
   onOpenDrawer: (item: CrmInboxItem) => void;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
 }
 
-function PipelineColumn({ simpleStage, items, config, onOpenDrawer }: PipelineColumnProps) {
+function PipelineColumn({ simpleStage, items, config, onOpenDrawer, selectedIds, onToggleSelect }: PipelineColumnProps) {
   const { t } = useTranslation();
   const { setNodeRef, isOver } = useDroppable({
     id: simpleStage,
@@ -313,6 +315,8 @@ function PipelineColumn({ simpleStage, items, config, onOpenDrawer }: PipelineCo
                     key={item.id} 
                     item={item} 
                     onOpenDrawer={onOpenDrawer}
+                    isSelected={selectedIds.has(item.id)}
+                    onToggleSelect={onToggleSelect}
                   />
                 ))}
               </div>
@@ -327,6 +331,8 @@ function PipelineColumn({ simpleStage, items, config, onOpenDrawer }: PipelineCo
 interface DraggableCardProps {
   item: CrmInboxItem;
   onOpenDrawer: (item: CrmInboxItem) => void;
+  isSelected: boolean;
+  onToggleSelect: (id: string) => void;
 }
 
 function DraggableCard({ item, onOpenDrawer }: DraggableCardProps) {
