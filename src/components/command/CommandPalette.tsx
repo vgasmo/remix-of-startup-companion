@@ -235,25 +235,35 @@ export function CommandPalette() {
                 : t('commandPalette.typeToSearch')}
             </CommandEmpty>
 
-            {/* AI Copilot Entry */}
-            {!query && (
-              <>
-                <CommandGroup heading={t('commandPalette.ai', { defaultValue: 'AI Assistant' })}>
-                  <CommandItem
-                    onSelect={() => setCopilotMode(true)}
-                    className="gap-3"
-                  >
-                    <Sparkles className="h-4 w-4 text-violet-500" />
-                    <div className="flex-1">
-                      <span className="text-sm">{t('commandPalette.askCopilot', { defaultValue: 'Ask Ecosystem Copilot' })}</span>
-                      <span className="text-xs text-muted-foreground block">{t('commandPalette.copilotDesc', { defaultValue: 'AI-powered insights about your portfolio' })}</span>
-                    </div>
-                    <Badge variant="secondary" className="text-[10px]">AI</Badge>
-                  </CommandItem>
-                </CommandGroup>
-                <CommandSeparator />
-              </>
-            )}
+            {/* AI Copilot Entry — always visible so users can escalate any query to AI */}
+            <CommandGroup heading={t('commandPalette.ai', { defaultValue: 'AI Assistant' })}>
+              <CommandItem
+                value={`__ai__ ${query}`}
+                onSelect={() => {
+                  setCopilotMode(true);
+                  if (query.trim()) {
+                    // fire-and-forget; copilot handles its own state
+                    copilot.send(query);
+                  }
+                }}
+                className="gap-3"
+              >
+                <Sparkles className="h-4 w-4 text-violet-500" />
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm block truncate">
+                    {query.trim()
+                      ? t('commandPalette.askAboutQuery', { query, defaultValue: `Perguntar à IA: "${query}"` })
+                      : t('commandPalette.askCopilot', { defaultValue: 'Ask Ecosystem Copilot' })}
+                  </span>
+                  <span className="text-xs text-muted-foreground block">
+                    {t('commandPalette.copilotDesc', { defaultValue: 'AI-powered insights about your portfolio' })}
+                  </span>
+                </div>
+                <Badge variant="secondary" className="text-[10px]">AI ⌘↵</Badge>
+              </CommandItem>
+            </CommandGroup>
+            <CommandSeparator />
+
 
             {/* Recent items */}
             {showRecents && (
