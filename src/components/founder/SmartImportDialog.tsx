@@ -182,7 +182,7 @@ export function SmartImportDialog({
       if (ex.startup?.stage) setStage(ex.startup.stage);
       setStep("review");
     } catch (e) {
-      logger.warn("smart-import extraction failed", e);
+      logger.warn("smart-import extraction failed", { error: e instanceof Error ? e.message : String(e) });
       setError(e instanceof Error ? e.message : "Unknown error");
       setStep("upload");
     }
@@ -364,7 +364,7 @@ export function SmartImportDialog({
         navigate(`/workspace/${targetWorkspaceId}`);
       }
     } catch (e: any) {
-      logger.warn("smart-import apply failed", e);
+      logger.warn("smart-import apply failed", { error: e instanceof Error ? e.message : String(e) });
       setError(e?.message || "Apply failed");
       setStep("review");
     }
