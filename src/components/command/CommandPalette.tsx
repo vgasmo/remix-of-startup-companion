@@ -204,13 +204,49 @@ export function CommandPalette() {
               <div
                 key={m.id}
                 className={cn(
-                  'rounded-xl px-3 py-2.5 text-sm whitespace-pre-wrap leading-relaxed',
+                  'rounded-xl px-3 py-2.5 text-sm leading-relaxed',
                   m.role === 'user'
-                    ? 'bg-primary/10 text-foreground ml-8'
+                    ? 'bg-primary/10 text-foreground ml-8 whitespace-pre-wrap'
                     : 'bg-muted/50 text-foreground mr-8 border border-border/40'
                 )}
               >
-                {m.content}
+                {m.role === 'assistant' ? (
+                  <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 prose-headings:my-2 prose-pre:my-2 prose-a:text-primary">
+                    <ReactMarkdown
+                      components={{
+                        a: ({ href, children, ...props }) => {
+                          const safe = sanitizeUrl(href);
+                          if (!safe) return <span>{children}</span>;
+                          const isExternal = safe.startsWith('http');
+                          return (
+                            <a
+                              {...props}
+                              href={safe}
+                              target={isExternal ? '_blank' : undefined}
+                              rel={isExternal ? 'noopener noreferrer' : undefined}
+                              onClick={(e) => {
+                                if (!isExternal && safe.startsWith('/')) {
+                                  e.preventDefault();
+                                  navigate(safe);
+                                  setOpen(false);
+                                  setQuery('');
+                                  setCopilotMode(false);
+                                  copilot.reset();
+                                }
+                              }}
+                            >
+                              {children}
+                            </a>
+                          );
+                        },
+                      }}
+                    >
+                      {m.content}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  m.content
+                )}
               </div>
             ))}
 
