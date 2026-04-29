@@ -47,9 +47,9 @@ serve(async (req: Request) => {
       }
     }
 
-    // ── Rate limit check (soft-fail) ────────────────────────────
-    // Get user's first workspace for rate limiting (FK requires valid workspace_id)
-    let rateLimitOk = true;
+    // ── Rate limit check (safe-fail: errors block, do not silently allow) ──
+    let rateLimitOk = false;
+    let rateLimitErrored = false;
     try {
       const { data: wsRow } = await supabase
         .from("workspace_users")
@@ -60,18 +60,34 @@ serve(async (req: Request) => {
         .single();
 
       if (wsRow?.workspace_id) {
-        const { data: withinLimit } = await supabase.rpc("check_ai_rate_limit", {
+        const { data: withinLimit, error: rlErr } = await supabase.rpc("check_ai_rate_limit", {
           _user_id: userId,
           _workspace_id: wsRow.workspace_id,
           _function_name: "copilot-chat",
           _max_requests: 30,
         });
-        if (withinLimit === false) rateLimitOk = false;
+        if (rlErr) {
+          rateLimitErrored = true;
+          console.warn("Rate limit RPC error:", rlErr.message);
+        } else {
+          rateLimitOk = withinLimit !== false;
+        }
+      } else {
+        // No workspace yet (e.g. brand-new founder pre-claim) → allow, low risk.
+        rateLimitOk = true;
       }
     } catch (e) {
-      console.warn("Rate limit check failed (non-blocking):", e);
+      rateLimitErrored = true;
+      console.warn("Rate limit check threw:", e);
     }
 
+    if (rateLimitErrored) {
+      return corsJsonResponse(
+        { error: "Could not verify rate limit. Please try again in a moment." },
+        req,
+        503
+      );
+    }
     if (!rateLimitOk) {
       return corsJsonResponse(
         { error: "Rate limit exceeded. Please try again later." },

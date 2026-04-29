@@ -463,6 +463,7 @@ export type Database = {
           failed_count: number
           id: string
           notes: string | null
+          program_id: string | null
           status: string
           total_files: number
           updated_at: string
@@ -476,6 +477,7 @@ export type Database = {
           failed_count?: number
           id?: string
           notes?: string | null
+          program_id?: string | null
           status?: string
           total_files?: number
           updated_at?: string
@@ -489,11 +491,20 @@ export type Database = {
           failed_count?: number
           id?: string
           notes?: string | null
+          program_id?: string | null
           status?: string
           total_files?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bulk_import_batches_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bulk_import_rows: {
         Row: {
@@ -6127,6 +6138,7 @@ export type Database = {
           company_nif: string | null
           company_postal_code: string | null
           contract_number: string | null
+          contract_pdf_path: string | null
           contract_template_version: string | null
           counter_signer_email: string | null
           counter_signer_name: string | null
@@ -6207,6 +6219,7 @@ export type Database = {
           company_nif?: string | null
           company_postal_code?: string | null
           contract_number?: string | null
+          contract_pdf_path?: string | null
           contract_template_version?: string | null
           counter_signer_email?: string | null
           counter_signer_name?: string | null
@@ -6287,6 +6300,7 @@ export type Database = {
           company_nif?: string | null
           company_postal_code?: string | null
           contract_number?: string | null
+          contract_pdf_path?: string | null
           contract_template_version?: string | null
           counter_signer_email?: string | null
           counter_signer_name?: string | null

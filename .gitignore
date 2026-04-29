@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 test
+
+# Environment files (release hygiene)
+.env
+.env.*
+!.env.example

@@ -62,7 +62,23 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const batchId = body?.batch_id as string | undefined;
+    const overwriteExisting = body?.overwrite_existing === true; // admin opt-in
     if (!batchId) return jsonResponse({ error: "batch_id required" }, 400);
+
+    // Batch must have a programme assigned (no orphan workspaces).
+    const { data: batch, error: batchErr } = await admin
+      .from("bulk_import_batches")
+      .select("id, program_id")
+      .eq("id", batchId)
+      .single();
+    if (batchErr || !batch) return jsonResponse({ error: "Batch not found" }, 404);
+    if (!batch.program_id) {
+      return jsonResponse({
+        error: "program_required",
+        message: "This batch has no programme assigned. Pick a programme on the upload screen before committing.",
+      }, 400);
+    }
+    const batchProgramId = batch.program_id as string;
 
     await admin.from("bulk_import_batches").update({ status: "committing" }).eq("id", batchId);
 
@@ -99,13 +115,24 @@ Deno.serve(async (req) => {
         const nif = (data.nif || "").replace(/\D/g, "").trim() || null;
 
         if (startupId) {
-          // Update existing — only fill missing fields, never overwrite non-null with null
+          // Update existing — by default only fill missing fields, never overwrite
+          // non-null with null. Admin can opt in to overwrite via overwrite_existing.
+          const { data: existing } = await admin
+            .from("startups")
+            .select("nif, address, main_contact_name, main_contact_email, main_contact_phone")
+            .eq("id", startupId)
+            .maybeSingle();
           const updates: Record<string, unknown> = {};
-          if (nif) updates.nif = nif;
-          if (data.address) updates.address = data.address;
-          if (data.main_contact_name) updates.main_contact_name = data.main_contact_name;
-          if (data.main_contact_email) updates.main_contact_email = data.main_contact_email;
-          if (data.main_contact_phone) updates.main_contact_phone = data.main_contact_phone;
+          const fillIfEmpty = (col: string, incoming: unknown) => {
+            const current = existing ? (existing as Record<string, unknown>)[col] : null;
+            const isEmpty = current === null || current === undefined || current === "";
+            if (incoming && (isEmpty || overwriteExisting)) updates[col] = incoming;
+          };
+          fillIfEmpty("nif", nif);
+          fillIfEmpty("address", data.address);
+          fillIfEmpty("main_contact_name", data.main_contact_name);
+          fillIfEmpty("main_contact_email", data.main_contact_email);
+          fillIfEmpty("main_contact_phone", data.main_contact_phone);
           if (Object.keys(updates).length > 0) {
             await admin.from("startups").update(updates).eq("id", startupId);
           }
@@ -126,13 +153,14 @@ Deno.serve(async (req) => {
           startupId = newStartup.id;
         }
 
-        // 2) Resolve or create workspace
+        // 2) Resolve or create workspace — programme is REQUIRED.
         let workspaceId = row.matched_workspace_id as string | null;
         if (!workspaceId) {
           const { data: newWs, error: wsErr } = await admin
             .from("workspaces")
             .insert({
               startup_id: startupId,
+              program_id: batchProgramId, // never orphan
               status: "imported_unclaimed",
               needs_onboarding: false, // historical contract — already onboarded
               stage: "ideation",
@@ -141,6 +169,17 @@ Deno.serve(async (req) => {
             .single();
           if (wsErr || !newWs) throw new Error(`Workspace create failed: ${wsErr?.message}`);
           workspaceId = newWs.id;
+        } else {
+          // If matched workspace has no programme, attach the batch programme
+          // so we never end up with orphan workspaces post-import.
+          const { data: ws } = await admin
+            .from("workspaces")
+            .select("program_id")
+            .eq("id", workspaceId)
+            .maybeSingle();
+          if (ws && !ws.program_id) {
+            await admin.from("workspaces").update({ program_id: batchProgramId }).eq("id", workspaceId);
+          }
         }
 
         // 3) Resolve typology
@@ -167,47 +206,77 @@ Deno.serve(async (req) => {
           currency: "EUR",
         };
 
-        // 5) Create contract
+        // 5) Create or update contract — idempotent on (workspace_id, contract_number)
         const contractStatus = normalizeStatus(data.status) || "active";
         const signedAt = parseDate(data.signed_at);
         const startDate = parseDate(data.start_date);
         const endDate = parseDate(data.end_date);
 
-        const publicUrl = `${supabaseUrl}/storage/v1/object/contract-imports/${row.pdf_path}`;
+        // Store the canonical PRIVATE storage path. Never persist a fake public
+        // URL — the contract-imports bucket is private and access is via signed URLs.
+        const contractPdfPath = row.pdf_path as string;
 
-        const { data: newContract, error: cErr } = await admin
-          .from("startup_contracts")
-          .insert({
-            workspace_id: workspaceId,
-            incubation_type_id: incubationTypeId,
-            contract_number: data.contract_number || null,
-            status: contractStatus,
-            start_date: startDate,
-            end_date: endDate,
-            signed_at: signedAt,
-            monthly_fee: data.monthly_fee ?? null,
-            currency: "EUR",
-            discount_percentage: data.discount_percentage ?? null,
-            square_meters: data.square_meters ?? null,
-            company_nif: nif,
-            company_address: data.address || null,
-            company_postal_code: data.postal_code || null,
-            company_city: data.city || null,
-            company_country: "Portugal",
-            legal_representative_name: data.legal_representative_name || null,
-            legal_representative_email: data.legal_representative_email || null,
-            notes: combineNotes(data.notes, `Bulk imported from PDF: ${row.pdf_filename}`),
-            document_url: publicUrl,
-            created_by: userData.user.id,
-          })
-          .select("id")
-          .single();
+        const contractPayload = {
+          workspace_id: workspaceId,
+          incubation_type_id: incubationTypeId,
+          contract_number: data.contract_number || null,
+          status: contractStatus,
+          start_date: startDate,
+          end_date: endDate,
+          signed_at: signedAt,
+          monthly_fee: data.monthly_fee ?? null,
+          currency: "EUR",
+          discount_percentage: data.discount_percentage ?? null,
+          square_meters: data.square_meters ?? null,
+          pricing_snapshot_json: pricingSnapshot,
+          company_nif: nif,
+          company_address: data.address || null,
+          company_postal_code: data.postal_code || null,
+          company_city: data.city || null,
+          company_country: "Portugal",
+          legal_representative_name: data.legal_representative_name || null,
+          legal_representative_email: data.legal_representative_email || null,
+          notes: combineNotes(data.notes, `Bulk imported from PDF: ${row.pdf_filename}`),
+          contract_pdf_path: contractPdfPath,
+          created_by: userData.user.id,
+        };
 
-        if (cErr || !newContract) throw new Error(`Contract create failed: ${cErr?.message}`);
+        // Idempotency: if the same contract_number already exists for this
+        // workspace, link/update instead of creating a duplicate.
+        let contractId: string | null = null;
+        if (data.contract_number) {
+          const { data: existing } = await admin
+            .from("startup_contracts")
+            .select("id")
+            .eq("workspace_id", workspaceId)
+            .eq("contract_number", data.contract_number)
+            .maybeSingle();
+          if (existing?.id) {
+            contractId = existing.id;
+            // Always refresh the PDF path; only overwrite full payload on admin opt-in
+            const updatePayload = overwriteExisting
+              ? contractPayload
+              : { contract_pdf_path: contractPdfPath, pricing_snapshot_json: pricingSnapshot };
+            const { error: upErr } = await admin
+              .from("startup_contracts")
+              .update(updatePayload)
+              .eq("id", contractId);
+            if (upErr) throw new Error(`Contract update failed: ${upErr.message}`);
+          }
+        }
+        if (!contractId) {
+          const { data: newContract, error: cErr } = await admin
+            .from("startup_contracts")
+            .insert(contractPayload)
+            .select("id")
+            .single();
+          if (cErr || !newContract) throw new Error(`Contract create failed: ${cErr?.message}`);
+          contractId = newContract.id;
+        }
 
         await admin.from("bulk_import_rows").update({
           status: "committed",
-          created_contract_id: newContract.id,
+          created_contract_id: contractId,
           matched_startup_id: startupId,
           matched_workspace_id: workspaceId,
           error_message: null,
