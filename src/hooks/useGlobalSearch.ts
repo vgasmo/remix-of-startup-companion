@@ -323,12 +323,26 @@ export function useGlobalSearch(filters: SearchFilters) {
       // Search startups (RLS will filter to what the user can see)
       if (typesToSearch.includes('startup')) {
         searchPromises.push((async () => {
-          const { data } = await supabase
+          const { data: exactData } = await supabase
             .from('startups')
             .select('id, name, description, updated_at')
             .or(`name.ilike.${ilikeTerm},description.ilike.${ilikeTerm}`)
             .is('archived_at', null)
             .limit(20);
+
+          let data = exactData || [];
+
+          // Fuzzy fallback (typo-tolerant) when exact ILIKE returned nothing
+          if (data.length === 0 && searchTerm.length >= 3) {
+            const { data: fuzzy } = await supabase.rpc('fuzzy_search_startups', {
+              p_query: searchTerm,
+              p_limit: 10,
+            });
+            data = (fuzzy || []).map((s: any) => ({
+              id: s.id, name: s.name, description: s.description, updated_at: s.updated_at,
+            }));
+          }
+
           // Map startup → its first workspace for navigation
           const ids = (data || []).map(s => s.id);
           let wsByStartup: Record<string, string> = {};
@@ -403,11 +417,23 @@ export function useGlobalSearch(filters: SearchFilters) {
       // Search CRM leads (staff via RLS)
       if (typesToSearch.includes('lead')) {
         searchPromises.push((async () => {
-          const { data } = await supabase
+          const { data: exactData } = await supabase
             .from('funnel_items')
             .select('id, organization_name, contact_name, contact_email, stage, updated_at')
             .or(`organization_name.ilike.${ilikeTerm},contact_name.ilike.${ilikeTerm},contact_email.ilike.${ilikeTerm}`)
             .limit(20);
+
+          let data: any[] = exactData || [];
+
+          // Fuzzy fallback for typos
+          if (data.length === 0 && searchTerm.length >= 3) {
+            const { data: fuzzy } = await supabase.rpc('fuzzy_search_leads', {
+              p_query: searchTerm,
+              p_limit: 10,
+            });
+            data = fuzzy || [];
+          }
+
           return (data || []).map((l: any) => ({
             type: 'lead' as const,
             id: l.id,
