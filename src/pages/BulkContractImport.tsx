@@ -662,6 +662,7 @@ export default function BulkContractImport() {
                   setFiles([]);
                   setRows([]);
                   setBatchId(null);
+                  setProgramId('');
                 }}>
                   {t('bulkImport.done.startNew', 'Start new batch')}
                 </Button>
