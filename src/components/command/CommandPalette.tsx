@@ -18,6 +18,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspaces } from '@/hooks/useWorkspaces';
 import { useCopilotChat } from '@/hooks/useCopilotChat';
 import { cn } from '@/lib/utils';
+import ReactMarkdown from 'react-markdown';
+import { sanitizeUrl } from '@/lib/sanitizeUrl';
 
 const typeIcons: Record<string, React.ReactNode> = {
   session: <Calendar className="h-4 w-4 text-muted-foreground" />,
