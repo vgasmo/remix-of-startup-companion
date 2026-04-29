@@ -151,6 +151,32 @@ export function CommandPalette() {
     milestone: t('search.types.milestones'),
   };
 
+  const buildSearchContextPrompt = useCallback((rawQuery: string) => {
+    const text = rawQuery.trim();
+    if (!text) return '';
+
+    const entityResults = (searchResults || []).slice(0, 8);
+    if (entityResults.length === 0) return text;
+
+    const lines: string[] = [
+      `O utilizador pesquisou por "${text}" na barra global da aplicação.`,
+      'Usa os resultados encontrados abaixo para responder com contexto real da app, priorizando entidades encontradas, o que são, e qual o próximo passo recomendado.',
+      '',
+      `Resultados encontrados (${entityResults.length}):`,
+    ];
+
+    entityResults.forEach((result, index) => {
+      const snippet = result.snippet ? ` — ${result.snippet.slice(0, 120)}` : '';
+      const workspaceName = result.workspace_name ? ` (${result.workspace_name})` : '';
+      lines.push(`${index + 1}. [${result.type}] ${result.title}${workspaceName}${snippet}`);
+    });
+
+    lines.push('');
+    lines.push(`Pergunta do utilizador: ${text}`);
+
+    return lines.join('\n');
+  }, [searchResults]);
+
   const hasSearchResults = searchResults && searchResults.length > 0;
   const showQuickActions = !query && quickActions.length > 0 && !copilotMode;
   const showNav = (!query || query.length < 2) && !copilotMode;
@@ -294,8 +320,9 @@ export function CommandPalette() {
                 onSelect={() => {
                   setCopilotMode(true);
                   if (query.trim()) {
-                    // fire-and-forget; copilot handles its own state
-                    copilot.send(query);
+                    const prompt = buildSearchContextPrompt(query);
+                    setQuery('');
+                    copilot.send(prompt);
                   }
                 }}
                 className="gap-3"
