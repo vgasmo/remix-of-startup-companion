@@ -32,8 +32,6 @@
     "actionRestored": "{{count}} actions restored",
     "actionRestored_one": "{{count}} action restored",
     "actionRestored_other": "{{count}} actions restored",
-    "statusReverted": "Status reverted",
-    "undoFailed": "Could not undo. Please try again.",
     "actionsBelongToMilestones": "Actions belong to milestones to track progress toward goals.",
     "actionsLabel": "actions",
     "addAction": "Add Action",
@@ -55,7 +53,9 @@
     "deleteActionTitle": "Delete Action Item",
     "deletedCount": "Deleted {{count}} actions",
     "deliverableAdded": "Entregável adicionado",
+    "deliverableAlreadyLinked": "This document is already linked to this action",
     "deliverableCompleted": "Entregável validado",
+    "deliverableDocExistingHint": "If the document is already complete, it will be linked to this action and opened in the documents area.",
     "deliverableDocHint": "Ao criar, será redirecionado para o separador de Documentos para preencher o material da plataforma.",
     "deliverablesRequired": "Todos os entregáveis devem estar concluídos antes de concluir a ação",
     "description": "Description",
@@ -109,14 +109,14 @@
     "statusDoing": "In Progress",
     "statusDone": "Done",
     "statusOpen": "Open",
+    "statusReverted": "Status reverted",
     "title": "Actions",
     "titlePlaceholder": "What needs to be done?",
     "titleRequired": "Title is required",
     "unassigned": "Unassigned",
     "unassignedActions": "Unassigned Actions",
-    "updatedCount": "Updated {{count}} actions",
-    "deliverableAlreadyLinked": "This document is already linked to this action",
-    "deliverableDocExistingHint": "If the document is already complete, it will be linked to this action and opened in the documents area."
+    "undoFailed": "Could not undo. Please try again.",
+    "updatedCount": "Updated {{count}} actions"
   },
   "activityLog": {
     "action": "Action",
@@ -1140,12 +1140,15 @@
       "actions": "Actions",
       "addStartup": "Add Startup",
       "allStages": "All Stages",
+      "archive": "Archive",
       "certificationDocument": "Certification Document",
       "contactEmail": "Contact Email",
       "contactName": "Contact Name",
       "contactPhone": "Contact Phone",
       "create": "Create",
       "createStartup": "Create Startup",
+      "deleteForever": "Delete permanently",
+      "deleteForeverConfirm": "Permanently delete \"{{name}}\"? This cannot be undone.",
       "description": "Description",
       "documentAttached": "Document attached",
       "documentRequired": "Startup Portugal certification document is required",
@@ -1167,26 +1170,23 @@
       "noEmailForInvite": "No Email For Invite",
       "noStartups": "No startups found",
       "noWorkspaceForInvite": "No Workspace For Invite",
+      "restore": "Restore",
       "search": "Search...",
       "stage": "Stage",
+      "startupArchived": "Startup archived",
       "startupCreated": "Startup created",
       "startupDeleted": "Startup permanently deleted",
-      "startupArchived": "Startup archived",
-      "startupRestored": "Startup restored",
-      "archive": "Archive",
-      "restore": "Restore",
-      "viewArchived": "View archived",
-      "viewActive": "View active",
-      "deleteForever": "Delete permanently",
-      "deleteForeverConfirm": "Permanently delete \"{{name}}\"? This cannot be undone.",
       "startupPortugal": "Startup Portugal",
       "startupPortugalStatus": "Startup with Startup Portugal certification",
+      "startupRestored": "Startup restored",
       "startupUpdated": "Startup updated",
       "status": "Status",
       "taxId": "Tax ID (NIF)",
       "title": "Startups",
       "update": "Update",
       "uploadDocument": "Attach Document",
+      "viewActive": "View active",
+      "viewArchived": "View archived",
       "viewDocument": "View document",
       "website": "Website"
     },
@@ -1667,6 +1667,61 @@
     "suspendedTitle": "Account Suspended",
     "whatHappensNext": "What happens next?"
   },
+  "askAi": {
+    "askAnything": "Ask anything…",
+    "button": "Ask AI",
+    "ctx": {
+      "admin": "Admin",
+      "backoffice": "Backoffice",
+      "crm": "CRM",
+      "default": "Help",
+      "ecosystem": "Ecosystem",
+      "mentors": "Mentors",
+      "myWorkspaces": "My portfolio",
+      "myWorkspacesFounder": "My workspace",
+      "settings": "Settings",
+      "workspace": "Workspace",
+      "workspaceAgenda": "Workspace agenda",
+      "workspaceDocs": "Workspace documents"
+    },
+    "q": {
+      "bofContracts": "Contracts to action",
+      "bofOccupancy": "Spaces occupancy",
+      "bofPricing": "Pricing & discounts",
+      "bookMentor": "Book a mentor",
+      "connectCalendar": "Connect my calendar",
+      "contractRenewals": "Contract renewals coming up",
+      "crmConvert": "Help me convert this lead",
+      "crmHotLeads": "Show hot leads",
+      "crmStuck": "Leads stuck in pipeline",
+      "docReview": "Request a document review",
+      "ecoConsultorLoad": "Consultant workload",
+      "ecoStageDist": "Stage distribution",
+      "ecoTopRisks": "Top ecosystem risks",
+      "findStartup": "Find a startup",
+      "founderHelp": "I need help with…",
+      "founderKpis": "How to update my KPIs",
+      "founderNext": "What should I do next?",
+      "howAddProgram": "How do I add a program?",
+      "howUpdateKpis": "How do I update KPIs?",
+      "howUseApp": "How do I use this app?",
+      "kpiSuggested": "Suggested KPIs for my stage",
+      "kpiTrend": "KPI trend last 90 days",
+      "mentorAvailable": "Available mentors",
+      "notifSettings": "Notification settings",
+      "pendingApprovals": "Pending approvals",
+      "portfolioOverdue": "Overdue actions",
+      "portfolioRisk": "Portfolio at risk",
+      "portfolioWeek": "Plan my week",
+      "scheduleSession": "Schedule a session",
+      "shortcuts": "Keyboard shortcuts",
+      "startupHealth": "How is this startup doing?",
+      "startupNext": "What should this startup do next?",
+      "startupRisks": "Top risks for this startup",
+      "upcomingSessions": "Upcoming sessions",
+      "uploadDoc": "Upload a document"
+    }
+  },
   "auditLog": {
     "allEntities": "All entities",
     "details": "Details",
@@ -1680,6 +1735,7 @@
     "forgotPassword": "Forgot password?",
     "forgotPasswordDesc": "Enter your email address and we'll send you a link to reset your password.",
     "hasAccount": "Already have an account?",
+    "invalidRecoveryLink": "Invalid or expired recovery link",
     "newPassword": "New Password",
     "noAccount": "Don't have an account?",
     "password": "Password",
@@ -1775,6 +1831,87 @@
     "createTaskTitle": "Create Staff Task for {{count}} Startups",
     "descriptionOptional": "Description (optional)",
     "taskTitle": "Task Title"
+  },
+  "bulkImport": {
+    "adminOnly": {
+      "desc": "Only administrators can use this tool.",
+      "title": "Admin only"
+    },
+    "cols": {
+      "action": "Action",
+      "confidence": "AI confidence",
+      "fee": "Monthly fee",
+      "file": "File",
+      "nif": "NIF",
+      "startup": "Startup",
+      "status": "Status",
+      "typology": "Typology"
+    },
+    "commit": "Commit import",
+    "commitSuccess": "Imported {{committed}} contracts ({{failed}} failed)",
+    "committing": "Committing...",
+    "confirmCommit": "Import {{count}} contracts? This will create/update startups, workspaces, and contracts.",
+    "done": {
+      "backAdmin": "Back to Backoffice",
+      "desc": "Your contracts have been imported. Review any errors below.",
+      "errorsDesc": "Download the errors file, fix the issues, and re-upload.",
+      "errorsTitle": "Some rows failed",
+      "startNew": "Start a new import",
+      "title": "Import complete"
+    },
+    "downloadErrors": "Download errors CSV",
+    "edit": {
+      "notes": "Notes",
+      "viewPdf": "View PDF"
+    },
+    "errors": {
+      "commitFailed": "Commit failed",
+      "loadFailed": "Failed to load rows",
+      "noUploads": "No files uploaded successfully",
+      "nothingToCommit": "No rows ready to commit",
+      "previewFailed": "Cannot open PDF",
+      "uploadFailed": "Upload failed"
+    },
+    "extractComplete": "Extraction complete",
+    "extracting": {
+      "title": "AI is reading your contracts"
+    },
+    "noErrors": "No errors to export",
+    "openWizard": "Bulk import (PDF)",
+    "preview": {
+      "title": "PDF preview"
+    },
+    "review": {
+      "desc": "Click any row to edit. Uncheck to skip. Errors won't be committed.",
+      "empty": "No rows yet.",
+      "retryExtract": "Retry extraction",
+      "title": "Review extracted data"
+    },
+    "stats": {
+      "committed": "Committed",
+      "errors": "Errors",
+      "pending": "Processing",
+      "skipped": "Skipped",
+      "total": "Total",
+      "willCreate": "Will create",
+      "willUpdate": "Will update"
+    },
+    "steps": {
+      "done": "3. Done",
+      "review": "2. Review extracted data",
+      "upload": "1. Upload PDFs"
+    },
+    "title": "Bulk Contract Import",
+    "upload": {
+      "browse": "Browse files",
+      "clearAll": "Clear all",
+      "desc": "Drop up to 50 PDFs at once. AI will extract startup name, NIF, dates, pricing, and more. You will review everything before committing.",
+      "drop": "Drag & drop PDFs here, or",
+      "filesSelected": "{{count}} files selected",
+      "start": "Upload & extract with AI",
+      "title": "Upload signed contract PDFs",
+      "uploading": "Uploading {{done}} / {{total}}..."
+    }
   },
   "calendar": {
     "bookSession": "Book Session",
@@ -1962,6 +2099,8 @@
     "descriptionOptional": "Description (optional)",
     "details": "Details",
     "disabled": "disabled",
+    "discard": "Discard",
+    "done": "Done",
     "download": "Download",
     "draft": "Draft",
     "dryRunCompleteResultsummarywould_insertTo": "Dry run complete: ${result.summary.would_insert} to insert,{{ would_update }} to update",
@@ -2037,10 +2176,12 @@
     "processing": "Processing...",
     "program": "Program",
     "rateLimitReachedPleaseWait": "Rate limit reached. Please wait a few minutes.",
+    "refresh": "Refresh",
     "reject": "Reject",
     "remove": "Remove",
     "replace": "Replace",
     "required": "Required",
+    "reset": "Reset",
     "results": "results",
     "resumoGerado": "Resumo gerado",
     "retry": "Tentar novamente",
@@ -2056,6 +2197,7 @@
     "sendEmail": "Send email",
     "sendMessage": "Send Message",
     "sending": "Sending...",
+    "session": "Session",
     "sessions": "Sessions",
     "settings": "Settings",
     "showingResults": "Showing {{from}}-{{to}} of {{total}}",
@@ -2092,9 +2234,7 @@
     "viewAll": "View all",
     "workspace": "Workspace",
     "years": "years",
-    "yes": "Yes",
-    "session": "Session",
-    "discard": "Discard"
+    "yes": "Yes"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -2589,6 +2729,7 @@
     "promptNextAction": "What's my next best action?",
     "promptOverdue": "Summarize my overdue tasks",
     "subtitle": "AI-powered assistant",
+    "thinking": "Thinking…",
     "timeout": "O pedido excedeu o tempo limite. Tente novamente mais tarde.",
     "title": "Ecosystem Copilot",
     "unavailable": "O assistente IA não está disponível neste momento. Pode navegar pela plataforma usando o menu lateral e a barra de pesquisa.",
@@ -2674,27 +2815,27 @@
       "archiveSelected": "Archive Selected",
       "archiveSuccess": "{{count}} leads archived",
       "archiveUndone": "Archive undone",
-      "assignUndone": "Assignment reverted",
-      "moveUndone": "Move reverted",
-      "undoFailed": "Could not undo. Please try again.",
       "assign": "Assign",
       "assignConfirmDesc": "This will update the owner for all selected leads.",
       "assignConfirmTitle": "Assign {{count}} leads to {{name}}?",
       "assignFailed": "Failed to assign leads",
       "assignSuccess": "{{count}} leads assigned to {{name}}",
+      "assignUndone": "Assignment reverted",
       "moveConfirmDesc": "This will update the stage for all selected leads, log the change, and trigger any configured emails.",
       "moveConfirmTitle": "Move {{count}} leads to {{stage}}?",
       "moveFailed": "Failed to update leads",
       "moveSuccess": "{{count}} leads moved to {{stage}}",
       "moveTo": "Move to",
+      "moveUndone": "Move reverted",
       "nextActionConfirmDesc": "This will set the next action date to tomorrow ({{date}}) for all selected leads without a next action.",
       "nextActionConfirmTitle": "Set next action for {{count}} leads?",
       "nextActionFailed": "Failed to set next actions",
       "nextActionSuccess": "Next actions set for leads",
+      "selectLead": "Select lead",
       "selectLeads": "Select leads to perform bulk actions",
       "selectedCount": "{{count}} selected",
       "setNextAction": "Set Next Action (Tomorrow)",
-      "selectLead": "Select lead"
+      "undoFailed": "Could not undo. Please try again."
     },
     "cancelTask": "Cancel Task",
     "canceled": "Canceled",
@@ -2767,6 +2908,7 @@
     "done": "Done",
     "dragDropHint": "Drag cards to change stage",
     "dragLeadsHere": "Drag leads here",
+    "dragToMove": "Drag to move",
     "dueAt": "Due",
     "dueDate": "Due Date",
     "dueSoon": "Em Breve",
@@ -3024,8 +3166,7 @@
     "viewAll": "View All",
     "viewSession": "View Session",
     "weighted": "EUR",
-    "winProbability": "Probabilidade (%)",
-    "dragToMove": "Drag to move"
+    "winProbability": "Probabilidade (%)"
   },
   "dashboard": {
     "acrossPrograms": "Across {{count}} program",
@@ -3596,6 +3737,7 @@
   },
   "errors": {
     "aiApplyFailed": "Failed to apply suggestions",
+    "aiCreditsExhausted": "AI credits exhausted. Please try again later.",
     "aiFailed": "AI assistant is unavailable",
     "aiFollowupFailed": "Failed to send follow-up",
     "aiGenerateFailed": "Failed to generate AI summary",
@@ -3910,6 +4052,28 @@
     "session": "Sessão recente",
     "title": "Prontidão do Projeto",
     "updateKpis": "Update"
+  },
+  "founderWizard": {
+    "done": "Done",
+    "next": "Next",
+    "skip": "Skip for now",
+    "step1": {
+      "cta": "Open settings",
+      "desc": "Add a logo and contact details so the team can support you better.",
+      "title": "Complete your profile"
+    },
+    "step2": {
+      "cta": "Open templates",
+      "desc": "Lean Canvas or Pitch Deck — a solid starting point.",
+      "title": "Pick your first template"
+    },
+    "step3": {
+      "cta": "Open agenda",
+      "desc": "Book a conversation with your assigned consultant.",
+      "title": "Schedule your first session"
+    },
+    "stepOf": "Step {{n}} of {{total}}",
+    "welcome": "Welcome"
   },
   "funding": {
     "addCapTableEntry": "Add Cap Table Entry",
@@ -4921,15 +5085,15 @@
   },
   "mentorImpact": {
     "activeStartups": "Startups ativas",
+    "feedbackTitle": "Recent feedback",
     "healthyMomentum": "Momentum saudável",
+    "noComment": "No written comment",
+    "noFeedback": "No public session feedback yet.",
+    "pageDesc": "Consolidated view of your sessions, active startups, open follow-ups and feedback received.",
+    "pageTitle": "Your Impact",
     "recentSessions": "Sessões recentes (30d)",
     "staleFollowup": "Follow-up em atraso",
-    "title": "O Seu Impacto",
-    "feedbackTitle": "Recent feedback",
-    "noFeedback": "No public session feedback yet.",
-    "noComment": "No written comment",
-    "pageTitle": "Your Impact",
-    "pageDesc": "Consolidated view of your sessions, active startups, open follow-ups and feedback received."
+    "title": "O Seu Impacto"
   },
   "mentorNda": {
     "accepted": "Accepted",
@@ -5858,6 +6022,9 @@
   "programSetup": {
     "acceleration": {
       "addDeliverable": "Add",
+      "addGate": "Add Gate",
+      "addWeek": "Add Week",
+      "assignGate": "Gate",
       "bulkAdd": "Bulk Add",
       "bulkAddConfirm": "Add deliverables",
       "bulkAddDefaultWeek": "Default week (optional)",
@@ -5874,21 +6041,6 @@
       "bulkAddedWithWeeks": "{{a}} deliverables added ({{w}} new weeks created)",
       "bulkRemoveN": "Remove ({{n}})",
       "bulkRemoved": "{{n}} deliverables removed",
-      "libraryDesc": "Flat view of every deliverable across all weeks. Multi-select to bulk remove, or paste many at once.",
-      "libraryEmpty": "No deliverables yet. Add them inside weeks below or use Bulk Add.",
-      "libraryTitle": "Deliverables Library",
-      "templateCol": "Template",
-      "undo": "Undo",
-      "undoLabelAdd": "Add {{n}} deliverables",
-      "undoLabelRemove": "Remove {{n}} deliverables",
-      "undoLabelRemoveDeliverable": "Remove deliverable",
-      "undoLabelRemoveWeek": "Remove Week {{number}}",
-      "undoneToast": "Undone: {{label}}",
-      "titleCol": "Title",
-      "weekCol": "Week",
-      "addGate": "Add Gate",
-      "addWeek": "Add Week",
-      "assignGate": "Gate",
       "defaultGate1": "Discovery",
       "defaultGate2": "Build",
       "defaultGate3": "Launch",
@@ -5901,6 +6053,9 @@
       "gateNamePlaceholder": "e.g., Discovery",
       "gates": "Gates / Phases",
       "gatesDesc": "Define the major phases/checkpoints of your acceleration program.",
+      "libraryDesc": "Flat view of every deliverable across all weeks. Multi-select to bulk remove, or paste many at once.",
+      "libraryEmpty": "No deliverables yet. Add them inside weeks below or use Bulk Add.",
+      "libraryTitle": "Deliverables Library",
       "linkTemplate": "Link platform template (optional)",
       "noDeliverables": "No deliverables yet. Add what startups should complete this week.",
       "noGate": "No gate",
@@ -5908,7 +6063,16 @@
       "noWeeks": "No weeks configured yet. Add weeks to define your program timeline.",
       "removeWeek": "Remove Week",
       "startWeek": "Start Week",
+      "templateCol": "Template",
+      "titleCol": "Title",
+      "undo": "Undo",
+      "undoLabelAdd": "Add {{n}} deliverables",
+      "undoLabelRemove": "Remove {{n}} deliverables",
+      "undoLabelRemoveDeliverable": "Remove deliverable",
+      "undoLabelRemoveWeek": "Remove Week {{number}}",
+      "undoneToast": "Undone: {{label}}",
       "untitled": "Untitled",
+      "weekCol": "Week",
       "weekDescription": "Description",
       "weekN": "Week {{n}}",
       "weekNumber": "Week #",
@@ -6373,9 +6537,17 @@
     "allStatusesActive": "Todos os estados visíveis",
     "allTags": "All tags",
     "allWorkspaces": "All workspaces",
+    "askAI": "Ask AI",
+    "askAIContextHeader": "Ask AI about these results",
+    "askAIHint": "AI uses the visible results as context",
+    "askAIPlaceholder": "Ask anything about the results",
+    "askAIPlaceholderSeed": "e.g. Summarise the top risks",
+    "askAboutResults": "Ask about these results",
+    "backToResults": "Back to results",
     "enterName": "Please enter a name",
     "loaded": "Loaded: {{name}}",
     "noResultsFor": "No results for \"{{query}}\"",
+    "recent": "Recent",
     "saveSearch": "Save Search",
     "saved": "Search saved",
     "savedLabel": "Saved",
@@ -6397,9 +6569,6 @@
       "startups": "Startups",
       "workspaces": "Workspaces"
     },
-    "askAI": "Ask AI",
-    "backToResults": "Back to results",
-    "recent": "Recent",
     "viewAllResults": "View all results"
   },
   "sectors": {
@@ -6971,6 +7140,52 @@
     "toggleTheme": "Toggle theme",
     "undo": "Undo",
     "view": "View & Display"
+  },
+  "smartImport": {
+    "analyse": "Analyse with AI",
+    "applySelected": "Apply selected",
+    "applying": "Applying to your workspace…",
+    "button": "Smart Import (PDF)",
+    "description": {
+      "create": "Upload a pitch deck or business plan and we'll extract the data to create a workspace.",
+      "fill": "Upload a pitch deck or business plan and we'll fill in the workspace fields for you to review."
+    },
+    "errors": {
+      "extractFailed": "Could not extract data from this PDF.",
+      "nameRequired": "Startup name is required.",
+      "notPdf": "Only PDF files are accepted.",
+      "programRequired": "Please select a program.",
+      "tooLarge": "PDF must be under 15 MB."
+    },
+    "extracting": "Reading your document…",
+    "extractingHint": "This usually takes 10–30 seconds.",
+    "fields": {
+      "address": "Address",
+      "contactEmail": "Main contact email",
+      "contactName": "Main contact name",
+      "contactPhone": "Main contact phone",
+      "description": "Description",
+      "foundedDate": "Founded date",
+      "name": "Name",
+      "nif": "NIF",
+      "sector": "Sector",
+      "stage": "Stage",
+      "website": "Website"
+    },
+    "parsed": "Parsed {{pages}} page(s). Review the extracted data, edit anything, then choose what to apply.",
+    "program": "Program",
+    "sections": {
+      "funding": "Funding",
+      "kpis": "KPIs",
+      "startup": "Startup profile",
+      "team": "Team members"
+    },
+    "shortButton": "Smart Import",
+    "startOver": "Upload another",
+    "success": "Smart import complete.",
+    "title": "Smart Import from PDF",
+    "uploadCta": "Click to upload a PDF",
+    "uploadHint": "Pitch deck or business plan · text-based PDF · max 15 MB"
   },
   "smartNudges": {
     "actionsOverdue": "You have {{count}} overdue action(s). Tackle them to stay on track.",
@@ -7798,9 +8013,9 @@
     "test": "Test",
     "title": "Templates",
     "unitEconomics": "Unit Economics",
+    "unsavedChangesTitle": "Discard unsaved changes?",
     "unsavedChangesWarning": "You have unsaved changes. Are you sure you want to close?",
-    "useTemplate": "Use Template",
-    "unsavedChangesTitle": "Discard unsaved changes?"
+    "useTemplate": "Use Template"
   },
   "tests": {
     "fail": "Fail",
@@ -8088,9 +8303,6 @@
     "bulkSnoozed": "{{count}} items snoozed for {{days}} days",
     "bulkToolbar": "Bulk actions toolbar",
     "clearSelection": "Clear selection",
-    "selectAll": "Select all",
-    "selectItem": "Select item",
-    "selectedCount": "{{count}} selected",
     "dueThisWeek": "due this week",
     "markDone": "Mark Done",
     "markedDone": "Marked as done",
@@ -8098,6 +8310,9 @@
     "open": "open",
     "overdue": "overdue",
     "overdueLabel": "Overdue",
+    "selectAll": "Select all",
+    "selectItem": "Select item",
+    "selectedCount": "{{count}} selected",
     "snooze1Day": "Snooze 1 day",
     "snooze7Days": "Snooze 7 days",
     "snoozeFailed": "Failed to snooze",
@@ -8303,154 +8518,5 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
-  },
-  "founderWizard": {
-    "welcome": "Welcome",
-    "stepOf": "Step {{n}} of {{total}}",
-    "skip": "Skip for now",
-    "next": "Next",
-    "done": "Done",
-    "step1": {
-      "title": "Complete your profile",
-      "desc": "Add a logo and contact details so the team can support you better.",
-      "cta": "Open settings"
-    },
-    "step2": {
-      "title": "Pick your first template",
-      "desc": "Lean Canvas or Pitch Deck — a solid starting point.",
-      "cta": "Open templates"
-    },
-    "step3": {
-      "title": "Schedule your first session",
-      "desc": "Book a conversation with your assigned consultant.",
-      "cta": "Open agenda"
-    }
-  },
-  "bulkImport": {
-    "openWizard": "Bulk import (PDF)",
-    "title": "Bulk Contract Import",
-    "confirmCommit": "Import {{count}} contracts? This will create/update startups, workspaces, and contracts.",
-    "commitSuccess": "Imported {{committed}} contracts ({{failed}} failed)",
-    "extractComplete": "Extraction complete",
-    "noErrors": "No errors to export",
-    "committing": "Committing...",
-    "commit": "Commit import",
-    "downloadErrors": "Download errors CSV",
-    "adminOnly": {
-      "title": "Admin only",
-      "desc": "Only administrators can use this tool."
-    },
-    "steps": {
-      "upload": "1. Upload PDFs",
-      "review": "2. Review extracted data",
-      "done": "3. Done"
-    },
-    "upload": {
-      "title": "Upload signed contract PDFs",
-      "desc": "Drop up to 50 PDFs at once. AI will extract startup name, NIF, dates, pricing, and more. You will review everything before committing.",
-      "drop": "Drag & drop PDFs here, or",
-      "browse": "Browse files",
-      "filesSelected": "{{count}} files selected",
-      "clearAll": "Clear all",
-      "uploading": "Uploading {{done}} / {{total}}...",
-      "start": "Upload & extract with AI"
-    },
-    "stats": {
-      "total": "Total",
-      "willCreate": "Will create",
-      "willUpdate": "Will update",
-      "errors": "Errors",
-      "pending": "Processing",
-      "committed": "Committed",
-      "skipped": "Skipped"
-    },
-    "extracting": {
-      "title": "AI is reading your contracts"
-    },
-    "review": {
-      "title": "Review extracted data",
-      "desc": "Click any row to edit. Uncheck to skip. Errors won't be committed.",
-      "retryExtract": "Retry extraction",
-      "empty": "No rows yet."
-    },
-    "cols": {
-      "file": "File",
-      "startup": "Startup",
-      "nif": "NIF",
-      "typology": "Typology",
-      "fee": "Monthly fee",
-      "status": "Status",
-      "action": "Action",
-      "confidence": "AI confidence"
-    },
-    "edit": {
-      "notes": "Notes",
-      "viewPdf": "View PDF"
-    },
-    "preview": {
-      "title": "PDF preview"
-    },
-    "done": {
-      "title": "Import complete",
-      "desc": "Your contracts have been imported. Review any errors below.",
-      "errorsTitle": "Some rows failed",
-      "errorsDesc": "Download the errors file, fix the issues, and re-upload.",
-      "startNew": "Start a new import",
-      "backAdmin": "Back to Backoffice"
-    },
-    "errors": {
-      "loadFailed": "Failed to load rows",
-      "noUploads": "No files uploaded successfully",
-      "uploadFailed": "Upload failed",
-      "previewFailed": "Cannot open PDF",
-      "nothingToCommit": "No rows ready to commit",
-      "commitFailed": "Commit failed"
-    }
-  },
-  "smartImport": {
-    "button": "Smart Import (PDF)",
-    "shortButton": "Smart Import",
-    "title": "Smart Import from PDF",
-    "description": {
-      "create": "Upload a pitch deck or business plan and we'll extract the data to create a workspace.",
-      "fill": "Upload a pitch deck or business plan and we'll fill in the workspace fields for you to review."
-    },
-    "uploadCta": "Click to upload a PDF",
-    "uploadHint": "Pitch deck or business plan · text-based PDF · max 15 MB",
-    "extracting": "Reading your document…",
-    "extractingHint": "This usually takes 10–30 seconds.",
-    "applying": "Applying to your workspace…",
-    "analyse": "Analyse with AI",
-    "applySelected": "Apply selected",
-    "startOver": "Upload another",
-    "success": "Smart import complete.",
-    "program": "Program",
-    "parsed": "Parsed {{pages}} page(s). Review the extracted data, edit anything, then choose what to apply.",
-    "sections": {
-      "startup": "Startup profile",
-      "team": "Team members",
-      "funding": "Funding",
-      "kpis": "KPIs"
-    },
-    "fields": {
-      "name": "Name",
-      "description": "Description",
-      "website": "Website",
-      "sector": "Sector",
-      "foundedDate": "Founded date",
-      "stage": "Stage",
-      "address": "Address",
-      "nif": "NIF",
-      "contactName": "Main contact name",
-      "contactEmail": "Main contact email",
-      "contactPhone": "Main contact phone"
-    },
-    "errors": {
-      "notPdf": "Only PDF files are accepted.",
-      "tooLarge": "PDF must be under 15 MB.",
-      "extractFailed": "Could not extract data from this PDF.",
-      "programRequired": "Please select a program.",
-      "nameRequired": "Startup name is required."
-    }
   }
 }
