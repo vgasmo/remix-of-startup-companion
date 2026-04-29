@@ -78,6 +78,7 @@ export default function BulkContractImport() {
   const { user, isAdmin } = useAuth();
   const [step, setStep] = useState<WizardStep>('upload');
   const [batchId, setBatchId] = useState<string | null>(null);
+  const [programId, setProgramId] = useState<string>('');
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
@@ -88,6 +89,11 @@ export default function BulkContractImport() {
   const [editingRow, setEditingRow] = useState<BatchRow | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const cancelRef = useRef(false);
+
+  const { data: programs = [], isLoading: programsLoading } = usePrograms();
+  const activePrograms = (programs as Array<{ id: string; name: string; is_active?: boolean | null; status?: string | null }>)
+    .filter(p => p.is_active !== false && p.status !== 'archived');
+  const selectedProgramName = activePrograms.find(p => p.id === programId)?.name || '';
 
   // Refresh rows from DB
   const refreshRows = useCallback(async (id: string) => {
