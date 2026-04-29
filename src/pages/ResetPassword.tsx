@@ -140,7 +140,12 @@ export default function ResetPassword() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {success ? (
+            {verifying ? (
+              <div className="py-8 text-center space-y-3">
+                <Loader2 className="h-6 w-6 mx-auto animate-spin text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+              </div>
+            ) : success ? (
               <div className="py-6 text-center space-y-4">
                 <div className="mx-auto w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
                   <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
