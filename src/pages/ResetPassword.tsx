@@ -20,22 +20,63 @@ export default function ResetPassword() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [verifying, setVerifying] = useState(true);
 
   const passwordSchema = z.string().min(6, { message: t('login.passwordMinLength') });
 
   useEffect(() => {
-    // Check if user has a valid recovery session
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        // No active session and no recovery token - redirect to login
-        const hash = window.location.hash;
-        if (!hash.includes('type=recovery')) {
-          navigate('/login');
+    // Handle both PKCE (?code=) and implicit (#access_token&type=recovery) recovery flows.
+    const verifyRecovery = async () => {
+      try {
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get('code');
+        const errorParam = url.searchParams.get('error') || url.searchParams.get('error_description');
+        const hash = window.location.hash || '';
+
+        // PKCE flow: exchange the code for a session.
+        if (code) {
+          const { error: exErr } = await supabase.auth.exchangeCodeForSession(code);
+          if (exErr) throw exErr;
+          // Clean the URL so refresh doesn't re-trigger.
+          window.history.replaceState({}, '', '/reset-password');
+          setVerifying(false);
+          return;
         }
+
+        // Implicit flow: Supabase JS auto-parses the hash on load; just wait briefly
+        // and confirm we end up with a session.
+        if (hash.includes('type=recovery') || hash.includes('access_token')) {
+          // Give detectSessionInUrl a tick to finish.
+          await new Promise((r) => setTimeout(r, 250));
+        }
+
+        if (errorParam) throw new Error(errorParam);
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          // No recovery context at all — send them to login.
+          navigate('/login');
+          return;
+        }
+        setVerifying(false);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Invalid or expired recovery link';
+        setError(msg);
+        setVerifying(false);
       }
     };
-    checkSession();
+
+    // Also listen for the PASSWORD_RECOVERY event Supabase fires after parsing the URL.
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+        setVerifying(false);
+      }
+    });
+
+    verifyRecovery();
+    return () => {
+      sub.subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
