@@ -206,47 +206,77 @@ Deno.serve(async (req) => {
           currency: "EUR",
         };
 
-        // 5) Create contract
+        // 5) Create or update contract — idempotent on (workspace_id, contract_number)
         const contractStatus = normalizeStatus(data.status) || "active";
         const signedAt = parseDate(data.signed_at);
         const startDate = parseDate(data.start_date);
         const endDate = parseDate(data.end_date);
 
-        const publicUrl = `${supabaseUrl}/storage/v1/object/contract-imports/${row.pdf_path}`;
+        // Store the canonical PRIVATE storage path. Never persist a fake public
+        // URL — the contract-imports bucket is private and access is via signed URLs.
+        const contractPdfPath = row.pdf_path as string;
 
-        const { data: newContract, error: cErr } = await admin
-          .from("startup_contracts")
-          .insert({
-            workspace_id: workspaceId,
-            incubation_type_id: incubationTypeId,
-            contract_number: data.contract_number || null,
-            status: contractStatus,
-            start_date: startDate,
-            end_date: endDate,
-            signed_at: signedAt,
-            monthly_fee: data.monthly_fee ?? null,
-            currency: "EUR",
-            discount_percentage: data.discount_percentage ?? null,
-            square_meters: data.square_meters ?? null,
-            company_nif: nif,
-            company_address: data.address || null,
-            company_postal_code: data.postal_code || null,
-            company_city: data.city || null,
-            company_country: "Portugal",
-            legal_representative_name: data.legal_representative_name || null,
-            legal_representative_email: data.legal_representative_email || null,
-            notes: combineNotes(data.notes, `Bulk imported from PDF: ${row.pdf_filename}`),
-            document_url: publicUrl,
-            created_by: userData.user.id,
-          })
-          .select("id")
-          .single();
+        const contractPayload = {
+          workspace_id: workspaceId,
+          incubation_type_id: incubationTypeId,
+          contract_number: data.contract_number || null,
+          status: contractStatus,
+          start_date: startDate,
+          end_date: endDate,
+          signed_at: signedAt,
+          monthly_fee: data.monthly_fee ?? null,
+          currency: "EUR",
+          discount_percentage: data.discount_percentage ?? null,
+          square_meters: data.square_meters ?? null,
+          pricing_snapshot_json: pricingSnapshot,
+          company_nif: nif,
+          company_address: data.address || null,
+          company_postal_code: data.postal_code || null,
+          company_city: data.city || null,
+          company_country: "Portugal",
+          legal_representative_name: data.legal_representative_name || null,
+          legal_representative_email: data.legal_representative_email || null,
+          notes: combineNotes(data.notes, `Bulk imported from PDF: ${row.pdf_filename}`),
+          contract_pdf_path: contractPdfPath,
+          created_by: userData.user.id,
+        };
 
-        if (cErr || !newContract) throw new Error(`Contract create failed: ${cErr?.message}`);
+        // Idempotency: if the same contract_number already exists for this
+        // workspace, link/update instead of creating a duplicate.
+        let contractId: string | null = null;
+        if (data.contract_number) {
+          const { data: existing } = await admin
+            .from("startup_contracts")
+            .select("id")
+            .eq("workspace_id", workspaceId)
+            .eq("contract_number", data.contract_number)
+            .maybeSingle();
+          if (existing?.id) {
+            contractId = existing.id;
+            // Always refresh the PDF path; only overwrite full payload on admin opt-in
+            const updatePayload = overwriteExisting
+              ? contractPayload
+              : { contract_pdf_path: contractPdfPath, pricing_snapshot_json: pricingSnapshot };
+            const { error: upErr } = await admin
+              .from("startup_contracts")
+              .update(updatePayload)
+              .eq("id", contractId);
+            if (upErr) throw new Error(`Contract update failed: ${upErr.message}`);
+          }
+        }
+        if (!contractId) {
+          const { data: newContract, error: cErr } = await admin
+            .from("startup_contracts")
+            .insert(contractPayload)
+            .select("id")
+            .single();
+          if (cErr || !newContract) throw new Error(`Contract create failed: ${cErr?.message}`);
+          contractId = newContract.id;
+        }
 
         await admin.from("bulk_import_rows").update({
           status: "committed",
-          created_contract_id: newContract.id,
+          created_contract_id: contractId,
           matched_startup_id: startupId,
           matched_workspace_id: workspaceId,
           error_message: null,
