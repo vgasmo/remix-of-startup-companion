@@ -405,8 +405,12 @@ export function SmartImportDialog({
           </DialogTitle>
           <DialogDescription>
             {mode === "create"
-              ? t("smartImport.description.create", { defaultValue: "Upload a pitch deck or business plan and we'll extract the data to create a workspace." })
-              : t("smartImport.description.fill", { defaultValue: "Upload a pitch deck or business plan and we'll fill in the workspace fields for you to review." })}
+              ? t("smartImport.description.create", {
+                  defaultValue: "Upload a pitch deck or business plan and we'll extract the data into a draft. Staff review is required before the workspace is activated.",
+                })
+              : t("smartImport.description.fill", {
+                  defaultValue: "Upload a pitch deck or business plan and we'll fill in the workspace fields. Every field is editable — review before applying.",
+                })}
           </DialogDescription>
         </DialogHeader>
 
