@@ -180,42 +180,51 @@ export function CommandPalette() {
       <CommandList>
         {/* Copilot Mode */}
         {copilotMode ? (
-          <div className="p-4 space-y-3">
-            {copilotThinking && (
-              <div className="space-y-3 animate-pulse">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin text-violet-500" />
-                  <span>{t('commandPalette.copilotThinking', { defaultValue: 'Analyzing ecosystem data…' })}</span>
-                </div>
+          <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
+            <div className="flex items-center gap-2">
+              <Bot className="h-4 w-4 text-violet-500" />
+              <span className="text-xs font-semibold text-violet-600 dark:text-violet-400">
+                {t('commandPalette.copilotTitle', 'Ecosystem Copilot')}
+              </span>
+              {copilot.isThinking && <Loader2 className="h-3.5 w-3.5 animate-spin text-violet-500 ml-auto" />}
+            </div>
+
+            {copilot.messages.length === 0 && !copilot.isThinking && (
+              <div className="text-center py-4 space-y-2">
+                <Bot className="h-8 w-8 text-muted-foreground/30 mx-auto" />
+                <p className="text-sm text-muted-foreground">
+                  {t('commandPalette.copilotHint', { defaultValue: 'Pergunte algo sobre os seus dados ou como usar a app. Pressione Enter para enviar.' })}
+                </p>
+              </div>
+            )}
+
+            {copilot.messages.map(m => (
+              <div
+                key={m.id}
+                className={cn(
+                  'rounded-xl px-3 py-2.5 text-sm whitespace-pre-wrap leading-relaxed',
+                  m.role === 'user'
+                    ? 'bg-primary/10 text-foreground ml-8'
+                    : 'bg-muted/50 text-foreground mr-8 border border-border/40'
+                )}
+              >
+                {m.content}
+              </div>
+            ))}
+
+            {copilot.isThinking && copilot.messages[copilot.messages.length - 1]?.role !== 'assistant' && (
+              <div className="space-y-2 mr-8">
                 <Skeleton className="h-3 w-full" />
                 <Skeleton className="h-3 w-4/5" />
                 <Skeleton className="h-3 w-3/5" />
               </div>
             )}
-            {copilotAnswer && !copilotThinking && (
-              <div className="rounded-xl bg-muted/40 border border-border/50 p-3 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Bot className="h-4 w-4 text-violet-500" />
-                  <span className="text-xs font-semibold text-violet-600 dark:text-violet-400">{t('commandPalette.copilotTitle', 'Ecosystem Copilot')}</span>
-                  <Badge variant="outline" className="text-[9px] ml-auto">{t('common.preview', 'Preview')}</Badge>
-                </div>
-                <p className="text-sm text-foreground whitespace-pre-line leading-relaxed">{copilotAnswer}</p>
-                <p className="text-[10px] text-muted-foreground italic">
-                  {t('commandPalette.copilotPreviewNote', { defaultValue: 'Modo informativo — dados ilustrativos.' })}
-                </p>
-              </div>
-            )}
-            {!copilotThinking && !copilotAnswer && (
-              <div className="text-center py-6 space-y-2">
-                <Bot className="h-8 w-8 text-muted-foreground/30 mx-auto" />
-                <p className="text-sm text-muted-foreground">{t('commandPalette.copilotHint', { defaultValue: 'Try: "Which startups are at risk?" or "KPI summary"' })}</p>
-              </div>
-            )}
+
             <button
-              onClick={() => { setCopilotMode(false); setCopilotAnswer(null); setQuery(''); }}
+              onClick={() => { setCopilotMode(false); copilot.reset(); setQuery(''); }}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              ← {t('commandPalette.backToSearch', { defaultValue: 'Back to search' })}
+              ← {t('commandPalette.backToSearch', { defaultValue: 'Voltar à pesquisa' })}
             </button>
           </div>
         ) : (
