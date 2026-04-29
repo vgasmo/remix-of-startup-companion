@@ -115,13 +115,24 @@ Deno.serve(async (req) => {
         const nif = (data.nif || "").replace(/\D/g, "").trim() || null;
 
         if (startupId) {
-          // Update existing — only fill missing fields, never overwrite non-null with null
+          // Update existing — by default only fill missing fields, never overwrite
+          // non-null with null. Admin can opt in to overwrite via overwrite_existing.
+          const { data: existing } = await admin
+            .from("startups")
+            .select("nif, address, main_contact_name, main_contact_email, main_contact_phone")
+            .eq("id", startupId)
+            .maybeSingle();
           const updates: Record<string, unknown> = {};
-          if (nif) updates.nif = nif;
-          if (data.address) updates.address = data.address;
-          if (data.main_contact_name) updates.main_contact_name = data.main_contact_name;
-          if (data.main_contact_email) updates.main_contact_email = data.main_contact_email;
-          if (data.main_contact_phone) updates.main_contact_phone = data.main_contact_phone;
+          const fillIfEmpty = (col: string, incoming: unknown) => {
+            const current = existing ? (existing as Record<string, unknown>)[col] : null;
+            const isEmpty = current === null || current === undefined || current === "";
+            if (incoming && (isEmpty || overwriteExisting)) updates[col] = incoming;
+          };
+          fillIfEmpty("nif", nif);
+          fillIfEmpty("address", data.address);
+          fillIfEmpty("main_contact_name", data.main_contact_name);
+          fillIfEmpty("main_contact_email", data.main_contact_email);
+          fillIfEmpty("main_contact_phone", data.main_contact_phone);
           if (Object.keys(updates).length > 0) {
             await admin.from("startups").update(updates).eq("id", startupId);
           }
@@ -142,13 +153,14 @@ Deno.serve(async (req) => {
           startupId = newStartup.id;
         }
 
-        // 2) Resolve or create workspace
+        // 2) Resolve or create workspace — programme is REQUIRED.
         let workspaceId = row.matched_workspace_id as string | null;
         if (!workspaceId) {
           const { data: newWs, error: wsErr } = await admin
             .from("workspaces")
             .insert({
               startup_id: startupId,
+              program_id: batchProgramId, // never orphan
               status: "imported_unclaimed",
               needs_onboarding: false, // historical contract — already onboarded
               stage: "ideation",
@@ -157,6 +169,17 @@ Deno.serve(async (req) => {
             .single();
           if (wsErr || !newWs) throw new Error(`Workspace create failed: ${wsErr?.message}`);
           workspaceId = newWs.id;
+        } else {
+          // If matched workspace has no programme, attach the batch programme
+          // so we never end up with orphan workspaces post-import.
+          const { data: ws } = await admin
+            .from("workspaces")
+            .select("program_id")
+            .eq("id", workspaceId)
+            .maybeSingle();
+          if (ws && !ws.program_id) {
+            await admin.from("workspaces").update({ program_id: batchProgramId }).eq("id", workspaceId);
+          }
         }
 
         // 3) Resolve typology
