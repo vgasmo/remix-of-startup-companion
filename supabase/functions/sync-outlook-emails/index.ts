@@ -358,13 +358,18 @@ async function syncConsultantEmails(
 
       if (!graphRes.ok) {
         const errText = await graphRes.text();
+        const isInvalidUser = errText.includes('ErrorInvalidUser') || graphRes.status === 404;
         log.error('Graph API messages fetch failed', new Error(errText));
 
         await supabaseAdmin.from('email_sync_status').upsert({
           consultant_user_id: consultantUserId,
           provider: 'outlook',
-          sync_state: 'error',
-          last_sync_error: `Graph API ${graphRes.status}: ${errText.slice(0, 200)}`,
+          // Mark as 'disabled' for invalid Graph mailboxes so the auto-sync
+          // loop skips them on subsequent runs (test/leftover accounts).
+          sync_state: isInvalidUser ? 'disabled' : 'error',
+          last_sync_error: isInvalidUser
+            ? 'Mailbox does not exist in Microsoft 365 tenant (ErrorInvalidUser). Auto-sync disabled for this account.'
+            : `Graph API ${graphRes.status}: ${errText.slice(0, 200)}`,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'consultant_user_id,provider' });
 
@@ -576,10 +581,23 @@ Deno.serve(async (req) => {
         return corsJsonResponse({ status: 'ok', synced: 0, reason: 'No consultant profiles found' }, req);
       }
 
-      const results: Array<{ email: string; processed: number; logged: number; unmatched: number; error?: string }> = [];
+      const results: Array<{ email: string; processed: number; logged: number; unmatched: number; error?: string; skipped?: boolean }> = [];
+
+      // Pre-load disabled mailboxes so we don't hammer Graph for known-invalid users
+      const { data: disabledRows } = await supabaseAdmin
+        .from('email_sync_status')
+        .select('consultant_user_id')
+        .eq('provider', 'outlook')
+        .eq('sync_state', 'disabled');
+      const disabledIds = new Set((disabledRows || []).map(r => r.consultant_user_id));
 
       for (const profile of profiles) {
         if (!profile.email) continue;
+        if (disabledIds.has(profile.id)) {
+          log.info(`Skipping disabled mailbox ${profile.email}`);
+          results.push({ email: profile.email, processed: 0, logged: 0, unmatched: 0, skipped: true });
+          continue;
+        }
         log.info(`Auto syncing for ${profile.email}`);
         const result = await syncConsultantEmails(supabaseAdmin, profile.id, profile.email, credentials, log);
         results.push({
