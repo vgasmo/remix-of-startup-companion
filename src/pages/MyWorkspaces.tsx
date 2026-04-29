@@ -14,6 +14,7 @@ import {
   ArrowRight,
   X,
   Rocket,
+  Sparkles,
 } from 'lucide-react';
 import { isToday } from 'date-fns';
 import { AppLayout } from '@/components/layout/AppLayout';
