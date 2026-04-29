@@ -309,8 +309,10 @@ export default function MyWorkspaces() {
               <span className="hidden sm:inline">{t('myWorkspaces.dashboard')}</span>
             </Button>
           )}
-          {/* Smart Import: founders + staff (consultants/admins) */}
-          {(isFounder || isConsultor || isAdmin) && !showMentorDashboard && (
+          {/* Smart Import: STAFF ONLY (consultants/admins). Founders must use the
+              claim/onboarding flow — Smart Import "create" mode would otherwise
+              bypass review and create active workspaces directly. */}
+          {(isConsultor || isAdmin) && !showMentorDashboard && (
             <Button
               variant="outline"
               size="sm"
