@@ -8753,6 +8753,28 @@ export type Database = {
         Returns: string
       }
       ensure_founder_role: { Args: never; Returns: undefined }
+      fuzzy_search_leads: {
+        Args: { p_limit?: number; p_query: string }
+        Returns: {
+          contact_email: string
+          contact_name: string
+          id: string
+          organization_name: string
+          similarity: number
+          stage: string
+          updated_at: string
+        }[]
+      }
+      fuzzy_search_startups: {
+        Args: { p_limit?: number; p_query: string }
+        Returns: {
+          description: string
+          id: string
+          name: string
+          similarity: number
+          updated_at: string
+        }[]
+      }
       generate_weekly_checkins: { Args: never; Returns: number }
       get_assigned_consultant_contact: {
         Args: { p_workspace_id: string }
@@ -8866,6 +8888,8 @@ export type Database = {
         Args: { _target_user_id: string }
         Returns: boolean
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       staff_assign_or_create_workspace: {
         Args: {
           p_description?: string
