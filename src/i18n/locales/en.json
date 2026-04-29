@@ -8336,8 +8336,15 @@
     "committing": "Committing...",
     "commit": "Commit import",
     "downloadErrors": "Download errors CSV",
-    "adminOnly": { "title": "Admin only", "desc": "Only administrators can use this tool." },
-    "steps": { "upload": "1. Upload PDFs", "review": "2. Review extracted data", "done": "3. Done" },
+    "adminOnly": {
+      "title": "Admin only",
+      "desc": "Only administrators can use this tool."
+    },
+    "steps": {
+      "upload": "1. Upload PDFs",
+      "review": "2. Review extracted data",
+      "done": "3. Done"
+    },
     "upload": {
       "title": "Upload signed contract PDFs",
       "desc": "Drop up to 50 PDFs at once. AI will extract startup name, NIF, dates, pricing, and more. You will review everything before committing.",
@@ -8349,10 +8356,17 @@
       "start": "Upload & extract with AI"
     },
     "stats": {
-      "total": "Total", "willCreate": "Will create", "willUpdate": "Will update",
-      "errors": "Errors", "pending": "Processing", "committed": "Committed", "skipped": "Skipped"
+      "total": "Total",
+      "willCreate": "Will create",
+      "willUpdate": "Will update",
+      "errors": "Errors",
+      "pending": "Processing",
+      "committed": "Committed",
+      "skipped": "Skipped"
     },
-    "extracting": { "title": "AI is reading your contracts" },
+    "extracting": {
+      "title": "AI is reading your contracts"
+    },
     "review": {
       "title": "Review extracted data",
       "desc": "Click any row to edit. Uncheck to skip. Errors won't be committed.",
@@ -8360,11 +8374,22 @@
       "empty": "No rows yet."
     },
     "cols": {
-      "file": "File", "startup": "Startup", "nif": "NIF", "typology": "Typology",
-      "fee": "Monthly fee", "status": "Status", "action": "Action", "confidence": "AI confidence"
+      "file": "File",
+      "startup": "Startup",
+      "nif": "NIF",
+      "typology": "Typology",
+      "fee": "Monthly fee",
+      "status": "Status",
+      "action": "Action",
+      "confidence": "AI confidence"
     },
-    "edit": { "notes": "Notes", "viewPdf": "View PDF" },
-    "preview": { "title": "PDF preview" },
+    "edit": {
+      "notes": "Notes",
+      "viewPdf": "View PDF"
+    },
+    "preview": {
+      "title": "PDF preview"
+    },
     "done": {
       "title": "Import complete",
       "desc": "Your contracts have been imported. Review any errors below.",
@@ -8380,6 +8405,52 @@
       "previewFailed": "Cannot open PDF",
       "nothingToCommit": "No rows ready to commit",
       "commitFailed": "Commit failed"
+    }
+  },
+  "smartImport": {
+    "button": "Smart Import (PDF)",
+    "shortButton": "Smart Import",
+    "title": "Smart Import from PDF",
+    "description": {
+      "create": "Upload a pitch deck or business plan and we'll extract the data to create a workspace.",
+      "fill": "Upload a pitch deck or business plan and we'll fill in the workspace fields for you to review."
+    },
+    "uploadCta": "Click to upload a PDF",
+    "uploadHint": "Pitch deck or business plan · text-based PDF · max 15 MB",
+    "extracting": "Reading your document…",
+    "extractingHint": "This usually takes 10–30 seconds.",
+    "applying": "Applying to your workspace…",
+    "analyse": "Analyse with AI",
+    "applySelected": "Apply selected",
+    "startOver": "Upload another",
+    "success": "Smart import complete.",
+    "program": "Program",
+    "parsed": "Parsed {{pages}} page(s). Review the extracted data, edit anything, then choose what to apply.",
+    "sections": {
+      "startup": "Startup profile",
+      "team": "Team members",
+      "funding": "Funding",
+      "kpis": "KPIs"
+    },
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "website": "Website",
+      "sector": "Sector",
+      "foundedDate": "Founded date",
+      "stage": "Stage",
+      "address": "Address",
+      "nif": "NIF",
+      "contactName": "Main contact name",
+      "contactEmail": "Main contact email",
+      "contactPhone": "Main contact phone"
+    },
+    "errors": {
+      "notPdf": "Only PDF files are accepted.",
+      "tooLarge": "PDF must be under 15 MB.",
+      "extractFailed": "Could not extract data from this PDF.",
+      "programRequired": "Please select a program.",
+      "nameRequired": "Startup name is required."
     }
   }
 }

@@ -8336,8 +8336,15 @@
     "committing": "A importar...",
     "commit": "Confirmar importação",
     "downloadErrors": "Descarregar CSV de erros",
-    "adminOnly": { "title": "Apenas administradores", "desc": "Só administradores podem usar esta ferramenta." },
-    "steps": { "upload": "1. Carregar PDFs", "review": "2. Rever dados extraídos", "done": "3. Concluído" },
+    "adminOnly": {
+      "title": "Apenas administradores",
+      "desc": "Só administradores podem usar esta ferramenta."
+    },
+    "steps": {
+      "upload": "1. Carregar PDFs",
+      "review": "2. Rever dados extraídos",
+      "done": "3. Concluído"
+    },
     "upload": {
       "title": "Carregar PDFs de contratos assinados",
       "desc": "Arraste até 50 PDFs de uma vez. A IA extrai nome da startup, NIF, datas, valores e mais. Vai poder rever tudo antes de confirmar.",
@@ -8349,10 +8356,17 @@
       "start": "Carregar e extrair com IA"
     },
     "stats": {
-      "total": "Total", "willCreate": "A criar", "willUpdate": "A atualizar",
-      "errors": "Erros", "pending": "A processar", "committed": "Importados", "skipped": "Ignorados"
+      "total": "Total",
+      "willCreate": "A criar",
+      "willUpdate": "A atualizar",
+      "errors": "Erros",
+      "pending": "A processar",
+      "committed": "Importados",
+      "skipped": "Ignorados"
     },
-    "extracting": { "title": "A IA está a ler os seus contratos" },
+    "extracting": {
+      "title": "A IA está a ler os seus contratos"
+    },
     "review": {
       "title": "Rever dados extraídos",
       "desc": "Clique numa linha para editar. Desmarque para ignorar. Linhas com erro não serão importadas.",
@@ -8360,11 +8374,22 @@
       "empty": "Sem linhas."
     },
     "cols": {
-      "file": "Ficheiro", "startup": "Startup", "nif": "NIF", "typology": "Tipologia",
-      "fee": "Mensalidade", "status": "Estado", "action": "Ação", "confidence": "Confiança IA"
+      "file": "Ficheiro",
+      "startup": "Startup",
+      "nif": "NIF",
+      "typology": "Tipologia",
+      "fee": "Mensalidade",
+      "status": "Estado",
+      "action": "Ação",
+      "confidence": "Confiança IA"
     },
-    "edit": { "notes": "Notas", "viewPdf": "Ver PDF" },
-    "preview": { "title": "Pré-visualização do PDF" },
+    "edit": {
+      "notes": "Notas",
+      "viewPdf": "Ver PDF"
+    },
+    "preview": {
+      "title": "Pré-visualização do PDF"
+    },
     "done": {
       "title": "Importação concluída",
       "desc": "Os contratos foram importados. Reveja eventuais erros abaixo.",
@@ -8380,6 +8405,52 @@
       "previewFailed": "Não foi possível abrir o PDF",
       "nothingToCommit": "Sem linhas prontas para importar",
       "commitFailed": "Falha na importação"
+    }
+  },
+  "smartImport": {
+    "button": "Importação Inteligente (PDF)",
+    "shortButton": "Importar",
+    "title": "Importação Inteligente a partir de PDF",
+    "description": {
+      "create": "Carregue um pitch deck ou plano de negócios e a IA extrai os dados para criar um workspace.",
+      "fill": "Carregue um pitch deck ou plano de negócios e a IA preenche os campos do workspace para você rever."
+    },
+    "uploadCta": "Clique para carregar um PDF",
+    "uploadHint": "Pitch deck ou plano de negócios · PDF com texto · máx. 15 MB",
+    "extracting": "A ler o seu documento…",
+    "extractingHint": "Normalmente demora 10–30 segundos.",
+    "applying": "A aplicar ao seu workspace…",
+    "analyse": "Analisar com IA",
+    "applySelected": "Aplicar seleção",
+    "startOver": "Carregar outro",
+    "success": "Importação inteligente concluída.",
+    "program": "Programa",
+    "parsed": "Processadas {{pages}} página(s). Reveja os dados extraídos, edite o que precisar e escolha o que aplicar.",
+    "sections": {
+      "startup": "Perfil da startup",
+      "team": "Equipa",
+      "funding": "Financiamento",
+      "kpis": "KPIs"
+    },
+    "fields": {
+      "name": "Nome",
+      "description": "Descrição",
+      "website": "Website",
+      "sector": "Setor",
+      "foundedDate": "Data de fundação",
+      "stage": "Estágio",
+      "address": "Morada",
+      "nif": "NIF",
+      "contactName": "Nome do contacto principal",
+      "contactEmail": "Email do contacto principal",
+      "contactPhone": "Telefone do contacto principal"
+    },
+    "errors": {
+      "notPdf": "Apenas são aceites ficheiros PDF.",
+      "tooLarge": "O PDF deve ter menos de 15 MB.",
+      "extractFailed": "Não foi possível extrair dados deste PDF.",
+      "programRequired": "Selecione um programa.",
+      "nameRequired": "O nome da startup é obrigatório."
     }
   }
 }
