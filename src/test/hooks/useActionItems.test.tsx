@@ -120,7 +120,7 @@ describe('useUpdateActionItem – optimistic rollback', () => {
     );
 
     // Trigger the mutation: mark as completed
-    await act(async () => {
+    act(() => {
       result.current.mutate({ id: 'action-1', status: 'completed' });
     });
 
