@@ -286,7 +286,7 @@ export function SmartImportDialog({
         }));
       if (teamRows.length) {
         const { error: tErr } = await supabase.from("team_members").insert(teamRows);
-        if (tErr) logger.warn("team_members insert failed", tErr);
+        if (tErr) logger.warn("team_members insert failed", { error: tErr.message });
       }
 
       // 3. Funding rounds
@@ -305,7 +305,7 @@ export function SmartImportDialog({
         }));
       if (fundRows.length) {
         const { error: fErr } = await supabase.from("funding_rounds").insert(fundRows);
-        if (fErr) logger.warn("funding_rounds insert failed", fErr);
+        if (fErr) logger.warn("funding_rounds insert failed", { error: fErr.message });
       }
 
       // 4. KPIs — find or create kpi_definitions, then upsert kpi_values
@@ -332,7 +332,7 @@ export function SmartImportDialog({
               .from("kpi_definitions")
               .insert({ name: k.name, unit: k.unit || null, is_global: false, direction: "up" })
               .select("id").single();
-            if (kdErr) { logger.warn("kpi_def create failed", kdErr); continue; }
+            if (kdErr) { logger.warn("kpi_def create failed", { error: kdErr.message }); continue; }
             defId = created.id;
           }
 
@@ -349,7 +349,7 @@ export function SmartImportDialog({
             source_type: "ai",
             created_by: user.id,
           }, { onConflict: "workspace_id,kpi_definition_id,period_month" });
-          if (vErr) logger.warn("kpi_value upsert failed", vErr);
+          if (vErr) logger.warn("kpi_value upsert failed", { error: vErr.message });
         }
       }
 
