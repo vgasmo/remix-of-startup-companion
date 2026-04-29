@@ -1875,7 +1875,14 @@
       "noUploads": "No files uploaded successfully",
       "nothingToCommit": "No rows ready to commit",
       "previewFailed": "Cannot open PDF",
+      "programRequired": "Pick a programme before uploading. New workspaces will be attached to it.",
       "uploadFailed": "Upload failed"
+    },
+    "program": {
+      "label": "Programme for new workspaces",
+      "placeholder": "Select a programme…",
+      "help": "Required. Any new workspaces created from this batch will be attached to this programme. Existing workspaces matched by NIF/name keep their current programme.",
+      "selected": "Programme: {{name}}"
     },
     "extractComplete": "Extraction complete",
     "extracting": {
