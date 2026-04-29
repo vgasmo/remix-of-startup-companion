@@ -631,6 +631,11 @@ export default function BulkContractImport() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {selectedProgramName && (
+                <Badge variant="secondary" className="text-xs">
+                  {t('bulkImport.program.selected', { name: selectedProgramName })}
+                </Badge>
+              )}
               <div className="grid grid-cols-3 gap-3">
                 <SummaryStat label={t('bulkImport.stats.committed', 'Committed')} value={counts.committed} tone="success" />
                 <SummaryStat label={t('bulkImport.stats.errors', 'Errors')} value={counts.errors} tone="destructive" />
