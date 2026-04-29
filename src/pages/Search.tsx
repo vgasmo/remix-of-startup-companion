@@ -291,7 +291,13 @@ export default function SearchPage() {
           </div>
           )}
 
-          <AskAiPanel seedQuery={debouncedQuery} />
+          <AskAiPanel
+            seedQuery={debouncedQuery}
+            results={results || []}
+            activeFilters={filters}
+            workspaces={workspaces || []}
+            tags={tags || []}
+          />
 
         {/* Results */}
         {isLoading ? (
