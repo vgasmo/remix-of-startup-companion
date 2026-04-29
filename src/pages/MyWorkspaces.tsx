@@ -14,6 +14,7 @@ import {
   ArrowRight,
   X,
   Rocket,
+  Sparkles,
 } from 'lucide-react';
 import { isToday } from 'date-fns';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -28,6 +29,7 @@ import { AdminDashboard } from '@/components/dashboard/AdminDashboard';
 import { MentorDashboard } from '@/components/dashboard/MentorDashboard';
 import { FounderDashboard } from '@/components/dashboard/FounderDashboard';
 import { CreateStartupDialog } from '@/components/founder/CreateStartupDialog';
+import { SmartImportDialog } from '@/components/founder/SmartImportDialog';
 import { ClaimedWorkspaceBanner } from '@/components/founder/ClaimedWorkspaceBanner';
 import { WorkspaceFilters } from '@/components/workspace/WorkspaceFilters';
 import { WorkspaceTable } from '@/components/workspace/WorkspaceTable';
@@ -71,6 +73,7 @@ export default function MyWorkspaces() {
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [quickFilters, setQuickFilters] = useState<Record<string, boolean>>({});
   const [showCreateStartup, setShowCreateStartup] = useState(false);
+  const [showSmartImport, setShowSmartImport] = useState(false);
   const [showDetailedView, setShowDetailedView] = useState(false);
 
   // Handle URL filter parameter
@@ -306,6 +309,19 @@ export default function MyWorkspaces() {
               <span className="hidden sm:inline">{t('myWorkspaces.dashboard')}</span>
             </Button>
           )}
+          {/* Smart Import: founders + staff (consultants/admins) */}
+          {(isFounder || isConsultor || isAdmin) && !showMentorDashboard && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSmartImport(true)}
+              className="gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('smartImport.button', { defaultValue: 'Smart Import (PDF)' })}</span>
+              <span className="sm:hidden">{t('smartImport.shortButton', { defaultValue: 'Smart Import' })}</span>
+            </Button>
+          )}
           {/* P0.1: Claim-first — show "Verify Startup" for founders with no workspaces. Route gate handles redirect, this is a safety fallback. */}
           {isFounder && !showConsultorDashboard && !showMentorDashboard && (workspaces || []).length === 0 && (
             <Button onClick={() => navigate('/claim-startup')} className="gap-2" data-tour="create-workspace">
@@ -319,6 +335,7 @@ export default function MyWorkspaces() {
     >
       <OnboardingTour />
       <CreateStartupDialog open={showCreateStartup} onOpenChange={setShowCreateStartup} />
+      <SmartImportDialog open={showSmartImport} onOpenChange={setShowSmartImport} />
 
       {/* Claimed/Pending state banner for founders */}
       {isFounder && !isConsultor && !isAdmin && founderState.status !== 'loading' && founderState.status !== 'not_founder' && founderState.status !== 'staff_exempt' && (
