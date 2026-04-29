@@ -125,10 +125,8 @@ describe('useUpdateActionItem – optimistic rollback', () => {
     });
 
     // Wait for the mutation to settle (error + rollback)
-    await act(async () => {
-      await vi.waitFor(() => {
-        expect(result.current.isError).toBe(true);
-      });
+    await waitFor(() => {
+      expect(result.current.isError).toBe(true);
     });
 
     // After rollback, the cache should be restored to original state
