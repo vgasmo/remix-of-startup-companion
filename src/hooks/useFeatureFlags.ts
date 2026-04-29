@@ -50,20 +50,27 @@ export function useFeatureFlags() {
   return useQuery({
     queryKey: ['feature-flags'],
     queryFn: async (): Promise<FeatureFlag[]> => {
+      // Skip when unauthenticated — flags are RLS-protected and unused on public pages.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return [];
+
       const { data, error } = await supabase
         .from('feature_flags')
         .select('*')
         .order('key');
-      
+
       if (error) {
-        logger.error('[useFeatureFlags] Error fetching flags', {}, error);
+        // Demote to warn: a transient RLS/network failure here just falls back to "off",
+        // which is the safe default. No user impact.
+        logger.warn('[useFeatureFlags] Falling back to empty flag set', { code: error.code, message: error.message });
         return [];
       }
-      
+
       return (data ?? []) as FeatureFlag[];
     },
     staleTime: 60000, // 1 minute
     gcTime: 300000, // 5 minutes
+    retry: false,
   });
 }
 
