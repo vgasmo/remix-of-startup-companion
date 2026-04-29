@@ -62,7 +62,23 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const batchId = body?.batch_id as string | undefined;
+    const overwriteExisting = body?.overwrite_existing === true; // admin opt-in
     if (!batchId) return jsonResponse({ error: "batch_id required" }, 400);
+
+    // Batch must have a programme assigned (no orphan workspaces).
+    const { data: batch, error: batchErr } = await admin
+      .from("bulk_import_batches")
+      .select("id, program_id")
+      .eq("id", batchId)
+      .single();
+    if (batchErr || !batch) return jsonResponse({ error: "Batch not found" }, 404);
+    if (!batch.program_id) {
+      return jsonResponse({
+        error: "program_required",
+        message: "This batch has no programme assigned. Pick a programme on the upload screen before committing.",
+      }, 400);
+    }
+    const batchProgramId = batch.program_id as string;
 
     await admin.from("bulk_import_batches").update({ status: "committing" }).eq("id", batchId);
 
