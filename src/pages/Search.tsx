@@ -291,7 +291,13 @@ export default function SearchPage() {
           </div>
           )}
 
-          <AskAiPanel seedQuery={debouncedQuery} />
+          <AskAiPanel
+            seedQuery={debouncedQuery}
+            results={results || []}
+            activeFilters={filters}
+            workspaces={workspaces || []}
+            tags={tags || []}
+          />
 
         {/* Results */}
         {isLoading ? (
@@ -351,10 +357,66 @@ export default function SearchPage() {
   );
 }
 
-function AskAiPanel({ seedQuery }: { seedQuery: string }) {
+function AskAiPanel({
+  seedQuery,
+  results,
+  activeFilters,
+  workspaces,
+  tags,
+}: {
+  seedQuery: string;
+  results: SearchResult[];
+  activeFilters: Omit<SearchFilters, 'query'>;
+  workspaces: Array<{ id: string; startup?: { name?: string } | null }>;
+  tags: Array<{ id: string; name: string }>;
+}) {
   const { t } = useTranslation();
   const { messages, isThinking, isAvailable, send, reset } = useCopilotChat();
   const [input, setInput] = useState('');
+
+  const hasResults = results.length > 0;
+  const hasActiveFilters =
+    !!seedQuery ||
+    (activeFilters.types?.length ?? 0) > 0 ||
+    (activeFilters.workspaceIds?.length ?? 0) > 0 ||
+    (activeFilters.tagIds?.length ?? 0) > 0 ||
+    !!activeFilters.dateRange;
+
+  const buildContextPrompt = () => {
+    const lines: string[] = [];
+    lines.push(
+      t('search.askAIContextHeader', {
+        defaultValue:
+          'Analisa estes resultados de pesquisa e dá-me um resumo executivo (padrões, riscos, próximos passos sugeridos).',
+      })
+    );
+    lines.push('');
+    lines.push('**Contexto da pesquisa:**');
+    if (seedQuery) lines.push(`- Termo: "${seedQuery}"`);
+    if (activeFilters.types?.length) lines.push(`- Tipos: ${activeFilters.types.join(', ')}`);
+    if (activeFilters.workspaceIds?.length) {
+      const names = activeFilters.workspaceIds
+        .map((id) => workspaces.find((w) => w.id === id)?.startup?.name || id)
+        .join(', ');
+      lines.push(`- Workspaces: ${names}`);
+    }
+    if (activeFilters.tagIds?.length) {
+      const tagNames = activeFilters.tagIds
+        .map((id) => tags.find((tg) => tg.id === id)?.name || id)
+        .join(', ');
+      lines.push(`- Tags: ${tagNames}`);
+    }
+    if (activeFilters.dateRange) lines.push(`- Período: ${activeFilters.dateRange}`);
+    lines.push('');
+    lines.push(`**Resultados (${results.length} no total, top 20):**`);
+    results.slice(0, 20).forEach((r, i) => {
+      const snippet = r.snippet ? ` — ${r.snippet.slice(0, 120)}` : '';
+      lines.push(
+        `${i + 1}. [${r.type}] ${r.title}${r.workspace_name ? ` (${r.workspace_name})` : ''}${snippet}`
+      );
+    });
+    return lines.join('\n');
+  };
 
   const handleSend = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -364,12 +426,32 @@ function AskAiPanel({ seedQuery }: { seedQuery: string }) {
     send(text);
   };
 
+  const handleAskAboutResults = () => {
+    if (!hasResults) return;
+    send(buildContextPrompt());
+  };
+
   return (
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
+        <CardTitle className="text-base flex items-center gap-2 flex-wrap">
           <Sparkles className="h-4 w-4 text-primary" />
           {t('search.askAI', { defaultValue: 'Perguntar à IA' })}
+          {hasResults && hasActiveFilters && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleAskAboutResults}
+              disabled={isThinking || !isAvailable}
+              className="ml-2 h-7 px-3 text-xs gap-1"
+            >
+              <Sparkles className="h-3 w-3" />
+              {t('search.askAboutResults', {
+                count: results.length,
+                defaultValue: `Perguntar à IA sobre estes ${results.length} resultados`,
+              })}
+            </Button>
+          )}
           {messages.length > 0 && (
             <Button variant="ghost" size="sm" onClick={reset} className="ml-auto h-7 px-2 text-xs">
               <RefreshCw className="h-3 w-3 mr-1" />
@@ -378,6 +460,7 @@ function AskAiPanel({ seedQuery }: { seedQuery: string }) {
           )}
         </CardTitle>
       </CardHeader>
+
       <CardContent className="space-y-3">
         {messages.length === 0 && (
           <p className="text-xs text-muted-foreground">
