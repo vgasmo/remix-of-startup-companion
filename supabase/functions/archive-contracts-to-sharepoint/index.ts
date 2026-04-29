@@ -87,6 +87,7 @@ Deno.serve(async (req) => {
       .from('startup_contracts')
       .select(`
         id, contract_number, organization_name, signed_at, document_url,
+        contract_pdf_path, pricing_snapshot_json,
         workspace_id, archive_status, archive_attempt_count, archive_checksum
       `)
       .not('signed_at', 'is', null)
@@ -159,45 +160,41 @@ async function archiveContract(
       })
       .eq('id', contractId);
 
-    // Get the canonical document
-    if (!contract.document_url) {
-      throw new Error('No document_url — contract has no canonical PDF to archive');
+    // Get the canonical document. Bulk-imported contracts also fill
+    // `contract_pdf_path`; fall back to it if `document_url` is missing.
+    const canonicalPath: string | null = contract.document_url || contract.contract_pdf_path || null;
+    if (!canonicalPath) {
+      throw new Error('No document_url or contract_pdf_path — contract has no canonical PDF to archive');
     }
+
+    // Determine which private bucket holds the file. Bulk imports tag this
+    // in pricing_snapshot_json.pdf_bucket; manual contracts default to
+    // `contract-documents`.
+    const bucketFromSnapshot = contract.pricing_snapshot_json?.pdf_bucket;
+    const bucketName: string = (typeof bucketFromSnapshot === 'string' && bucketFromSnapshot.length > 0)
+      ? bucketFromSnapshot
+      : 'contract-documents';
 
     // Resolve document URL — may be a relative Storage path or a full URL
-    let documentUrl = contract.document_url;
-    if (!documentUrl.startsWith('http')) {
-      // It's a relative path in Supabase Storage (bucket: contract-documents)
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-      // Try common bucket names
-      const bucketName = 'contract-documents';
-      documentUrl = `${supabaseUrl}/storage/v1/object/public/${bucketName}/${documentUrl}`;
-      log.info(`Resolved relative document_url to: ${documentUrl}`);
-    }
-
-    // Download the PDF
+    let documentUrl = canonicalPath;
     let pdfBytes: Uint8Array;
-    const pdfResponse = await fetch(documentUrl);
-    if (!pdfResponse.ok) {
-      // If public bucket fails, try with service role auth
-      if (pdfResponse.status === 400 || pdfResponse.status === 404) {
-        // Try downloading via Supabase Storage API with auth
-        const pathParts = contract.document_url.split('/');
-        const fileName = pathParts.pop()!;
-        const folder = pathParts.join('/');
-        const { data: fileData, error: dlError } = await supabase
-          .storage
-          .from('contract-documents')
-          .download(contract.document_url);
-        if (dlError || !fileData) {
-          throw new Error(`Failed to download contract PDF from storage: ${dlError?.message || 'unknown'}`);
-        }
-        pdfBytes = new Uint8Array(await fileData.arrayBuffer());
-      } else {
+    if (documentUrl.startsWith('http')) {
+      const pdfResponse = await fetch(documentUrl);
+      if (!pdfResponse.ok) {
         throw new Error(`Failed to download contract PDF: ${pdfResponse.status}`);
       }
-    } else {
       pdfBytes = new Uint8Array(await pdfResponse.arrayBuffer());
+    } else {
+      // Private storage path — download via service role from the appropriate bucket.
+      log.info(`Downloading from private bucket ${bucketName}: ${documentUrl}`);
+      const { data: fileData, error: dlError } = await supabase
+        .storage
+        .from(bucketName)
+        .download(documentUrl);
+      if (dlError || !fileData) {
+        throw new Error(`Failed to download contract PDF from storage (${bucketName}): ${dlError?.message || 'unknown'}`);
+      }
+      pdfBytes = new Uint8Array(await fileData.arrayBuffer());
     }
 
     // Compute SHA-256 checksum
