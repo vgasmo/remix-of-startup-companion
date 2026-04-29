@@ -187,7 +187,7 @@ describe('useUpdateActionItem – optimistic rollback', () => {
     });
 
     await act(async () => {
-      await vi.waitFor(() => {
+      await waitFor(() => {
         expect(result.current.isSuccess || result.current.isError).toBe(true);
       }, { timeout: 5000 });
     });
