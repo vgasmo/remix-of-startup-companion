@@ -417,11 +417,23 @@ export function useGlobalSearch(filters: SearchFilters) {
       // Search CRM leads (staff via RLS)
       if (typesToSearch.includes('lead')) {
         searchPromises.push((async () => {
-          const { data } = await supabase
+          const { data: exactData } = await supabase
             .from('funnel_items')
             .select('id, organization_name, contact_name, contact_email, stage, updated_at')
             .or(`organization_name.ilike.${ilikeTerm},contact_name.ilike.${ilikeTerm},contact_email.ilike.${ilikeTerm}`)
             .limit(20);
+
+          let data: any[] = exactData || [];
+
+          // Fuzzy fallback for typos
+          if (data.length === 0 && searchTerm.length >= 3) {
+            const { data: fuzzy } = await supabase.rpc('fuzzy_search_leads', {
+              p_query: searchTerm,
+              p_limit: 10,
+            });
+            data = fuzzy || [];
+          }
+
           return (data || []).map((l: any) => ({
             type: 'lead' as const,
             id: l.id,
