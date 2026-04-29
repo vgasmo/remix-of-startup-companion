@@ -1875,7 +1875,14 @@
       "noUploads": "No files uploaded successfully",
       "nothingToCommit": "No rows ready to commit",
       "previewFailed": "Cannot open PDF",
+      "programRequired": "Pick a programme before uploading. New workspaces will be attached to it.",
       "uploadFailed": "Upload failed"
+    },
+    "program": {
+      "label": "Programme for new workspaces",
+      "placeholder": "Select a programme…",
+      "help": "Required. Any new workspaces created from this batch will be attached to this programme. Existing workspaces matched by NIF/name keep their current programme.",
+      "selected": "Programme: {{name}}"
     },
     "extractComplete": "Extraction complete",
     "extracting": {
@@ -7161,6 +7168,7 @@
       "nameRequired": "Startup name is required.",
       "notPdf": "Only PDF files are accepted.",
       "programRequired": "Please select a program.",
+      "staffOnlyCreate": "Only staff can create new workspaces from a Smart Import. Please ask an administrator or consultant.",
       "tooLarge": "PDF must be under 15 MB."
     },
     "extracting": "Reading your document…",

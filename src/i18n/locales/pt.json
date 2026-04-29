@@ -1875,7 +1875,14 @@
       "noUploads": "Nenhum ficheiro carregado com sucesso",
       "nothingToCommit": "Sem linhas prontas para importar",
       "previewFailed": "Não foi possível abrir o PDF",
+      "programRequired": "Escolha um programa antes de carregar. Os novos workspaces serão associados a esse programa.",
       "uploadFailed": "Falha no carregamento"
+    },
+    "program": {
+      "label": "Programa para novos workspaces",
+      "placeholder": "Selecione um programa…",
+      "help": "Obrigatório. Quaisquer novos workspaces criados neste lote serão associados a este programa. Os workspaces existentes (encontrados por NIF/nome) mantêm o programa atual.",
+      "selected": "Programa: {{name}}"
     },
     "extractComplete": "Extração concluída",
     "extracting": {
@@ -7161,6 +7168,7 @@
       "nameRequired": "O nome da startup é obrigatório.",
       "notPdf": "Apenas são aceites ficheiros PDF.",
       "programRequired": "Selecione um programa.",
+      "staffOnlyCreate": "Apenas a equipa pode criar novos workspaces a partir de uma Importação Inteligente. Peça a um administrador ou consultor.",
       "tooLarge": "O PDF deve ter menos de 15 MB."
     },
     "extracting": "A ler o seu documento…",

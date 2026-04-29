@@ -23,6 +23,10 @@ import {
 import { supabase } from '@/lib/supabaseClient';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePrograms } from '@/hooks/useAdminData';
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
@@ -74,6 +78,7 @@ export default function BulkContractImport() {
   const { user, isAdmin } = useAuth();
   const [step, setStep] = useState<WizardStep>('upload');
   const [batchId, setBatchId] = useState<string | null>(null);
+  const [programId, setProgramId] = useState<string>('');
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
@@ -84,6 +89,11 @@ export default function BulkContractImport() {
   const [editingRow, setEditingRow] = useState<BatchRow | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const cancelRef = useRef(false);
+
+  const { data: programs = [], isLoading: programsLoading } = usePrograms();
+  const activePrograms = (programs as Array<{ id: string; name: string; is_active?: boolean | null; status?: string | null }>)
+    .filter(p => p.is_active !== false && p.status !== 'archived');
+  const selectedProgramName = activePrograms.find(p => p.id === programId)?.name || '';
 
   // Refresh rows from DB
   const refreshRows = useCallback(async (id: string) => {
@@ -125,18 +135,23 @@ export default function BulkContractImport() {
 
   const startBatch = async () => {
     if (!user || files.length === 0) return;
+    if (!programId) {
+      toast.error(t('bulkImport.errors.programRequired'));
+      return;
+    }
     setUploading(true);
     setUploadProgress({ done: 0, total: files.length });
     cancelRef.current = false;
 
     try {
-      // 1) Create batch row
+      // 1) Create batch row — programme is required so new workspaces are never orphaned.
       const { data: batch, error: batchErr } = await supabase
         .from('bulk_import_batches')
         .insert({
           created_by: user.id,
           status: 'uploading',
           total_files: files.length,
+          program_id: programId,
         })
         .select('id')
         .single();
@@ -351,6 +366,22 @@ export default function BulkContractImport() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Programme picker — required, drives program_id on bulk_import_batches */}
+              <div className="space-y-1.5">
+                <Label htmlFor="bulk-program">{t('bulkImport.program.label')} <span className="text-destructive">*</span></Label>
+                <Select value={programId} onValueChange={setProgramId} disabled={uploading || programsLoading}>
+                  <SelectTrigger id="bulk-program">
+                    <SelectValue placeholder={t('bulkImport.program.placeholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activePrograms.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">{t('bulkImport.program.help')}</p>
+              </div>
+
               <div
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={onDrop}
@@ -413,7 +444,7 @@ export default function BulkContractImport() {
                 </Button>
                 <Button
                   onClick={startBatch}
-                  disabled={files.length === 0 || uploading}
+                  disabled={files.length === 0 || uploading || !programId}
                 >
                   {uploading ? (
                     <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t('bulkImport.upload.uploading', 'Uploading...')}</>
@@ -429,6 +460,11 @@ export default function BulkContractImport() {
         {/* STEP 2: REVIEW */}
         {step === 'review' && batchId && (
           <>
+            {selectedProgramName && (
+              <Badge variant="secondary" className="text-xs">
+                {t('bulkImport.program.selected', { name: selectedProgramName })}
+              </Badge>
+            )}
             {/* Summary */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               <SummaryStat label={t('bulkImport.stats.total', 'Total')} value={counts.total} />
@@ -595,6 +631,11 @@ export default function BulkContractImport() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {selectedProgramName && (
+                <Badge variant="secondary" className="text-xs">
+                  {t('bulkImport.program.selected', { name: selectedProgramName })}
+                </Badge>
+              )}
               <div className="grid grid-cols-3 gap-3">
                 <SummaryStat label={t('bulkImport.stats.committed', 'Committed')} value={counts.committed} tone="success" />
                 <SummaryStat label={t('bulkImport.stats.errors', 'Errors')} value={counts.errors} tone="destructive" />
@@ -621,6 +662,7 @@ export default function BulkContractImport() {
                   setFiles([]);
                   setRows([]);
                   setBatchId(null);
+                  setProgramId('');
                 }}>
                   {t('bulkImport.done.startNew', 'Start new batch')}
                 </Button>
