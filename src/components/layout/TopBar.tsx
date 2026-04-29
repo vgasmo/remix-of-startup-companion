@@ -17,6 +17,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { LanguageSelector } from '@/components/ui/LanguageSelector';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 import { Search } from 'lucide-react';
+import { AskAiMenu } from './AskAiMenu';
 
 export function TopBar() {
   const navigate = useNavigate();
