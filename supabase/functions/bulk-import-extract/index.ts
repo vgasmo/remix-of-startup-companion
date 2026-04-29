@@ -249,7 +249,7 @@ Deno.serve(async (req) => {
     }).eq("id", rowId);
 
     // Bump batch counter
-    await admin.rpc("update_updated_at_column"); // no-op safety
+    // (Removed bogus admin.rpc("update_updated_at_column") — that is a trigger function, not a callable RPC.)
     const { data: batchRow } = await admin
       .from("bulk_import_rows")
       .select("batch_id")
