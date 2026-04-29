@@ -60,7 +60,7 @@ export function CommandPalette() {
     } catch { /* ignore */ }
   }, [recentItems]);
 
-  // Keyboard shortcut
+  // Keyboard shortcut + custom event for "Ask AI" dropdown
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -68,9 +68,23 @@ export function CommandPalette() {
         setOpen(prev => !prev);
       }
     };
+    const handleAskAi = (e: Event) => {
+      const detail = (e as CustomEvent<{ question?: string }>).detail || {};
+      setOpen(true);
+      setCopilotMode(true);
+      setQuery('');
+      if (detail.question?.trim()) {
+        // small defer so dialog mounts
+        setTimeout(() => copilot.send(detail.question!.trim()), 50);
+      }
+    };
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+    document.addEventListener('sl-ask-ai', handleAskAi as EventListener);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('sl-ask-ai', handleAskAi as EventListener);
+    };
+  }, [copilot]);
 
   const runAction = useCallback((path: string, label?: string, type: string = 'nav') => {
     if (label) pushRecent({ path, label, type });
