@@ -263,3 +263,10 @@ verify_jwt = false
 # Cron/manual — creates ecosystem data snapshots
 [functions.run-ecosystem-snapshot]
 verify_jwt = false
+
+# ============================================
+# SMART IMPORT (User-facing AI)
+# JWT verified at runtime; reads PDF + calls AI gateway
+# ============================================
+[functions.smart-import-pdf]
+verify_jwt = true
