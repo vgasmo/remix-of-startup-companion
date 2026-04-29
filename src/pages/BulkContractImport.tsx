@@ -444,7 +444,7 @@ export default function BulkContractImport() {
                 </Button>
                 <Button
                   onClick={startBatch}
-                  disabled={files.length === 0 || uploading}
+                  disabled={files.length === 0 || uploading || !programId}
                 >
                   {uploading ? (
                     <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t('bulkImport.upload.uploading', 'Uploading...')}</>
