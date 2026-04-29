@@ -184,7 +184,7 @@ describe('useUpdateActionItem – optimistic rollback', () => {
       { wrapper: createWrapper(queryClient) },
     );
 
-    await act(async () => {
+    act(() => {
       result.current.mutate({ id: 'action-1', status: 'completed' });
     });
 
