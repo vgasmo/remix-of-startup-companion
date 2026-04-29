@@ -66,9 +66,12 @@ export function TopBar() {
         </kbd>
       </Button>
       
+      {/* Ask AI dropdown – context-aware suggested questions */}
+      <AskAiMenu />
+
       {/* Notifications Bell */}
       <NotificationCenter />
-      
+
       {/* Language Selector - hidden on mobile */}
       <div className="hidden md:block">
         <LanguageSelector />
