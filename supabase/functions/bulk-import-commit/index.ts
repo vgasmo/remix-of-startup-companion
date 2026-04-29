@@ -214,7 +214,16 @@ Deno.serve(async (req) => {
 
         // Store the canonical PRIVATE storage path. Never persist a fake public
         // URL — the contract-imports bucket is private and access is via signed URLs.
+        // We mirror the same path into `document_url` so existing flows
+        // (SharePoint archival, contract readiness/preview UI) keep working
+        // unchanged. Both columns hold the SAME private storage path string;
+        // consumers must call createSignedUrl on the appropriate bucket to read it.
         const contractPdfPath = row.pdf_path as string;
+        const documentUrl = contractPdfPath; // private storage path, NOT a public URL
+        // Bucket hint for downstream consumers — bulk-imported PDFs live in
+        // `contract-imports`, while manually-uploaded contracts live in
+        // `contract-documents`. We tag the source for clarity.
+        const pdfBucket = "contract-imports";
 
         const contractPayload = {
           workspace_id: workspaceId,
@@ -228,7 +237,7 @@ Deno.serve(async (req) => {
           currency: "EUR",
           discount_percentage: data.discount_percentage ?? null,
           square_meters: data.square_meters ?? null,
-          pricing_snapshot_json: pricingSnapshot,
+          pricing_snapshot_json: { ...pricingSnapshot, pdf_bucket: pdfBucket },
           company_nif: nif,
           company_address: data.address || null,
           company_postal_code: data.postal_code || null,
@@ -238,6 +247,7 @@ Deno.serve(async (req) => {
           legal_representative_email: data.legal_representative_email || null,
           notes: combineNotes(data.notes, `Bulk imported from PDF: ${row.pdf_filename}`),
           contract_pdf_path: contractPdfPath,
+          document_url: documentUrl,
           created_by: userData.user.id,
         };
 
