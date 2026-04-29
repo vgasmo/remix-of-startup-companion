@@ -32,8 +32,6 @@
     "actionRestored": "{{count}} ações restauradas",
     "actionRestored_one": "{{count}} ação restaurada",
     "actionRestored_other": "{{count}} ações restauradas",
-    "statusReverted": "Estado revertido",
-    "undoFailed": "Não foi possível desfazer. Tente novamente.",
     "actionsBelongToMilestones": "As ações pertencem a marcos para acompanhar o progresso.",
     "actionsLabel": "ações",
     "addAction": "Adicionar Ação",
@@ -55,7 +53,9 @@
     "deleteActionTitle": "Eliminar Item de Ação",
     "deletedCount": "{{count}} ações eliminadas",
     "deliverableAdded": "Entregável adicionado",
+    "deliverableAlreadyLinked": "Este documento já está ligado a esta ação",
     "deliverableCompleted": "Entregável validado",
+    "deliverableDocExistingHint": "Se o documento já estiver concluído, será ligado a esta ação e aberto na base de documentos.",
     "deliverableDocHint": "Ao criar, será redirecionado para o separador de Documentos para preencher o material da plataforma.",
     "deliverablesRequired": "Todos os entregáveis devem estar concluídos antes de concluir a ação",
     "description": "Descrição",
@@ -109,14 +109,14 @@
     "statusDoing": "Em Progresso",
     "statusDone": "Concluída",
     "statusOpen": "Aberta",
+    "statusReverted": "Estado revertido",
     "title": "Ações",
     "titlePlaceholder": "O que precisa ser feito?",
     "titleRequired": "Título é obrigatório",
     "unassigned": "Não atribuído",
     "unassignedActions": "Ações Não Atribuídas",
-    "updatedCount": "{{count}} ações atualizadas",
-    "deliverableAlreadyLinked": "Este documento já está ligado a esta ação",
-    "deliverableDocExistingHint": "Se o documento já estiver concluído, será ligado a esta ação e aberto na base de documentos."
+    "undoFailed": "Não foi possível desfazer. Tente novamente.",
+    "updatedCount": "{{count}} ações atualizadas"
   },
   "activityLog": {
     "action": "Ação",
@@ -1140,12 +1140,15 @@
       "actions": "Ações",
       "addStartup": "Adicionar Startup",
       "allStages": "Todas as Fases",
+      "archive": "Arquivar",
       "certificationDocument": "Documento de Certificação",
       "contactEmail": "Email do Contacto",
       "contactName": "Nome do Contacto",
       "contactPhone": "Telefone do Contacto",
       "create": "Criar",
       "createStartup": "Criar Startup",
+      "deleteForever": "Eliminar permanentemente",
+      "deleteForeverConfirm": "Eliminar permanentemente \"{{name}}\"? Esta ação não pode ser revertida.",
       "description": "Descrição",
       "documentAttached": "Documento anexado",
       "documentRequired": "É obrigatório anexar o documento de certificação Startup Portugal",
@@ -1167,26 +1170,23 @@
       "noEmailForInvite": "No Email para Convidar",
       "noStartups": "Nenhuma startup encontrada",
       "noWorkspaceForInvite": "No Workspace para Convidar",
+      "restore": "Restaurar",
       "search": "Pesquisar...",
       "stage": "Fase",
+      "startupArchived": "Startup arquivada",
       "startupCreated": "Startup criada",
       "startupDeleted": "Startup eliminada permanentemente",
-      "startupArchived": "Startup arquivada",
-      "startupRestored": "Startup restaurada",
-      "archive": "Arquivar",
-      "restore": "Restaurar",
-      "viewArchived": "Ver arquivadas",
-      "viewActive": "Ver ativas",
-      "deleteForever": "Eliminar permanentemente",
-      "deleteForeverConfirm": "Eliminar permanentemente \"{{name}}\"? Esta ação não pode ser revertida.",
       "startupPortugal": "Startup Portugal",
       "startupPortugalStatus": "Startup com estatuto Startup Portugal",
+      "startupRestored": "Startup restaurada",
       "startupUpdated": "Startup atualizada",
       "status": "Estado",
       "taxId": "NIF (Número de Contribuinte)",
       "title": "Startups",
       "update": "Atualizar",
       "uploadDocument": "Anexar Documento",
+      "viewActive": "Ver ativas",
+      "viewArchived": "Ver arquivadas",
       "viewDocument": "Ver documento",
       "website": "Website"
     },
@@ -1667,6 +1667,66 @@
     "suspendedTitle": "Conta Suspensa",
     "whatHappensNext": "O que acontece a seguir?"
   },
+  "askAi": {
+    "askAnything": "Pergunta o que quiseres…",
+    "button": "Perguntar à IA",
+    "ctx": {
+      "admin": "Administração",
+      "backoffice": "Backoffice",
+      "crm": "CRM",
+      "default": "Ajuda",
+      "ecosystem": "Ecossistema",
+      "mentors": "Mentores",
+      "myWorkspaces": "O meu portefólio",
+      "myWorkspacesFounder": "O meu workspace",
+      "settings": "Definições",
+      "workspace": "Workspace",
+      "workspaceActions": "Ações do workspace",
+      "workspaceAgenda": "Agenda do workspace",
+      "workspaceDocs": "Documentos do workspace",
+      "workspaceKpis": "KPIs do workspace"
+    },
+    "q": {
+      "actionsOverdue": "Ações em atraso",
+      "bofContracts": "Contratos a tratar",
+      "bofOccupancy": "Ocupação de espaços",
+      "bofPricing": "Preços e descontos",
+      "bookMentor": "Marcar um mentor",
+      "connectCalendar": "Ligar o meu calendário",
+      "contractRenewals": "Renovações de contratos a chegar",
+      "crmConvert": "Ajuda a converter esta lead",
+      "crmHotLeads": "Mostrar leads quentes",
+      "crmStuck": "Leads paradas no pipeline",
+      "docReview": "Pedir revisão de um documento",
+      "ecoConsultorLoad": "Carga dos consultores",
+      "ecoStageDist": "Distribuição por fase",
+      "ecoTopRisks": "Principais riscos do ecossistema",
+      "findStartup": "Encontrar uma startup",
+      "founderHelp": "Preciso de ajuda com…",
+      "founderKpis": "Como atualizar os meus KPIs",
+      "founderNext": "O que devo fazer a seguir?",
+      "howAddProgram": "Como adiciono um programa?",
+      "howCreateAction": "Como crio uma ação?",
+      "howUpdateKpis": "Como atualizo os KPIs?",
+      "howUseApp": "Como uso esta app?",
+      "kpiSuggested": "KPIs sugeridos para a minha fase",
+      "kpiTrend": "Tendência de KPIs nos últimos 90 dias",
+      "mentorAvailable": "Mentores disponíveis",
+      "nextMilestone": "Próximo marco",
+      "notifSettings": "Definições de notificações",
+      "pendingApprovals": "Aprovações pendentes",
+      "portfolioOverdue": "Ações em atraso",
+      "portfolioRisk": "Portefólio em risco",
+      "portfolioWeek": "Planear a minha semana",
+      "scheduleSession": "Agendar uma sessão",
+      "shortcuts": "Atalhos de teclado",
+      "startupHealth": "Como está esta startup?",
+      "startupNext": "Qual o próximo passo desta startup?",
+      "startupRisks": "Principais riscos desta startup",
+      "upcomingSessions": "Próximas sessões",
+      "uploadDoc": "Carregar um documento"
+    }
+  },
   "auditLog": {
     "allEntities": "Todos entities",
     "details": "Detalhes",
@@ -1680,6 +1740,7 @@
     "forgotPassword": "Esqueceu a palavra-passe?",
     "forgotPasswordDesc": "Introduza o seu email e enviaremos um link para redefinir a sua palavra-passe.",
     "hasAccount": "Já tem conta?",
+    "invalidRecoveryLink": "Link de recuperação inválido ou expirado",
     "newPassword": "Nova Palavra-passe",
     "noAccount": "Não tem conta?",
     "password": "Palavra-passe",
@@ -1775,6 +1836,87 @@
     "createTaskTitle": "Criar Tarefa para {{count}} Startups",
     "descriptionOptional": "Descrição (opcional)",
     "taskTitle": "Título da Tarefa"
+  },
+  "bulkImport": {
+    "adminOnly": {
+      "desc": "Só administradores podem usar esta ferramenta.",
+      "title": "Apenas administradores"
+    },
+    "cols": {
+      "action": "Ação",
+      "confidence": "Confiança IA",
+      "fee": "Mensalidade",
+      "file": "Ficheiro",
+      "nif": "NIF",
+      "startup": "Startup",
+      "status": "Estado",
+      "typology": "Tipologia"
+    },
+    "commit": "Confirmar importação",
+    "commitSuccess": "Importados {{committed}} contratos ({{failed}} falhados)",
+    "committing": "A importar...",
+    "confirmCommit": "Importar {{count}} contratos? Vai criar/atualizar startups, workspaces e contratos.",
+    "done": {
+      "backAdmin": "Voltar ao Backoffice",
+      "desc": "Os contratos foram importados. Reveja eventuais erros abaixo.",
+      "errorsDesc": "Descarregue o ficheiro de erros, corrija e volte a carregar.",
+      "errorsTitle": "Algumas linhas falharam",
+      "startNew": "Iniciar nova importação",
+      "title": "Importação concluída"
+    },
+    "downloadErrors": "Descarregar CSV de erros",
+    "edit": {
+      "notes": "Notas",
+      "viewPdf": "Ver PDF"
+    },
+    "errors": {
+      "commitFailed": "Falha na importação",
+      "loadFailed": "Falha ao carregar linhas",
+      "noUploads": "Nenhum ficheiro carregado com sucesso",
+      "nothingToCommit": "Sem linhas prontas para importar",
+      "previewFailed": "Não foi possível abrir o PDF",
+      "uploadFailed": "Falha no carregamento"
+    },
+    "extractComplete": "Extração concluída",
+    "extracting": {
+      "title": "A IA está a ler os seus contratos"
+    },
+    "noErrors": "Sem erros para exportar",
+    "openWizard": "Importação em massa (PDF)",
+    "preview": {
+      "title": "Pré-visualização do PDF"
+    },
+    "review": {
+      "desc": "Clique numa linha para editar. Desmarque para ignorar. Linhas com erro não serão importadas.",
+      "empty": "Sem linhas.",
+      "retryExtract": "Repetir extração",
+      "title": "Rever dados extraídos"
+    },
+    "stats": {
+      "committed": "Importados",
+      "errors": "Erros",
+      "pending": "A processar",
+      "skipped": "Ignorados",
+      "total": "Total",
+      "willCreate": "A criar",
+      "willUpdate": "A atualizar"
+    },
+    "steps": {
+      "done": "3. Concluído",
+      "review": "2. Rever dados extraídos",
+      "upload": "1. Carregar PDFs"
+    },
+    "title": "Importação em Massa de Contratos",
+    "upload": {
+      "browse": "Procurar ficheiros",
+      "clearAll": "Limpar tudo",
+      "desc": "Arraste até 50 PDFs de uma vez. A IA extrai nome da startup, NIF, datas, valores e mais. Vai poder rever tudo antes de confirmar.",
+      "drop": "Arraste PDFs para aqui ou",
+      "filesSelected": "{{count}} ficheiros selecionados",
+      "start": "Carregar e extrair com IA",
+      "title": "Carregar PDFs de contratos assinados",
+      "uploading": "A carregar {{done}} / {{total}}..."
+    }
   },
   "calendar": {
     "bookSession": "Agendar Sessão",
@@ -1905,6 +2047,7 @@
   },
   "commandPalette": {
     "ai": "AI Assistant",
+    "askAboutQuery": "Perguntar à IA sobre \"{{query}}\"",
     "askCopilot": "Ask Ecosystem Copilot",
     "backToSearch": "Back to search",
     "copilotDesc": "AI-powered insights about your portfolio",
@@ -1962,6 +2105,8 @@
     "descriptionOptional": "Descrição (opcional)",
     "details": "Detalhes",
     "disabled": "desativada",
+    "discard": "Descartar",
+    "done": "Concluído",
     "download": "Descarregar",
     "draft": "Rascunho",
     "dryRunCompleteResultsummarywould_insertTo": "Dry run complete: ${result.summary.would_insert} to insert,{{ would_update }} to update",
@@ -2037,10 +2182,12 @@
     "processing": "A processar...",
     "program": "Programa",
     "rateLimitReachedPleaseWait": "Rate limit reached. Please wait a few minutes.",
+    "refresh": "Atualizar",
     "reject": "Rejeitar",
     "remove": "Remover",
     "replace": "Substituir",
     "required": "Obrigatório",
+    "reset": "Repor",
     "results": "resultados",
     "resumoGerado": "Resumo gerado",
     "retry": "Tentar novamente",
@@ -2056,6 +2203,7 @@
     "sendEmail": "Enviar email",
     "sendMessage": "Enviar Mensagem",
     "sending": "A enviar...",
+    "session": "Sessão",
     "sessions": "Sessões",
     "settings": "Definições",
     "showingResults": "A mostrar {{from}}-{{to}} de {{total}}",
@@ -2092,9 +2240,7 @@
     "viewAll": "Ver todas",
     "workspace": "Workspace",
     "years": "anos",
-    "yes": "Sim",
-    "session": "Sessão",
-    "discard": "Descartar"
+    "yes": "Sim"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -2589,6 +2735,7 @@
     "promptNextAction": "Qual é a minha melhor próxima ação?",
     "promptOverdue": "Resumir tarefas em atraso",
     "subtitle": "Assistente com IA",
+    "thinking": "A pensar…",
     "timeout": "O pedido excedeu o tempo limite. Tente novamente mais tarde.",
     "title": "Copilot do Ecossistema",
     "unavailable": "O assistente IA não está disponível neste momento. Pode navegar pela plataforma usando o menu lateral e a barra de pesquisa.",
@@ -2674,27 +2821,27 @@
       "archiveSelected": "Arquivar Selecionados",
       "archiveSuccess": "{{count}} leads arquivados",
       "archiveUndone": "Arquivamento desfeito",
-      "assignUndone": "Atribuição revertida",
-      "moveUndone": "Movimento revertido",
-      "undoFailed": "Não foi possível desfazer. Tente novamente.",
       "assign": "Atribuir",
       "assignConfirmDesc": "Isto irá atualizar o proprietário para todos os leads selecionados.",
       "assignConfirmTitle": "Atribuir {{count}} leads a {{name}}?",
       "assignFailed": "Falha ao atribuir leads",
       "assignSuccess": "{{count}} leads atribuídos a {{name}}",
+      "assignUndone": "Atribuição revertida",
       "moveConfirmDesc": "Isto irá atualizar o estágio para todos os leads selecionados, registar a alteração e acionar emails configurados.",
       "moveConfirmTitle": "Mover {{count}} leads para {{stage}}?",
       "moveFailed": "Falha ao atualizar leads",
       "moveSuccess": "{{count}} leads movidos para {{stage}}",
       "moveTo": "Mover para",
+      "moveUndone": "Movimento revertido",
       "nextActionConfirmDesc": "Isto irá definir a data da próxima ação para amanhã ({{date}}) para todos os leads sem próxima ação.",
       "nextActionConfirmTitle": "Definir próxima ação para {{count}} leads?",
       "nextActionFailed": "Falha ao definir próximas ações",
       "nextActionSuccess": "Próximas ações definidas",
+      "selectLead": "Selecionar lead",
       "selectLeads": "Selecione leads para ações em massa",
       "selectedCount": "{{count}} selecionados",
       "setNextAction": "Definir Próxima Ação (Amanhã)",
-      "selectLead": "Selecionar lead"
+      "undoFailed": "Não foi possível desfazer. Tente novamente."
     },
     "cancelTask": "Cancelar Tarefa",
     "canceled": "Canceladas",
@@ -2767,6 +2914,7 @@
     "done": "Concluídas",
     "dragDropHint": "Arraste os cartões para mudar de fase",
     "dragLeadsHere": "Arraste leads para aqui",
+    "dragToMove": "Arrastar para mover",
     "dueAt": "Vence",
     "dueDate": "Data de Vencimento",
     "dueSoon": "Em Breve",
@@ -3024,8 +3172,7 @@
     "viewAll": "Ver Tudo",
     "viewSession": "Ver Sessão",
     "weighted": "EUR",
-    "winProbability": "Probabilidade (%)",
-    "dragToMove": "Arrastar para mover"
+    "winProbability": "Probabilidade (%)"
   },
   "dashboard": {
     "acrossPrograms": "Em {{count}} programa",
@@ -3596,6 +3743,7 @@
   },
   "errors": {
     "aiApplyFailed": "Falha ao aplicar sugestões",
+    "aiCreditsExhausted": "Créditos de IA esgotados. Tenta novamente mais tarde.",
     "aiFailed": "O assistente de IA não está disponível",
     "aiFollowupFailed": "Falha ao enviar follow-up",
     "aiGenerateFailed": "Falha ao gerar resumo com IA",
@@ -3910,6 +4058,28 @@
     "session": "Sessão recente",
     "title": "Prontidão do Projeto",
     "updateKpis": "Atualizar"
+  },
+  "founderWizard": {
+    "done": "Concluir",
+    "next": "Seguinte",
+    "skip": "Saltar por agora",
+    "step1": {
+      "cta": "Abrir definições",
+      "desc": "Adicione logo e contacto para que a equipa o consiga apoiar melhor.",
+      "title": "Complete o seu perfil"
+    },
+    "step2": {
+      "cta": "Ver templates",
+      "desc": "Lean Canvas ou Pitch Deck — é um bom ponto de partida.",
+      "title": "Escolha o seu primeiro template"
+    },
+    "step3": {
+      "cta": "Abrir agenda",
+      "desc": "Marque uma conversa com o seu consultor responsável.",
+      "title": "Agende a primeira sessão"
+    },
+    "stepOf": "Passo {{n}} de {{total}}",
+    "welcome": "Bem-vindo"
   },
   "funding": {
     "addCapTableEntry": "Adicionar Entrada na Cap Table",
@@ -4921,15 +5091,15 @@
   },
   "mentorImpact": {
     "activeStartups": "Startups ativas",
+    "feedbackTitle": "Feedback recente",
     "healthyMomentum": "Momentum saudável",
+    "noComment": "Sem comentário escrito",
+    "noFeedback": "Ainda sem feedback público das sessões.",
+    "pageDesc": "Visão consolidada das suas sessões, startups ativas, follow-ups por fechar e feedback recebido.",
+    "pageTitle": "O Seu Impacto",
     "recentSessions": "Sessões recentes (30d)",
     "staleFollowup": "Follow-up em atraso",
-    "title": "O Seu Impacto",
-    "feedbackTitle": "Feedback recente",
-    "noFeedback": "Ainda sem feedback público das sessões.",
-    "noComment": "Sem comentário escrito",
-    "pageTitle": "O Seu Impacto",
-    "pageDesc": "Visão consolidada das suas sessões, startups ativas, follow-ups por fechar e feedback recebido."
+    "title": "O Seu Impacto"
   },
   "mentorNda": {
     "accepted": "Aceite",
@@ -5858,6 +6028,9 @@
   "programSetup": {
     "acceleration": {
       "addDeliverable": "Adicionar",
+      "addGate": "Adicionar Gate",
+      "addWeek": "Adicionar Semana",
+      "assignGate": "Gate",
       "bulkAdd": "Adicionar em massa",
       "bulkAddConfirm": "Adicionar entregáveis",
       "bulkAddDefaultWeek": "Semana por defeito (opcional)",
@@ -5874,21 +6047,6 @@
       "bulkAddedWithWeeks": "{{a}} entregáveis adicionados ({{w}} novas semanas criadas)",
       "bulkRemoveN": "Remover ({{n}})",
       "bulkRemoved": "{{n}} entregáveis removidos",
-      "libraryDesc": "Vista plana de todos os entregáveis ao longo das semanas. Selecione vários para remover em massa, ou cole muitos de uma vez.",
-      "libraryEmpty": "Sem entregáveis. Adicione-os dentro das semanas abaixo ou use Adicionar em massa.",
-      "libraryTitle": "Biblioteca de Entregáveis",
-      "templateCol": "Template",
-      "undo": "Anular",
-      "undoLabelAdd": "Adicionar {{n}} entregáveis",
-      "undoLabelRemove": "Remover {{n}} entregáveis",
-      "undoLabelRemoveDeliverable": "Remover entregável",
-      "undoLabelRemoveWeek": "Remover Semana {{number}}",
-      "undoneToast": "Anulado: {{label}}",
-      "titleCol": "Título",
-      "weekCol": "Semana",
-      "addGate": "Adicionar Gate",
-      "addWeek": "Adicionar Semana",
-      "assignGate": "Gate",
       "defaultGate1": "Discovery",
       "defaultGate2": "Build",
       "defaultGate3": "Launch",
@@ -5901,6 +6059,9 @@
       "gateNamePlaceholder": "ex: Discovery",
       "gates": "Gates / Fases",
       "gatesDesc": "Defina as fases/checkpoints principais do seu programa de aceleração.",
+      "libraryDesc": "Vista plana de todos os entregáveis ao longo das semanas. Selecione vários para remover em massa, ou cole muitos de uma vez.",
+      "libraryEmpty": "Sem entregáveis. Adicione-os dentro das semanas abaixo ou use Adicionar em massa.",
+      "libraryTitle": "Biblioteca de Entregáveis",
       "linkTemplate": "Ligar template da plataforma (opcional)",
       "noDeliverables": "Sem entregáveis ainda. Adicione o que as startups devem completar nesta semana.",
       "noGate": "Sem gate",
@@ -5908,7 +6069,16 @@
       "noWeeks": "Nenhuma semana configurada ainda. Adicione semanas para definir a timeline do programa.",
       "removeWeek": "Remover Semana",
       "startWeek": "Semana Início",
+      "templateCol": "Template",
+      "titleCol": "Título",
+      "undo": "Anular",
+      "undoLabelAdd": "Adicionar {{n}} entregáveis",
+      "undoLabelRemove": "Remover {{n}} entregáveis",
+      "undoLabelRemoveDeliverable": "Remover entregável",
+      "undoLabelRemoveWeek": "Remover Semana {{number}}",
+      "undoneToast": "Anulado: {{label}}",
       "untitled": "Sem título",
+      "weekCol": "Semana",
       "weekDescription": "Descrição",
       "weekN": "Semana {{n}}",
       "weekNumber": "Semana #",
@@ -6373,9 +6543,17 @@
     "allStatusesActive": "Todos os estados visíveis",
     "allTags": "Todas as tags",
     "allWorkspaces": "Todos os workspaces",
+    "askAI": "Perguntar à IA",
+    "askAIContextHeader": "Perguntar à IA sobre estes resultados",
+    "askAIHint": "A IA usa os resultados visíveis como contexto",
+    "askAIPlaceholder": "Pergunta o que quiseres sobre os resultados",
+    "askAIPlaceholderSeed": "ex.: Resume os principais riscos",
+    "askAboutResults": "Perguntar sobre estes resultados",
+    "backToResults": "Voltar aos resultados",
     "enterName": "Introduza um nome",
     "loaded": "Carregada: {{name}}",
     "noResultsFor": "Sem resultados para \"{{query}}\"",
+    "recent": "Recentes",
     "saveSearch": "Guardar Pesquisa",
     "saved": "Pesquisa guardada",
     "savedLabel": "Guardadas",
@@ -6397,9 +6575,6 @@
       "startups": "Startups",
       "workspaces": "Workspaces"
     },
-    "askAI": "Perguntar à IA",
-    "backToResults": "Voltar aos resultados",
-    "recent": "Recentes",
     "viewAllResults": "Ver todos os resultados"
   },
   "sectors": {
@@ -6971,6 +7146,52 @@
     "toggleTheme": "Alternar tema",
     "undo": "Desfazer",
     "view": "Vista e Visualização"
+  },
+  "smartImport": {
+    "analyse": "Analisar com IA",
+    "applySelected": "Aplicar seleção",
+    "applying": "A aplicar ao seu workspace…",
+    "button": "Importação Inteligente (PDF)",
+    "description": {
+      "create": "Carregue um pitch deck ou plano de negócios e a IA extrai os dados para criar um workspace.",
+      "fill": "Carregue um pitch deck ou plano de negócios e a IA preenche os campos do workspace para você rever."
+    },
+    "errors": {
+      "extractFailed": "Não foi possível extrair dados deste PDF.",
+      "nameRequired": "O nome da startup é obrigatório.",
+      "notPdf": "Apenas são aceites ficheiros PDF.",
+      "programRequired": "Selecione um programa.",
+      "tooLarge": "O PDF deve ter menos de 15 MB."
+    },
+    "extracting": "A ler o seu documento…",
+    "extractingHint": "Normalmente demora 10–30 segundos.",
+    "fields": {
+      "address": "Morada",
+      "contactEmail": "Email do contacto principal",
+      "contactName": "Nome do contacto principal",
+      "contactPhone": "Telefone do contacto principal",
+      "description": "Descrição",
+      "foundedDate": "Data de fundação",
+      "name": "Nome",
+      "nif": "NIF",
+      "sector": "Setor",
+      "stage": "Estágio",
+      "website": "Website"
+    },
+    "parsed": "Processadas {{pages}} página(s). Reveja os dados extraídos, edite o que precisar e escolha o que aplicar.",
+    "program": "Programa",
+    "sections": {
+      "funding": "Financiamento",
+      "kpis": "KPIs",
+      "startup": "Perfil da startup",
+      "team": "Equipa"
+    },
+    "shortButton": "Importar",
+    "startOver": "Carregar outro",
+    "success": "Importação inteligente concluída.",
+    "title": "Importação Inteligente a partir de PDF",
+    "uploadCta": "Clique para carregar um PDF",
+    "uploadHint": "Pitch deck ou plano de negócios · PDF com texto · máx. 15 MB"
   },
   "smartNudges": {
     "actionsOverdue": "Tem {{count}} ação(ões) em atraso. Resolva-as para manter o ritmo.",
@@ -7798,9 +8019,9 @@
     "test": "Teste",
     "title": "Templates",
     "unitEconomics": "Unit Economics",
+    "unsavedChangesTitle": "Descartar alterações não guardadas?",
     "unsavedChangesWarning": "Tem alterações não guardadas. Tem a certeza que deseja fechar?",
-    "useTemplate": "Usar Template",
-    "unsavedChangesTitle": "Descartar alterações não guardadas?"
+    "useTemplate": "Usar Template"
   },
   "tests": {
     "fail": "Falhou",
@@ -8088,9 +8309,6 @@
     "bulkSnoozed": "{{count}} itens adiados {{days}} dias",
     "bulkToolbar": "Barra de ações em massa",
     "clearSelection": "Limpar seleção",
-    "selectAll": "Selecionar tudo",
-    "selectItem": "Selecionar item",
-    "selectedCount": "{{count}} selecionado(s)",
     "dueThisWeek": "esta semana",
     "markDone": "Marcar Concluída",
     "markedDone": "Marcado como concluído",
@@ -8098,6 +8316,9 @@
     "open": "abertas",
     "overdue": "atrasadas",
     "overdueLabel": "Atrasado",
+    "selectAll": "Selecionar tudo",
+    "selectItem": "Selecionar item",
+    "selectedCount": "{{count}} selecionado(s)",
     "snooze1Day": "Adiar 1 dia",
     "snooze7Days": "Adiar 7 dias",
     "snoozeFailed": "Falha ao adiar",
@@ -8303,154 +8524,5 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
-  },
-  "founderWizard": {
-    "welcome": "Bem-vindo",
-    "stepOf": "Passo {{n}} de {{total}}",
-    "skip": "Saltar por agora",
-    "next": "Seguinte",
-    "done": "Concluir",
-    "step1": {
-      "title": "Complete o seu perfil",
-      "desc": "Adicione logo e contacto para que a equipa o consiga apoiar melhor.",
-      "cta": "Abrir definições"
-    },
-    "step2": {
-      "title": "Escolha o seu primeiro template",
-      "desc": "Lean Canvas ou Pitch Deck — é um bom ponto de partida.",
-      "cta": "Ver templates"
-    },
-    "step3": {
-      "title": "Agende a primeira sessão",
-      "desc": "Marque uma conversa com o seu consultor responsável.",
-      "cta": "Abrir agenda"
-    }
-  },
-  "bulkImport": {
-    "openWizard": "Importação em massa (PDF)",
-    "title": "Importação em Massa de Contratos",
-    "confirmCommit": "Importar {{count}} contratos? Vai criar/atualizar startups, workspaces e contratos.",
-    "commitSuccess": "Importados {{committed}} contratos ({{failed}} falhados)",
-    "extractComplete": "Extração concluída",
-    "noErrors": "Sem erros para exportar",
-    "committing": "A importar...",
-    "commit": "Confirmar importação",
-    "downloadErrors": "Descarregar CSV de erros",
-    "adminOnly": {
-      "title": "Apenas administradores",
-      "desc": "Só administradores podem usar esta ferramenta."
-    },
-    "steps": {
-      "upload": "1. Carregar PDFs",
-      "review": "2. Rever dados extraídos",
-      "done": "3. Concluído"
-    },
-    "upload": {
-      "title": "Carregar PDFs de contratos assinados",
-      "desc": "Arraste até 50 PDFs de uma vez. A IA extrai nome da startup, NIF, datas, valores e mais. Vai poder rever tudo antes de confirmar.",
-      "drop": "Arraste PDFs para aqui ou",
-      "browse": "Procurar ficheiros",
-      "filesSelected": "{{count}} ficheiros selecionados",
-      "clearAll": "Limpar tudo",
-      "uploading": "A carregar {{done}} / {{total}}...",
-      "start": "Carregar e extrair com IA"
-    },
-    "stats": {
-      "total": "Total",
-      "willCreate": "A criar",
-      "willUpdate": "A atualizar",
-      "errors": "Erros",
-      "pending": "A processar",
-      "committed": "Importados",
-      "skipped": "Ignorados"
-    },
-    "extracting": {
-      "title": "A IA está a ler os seus contratos"
-    },
-    "review": {
-      "title": "Rever dados extraídos",
-      "desc": "Clique numa linha para editar. Desmarque para ignorar. Linhas com erro não serão importadas.",
-      "retryExtract": "Repetir extração",
-      "empty": "Sem linhas."
-    },
-    "cols": {
-      "file": "Ficheiro",
-      "startup": "Startup",
-      "nif": "NIF",
-      "typology": "Tipologia",
-      "fee": "Mensalidade",
-      "status": "Estado",
-      "action": "Ação",
-      "confidence": "Confiança IA"
-    },
-    "edit": {
-      "notes": "Notas",
-      "viewPdf": "Ver PDF"
-    },
-    "preview": {
-      "title": "Pré-visualização do PDF"
-    },
-    "done": {
-      "title": "Importação concluída",
-      "desc": "Os contratos foram importados. Reveja eventuais erros abaixo.",
-      "errorsTitle": "Algumas linhas falharam",
-      "errorsDesc": "Descarregue o ficheiro de erros, corrija e volte a carregar.",
-      "startNew": "Iniciar nova importação",
-      "backAdmin": "Voltar ao Backoffice"
-    },
-    "errors": {
-      "loadFailed": "Falha ao carregar linhas",
-      "noUploads": "Nenhum ficheiro carregado com sucesso",
-      "uploadFailed": "Falha no carregamento",
-      "previewFailed": "Não foi possível abrir o PDF",
-      "nothingToCommit": "Sem linhas prontas para importar",
-      "commitFailed": "Falha na importação"
-    }
-  },
-  "smartImport": {
-    "button": "Importação Inteligente (PDF)",
-    "shortButton": "Importar",
-    "title": "Importação Inteligente a partir de PDF",
-    "description": {
-      "create": "Carregue um pitch deck ou plano de negócios e a IA extrai os dados para criar um workspace.",
-      "fill": "Carregue um pitch deck ou plano de negócios e a IA preenche os campos do workspace para você rever."
-    },
-    "uploadCta": "Clique para carregar um PDF",
-    "uploadHint": "Pitch deck ou plano de negócios · PDF com texto · máx. 15 MB",
-    "extracting": "A ler o seu documento…",
-    "extractingHint": "Normalmente demora 10–30 segundos.",
-    "applying": "A aplicar ao seu workspace…",
-    "analyse": "Analisar com IA",
-    "applySelected": "Aplicar seleção",
-    "startOver": "Carregar outro",
-    "success": "Importação inteligente concluída.",
-    "program": "Programa",
-    "parsed": "Processadas {{pages}} página(s). Reveja os dados extraídos, edite o que precisar e escolha o que aplicar.",
-    "sections": {
-      "startup": "Perfil da startup",
-      "team": "Equipa",
-      "funding": "Financiamento",
-      "kpis": "KPIs"
-    },
-    "fields": {
-      "name": "Nome",
-      "description": "Descrição",
-      "website": "Website",
-      "sector": "Setor",
-      "foundedDate": "Data de fundação",
-      "stage": "Estágio",
-      "address": "Morada",
-      "nif": "NIF",
-      "contactName": "Nome do contacto principal",
-      "contactEmail": "Email do contacto principal",
-      "contactPhone": "Telefone do contacto principal"
-    },
-    "errors": {
-      "notPdf": "Apenas são aceites ficheiros PDF.",
-      "tooLarge": "O PDF deve ter menos de 15 MB.",
-      "extractFailed": "Não foi possível extrair dados deste PDF.",
-      "programRequired": "Selecione um programa.",
-      "nameRequired": "O nome da startup é obrigatório."
-    }
   }
 }
