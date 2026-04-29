@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, FileText, CheckSquare, MessageSquare, File, Calendar, Target, Save, Loader2, X } from 'lucide-react';
+import { Search, FileText, CheckSquare, MessageSquare, File, Calendar, Target, Save, Loader2, X, Sparkles, Send, RefreshCw } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { useCopilotChat } from '@/hooks/useCopilotChat';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
