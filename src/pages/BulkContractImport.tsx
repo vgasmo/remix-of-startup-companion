@@ -460,6 +460,11 @@ export default function BulkContractImport() {
         {/* STEP 2: REVIEW */}
         {step === 'review' && batchId && (
           <>
+            {selectedProgramName && (
+              <Badge variant="secondary" className="text-xs">
+                {t('bulkImport.program.selected', { name: selectedProgramName })}
+              </Badge>
+            )}
             {/* Summary */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               <SummaryStat label={t('bulkImport.stats.total', 'Total')} value={counts.total} />
