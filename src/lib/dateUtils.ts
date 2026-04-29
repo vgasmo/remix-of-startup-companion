@@ -197,6 +197,73 @@ export function formatLocalizedDate(date: Date | string | null | undefined, form
 }
 
 /**
+ * Canonical app timezone. All scheduling-facing wall-clock times
+ * (consultant availability, booking slots, calendar events) are interpreted
+ * in this zone unless explicitly stated otherwise.
+ *
+ * See memory: infrastructure/timezone-and-booking-standards
+ */
+export const APP_TIMEZONE = 'Europe/Lisbon';
+
+/**
+ * Returns the offset (in minutes) of Europe/Lisbon vs UTC for the given
+ * instant. Positive means Lisbon is ahead of UTC. Lisbon is UTC+0 in winter
+ * and UTC+1 (WEST) in summer, so this is +0 or +60.
+ */
+function getLisbonOffsetMinutes(date: Date): number {
+  // Format the same instant in Lisbon and in UTC, then diff.
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone: APP_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+  const parts = dtf.formatToParts(date).reduce<Record<string, string>>((acc, p) => {
+    if (p.type !== 'literal') acc[p.type] = p.value;
+    return acc;
+  }, {});
+  const asUtcMs = Date.UTC(
+    Number(parts.year),
+    Number(parts.month) - 1,
+    Number(parts.day),
+    Number(parts.hour === '24' ? '00' : parts.hour),
+    Number(parts.minute),
+    Number(parts.second),
+  );
+  return Math.round((asUtcMs - date.getTime()) / 60000);
+}
+
+/**
+ * Convert a wall-clock string like "2026-04-29T09:00:00" representing
+ * Europe/Lisbon time into a correct UTC ISO string (e.g. "2026-04-29T08:00:00.000Z").
+ *
+ * This must be used whenever we read a slot string from the availability
+ * endpoint or a manual-time input that the user expects to be Lisbon time —
+ * never rely on `new Date(localString)` which uses the *browser's* timezone.
+ */
+export function lisbonWallClockToUtcIso(wallClock: string): string {
+  const m = wallClock.match(
+    /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/,
+  );
+  if (!m) {
+    // Fallback: best-effort parse. Caller passed an already-zoned string.
+    return new Date(wallClock).toISOString();
+  }
+  const [, y, mo, d, h, mi, s] = m;
+  // Build a Date as if the wall clock were UTC, then subtract Lisbon's offset
+  // for that moment to get the real UTC instant.
+  const naiveUtc = new Date(
+    Date.UTC(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s ?? '0')),
+  );
+  const offsetMin = getLisbonOffsetMinutes(naiveUtc);
+  return new Date(naiveUtc.getTime() - offsetMin * 60_000).toISOString();
+}
+
+/**
  * Get the day of week name localized
  */
 export function getLocalizedDayName(dayIndex: number): string {

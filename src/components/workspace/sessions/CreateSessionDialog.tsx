@@ -41,6 +41,7 @@ import { toast } from 'sonner';
 import { useConsultantAvailability, useValidateBookingSlot } from '@/hooks/useConsultantCalendar';
 import { useMentorAvailability } from '@/hooks/useMentorAvailability';
 import { logger } from '@/lib/logger';
+import { lisbonWallClockToUtcIso } from '@/lib/dateUtils';
 
 interface CreateSessionDialogProps {
   workspaceId: string;
@@ -162,21 +163,29 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
         toast.error(t('common.error'));
         return;
       }
-      scheduledAtISO = new Date(manualDateTime).toISOString();
+      // Manual datetime-local input is a wall-clock string. Treat it as
+      // Europe/Lisbon (the canonical app timezone) so the saved UTC instant
+      // matches what the user typed regardless of their browser timezone.
+      scheduledAtISO = lisbonWallClockToUtcIso(manualDateTime);
     } else {
       if (!title.trim() || !selectedDate || !selectedSlot) {
         toast.error(t('sessions.selectDateAndSlot', 'Please select a date and time slot'));
         return;
       }
 
+      // selectedSlot comes from check-consultant-availability and is a
+      // wall-clock string in Europe/Lisbon (e.g. "2026-04-29T09:00:00").
+      // Convert explicitly so non-Lisbon browsers still produce the correct UTC.
+      const startUtcIso = lisbonWallClockToUtcIso(selectedSlot);
+
       if (meetingWith === 'consultor') {
         const durationMinutes = Number.parseInt(duration || '60', 10);
-        const start = new Date(selectedSlot);
+        const start = new Date(startUtcIso);
         const end = new Date(start.getTime() + durationMinutes * 60000);
 
         const validation = await validateSlotMutation.mutateAsync({
           workspaceId,
-          startTime: selectedSlot,
+          startTime: startUtcIso,
           endTime: end.toISOString(),
         });
 
@@ -192,7 +201,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
         }
       }
 
-      scheduledAtISO = new Date(selectedSlot).toISOString();
+      scheduledAtISO = startUtcIso;
     }
 
     setIsSending(true);
