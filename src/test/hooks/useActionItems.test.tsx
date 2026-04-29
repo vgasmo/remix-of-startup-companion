@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
@@ -124,16 +124,8 @@ describe('useUpdateActionItem – optimistic rollback', () => {
       result.current.mutate({ id: 'action-1', status: 'completed' });
     });
 
-    // The optimistic update should show 'completed' immediately
-    await vi.waitFor(() => {
-      const cached = queryClient.getQueryData<any[]>(['action-items', WORKSPACE_ID]);
-      // Either the optimistic update is visible OR the rollback already happened
-      // We need to wait for the mutation to settle
-      expect(cached).toBeDefined();
-    });
-
     // Wait for the mutation to settle (error + rollback)
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(result.current.isError).toBe(true);
     });
 
@@ -190,11 +182,11 @@ describe('useUpdateActionItem – optimistic rollback', () => {
       { wrapper: createWrapper(queryClient) },
     );
 
-    await act(async () => {
+    act(() => {
       result.current.mutate({ id: 'action-1', status: 'completed' });
     });
 
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(result.current.isSuccess || result.current.isError).toBe(true);
     }, { timeout: 5000 });
 
@@ -237,7 +229,7 @@ describe('useUpdateActionItem – optimistic rollback', () => {
       result.current.mutate({ id: 'action-2', status: 'completed' });
     });
 
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(result.current.isError).toBe(true);
     });
 
