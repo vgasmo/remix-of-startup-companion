@@ -1681,10 +1681,13 @@
       "myWorkspacesFounder": "My workspace",
       "settings": "Settings",
       "workspace": "Workspace",
+      "workspaceActions": "Workspace actions",
       "workspaceAgenda": "Workspace agenda",
-      "workspaceDocs": "Workspace documents"
+      "workspaceDocs": "Workspace documents",
+      "workspaceKpis": "Workspace KPIs"
     },
     "q": {
+      "actionsOverdue": "Overdue actions",
       "bofContracts": "Contracts to action",
       "bofOccupancy": "Spaces occupancy",
       "bofPricing": "Pricing & discounts",
@@ -1703,11 +1706,13 @@
       "founderKpis": "How to update my KPIs",
       "founderNext": "What should I do next?",
       "howAddProgram": "How do I add a program?",
+      "howCreateAction": "How do I create an action?",
       "howUpdateKpis": "How do I update KPIs?",
       "howUseApp": "How do I use this app?",
       "kpiSuggested": "Suggested KPIs for my stage",
       "kpiTrend": "KPI trend last 90 days",
       "mentorAvailable": "Available mentors",
+      "nextMilestone": "Next milestone",
       "notifSettings": "Notification settings",
       "pendingApprovals": "Pending approvals",
       "portfolioOverdue": "Overdue actions",
@@ -2042,6 +2047,7 @@
   },
   "commandPalette": {
     "ai": "AI Assistant",
+    "askAboutQuery": "Ask AI about \"{{query}}\"",
     "askCopilot": "Ask Ecosystem Copilot",
     "backToSearch": "Back to search",
     "copilotDesc": "AI-powered insights about your portfolio",
