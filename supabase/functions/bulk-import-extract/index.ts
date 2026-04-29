@@ -115,6 +115,25 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Download failed" }, 500);
     }
 
+    // Server-side validation: size and type. Defense-in-depth (clients already filter).
+    const MAX_PDF_BYTES = 20 * 1024 * 1024; // 20 MB
+    const detectedType = (fileData as Blob).type || "";
+    const isPdfByName = String(row.pdf_filename || "").toLowerCase().endsWith(".pdf");
+    if (detectedType && !detectedType.includes("pdf") && !isPdfByName) {
+      await admin.from("bulk_import_rows").update({
+        status: "error",
+        error_message: `Unsupported file type: ${detectedType || "unknown"} (expected PDF)`,
+      }).eq("id", rowId);
+      return jsonResponse({ error: "Unsupported file type" }, 400);
+    }
+    if ((fileData as Blob).size > MAX_PDF_BYTES) {
+      await admin.from("bulk_import_rows").update({
+        status: "error",
+        error_message: `PDF too large (${((fileData as Blob).size / 1024 / 1024).toFixed(1)} MB). Max 20 MB.`,
+      }).eq("id", rowId);
+      return jsonResponse({ error: "PDF too large" }, 413);
+    }
+
     const arrayBuffer = await fileData.arrayBuffer();
     // Convert to base64 in chunks (avoid stack overflow on large files)
     const bytes = new Uint8Array(arrayBuffer);
