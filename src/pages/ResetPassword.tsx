@@ -26,38 +26,45 @@ export default function ResetPassword() {
 
   useEffect(() => {
     // Handle both PKCE (?code=) and implicit (#access_token&type=recovery) recovery flows.
+    // CRITICAL: We must distinguish a *real* recovery context (code/hash/event) from a
+    // pre-existing logged-in session, otherwise a logged-in user clicking a malformed
+    // link would change the wrong account's password.
+    let recoveryConfirmed = false;
+
     const verifyRecovery = async () => {
       try {
         const url = new URL(window.location.href);
         const code = url.searchParams.get('code');
         const errorParam = url.searchParams.get('error') || url.searchParams.get('error_description');
         const hash = window.location.hash || '';
+        const hasRecoveryHash = hash.includes('type=recovery') || hash.includes('access_token');
 
         // PKCE flow: exchange the code for a session.
         if (code) {
           const { error: exErr } = await supabase.auth.exchangeCodeForSession(code);
           if (exErr) throw exErr;
-          // Clean the URL so refresh doesn't re-trigger.
+          recoveryConfirmed = true;
           window.history.replaceState({}, '', '/reset-password');
           setVerifying(false);
           return;
         }
 
-        // Implicit flow: Supabase JS auto-parses the hash on load; just wait briefly
-        // and confirm we end up with a session.
-        if (hash.includes('type=recovery') || hash.includes('access_token')) {
-          // Give detectSessionInUrl a tick to finish.
-          await new Promise((r) => setTimeout(r, 250));
-        }
-
         if (errorParam) throw new Error(errorParam);
 
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          // No recovery context at all — send them to login.
-          navigate('/login');
-          return;
+        // Implicit flow: wait for Supabase JS to parse the hash and fire PASSWORD_RECOVERY.
+        if (hasRecoveryHash) {
+          // The onAuthStateChange listener below will flip recoveryConfirmed and verifying.
+          // Give it up to 3s; if nothing fires, treat as invalid.
+          for (let i = 0; i < 12; i++) {
+            await new Promise((r) => setTimeout(r, 250));
+            if (recoveryConfirmed) return;
+          }
+          throw new Error(t('auth.invalidRecoveryLink', 'Invalid or expired recovery link'));
         }
+
+        // No recovery context at all — do NOT trust any pre-existing session.
+        // Send the user to login with a clear message.
+        setError(t('auth.invalidRecoveryLink', 'Invalid or expired recovery link'));
         setVerifying(false);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Invalid or expired recovery link';
@@ -66,9 +73,10 @@ export default function ResetPassword() {
       }
     };
 
-    // Also listen for the PASSWORD_RECOVERY event Supabase fires after parsing the URL.
+    // Listen for the PASSWORD_RECOVERY event Supabase fires after parsing the URL.
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+      if (event === 'PASSWORD_RECOVERY') {
+        recoveryConfirmed = true;
         setVerifying(false);
       }
     });
@@ -77,7 +85,7 @@ export default function ResetPassword() {
     return () => {
       sub.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
