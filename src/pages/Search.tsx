@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, FileText, CheckSquare, MessageSquare, File, Calendar, Target, Save, Loader2, X } from 'lucide-react';
+import { Search, FileText, CheckSquare, MessageSquare, File, Calendar, Target, Save, Loader2, X, Sparkles, Send, RefreshCw } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { useCopilotChat } from '@/hooks/useCopilotChat';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -289,20 +291,8 @@ export default function SearchPage() {
           </div>
           )}
 
-          {/* Staff-only: show all workspace statuses toggle */}
-          {isStaff && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border/40">
-              <Switch checked={showAllStatuses} onCheckedChange={setShowAllStatuses} />
-              <span className="text-xs text-muted-foreground">
-                {t('search.showAllStatuses', { defaultValue: 'Mostrar todos os estados' })}
-              </span>
-              {showAllStatuses && (
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:text-amber-400">
-                  {t('search.allStatusesActive', { defaultValue: 'Todos os estados visíveis' })}
-                </Badge>
-              )}
-            </div>
-          )}
+          <AskAiPanel seedQuery={debouncedQuery} />
+
         {/* Results */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
@@ -360,3 +350,95 @@ export default function SearchPage() {
     </AppLayout>
   );
 }
+
+function AskAiPanel({ seedQuery }: { seedQuery: string }) {
+  const { t } = useTranslation();
+  const { messages, isThinking, isAvailable, send, reset } = useCopilotChat();
+  const [input, setInput] = useState('');
+
+  const handleSend = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const text = input.trim() || seedQuery.trim();
+    if (!text) return;
+    setInput('');
+    send(text);
+  };
+
+  return (
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          {t('search.askAI', { defaultValue: 'Perguntar à IA' })}
+          {messages.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={reset} className="ml-auto h-7 px-2 text-xs">
+              <RefreshCw className="h-3 w-3 mr-1" />
+              {t('common.reset', { defaultValue: 'Limpar' })}
+            </Button>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {messages.length === 0 && (
+          <p className="text-xs text-muted-foreground">
+            {t('search.askAIHint', { defaultValue: 'Faça uma pergunta sobre o ecossistema ou como usar a aplicação. Ex.: "startups em risco", "como criar um contrato".' })}
+          </p>
+        )}
+        {messages.length > 0 && (
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {messages.map((m) => (
+              <div
+                key={m.id}
+                className={`text-sm rounded-lg p-3 ${
+                  m.role === 'user'
+                    ? 'bg-muted ml-8'
+                    : 'bg-background border border-border/40 mr-8'
+                }`}
+              >
+                {m.role === 'assistant' ? (
+                  <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                    <ReactMarkdown>{m.content}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="whitespace-pre-wrap">{m.content}</p>
+                )}
+              </div>
+            ))}
+            {isThinking && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mr-8">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                {t('copilot.thinking', { defaultValue: 'A pensar…' })}
+              </div>
+            )}
+          </div>
+        )}
+        <form onSubmit={handleSend} className="flex gap-2">
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={
+              seedQuery
+                ? t('search.askAIPlaceholderSeed', { query: seedQuery, defaultValue: `Perguntar sobre "${seedQuery}"…` })
+                : t('search.askAIPlaceholder', { defaultValue: 'Escreva uma pergunta…' })
+            }
+            disabled={isThinking || !isAvailable}
+            className="flex-1"
+          />
+          <Button
+            type="submit"
+            size="sm"
+            disabled={isThinking || !isAvailable || (!input.trim() && !seedQuery.trim())}
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </form>
+        {!isAvailable && (
+          <p className="text-xs text-muted-foreground">
+            {t('copilot.unavailable', { defaultValue: 'O assistente IA não está disponível neste momento.' })}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
