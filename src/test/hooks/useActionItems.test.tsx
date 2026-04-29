@@ -229,12 +229,14 @@ describe('useUpdateActionItem – optimistic rollback', () => {
     );
 
     // Try to mark action-2 as completed
-    act(() => {
+    await act(async () => {
       result.current.mutate({ id: 'action-2', status: 'completed' });
     });
 
-    await vi.waitFor(() => {
-      expect(result.current.isError).toBe(true);
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
     });
 
     // All items should be restored to original
