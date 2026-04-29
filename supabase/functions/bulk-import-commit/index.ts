@@ -266,7 +266,7 @@ Deno.serve(async (req) => {
             // Always refresh the PDF path; only overwrite full payload on admin opt-in
             const updatePayload = overwriteExisting
               ? contractPayload
-              : { contract_pdf_path: contractPdfPath, pricing_snapshot_json: pricingSnapshot };
+              : { contract_pdf_path: contractPdfPath, document_url: documentUrl, pricing_snapshot_json: { ...pricingSnapshot, pdf_bucket: pdfBucket } };
             const { error: upErr } = await admin
               .from("startup_contracts")
               .update(updatePayload)
