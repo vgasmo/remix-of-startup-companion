@@ -323,12 +323,26 @@ export function useGlobalSearch(filters: SearchFilters) {
       // Search startups (RLS will filter to what the user can see)
       if (typesToSearch.includes('startup')) {
         searchPromises.push((async () => {
-          const { data } = await supabase
+          const { data: exactData } = await supabase
             .from('startups')
             .select('id, name, description, updated_at')
             .or(`name.ilike.${ilikeTerm},description.ilike.${ilikeTerm}`)
             .is('archived_at', null)
             .limit(20);
+
+          let data = exactData || [];
+
+          // Fuzzy fallback (typo-tolerant) when exact ILIKE returned nothing
+          if (data.length === 0 && searchTerm.length >= 3) {
+            const { data: fuzzy } = await supabase.rpc('fuzzy_search_startups', {
+              p_query: searchTerm,
+              p_limit: 10,
+            });
+            data = (fuzzy || []).map((s: any) => ({
+              id: s.id, name: s.name, description: s.description, updated_at: s.updated_at,
+            }));
+          }
+
           // Map startup → its first workspace for navigation
           const ids = (data || []).map(s => s.id);
           let wsByStartup: Record<string, string> = {};
