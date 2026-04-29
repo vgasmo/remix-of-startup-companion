@@ -229,10 +229,8 @@ describe('useUpdateActionItem – optimistic rollback', () => {
       result.current.mutate({ id: 'action-2', status: 'completed' });
     });
 
-    await act(async () => {
-      await vi.waitFor(() => {
-        expect(result.current.isError).toBe(true);
-      });
+    await waitFor(() => {
+      expect(result.current.isError).toBe(true);
     });
 
     // All items should be restored to original
