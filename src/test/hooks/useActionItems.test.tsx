@@ -120,21 +120,15 @@ describe('useUpdateActionItem – optimistic rollback', () => {
     );
 
     // Trigger the mutation: mark as completed
-    act(() => {
+    await act(async () => {
       result.current.mutate({ id: 'action-1', status: 'completed' });
     });
 
-    // The optimistic update should show 'completed' immediately
-    await vi.waitFor(() => {
-      const cached = queryClient.getQueryData<any[]>(['action-items', WORKSPACE_ID]);
-      // Either the optimistic update is visible OR the rollback already happened
-      // We need to wait for the mutation to settle
-      expect(cached).toBeDefined();
-    });
-
     // Wait for the mutation to settle (error + rollback)
-    await vi.waitFor(() => {
-      expect(result.current.isError).toBe(true);
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
     });
 
     // After rollback, the cache should be restored to original state
