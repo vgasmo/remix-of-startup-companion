@@ -575,6 +575,25 @@ Deno.serve(async (req: Request) => {
         const startDate = new Date(typedSession.scheduled_at);
         const endDate = new Date(startDate.getTime() + (typedSession.duration || 60) * 60 * 1000);
 
+        // Send wall-clock time in Europe/Lisbon (the canonical app timezone)
+        // instead of stripping Z from a UTC ISO and labeling it "UTC".
+        // This matches what the founder/consultant saw in the booking UI
+        // and removes any chance of the recipient seeing a shifted hour.
+        const toLisbonWallClock = (d: Date): string => {
+          const dtf = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Europe/Lisbon',
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false,
+          });
+          const parts = dtf.formatToParts(d).reduce<Record<string, string>>((acc, p) => {
+            if (p.type !== 'literal') acc[p.type] = p.value;
+            return acc;
+          }, {});
+          const hh = parts.hour === '24' ? '00' : parts.hour;
+          return `${parts.year}-${parts.month}-${parts.day}T${hh}:${parts.minute}:${parts.second}`;
+        };
+
         // Build event object
         const eventData: GraphCalendarEvent = {
           subject: `${typedSession.title} - ${startupName}`,
@@ -583,12 +602,12 @@ Deno.serve(async (req: Request) => {
             content: `<p>${typedSession.notes || ''}</p><p><a href="${sessionLink}">View in Startup Leiria</a></p>`,
           },
           start: {
-            dateTime: startDate.toISOString().slice(0, -1), // Remove Z for Graph API
-            timeZone: 'UTC',
+            dateTime: toLisbonWallClock(startDate),
+            timeZone: 'Europe/Lisbon',
           },
           end: {
-            dateTime: endDate.toISOString().slice(0, -1),
-            timeZone: 'UTC',
+            dateTime: toLisbonWallClock(endDate),
+            timeZone: 'Europe/Lisbon',
           },
           isOnlineMeeting: true,
           onlineMeetingProvider: 'teamsForBusiness',
