@@ -7161,6 +7161,7 @@
       "nameRequired": "O nome da startup é obrigatório.",
       "notPdf": "Apenas são aceites ficheiros PDF.",
       "programRequired": "Selecione um programa.",
+      "staffOnlyCreate": "Apenas a equipa pode criar novos workspaces a partir de uma Importação Inteligente. Peça a um administrador ou consultor.",
       "tooLarge": "O PDF deve ter menos de 15 MB."
     },
     "extracting": "A ler o seu documento…",

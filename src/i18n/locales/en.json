@@ -7161,6 +7161,7 @@
       "nameRequired": "Startup name is required.",
       "notPdf": "Only PDF files are accepted.",
       "programRequired": "Please select a program.",
+      "staffOnlyCreate": "Only staff can create new workspaces from a Smart Import. Please ask an administrator or consultant.",
       "tooLarge": "PDF must be under 15 MB."
     },
     "extracting": "Reading your document…",
