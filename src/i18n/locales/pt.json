@@ -6386,12 +6386,20 @@
     "startTyping": "Comece a digitar para pesquisar sessões, ações, notas, documentos e mensagens.",
     "types": {
       "actions": "Ações",
+      "contracts": "Contratos",
       "documents": "Documentos",
+      "leads": "Leads",
       "messages": "Mensagens",
       "milestones": "Marcos",
       "notes": "Notas",
-      "sessions": "Sessões"
+      "people": "Pessoas",
+      "sessions": "Sessões",
+      "startups": "Startups",
+      "workspaces": "Workspaces"
     },
+    "askAI": "Perguntar à IA",
+    "backToResults": "Voltar aos resultados",
+    "recent": "Recentes",
     "viewAllResults": "Ver todos os resultados"
   },
   "sectors": {

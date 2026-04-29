@@ -6386,12 +6386,20 @@
     "startTyping": "Start typing to search sessions, actions, notes, documents, and messages.",
     "types": {
       "actions": "Actions",
+      "contracts": "Contracts",
       "documents": "Documents",
+      "leads": "Leads",
       "messages": "Messages",
       "milestones": "Milestones",
       "notes": "Notes",
-      "sessions": "Sessions"
+      "people": "People",
+      "sessions": "Sessions",
+      "startups": "Startups",
+      "workspaces": "Workspaces"
     },
+    "askAI": "Ask AI",
+    "backToResults": "Back to results",
+    "recent": "Recent",
     "viewAllResults": "View all results"
   },
   "sectors": {

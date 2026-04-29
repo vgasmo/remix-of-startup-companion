@@ -6,7 +6,8 @@ import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
 
 export interface SearchResult {
-  type: 'session' | 'action' | 'note' | 'document' | 'message' | 'milestone';
+  type: 'session' | 'action' | 'note' | 'document' | 'message' | 'milestone'
+      | 'startup' | 'workspace' | 'contract' | 'lead' | 'person';
   id: string;
   workspace_id: string;
   title: string;
@@ -49,7 +50,8 @@ export function useGlobalSearch(filters: SearchFilters) {
       
       const typesToSearch = filters.types?.length 
         ? filters.types 
-        : ['session', 'action', 'note', 'document', 'message', 'milestone'];
+        : ['session', 'action', 'note', 'document', 'message', 'milestone',
+           'startup', 'workspace', 'contract', 'lead', 'person'];
 
       // Calculate date filter
       let dateFilter: string | null = null;
@@ -315,6 +317,126 @@ export function useGlobalSearch(filters: SearchFilters) {
             });
 
           return results;
+        })());
+      }
+
+      // Search startups (RLS will filter to what the user can see)
+      if (typesToSearch.includes('startup')) {
+        searchPromises.push((async () => {
+          const { data } = await supabase
+            .from('startups')
+            .select('id, name, description, updated_at')
+            .or(`name.ilike.${ilikeTerm},description.ilike.${ilikeTerm}`)
+            .is('archived_at', null)
+            .limit(20);
+          // Map startup → its first workspace for navigation
+          const ids = (data || []).map(s => s.id);
+          let wsByStartup: Record<string, string> = {};
+          if (ids.length) {
+            const { data: ws } = await supabase
+              .from('workspaces')
+              .select('id, startup_id')
+              .in('startup_id', ids);
+            (ws || []).forEach(w => { if (!wsByStartup[w.startup_id]) wsByStartup[w.startup_id] = w.id; });
+          }
+          return (data || []).map(s => ({
+            type: 'startup' as const,
+            id: s.id,
+            workspace_id: wsByStartup[s.id] || '',
+            title: s.name,
+            snippet: s.description?.slice(0, 150) || '',
+            updated_at: s.updated_at,
+            url: wsByStartup[s.id] ? `/workspace/${wsByStartup[s.id]}` : `/ecosystem?startup=${s.id}`,
+            workspace_name: s.name,
+          }));
+        })());
+      }
+
+      // Search workspaces (by startup name / program — already filtered by RLS)
+      if (typesToSearch.includes('workspace')) {
+        searchPromises.push((async () => {
+          const { data } = await supabase
+            .from('workspaces')
+            .select('id, stage, status, updated_at, startup:startups(name), program:programs(name)')
+            .limit(50);
+          const q = searchTerm.toLowerCase();
+          return (data || [])
+            .filter((w: any) =>
+              w.startup?.name?.toLowerCase().includes(q) ||
+              w.program?.name?.toLowerCase().includes(q)
+            )
+            .slice(0, 20)
+            .map((w: any) => ({
+              type: 'workspace' as const,
+              id: w.id,
+              workspace_id: w.id,
+              title: w.startup?.name || 'Workspace',
+              snippet: `${w.program?.name || ''} • ${w.stage || ''} • ${w.status || ''}`,
+              updated_at: w.updated_at,
+              url: `/workspace/${w.id}`,
+              workspace_name: w.startup?.name,
+            }));
+        })());
+      }
+
+      // Search contracts (staff via RLS)
+      if (typesToSearch.includes('contract')) {
+        searchPromises.push((async () => {
+          const { data } = await supabase
+            .from('startup_contracts')
+            .select('id, contract_number, status, updated_at, workspace_id, startup:startups(name)')
+            .or(`contract_number.ilike.${ilikeTerm}`)
+            .limit(20);
+          return (data || []).map((c: any) => ({
+            type: 'contract' as const,
+            id: c.id,
+            workspace_id: c.workspace_id || '',
+            title: c.contract_number || 'Contract',
+            snippet: `${c.startup?.name || ''} • ${c.status || ''}`,
+            updated_at: c.updated_at,
+            url: `/admin/contracts?contract=${c.id}`,
+            workspace_name: c.startup?.name,
+          }));
+        })());
+      }
+
+      // Search CRM leads (staff via RLS)
+      if (typesToSearch.includes('lead')) {
+        searchPromises.push((async () => {
+          const { data } = await supabase
+            .from('funnel_items')
+            .select('id, organization_name, contact_name, contact_email, stage, updated_at')
+            .or(`organization_name.ilike.${ilikeTerm},contact_name.ilike.${ilikeTerm},contact_email.ilike.${ilikeTerm}`)
+            .limit(20);
+          return (data || []).map((l: any) => ({
+            type: 'lead' as const,
+            id: l.id,
+            workspace_id: '',
+            title: l.organization_name || l.contact_name || 'Lead',
+            snippet: `${l.contact_name || ''} ${l.contact_email ? `• ${l.contact_email}` : ''} • ${l.stage || ''}`.trim(),
+            updated_at: l.updated_at,
+            url: `/crm?lead=${l.id}`,
+          }));
+        })());
+      }
+
+      // Search people (mentors / consultants / founders via profiles_safe)
+      if (typesToSearch.includes('person')) {
+        searchPromises.push((async () => {
+          const { data } = await supabase
+            .from('profiles_safe')
+            .select('id, full_name, email')
+            .or(`full_name.ilike.${ilikeTerm},email.ilike.${ilikeTerm}`)
+            .limit(15);
+          return (data || []).map((p: any) => ({
+            type: 'person' as const,
+            id: p.id,
+            workspace_id: '',
+            title: p.full_name || p.email || 'Person',
+            snippet: p.email || '',
+            updated_at: new Date().toISOString(),
+            url: `/mentors?user=${p.id}`,
+          }));
         })());
       }
 
