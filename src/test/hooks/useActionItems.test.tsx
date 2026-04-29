@@ -186,11 +186,9 @@ describe('useUpdateActionItem – optimistic rollback', () => {
       result.current.mutate({ id: 'action-1', status: 'completed' });
     });
 
-    await act(async () => {
-      await waitFor(() => {
-        expect(result.current.isSuccess || result.current.isError).toBe(true);
-      }, { timeout: 5000 });
-    });
+    await waitFor(() => {
+      expect(result.current.isSuccess || result.current.isError).toBe(true);
+    }, { timeout: 5000 });
 
     // If mutation errored unexpectedly, fail with details
     if (result.current.isError) {
