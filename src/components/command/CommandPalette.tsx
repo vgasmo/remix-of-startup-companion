@@ -16,6 +16,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useGlobalSearch, SearchResult } from '@/hooks/useGlobalSearch';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspaces } from '@/hooks/useWorkspaces';
+import { useCopilotChat } from '@/hooks/useCopilotChat';
+import { cn } from '@/lib/utils';
 
 const typeIcons: Record<string, React.ReactNode> = {
   session: <Calendar className="h-4 w-4 text-muted-foreground" />,
@@ -34,9 +36,8 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [copilotMode, setCopilotMode] = useState(false);
-  const [copilotThinking, setCopilotThinking] = useState(false);
-  const [copilotAnswer, setCopilotAnswer] = useState<string | null>(null);
   const [recentItems, setRecentItems] = useState<Array<{ path: string; label: string; type: string }>>([]);
+  const copilot = useCopilotChat();
 
   const { data: searchResults } = useGlobalSearch({ query: copilotMode ? '' : query });
   const { data: workspacesData } = useWorkspaces({});
@@ -75,28 +76,14 @@ export function CommandPalette() {
     setOpen(false);
     setQuery('');
     setCopilotMode(false);
-    setCopilotAnswer(null);
-  }, [navigate, pushRecent]);
+    copilot.reset();
+  }, [navigate, pushRecent, copilot]);
 
-  // Copilot: simulate AI response
+  // Real AI copilot via streaming edge function
   const handleCopilotSubmit = useCallback(async () => {
     if (!query.trim()) return;
-    setCopilotThinking(true);
-    setCopilotAnswer(null);
-    await new Promise(r => setTimeout(r, 2200));
-    // Mock smart answers based on keywords
-    const q = query.toLowerCase();
-    let answer = `Based on ecosystem data: Your portfolio has 12 active startups. 2 are flagged "at risk" due to late KPI submissions. 3 contracts expire within 30 days. Recommend scheduling check-ins with at-risk startups this week.`;
-    if (q.includes('risk') || q.includes('risco')) {
-      answer = `🔴 2 startups are flagged At Risk:\n• "TechNova" — missed last 2 KPI submissions, no session in 45 days\n• "GreenFlow" — burn rate increased 40%, runway < 3 months\n\nRecommended: Schedule urgent check-ins and review financial models.`;
-    } else if (q.includes('kpi') || q.includes('metric')) {
-      answer = `📊 KPI Health Summary:\n• 78% of startups submitted KPIs this month\n• Top improving: "DataPulse" (+23% MRR)\n• Declining: "CloudBase" (-15% NPS)\n• 3 startups have never submitted KPIs — consider automated reminders.`;
-    } else if (q.includes('session') || q.includes('sessão')) {
-      answer = `📅 Session Insights:\n• 8 sessions scheduled this week\n• Average session frequency: 1.2 per startup/month\n• 4 startups haven't had a session in 30+ days\n• Next overdue: "HealthTech AI" (last session: 38 days ago)`;
-    }
-    setCopilotAnswer(answer);
-    setCopilotThinking(false);
-  }, [query]);
+    await copilot.send(query);
+  }, [query, copilot]);
 
   // Extract workspace ID from current path
   const workspaceMatch = location.pathname.match(/\/workspace\/([a-f0-9-]+)/);
@@ -157,8 +144,7 @@ export function CommandPalette() {
     if (!nextOpen) {
       setQuery('');
       setCopilotMode(false);
-      setCopilotAnswer(null);
-      setCopilotThinking(false);
+      copilot.reset();
     }
   };
 
