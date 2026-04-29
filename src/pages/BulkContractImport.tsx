@@ -366,6 +366,22 @@ export default function BulkContractImport() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Programme picker — required, drives program_id on bulk_import_batches */}
+              <div className="space-y-1.5">
+                <Label htmlFor="bulk-program">{t('bulkImport.program.label')} <span className="text-destructive">*</span></Label>
+                <Select value={programId} onValueChange={setProgramId} disabled={uploading || programsLoading}>
+                  <SelectTrigger id="bulk-program">
+                    <SelectValue placeholder={t('bulkImport.program.placeholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activePrograms.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">{t('bulkImport.program.help')}</p>
+              </div>
+
               <div
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={onDrop}
