@@ -6,7 +6,8 @@ import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
 
 export interface SearchResult {
-  type: 'session' | 'action' | 'note' | 'document' | 'message' | 'milestone';
+  type: 'session' | 'action' | 'note' | 'document' | 'message' | 'milestone'
+      | 'startup' | 'workspace' | 'contract' | 'lead' | 'person';
   id: string;
   workspace_id: string;
   title: string;
@@ -49,7 +50,8 @@ export function useGlobalSearch(filters: SearchFilters) {
       
       const typesToSearch = filters.types?.length 
         ? filters.types 
-        : ['session', 'action', 'note', 'document', 'message', 'milestone'];
+        : ['session', 'action', 'note', 'document', 'message', 'milestone',
+           'startup', 'workspace', 'contract', 'lead', 'person'];
 
       // Calculate date filter
       let dateFilter: string | null = null;
