@@ -135,18 +135,23 @@ export default function BulkContractImport() {
 
   const startBatch = async () => {
     if (!user || files.length === 0) return;
+    if (!programId) {
+      toast.error(t('bulkImport.errors.programRequired'));
+      return;
+    }
     setUploading(true);
     setUploadProgress({ done: 0, total: files.length });
     cancelRef.current = false;
 
     try {
-      // 1) Create batch row
+      // 1) Create batch row — programme is required so new workspaces are never orphaned.
       const { data: batch, error: batchErr } = await supabase
         .from('bulk_import_batches')
         .insert({
           created_by: user.id,
           status: 'uploading',
           total_files: files.length,
+          program_id: programId,
         })
         .select('id')
         .single();
