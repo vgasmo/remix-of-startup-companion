@@ -103,10 +103,11 @@ export function SmartImportDialog({
 }: SmartImportDialogProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAdmin, isConsultor } = useAuth();
   const qc = useQueryClient();
   const { data: programs } = usePrograms();
 
+  const isStaff = isAdmin || isConsultor;
   const mode: Mode = workspaceId && startupId ? "fill" : "create";
   const lang = (i18n.language || "pt").startsWith("en") ? "en" : "pt";
 
@@ -199,6 +200,14 @@ export function SmartImportDialog({
 
       // 1. CREATE mode → make startup + workspace first
       if (mode === "create") {
+        // Hard gate: only staff (admin/consultor) can create active workspaces
+        // from a Smart Import. Founders must use the claim/onboarding flow so
+        // every new workspace goes through review before activation.
+        if (!isStaff) {
+          throw new Error(t("smartImport.errors.staffOnlyCreate", {
+            defaultValue: "Only staff can create a workspace from Smart Import. Please use the claim/onboarding flow.",
+          }));
+        }
         if (!programId) throw new Error(t("smartImport.errors.programRequired", {
           defaultValue: "Please select a program.",
         }));
@@ -225,26 +234,24 @@ export function SmartImportDialog({
         if (startupErr) throw startupErr;
         targetStartupId = newStartup.id;
 
+        // Staff-created workspaces from Smart Import start as imported_unclaimed
+        // (review required). Activation happens through the normal review flow,
+        // not by client-side insert of an "active" workspace.
         const { data: newWs, error: wsErr } = await supabase
           .from("workspaces")
           .insert({
             startup_id: targetStartupId,
             program_id: programId,
             stage,
-            status: "active",
+            status: "imported_unclaimed",
             needs_onboarding: false,
           })
           .select("id").single();
         if (wsErr) throw wsErr;
         targetWorkspaceId = newWs.id;
 
-        // Add the creator as a workspace user (founder)
-        await supabase.from("workspace_users").insert({
-          workspace_id: targetWorkspaceId,
-          user_id: user.id,
-          role: "founder",
-          active: true,
-        });
+        // NOTE: Do NOT auto-add the staff member as a workspace_user/founder.
+        // Founder linkage happens through the claim flow.
       } else {
         // FILL mode → patch only checked fields that exist in editStartup
         const patch: any = {};
