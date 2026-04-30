@@ -353,13 +353,32 @@ Deno.serve(async (req) => {
         throw new Error(`Failed to quarantine stage-side artifacts: ${JSON.stringify(wipeErrs)}`);
       }
     } else {
-      const accWipes = await Promise.all([
-        supabase.from('program_weeks').delete().eq('program_id', programId),
-        supabase.from('program_gates').delete().eq('program_id', programId),
+      // Sequential delete: weeks first (FK gate_id ON DELETE SET NULL), then gates.
+      // Running these in parallel via Promise.all has historically left orphan
+      // rows behind (manifesting as "duplicate key on program_weeks" on retry),
+      // so we now serialize and verify each delete.
+      const { error: weeksWipeErr } = await supabase
+        .from('program_weeks')
+        .delete()
+        .eq('program_id', programId);
+      if (weeksWipeErr) {
+        throw new Error(`Failed to quarantine program_weeks: ${weeksWipeErr.message}`);
+      }
+      const { error: gatesWipeErr } = await supabase
+        .from('program_gates')
+        .delete()
+        .eq('program_id', programId);
+      if (gatesWipeErr) {
+        throw new Error(`Failed to quarantine program_gates: ${gatesWipeErr.message}`);
+      }
+      // Defensive verification — if anything remained, surface it loudly so we
+      // never hit the unique-constraint trap silently.
+      const [{ count: leftoverWeeks }, { count: leftoverGates }] = await Promise.all([
+        supabase.from('program_weeks').select('id', { count: 'exact', head: true }).eq('program_id', programId),
+        supabase.from('program_gates').select('id', { count: 'exact', head: true }).eq('program_id', programId),
       ]);
-      const wipeErrs = accWipes.map(r => r.error).filter(Boolean);
-      if (wipeErrs.length) {
-        throw new Error(`Failed to quarantine acceleration-side artifacts: ${JSON.stringify(wipeErrs)}`);
+      if ((leftoverWeeks ?? 0) > 0 || (leftoverGates ?? 0) > 0) {
+        throw new Error(`Quarantine incomplete: ${leftoverWeeks} weeks / ${leftoverGates} gates still present for program ${programId}`);
       }
     }
 
