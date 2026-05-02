@@ -1,4 +1,4 @@
-# FoundersBook Changelog
+# Leiria Launchpad Changelog
 
 ## RC-3 — Release Candidate (2026-02-20)
 

@@ -1,4 +1,4 @@
-# CTO Review: FoundersBook Platform
+# CTO Review: Leiria Launchpad Platform
 
 **Date:** 2026-01-15  
 **Author:** CTO Review Agent  

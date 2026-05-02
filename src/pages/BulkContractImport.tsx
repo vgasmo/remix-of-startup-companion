@@ -366,21 +366,36 @@ export default function BulkContractImport() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Programme picker — required, drives program_id on bulk_import_batches */}
-              <div className="space-y-1.5">
-                <Label htmlFor="bulk-program">{t('bulkImport.program.label')} <span className="text-destructive">*</span></Label>
-                <Select value={programId} onValueChange={setProgramId} disabled={uploading || programsLoading}>
-                  <SelectTrigger id="bulk-program">
-                    <SelectValue placeholder={t('bulkImport.program.placeholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activePrograms.map(p => (
-                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">{t('bulkImport.program.help')}</p>
-              </div>
+              {/* Programme picker — required, drives program_id on bulk_import_batches.
+                  When no active programmes exist we hard-block uploads so a batch
+                  can never be created without a programme to attach workspaces to. */}
+              {!programsLoading && activePrograms.length === 0 ? (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>{t('bulkImport.noPrograms.title', 'No active programmes')}</AlertTitle>
+                  <AlertDescription className="space-y-2">
+                    <p>{t('bulkImport.noPrograms.desc', 'Create or activate a programme before importing contracts in bulk. Every imported workspace must be attached to a programme.')}</p>
+                    <Button size="sm" variant="outline" onClick={() => navigate('/admin?tab=programs')}>
+                      {t('bulkImport.noPrograms.cta', 'Go to programmes')}
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <div className="space-y-1.5">
+                  <Label htmlFor="bulk-program">{t('bulkImport.program.label')} <span className="text-destructive">*</span></Label>
+                  <Select value={programId} onValueChange={setProgramId} disabled={uploading || programsLoading}>
+                    <SelectTrigger id="bulk-program">
+                      <SelectValue placeholder={t('bulkImport.program.placeholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {activePrograms.map(p => (
+                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">{t('bulkImport.program.help')}</p>
+                </div>
+              )}
 
               <div
                 onDragOver={(e) => e.preventDefault()}
