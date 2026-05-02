@@ -1885,6 +1885,11 @@
       "selected": "Programme: {{name}}"
     },
     "extractComplete": "Extraction complete",
+    "noPrograms": {
+      "title": "No active programmes",
+      "desc": "Create or activate a programme before importing contracts in bulk. Every imported workspace must be attached to a programme.",
+      "cta": "Go to programmes"
+    },
     "extracting": {
       "title": "AI is reading your contracts"
     },

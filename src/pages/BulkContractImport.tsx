@@ -375,7 +375,7 @@ export default function BulkContractImport() {
                   <AlertTitle>{t('bulkImport.noPrograms.title', 'No active programmes')}</AlertTitle>
                   <AlertDescription className="space-y-2">
                     <p>{t('bulkImport.noPrograms.desc', 'Create or activate a programme before importing contracts in bulk. Every imported workspace must be attached to a programme.')}</p>
-                    <Button size="sm" variant="outline" onClick={() => navigate('/admin/programs')}>
+                    <Button size="sm" variant="outline" onClick={() => navigate('/admin?tab=programs')}>
                       {t('bulkImport.noPrograms.cta', 'Go to programmes')}
                     </Button>
                   </AlertDescription>
