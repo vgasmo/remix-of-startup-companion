@@ -7,7 +7,7 @@
 
 ## Overview
 
-This guide ensures consistent, high-quality translations across the FoundersBook platform. Follow these conventions when adding or modifying translation strings.
+This guide ensures consistent, high-quality translations across the Leiria Launchpad platform. Follow these conventions when adding or modifying translation strings.
 
 ---
 
