@@ -1885,6 +1885,11 @@
       "selected": "Programa: {{name}}"
     },
     "extractComplete": "Extração concluída",
+    "noPrograms": {
+      "title": "Sem programas ativos",
+      "desc": "Crie ou ative um programa antes de importar contratos em massa. Cada workspace importado tem de estar associado a um programa.",
+      "cta": "Ir para programas"
+    },
     "extracting": {
       "title": "A IA está a ler os seus contratos"
     },
