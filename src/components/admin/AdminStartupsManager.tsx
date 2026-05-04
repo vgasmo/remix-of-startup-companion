@@ -661,6 +661,7 @@ export function AdminStartupsManager() {
                 <TableHead>{t('admin.startupsManager.mainContact')}</TableHead>
                 <TableHead>{t('admin.startupsManager.stage')}</TableHead>
                 <TableHead>{t('admin.startupsManager.status')}</TableHead>
+                <TableHead>{t('admin.startupsManager.startupPortugal', { defaultValue: 'Startup Portugal' })}</TableHead>
                 <TableHead className="w-24">{t('admin.startupsManager.actions')}</TableHead>
               </TableRow>
             </TableHeader>
