@@ -19,6 +19,7 @@ export interface EcosystemFiltersState {
   categoryId: string;
   tagId: string;
   needsAttention: boolean;
+  hasStartupPortugal: boolean;
 }
 
 interface Props {
