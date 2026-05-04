@@ -27,6 +27,7 @@ export default function Ecosystem() {
     categoryId: 'all',
     tagId: 'all',
     needsAttention: false,
+    hasStartupPortugal: false,
   });
 
   const { data: items, isLoading } = useEcosystemItems(filters);
