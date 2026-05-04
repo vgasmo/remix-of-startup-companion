@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Building2, AlertTriangle, Calendar, ArrowRight, CheckCircle2, Clock, ShieldCheck } from 'lucide-react';
+import { Building2, AlertTriangle, Calendar, ArrowRight, CheckCircle2, Clock, ShieldCheck, UserCog } from 'lucide-react';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { format, parseISO } from 'date-fns';
 import { pt } from 'date-fns/locale';
