@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { EcosystemTable } from '@/components/ecosystem/EcosystemTable';
@@ -15,6 +15,8 @@ import { Globe2, Users, Building2, UserCog } from 'lucide-react';
 export default function Ecosystem() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get('tab') || 'startups';
 
   const [filters, setFilters] = useState<EcosystemFiltersState>({
     search: '',
@@ -41,7 +43,7 @@ export default function Ecosystem() {
           icon={<Globe2 className="h-6 w-6" />}
         />
 
-        <Tabs defaultValue="startups" className="w-full">
+        <Tabs value={tab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="startups" className="gap-2">
               <Building2 className="h-4 w-4" />

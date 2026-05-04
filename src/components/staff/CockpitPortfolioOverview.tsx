@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Building2, AlertTriangle, Calendar, ArrowRight, CheckCircle2, Clock, ShieldCheck } from 'lucide-react';
+import { Building2, AlertTriangle, Calendar, ArrowRight, CheckCircle2, Clock, ShieldCheck, UserCog } from 'lucide-react';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { format, parseISO } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -89,6 +89,16 @@ export function CockpitPortfolioOverview({ workspaces }: CockpitPortfolioOvervie
                 </Badge>
               </Label>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs gap-1"
+              onClick={() => navigate('/ecosystem?tab=by-consultant')}
+              title={t('staffCockpit.viewConsultantPortfolioHint', { defaultValue: 'Ver portefólio agrupado por consultor no Ecosistema' })}
+            >
+              <UserCog className="h-3 w-3" />
+              {t('staffCockpit.viewConsultantPortfolio', { defaultValue: 'Portefólio por Consultor' })}
+            </Button>
             <Button variant="ghost" size="sm" className="text-xs gap-1" onClick={() => navigate('/my-workspaces')}>
               {t('common.viewAll', { defaultValue: 'Ver Todas' })}
               <ArrowRight className="h-3 w-3" />
