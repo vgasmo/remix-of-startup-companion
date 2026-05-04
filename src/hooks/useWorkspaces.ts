@@ -37,6 +37,7 @@ export interface WorkspaceWithDetails {
     name: string;
     description: string | null;
     logo_url: string | null;
+    has_startup_portugal_status?: boolean | null;
   } | null;
   program: {
     id: string;
