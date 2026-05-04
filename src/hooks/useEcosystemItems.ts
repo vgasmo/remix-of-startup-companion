@@ -30,6 +30,8 @@ export interface EcosystemItem {
   overdue_actions_count?: number;
   has_current_month_kpi?: boolean;
   contract_expires_soon?: boolean;
+  has_startup_portugal_status?: boolean;
+  startup_portugal_document_path?: string | null;
   tags?: Array<{ id: string; name: string; color: string | null; category_id: string | null }>;
 }
 
@@ -44,6 +46,7 @@ export interface EcosystemFilters {
   categoryId?: string;
   tagId?: string;
   needsAttention?: boolean;
+  hasStartupPortugal?: boolean;
 }
 
 export function useEcosystemItems(filters: EcosystemFilters = {}) {
