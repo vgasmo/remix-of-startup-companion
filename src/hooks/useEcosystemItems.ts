@@ -249,6 +249,11 @@ export function useEcosystemItems(filters: EcosystemFilters = {}) {
         );
       }
 
+      // Apply Startup Portugal certification filter (workspace items only have this)
+      if (filters.hasStartupPortugal) {
+        allItems = allItems.filter(item => item.has_startup_portugal_status === true);
+      }
+
       // Sort by last activity
       allItems.sort((a, b) => 
         new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
