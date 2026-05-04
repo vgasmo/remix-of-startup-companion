@@ -89,6 +89,16 @@ export function CockpitPortfolioOverview({ workspaces }: CockpitPortfolioOvervie
                 </Badge>
               </Label>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs gap-1"
+              onClick={() => navigate('/ecosystem?tab=by-consultant')}
+              title={t('staffCockpit.viewConsultantPortfolioHint', { defaultValue: 'Ver portefólio agrupado por consultor no Ecosistema' })}
+            >
+              <UserCog className="h-3 w-3" />
+              {t('staffCockpit.viewConsultantPortfolio', { defaultValue: 'Portefólio por Consultor' })}
+            </Button>
             <Button variant="ghost" size="sm" className="text-xs gap-1" onClick={() => navigate('/my-workspaces')}>
               {t('common.viewAll', { defaultValue: 'Ver Todas' })}
               <ArrowRight className="h-3 w-3" />
