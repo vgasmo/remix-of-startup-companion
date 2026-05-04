@@ -30,6 +30,8 @@ export interface EcosystemItem {
   overdue_actions_count?: number;
   has_current_month_kpi?: boolean;
   contract_expires_soon?: boolean;
+  has_startup_portugal_status?: boolean;
+  startup_portugal_document_path?: string | null;
   tags?: Array<{ id: string; name: string; color: string | null; category_id: string | null }>;
 }
 
@@ -44,6 +46,7 @@ export interface EcosystemFilters {
   categoryId?: string;
   tagId?: string;
   needsAttention?: boolean;
+  hasStartupPortugal?: boolean;
 }
 
 export function useEcosystemItems(filters: EcosystemFilters = {}) {
@@ -64,7 +67,7 @@ export function useEcosystemItems(filters: EcosystemFilters = {}) {
           assigned_consultor_id,
           updated_at,
           created_at,
-          startup:startups(name),
+          startup:startups(name, has_startup_portugal_status, startup_portugal_document_path),
           program:programs(name)
         `)
         .in('status', ['imported_unclaimed', 'claimed', 'pending', 'active', 'archived']);
@@ -205,6 +208,8 @@ export function useEcosystemItems(filters: EcosystemFilters = {}) {
         next_meeting_at: null,
         created_at: w.created_at,
         updated_at: w.updated_at,
+        has_startup_portugal_status: (w.startup as any)?.has_startup_portugal_status === true,
+        startup_portugal_document_path: (w.startup as any)?.startup_portugal_document_path || null,
       }));
 
       // Map funnel items to ecosystem items
@@ -242,6 +247,11 @@ export function useEcosystemItems(filters: EcosystemFilters = {}) {
         allItems = allItems.filter(item => 
           item.name?.toLowerCase().includes(search)
         );
+      }
+
+      // Apply Startup Portugal certification filter (workspace items only have this)
+      if (filters.hasStartupPortugal) {
+        allItems = allItems.filter(item => item.has_startup_portugal_status === true);
       }
 
       // Sort by last activity

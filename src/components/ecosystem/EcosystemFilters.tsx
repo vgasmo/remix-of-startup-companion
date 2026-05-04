@@ -19,6 +19,7 @@ export interface EcosystemFiltersState {
   categoryId: string;
   tagId: string;
   needsAttention: boolean;
+  hasStartupPortugal: boolean;
 }
 
 interface Props {
@@ -144,6 +145,18 @@ export function EcosystemFilters({ filters, onChange }: Props) {
           />
           <Label htmlFor="needs-attention" className="text-sm cursor-pointer">
             {t('ecosystem.needsAttention', 'Needs Attention')}
+          </Label>
+        </div>
+
+        {/* Startup Portugal Status Toggle */}
+        <div className="flex items-center gap-2 pb-1">
+          <Switch
+            id="has-startup-portugal"
+            checked={filters.hasStartupPortugal}
+            onCheckedChange={(v) => updateFilter('hasStartupPortugal', v)}
+          />
+          <Label htmlFor="has-startup-portugal" className="text-sm cursor-pointer">
+            {t('ecosystem.hasStartupPortugalFilter', { defaultValue: 'Estatuto Startup Portugal' })}
           </Label>
         </div>
       </div>

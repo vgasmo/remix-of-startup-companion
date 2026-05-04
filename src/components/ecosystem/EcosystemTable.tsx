@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { MoreHorizontal, Building2, Users, ExternalLink, Calendar, AlertTriangle, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Archive, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Building2, Users, ExternalLink, Calendar, AlertTriangle, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Archive, Trash2, ShieldCheck } from 'lucide-react';
 import { InlineConsultantSelect } from './InlineConsultantSelect';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
@@ -263,6 +263,16 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     {item.name || t('common.unknown', { defaultValue: 'Unknown' })}
+                    {item.has_startup_portugal_status && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                        title={t('ecosystem.startupPortugalBadge', { defaultValue: 'Estatuto Startup Portugal' })}
+                      >
+                        <ShieldCheck className="h-3 w-3 mr-1" />
+                        {t('ecosystem.startupPortugalShort', { defaultValue: 'SP' })}
+                      </Badge>
+                    )}
                     {item.overdue_actions_count && item.overdue_actions_count > 0 && (
                       <Badge variant="destructive" className="text-xs">
                         <AlertTriangle className="h-3 w-3 mr-1" />

@@ -15,11 +15,13 @@ import { PendingApprovalsManager } from '@/components/admin/PendingApprovalsMana
 import { IntakeRoutingManager } from '@/components/admin/IntakeRoutingManager';
 import { ClaimRequestsQueue } from '@/components/admin/ClaimRequestsQueue';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
-import { LayoutDashboard, Inbox, ListTodo, Zap, Building2, UserCheck, FileText } from 'lucide-react';
+import { LayoutDashboard, Inbox, ListTodo, Zap, Building2, UserCheck, FileText, ShieldCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function StaffCockpit() {
@@ -102,10 +104,22 @@ export default function StaffCockpit() {
           <SilentDisengagementCard workspaces={workspaces} />
         )}
 
-        {/* Backoffice-specific: Contracts expiring */}
+        {/* Backoffice-specific: Contracts expiring + Startup Portugal status */}
         {(isBackoffice || isAdmin) && (
-          <WidgetErrorBoundary name="ContractsExpiring">
-            <BackofficeContractsExpiringCard />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <WidgetErrorBoundary name="ContractsExpiring">
+              <BackofficeContractsExpiringCard />
+            </WidgetErrorBoundary>
+            <WidgetErrorBoundary name="StartupPortugalCertified">
+              <StartupPortugalCertifiedCard />
+            </WidgetErrorBoundary>
+          </div>
+        )}
+
+        {/* Consultor-only Startup Portugal card (admin already covered above) */}
+        {isConsultor && !isAdmin && !isBackoffice && (
+          <WidgetErrorBoundary name="StartupPortugalCertified">
+            <StartupPortugalCertifiedCard />
           </WidgetErrorBoundary>
         )}
 
@@ -248,6 +262,83 @@ function BackofficeContractsExpiringCard() {
             ))}
           </ul>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/** Staff widget: count of startups with Startup Portugal certification */
+function StartupPortugalCertifiedCard() {
+  const { t } = useTranslation();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['startup-portugal-certified-stats'],
+    queryFn: async () => {
+      const [{ count: total }, { count: certified }, { data: recent }] = await Promise.all([
+        supabase.from('startups').select('id', { count: 'exact', head: true }),
+        supabase
+          .from('startups')
+          .select('id', { count: 'exact', head: true })
+          .eq('has_startup_portugal_status', true),
+        supabase
+          .from('startups')
+          .select('id, name')
+          .eq('has_startup_portugal_status', true)
+          .order('updated_at', { ascending: false })
+          .limit(5),
+      ]);
+      return {
+        total: total ?? 0,
+        certified: certified ?? 0,
+        recent: recent || [],
+      };
+    },
+    staleTime: 5 * 60_000,
+  });
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+          {t('staffCockpit.startupPortugalTitle', { defaultValue: 'Estatuto Startup Portugal' })}
+          {!isLoading && (
+            <Badge variant="secondary" className="ml-auto">
+              {data?.certified ?? 0} / {data?.total ?? 0}
+            </Badge>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <Skeleton className="h-16 w-full" />
+        ) : (data?.certified ?? 0) === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {t('staffCockpit.noStartupPortugalCertified', { defaultValue: 'Ainda nenhuma startup com estatuto Startup Portugal certificado.' })}
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {data!.recent.map((s) => (
+              <li key={s.id} className="flex items-center justify-between text-sm border-b border-border pb-2 last:border-0">
+                <span className="font-medium truncate">{s.name}</span>
+                <Badge
+                  variant="outline"
+                  className="text-xs border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                >
+                  <ShieldCheck className="h-3 w-3 mr-1" />
+                  {t('admin.startupsManager.startupPortugal', { defaultValue: 'Startup Portugal' })}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="mt-3 flex justify-end">
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/admin?tab=startups">
+              {t('staffCockpit.viewAllStartups', { defaultValue: 'Gerir startups' })}
+            </Link>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

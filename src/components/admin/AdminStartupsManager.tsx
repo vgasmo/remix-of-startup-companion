@@ -661,6 +661,7 @@ export function AdminStartupsManager() {
                 <TableHead>{t('admin.startupsManager.mainContact')}</TableHead>
                 <TableHead>{t('admin.startupsManager.stage')}</TableHead>
                 <TableHead>{t('admin.startupsManager.status')}</TableHead>
+                <TableHead>{t('admin.startupsManager.startupPortugal', { defaultValue: 'Startup Portugal' })}</TableHead>
                 <TableHead className="w-24">{t('admin.startupsManager.actions')}</TableHead>
               </TableRow>
             </TableHeader>
@@ -704,6 +705,33 @@ export function AdminStartupsManager() {
                           {workspace.status}
                         </Badge>
                       ) : '-'}
+                    </TableCell>
+                    <TableCell>
+                      {startup.has_startup_portugal_status ? (
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant="outline"
+                            className="text-xs border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                          >
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            {t('admin.startupsManager.certified', { defaultValue: 'Certificada' })}
+                          </Badge>
+                          {startup.startup_portugal_document_path && (
+                            <a
+                              href={startup.startup_portugal_document_path}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                              title={t('admin.startupsManager.viewCertification', { defaultValue: 'Ver documento de certificação' })}
+                            >
+                              <FileText className="h-3 w-3" />
+                              PDF
+                            </a>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">-</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <TooltipProvider>
