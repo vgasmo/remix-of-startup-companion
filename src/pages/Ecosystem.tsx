@@ -15,6 +15,8 @@ import { Globe2, Users, Building2, UserCog } from 'lucide-react';
 export default function Ecosystem() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get('tab') || 'startups';
 
   const [filters, setFilters] = useState<EcosystemFiltersState>({
     search: '',
