@@ -208,6 +208,8 @@ export function useEcosystemItems(filters: EcosystemFilters = {}) {
         next_meeting_at: null,
         created_at: w.created_at,
         updated_at: w.updated_at,
+        has_startup_portugal_status: (w.startup as any)?.has_startup_portugal_status === true,
+        startup_portugal_document_path: (w.startup as any)?.startup_portugal_document_path || null,
       }));
 
       // Map funnel items to ecosystem items
