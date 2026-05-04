@@ -67,7 +67,7 @@ export function useEcosystemItems(filters: EcosystemFilters = {}) {
           assigned_consultor_id,
           updated_at,
           created_at,
-          startup:startups(name),
+          startup:startups(name, has_startup_portugal_status, startup_portugal_document_path),
           program:programs(name)
         `)
         .in('status', ['imported_unclaimed', 'claimed', 'pending', 'active', 'archived']);
