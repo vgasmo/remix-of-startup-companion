@@ -104,10 +104,22 @@ export default function StaffCockpit() {
           <SilentDisengagementCard workspaces={workspaces} />
         )}
 
-        {/* Backoffice-specific: Contracts expiring */}
+        {/* Backoffice-specific: Contracts expiring + Startup Portugal status */}
         {(isBackoffice || isAdmin) && (
-          <WidgetErrorBoundary name="ContractsExpiring">
-            <BackofficeContractsExpiringCard />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <WidgetErrorBoundary name="ContractsExpiring">
+              <BackofficeContractsExpiringCard />
+            </WidgetErrorBoundary>
+            <WidgetErrorBoundary name="StartupPortugalCertified">
+              <StartupPortugalCertifiedCard />
+            </WidgetErrorBoundary>
+          </div>
+        )}
+
+        {/* Consultor-only Startup Portugal card (admin already covered above) */}
+        {isConsultor && !isAdmin && !isBackoffice && (
+          <WidgetErrorBoundary name="StartupPortugalCertified">
+            <StartupPortugalCertifiedCard />
           </WidgetErrorBoundary>
         )}
 
