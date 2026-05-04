@@ -43,7 +43,7 @@ export default function Ecosystem() {
           icon={<Globe2 className="h-6 w-6" />}
         />
 
-        <Tabs defaultValue="startups" className="w-full">
+        <Tabs value={tab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="startups" className="gap-2">
               <Building2 className="h-4 w-4" />
