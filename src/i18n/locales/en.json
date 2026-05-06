@@ -2890,6 +2890,15 @@
     "contratoEnviadoParaAssinatura": "Contrato enviado para assinatura!",
     "convertToStartup": "Convert to Startup",
     "convertedToStartup": "Converted to startup",
+    "convertToWorkspace": {
+      "cta": "Convert to Workspace",
+      "title": "Convert Lead to Workspace",
+      "description": "Creates the startup and workspace for \"{{name}}\". The workspace stays pending until activated by contract.",
+      "program": "Program",
+      "selectProgram": "Select program",
+      "stage": "Initial stage",
+      "confirm": "Convert"
+    },
     "createLead": "Criar Lead",
     "createNewLead": "Criar Nova Lead",
     "createWorkspace": "Create Workspace",
