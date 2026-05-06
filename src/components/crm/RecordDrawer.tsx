@@ -467,28 +467,40 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
                         {t('crm.linkHint', { defaultValue: 'O vínculo é criado automaticamente ao converter o lead ou pode ser feito manualmente.' })}
                       </p>
                     </div>
-                    {['qualified', 'proposal_sent', 'negotiating', 'contracted'].includes(item.stage) && (
+                    <div className="flex flex-wrap items-center justify-center gap-2">
                       <Button
                         size="sm"
+                        variant="default"
                         className="gap-1.5"
-                        onClick={() => {
-                          const params = new URLSearchParams({
-                            tab: 'backoffice',
-                            subtab: 'contracts',
-                            action: 'create',
-                            funnel: item.id,
-                            contact: item.contact_name || '',
-                            email: item.contact_email || '',
-                            org: item.organization_name || '',
-                          });
-                          onOpenChange(false);
-                          navigate(`/admin?${params.toString()}`);
-                        }}
+                        onClick={() => setConvertDialog(true)}
                       >
-                        <FileText className="h-3.5 w-3.5" />
-                        {t('crm.initiateContract', { defaultValue: 'Iniciar Contrato' })}
+                        <Briefcase className="h-3.5 w-3.5" />
+                        {t('crm.convertToWorkspace.cta', { defaultValue: 'Converter em Workspace' })}
                       </Button>
-                    )}
+                      {['qualified', 'proposal_sent', 'negotiating', 'contracted'].includes(item.stage) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1.5"
+                          onClick={() => {
+                            const params = new URLSearchParams({
+                              tab: 'backoffice',
+                              subtab: 'contracts',
+                              action: 'create',
+                              funnel: item.id,
+                              contact: item.contact_name || '',
+                              email: item.contact_email || '',
+                              org: item.organization_name || '',
+                            });
+                            onOpenChange(false);
+                            navigate(`/admin?${params.toString()}`);
+                          }}
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                          {t('crm.initiateContract', { defaultValue: 'Iniciar Contrato' })}
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               )}
