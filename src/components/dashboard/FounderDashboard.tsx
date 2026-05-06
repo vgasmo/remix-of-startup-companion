@@ -6,7 +6,10 @@ import {
   RotateCcw,
   BookOpenCheck,
   X,
+  ChevronDown,
 } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useFounderMaturity } from '@/hooks/useFounderMaturity';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
