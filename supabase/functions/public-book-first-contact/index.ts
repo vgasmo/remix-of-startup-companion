@@ -115,13 +115,18 @@ function validateBookingRequest(body: unknown): { valid: true; data: BookingRequ
   const referral_source = typeof contact.referral_source === 'string' ? contact.referral_source.trim().slice(0, 100) : undefined;
   const has_team = typeof contact.has_team === 'string' ? contact.has_team.trim().slice(0, 20) : undefined;
   const pitch_deck_path = typeof contact.pitch_deck_path === 'string' ? contact.pitch_deck_path.trim().slice(0, 500) : undefined;
+  const has_tech = typeof contact.has_tech === 'string' ? contact.has_tech.trim().slice(0, 20) : undefined;
+  const is_iies = typeof contact.is_iies === 'string' ? contact.is_iies.trim().slice(0, 20) : undefined;
+  const vertical = typeof contact.vertical === 'string' ? contact.vertical.trim().slice(0, 100) : undefined;
+  const help_expectation = typeof contact.help_expectation === 'string' ? contact.help_expectation.trim().slice(0, MAX_MESSAGE_LENGTH) : undefined;
+  const personal_intro = typeof contact.personal_intro === 'string' ? contact.personal_intro.trim().slice(0, MAX_MESSAGE_LENGTH) : undefined;
 
   return {
     valid: true,
     data: {
       token: req.token as string,
       slot: { date: slot.date as string, time: slot.time as string },
-      contact: { name: (contact.name as string).trim(), email, phone, organization, message, sector, stage, referral_source, has_team, pitch_deck_path },
+      contact: { name: (contact.name as string).trim(), email, phone, organization, message, sector, stage, referral_source, has_team, pitch_deck_path, has_tech, is_iies, vertical, help_expectation, personal_intro },
     },
   };
 }
