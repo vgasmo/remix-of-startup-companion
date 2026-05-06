@@ -78,15 +78,24 @@ export function FounderHelpNudge({
   const handleSearch = () => {
     track('founder_help_nudge_search', { page: pageLabel, workspaceId });
     acknowledge();
-    // Try to focus the global search input if present; otherwise navigate to /search
-    const input = document.querySelector<HTMLInputElement>(
-      'input[placeholder^="' + t('common.search') + '"]'
+    // Try to open the global command palette via a custom event;
+    // fall back to /search?q=<contextual beginner query>.
+    const opened = window.dispatchEvent(
+      new CustomEvent('command-palette:open', {
+        detail: { query: t('founderHelpNudge.searchQuery', { defaultValue: 'como começar' }) },
+      })
     );
-    if (input) {
-      input.focus();
+    // dispatchEvent always returns true unless preventDefault was used; use it as a hint only.
+    const q = encodeURIComponent(
+      t('founderHelpNudge.searchQuery', { defaultValue: 'como começar' })
+    );
+    if (!opened) {
+      navigate(`/search?q=${q}`);
       return;
     }
-    navigate('/search');
+    // Always navigate as a guaranteed fallback; the palette listener (if present)
+    // will have already opened by the time this runs.
+    navigate(`/search?q=${q}`);
   };
 
   const handleBookSession = () => {

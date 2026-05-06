@@ -1188,7 +1188,9 @@
       "viewActive": "Ver ativas",
       "viewArchived": "Ver arquivadas",
       "viewDocument": "Ver documento",
-      "website": "Website"
+      "website": "Website",
+      "certified": "Certificada",
+      "viewCertification": "Ver certificação"
     },
     "stats": {
       "actionsCompleted": "ações concluídas",
@@ -2252,7 +2254,8 @@
     "viewAll": "Ver todas",
     "workspace": "Workspace",
     "years": "anos",
-    "yes": "Sim"
+    "yes": "Sim",
+    "dismiss": "Dispensar"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -2743,7 +2746,8 @@
     "searchHelp": "Pesquisar ajuda",
     "bookSession": "Marcar sessão",
     "defaultPrompt": "Estou um pouco perdido. Por onde devo começar agora?",
-    "dashboardPrompt": "Estou no meu painel. Qual deveria ser o meu próximo passo?"
+    "dashboardPrompt": "Estou no meu painel. Qual deveria ser o meu próximo passo?",
+    "searchQuery": "como começar"
   },
   "copilot": {
     "askAnything": "Pergunte sobre a sua startup, tarefas, KPIs ou ecossistema.",
@@ -3652,7 +3656,10 @@
     "unassigned": "Sem consultor atribuído",
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
-    "workspaces": "workspaces"
+    "workspaces": "workspaces",
+    "hasStartupPortugalFilter": "Certificada Startup Portugal",
+    "startupPortugalBadge": "Certificada Startup Portugal",
+    "startupPortugalShort": "SP"
   },
   "ecosystemHub": {
     "navLabel": "Hub de Gestão",
@@ -7340,7 +7347,15 @@
     "title": "Painel",
     "triage": "Triagem & Intake",
     "triageDesc": "O que precisa de decisão agora: aprovações, associações e encaminhamento.",
-    "upToDate": "Em dia"
+    "upToDate": "Em dia",
+    "onlyStartupPortugalHint": "Mostrar apenas startups certificadas Startup Portugal",
+    "onlyStartupPortugal": "Apenas Startup Portugal",
+    "viewConsultantPortfolioHint": "Ver portefólio deste consultor",
+    "viewConsultantPortfolio": "Ver portefólio do consultor",
+    "noStartupPortugalInPortfolio": "Sem startups certificadas Startup Portugal neste portefólio.",
+    "startupPortugalTitle": "Certificadas Startup Portugal",
+    "noStartupPortugalCertified": "Ainda sem startups certificadas pela Startup Portugal.",
+    "viewAllStartups": "Ver todas as startups"
   },
   "staffTasks": {
     "moreTasks": "mais tarefas",

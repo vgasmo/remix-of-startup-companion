@@ -47,6 +47,7 @@ import { PendingContractBanner } from '@/components/founder/PendingContractBanne
 import { FounderProgressRings } from '@/components/dashboard/FounderProgressRings';
 import { useAutoMaterializeDeliverables } from '@/hooks/useAutoMaterializeDeliverables';
 import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
+import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
 // NextBestActionFounder removed from beginner view — kept available for power users via OneThingToday.
 
 interface FounderDashboardProps {
@@ -85,6 +86,7 @@ export function FounderDashboard({
   const nudges = useSmartNudges(workspace?.id);
   
   const { data: workspaceMembers } = useWorkspaceMembers(workspace?.id);
+  const { data: workspaceOwner } = useWorkspaceOwner(workspace?.id);
 
   // Auto-materialize acceleration deliverables into workspace milestones/actions
   useAutoMaterializeDeliverables(workspace?.id, workspace?.program_id, workspace?.program?.program_type ?? undefined);
@@ -92,6 +94,8 @@ export function FounderDashboard({
     if (!workspaceMembers) return false;
     return workspaceMembers.some(m => m.role === 'mentor_externo');
   }, [workspaceMembers]);
+  const hasConsultant = Boolean(workspaceOwner?.assigned_consultor_id)
+    || Boolean(workspaceMembers?.some(m => m.role === 'consultor'));
   
   const hasProfile = Boolean(profile?.full_name);
   const hasStartup = Boolean(workspace);
@@ -102,6 +106,18 @@ export function FounderDashboard({
   const { maturity, isBeginner, showAdvancedByDefault } = useFounderMaturity(workspace);
   const setupComplete = hasProfile && hasStartup && hasKpis && hasDocuments;
   const [advancedOpen, setAdvancedOpen] = useState(showAdvancedByDefault);
+  const [advancedUserToggled, setAdvancedUserToggled] = useState(false);
+
+  // Sync default disclosure as maturity is computed (e.g., async data arrives),
+  // but never override an explicit user toggle.
+  useEffect(() => {
+    if (!advancedUserToggled) setAdvancedOpen(showAdvancedByDefault);
+  }, [showAdvancedByDefault, advancedUserToggled]);
+
+  const handleAdvancedToggle = (open: boolean) => {
+    setAdvancedUserToggled(true);
+    setAdvancedOpen(open);
+  };
 
   // Auto-trigger QuickKpiModal — but NOT for new founders, and never on first visit.
   useEffect(() => {
@@ -275,7 +291,7 @@ export function FounderDashboard({
       {/* ============================================================
           SHOW MORE PROGRESS DETAILS — collapsible advanced widgets
           ============================================================ */}
-      <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+      <Collapsible open={advancedOpen} onOpenChange={handleAdvancedToggle}>
         <CollapsibleTrigger asChild>
           <Button
             variant="ghost"
@@ -412,7 +428,7 @@ export function FounderDashboard({
 
       <FounderHelpNudge
         workspaceId={workspace.id}
-        hasConsultant={hasMentor}
+        hasConsultant={hasConsultant}
         pageLabel="founder_dashboard"
         aiStarterPrompt={t('founderHelpNudge.dashboardPrompt', {
           defaultValue: 'Estou no meu painel. Qual deveria ser o meu próximo passo?',

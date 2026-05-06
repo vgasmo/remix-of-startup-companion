@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ClipboardList } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -67,6 +67,10 @@ import { StartupStage, HealthScore, WorkspacePriority } from '@/types/database';
 import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
+import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
+import { useWorkspaceMembers } from '@/hooks/useWorkspaceMembers';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 
 interface WorkspaceOverviewProps {
   workspace: {
@@ -104,6 +108,11 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
   const { data: workspaceTags = [] } = useWorkspaceTags(workspace.id);
   const addWorkspaceTag = useAddWorkspaceTag();
   const removeWorkspaceTag = useRemoveWorkspaceTag();
+  const { data: workspaceOwner } = useWorkspaceOwner(workspace.id);
+  const { data: workspaceMembersData } = useWorkspaceMembers(workspace.id);
+  const hasConsultant = Boolean(workspaceOwner?.assigned_consultor_id)
+    || Boolean(workspaceMembersData?.some(m => m.role === 'consultor'));
+  const [founderAdvancedOpen, setFounderAdvancedOpen] = useState(false);
   
   // Auto-materialize acceleration deliverables into workspace milestones/actions
   useAutoMaterializeDeliverables(workspace.id, workspace.program_id, workspace.program?.program_type ?? undefined);
@@ -192,8 +201,8 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
         />
       )}
 
-      {/* AI Draft Monthly Update CTA - Founders only */}
-      {isFounder && canWrite && (
+      {/* AI Draft Monthly Update CTA - Founders only, advanced disclosure */}
+      {isFounder && canWrite && founderAdvancedOpen && (
         <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl">
           <CardContent className="py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -217,11 +226,11 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
         </Card>
       )}
 
-      {/* Monthly Check-in Banner for Founders */}
-      {isFounder && <MonthlyCheckinBanner workspaceId={workspace.id} />}
+      {/* Monthly Check-in Banner for Founders (advanced) */}
+      {isFounder && founderAdvancedOpen && <MonthlyCheckinBanner workspaceId={workspace.id} />}
 
-      {/* Pending Surveys Banner for Founders */}
-      {isFounder && (
+      {/* Pending Surveys Banner for Founders (advanced) */}
+      {isFounder && founderAdvancedOpen && (
         <PendingSurveysBanner 
           workspaceId={workspace.id} 
           onOpenSurvey={setActiveSurveyId} 
@@ -513,37 +522,36 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
           <ResponsibleConsultantCard workspaceId={workspace.id} />
         )}
         
-        {/* Playbook Progress Widget for Founders - Journey focus */}
+        {/* Founder advanced widgets — progressively disclosed */}
         {isFounder && (
-          <PlaybookProgressWidget workspaceId={workspace.id} />
-        )}
-        
-        {/* Investor Readiness Checklist for Founders - Results focus */}
-        {isFounder && (
-          <InvestorReadinessChecklist workspaceId={workspace.id} canWrite={canWrite} />
-        )}
-        
-        {/* Health Score Card - Secondary for Founders (they see it in JourneyHeader) */}
-        {isFounder && (
-          <HealthScoreCard workspaceId={workspace.id} programId={workspace.program_id} canManage={false} />
-        )}
-        
-        {/* Interactions Card for Founders */}
-        {isFounder && (
-          <InteractionsCard 
-            workspaceId={workspace.id} 
-            onViewAll={() => setSearchParams({ tab: 'communications' })}
-          />
-        )}
-        
-        {/* Location & Contract for Founders - secondary */}
-        {isFounder && (
-          <LocationContractCard workspaceId={workspace.id} />
-        )}
-        
-        {/* Workspace Alerts for Founders - secondary */}
-        {isFounder && (
-          <WorkspaceAlertsSection workspaceId={workspace.id} canManage={canWrite} />
+          <div className="lg:col-span-2">
+            <Collapsible open={founderAdvancedOpen} onOpenChange={setFounderAdvancedOpen}>
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between text-sm text-muted-foreground hover:text-foreground border border-dashed border-border/60 rounded-xl"
+                >
+                  <span>
+                    {founderAdvancedOpen
+                      ? t('founder.advanced.hide', { defaultValue: 'Esconder detalhes de progresso' })
+                      : t('founder.advanced.show', { defaultValue: 'Mostrar mais detalhes de progresso' })}
+                  </span>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${founderAdvancedOpen ? 'rotate-180' : ''}`} />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="grid gap-6 lg:grid-cols-2 pt-4">
+                <PlaybookProgressWidget workspaceId={workspace.id} />
+                <InvestorReadinessChecklist workspaceId={workspace.id} canWrite={canWrite} />
+                <HealthScoreCard workspaceId={workspace.id} programId={workspace.program_id} canManage={false} />
+                <InteractionsCard
+                  workspaceId={workspace.id}
+                  onViewAll={() => setSearchParams({ tab: 'communications' })}
+                />
+                <LocationContractCard workspaceId={workspace.id} />
+                <WorkspaceAlertsSection workspaceId={workspace.id} canManage={canWrite} />
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
         )}
       </div>
 
@@ -609,7 +617,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
       {isFounder && (
         <FounderHelpNudge
           workspaceId={workspace.id}
-          hasConsultant={Boolean((workspace as any)?.responsible_consultor_id)}
+          hasConsultant={hasConsultant}
           pageLabel="workspace_overview"
           aiStarterPrompt={`Estou no workspace da ${workspace.startup?.name || 'minha startup'}. Por onde devo continuar?`}
         />
