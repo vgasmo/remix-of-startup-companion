@@ -327,6 +327,42 @@ export function useConvertToStartup() {
       // This prevents premature workspace activation before contract truth is established.
       logger.info('Workspace created as pending — activation deferred to contract signing', { workspaceId: workspace.id });
 
+      // Copy pitch deck (if any) from public booking bucket into the workspace's documents
+      const pitchDeckPath = typeof meta.pitch_deck_path === 'string' ? meta.pitch_deck_path : null;
+      if (pitchDeckPath) {
+        try {
+          const { data: deckBlob, error: dlErr } = await supabase.storage
+            .from('booking-uploads')
+            .download(pitchDeckPath);
+          if (dlErr) throw dlErr;
+
+          const originalName = pitchDeckPath.split('/').pop() || 'pitch-deck';
+          const destPath = `${workspace.id}/${Date.now()}_${originalName}`;
+          const { error: upErr } = await supabase.storage
+            .from('workspace-documents')
+            .upload(destPath, deckBlob, {
+              contentType: deckBlob.type || 'application/octet-stream',
+              upsert: false,
+            });
+          if (upErr) throw upErr;
+
+          const { error: docErr } = await supabase.from('documents').insert({
+            workspace_id: workspace.id,
+            name: `Pitch Deck — ${projectName}`,
+            description: 'Importado automaticamente do formulário público de primeiro contacto.',
+            document_type: 'file',
+            file_path: destPath,
+            mime_type: deckBlob.type || 'application/octet-stream',
+            category: 'pitch_deck',
+            visibility: 'shared_with_mentor',
+            uploaded_by: user.id,
+          });
+          if (docErr) throw docErr;
+        } catch (err) {
+          logger.warn('pitch_deck_import_failed', { error: String(err), workspaceId: workspace.id });
+        }
+      }
+
       // Create contract if incubation type is specified
       let contract = null;
       if (incubationTypeId) {
