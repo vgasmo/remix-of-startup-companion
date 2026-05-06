@@ -732,7 +732,6 @@ Deno.serve(async (req) => {
         signed_at: new Date().toISOString(),
         ip_hash: ipHash,
         user_agent: signatureData.user_agent || req.headers.get('User-Agent'),
-        token_used: token,
       }
       
       // Update contract: mark as signed
