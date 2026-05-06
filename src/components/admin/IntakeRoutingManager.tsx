@@ -343,7 +343,10 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
                     {isGlobal ? <Users className="h-3.5 w-3.5" /> : <Building2 className="h-3.5 w-3.5" />}
                     {tab.label}
                     {hasConfig && (
-                      <span className="ml-1 h-2 w-2 rounded-full bg-primary inline-block" />
+                      <span
+                        className={`ml-1 h-2 w-2 rounded-full inline-block ${route?.active ? 'bg-primary' : 'bg-muted-foreground/40'}`}
+                        title={route?.active ? t('common.active', 'Ativo') : t('common.inactive', 'Inativo')}
+                      />
                     )}
                   </TabsTrigger>
                 );
