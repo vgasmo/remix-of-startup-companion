@@ -33,6 +33,11 @@ interface BookingRequest {
     referral_source?: string;
     has_team?: string;
     pitch_deck_path?: string;
+    has_tech?: string;
+    is_iies?: string;
+    vertical?: string;
+    help_expectation?: string;
+    personal_intro?: string;
   };
 }
 
