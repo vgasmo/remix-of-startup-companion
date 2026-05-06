@@ -3953,6 +3953,15 @@
   },
   "founder": {
     "accelerationProgress": "Progresso da Aceleração",
+    "calmHero": {
+      "eyebrow": "Your startup space",
+      "greeting": "Hi{{name}}, just one step today.",
+      "subtitle": "No rush. Let's move forward one thing at a time — we're here to help."
+    },
+    "advanced": {
+      "show": "Show more progress details",
+      "hide": "Hide progress details"
+    },
     "applicationUnderReview": "Application Under Review",
     "claimFirst": {
       "cta": "Verificar a Minha Startup",
