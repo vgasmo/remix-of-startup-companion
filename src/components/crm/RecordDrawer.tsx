@@ -78,6 +78,7 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
   const [addActivityDialog, setAddActivityDialog] = useState<ActivityType | null>(null);
   const [addTaskDialog, setAddTaskDialog] = useState(false);
   const [nextActionDialog, setNextActionDialog] = useState(false);
+  const [convertDialog, setConvertDialog] = useState(false);
   const [taskStatusFilter, setTaskStatusFilter] = useState<TaskStatusFilter>('open');
   
   // Local overrides for optimistic updates on next action
