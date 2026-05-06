@@ -59,6 +59,11 @@ export default function PublicBooking() {
     referral_source: '',
     has_team: '',
     message: '',
+    has_tech: '',
+    is_iies: '',
+    vertical: '',
+    help_expectation: '',
+    personal_intro: '',
   });
 
   const toggleLang = () => {
