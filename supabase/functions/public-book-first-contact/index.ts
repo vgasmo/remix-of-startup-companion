@@ -33,6 +33,11 @@ interface BookingRequest {
     referral_source?: string;
     has_team?: string;
     pitch_deck_path?: string;
+    has_tech?: string;
+    is_iies?: string;
+    vertical?: string;
+    help_expectation?: string;
+    personal_intro?: string;
   };
 }
 
@@ -110,13 +115,18 @@ function validateBookingRequest(body: unknown): { valid: true; data: BookingRequ
   const referral_source = typeof contact.referral_source === 'string' ? contact.referral_source.trim().slice(0, 100) : undefined;
   const has_team = typeof contact.has_team === 'string' ? contact.has_team.trim().slice(0, 20) : undefined;
   const pitch_deck_path = typeof contact.pitch_deck_path === 'string' ? contact.pitch_deck_path.trim().slice(0, 500) : undefined;
+  const has_tech = typeof contact.has_tech === 'string' ? contact.has_tech.trim().slice(0, 20) : undefined;
+  const is_iies = typeof contact.is_iies === 'string' ? contact.is_iies.trim().slice(0, 20) : undefined;
+  const vertical = typeof contact.vertical === 'string' ? contact.vertical.trim().slice(0, 100) : undefined;
+  const help_expectation = typeof contact.help_expectation === 'string' ? contact.help_expectation.trim().slice(0, MAX_MESSAGE_LENGTH) : undefined;
+  const personal_intro = typeof contact.personal_intro === 'string' ? contact.personal_intro.trim().slice(0, MAX_MESSAGE_LENGTH) : undefined;
 
   return {
     valid: true,
     data: {
       token: req.token as string,
       slot: { date: slot.date as string, time: slot.time as string },
-      contact: { name: (contact.name as string).trim(), email, phone, organization, message, sector, stage, referral_source, has_team, pitch_deck_path },
+      contact: { name: (contact.name as string).trim(), email, phone, organization, message, sector, stage, referral_source, has_team, pitch_deck_path, has_tech, is_iies, vertical, help_expectation, personal_intro },
     },
   };
 }
@@ -382,6 +392,11 @@ serve(async (req) => {
       if (contact.referral_source) bookingMetadata.referral_source = contact.referral_source;
       if (contact.has_team) bookingMetadata.has_team = contact.has_team;
       if (contact.pitch_deck_path) bookingMetadata.pitch_deck_path = contact.pitch_deck_path;
+      if (contact.has_tech) bookingMetadata.has_tech = contact.has_tech;
+      if (contact.is_iies) bookingMetadata.is_iies = contact.is_iies;
+      if (contact.vertical) bookingMetadata.vertical = contact.vertical;
+      if (contact.help_expectation) bookingMetadata.help_expectation = contact.help_expectation;
+      if (contact.personal_intro) bookingMetadata.personal_intro = contact.personal_intro;
       bookingMetadata.booking_date = `${slot.date}T${slot.time}:00`;
       bookingMetadata.booking_source = 'public_form';
 
