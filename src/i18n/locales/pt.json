@@ -2735,6 +2735,16 @@
       "uploading": "A carregar documento..."
     }
   },
+  "founderHelpNudge": {
+    "aria": "Sugestão de ajuda",
+    "title": "Sentes-te perdido? Podemos ajudar.",
+    "subtitle": "Pergunta ao assistente, pesquisa o guia ou marca tempo com o teu consultor.",
+    "askAi": "Perguntar à IA",
+    "searchHelp": "Pesquisar ajuda",
+    "bookSession": "Marcar sessão",
+    "defaultPrompt": "Estou um pouco perdido. Por onde devo começar agora?",
+    "dashboardPrompt": "Estou no meu painel. Qual deveria ser o meu próximo passo?"
+  },
   "copilot": {
     "askAnything": "Pergunte sobre a sua startup, tarefas, KPIs ou ecossistema.",
     "emptyResponse": "Não consegui processar o pedido. Tente reformular a pergunta.",

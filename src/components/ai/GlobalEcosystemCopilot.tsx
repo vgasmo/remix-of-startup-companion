@@ -47,6 +47,19 @@ export function GlobalEcosystemCopilot() {
     }
   }, [messages, isThinking]);
 
+  // Listen for global "open copilot" events (with optional starter prompt)
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      setOpen(true);
+      const detail = (e as CustomEvent<{ prompt?: string }>).detail;
+      if (detail?.prompt) {
+        setInput(detail.prompt);
+      }
+    };
+    window.addEventListener('copilot:open', onOpen as EventListener);
+    return () => window.removeEventListener('copilot:open', onOpen as EventListener);
+  }, []);
+
   const handleSend = useCallback(async (text?: string) => {
     const content = text || input.trim();
     if (!content || isThinking) return;

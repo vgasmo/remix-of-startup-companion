@@ -46,6 +46,7 @@ import { FounderReadinessStrip } from '@/components/founder/FounderReadinessStri
 import { PendingContractBanner } from '@/components/founder/PendingContractBanner';
 import { FounderProgressRings } from '@/components/dashboard/FounderProgressRings';
 import { useAutoMaterializeDeliverables } from '@/hooks/useAutoMaterializeDeliverables';
+import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
 // NextBestActionFounder removed from beginner view — kept available for power users via OneThingToday.
 
 interface FounderDashboardProps {
@@ -408,6 +409,15 @@ export function FounderDashboard({
           programId={workspace.program_id}
         />
       )}
+
+      <FounderHelpNudge
+        workspaceId={workspace.id}
+        hasConsultant={hasMentor}
+        pageLabel="founder_dashboard"
+        aiStarterPrompt={t('founderHelpNudge.dashboardPrompt', {
+          defaultValue: 'Estou no meu painel. Qual deveria ser o meu próximo passo?',
+        })}
+      />
     </div>
   );
 }
