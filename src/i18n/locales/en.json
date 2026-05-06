@@ -1188,7 +1188,9 @@
       "viewActive": "View active",
       "viewArchived": "View archived",
       "viewDocument": "View document",
-      "website": "Website"
+      "website": "Website",
+      "certified": "Certified",
+      "viewCertification": "View certification"
     },
     "stats": {
       "actionsCompleted": "actions completed",
@@ -2252,7 +2254,8 @@
     "viewAll": "View all",
     "workspace": "Workspace",
     "years": "years",
-    "yes": "Yes"
+    "yes": "Yes",
+    "dismiss": "Dismiss"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -3652,7 +3655,10 @@
     "unassigned": "Sem consultor atribuído",
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
-    "workspaces": "workspaces"
+    "workspaces": "workspaces",
+    "hasStartupPortugalFilter": "Startup Portugal certified",
+    "startupPortugalBadge": "Startup Portugal certified",
+    "startupPortugalShort": "SP"
   },
   "ecosystemHub": {
     "navLabel": "Management Hub",
@@ -7340,7 +7346,15 @@
     "title": "Dashboard",
     "triage": "Smart Triage & Intake",
     "triageDesc": "What needs a decision now: approvals, claims and routing.",
-    "upToDate": "Up to date"
+    "upToDate": "Up to date",
+    "onlyStartupPortugalHint": "Show only Startup Portugal certified startups",
+    "onlyStartupPortugal": "Only Startup Portugal",
+    "viewConsultantPortfolioHint": "View this consultant’s portfolio",
+    "viewConsultantPortfolio": "View consultant portfolio",
+    "noStartupPortugalInPortfolio": "No Startup Portugal certified startups in this portfolio.",
+    "startupPortugalTitle": "Startup Portugal certified",
+    "noStartupPortugalCertified": "No startups certified by Startup Portugal yet.",
+    "viewAllStartups": "View all startups"
   },
   "staffTasks": {
     "moreTasks": "more tasks",
