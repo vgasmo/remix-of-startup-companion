@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LifeBuoy, Sparkles, Search, CalendarClock, X } from 'lucide-react';
@@ -50,15 +50,10 @@ export function FounderHelpNudge({
     forceTrigger,
   });
 
-  const fireShown = useCallback(() => {
-    track('founder_help_nudge_shown', { page: pageLabel, workspaceId });
-  }, [pageLabel, workspaceId]);
-
-  // Fire shown event once per appearance
-  if (show) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    queueMicrotask(fireShown);
-  }
+  // Fire "shown" once per appearance
+  useEffect(() => {
+    if (show) track('founder_help_nudge_shown', { page: pageLabel, workspaceId });
+  }, [show, pageLabel, workspaceId]);
 
   if (!isFounder || !show) return null;
 
