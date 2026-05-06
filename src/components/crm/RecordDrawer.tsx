@@ -663,6 +663,16 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
           currentDate={nextActionAt}
           currentDescription={nextActionDescription}
         />
+
+        <ConvertLeadDialog
+          item={item}
+          open={convertDialog}
+          onOpenChange={setConvertDialog}
+          onConverted={(workspaceId) => {
+            onOpenChange(false);
+            navigate(`/admin?tab=workspaces&workspace=${workspaceId}`);
+          }}
+        />
       </SheetContent>
     </Sheet>
   );
