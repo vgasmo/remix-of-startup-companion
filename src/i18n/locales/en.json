@@ -2746,7 +2746,8 @@
     "searchHelp": "Search help",
     "bookSession": "Book a session",
     "defaultPrompt": "I'm a bit lost. Where should I start right now?",
-    "dashboardPrompt": "I'm on my dashboard. What should be my next step?"
+    "dashboardPrompt": "I'm on my dashboard. What should be my next step?",
+    "searchQuery": "How do I start"
   },
   "copilot": {
     "askAnything": "Ask me anything about your startup, tasks, KPIs, or ecosystem.",

@@ -2746,7 +2746,8 @@
     "searchHelp": "Pesquisar ajuda",
     "bookSession": "Marcar sessão",
     "defaultPrompt": "Estou um pouco perdido. Por onde devo começar agora?",
-    "dashboardPrompt": "Estou no meu painel. Qual deveria ser o meu próximo passo?"
+    "dashboardPrompt": "Estou no meu painel. Qual deveria ser o meu próximo passo?",
+    "searchQuery": "como começar"
   },
   "copilot": {
     "askAnything": "Pergunte sobre a sua startup, tarefas, KPIs ou ecossistema.",
