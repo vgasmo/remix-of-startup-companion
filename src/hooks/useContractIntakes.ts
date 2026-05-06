@@ -367,23 +367,27 @@ export function useTransitionIntakeStatus() {
         // Fetch intake token for the email link
         const { data: intakeData } = await supabase
           .from('contract_intakes')
-          .select('intake_token, legal_representative_email, legal_representative_name, organization_name')
+          .select('legal_representative_email, legal_representative_name, organization_name')
           .eq('id', params.intakeId)
           .single();
 
-        if (intakeData?.legal_representative_email && intakeData?.intake_token) {
+        if (intakeData?.legal_representative_email) {
           try {
-            await supabase.functions.invoke('send-intake-email', {
-              body: {
-                type: 'changes_requested',
-                intakeId: params.intakeId,
-                recipientEmail: intakeData.legal_representative_email,
-                recipientName: intakeData.legal_representative_name,
-                organizationName: intakeData.organization_name,
-                intakeToken: intakeData.intake_token,
-                changesNotes: params.notes,
-              },
-            });
+            // Rotate token so the email link is fresh and the DB only stores the hash
+            const { data: freshToken } = await supabase.rpc('staff_rotate_intake_token', { p_intake_id: params.intakeId });
+            if (freshToken) {
+              await supabase.functions.invoke('send-intake-email', {
+                body: {
+                  type: 'changes_requested',
+                  intakeId: params.intakeId,
+                  recipientEmail: intakeData.legal_representative_email,
+                  recipientName: intakeData.legal_representative_name,
+                  organizationName: intakeData.organization_name,
+                  intakeToken: freshToken,
+                  changesNotes: params.notes,
+                },
+              });
+            }
           } catch (emailErr) {
             logger.warn('changes_requested_email_failed', { error: String(emailErr) });
           }

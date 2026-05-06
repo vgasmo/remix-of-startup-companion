@@ -460,6 +460,6 @@ serve(async (req) => {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error("Error:", message);
-    return corsJsonResponse({ success: false, error: message }, req, 500);
+    return corsJsonResponse({ success: false, error: 'An unexpected error occurred. Please try again.' }, req, 500);
   }
 });

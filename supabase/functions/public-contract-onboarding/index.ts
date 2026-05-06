@@ -24,6 +24,54 @@ function generateToken(): string {
   return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('')
 }
 
+async function sha256Hex(input: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input))
+  return Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join('')
+}
+
+// Basic server-side validators for the public intake form
+const PT_NIF_REGEX = /^\d{9}$/
+const IBAN_REGEX = /^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const POSTAL_PT_REGEX = /^\d{4}-\d{3}$/
+
+function validateIntakeForm(fd: any): { ok: true } | { ok: false; error: string } {
+  const optStr = (v: unknown, max: number) =>
+    v === undefined || v === null || (typeof v === 'string' && v.length <= max)
+  const reqStr = (v: unknown, max: number) =>
+    typeof v === 'string' && v.trim().length > 0 && v.length <= max
+
+  if (fd.organization_name !== undefined && !optStr(fd.organization_name, 255))
+    return { ok: false, error: 'organization_name invalid' }
+  if (fd.company_nif !== undefined && fd.company_nif !== null && fd.company_nif !== '') {
+    if (typeof fd.company_nif !== 'string' || !PT_NIF_REGEX.test(fd.company_nif.replace(/\s|-/g, '')))
+      return { ok: false, error: 'NIF must be 9 digits' }
+  }
+  if (fd.iban !== undefined && fd.iban !== null && fd.iban !== '') {
+    const cleaned = String(fd.iban).replace(/\s/g, '').toUpperCase()
+    if (!IBAN_REGEX.test(cleaned)) return { ok: false, error: 'IBAN format invalid' }
+  }
+  if (fd.company_postal_code !== undefined && fd.company_postal_code !== null && fd.company_postal_code !== '') {
+    if (!POSTAL_PT_REGEX.test(String(fd.company_postal_code)))
+      return { ok: false, error: 'postal_code must be NNNN-NNN' }
+  }
+  for (const f of ['legal_representative_email', 'billing_email']) {
+    const v = fd[f]
+    if (v !== undefined && v !== null && v !== '' && (typeof v !== 'string' || !EMAIL_REGEX.test(v) || v.length > 255))
+      return { ok: false, error: `${f} invalid` }
+  }
+  if (!optStr(fd.company_address, 500)) return { ok: false, error: 'company_address too long' }
+  if (!optStr(fd.company_city, 120)) return { ok: false, error: 'company_city too long' }
+  if (!optStr(fd.legal_representative_name, 200)) return { ok: false, error: 'legal_representative_name too long' }
+  if (fd.legal_representative_phone !== undefined && fd.legal_representative_phone !== null && fd.legal_representative_phone !== '') {
+    const p = String(fd.legal_representative_phone)
+    if (p.length > 32 || !/^[+\d\s().-]{6,32}$/.test(p)) return { ok: false, error: 'phone invalid' }
+  }
+  if (!optStr(fd.startup_description, 5000)) return { ok: false, error: 'description too long' }
+  if (!optStr(fd.website, 500)) return { ok: false, error: 'website too long' }
+  return { ok: true }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -233,10 +281,11 @@ Deno.serve(async (req) => {
         })
       }
 
+      const tokenHashLoad = await sha256Hex(token)
       const { data: intake, error: iErr } = await supabase
         .from('contract_intakes')
         .select('id, status, organization_name, company_nif, company_address, company_city, company_postal_code, iban, legal_representative_name, legal_representative_email, legal_representative_phone, billing_email, startup_description, website, documents_json, missing_documents, changes_requested_notes, intake_token_expires_at, submitted_at')
-        .eq('intake_token', token)
+        .eq('intake_token_hash', tokenHashLoad)
         .maybeSingle()
 
       if (iErr || !intake) {
@@ -271,10 +320,11 @@ Deno.serve(async (req) => {
       }
 
       // Verify token
+      const tokenHash = await sha256Hex(token)
       const { data: intake, error: iErr } = await supabase
         .from('contract_intakes')
         .select('id, status, intake_token_expires_at')
-        .eq('intake_token', token)
+        .eq('intake_token_hash', tokenHash)
         .maybeSingle()
 
       if (iErr || !intake) {
@@ -296,16 +346,24 @@ Deno.serve(async (req) => {
         })
       }
 
+      // Server-side validation for sensitive financial fields
+      const validation = validateIntakeForm(fd)
+      if (!validation.ok) {
+        return new Response(JSON.stringify({ error: validation.error }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
       // Update intake with form data
       const { error: updateErr } = await supabase
         .from('contract_intakes')
         .update({
           organization_name: fd.organization_name,
-          company_nif: fd.company_nif,
+          company_nif: fd.company_nif ? String(fd.company_nif).replace(/\s|-/g, '') : null,
           company_address: fd.company_address,
           company_city: fd.company_city,
           company_postal_code: fd.company_postal_code,
-          iban: fd.iban,
+          iban: fd.iban ? String(fd.iban).replace(/\s/g, '').toUpperCase() : null,
           legal_representative_name: fd.legal_representative_name,
           legal_representative_email: fd.legal_representative_email,
           legal_representative_phone: fd.legal_representative_phone,
@@ -341,7 +399,8 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Fetch contract by token
+    // Fetch contract by token (lookup by hash)
+    const onboardingTokenHash = await sha256Hex(token)
     const { data: contract, error: fetchErr } = await supabase
       .from('startup_contracts')
       .select(`
@@ -354,7 +413,7 @@ Deno.serve(async (req) => {
         incubation_type:incubation_types(name),
         building:buildings(name, code, address)
       `)
-      .eq('onboarding_token', token)
+      .eq('onboarding_token_hash', onboardingTokenHash)
       .single()
 
     if (fetchErr || !contract) {
@@ -673,7 +732,6 @@ Deno.serve(async (req) => {
         signed_at: new Date().toISOString(),
         ip_hash: ipHash,
         user_agent: signatureData.user_agent || req.headers.get('User-Agent'),
-        token_used: token,
       }
       
       // Update contract: mark as signed
@@ -781,7 +839,7 @@ Deno.serve(async (req) => {
 
   } catch (err) {
     console.error('Public contract onboarding error:', err)
-    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }

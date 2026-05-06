@@ -45,10 +45,9 @@ Deno.serve(async (req) => {
     // Fetch intakes in editable states that haven't been submitted
     const { data: pendingIntakes } = await supabase
       .from('contract_intakes')
-      .select('id, intake_token, organization_name, legal_representative_email, legal_representative_name, created_at, last_reminder_sent_at, reminder_count, status')
+      .select('id, organization_name, legal_representative_email, legal_representative_name, created_at, last_reminder_sent_at, reminder_count, status')
       .in('status', ['intake_requested', 'intake_in_progress', 'changes_requested'])
       .not('legal_representative_email', 'is', null)
-      .not('intake_token', 'is', null)
 
     if (pendingIntakes?.length) {
       const now = new Date()
@@ -71,7 +70,8 @@ Deno.serve(async (req) => {
 
         if (shouldSend) {
           try {
-            // Send reminder via send-intake-email
+            // Rotate token so the reminder link is fresh and DB only stores hash
+            const { data: freshToken } = await supabase.rpc('staff_rotate_intake_token', { p_intake_id: intake.id })
             await fetch(`${supabaseUrl}/functions/v1/send-intake-email`, {
               method: 'POST',
               headers: {
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
                 recipientEmail: intake.legal_representative_email,
                 recipientName: intake.legal_representative_name,
                 organizationName: intake.organization_name,
-                intakeToken: intake.intake_token,
+                intakeToken: freshToken,
               }),
             })
 
@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
     })
   } catch (err) {
     console.error('run-intake-reminders error:', err)
-    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }

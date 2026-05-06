@@ -1157,6 +1157,7 @@ export type Database = {
           id: string
           intake_token: string | null
           intake_token_expires_at: string | null
+          intake_token_hash: string | null
           last_reminder_sent_at: string | null
           legal_representative_email: string | null
           legal_representative_name: string | null
@@ -1192,6 +1193,7 @@ export type Database = {
           id?: string
           intake_token?: string | null
           intake_token_expires_at?: string | null
+          intake_token_hash?: string | null
           last_reminder_sent_at?: string | null
           legal_representative_email?: string | null
           legal_representative_name?: string | null
@@ -1227,6 +1229,7 @@ export type Database = {
           id?: string
           intake_token?: string | null
           intake_token_expires_at?: string | null
+          intake_token_hash?: string | null
           last_reminder_sent_at?: string | null
           legal_representative_email?: string | null
           legal_representative_name?: string | null
@@ -6172,6 +6175,7 @@ export type Database = {
           onboarding_completed_at: string | null
           onboarding_token: string | null
           onboarding_token_expires_at: string | null
+          onboarding_token_hash: string | null
           organization_name: string | null
           payment_method: string | null
           payment_terms_days: number | null
@@ -6253,6 +6257,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           onboarding_token?: string | null
           onboarding_token_expires_at?: string | null
+          onboarding_token_hash?: string | null
           organization_name?: string | null
           payment_method?: string | null
           payment_terms_days?: number | null
@@ -6334,6 +6339,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           onboarding_token?: string | null
           onboarding_token_expires_at?: string | null
+          onboarding_token_hash?: string | null
           organization_name?: string | null
           payment_method?: string | null
           payment_terms_days?: number | null
@@ -8935,6 +8941,14 @@ export type Database = {
       staff_delete_user: {
         Args: { target_user_id: string }
         Returns: undefined
+      }
+      staff_rotate_intake_token: {
+        Args: { p_intake_id: string }
+        Returns: string
+      }
+      staff_rotate_onboarding_token: {
+        Args: { p_contract_id: string }
+        Returns: string
       }
       submit_checkin: {
         Args: { p_instance_id: string; p_responses: Json }

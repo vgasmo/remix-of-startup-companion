@@ -735,7 +735,7 @@ function IntakeActionsForDrawer({ item, user }: { item: FunnelItem; user: any })
     return (
       <div className="space-y-2">
         {/* Copy link action for in-progress intakes */}
-        {CUSTOMER_EDITABLE_STATES.includes(intake.status as IntakeState) && intake.intake_token && (
+        {CUSTOMER_EDITABLE_STATES.includes(intake.status as IntakeState) && (
           <Card className="border-cyan-200 bg-cyan-50/50 dark:bg-cyan-900/10">
             <CardContent className="p-3 flex items-center justify-between">
               <div>
@@ -750,7 +750,12 @@ function IntakeActionsForDrawer({ item, user }: { item: FunnelItem; user: any })
                 variant="outline"
                 className="h-7 text-xs gap-1"
                 onClick={async () => {
-                  const url = `${window.location.origin}/contract-intake/${intake.intake_token}`;
+                  const { data: freshToken, error } = await supabase.rpc('staff_rotate_intake_token', { p_intake_id: intake.id });
+                  if (error || !freshToken) {
+                    toast.error(t('crm.linkCopyFailed', 'Falha ao gerar o link'));
+                    return;
+                  }
+                  const url = `${window.location.origin}/contract-intake/${freshToken}`;
                   await navigator.clipboard.writeText(url);
                   toast.success(t('crm.linkCopiado'));
                 }}
