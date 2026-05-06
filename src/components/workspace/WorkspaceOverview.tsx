@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ClipboardList } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -67,6 +67,10 @@ import { StartupStage, HealthScore, WorkspacePriority } from '@/types/database';
 import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
+import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
+import { useWorkspaceMembers } from '@/hooks/useWorkspaceMembers';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 
 interface WorkspaceOverviewProps {
   workspace: {
