@@ -399,7 +399,8 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Fetch contract by token
+    // Fetch contract by token (lookup by hash)
+    const onboardingTokenHash = await sha256Hex(token)
     const { data: contract, error: fetchErr } = await supabase
       .from('startup_contracts')
       .select(`
@@ -412,7 +413,7 @@ Deno.serve(async (req) => {
         incubation_type:incubation_types(name),
         building:buildings(name, code, address)
       `)
-      .eq('onboarding_token', token)
+      .eq('onboarding_token_hash', onboardingTokenHash)
       .single()
 
     if (fetchErr || !contract) {
