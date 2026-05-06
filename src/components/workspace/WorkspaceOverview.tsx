@@ -522,37 +522,36 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
           <ResponsibleConsultantCard workspaceId={workspace.id} />
         )}
         
-        {/* Playbook Progress Widget for Founders - Journey focus */}
+        {/* Founder advanced widgets — progressively disclosed */}
         {isFounder && (
-          <PlaybookProgressWidget workspaceId={workspace.id} />
-        )}
-        
-        {/* Investor Readiness Checklist for Founders - Results focus */}
-        {isFounder && (
-          <InvestorReadinessChecklist workspaceId={workspace.id} canWrite={canWrite} />
-        )}
-        
-        {/* Health Score Card - Secondary for Founders (they see it in JourneyHeader) */}
-        {isFounder && (
-          <HealthScoreCard workspaceId={workspace.id} programId={workspace.program_id} canManage={false} />
-        )}
-        
-        {/* Interactions Card for Founders */}
-        {isFounder && (
-          <InteractionsCard 
-            workspaceId={workspace.id} 
-            onViewAll={() => setSearchParams({ tab: 'communications' })}
-          />
-        )}
-        
-        {/* Location & Contract for Founders - secondary */}
-        {isFounder && (
-          <LocationContractCard workspaceId={workspace.id} />
-        )}
-        
-        {/* Workspace Alerts for Founders - secondary */}
-        {isFounder && (
-          <WorkspaceAlertsSection workspaceId={workspace.id} canManage={canWrite} />
+          <div className="lg:col-span-2">
+            <Collapsible open={founderAdvancedOpen} onOpenChange={setFounderAdvancedOpen}>
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between text-sm text-muted-foreground hover:text-foreground border border-dashed border-border/60 rounded-xl"
+                >
+                  <span>
+                    {founderAdvancedOpen
+                      ? t('founder.advanced.hide', { defaultValue: 'Esconder detalhes de progresso' })
+                      : t('founder.advanced.show', { defaultValue: 'Mostrar mais detalhes de progresso' })}
+                  </span>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${founderAdvancedOpen ? 'rotate-180' : ''}`} />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="grid gap-6 lg:grid-cols-2 pt-4">
+                <PlaybookProgressWidget workspaceId={workspace.id} />
+                <InvestorReadinessChecklist workspaceId={workspace.id} canWrite={canWrite} />
+                <HealthScoreCard workspaceId={workspace.id} programId={workspace.program_id} canManage={false} />
+                <InteractionsCard
+                  workspaceId={workspace.id}
+                  onViewAll={() => setSearchParams({ tab: 'communications' })}
+                />
+                <LocationContractCard workspaceId={workspace.id} />
+                <WorkspaceAlertsSection workspaceId={workspace.id} canManage={canWrite} />
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
         )}
       </div>
 
@@ -618,7 +617,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
       {isFounder && (
         <FounderHelpNudge
           workspaceId={workspace.id}
-          hasConsultant={Boolean((workspace as any)?.responsible_consultor_id)}
+          hasConsultant={hasConsultant}
           pageLabel="workspace_overview"
           aiStarterPrompt={`Estou no workspace da ${workspace.startup?.name || 'minha startup'}. Por onde devo continuar?`}
         />
