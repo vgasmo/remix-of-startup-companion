@@ -46,16 +46,19 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
   
   const [mode, setMode] = useState<'single' | 'round_robin'>('single');
   const [selectedConsultants, setSelectedConsultants] = useState<string[]>([]);
+  const [active, setActive] = useState(true);
   const [hasChanges, setHasChanges] = useState(false);
   
   useEffect(() => {
     if (route) {
       setMode(route.mode as 'single' | 'round_robin');
       setSelectedConsultants(route.consultant_ids || []);
+      setActive(route.active ?? true);
       setHasChanges(false);
     } else {
       setMode('single');
       setSelectedConsultants([]);
+      setActive(true);
       setHasChanges(false);
     }
   }, [route]);
@@ -76,9 +79,14 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
     }
     setHasChanges(true);
   };
+
+  const handleActiveChange = (next: boolean) => {
+    setActive(next);
+    setHasChanges(true);
+  };
   
   const handleSave = async () => {
-    if (selectedConsultants.length === 0) {
+    if (active && selectedConsultants.length === 0) {
       toast.error(t('admin.pleaseSelectAtLeastOne'));
       return;
     }
@@ -89,7 +97,7 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
       program_id: programId || null,
       mode,
       consultant_ids: selectedConsultants,
-      active: true,
+      active,
     });
     
     setHasChanges(false);
