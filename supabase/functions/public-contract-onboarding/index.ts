@@ -281,10 +281,11 @@ Deno.serve(async (req) => {
         })
       }
 
+      const tokenHashLoad = await sha256Hex(token)
       const { data: intake, error: iErr } = await supabase
         .from('contract_intakes')
         .select('id, status, organization_name, company_nif, company_address, company_city, company_postal_code, iban, legal_representative_name, legal_representative_email, legal_representative_phone, billing_email, startup_description, website, documents_json, missing_documents, changes_requested_notes, intake_token_expires_at, submitted_at')
-        .eq('intake_token', token)
+        .eq('intake_token_hash', tokenHashLoad)
         .maybeSingle()
 
       if (iErr || !intake) {
