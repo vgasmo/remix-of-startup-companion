@@ -201,8 +201,8 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
         />
       )}
 
-      {/* AI Draft Monthly Update CTA - Founders only */}
-      {isFounder && canWrite && (
+      {/* AI Draft Monthly Update CTA - Founders only, advanced disclosure */}
+      {isFounder && canWrite && founderAdvancedOpen && (
         <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl">
           <CardContent className="py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -226,11 +226,11 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
         </Card>
       )}
 
-      {/* Monthly Check-in Banner for Founders */}
-      {isFounder && <MonthlyCheckinBanner workspaceId={workspace.id} />}
+      {/* Monthly Check-in Banner for Founders (advanced) */}
+      {isFounder && founderAdvancedOpen && <MonthlyCheckinBanner workspaceId={workspace.id} />}
 
-      {/* Pending Surveys Banner for Founders */}
-      {isFounder && (
+      {/* Pending Surveys Banner for Founders (advanced) */}
+      {isFounder && founderAdvancedOpen && (
         <PendingSurveysBanner 
           workspaceId={workspace.id} 
           onOpenSurvey={setActiveSurveyId} 
