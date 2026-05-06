@@ -319,10 +319,11 @@ Deno.serve(async (req) => {
       }
 
       // Verify token
+      const tokenHash = await sha256Hex(token)
       const { data: intake, error: iErr } = await supabase
         .from('contract_intakes')
         .select('id, status, intake_token_expires_at')
-        .eq('intake_token', token)
+        .eq('intake_token_hash', tokenHash)
         .maybeSingle()
 
       if (iErr || !intake) {
@@ -344,16 +345,24 @@ Deno.serve(async (req) => {
         })
       }
 
+      // Server-side validation for sensitive financial fields
+      const validation = validateIntakeForm(fd)
+      if (!validation.ok) {
+        return new Response(JSON.stringify({ error: validation.error }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
       // Update intake with form data
       const { error: updateErr } = await supabase
         .from('contract_intakes')
         .update({
           organization_name: fd.organization_name,
-          company_nif: fd.company_nif,
+          company_nif: fd.company_nif ? String(fd.company_nif).replace(/\s|-/g, '') : null,
           company_address: fd.company_address,
           company_city: fd.company_city,
           company_postal_code: fd.company_postal_code,
-          iban: fd.iban,
+          iban: fd.iban ? String(fd.iban).replace(/\s/g, '').toUpperCase() : null,
           legal_representative_name: fd.legal_representative_name,
           legal_representative_email: fd.legal_representative_email,
           legal_representative_phone: fd.legal_representative_phone,
