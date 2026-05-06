@@ -66,6 +66,7 @@ import { toast } from 'sonner';
 import { StartupStage, HealthScore, WorkspacePriority } from '@/types/database';
 import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
 
 interface WorkspaceOverviewProps {
   workspace: {
@@ -602,6 +603,15 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
           open={showPrepSheet}
           onOpenChange={setShowPrepSheet}
           workspaceId={workspace.id}
+        />
+      )}
+
+      {isFounder && (
+        <FounderHelpNudge
+          workspaceId={workspace.id}
+          hasConsultant={Boolean((workspace as any)?.responsible_consultor_id)}
+          pageLabel="workspace_overview"
+          aiStarterPrompt={`Estou no workspace da ${workspace.startup?.name || 'minha startup'}. Por onde devo continuar?`}
         />
       )}
     </div>
