@@ -106,6 +106,21 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
   
   return (
     <div className="space-y-5">
+      {/* Active toggle */}
+      <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
+        <div>
+          <Label className="font-medium">
+            {t('admin.intakeRouting.activeLabel', 'Encaminhamento ativo')}
+          </Label>
+          <p className="text-xs text-muted-foreground mt-1">
+            {active
+              ? t('admin.intakeRouting.activeOnDesc', 'Esta regra está a receber novas marcações.')
+              : t('admin.intakeRouting.activeOffDesc', 'Regra desativada — novas marcações irão usar a regra global.')}
+          </p>
+        </div>
+        <Switch checked={active} onCheckedChange={handleActiveChange} />
+      </div>
+
       {/* Mode Selection */}
       <div className="space-y-3">
         <Label>{t('admin.intakeRouting.routingMode', 'Modo de Encaminhamento')}</Label>
