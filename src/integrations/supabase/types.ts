@@ -8942,6 +8942,14 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: undefined
       }
+      staff_rotate_intake_token: {
+        Args: { p_intake_id: string }
+        Returns: string
+      }
+      staff_rotate_onboarding_token: {
+        Args: { p_contract_id: string }
+        Returns: string
+      }
       submit_checkin: {
         Args: { p_instance_id: string; p_responses: Json }
         Returns: string
