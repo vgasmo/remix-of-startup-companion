@@ -569,36 +569,38 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
         programId={workspace.program_id}
       />
 
-      {/* Recent Sessions - Full Width */}
-      <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSearchParams({ tab: 'agenda' })}>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
-              {t('workspaceOverview.recentSessions')}
-            </CardTitle>
-            <Badge variant="secondary">{sessions?.length || 0} {t('sessions.title').toLowerCase()}</Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {sessionsLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}
+      {/* Recent Sessions - Full Width. For founders, only when "Show more" is open. */}
+      {(!isFounder || founderAdvancedOpen) && (
+        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSearchParams({ tab: 'agenda' })}>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                {t('workspaceOverview.recentSessions')}
+              </CardTitle>
+              <Badge variant="secondary">{sessions?.length || 0} {t('sessions.title').toLowerCase()}</Badge>
             </div>
-          ) : sessions?.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>{t('workspaceOverview.noSessionsRecorded')}</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {sessions?.map(session => (
-                <SessionItem key={session.id} session={session} />
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            {sessionsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}
+              </div>
+            ) : sessions?.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>{t('workspaceOverview.noSessionsRecorded')}</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {sessions?.map(session => (
+                  <SessionItem key={session.id} session={session} />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Mobile Quick Actions FAB for Founders */}
       {isFounder && canWrite && (
