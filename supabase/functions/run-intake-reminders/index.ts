@@ -70,7 +70,8 @@ Deno.serve(async (req) => {
 
         if (shouldSend) {
           try {
-            // Send reminder via send-intake-email
+            // Rotate token so the reminder link is fresh and DB only stores hash
+            const { data: freshToken } = await supabase.rpc('staff_rotate_intake_token', { p_intake_id: intake.id })
             await fetch(`${supabaseUrl}/functions/v1/send-intake-email`, {
               method: 'POST',
               headers: {
@@ -83,7 +84,7 @@ Deno.serve(async (req) => {
                 recipientEmail: intake.legal_representative_email,
                 recipientName: intake.legal_representative_name,
                 organizationName: intake.organization_name,
-                intakeToken: intake.intake_token,
+                intakeToken: freshToken,
               }),
             })
 
