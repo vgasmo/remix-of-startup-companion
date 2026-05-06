@@ -45,10 +45,9 @@ Deno.serve(async (req) => {
     // Fetch intakes in editable states that haven't been submitted
     const { data: pendingIntakes } = await supabase
       .from('contract_intakes')
-      .select('id, intake_token, organization_name, legal_representative_email, legal_representative_name, created_at, last_reminder_sent_at, reminder_count, status')
+      .select('id, organization_name, legal_representative_email, legal_representative_name, created_at, last_reminder_sent_at, reminder_count, status')
       .in('status', ['intake_requested', 'intake_in_progress', 'changes_requested'])
       .not('legal_representative_email', 'is', null)
-      .not('intake_token', 'is', null)
 
     if (pendingIntakes?.length) {
       const now = new Date()
