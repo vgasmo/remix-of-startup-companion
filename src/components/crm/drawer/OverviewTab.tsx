@@ -379,24 +379,29 @@ export function OverviewTab({
   );
 }
 
-const SECTOR_LABELS: Record<string, string> = {
+const VERTICAL_LABELS: Record<string, string> = {
+  cybersecurity: 'Cybersecurity',
+  engineering: 'Engineering',
+  deeptech: 'DeepTech',
+  planettech: 'PlanetTech',
+  ai: 'AI',
   healthtech: 'HealthTech',
+  fintech: 'FinTech',
   edtech: 'EdTech',
-  fintech: 'Fintech',
-  saas: 'SaaS / Software',
-  ecommerce: 'E-commerce / Marketplace',
-  cleantech: 'CleanTech / Sustainability',
-  foodtech: 'FoodTech / AgriTech',
-  manufacturing: 'Indústria / Manufatura',
+  saas: 'SaaS',
+  ecommerce: 'E-commerce',
   social_impact: 'Impacto Social',
   other: 'Outro',
 };
 
 const STAGE_LABELS_BOOKING: Record<string, string> = {
+  ideation: 'Ideação',
+  validation: 'Validação',
   idea: 'Ideia / Conceito',
   mvp: 'MVP / Protótipo',
   early_revenue: 'Early Revenue',
   growth: 'Growth / Escala',
+  scale: 'Escala',
 };
 
 const REFERRAL_LABELS: Record<string, string> = {
@@ -408,9 +413,10 @@ const REFERRAL_LABELS: Record<string, string> = {
   other: 'Outro',
 };
 
-const TEAM_LABELS: Record<string, string> = {
+const YES_NO_LABELS: Record<string, string> = {
   yes: 'Sim',
   no: 'Não',
+  unsure: 'Não tenho a certeza',
   forming: 'Em formação',
 };
 
@@ -420,49 +426,85 @@ function BookingQuestionnaireSection({ item }: { item: FunnelItem }) {
     ? (item as any).metadata_json
     : {};
 
-  const hasBookingData = metadata.sector || metadata.startup_stage || metadata.referral_source || metadata.has_team;
+  const isPublicForm = metadata.booking_source === 'public_form'
+    || item.source === 'public_booking'
+    || metadata.sector || metadata.startup_stage || metadata.vertical
+    || metadata.help_expectation || metadata.personal_intro
+    || metadata.has_tech || metadata.is_iies;
 
-  if (!hasBookingData) return null;
+  if (!isPublicForm) return null;
+
+  const renderRow = (label: string, value: React.ReactNode) => (
+    <div className="grid grid-cols-[1fr,2fr] gap-3 text-sm py-1.5 border-b border-border/40 last:border-0">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="text-foreground break-words">{value}</span>
+    </div>
+  );
+
+  const renderTextBlock = (label: string, value: string) => (
+    <div className="space-y-1 py-2 border-b border-border/40 last:border-0">
+      <p className="text-xs text-muted-foreground uppercase tracking-wide">{label}</p>
+      <p className="text-sm whitespace-pre-wrap text-foreground">{value}</p>
+    </div>
+  );
 
   return (
-    <div className="space-y-2 pt-3 border-t">
+    <div className="space-y-1 pt-3 border-t">
       <p className="text-xs font-medium text-muted-foreground uppercase mb-2 flex items-center gap-1.5">
         <Calendar className="h-3.5 w-3.5" />
         {t('crm.bookingQuestionnaire', { defaultValue: 'Questionário de Primeiro Contacto' })}
       </p>
-      <div className="grid gap-2">
-        {metadata.sector && (
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{t('publicBooking.sector', { defaultValue: 'Setor' })}</span>
-            <span>{SECTOR_LABELS[metadata.sector] || metadata.sector}</span>
-          </div>
+      <div className="grid gap-0.5">
+        {item.notes && renderTextBlock(
+          t('publicBooking.q1ProjectDescription', { defaultValue: 'Descrição breve do projeto' }),
+          item.notes,
         )}
-        {metadata.startup_stage && (
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{t('publicBooking.stage', { defaultValue: 'Fase' })}</span>
-            <span>{STAGE_LABELS_BOOKING[metadata.startup_stage] || metadata.startup_stage}</span>
-          </div>
+        {item.organization_name && renderRow(
+          t('publicBooking.q2ProjectName', { defaultValue: 'Nome do projeto' }),
+          item.organization_name,
         )}
-        {metadata.referral_source && (
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{t('publicBooking.referralSource', { defaultValue: 'Como nos conheceu' })}</span>
-            <span>{REFERRAL_LABELS[metadata.referral_source] || metadata.referral_source}</span>
-          </div>
+        {metadata.has_tech && renderRow(
+          t('publicBooking.q3HasTech', { defaultValue: 'Componente tecnológica' }),
+          YES_NO_LABELS[metadata.has_tech] || metadata.has_tech,
         )}
-        {metadata.has_team && (
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{t('publicBooking.hasTeam', { defaultValue: 'Tem equipa' })}</span>
-            <span>{TEAM_LABELS[metadata.has_team] || metadata.has_team}</span>
-          </div>
+        {metadata.is_iies && renderRow(
+          t('publicBooking.q4IsIies', { defaultValue: 'IIES' }),
+          YES_NO_LABELS[metadata.is_iies] || metadata.is_iies,
         )}
-        {metadata.booking_date && (
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{t('crm.meetingDate', { defaultValue: 'Data da reunião' })}</span>
-            <span>{new Date(metadata.booking_date).toLocaleString('pt-PT', { dateStyle: 'medium', timeStyle: 'short' })}</span>
-          </div>
+        {metadata.vertical && renderRow(
+          t('publicBooking.q5Vertical', { defaultValue: 'Vertical' }),
+          VERTICAL_LABELS[metadata.vertical] || metadata.vertical,
+        )}
+        {metadata.startup_stage && renderRow(
+          t('publicBooking.q6Stage', { defaultValue: 'Fase do projeto' }),
+          STAGE_LABELS_BOOKING[metadata.startup_stage] || metadata.startup_stage,
+        )}
+        {metadata.help_expectation && renderTextBlock(
+          t('publicBooking.q7HelpExpectation', { defaultValue: 'Como podemos ajudar' }),
+          metadata.help_expectation,
+        )}
+        {metadata.personal_intro && renderTextBlock(
+          t('publicBooking.q8PersonalIntro', { defaultValue: 'Apresentação pessoal' }),
+          metadata.personal_intro,
+        )}
+        {metadata.referral_source && renderRow(
+          t('publicBooking.q9ReferralSource', { defaultValue: 'Como nos conheceu' }),
+          REFERRAL_LABELS[metadata.referral_source] || metadata.referral_source,
+        )}
+        {metadata.sector && renderRow(
+          t('publicBooking.sector', { defaultValue: 'Setor' }),
+          metadata.sector,
+        )}
+        {metadata.has_team && renderRow(
+          t('publicBooking.hasTeam', { defaultValue: 'Tem equipa' }),
+          YES_NO_LABELS[metadata.has_team] || metadata.has_team,
+        )}
+        {metadata.booking_date && renderRow(
+          t('crm.meetingDate', { defaultValue: 'Data da reunião' }),
+          new Date(metadata.booking_date).toLocaleString('pt-PT', { dateStyle: 'medium', timeStyle: 'short' }),
         )}
         {metadata.pitch_deck_path && (
-          <div className="flex justify-between text-sm items-center">
+          <div className="flex justify-between text-sm items-center pt-2">
             <span className="text-muted-foreground flex items-center gap-1">
               <FileText className="h-3.5 w-3.5" />
               {t('publicBooking.pitchDeck', { defaultValue: 'Pitch Deck' })}
