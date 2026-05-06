@@ -42,6 +42,7 @@ import { cn } from '@/lib/utils';
 import { formatRelativeTime } from '@/lib/dateUtils';
 import { useIntakeByFunnelItem, useCreateIntake } from '@/hooks/useContractIntakes';
 import { IntakeReviewPanel } from './IntakeReviewPanel';
+import { ConvertLeadDialog } from './ConvertLeadDialog';
 import { INTAKE_STATE_LABELS, CUSTOMER_EDITABLE_STATES, type IntakeState } from '@/constants/intakeStates';
 
 // Extracted sub-components
@@ -77,6 +78,7 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
   const [addActivityDialog, setAddActivityDialog] = useState<ActivityType | null>(null);
   const [addTaskDialog, setAddTaskDialog] = useState(false);
   const [nextActionDialog, setNextActionDialog] = useState(false);
+  const [convertDialog, setConvertDialog] = useState(false);
   const [taskStatusFilter, setTaskStatusFilter] = useState<TaskStatusFilter>('open');
   
   // Local overrides for optimistic updates on next action
@@ -465,28 +467,40 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
                         {t('crm.linkHint', { defaultValue: 'O vínculo é criado automaticamente ao converter o lead ou pode ser feito manualmente.' })}
                       </p>
                     </div>
-                    {['qualified', 'proposal_sent', 'negotiating', 'contracted'].includes(item.stage) && (
+                    <div className="flex flex-wrap items-center justify-center gap-2">
                       <Button
                         size="sm"
+                        variant="default"
                         className="gap-1.5"
-                        onClick={() => {
-                          const params = new URLSearchParams({
-                            tab: 'backoffice',
-                            subtab: 'contracts',
-                            action: 'create',
-                            funnel: item.id,
-                            contact: item.contact_name || '',
-                            email: item.contact_email || '',
-                            org: item.organization_name || '',
-                          });
-                          onOpenChange(false);
-                          navigate(`/admin?${params.toString()}`);
-                        }}
+                        onClick={() => setConvertDialog(true)}
                       >
-                        <FileText className="h-3.5 w-3.5" />
-                        {t('crm.initiateContract', { defaultValue: 'Iniciar Contrato' })}
+                        <Briefcase className="h-3.5 w-3.5" />
+                        {t('crm.convertToWorkspace.cta', { defaultValue: 'Converter em Workspace' })}
                       </Button>
-                    )}
+                      {['qualified', 'proposal_sent', 'negotiating', 'contracted'].includes(item.stage) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1.5"
+                          onClick={() => {
+                            const params = new URLSearchParams({
+                              tab: 'backoffice',
+                              subtab: 'contracts',
+                              action: 'create',
+                              funnel: item.id,
+                              contact: item.contact_name || '',
+                              email: item.contact_email || '',
+                              org: item.organization_name || '',
+                            });
+                            onOpenChange(false);
+                            navigate(`/admin?${params.toString()}`);
+                          }}
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                          {t('crm.initiateContract', { defaultValue: 'Iniciar Contrato' })}
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               )}
@@ -648,6 +662,16 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
           isPending={updateNextAction.isPending}
           currentDate={nextActionAt}
           currentDescription={nextActionDescription}
+        />
+
+        <ConvertLeadDialog
+          item={item}
+          open={convertDialog}
+          onOpenChange={setConvertDialog}
+          onConverted={(workspaceId) => {
+            onOpenChange(false);
+            navigate(`/admin?tab=workspaces&workspace=${workspaceId}`);
+          }}
         />
       </SheetContent>
     </Sheet>
