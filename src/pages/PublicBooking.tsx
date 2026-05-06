@@ -181,11 +181,11 @@ export default function PublicBooking() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.sector || !formData.stage) {
-      toast.error(t('publicBooking.fillRequired', { defaultValue: 'Preencha os campos obrigatórios: nome, email, setor e fase' }));
+    if (!formData.name || !formData.email || !formData.message || !formData.organization || !formData.has_tech || !formData.is_iies || !formData.vertical || !formData.stage || !formData.help_expectation || !formData.personal_intro || !formData.referral_source) {
+      toast.error(t('publicBooking.fillRequired'));
       return;
     }
-    
+
     setUploading(true);
     try {
       const pitchPath = await uploadPitchDeck();
