@@ -97,18 +97,30 @@ export function FounderDashboard({
   const hasKpis = Boolean(workspace?.hasCurrentMonthKpi);
   const hasDocuments = Boolean(workspace?.lastSession);
 
-  // Auto-trigger QuickKpiModal on 1st-5th of month if KPIs are missing
+  // Founder maturity drives progressive disclosure.
+  const { maturity, isBeginner, showAdvancedByDefault } = useFounderMaturity(workspace);
+  const setupComplete = hasProfile && hasStartup && hasKpis && hasDocuments;
+  const [advancedOpen, setAdvancedOpen] = useState(showAdvancedByDefault);
+
+  // Auto-trigger QuickKpiModal — but NOT for new founders, and never on first visit.
   useEffect(() => {
     if (!workspace || hasKpis) return;
+    if (maturity === 'new_founder') return; // calm first-arrival
     const day = new Date().getDate();
     if (day >= 1 && day <= 5) {
       const dismissKey = `quickkpi-dismissed-${workspace.id}-${new Date().getFullYear()}-${new Date().getMonth()}`;
+      const firstVisitKey = `founder-first-visit-${workspace.id}`;
+      const isFirstVisit = !localStorage.getItem(firstVisitKey);
+      if (isFirstVisit) {
+        localStorage.setItem(firstVisitKey, new Date().toISOString());
+        return; // never on first visit
+      }
       if (!sessionStorage.getItem(dismissKey)) {
         const timer = setTimeout(() => setShowQuickKpi(true), 1500);
         return () => clearTimeout(timer);
       }
     }
-  }, [workspace, hasKpis]);
+  }, [workspace, hasKpis, maturity]);
 
   if (isLoading) {
     return (
