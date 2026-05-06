@@ -46,7 +46,7 @@ import { FounderReadinessStrip } from '@/components/founder/FounderReadinessStri
 import { PendingContractBanner } from '@/components/founder/PendingContractBanner';
 import { FounderProgressRings } from '@/components/dashboard/FounderProgressRings';
 import { useAutoMaterializeDeliverables } from '@/hooks/useAutoMaterializeDeliverables';
-import { NextBestActionFounder } from '@/components/dashboard/NextBestActionPanels';
+// NextBestActionFounder removed from beginner view — kept available for power users via OneThingToday.
 
 interface FounderDashboardProps {
   workspaces: WorkspaceWithDetails[];
