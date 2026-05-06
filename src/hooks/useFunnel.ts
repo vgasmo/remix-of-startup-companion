@@ -250,17 +250,54 @@ export function useConvertToStartup() {
         .single();
       if (itemError) throw itemError;
 
-      // Create startup
+      // Build prefill payload from lead metadata so mentors immediately see context
+      const meta = (item.metadata_json as Record<string, any> | null) || {};
+      const projectName = (meta.project_name as string) || item.organization_name || item.contact_name || 'New Startup';
+
+      // Compose a richer description from the lead's brief + key metadata answers
+      const descParts: string[] = [];
+      if (item.notes) descParts.push(item.notes);
+      if (meta.vertical) descParts.push(`Vertical: ${meta.vertical}`);
+      if (meta.sector) descParts.push(`Setor: ${meta.sector}`);
+      if (typeof meta.has_tech === 'boolean') descParts.push(`Componente tecnológica: ${meta.has_tech ? 'Sim' : 'Não'}`);
+      if (typeof meta.is_iies === 'boolean') descParts.push(`IIES: ${meta.is_iies ? 'Sim' : 'Não'}`);
+      if (meta.help_expectation) descParts.push(`Expectativas: ${meta.help_expectation}`);
+      if (meta.personal_intro) descParts.push(`Apresentação: ${meta.personal_intro}`);
+      if (meta.referral_source) descParts.push(`Como nos conheceu: ${meta.referral_source}`);
+      const description = descParts.filter(Boolean).join('\n\n') || null;
+
+      // Create startup with all available lead details
       const { data: startup, error: startupError } = await supabase
         .from('startups')
         .insert({
-          name: item.organization_name || item.contact_name || 'New Startup',
-          description: item.notes,
+          name: projectName,
+          description,
+          main_contact_name: item.contact_name,
+          main_contact_email: item.contact_email,
+          main_contact_phone: item.contact_phone,
           created_by: user.id,
         })
         .select()
         .single();
       if (startupError) throw startupError;
+
+      // Map lead's self-reported stage onto canonical workspace stage when possible
+      const STAGE_MAP: Record<string, string> = {
+        ideation: 'ideation',
+        validation: 'validation',
+        mvp: 'mvp',
+        growth: 'growth',
+        scale: 'scale',
+      };
+      const inferredStage = STAGE_MAP[String(meta.stage || '').toLowerCase()] || stage;
+
+      // Build a context note so consultants and mentors see lead summary on the workspace
+      const noteParts: string[] = [];
+      noteParts.push('Workspace criado a partir de lead CRM.');
+      if (item.contact_name) noteParts.push(`Contacto: ${item.contact_name}${item.contact_email ? ` <${item.contact_email}>` : ''}${item.contact_phone ? ` (${item.contact_phone})` : ''}`);
+      if (item.source) noteParts.push(`Origem: ${item.source}`);
+      if (description) noteParts.push(description);
+      const healthNotes = noteParts.join('\n\n');
 
       // Create workspace as 'pending' first (trigger blocks 'active' without members)
       const { data: workspace, error: workspaceError } = await supabase
@@ -268,9 +305,10 @@ export function useConvertToStartup() {
         .insert({
           startup_id: startup.id,
           program_id: programId,
-          stage: stage as any,
+          stage: inferredStage as any,
           status: 'pending',
           assigned_consultor_id: item.owner_consultant_id,
+          health_notes: healthNotes,
         })
         .select()
         .single();
