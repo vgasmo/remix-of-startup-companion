@@ -108,6 +108,11 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
   const { data: workspaceTags = [] } = useWorkspaceTags(workspace.id);
   const addWorkspaceTag = useAddWorkspaceTag();
   const removeWorkspaceTag = useRemoveWorkspaceTag();
+  const { data: workspaceOwner } = useWorkspaceOwner(workspace.id);
+  const { data: workspaceMembersData } = useWorkspaceMembers(workspace.id);
+  const hasConsultant = Boolean(workspaceOwner?.assigned_consultor_id)
+    || Boolean(workspaceMembersData?.some(m => m.role === 'consultor'));
+  const [founderAdvancedOpen, setFounderAdvancedOpen] = useState(false);
   
   // Auto-materialize acceleration deliverables into workspace milestones/actions
   useAutoMaterializeDeliverables(workspace.id, workspace.program_id, workspace.program?.program_type ?? undefined);
