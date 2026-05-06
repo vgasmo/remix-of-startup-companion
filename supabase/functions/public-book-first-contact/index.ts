@@ -392,6 +392,11 @@ serve(async (req) => {
       if (contact.referral_source) bookingMetadata.referral_source = contact.referral_source;
       if (contact.has_team) bookingMetadata.has_team = contact.has_team;
       if (contact.pitch_deck_path) bookingMetadata.pitch_deck_path = contact.pitch_deck_path;
+      if (contact.has_tech) bookingMetadata.has_tech = contact.has_tech;
+      if (contact.is_iies) bookingMetadata.is_iies = contact.is_iies;
+      if (contact.vertical) bookingMetadata.vertical = contact.vertical;
+      if (contact.help_expectation) bookingMetadata.help_expectation = contact.help_expectation;
+      if (contact.personal_intro) bookingMetadata.personal_intro = contact.personal_intro;
       bookingMetadata.booking_date = `${slot.date}T${slot.time}:00`;
       bookingMetadata.booking_source = 'public_form';
 
