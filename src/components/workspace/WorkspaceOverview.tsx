@@ -371,157 +371,162 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
 
       {/* Main Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Next Actions */}
-        <Card className="lg:col-span-1 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSearchParams({ tab: 'milestones-actions' })}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-primary" />
-                {t('workspaceOverview.nextActions')}
-              </CardTitle>
-              <Badge variant="secondary">{actions?.length || 0} {t('workspaceOverview.open')}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {actionsLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map(i => <Skeleton key={i} className="h-14" />)}
+        {/* Next Actions — staff cockpit (founders see EnhancedNextSteps above) */}
+        {!isFounder && (
+          <Card className="lg:col-span-1 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSearchParams({ tab: 'milestones-actions' })}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
+                  {t('workspaceOverview.nextActions')}
+                </CardTitle>
+                <Badge variant="secondary">{actions?.length || 0} {t('workspaceOverview.open')}</Badge>
               </div>
-            ) : actions?.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <CheckCircle2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>{t('workspaceOverview.allCaughtUp')}</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {actions?.slice(0, 5).map(action => (
-                  <ActionItem key={action.id} action={action} />
-                ))}
-                {(actions?.length || 0) > 5 && (
-                  <p className="text-xs text-muted-foreground text-center pt-2">
-                    {t('workspaceOverview.moreActions', { count: (actions?.length || 0) - 5 })}
-                  </p>
+            </CardHeader>
+            <CardContent>
+              {actionsLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map(i => <Skeleton key={i} className="h-14" />)}
+                </div>
+              ) : actions?.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <CheckCircle2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>{t('workspaceOverview.allCaughtUp')}</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {actions?.slice(0, 5).map(action => (
+                    <ActionItem key={action.id} action={action} />
+                  ))}
+                  {(actions?.length || 0) > 5 && (
+                    <p className="text-xs text-muted-foreground text-center pt-2">
+                      {t('workspaceOverview.moreActions', { count: (actions?.length || 0) - 5 })}
+                    </p>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* KPIs Snapshot — staff cockpit only above the fold */}
+        {!isFounder && (
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSearchParams({ tab: 'kpis' })}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  {t('workspaceOverview.kpisSnapshot')}
+                </CardTitle>
+                {kpiData?.currentMonth && (
+                  <Badge variant="outline">
+                    {format(new Date(kpiData.currentMonth), 'MMM yyyy')}
+                  </Badge>
                 )}
               </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* KPIs Snapshot */}
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSearchParams({ tab: 'kpis' })}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                {t('workspaceOverview.kpisSnapshot')}
-              </CardTitle>
-              {kpiData?.currentMonth && (
-                <Badge variant="outline">
-                  {format(new Date(kpiData.currentMonth), 'MMM yyyy')}
-                </Badge>
+            </CardHeader>
+            <CardContent>
+              {kpisLoading ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-20" />)}
+                </div>
+              ) : kpiData?.current.length === 0 ? (
+                <EmptyState
+                  illustration="chart"
+                  title={t('emptyStates.kpis.title')}
+                  description={t('emptyStates.kpis.description')}
+                  value={getKpiStageSuggestion(workspace.stage, t)}
+                  action={{
+                    label: t('workspaceOverview.addKpiEntry'),
+                    onClick: () => setSearchParams({ tab: 'kpis' }),
+                    icon: Plus,
+                  }}
+                />
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  {kpiData?.current.slice(0, 6).map(kpi => (
+                    <KpiCard
+                      key={kpi.id}
+                      kpi={kpi}
+                      previousValue={kpiData.previous.find(
+                        p => p.kpi_definition_id === kpi.kpi_definition_id
+                      )?.value}
+                    />
+                  ))}
+                </div>
               )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            {kpisLoading ? (
-              <div className="grid grid-cols-2 gap-4">
-                {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-20" />)}
-              </div>
-            ) : kpiData?.current.length === 0 ? (
-              <EmptyState
-                illustration="chart"
-                title={t('emptyStates.kpis.title')}
-                description={t('emptyStates.kpis.description')}
-                value={getKpiStageSuggestion(workspace.stage, t)}
-                action={{
-                  label: t('workspaceOverview.addKpiEntry'),
-                  onClick: () => setSearchParams({ tab: 'kpis' }),
-                  icon: Plus,
-                }}
-              />
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
-                {kpiData?.current.slice(0, 6).map(kpi => (
-                  <KpiCard 
-                    key={kpi.id} 
-                    kpi={kpi} 
-                    previousValue={kpiData.previous.find(
-                      p => p.kpi_definition_id === kpi.kpi_definition_id
-                    )?.value}
-                  />
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Milestones Summary */}
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSearchParams({ tab: 'milestones-actions' })}>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-primary" />
-              {t('milestones.title')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {milestonesLoading ? (
-              <Skeleton className="h-24" />
-            ) : milestones?.length === 0 ? (
-              <EmptyState
-                illustration="rocket"
-                title={t('emptyStates.milestones.title')}
-                description={t('emptyStates.milestones.description')}
-                value={getMilestoneStageSuggestion(workspace.stage, t)}
-                action={{
-                  label: t('workspace.addFirstMilestone'),
-                  onClick: () => setSearchParams({ tab: 'milestones-actions' }),
-                  icon: Plus,
-                }}
-              />
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <MilestoneCount label={t('workspaceOverview.planned')} count={milestoneCounts.planned} color="bg-muted" />
-                <MilestoneCount label={t('workspaceOverview.inProgressMilestone')} count={milestoneCounts.inProgress} color="bg-blue-500/10 text-blue-600" />
-                <MilestoneCount label={t('workspaceOverview.completedMilestone')} count={milestoneCounts.completed} color="bg-green-500/10 text-green-600" />
-                <MilestoneCount label={t('workspaceOverview.delayed')} count={milestoneCounts.delayed} color="bg-destructive/10 text-destructive" />
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Milestones Summary — staff cockpit only above the fold */}
+        {!isFounder && (
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSearchParams({ tab: 'milestones-actions' })}>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-primary" />
+                {t('milestones.title')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {milestonesLoading ? (
+                <Skeleton className="h-24" />
+              ) : milestones?.length === 0 ? (
+                <EmptyState
+                  illustration="rocket"
+                  title={t('emptyStates.milestones.title')}
+                  description={t('emptyStates.milestones.description')}
+                  value={getMilestoneStageSuggestion(workspace.stage, t)}
+                  action={{
+                    label: t('workspace.addFirstMilestone'),
+                    onClick: () => setSearchParams({ tab: 'milestones-actions' }),
+                    icon: Plus,
+                  }}
+                />
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <MilestoneCount label={t('workspaceOverview.planned')} count={milestoneCounts.planned} color="bg-muted" />
+                  <MilestoneCount label={t('workspaceOverview.inProgressMilestone')} count={milestoneCounts.inProgress} color="bg-blue-500/10 text-blue-600" />
+                  <MilestoneCount label={t('workspaceOverview.completedMilestone')} count={milestoneCounts.completed} color="bg-green-500/10 text-green-600" />
+                  <MilestoneCount label={t('workspaceOverview.delayed')} count={milestoneCounts.delayed} color="bg-destructive/10 text-destructive" />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Progress Timeline (with Acceleration Calendar) - visible to all roles immediately */}
-        <ProgressTimeline workspaceId={workspace.id} programId={workspace.program_id} programType={workspace.program?.program_type} currentWeek={(workspace as any).current_week ?? null} />
+        {/* Progress Timeline — staff cockpit only above the fold (founders see it inside Show more) */}
+        {!isFounder && (
+          <ProgressTimeline workspaceId={workspace.id} programId={workspace.program_id} programType={workspace.program?.program_type} currentWeek={(workspace as any).current_week ?? null} />
+        )}
 
-        {/* UX EMPHASIS by Role:
-            - Staff (Consultant/Admin): See Health, Ownership, Contracts FIRST - operational focus
-            - Founders: See Responsible Consultant, Playbook Progress, Investor Readiness FIRST - journey focus
-        */}
-        
-        {/* Health Score Card - Staff sees it prominently, Founders have it in JourneyHeader already */}
+        {/* Health Score Card — staff prominent */}
         {(isConsultor || isAdmin) && (
           <HealthScoreCard workspaceId={workspace.id} programId={workspace.program_id} canManage={canWrite} />
         )}
-        
-        {/* P1.1: Ownership & SLA Card - visible to staff - PRIMARY for consultants */}
+
+        {/* Ownership & SLA — staff */}
         {(isConsultor || isAdmin) && (
           <OwnershipCard workspaceId={workspace.id} />
         )}
-        
-        {/* Location & Contract Card - Staff sees early, Founders see later */}
+
+        {/* Location & Contract — staff */}
         {(isConsultor || isAdmin) && (
           <LocationContractCard workspaceId={workspace.id} />
         )}
-        
-        {/* Workspace Alerts Section - Staff sees early */}
+
+        {/* Workspace Alerts — staff */}
         {(isConsultor || isAdmin) && (
           <WorkspaceAlertsSection workspaceId={workspace.id} canManage={canWrite} />
         )}
-        
-        {/* Responsible Consultant Card - PRIMARY for founders - their key contact */}
+
+        {/* Responsible Consultant Card — PRIMARY for founders */}
         {isFounder && (
-          <ResponsibleConsultantCard workspaceId={workspace.id} />
+          <div className="lg:col-span-2">
+            <ResponsibleConsultantCard workspaceId={workspace.id} />
+          </div>
         )}
-        
+
         {/* Founder advanced widgets — progressively disclosed */}
         {isFounder && (
           <div className="lg:col-span-2">
@@ -540,6 +545,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="grid gap-6 lg:grid-cols-2 pt-4">
+                <ProgressTimeline workspaceId={workspace.id} programId={workspace.program_id} programType={workspace.program?.program_type} currentWeek={(workspace as any).current_week ?? null} />
                 <PlaybookProgressWidget workspaceId={workspace.id} />
                 <InvestorReadinessChecklist workspaceId={workspace.id} canWrite={canWrite} />
                 <HealthScoreCard workspaceId={workspace.id} programId={workspace.program_id} canManage={false} />
@@ -563,36 +569,38 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
         programId={workspace.program_id}
       />
 
-      {/* Recent Sessions - Full Width */}
-      <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSearchParams({ tab: 'agenda' })}>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
-              {t('workspaceOverview.recentSessions')}
-            </CardTitle>
-            <Badge variant="secondary">{sessions?.length || 0} {t('sessions.title').toLowerCase()}</Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {sessionsLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}
+      {/* Recent Sessions - Full Width. For founders, only when "Show more" is open. */}
+      {(!isFounder || founderAdvancedOpen) && (
+        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSearchParams({ tab: 'agenda' })}>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                {t('workspaceOverview.recentSessions')}
+              </CardTitle>
+              <Badge variant="secondary">{sessions?.length || 0} {t('sessions.title').toLowerCase()}</Badge>
             </div>
-          ) : sessions?.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>{t('workspaceOverview.noSessionsRecorded')}</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {sessions?.map(session => (
-                <SessionItem key={session.id} session={session} />
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            {sessionsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}
+              </div>
+            ) : sessions?.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>{t('workspaceOverview.noSessionsRecorded')}</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {sessions?.map(session => (
+                  <SessionItem key={session.id} session={session} />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Mobile Quick Actions FAB for Founders */}
       {isFounder && canWrite && (
