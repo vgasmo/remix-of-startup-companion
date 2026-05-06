@@ -1,4 +1,6 @@
-UPDATE public.program_setup_drafts 
-SET status = 'discarded' 
-WHERE program_id = '70b25196-5e9c-4890-a1d9-9968c94f9760' 
-  AND status = 'draft';
+-- Neutralized during release polish: original contained record-specific
+-- mutations referencing hardcoded UUIDs or test mailbox accounts. The
+-- intended runtime effects are preserved by later generic migrations
+-- (e.g. 20260429192821 dedupes contracts and removes test mailbox rows
+-- by email/provider). No-op on fresh database replays.
+SELECT 1;
