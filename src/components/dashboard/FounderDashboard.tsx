@@ -23,7 +23,7 @@ import { FounderBookingCTA } from '@/components/dashboard/FounderBookingCTA';
 import { OneThingToday } from '@/components/dashboard/OneThingToday';
 import { StageProgressCard } from '@/components/dashboard/StageProgressCard';
 import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
-import { NextBestAction } from '@/components/workspace/NextBestAction';
+// Deduped: OneThingToday is the single primary "next action" signal for founders.
 import { InvestorReadinessWidget } from '@/components/workspace/InvestorReadinessWidget';
 import { QuickActionsFab } from '@/components/workspace/QuickActionsFab';
 import { QuickKpiModal } from '@/components/workspace/QuickKpiModal';
