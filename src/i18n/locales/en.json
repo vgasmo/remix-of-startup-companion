@@ -988,6 +988,9 @@
       "viewOverdue": "View overdue"
     },
     "intakeRouting": {
+      "activeLabel": "Routing active",
+      "activeOnDesc": "This rule is receiving new bookings.",
+      "activeOffDesc": "Rule disabled — new bookings will fall back to the global rule.",
       "bookingLinks": "Booking Links",
       "bookingLinksDesc": "Generate shareable links for external booking",
       "createdAt": "Created",
