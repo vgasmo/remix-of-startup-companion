@@ -988,6 +988,9 @@
       "viewOverdue": "Ver em atraso"
     },
     "intakeRouting": {
+      "activeLabel": "Encaminhamento ativo",
+      "activeOnDesc": "Esta regra está a receber novas marcações.",
+      "activeOffDesc": "Regra desativada — novas marcações irão usar a regra global.",
       "bookingLinks": "Links de Marcação",
       "bookingLinksDesc": "Gerar links partilháveis para marcação externa",
       "createdAt": "Criado",
