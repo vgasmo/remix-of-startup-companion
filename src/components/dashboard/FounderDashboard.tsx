@@ -27,7 +27,7 @@ import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
 import { InvestorReadinessWidget } from '@/components/workspace/InvestorReadinessWidget';
 import { QuickActionsFab } from '@/components/workspace/QuickActionsFab';
 import { QuickKpiModal } from '@/components/workspace/QuickKpiModal';
-import { AiPulseCard } from '@/components/dashboard/AiPulseCard';
+// AiPulseCard intentionally not rendered in the calm founder view.
 import { WorkspaceWithDetails, PendingWorkspace } from '@/hooks/useWorkspaces';
 import { useWorkspaceMembers } from '@/hooks/useWorkspaceMembers';
 import { HealthScore } from '@/types/database';
