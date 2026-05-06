@@ -42,6 +42,7 @@ import { cn } from '@/lib/utils';
 import { formatRelativeTime } from '@/lib/dateUtils';
 import { useIntakeByFunnelItem, useCreateIntake } from '@/hooks/useContractIntakes';
 import { IntakeReviewPanel } from './IntakeReviewPanel';
+import { ConvertLeadDialog } from './ConvertLeadDialog';
 import { INTAKE_STATE_LABELS, CUSTOMER_EDITABLE_STATES, type IntakeState } from '@/constants/intakeStates';
 
 // Extracted sub-components
