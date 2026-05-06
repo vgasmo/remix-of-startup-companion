@@ -46,6 +46,9 @@ export function useUpdateProgram() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['programs'] });
+      queryClient.invalidateQueries({ queryKey: ['programs-for-routing'] });
+      queryClient.invalidateQueries({ queryKey: ['programs-list'] });
+      queryClient.invalidateQueries({ queryKey: ['intake-routing'] });
       toast.success(t('admin.programUpdated'));
     },
     onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
@@ -61,6 +64,9 @@ export function useDeleteProgram() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['programs'] });
+      queryClient.invalidateQueries({ queryKey: ['programs-for-routing'] });
+      queryClient.invalidateQueries({ queryKey: ['programs-list'] });
+      queryClient.invalidateQueries({ queryKey: ['intake-routing'] });
       toast.success(t('admin.programDeleted'));
     },
     onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
