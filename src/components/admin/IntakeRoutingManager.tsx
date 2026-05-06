@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -45,16 +46,19 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
   
   const [mode, setMode] = useState<'single' | 'round_robin'>('single');
   const [selectedConsultants, setSelectedConsultants] = useState<string[]>([]);
+  const [active, setActive] = useState(true);
   const [hasChanges, setHasChanges] = useState(false);
   
   useEffect(() => {
     if (route) {
       setMode(route.mode as 'single' | 'round_robin');
       setSelectedConsultants(route.consultant_ids || []);
+      setActive(route.active ?? true);
       setHasChanges(false);
     } else {
       setMode('single');
       setSelectedConsultants([]);
+      setActive(true);
       setHasChanges(false);
     }
   }, [route]);
@@ -75,9 +79,14 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
     }
     setHasChanges(true);
   };
+
+  const handleActiveChange = (next: boolean) => {
+    setActive(next);
+    setHasChanges(true);
+  };
   
   const handleSave = async () => {
-    if (selectedConsultants.length === 0) {
+    if (active && selectedConsultants.length === 0) {
       toast.error(t('admin.pleaseSelectAtLeastOne'));
       return;
     }
@@ -88,7 +97,7 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
       program_id: programId || null,
       mode,
       consultant_ids: selectedConsultants,
-      active: true,
+      active,
     });
     
     setHasChanges(false);
@@ -97,6 +106,21 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
   
   return (
     <div className="space-y-5">
+      {/* Active toggle */}
+      <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
+        <div>
+          <Label className="font-medium">
+            {t('admin.intakeRouting.activeLabel', 'Encaminhamento ativo')}
+          </Label>
+          <p className="text-xs text-muted-foreground mt-1">
+            {active
+              ? t('admin.intakeRouting.activeOnDesc', 'Esta regra está a receber novas marcações.')
+              : t('admin.intakeRouting.activeOffDesc', 'Regra desativada — novas marcações irão usar a regra global.')}
+          </p>
+        </div>
+        <Switch checked={active} onCheckedChange={handleActiveChange} />
+      </div>
+
       {/* Mode Selection */}
       <div className="space-y-3">
         <Label>{t('admin.intakeRouting.routingMode', 'Modo de Encaminhamento')}</Label>
@@ -181,7 +205,7 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
       {/* Save Button */}
       <Button
         onClick={handleSave}
-        disabled={upsertRoute.isPending || !hasChanges || selectedConsultants.length === 0}
+        disabled={upsertRoute.isPending || !hasChanges || (active && selectedConsultants.length === 0)}
       >
         {upsertRoute.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
         {t('common.saveChanges', 'Guardar Alterações')}
@@ -319,7 +343,10 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
                     {isGlobal ? <Users className="h-3.5 w-3.5" /> : <Building2 className="h-3.5 w-3.5" />}
                     {tab.label}
                     {hasConfig && (
-                      <span className="ml-1 h-2 w-2 rounded-full bg-primary inline-block" />
+                      <span
+                        className={`ml-1 h-2 w-2 rounded-full inline-block ${route?.active ? 'bg-primary' : 'bg-muted-foreground/40'}`}
+                        title={route?.active ? t('common.active', 'Ativo') : t('common.inactive', 'Inativo')}
+                      />
                     )}
                   </TabsTrigger>
                 );
