@@ -2735,6 +2735,16 @@
       "uploading": "Uploading document..."
     }
   },
+  "founderHelpNudge": {
+    "aria": "Help suggestion",
+    "title": "Feeling stuck? We can help.",
+    "subtitle": "Ask the assistant, search the guide, or book time with your consultant.",
+    "askAi": "Ask AI",
+    "searchHelp": "Search help",
+    "bookSession": "Book a session",
+    "defaultPrompt": "I'm a bit lost. Where should I start right now?",
+    "dashboardPrompt": "I'm on my dashboard. What should be my next step?"
+  },
   "copilot": {
     "askAnything": "Ask me anything about your startup, tasks, KPIs, or ecosystem.",
     "emptyResponse": "Não consegui processar o pedido. Tente reformular a pergunta.",
