@@ -211,125 +211,165 @@ export function FounderDashboard({
         </Card>
       )}
 
-      {/* ★ READINESS STRIP — Quick status overview ★ */}
-      <WidgetErrorBoundary name="ReadinessStrip">
-        <FounderReadinessStrip workspace={workspace} />
-      </WidgetErrorBoundary>
-
-      {/* Stream F: Next Best Action (read-only, derived) */}
-      <WidgetErrorBoundary name="NextBestActionFounder">
-        <NextBestActionFounder workspace={workspace} />
-      </WidgetErrorBoundary>
-
-      {/* ★ PROGRESS RINGS — Visual health at a glance ★ */}
-      <WidgetErrorBoundary name="ProgressRings">
-        <FounderProgressRings workspaceId={workspace.id} />
-      </WidgetErrorBoundary>
-
-      {/* ★ PENDING CONTRACT — High-priority CTA for unsigned contracts ★ */}
+      {/* ★ PENDING CONTRACT — High-priority, blocks everything else when present ★ */}
       <WidgetErrorBoundary name="PendingContract">
         <PendingContractBanner workspaceId={workspace.id} />
       </WidgetErrorBoundary>
 
-      {/* ★ JOURNEY MAP / ACCELERATION PROGRESS — Adaptive to program type ★ */}
-      <WidgetErrorBoundary name="JourneyMap">
-        {workspace.program?.program_type === 'acceleration' ? (
-          <AccelerationProgressCard
-            programId={workspace.program_id}
-            currentWeek={(workspace as any).current_week ?? null}
-            workspaceId={workspace.id}
-          />
-        ) : (
-          <FounderJourneyMap currentStage={workspace.stage} />
-        )}
-      </WidgetErrorBoundary>
+      {/* ============================================================
+          PRIMARY CALM SCREEN — max 3 cards for beginners
+          1) Welcome / context hero
+          2) Today's focus (single next-action)
+          3) Consultant / next session card
+          (+ optional compact setup checklist if incomplete)
+          ============================================================ */}
 
-      {/* ★ HERO: Next Best Actions — the ABSOLUTE FIRST thing founders see ★ */}
-      <NextBestAction
-        workspaceId={workspace.id}
-        programId={workspace.program_id}
-        stage={workspace.stage}
-        canWrite={true}
-      />
-
-      {/* ★ Smart Nudges — passive AI suggestions ★ */}
-      {nudges.length > 0 && (
-        <WidgetErrorBoundary name="SmartNudges">
-          <SmartNudgeCard nudges={nudges} />
-        </WidgetErrorBoundary>
-      )}
-
-      {/* Welcome Panel with Checklist (dismissible) */}
-      <FounderWelcomePanel
-        hasStartup={hasStartup}
-        hasProfile={hasProfile}
-        hasKpis={hasKpis}
-        hasMentor={hasMentor}
-        hasDocuments={hasDocuments}
-        onCreateStartup={onCreateStartup}
-        workspaceId={workspace.id}
-        userId={profile?.id}
-      />
-
-      <section className="space-y-4">
-        {/* One Thing Today - Single focus action */}
-        <OneThingToday workspace={workspace} />
-
-        {/* PRIMARY BOOKING CTA */}
-        <FounderBookingCTA workspaceId={workspace.id} />
-      </section>
-
-      {/* Quick Guide Banner */}
-      <QuickGuideBanner />
-
-      {/* Startup Card - Journey-first */}
-      <Card 
-        className="overflow-hidden border-border/60 rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-        onClick={() => navigate(`/workspace/${workspace.id}`)}
-      >
-        <div className="bg-muted/40 p-4 sm:p-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-12 w-12 rounded-xl border border-border/50">
-              <AvatarImage src={workspace.startup?.logo_url || undefined} className="object-cover" alt={workspace.startup?.name || 'Startup logo'} />
-              <AvatarFallback className="rounded-xl bg-primary/10 text-primary text-sm font-semibold">
-                {workspace.startup?.name?.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-lg font-semibold truncate">{workspace.startup?.name}</h1>
-              </div>
-              <div className="flex items-center gap-2">
-                <StageBadge stage={workspace.stage} size="sm" />
-                <Badge variant="secondary" className="text-xs px-2 py-0.5 rounded-full border border-border/50">
-                  {workspace.program?.name}
-                </Badge>
-                <HealthBadge score={health as HealthScore | null} size="sm" />
+      {/* 1. Warm welcome / context hero */}
+      {isBeginner && (
+        <Card className="overflow-hidden border-border/60 rounded-2xl shadow-sm">
+          <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 sm:p-6">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-12 w-12 rounded-xl border border-border/50">
+                <AvatarImage src={workspace.startup?.logo_url || undefined} className="object-cover" alt={workspace.startup?.name || 'Startup'} />
+                <AvatarFallback className="rounded-xl bg-primary/10 text-primary text-sm font-semibold">
+                  {workspace.startup?.name?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-muted-foreground mb-0.5">
+                  {t('founder.calmHero.eyebrow', { defaultValue: 'O teu espaço de startup' })}
+                </p>
+                <h1 className="text-lg sm:text-xl font-semibold truncate">
+                  {t('founder.calmHero.greeting', { defaultValue: 'Olá{{name}}, hoje basta um passo.', name: profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : '' })}
+                </h1>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 line-clamp-2">
+                  {t('founder.calmHero.subtitle', { defaultValue: 'Sem pressa. Vamos avançar uma coisa de cada vez — e estamos aqui para ajudar.' })}
+                </p>
               </div>
             </div>
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={(e) => { e.stopPropagation(); navigate(`/workspace/${workspace.id}`); }}
-              className="text-xs shrink-0"
-            >
-              {t('founder.openWorkspace')}
-            </Button>
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
 
-      {/* Progress + Calendar */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-4">
-          <StageProgressCard workspace={workspace} />
-          <InvestorReadinessWidget workspaceId={workspace.id} compact />
-        </div>
-        <CalendarWidget />
-      </div>
+      {/* 2. Today's focus — THE single primary CTA */}
+      <OneThingToday workspace={workspace} />
 
-      {/* Streak */}
-      <StreakHero streakWeeks={streakWeeks} />
+      {/* 3. Consultant / next session */}
+      <FounderBookingCTA workspaceId={workspace.id} />
+
+      {/* Optional: compact "Your setup" checklist — only when onboarding is incomplete */}
+      {!setupComplete && (
+        <FounderWelcomePanel
+          hasStartup={hasStartup}
+          hasProfile={hasProfile}
+          hasKpis={hasKpis}
+          hasMentor={hasMentor}
+          hasDocuments={hasDocuments}
+          onCreateStartup={onCreateStartup}
+          workspaceId={workspace.id}
+          userId={profile?.id}
+        />
+      )}
+
+      {/* ============================================================
+          SHOW MORE PROGRESS DETAILS — collapsible advanced widgets
+          ============================================================ */}
+      <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+        <CollapsibleTrigger asChild>
+          <Button
+            variant="ghost"
+            className="w-full justify-between text-sm text-muted-foreground hover:text-foreground border border-dashed border-border/60 rounded-xl"
+          >
+            <span>
+              {advancedOpen
+                ? t('founder.advanced.hide', { defaultValue: 'Esconder detalhes de progresso' })
+                : t('founder.advanced.show', { defaultValue: 'Mostrar mais detalhes de progresso' })}
+            </span>
+            <ChevronDown className={`h-4 w-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-6 pt-4">
+          {/* Startup Card */}
+          <Card 
+            className="overflow-hidden border-border/60 rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate(`/workspace/${workspace.id}`)}
+          >
+            <div className="bg-muted/40 p-4 sm:p-6">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-12 w-12 rounded-xl border border-border/50">
+                  <AvatarImage src={workspace.startup?.logo_url || undefined} className="object-cover" alt={workspace.startup?.name || 'Startup logo'} />
+                  <AvatarFallback className="rounded-xl bg-primary/10 text-primary text-sm font-semibold">
+                    {workspace.startup?.name?.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg font-semibold truncate mb-1">{workspace.startup?.name}</h2>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <StageBadge stage={workspace.stage} size="sm" />
+                    <Badge variant="secondary" className="text-xs px-2 py-0.5 rounded-full border border-border/50">
+                      {workspace.program?.name}
+                    </Badge>
+                    <HealthBadge score={health as HealthScore | null} size="sm" />
+                  </div>
+                </div>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => { e.stopPropagation(); navigate(`/workspace/${workspace.id}`); }}
+                  className="text-xs shrink-0"
+                >
+                  {t('founder.openWorkspace')}
+                </Button>
+              </div>
+            </div>
+          </Card>
+
+          {/* Readiness Strip */}
+          <WidgetErrorBoundary name="ReadinessStrip">
+            <FounderReadinessStrip workspace={workspace} />
+          </WidgetErrorBoundary>
+
+          {/* Progress Rings */}
+          <WidgetErrorBoundary name="ProgressRings">
+            <FounderProgressRings workspaceId={workspace.id} />
+          </WidgetErrorBoundary>
+
+          {/* Journey Map / Acceleration */}
+          <WidgetErrorBoundary name="JourneyMap">
+            {workspace.program?.program_type === 'acceleration' ? (
+              <AccelerationProgressCard
+                programId={workspace.program_id}
+                currentWeek={(workspace as any).current_week ?? null}
+                workspaceId={workspace.id}
+              />
+            ) : (
+              <FounderJourneyMap currentStage={workspace.stage} />
+            )}
+          </WidgetErrorBoundary>
+
+          {/* Smart Nudges */}
+          {nudges.length > 0 && (
+            <WidgetErrorBoundary name="SmartNudges">
+              <SmartNudgeCard nudges={nudges} />
+            </WidgetErrorBoundary>
+          )}
+
+          {/* Stage Progress + Investor Readiness + Calendar */}
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-4">
+              <StageProgressCard workspace={workspace} />
+              <InvestorReadinessWidget workspaceId={workspace.id} compact />
+            </div>
+            <CalendarWidget />
+          </div>
+
+          {/* Streak */}
+          <StreakHero streakWeeks={streakWeeks} />
+
+          {/* Quick Guide — only one dismissible banner, only inside advanced */}
+          {!isBeginner && <QuickGuideBanner />}
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Checklist Recovery Footer */}
       {canRestore && (
