@@ -94,6 +94,11 @@ export function useContractDraftAutosave<T extends Record<string, unknown>>({
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [restoredFromLocal, setRestoredFromLocal] = useState(false);
   const [restorePreview, setRestorePreview] = useState<T | null>(null);
+  // Concurrent-edit signal: server has been updated more recently than the
+  // local draft. We do NOT silently drop the local copy — UI surfaces a
+  // conflict and lets the user decide.
+  const [serverNewerThanLocal, setServerNewerThanLocal] = useState(false);
+  const [staleLocalPreview, setStaleLocalPreview] = useState<T | null>(null);
 
   // One-shot init: compare local vs server, expose restore offer.
   const initSigRef = useRef<string | null>(null);
@@ -107,6 +112,8 @@ export function useContractDraftAutosave<T extends Record<string, unknown>>({
     if (!local) {
       setRestoredFromLocal(false);
       setRestorePreview(null);
+      setServerNewerThanLocal(false);
+      setStaleLocalPreview(null);
       return;
     }
     const localTs = new Date(local.updatedAt).getTime();
@@ -114,11 +121,17 @@ export function useContractDraftAutosave<T extends Record<string, unknown>>({
     if (localTs > serverTs) {
       setRestoredFromLocal(true);
       setRestorePreview(local.data);
+      setServerNewerThanLocal(false);
+      setStaleLocalPreview(null);
     } else {
-      // Server is newer — local is stale, drop it silently.
-      clearLocal(key);
+      // Server is newer than (or equal to) the local draft — someone else
+      // (or the same user on another device) saved after this draft was
+      // captured. Surface a conflict instead of silently dropping; the UI
+      // decides whether to keep server, restore stale local, or discard.
       setRestoredFromLocal(false);
       setRestorePreview(null);
+      setServerNewerThanLocal(true);
+      setStaleLocalPreview(local.data);
     }
   }, [key, serverUpdatedAt]);
 
@@ -189,12 +202,21 @@ export function useContractDraftAutosave<T extends Record<string, unknown>>({
     if (key) clearLocal(key);
     setRestoredFromLocal(false);
     setRestorePreview(null);
+    setServerNewerThanLocal(false);
+    setStaleLocalPreview(null);
     dirtyRef.current = false;
   }, [key]);
 
   const dismissRestoredBanner = useCallback(() => {
     setRestoredFromLocal(false);
   }, []);
+
+  /** Dismiss the "server has newer changes" conflict notice and keep server. */
+  const acceptServerVersion = useCallback(() => {
+    if (key) clearLocal(key);
+    setServerNewerThanLocal(false);
+    setStaleLocalPreview(null);
+  }, [key]);
 
   // Visibility / pagehide / beforeunload → flush.
   useEffect(() => {
@@ -231,6 +253,9 @@ export function useContractDraftAutosave<T extends Record<string, unknown>>({
     lastSavedAt,
     restoredFromLocal,
     restorePreview,
+    serverNewerThanLocal,
+    staleLocalPreview,
+    acceptServerVersion,
     dismissRestoredBanner,
     trackChange,
     flush,
