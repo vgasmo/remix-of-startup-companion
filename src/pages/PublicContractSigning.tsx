@@ -367,6 +367,11 @@ export default function PublicContractSigning() {
   // Submit for signature (provider-agnostic — backend resolves provider)
   const submitForSigning = useMutation({
     mutationFn: async () => {
+      // Flush any pending autosave AND explicitly persist the latest visible
+      // fields BEFORE submitting — otherwise the user's latest phone/project
+      // edits could be lost if they click Submit faster than the 1.5s debounce.
+      await autosave.flush();
+      await persistFormDataServer(formData as unknown as Record<string, unknown>);
       const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
         body: { action: 'submit_signing', token, formData },
       });
