@@ -7007,6 +7007,63 @@ export type Database = {
           },
         ]
       }
+      template_instances_dedup_backup_20260516: {
+        Row: {
+          ai_feedback_generated_at: string | null
+          ai_feedback_generated_by: string | null
+          ai_feedback_json: Json | null
+          ai_feedback_visibility: string | null
+          created_at: string | null
+          created_by: string | null
+          data_json: Json | null
+          id: string | null
+          review_notes: string | null
+          review_status: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
+          status: string | null
+          template_id: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          ai_feedback_generated_at?: string | null
+          ai_feedback_generated_by?: string | null
+          ai_feedback_json?: Json | null
+          ai_feedback_visibility?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          data_json?: Json | null
+          id?: string | null
+          review_notes?: string | null
+          review_status?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          status?: string | null
+          template_id?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          ai_feedback_generated_at?: string | null
+          ai_feedback_generated_by?: string | null
+          ai_feedback_json?: Json | null
+          ai_feedback_visibility?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          data_json?: Json | null
+          id?: string | null
+          review_notes?: string | null
+          review_status?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          status?: string | null
+          template_id?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       templates: {
         Row: {
           category: string | null
