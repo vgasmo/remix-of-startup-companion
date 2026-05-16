@@ -4432,7 +4432,9 @@ export type Database = {
           id: string
           last_publish_error: string | null
           last_publish_failed_at: string | null
+          last_publish_rollback_status: string | null
           program_id: string | null
+          program_snapshot_json: Json | null
           status: string
           updated_at: string
         }
@@ -4443,7 +4445,9 @@ export type Database = {
           id?: string
           last_publish_error?: string | null
           last_publish_failed_at?: string | null
+          last_publish_rollback_status?: string | null
           program_id?: string | null
+          program_snapshot_json?: Json | null
           status?: string
           updated_at?: string
         }
@@ -4454,7 +4458,9 @@ export type Database = {
           id?: string
           last_publish_error?: string | null
           last_publish_failed_at?: string | null
+          last_publish_rollback_status?: string | null
           program_id?: string | null
+          program_snapshot_json?: Json | null
           status?: string
           updated_at?: string
         }
