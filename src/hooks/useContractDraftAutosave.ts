@@ -202,12 +202,21 @@ export function useContractDraftAutosave<T extends Record<string, unknown>>({
     if (key) clearLocal(key);
     setRestoredFromLocal(false);
     setRestorePreview(null);
+    setServerNewerThanLocal(false);
+    setStaleLocalPreview(null);
     dirtyRef.current = false;
   }, [key]);
 
   const dismissRestoredBanner = useCallback(() => {
     setRestoredFromLocal(false);
   }, []);
+
+  /** Dismiss the "server has newer changes" conflict notice and keep server. */
+  const acceptServerVersion = useCallback(() => {
+    if (key) clearLocal(key);
+    setServerNewerThanLocal(false);
+    setStaleLocalPreview(null);
+  }, [key]);
 
   // Visibility / pagehide / beforeunload → flush.
   useEffect(() => {
@@ -244,6 +253,9 @@ export function useContractDraftAutosave<T extends Record<string, unknown>>({
     lastSavedAt,
     restoredFromLocal,
     restorePreview,
+    serverNewerThanLocal,
+    staleLocalPreview,
+    acceptServerVersion,
     dismissRestoredBanner,
     trackChange,
     flush,
