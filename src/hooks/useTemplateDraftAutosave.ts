@@ -56,7 +56,7 @@ function writeLocal(key: string, draft: LocalDraft) {
   try {
     localStorage.setItem(key, JSON.stringify(draft));
   } catch (err) {
-    logger.warn('template-draft: localStorage write failed', { key }, err as Error);
+    logger.error('template-draft: localStorage write failed', { key }, err);
   }
 }
 
