@@ -409,7 +409,7 @@ export function CanvasTemplate({ type, data, onChange, disabled = false, reviewS
         </div>
       </CardHeader>
       <CardContent className="p-2">
-        <ScrollArea className="w-full">
+        <ScrollArea className="w-full max-h-[calc(100vh-16rem)]">
           <div style={gridConfig.gridStyle} className="min-w-[600px]">
             {sections.map((section) => {
               const isEditing = editingSection === section.id;
