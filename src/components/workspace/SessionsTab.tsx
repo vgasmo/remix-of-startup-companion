@@ -113,7 +113,20 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
             label: t('sessions.createSession'),
             onClick: () => setShowCreateDialog(true),
             icon: Plus,
-          } : undefined}
+          } : (!search && !canWrite ? {
+            label: t('sessions.askConsultor', { defaultValue: 'Pedir sessão ao consultor' }),
+            onClick: () => {
+              try {
+                window.dispatchEvent(new CustomEvent('copilot:open', {
+                  detail: {
+                    prompt: t('sessions.askConsultorPrompt', {
+                      defaultValue: 'Gostava de marcar uma sessão com o meu consultor. Podes ajudar-me a redigir o pedido?',
+                    }),
+                  },
+                }));
+              } catch { /* ignore */ }
+            },
+          } : undefined)}
         />
       ) : (
         <div className="space-y-3">
