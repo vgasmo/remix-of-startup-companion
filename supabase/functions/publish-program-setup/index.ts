@@ -643,7 +643,7 @@ Deno.serve(async (req) => {
 
       let playbookId: string;
       if (existingPlaybook) {
-        await supabase
+        const { error: pbUpdErr } = await supabase
           .from('playbooks')
           .update({
             title: playbook.title,
@@ -651,10 +651,12 @@ Deno.serve(async (req) => {
             is_active: true,
           })
           .eq('id', existingPlaybook.id);
+        if (pbUpdErr) throw new Error(`Failed to update playbook "${playbook.stage_key}": ${pbUpdErr.message}`);
         playbookId = existingPlaybook.id;
 
         // Delete existing items (will recreate)
-        await supabase.from('playbook_items').delete().eq('playbook_id', playbookId);
+        const { error: itemDelErr } = await supabase.from('playbook_items').delete().eq('playbook_id', playbookId);
+        if (itemDelErr) throw new Error(`Failed to clear playbook_items for ${playbookId}: ${itemDelErr.message}`);
       } else {
         const { data: newPlaybook, error: pbError } = await supabase
           .from('playbooks')
@@ -669,15 +671,14 @@ Deno.serve(async (req) => {
           .single();
 
         if (pbError || !newPlaybook) {
-          console.error(`[publish-program-setup] Failed to create playbook`, pbError);
-          continue;
+          throw new Error(`Failed to create playbook "${playbook.stage_key}": ${pbError?.message ?? 'unknown error'}`);
         }
         playbookId = newPlaybook.id;
       }
 
       // Create playbook items
       for (const item of playbook.items || []) {
-        await supabase.from('playbook_items').insert({
+        const { error: itemInsErr } = await supabase.from('playbook_items').insert({
           playbook_id: playbookId,
           item_type: item.item_type,
           title: item.title,
@@ -688,21 +689,26 @@ Deno.serve(async (req) => {
           default_owner_role: item.default_owner_role,
           metadata_json: item.metadata_json || {},
         });
+        if (itemInsErr) throw new Error(`Failed to insert playbook_item "${item.title}": ${itemInsErr.message}`);
       }
     }
     console.log(`[publish-program-setup] Upserted ${draftData.playbooks?.length || 0} playbooks`);
 
     // 6. Upsert alert rules
-    await supabase.from('program_alert_rules').delete().eq('program_id', programId);
-    
+    {
+      const { error: alertDelErr } = await supabase.from('program_alert_rules').delete().eq('program_id', programId);
+      if (alertDelErr) throw new Error(`Failed to clear program_alert_rules: ${alertDelErr.message}`);
+    }
+
     for (const rule of draftData.alertRules || []) {
-      await supabase.from('program_alert_rules').insert({
+      const { error: alertInsErr } = await supabase.from('program_alert_rules').insert({
         program_id: programId,
         rule_type: rule.rule_type,
         threshold: rule.threshold,
         severity: rule.severity,
         is_enabled: rule.is_enabled,
       });
+      if (alertInsErr) throw new Error(`Failed to insert alert rule "${rule.rule_type}": ${alertInsErr.message}`);
     }
     console.log(`[publish-program-setup] Upserted ${draftData.alertRules?.length || 0} alert rules`);
 
@@ -715,7 +721,7 @@ Deno.serve(async (req) => {
         .single();
 
       if (existingModel) {
-        await supabase
+        const { error: hmUpdErr } = await supabase
           .from('program_health_model')
           .update({
             weights_json: draftData.healthModel.weights_json,
@@ -723,13 +729,15 @@ Deno.serve(async (req) => {
             is_enabled: draftData.healthModel.is_enabled,
           })
           .eq('id', existingModel.id);
+        if (hmUpdErr) throw new Error(`Failed to update program_health_model: ${hmUpdErr.message}`);
       } else {
-        await supabase.from('program_health_model').insert({
+        const { error: hmInsErr } = await supabase.from('program_health_model').insert({
           program_id: programId,
           weights_json: draftData.healthModel.weights_json,
           thresholds_json: draftData.healthModel.thresholds_json,
           is_enabled: draftData.healthModel.is_enabled,
         });
+        if (hmInsErr) throw new Error(`Failed to insert program_health_model: ${hmInsErr.message}`);
       }
       console.log(`[publish-program-setup] Upserted health model`);
     }
