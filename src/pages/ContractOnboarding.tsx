@@ -335,7 +335,35 @@ export default function ContractOnboarding() {
                   </Button>
                 </div>
               )}
-            </CardHeader>
+              {/* Server-newer-than-local conflict banner */}
+              {autosave.serverNewerThanLocal && autosave.staleLocalPreview && (contract as any)?.signature_status !== 'signed' && (
+                <div className="mt-3 flex items-center gap-3 rounded-lg border border-amber-500/40 bg-amber-50 dark:bg-amber-950/20 p-3">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+                  <div className="flex-1 text-xs text-amber-900 dark:text-amber-200">
+                    {t('contractOnboarding.autosave.conflictBanner', { defaultValue: 'Este contrato foi atualizado no servidor depois do seu rascunho local. Recomendamos usar a versão do servidor.' })}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="h-7 text-xs"
+                    onClick={() => autosave.acceptServerVersion()}
+                  >
+                    {t('contractOnboarding.autosave.useServer', { defaultValue: 'Usar servidor' })}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      const draft = autosave.staleLocalPreview as Partial<CompanyFormData> | null;
+                      if (draft) setFormData(prev => ({ ...prev, ...draft }));
+                      autosave.acceptServerVersion();
+                    }}
+                  >
+                    {t('contractOnboarding.autosave.restoreLocal', { defaultValue: 'Restaurar local' })}
+                  </Button>
+                </div>
+              )}
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
