@@ -4020,6 +4020,7 @@
     "firstDocument": "📁 First document! Your data room is growing.",
     "gateWeeks": "Semanas {{start}}–{{end}}",
     "journeyMap": "Your Journey",
+    "nextGateIn": "Next gate ({{name}}) in {{count}}w",
     "multiWorkspace": {
       "hint": "Está a ver ",
       "title": "Tem {{count}} startups associadas"
