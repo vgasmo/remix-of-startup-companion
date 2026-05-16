@@ -334,8 +334,7 @@ serve(async (req) => {
     }, req);
 
   } catch (err) {
-    const error = err as Error;
-    console.error('Error generating progress report:', error);
-    return corsJsonResponse({ error: error.message }, req, 500);
+    console.error('Error generating progress report:', err);
+    return corsJsonResponse({ error: 'An unexpected error occurred. Please try again.' }, req, 500);
   }
 });

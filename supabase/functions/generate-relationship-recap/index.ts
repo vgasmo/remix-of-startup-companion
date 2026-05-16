@@ -345,7 +345,6 @@ ${activities.map((a, i) => `${i + 1}. [${a.type}] ${a.date}: ${a.subject || ''} 
     }, req, 200);
   } catch (err) {
     console.error('[generate-relationship-recap] Error:', err);
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    return corsJsonResponse({ error: errorMessage }, req, 500);
+    return corsJsonResponse({ error: 'An unexpected error occurred. Please try again.' }, req, 500);
   }
 });

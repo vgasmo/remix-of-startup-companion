@@ -327,7 +327,7 @@ ${contextBlock}`;
   } catch (err) {
     console.error("copilot-chat error:", err);
     return corsJsonResponse(
-      { error: err instanceof Error ? err.message : "Internal error" },
+      { error: "An unexpected error occurred. Please try again." },
       req,
       500
     );

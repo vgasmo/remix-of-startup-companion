@@ -87,8 +87,7 @@ serve(async (req) => {
     if (invitation.email.toLowerCase() !== user.email?.toLowerCase()) {
       console.warn(`Email mismatch: invitation for ${invitation.email}, user is ${user.email}`);
       return corsJsonResponse({ 
-        error: "This invitation was sent to a different email address. Please log in with the correct account.",
-        expectedEmail: invitation.email
+        error: "This invitation is for a different account. Please sign in with the correct email."
       }, req, 403);
     }
     
