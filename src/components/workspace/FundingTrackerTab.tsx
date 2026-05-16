@@ -213,7 +213,14 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
                 {loadingRounds ? (
                   <TableRow><TableCell colSpan={5} className="text-center py-8">{t('common.loading')}</TableCell></TableRow>
                 ) : !rounds?.length ? (
-                  <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('funding.noRounds')}</TableCell></TableRow>
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-10">
+                      <p className="text-sm text-muted-foreground mb-3">{t('funding.noRounds')}</p>
+                      <Button size="sm" variant="outline" onClick={() => setShowRoundDialog(true)}>
+                        <Plus className="h-4 w-4 mr-2" />{t('funding.addRound')}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ) : rounds.map(round => (
                   <TableRow key={round.id}>
                     <TableCell className="font-medium capitalize">{round.round_type.replace('-', ' ')}</TableCell>
@@ -259,7 +266,14 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
                 {loadingInvestors ? (
                   <TableRow><TableCell colSpan={5} className="text-center py-8">{t('common.loading')}</TableCell></TableRow>
                 ) : !investors?.length ? (
-                  <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('funding.noInvestors')}</TableCell></TableRow>
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-10">
+                      <p className="text-sm text-muted-foreground mb-3">{t('funding.noInvestors')}</p>
+                      <Button size="sm" variant="outline" onClick={() => setShowInvestorDialog(true)}>
+                        <Plus className="h-4 w-4 mr-2" />{t('funding.addInvestor')}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ) : investors.map(investor => (
                   <TableRow key={investor.id}>
                     <TableCell className="font-medium">{investor.name}</TableCell>

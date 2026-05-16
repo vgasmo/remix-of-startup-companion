@@ -260,31 +260,24 @@ export function FounderDashboard({
           (+ optional compact setup checklist if incomplete)
           ============================================================ */}
 
-      {/* 1. Warm welcome / context hero */}
+      {/* 1. Slim inline greeting — no card chrome so OneThingToday becomes the hero */}
       {isBeginner && (
-        <Card className="overflow-hidden border-border/60 rounded-2xl shadow-sm">
-          <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 sm:p-6">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-12 w-12 rounded-xl border border-border/50">
-                <AvatarImage src={workspace.startup?.logo_url || undefined} className="object-cover" alt={workspace.startup?.name || 'Startup'} />
-                <AvatarFallback className="rounded-xl bg-primary/10 text-primary text-sm font-semibold">
-                  {workspace.startup?.name?.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground mb-0.5">
-                  {t('founder.calmHero.eyebrow', { defaultValue: 'O teu espaço de startup' })}
-                </p>
-                <h1 className="text-lg sm:text-xl font-semibold truncate">
-                  {t('founder.calmHero.greeting', { defaultValue: 'Olá{{name}}, hoje basta um passo.', name: profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : '' })}
-                </h1>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 line-clamp-2">
-                  {t('founder.calmHero.subtitle', { defaultValue: 'Sem pressa. Vamos avançar uma coisa de cada vez — e estamos aqui para ajudar.' })}
-                </p>
-              </div>
-            </div>
+        <div className="flex items-center gap-3 px-1 pt-1">
+          <Avatar className="h-10 w-10 rounded-xl border border-border/40">
+            <AvatarImage src={workspace.startup?.logo_url || undefined} className="object-cover" alt={workspace.startup?.name || 'Startup'} />
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary text-xs font-semibold">
+              {workspace.startup?.name?.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base sm:text-lg font-semibold truncate leading-tight">
+              {t('founder.calmHero.greeting', { defaultValue: 'Olá{{name}}, hoje basta um passo.', name: profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : '' })}
+            </h1>
+            <p className="text-xs text-muted-foreground truncate">
+              {t('founder.calmHero.subtitle', { defaultValue: 'Sem pressa. Uma coisa de cada vez — estamos aqui para ajudar.' })}
+            </p>
           </div>
-        </Card>
+        </div>
       )}
 
       {/* 2. Today's focus — THE single primary CTA */}
