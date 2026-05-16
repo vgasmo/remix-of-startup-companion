@@ -1,119 +1,70 @@
+# Founder UX Audit & Surgical Gap-Fill Plan
 
-# Production Data-Loss Hardening Plan
+The brief says "do not change anything yet — first audit and plan." I read the live founder surfaces and almost every item is **already implemented**. Below: what exists, what's actually missing, and the minimal changes I propose.
 
-Live incident. 7 batches, executed in priority order. Each batch is independently shippable and verifiable. I will not bundle batches that touch unrelated files; if a batch fails verification I stop and report.
+## 1. Audit — what's already there
 
----
+`src/components/dashboard/FounderDashboard.tsx` (490 lines) already implements the calm founder view the brief asks for:
 
-## P0 — BATCH 1: Contract field persistence
+| Brief item | Status | Existing implementation |
+|---|---|---|
+| 2. Next Best Action focus area | ✅ Shipped | `<OneThingToday>` renders a single primary CTA above the fold; `NextBestActionPanels` exists for power users |
+| 3. "Feeling stuck?" help nudge | ✅ Shipped | `<FounderHelpNudge>` (168 lines): non-intrusive, per-user/path dismissal, opens search / AI copilot / quick guide / book session, respects `hasConsultant` |
+| 4. Progressive disclosure | ✅ Shipped | `<Collapsible>` "Mostrar mais detalhes de progresso" wrapping Journey Map, Progress Rings, Stage/Investor/Calendar, Streak, QuickGuide. Driven by `useFounderMaturity` (`isBeginner` → collapsed by default; experienced founders expand by default). User toggle is persisted in component state, but NOT to localStorage. |
+| 5. Template autosave confidence | ✅ Shipped last loop | `useContractDraftAutosave` flushes on blur/visibility/pagehide; "Saved locally" + Restore draft UI present |
+| 6. Programme-specific guidance | ✅ Shipped | `program_type === 'acceleration'` → `<AccelerationProgressCard>` (week/gate); else `<FounderJourneyMap>` (stage); `OneThingToday` already branches on programme type |
+| 7. Lightweight empty states | ✅ Mostly | `FounderWelcomePanel` checklist appears when setup incomplete; `OneThingToday` provides "Ask for help" fallback |
+| Calm hero / warm welcome | ✅ Shipped | Beginner-only gradient hero with first-name greeting |
+| Pending contract priority | ✅ Shipped | `<PendingContractBanner>` rendered above everything |
+| Multi-workspace switcher | ✅ Shipped | Inline pill switcher |
+| Quick KPI auto-prompt | ✅ Shipped | Suppressed for `new_founder` and on first visit; per-month sessionStorage dismiss |
+| Mobile QuickActionsFab | ✅ Shipped | Already present |
 
-**Files**
-- `src/pages/ContractOnboarding.tsx`
-- `src/pages/PublicContractIntake.tsx`
-- `src/pages/PublicContractSigning.tsx`
-- `supabase/functions/public-contract-onboarding/index.ts`
-- new migration
+**What is actually overwhelming today:** very little above the fold for beginners (hero + OneThingToday + booking CTA + optional checklist = 3–4 cards). The brief's diagnosis ("founders feel overwhelmed") was largely true before recent work but is mostly addressed.
 
-**Changes**
-1. Migration: add `certidao_permanente_code text`, `additional_representatives jsonb default '[]'::jsonb`, `project_name text` to `startup_contracts` (only the missing ones — verified against current schema first).
-2. In each of the 3 contract pages, extract an explicit `VISIBLE_TO_PERSISTED` field map at top of file. Save mutation iterates the map, no field is dropped.
-3. `ContractOnboarding`: include `legal_representative_phone`, `certidao_permanente_code`, `project_name`, `additional_representatives` in the save mutation.
-4. `public-contract-onboarding` edge function: load returns + submit persists the same expanded set.
-5. `PublicContractSigning.save_data`: persists `legal_representative_phone` + `project_name`.
+## 2. Real gaps worth fixing (small, surgical)
 
-**Acceptance:** fill every visible field → reload → all fields render with the saved values, for each of the 3 flows.
+These are the only deltas I'd ship — no rewrites, no new systems:
 
----
+### G1. Persist the "Show more" preference across sessions
+`advancedOpen` lives in component state only. A founder who expands once must re-expand on every visit. Add a per-user localStorage key (`founder-advanced-open-${profile.id}`) that overrides `showAdvancedByDefault` once the user toggles. Reversible, ~10 LOC.
 
-## P0 — BATCH 2: Autosave + local recovery for contract pages
+### G2. Re-surface help nudge after stalled sessions
+`FounderHelpNudge` dismissal is sticky per path. Brief asks: "If a founder has been inactive or returns after a failed/unfinished action, allow the nudge to reappear." Add a 14-day TTL on the dismiss key so it returns silently for re-engaged founders. ~5 LOC inside `FounderHelpNudge`.
 
-**Files**
-- new `src/hooks/useContractDraftAutosave.ts` (modeled on `useTemplateDraftAutosave` but keyed by token/contract id, no React Query coupling)
-- wire into all 3 contract pages
+### G3. Lightweight analytics events
+Brief lists 6 events. Confirm whether a tracker exists; if `@/lib/analytics` or similar is present, wire:
+- `founder_next_action_clicked` in `OneThingToday`
+- `founder_help_nudge_opened` / `_search_from_help_clicked` / `_ai_from_help_clicked` / `_guide_from_help_clicked` in `FounderHelpNudge`
+- `founder_advanced_section_expanded` in `FounderDashboard`
 
-**Behavior (mirrors existing template autosave contract)**
-- `setField`/`setAll` → localStorage write on every change.
-- 850ms debounce server save, flush on `blur`, `visibilitychange=hidden`, `pagehide`, `beforeunload`, route unmount.
-- Restore banner: "Encontrámos dados não guardados. Restaurar / Ignorar" with i18n PT/EN keys.
-- Status pill: `saving | saved | local_only | error`.
-- localStorage key: `contract-draft:{flow}:{tokenOrId}` — scoped so two contracts never share a draft.
-- Local draft only cleared after a confirmed server save / final submit.
+If no analytics module exists, **skip** rather than invent one (brief: "If an analytics/event taxonomy exists, use it").
 
-**Acceptance:** the 3 manual smoke tests in the brief (refresh, tab switch, close/reopen) preserve typed data.
+### G4. Empty-state polish (only if missing)
+Spot-check KPI tab, templates list, sessions tab for dead-end empty states. Add CTA-bearing empty states only where missing. Do not touch tabs that already have them.
 
----
+## 3. Explicitly NOT doing
 
-## P1 — BATCH 3: True upsert for template instances
+- No rewrite of `FounderDashboard`, `OneThingToday`, `FounderHelpNudge`, `useFounderMaturity` — they already match the brief.
+- No new "next best action" engine — `OneThingToday` is the single source.
+- No new task system, social feed, LMS, or marketplace.
+- No removal of existing widgets (StreakHero, JourneyMap, ProgressRings, InvestorReadiness, etc.) — they stay inside "Show more".
+- No changes to admin/staff/consultor/mentor dashboards.
+- No mobile redesign — current layout uses `max-w-5xl space-y-6` with responsive grids; spot-check only.
 
-**File:** `src/hooks/useTemplates.ts`
+## 4. Files I expect to touch
 
-**Change** `useUpsertTemplateInstance` to use `.upsert(..., { onConflict: 'workspace_id,template_id' })` and `.select().single()`, returning the canonical row. If Supabase returns 23505 anyway (race), fall back to `select` by `(workspace_id, template_id)` then `update().eq('id', ...)`. Always return final id so `useTemplateDraftAutosave` cache stays correct.
+- `src/components/dashboard/FounderDashboard.tsx` — persist advanced-open preference (G1)
+- `src/components/founder/FounderHelpNudge.tsx` — TTL on dismissal + analytics hooks (G2, G3)
+- `src/components/dashboard/OneThingToday.tsx` — analytics hook (G3)
+- (conditional) one or two empty-state tweaks (G4)
 
-**Acceptance:** two tabs editing same template never stick on `local_only`; the second tab recovers and updates the same row.
+Estimated diff: **<80 lines net**. No migrations, no edge-function changes, no schema changes, no i18n breakage.
 
----
+## 5. Verification after implementation
 
-## P1 — BATCH 4: Booking link token hashing
+`bun run typecheck` · `node scripts/i18n-check.cjs` · `node scripts/i18n-lint.mjs` · `node scripts/secret-scan.cjs` · manual smoke on `/dashboard` as beginner founder.
 
-**Files**
-- `src/components/admin/IntakeRoutingManager.tsx`
-- `src/components/admin/BookingLinksManager.tsx`
-- new shared helper `src/lib/bookingTokens.ts` (`generateToken()` + `sha256Hex()` via Web Crypto)
-- one-shot SQL: invalidate rows where `token_hash` looks like a plaintext token (length != 64 or non-hex), so old broken links return a clean "expired" error rather than partially working.
+## 6. Open question for you
 
-**Change:** `IntakeRoutingManager` stops writing plaintext to `token_hash`. Both admin UIs only render the share URL (which contains the plaintext token), never the hash column. Public edge functions already hash incoming → match — no change there.
-
-**Acceptance:** brand-new booking link created from either admin surface works; admin UI never shows raw token after creation closes.
-
----
-
-## P1 — BATCH 5: ProgramSetupWizard autosave
-
-**File:** `src/pages/ProgramSetupWizard.tsx`
-
-**Changes**
-1. `pendingUpdatesRef.current = { ...pendingUpdatesRef.current, ...updates }` (merge, not replace).
-2. `await flush()` before: step nav buttons, Back, Discard, Publish, and inside an unmount effect.
-3. `visibilitychange` / `pagehide` / `beforeunload` listeners → flush + localStorage backup keyed `program-setup-draft:{programId}`.
-4. On mount, if local draft newer than server `updated_at`, offer restore.
-
-**Acceptance:** three manual smoke tests in the brief.
-
----
-
-## P1 — BATCH 6: Transactional program publish
-
-**File:** new migration with `publish_program_setup_tx(p_program_id uuid, p_payload jsonb)` SECURITY DEFINER RPC; refactor `supabase/functions/publish-program-setup/index.ts` to call the RPC.
-
-**Strategy:** inside one transaction — insert new gates/weeks/playbooks/stages with a temporary `is_pending=true` marker (or staging temp table via CTE), validate, then in same tx swap by deleting old + clearing pending flag. Wrap in `BEGIN/EXCEPTION WHEN OTHERS THEN` → mark draft `publish_failed` with error JSON, RAISE. Existing active program rows are never deleted before replacement rows exist + validate.
-
-**Acceptance:** forced failure mid-publish leaves prior active program fully usable.
-
----
-
-## P2 — BATCH 7: Hygiene
-
-- `.env` cannot be removed from the sandbox (release-wrapper limitation, already documented in `RELEASE_WRAPPER_MANUAL_STEPS.md`). I will re-verify the doc covers this and stop there.
-- Lockfiles: same release-wrapper constraint. Doc already covers `bun.lockb` + `package-lock.json` removal post-export. No code change possible from sandbox.
-- Dedupe migration: add a **read-only** verification SQL (no DDL) inside a new `supabase/tests/` file; do NOT re-run the destructive migration. Run it once via `read_query` and report counts.
-
----
-
-## Verification
-
-After each batch:
-- targeted code re-read
-- `node scripts/i18n-check.cjs && node scripts/i18n-lint.mjs && node scripts/secret-scan.cjs`
-- DB sanity SELECTs (template dupes, contract column presence, token_hash lengths)
-
-(Typecheck/vitest/build run automatically by the harness — I do not invoke them manually.)
-
----
-
-## Risks / honest caveats
-
-- **Batch 6 is the riskiest.** Moving publish into a single RPC means rewriting the function body server-side; if the existing edge function does many cross-table writes with dynamic shapes, the RPC may need a multi-step API instead of one call. If that's the case I will fall back to the "interim" approach (staging rows + rollback) and flag clearly.
-- **Batch 7 hygiene items** (.env, lockfiles) genuinely cannot be done from the Lovable sandbox — they are post-export manual steps. I will not pretend otherwise.
-- I will only touch files listed per batch. No cosmetic edits, no unrelated refactors.
-
-Reply "go" (or name specific batches) to start. I will execute batches sequentially, reporting verification after each.
+Should I proceed with **G1 + G2 only** (lowest risk, highest signal), or include **G3 analytics** as well? G3 depends on whether you already have an analytics taxonomy I should plug into — say the module name and I'll wire it; otherwise I'll skip G3 per the brief.
