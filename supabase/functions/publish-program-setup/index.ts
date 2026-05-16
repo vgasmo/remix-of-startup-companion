@@ -781,10 +781,79 @@ Deno.serve(async (req) => {
     const errMsg = error instanceof Error ? error.message : 'Internal server error';
     console.error('[publish-program-setup] Error:', errMsg);
 
-    // Mark the wizard draft as 'publish_failed' so staff sees the failure
-    // and can retry/continue. Uses the hoisted `draftIdForCatch` so this
-    // works even if the failure happened before the inner try logic ran.
+    // ---- ROLLBACK: if we were re-publishing an existing live program and
+    // captured a snapshot, restore the program + children from the snapshot
+    // so founders never see a half-mutated active program.
+    let rollbackStatus: 'restored' | 'failed' | 'skipped' = 'skipped';
     if (draftIdForCatch) {
+      try {
+        const { data: draftRow } = await supabase
+          .from('program_setup_drafts')
+          .select('program_id, program_snapshot_json')
+          .eq('id', draftIdForCatch)
+          .maybeSingle();
+        const snap = draftRow?.program_snapshot_json as Record<string, unknown> | null | undefined;
+        const restoreProgramId = draftRow?.program_id as string | null | undefined;
+        if (snap && restoreProgramId && snap.program) {
+          try {
+            const prog = snap.program as Record<string, unknown>;
+            // Restore program metadata + status.
+            await supabase.from('programs').update({
+              name: prog.name, description: prog.description,
+              start_date: prog.start_date, end_date: prog.end_date,
+              settings_json: prog.settings_json, program_type: prog.program_type,
+              status: prog.status, is_active: prog.is_active,
+              updated_at: new Date().toISOString(),
+            }).eq('id', restoreProgramId);
+
+            // Wipe whatever the failed publish wrote, then restore from snapshot.
+            const { data: existingPb } = await supabase
+              .from('playbooks').select('id').eq('program_id', restoreProgramId);
+            const pbIds = (existingPb ?? []).map((r: { id: string }) => r.id);
+            if (pbIds.length) {
+              await supabase.from('playbook_items').delete().in('playbook_id', pbIds);
+            }
+            await Promise.all([
+              supabase.from('stage_kpi_defaults').delete().eq('program_id', restoreProgramId),
+              supabase.from('playbooks').delete().eq('program_id', restoreProgramId),
+              supabase.from('stages').delete().eq('program_id', restoreProgramId),
+              supabase.from('program_weeks').delete().eq('program_id', restoreProgramId),
+              supabase.from('program_gates').delete().eq('program_id', restoreProgramId),
+              supabase.from('program_alert_rules').delete().eq('program_id', restoreProgramId),
+              supabase.from('program_health_models').delete().eq('program_id', restoreProgramId),
+            ]);
+
+            const inserts: Array<Promise<unknown>> = [];
+            const pushIfAny = (table: string, rows: unknown) => {
+              const arr = Array.isArray(rows) ? rows : [];
+              if (arr.length) inserts.push(supabase.from(table).insert(arr as never));
+            };
+            pushIfAny('stages', snap.stages);
+            pushIfAny('playbooks', snap.playbooks);
+            pushIfAny('stage_kpi_defaults', snap.stage_kpi_defaults);
+            pushIfAny('program_gates', snap.program_gates);
+            pushIfAny('program_weeks', snap.program_weeks);
+            pushIfAny('program_alert_rules', snap.program_alert_rules);
+            pushIfAny('program_health_models', snap.program_health_models);
+            await Promise.all(inserts);
+            // playbook_items restored after parent playbooks (FK).
+            if (Array.isArray(snap.playbook_items) && (snap.playbook_items as unknown[]).length) {
+              await supabase.from('playbook_items').insert(snap.playbook_items as never);
+            }
+            rollbackStatus = 'restored';
+            console.log(`[publish-program-setup] Restored program ${restoreProgramId} from snapshot`);
+          } catch (rbErr) {
+            rollbackStatus = 'failed';
+            console.error('[publish-program-setup] Rollback failed:', rbErr);
+          }
+        }
+      } catch (snapReadErr) {
+        console.warn('[publish-program-setup] Could not read snapshot for rollback:', snapReadErr);
+      }
+
+      // Mark the wizard draft as 'publish_failed' so staff sees the failure
+      // and can retry/continue. Uses the hoisted `draftIdForCatch` so this
+      // works even if the failure happened before the inner try logic ran.
       try {
         await supabase
           .from('program_setup_drafts')
@@ -792,6 +861,7 @@ Deno.serve(async (req) => {
             status: 'publish_failed',
             last_publish_error: errMsg.slice(0, 2000),
             last_publish_failed_at: new Date().toISOString(),
+            last_publish_rollback_status: rollbackStatus,
           })
           .eq('id', draftIdForCatch);
       } catch (markErr) {
