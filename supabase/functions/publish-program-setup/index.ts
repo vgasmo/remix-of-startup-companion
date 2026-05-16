@@ -333,7 +333,6 @@ Deno.serve(async (req) => {
           .from('program_setup_drafts')
           .update({ program_snapshot_json: snapshot })
           .eq('id', draft_id);
-        snapshotCaptured = true;
         console.log(`[publish-program-setup] Captured pre-publish snapshot for program ${programId}`);
       } catch (snapErr) {
         // Non-fatal — if snapshot capture fails we still proceed, but the
