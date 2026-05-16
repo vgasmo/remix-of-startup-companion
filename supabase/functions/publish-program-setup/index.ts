@@ -305,18 +305,21 @@ Deno.serve(async (req) => {
       // mid-publish failure occurs, so re-publishing never damages the
       // active program founders are using.
       try {
-        const [progRow, stagesRows, playbooksRows, playbookItemsRows, stageKpiRows,
+        const [progRow, stagesRows, playbooksRows, stageKpiRows,
                gatesRows, weeksRows, alertRulesRows, healthRows] = await Promise.all([
           supabase.from('programs').select('*').eq('id', programId).maybeSingle(),
           supabase.from('stages').select('*').eq('program_id', programId),
           supabase.from('playbooks').select('*').eq('program_id', programId),
-          supabase.from('playbook_items').select('*, playbook:playbooks!inner(program_id)').eq('playbooks.program_id', programId),
           supabase.from('stage_kpi_defaults').select('*').eq('program_id', programId),
           supabase.from('program_gates').select('*').eq('program_id', programId),
           supabase.from('program_weeks').select('*').eq('program_id', programId),
           supabase.from('program_alert_rules').select('*').eq('program_id', programId),
           supabase.from('program_health_models').select('*').eq('program_id', programId),
         ]);
+        const playbookIds = (playbooksRows.data ?? []).map((p: { id: string }) => p.id);
+        const playbookItemsRows = playbookIds.length
+          ? await supabase.from('playbook_items').select('*').in('playbook_id', playbookIds)
+          : { data: [] as unknown[] };
         const snapshot = {
           captured_at: new Date().toISOString(),
           program: progRow.data ?? null,
