@@ -105,11 +105,27 @@ export function FounderDashboard({
   // Founder maturity drives progressive disclosure.
   const { maturity, isBeginner, showAdvancedByDefault } = useFounderMaturity(workspace);
   const setupComplete = hasProfile && hasStartup && hasKpis && hasDocuments;
-  const [advancedOpen, setAdvancedOpen] = useState(showAdvancedByDefault);
-  const [advancedUserToggled, setAdvancedUserToggled] = useState(false);
+
+  // Persist the "Show more" preference per user across sessions.
+  // Read once on mount; if the user has never toggled, fall back to maturity-driven default.
+  const advancedPrefKey = profile?.id ? `founder-advanced-open:${profile.id}` : null;
+  const readStoredAdvanced = (): boolean | null => {
+    if (!advancedPrefKey) return null;
+    try {
+      const raw = localStorage.getItem(advancedPrefKey);
+      if (raw === '1') return true;
+      if (raw === '0') return false;
+      return null;
+    } catch { return null; }
+  };
+  const [advancedUserToggled, setAdvancedUserToggled] = useState<boolean>(() => readStoredAdvanced() !== null);
+  const [advancedOpen, setAdvancedOpen] = useState<boolean>(() => {
+    const stored = readStoredAdvanced();
+    return stored !== null ? stored : showAdvancedByDefault;
+  });
 
   // Sync default disclosure as maturity is computed (e.g., async data arrives),
-  // but never override an explicit user toggle.
+  // but never override an explicit user toggle (in-session or persisted).
   useEffect(() => {
     if (!advancedUserToggled) setAdvancedOpen(showAdvancedByDefault);
   }, [showAdvancedByDefault, advancedUserToggled]);
@@ -117,6 +133,9 @@ export function FounderDashboard({
   const handleAdvancedToggle = (open: boolean) => {
     setAdvancedUserToggled(true);
     setAdvancedOpen(open);
+    if (advancedPrefKey) {
+      try { localStorage.setItem(advancedPrefKey, open ? '1' : '0'); } catch { /* ignore */ }
+    }
   };
 
   // Auto-trigger QuickKpiModal — but NOT for new founders, and never on first visit.
