@@ -811,58 +811,92 @@ Deno.serve(async (req) => {
         const snap = draftRow?.program_snapshot_json as Record<string, unknown> | null | undefined;
         const restoreProgramId = draftRow?.program_id as string | null | undefined;
         if (snap && restoreProgramId && snap.program) {
+          const rbErrors: string[] = [];
           try {
             const prog = snap.program as Record<string, unknown>;
             // Restore program metadata + status.
-            await supabase.from('programs').update({
+            const { error: progUpdErr } = await supabase.from('programs').update({
               name: prog.name, description: prog.description,
               start_date: prog.start_date, end_date: prog.end_date,
               settings_json: prog.settings_json, program_type: prog.program_type,
               status: prog.status, is_active: prog.is_active,
               updated_at: new Date().toISOString(),
             }).eq('id', restoreProgramId);
+            if (progUpdErr) rbErrors.push(`programs.update: ${progUpdErr.message}`);
 
-            // Wipe whatever the failed publish wrote, then restore from snapshot.
+            // ---- Wipe in reverse-FK order, sequential + awaited so each
+            // failure is captured (Promise.all would swallow partials).
+            // playbook_items depends on playbooks, so wipe it first.
             const { data: existingPb } = await supabase
               .from('playbooks').select('id').eq('program_id', restoreProgramId);
             const pbIds = (existingPb ?? []).map((r: { id: string }) => r.id);
             if (pbIds.length) {
-              await supabase.from('playbook_items').delete().in('playbook_id', pbIds);
+              const { error } = await supabase.from('playbook_items').delete().in('playbook_id', pbIds);
+              if (error) rbErrors.push(`wipe playbook_items: ${error.message}`);
             }
-            await Promise.all([
-              supabase.from('stage_kpi_defaults').delete().eq('program_id', restoreProgramId),
-              supabase.from('playbooks').delete().eq('program_id', restoreProgramId),
-              supabase.from('stages').delete().eq('program_id', restoreProgramId),
-              supabase.from('program_weeks').delete().eq('program_id', restoreProgramId),
-              supabase.from('program_gates').delete().eq('program_id', restoreProgramId),
-              supabase.from('program_alert_rules').delete().eq('program_id', restoreProgramId),
-              supabase.from('program_health_model').delete().eq('program_id', restoreProgramId),
-            ]);
+            const wipeTables: Array<string> = [
+              'stage_kpi_defaults',
+              'program_core_kpis',
+              'playbooks',
+              'stages',
+              'program_weeks',
+              'program_gates',
+              'program_alert_rules',
+              'program_health_model',
+            ];
+            for (const t of wipeTables) {
+              const { error } = await supabase.from(t).delete().eq('program_id', restoreProgramId);
+              if (error) rbErrors.push(`wipe ${t}: ${error.message}`);
+            }
 
-            const inserts: Array<Promise<unknown>> = [];
-            const pushIfAny = (table: string, rows: unknown) => {
+            // ---- Restore in FK-safe order, sequential + awaited.
+            const restoreTable = async (table: string, rows: unknown) => {
               const arr = Array.isArray(rows) ? rows : [];
-              if (arr.length) inserts.push(supabase.from(table).insert(arr as never));
+              if (!arr.length) return;
+              const { error } = await supabase.from(table).insert(arr as never);
+              if (error) rbErrors.push(`restore ${table}: ${error.message}`);
             };
-            pushIfAny('stages', snap.stages);
-            pushIfAny('playbooks', snap.playbooks);
-            pushIfAny('stage_kpi_defaults', snap.stage_kpi_defaults);
-            pushIfAny('program_gates', snap.program_gates);
-            pushIfAny('program_weeks', snap.program_weeks);
-            pushIfAny('program_alert_rules', snap.program_alert_rules);
+            await restoreTable('stages', snap.stages);
+            await restoreTable('playbooks', snap.playbooks);
+            // playbook_items must come AFTER playbooks (FK parent).
+            await restoreTable('playbook_items', snap.playbook_items);
+            await restoreTable('stage_kpi_defaults', snap.stage_kpi_defaults);
+            await restoreTable('program_core_kpis', (snap as any).program_core_kpis);
+            await restoreTable('program_gates', snap.program_gates);
+            await restoreTable('program_weeks', snap.program_weeks);
+            await restoreTable('program_alert_rules', snap.program_alert_rules);
             // Snapshot key migrated from 'program_health_models' → 'program_health_model'.
-            // Read both for backward compatibility with snapshots captured by older code.
-            pushIfAny('program_health_model', snap.program_health_model ?? (snap as any).program_health_models);
-            await Promise.all(inserts);
-            // playbook_items restored after parent playbooks (FK).
-            if (Array.isArray(snap.playbook_items) && (snap.playbook_items as unknown[]).length) {
-              await supabase.from('playbook_items').insert(snap.playbook_items as never);
+            await restoreTable('program_health_model', snap.program_health_model ?? (snap as any).program_health_models);
+
+            // ---- Post-restore verification: counts must match snapshot.
+            const expected = (key: string) => (Array.isArray((snap as any)[key]) ? (snap as any)[key].length : 0);
+            const verifyTables: Array<[string, string]> = [
+              ['stages', 'stages'],
+              ['playbooks', 'playbooks'],
+              ['stage_kpi_defaults', 'stage_kpi_defaults'],
+              ['program_core_kpis', 'program_core_kpis'],
+              ['program_gates', 'program_gates'],
+              ['program_weeks', 'program_weeks'],
+              ['program_alert_rules', 'program_alert_rules'],
+              ['program_health_model', 'program_health_model'],
+            ];
+            for (const [table, key] of verifyTables) {
+              const { count, error } = await supabase
+                .from(table).select('id', { count: 'exact', head: true }).eq('program_id', restoreProgramId);
+              if (error) { rbErrors.push(`verify ${table}: ${error.message}`); continue; }
+              const want = expected(key);
+              if ((count ?? 0) !== want) rbErrors.push(`verify ${table}: expected ${want}, got ${count ?? 0}`);
             }
-            rollbackStatus = 'restored';
-            console.log(`[publish-program-setup] Restored program ${restoreProgramId} from snapshot`);
+
+            rollbackStatus = rbErrors.length === 0 ? 'restored' : 'failed';
+            if (rbErrors.length === 0) {
+              console.log(`[publish-program-setup] Restored program ${restoreProgramId} from snapshot`);
+            } else {
+              console.error(`[publish-program-setup] Rollback completed with errors:`, rbErrors);
+            }
           } catch (rbErr) {
             rollbackStatus = 'failed';
-            console.error('[publish-program-setup] Rollback failed:', rbErr);
+            console.error('[publish-program-setup] Rollback threw:', rbErr, 'collected errors:', rbErrors);
           }
         }
       } catch (snapReadErr) {
