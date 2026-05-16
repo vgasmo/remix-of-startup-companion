@@ -89,6 +89,15 @@ export const AccelerationProgressCard = memo(function AccelerationProgressCard({
   const totalWeeks = weeks.length > 0 ? Math.max(...weeks.map(w => w.week_number)) : 12;
   const progressPercent = Math.min(((week) / totalWeeks) * 100, 100);
 
+  // Next upcoming gate (first gate whose start week is in the future)
+  const nextGate = useMemo(() => {
+    return gates.find(g => (g.target_start_week ?? 1) > week)
+      ?? gates.find(g => week >= (g.target_start_week ?? 1) && week <= (g.target_end_week ?? totalWeeks));
+  }, [gates, week, totalWeeks]);
+  const weeksToNextGate = nextGate
+    ? Math.max((nextGate.target_start_week ?? week) - week, 0)
+    : null;
+
   // Map gates to their weeks and determine status
   const gateStatus = useMemo(() => {
     return gates.map((gate, idx) => {
