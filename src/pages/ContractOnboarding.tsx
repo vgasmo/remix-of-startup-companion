@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { Building2, FileText, PenTool, CheckCircle2, ArrowRight, ArrowLeft, Download, Shield, Loader2, ExternalLink } from 'lucide-react';
+import { Building2, FileText, PenTool, CheckCircle2, ArrowRight, ArrowLeft, Download, Shield, Loader2, ExternalLink, RotateCcw, Cloud, CloudOff, AlertTriangle, Check } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useContractDraftAutosave } from '@/hooks/useContractDraftAutosave';
 
@@ -285,13 +285,56 @@ export default function ContractOnboarding() {
         {currentStep === 'company_data' && (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                {t('contractOnboarding.companyAndRepData')}
-              </CardTitle>
-              <CardDescription>
-                {t('contractOnboarding.companyDataDesc')}
-              </CardDescription>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building2 className="h-5 w-5 text-primary" />
+                    {t('contractOnboarding.companyAndRepData')}
+                  </CardTitle>
+                  <CardDescription>
+                    {t('contractOnboarding.companyDataDesc')}
+                  </CardDescription>
+                </div>
+                {/* Autosave status chip — calm, near the form header */}
+                {(contract as any)?.signature_status !== 'signed' && (
+                  <div className="text-xs text-muted-foreground inline-flex items-center gap-1.5 shrink-0 pt-1">
+                    {autosave.status === 'saving' && (<><Loader2 className="h-3 w-3 animate-spin" />{t('contractOnboarding.autosave.saving', { defaultValue: 'A guardar…' })}</>)}
+                    {autosave.status === 'saved' && (<><Check className="h-3 w-3 text-emerald-600" />{t('contractOnboarding.autosave.saved', { defaultValue: 'Guardado' })}</>)}
+                    {autosave.status === 'local_only' && (<><CloudOff className="h-3 w-3 text-amber-600" />{t('contractOnboarding.autosave.localOnly', { defaultValue: 'Guardado localmente' })}</>)}
+                    {autosave.status === 'error' && (<><AlertTriangle className="h-3 w-3 text-destructive" />{t('contractOnboarding.autosave.error', { defaultValue: 'Erro ao guardar' })}</>)}
+                    {autosave.status === 'idle' && autosave.lastSavedAt && (<><Cloud className="h-3 w-3" />{t('contractOnboarding.autosave.saved', { defaultValue: 'Guardado' })}</>)}
+                  </div>
+                )}
+              </div>
+              {/* Restore-from-local banner */}
+              {autosave.restoredFromLocal && autosave.restorePreview && (contract as any)?.signature_status !== 'signed' && (
+                <div className="mt-3 flex items-center gap-3 rounded-lg border border-amber-300/50 bg-amber-50 dark:bg-amber-950/20 p-3">
+                  <RotateCcw className="h-4 w-4 text-amber-600 shrink-0" />
+                  <div className="flex-1 text-xs text-amber-900 dark:text-amber-200">
+                    {t('contractOnboarding.autosave.restoreBanner', { defaultValue: 'Encontrámos edições não guardadas no seu dispositivo. Quer restaurá-las?' })}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      const preview = autosave.restorePreview as Partial<CompanyFormData> | null;
+                      if (preview) setFormData(prev => ({ ...prev, ...preview }));
+                      autosave.dismissRestoredBanner();
+                    }}
+                  >
+                    {t('common.restore', { defaultValue: 'Restaurar' })}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 text-xs"
+                    onClick={() => autosave.clearDraft()}
+                  >
+                    {t('common.discard', { defaultValue: 'Descartar' })}
+                  </Button>
+                </div>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
