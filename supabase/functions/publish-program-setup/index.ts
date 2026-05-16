@@ -439,7 +439,7 @@ Deno.serve(async (req) => {
         .single();
 
       if (existing) {
-        await supabase
+        const { error: stageUpdErr } = await supabase
           .from('stages')
           .update({
             name: stage.name,
@@ -448,8 +448,9 @@ Deno.serve(async (req) => {
             is_active: stage.is_active,
           })
           .eq('id', existing.id);
+        if (stageUpdErr) throw new Error(`Failed to update stage "${stage.stage_key}": ${stageUpdErr.message}`);
       } else {
-        await supabase.from('stages').insert({
+        const { error: stageInsErr } = await supabase.from('stages').insert({
           program_id: programId,
           stage_key: stage.stage_key,
           name: stage.name,
@@ -457,6 +458,7 @@ Deno.serve(async (req) => {
           position: stage.position,
           is_active: stage.is_active,
         });
+        if (stageInsErr) throw new Error(`Failed to insert stage "${stage.stage_key}": ${stageInsErr.message}`);
       }
     }
     console.log(`[publish-program-setup] Upserted ${draftData.stages?.length || 0} stages`);
@@ -584,17 +586,20 @@ Deno.serve(async (req) => {
 
     // Second pass: upsert stage_kpi_defaults
     // First, remove existing defaults for this program
-    await supabase
-      .from('stage_kpi_defaults')
-      .delete()
-      .eq('program_id', programId);
+    {
+      const { error: kpiDelErr } = await supabase
+        .from('stage_kpi_defaults')
+        .delete()
+        .eq('program_id', programId);
+      if (kpiDelErr) throw new Error(`Failed to clear stage_kpi_defaults: ${kpiDelErr.message}`);
+    }
 
     for (const stageKpis of draftData.kpis || []) {
       for (const kpi of stageKpis.kpis) {
         const kpiDefId = kpiDefinitionMap[kpi.name];
         if (!kpiDefId) continue;
 
-        await supabase.from('stage_kpi_defaults').insert({
+        const { error: kpiInsErr } = await supabase.from('stage_kpi_defaults').insert({
           program_id: programId,
           stage: stageKpis.stage_key,
           kpi_definition_id: kpiDefId,
@@ -602,22 +607,27 @@ Deno.serve(async (req) => {
           order_index: kpi.order_index,
           target_value: kpi.target_value || null,
         });
+        if (kpiInsErr) throw new Error(`Failed to insert stage_kpi_default for "${kpi.name}": ${kpiInsErr.message}`);
       }
     }
     console.log(`[publish-program-setup] Upserted stage KPI defaults`);
 
     // 4. Upsert core KPIs
-    await supabase.from('program_core_kpis').delete().eq('program_id', programId);
-    
+    {
+      const { error: coreDelErr } = await supabase.from('program_core_kpis').delete().eq('program_id', programId);
+      if (coreDelErr) throw new Error(`Failed to clear program_core_kpis: ${coreDelErr.message}`);
+    }
+
     for (const coreKpi of draftData.coreKpis || []) {
       const kpiDefId = coreKpi.kpi_definition_id || kpiDefinitionMap[coreKpi.name];
       if (!kpiDefId) continue;
 
-      await supabase.from('program_core_kpis').insert({
+      const { error: coreInsErr } = await supabase.from('program_core_kpis').insert({
         program_id: programId,
         kpi_definition_id: kpiDefId,
         order_index: coreKpi.order_index,
       });
+      if (coreInsErr) throw new Error(`Failed to insert core KPI "${coreKpi.name}": ${coreInsErr.message}`);
     }
     console.log(`[publish-program-setup] Upserted ${draftData.coreKpis?.length || 0} core KPIs`);
 
