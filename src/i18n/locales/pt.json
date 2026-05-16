@@ -8124,7 +8124,9 @@
       "flushPending": "A terminar de guardar…",
       "unsavedExitTitle": "Alterações por sincronizar",
       "unsavedExitDescription": "Não conseguimos sincronizar agora, mas guardámos uma cópia local. Sair na mesma?",
-      "unsavedExitConfirm": "Sair e manter cópia local"
+      "unsavedExitConfirm": "Sair e manter cópia local",
+      "error": "Erro ao guardar",
+      "restoreBanner": "Encontrámos edições não guardadas no seu dispositivo. Quer restaurá-las?"
     }
   },
   "tests": {
