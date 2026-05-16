@@ -4021,6 +4021,13 @@
     "gateWeeks": "Semanas {{start}}–{{end}}",
     "journeyMap": "Your Journey",
     "nextGateIn": "Next gate ({{name}}) in {{count}}w",
+    "journeyStages": {
+      "idea": "Idea",
+      "mvp": "MVP",
+      "validation": "Validation",
+      "scaling": "Scaling",
+      "growth": "Growth"
+    },
     "multiWorkspace": {
       "hint": "Está a ver ",
       "title": "Tem {{count}} startups associadas"
