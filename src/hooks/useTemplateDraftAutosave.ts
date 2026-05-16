@@ -258,6 +258,32 @@ export function useTemplateDraftAutosave({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ─── Telemetry: log every status transition so production issues are
+  // diagnosable from logs/Sentry without needing user repro.
+  const lastLoggedStatusRef = useRef<AutosaveStatus | null>(null);
+  useEffect(() => {
+    if (lastLoggedStatusRef.current === status) return;
+    const from = lastLoggedStatusRef.current;
+    lastLoggedStatusRef.current = status;
+    const context = {
+      workspaceId,
+      templateId: templateId ?? null,
+      instanceId: instanceIdRef.current,
+      userId: userId ?? null,
+      from,
+      to: status,
+      restoredFromLocal,
+      lastSavedAt: lastSavedAt?.toISOString() ?? null,
+    };
+    if (status === 'error') {
+      logger.error('template_autosave.status_change', context);
+    } else if (status === 'local_only') {
+      logger.warn('template_autosave.status_change', context);
+    } else {
+      logger.info('template_autosave.status_change', context);
+    }
+  }, [status, workspaceId, templateId, userId, restoredFromLocal, lastSavedAt]);
+
   const dismissRestoredBanner = useCallback(() => setRestoredFromLocal(false), []);
 
   return {
