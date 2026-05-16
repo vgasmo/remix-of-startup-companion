@@ -293,11 +293,8 @@ Deno.serve(async (req) => {
     let programId = draft.program_id;
     const programTypeFinal = draftData.basics.program_type || 'incubation';
     const isAccelerationFinal = programTypeFinal === 'acceleration';
-    // Track whether this run mutated an existing live program — drives
-    // rollback-from-snapshot in the catch block. New programs (no prior id)
-    // are simply deleted on failure (they were never activated).
-    const wasRepublish = !!draft.program_id;
-    let snapshotCaptured = false;
+    // Snapshot-and-rollback safety for re-publishes is handled inline
+    // (snapshot captured before destructive writes; restored in catch block).
 
     if (programId) {
       // ---- SNAPSHOT existing program + children BEFORE any destructive
