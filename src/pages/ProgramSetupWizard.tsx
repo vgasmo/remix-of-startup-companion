@@ -156,12 +156,27 @@ export default function ProgramSetupWizard() {
     }
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
+    await flushAutosave();
     const prevIndex = currentStepIndex - 1;
     if (prevIndex >= 0) {
       goToStep(STEPS[prevIndex].key);
     }
   };
+
+  // localStorage backup key — survives crash / unload before server save.
+  const localKey = activeDraftId ? `program-setup-draft:${activeDraftId}` : null;
+  const writeLocalBackup = useCallback((updates: Partial<ProgramSetupDraft['draft_json']>) => {
+    if (!localKey) return;
+    try {
+      const prev = localStorage.getItem(localKey);
+      const merged = {
+        ...(prev ? JSON.parse(prev).data : {}),
+        ...updates,
+      };
+      localStorage.setItem(localKey, JSON.stringify({ data: merged, updatedAt: new Date().toISOString() }));
+    } catch { /* noop */ }
+  }, [localKey]);
 
   // Flush any pending debounced autosave immediately. Used before
   // navigation/publish so we never lose the last few seconds of edits.
@@ -177,12 +192,13 @@ export default function ProgramSetupWizard() {
       try {
         await updateDraft.mutateAsync({ draftId: activeDraftId, draftJson: pending });
         setAutosaveStatus('saved');
+        if (localKey) { try { localStorage.removeItem(localKey); } catch { /* noop */ } }
         setTimeout(() => setAutosaveStatus('idle'), 1500);
       } catch {
         setAutosaveStatus('idle');
       }
     }
-  }, [activeDraftId, updateDraft]);
+  }, [activeDraftId, updateDraft, localKey]);
 
   const handleSaveAndContinue = async () => {
     await flushAutosave();
@@ -195,24 +211,48 @@ export default function ProgramSetupWizard() {
     await updateDraft.mutateAsync({ draftId: activeDraftId, draftJson: updates });
   }, [activeDraftId, updateDraft]);
 
-  // Autosave: debounced save after 2s of inactivity. Latest payload is also
-  // mirrored to pendingUpdatesRef so flushAutosave can persist it on demand.
+  // Autosave: debounced save after 2s of inactivity. Pending updates are
+  // MERGED (not replaced) so concurrent partial updates from different step
+  // components are never dropped. Latest payload is also mirrored to
+  // localStorage so a crash/close before the 2s elapses doesn't lose data.
   const handleUpdateDraftWithAutosave = useCallback((updates: Partial<ProgramSetupDraft['draft_json']>) => {
     if (!activeDraftId) return;
-    pendingUpdatesRef.current = updates;
+    pendingUpdatesRef.current = {
+      ...(pendingUpdatesRef.current ?? {}),
+      ...updates,
+    };
+    writeLocalBackup(pendingUpdatesRef.current);
     setAutosaveStatus('saving');
     if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
     autosaveTimerRef.current = setTimeout(async () => {
+      const payload = pendingUpdatesRef.current;
+      if (!payload) return;
       try {
-        await updateDraft.mutateAsync({ draftId: activeDraftId, draftJson: updates });
+        await updateDraft.mutateAsync({ draftId: activeDraftId, draftJson: payload });
         pendingUpdatesRef.current = null;
+        if (localKey) { try { localStorage.removeItem(localKey); } catch { /* noop */ } }
         setAutosaveStatus('saved');
         setTimeout(() => setAutosaveStatus('idle'), 2000);
       } catch {
         setAutosaveStatus('idle');
       }
     }, 2000);
-  }, [activeDraftId, updateDraft]);
+  }, [activeDraftId, updateDraft, writeLocalBackup, localKey]);
+
+  // Flush on tab hide / pagehide / beforeunload / unmount.
+  useEffect(() => {
+    const onHide = () => { void flushAutosave(); };
+    const onVis = () => { if (document.visibilityState === 'hidden') onHide(); };
+    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('pagehide', onHide);
+    window.addEventListener('beforeunload', onHide);
+    return () => {
+      document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('pagehide', onHide);
+      window.removeEventListener('beforeunload', onHide);
+      void flushAutosave();
+    };
+  }, [flushAutosave]);
 
   const handleDiscard = async () => {
     if (!activeDraftId) return;

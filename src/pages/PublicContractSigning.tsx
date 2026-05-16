@@ -20,8 +20,9 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import {
   Building2, FileText, PenTool, CheckCircle2, ArrowRight, ArrowLeft,
-  Shield, Loader2, AlertTriangle, Upload, X, Globe, FileUp, Mail
+  Shield, Loader2, AlertTriangle, Upload, X, Globe, FileUp, Mail, RotateCcw
 } from 'lucide-react';
+import { useContractDraftAutosave } from '@/hooks/useContractDraftAutosave';
 
 type WizardStep = 'company_data' | 'review_contract' | 'signing';
 
@@ -285,21 +286,48 @@ export default function PublicContractSigning() {
     }
   };
 
-  // Save company data
+  // Server save callback — used by autosave hook and by explicit save button.
+  const persistFormDataServer = async (payload: Record<string, unknown>) => {
+    const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
+      body: {
+        action: 'save_data',
+        token,
+        formData: payload,
+        documents: Object.fromEntries(
+          Object.entries(uploadedDocs).filter(([, v]) => v).map(([k, v]) => [k, v!.path])
+        ),
+      },
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+  };
+
+  const isSigned =
+    contract?.signature_status === 'signed' ||
+    contract?.signature_status === 'completed';
+
+  // Debounced autosave — every keystroke → localStorage; server save 1.5s debounced.
+  const autosave = useContractDraftAutosave<Record<string, unknown>>({
+    scopeKey: token ?? null,
+    namespace: 'contract-signing',
+    serverData: contract ? (contract as unknown as Record<string, unknown>) : null,
+    serverUpdatedAt: (contract as any)?.updated_at ?? null,
+    disabled: isSigned,
+    debounceMs: 1500,
+    serverSave: persistFormDataServer,
+  });
+
+  useEffect(() => {
+    if (!contract || isSigned) return;
+    autosave.trackChange(formData as unknown as Record<string, unknown>);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData]);
+
+  // Save company data (explicit, on "Next" button)
   const saveCompanyData = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
-        body: {
-          action: 'save_data',
-          token,
-          formData,
-          documents: Object.fromEntries(
-            Object.entries(uploadedDocs).filter(([, v]) => v).map(([k, v]) => [k, v!.path])
-          ),
-        },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      await autosave.flush();
+      await persistFormDataServer(formData as unknown as Record<string, unknown>);
     },
     onSuccess: () => {
       setCurrentStep('review_contract');
@@ -447,6 +475,51 @@ export default function PublicContractSigning() {
         {/* ===== Step 1: Company Data + Document Uploads ===== */}
         {currentStep === 'company_data' && (
           <div className="space-y-6">
+            {/* Restore-from-local-draft banner */}
+            {autosave.restoredFromLocal && autosave.restorePreview && (
+              <Card className="border-primary/30 bg-primary/5">
+                <CardContent className="p-3 flex items-start gap-3">
+                  <RotateCcw className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <div className="flex-1 text-xs">
+                    <p className="font-semibold">
+                      {isPt ? 'Encontrámos dados não guardados' : 'Unsaved data found'}
+                    </p>
+                    <p className="text-muted-foreground mt-0.5">
+                      {isPt ? 'Quer restaurar o rascunho?' : 'Restore your draft?'}
+                    </p>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="h-7 text-xs"
+                      onClick={() => {
+                        const draft = autosave.restorePreview as Partial<CompanyFormData> | null;
+                        if (draft) setFormData(prev => ({ ...prev, ...draft }));
+                        autosave.dismissRestoredBanner();
+                      }}
+                    >
+                      {isPt ? 'Restaurar' : 'Restore'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-xs"
+                      onClick={() => autosave.clearDraft()}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            {/* Save-status pill */}
+            <div className="text-[11px] text-muted-foreground text-right" aria-live="polite">
+              {autosave.status === 'saving' && (isPt ? 'A guardar…' : 'Saving…')}
+              {autosave.status === 'saved' && (isPt ? 'Guardado' : 'Saved')}
+              {autosave.status === 'local_only' && (isPt ? 'Guardado neste dispositivo' : 'Saved on this device')}
+              {autosave.status === 'error' && (isPt ? 'Erro ao guardar' : 'Save error')}
+            </div>
             {/* Company & Legal Rep Data */}
             <Card>
               <CardHeader>
