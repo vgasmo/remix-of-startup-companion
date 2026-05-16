@@ -519,11 +519,16 @@ Deno.serve(async (req) => {
         })
       }
 
+      // Explicit visible→persisted map for the public signing form.
       const { error: saveErr } = await supabase
         .from('startup_contracts')
         .update({
           legal_representative_name: formData.legal_representative_name,
           legal_representative_email: formData.legal_representative_email,
+          legal_representative_phone: formData.legal_representative_phone ?? null,
+          project_name: formData.project_name ?? null,
+          certidao_permanente_code: formData.certidao_permanente_code ?? null,
+          additional_representatives: Array.isArray(formData.additional_representatives) ? formData.additional_representatives : [],
           company_nif: formData.company_nif,
           company_address: formData.company_address,
           company_city: formData.company_city,
