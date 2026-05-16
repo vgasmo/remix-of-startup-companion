@@ -546,6 +546,46 @@ export default function PublicContractSigning() {
                 </CardContent>
               </Card>
             )}
+            {/* Server-newer-than-local conflict banner — never silently drop */}
+            {autosave.serverNewerThanLocal && autosave.staleLocalPreview && (
+              <Card className="border-amber-500/40 bg-amber-50 dark:bg-amber-950/20">
+                <CardContent className="p-3 flex items-start gap-3">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                  <div className="flex-1 text-xs">
+                    <p className="font-semibold">
+                      {isPt ? 'Versão mais recente no servidor' : 'Newer version on the server'}
+                    </p>
+                    <p className="text-muted-foreground mt-0.5">
+                      {isPt
+                        ? 'Foram guardadas alterações neste contrato depois do seu rascunho local. Recomendamos usar a versão do servidor.'
+                        : 'This contract was updated on the server after your local draft. We recommend keeping the server version.'}
+                    </p>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="h-7 text-xs"
+                      onClick={() => autosave.acceptServerVersion()}
+                    >
+                      {isPt ? 'Usar servidor' : 'Use server'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs"
+                      onClick={() => {
+                        const draft = autosave.staleLocalPreview as Partial<CompanyFormData> | null;
+                        if (draft) setFormData(prev => ({ ...prev, ...draft }));
+                        autosave.acceptServerVersion();
+                      }}
+                    >
+                      {isPt ? 'Restaurar local' : 'Restore local'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             {/* Save-status pill */}
             <div className="text-[11px] text-muted-foreground text-right" aria-live="polite">
               {autosave.status === 'saving' && (isPt ? 'A guardar…' : 'Saving…')}
