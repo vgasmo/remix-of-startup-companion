@@ -122,10 +122,10 @@ export default function PublicContractIntake() {
   // tab/window switch, refresh, accidental close. No server draft endpoint
   // exists for the intake yet — submit still goes through the existing
   // intake_submit_by_token action.
-  const autosave = useContractDraftAutosave<IntakeFormData>({
+  const autosave = useContractDraftAutosave<Record<string, unknown>>({
     scopeKey: token ?? null,
     namespace: 'contract-intake',
-    serverData: intake ? (intake as unknown as IntakeFormData) : null,
+    serverData: intake ? (intake as unknown as Record<string, unknown>) : null,
     serverUpdatedAt: intake?.updated_at ?? null,
     disabled: isSubmitted,
   });
