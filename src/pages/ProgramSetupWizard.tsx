@@ -239,6 +239,34 @@ export default function ProgramSetupWizard() {
     }, 2000);
   }, [activeDraftId, updateDraft, writeLocalBackup, localKey]);
 
+  // Crash recovery: if a localStorage backup exists and is newer than the
+  // server-side draft, replay it via debounced autosave so the user's last
+  // edits (typed in the seconds before a crash/close) make it back into the
+  // server draft. Runs once per (draftId, server updated_at) pair.
+  const recoveredKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!activeDraftId || !localKey || !draft) return;
+    const sig = `${activeDraftId}:${draft.updated_at ?? 'na'}`;
+    if (recoveredKeyRef.current === sig) return;
+    recoveredKeyRef.current = sig;
+    try {
+      const raw = localStorage.getItem(localKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { data?: Partial<ProgramSetupDraft['draft_json']>; updatedAt?: string };
+      if (!parsed?.data || !parsed.updatedAt) return;
+      const localTs = new Date(parsed.updatedAt).getTime();
+      const serverTs = draft.updated_at ? new Date(draft.updated_at).getTime() : 0;
+      if (localTs > serverTs) {
+        // Replay through the autosave path so it lands in server + clears local on success.
+        handleUpdateDraftWithAutosave(parsed.data);
+        toast.info(t('programSetup.restoredFromBackup', 'Restaurámos as últimas edições não guardadas.'));
+      } else {
+        // Server is newer — backup is stale.
+        try { localStorage.removeItem(localKey); } catch { /* noop */ }
+      }
+    } catch { /* noop */ }
+  }, [activeDraftId, localKey, draft, handleUpdateDraftWithAutosave, t]);
+
   // Flush on tab hide / pagehide / beforeunload / unmount.
   useEffect(() => {
     const onHide = () => { void flushAutosave(); };

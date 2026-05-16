@@ -65,17 +65,14 @@ export function BookingLinksManager() {
     mutationFn: async () => {
       if (!user) throw new Error('Not authenticated');
 
-      const tokenBytes = new Uint8Array(32);
-      crypto.getRandomValues(tokenBytes);
-      const token = Array.from(tokenBytes)
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
-
-      const encoder = new TextEncoder();
-      const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(token));
-      const tokenHash = Array.from(new Uint8Array(hashBuffer))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
+      // Use the shared booking-token helpers so token format & hashing stay
+      // identical across BookingLinksManager, IntakeRoutingManager, and any
+      // future surface that creates public booking links. The DB stores only
+      // the SHA-256 hash; the plaintext is returned once and embedded in the
+      // copied share URL.
+      const { generateBookingToken, sha256Hex } = await import('@/lib/bookingTokens');
+      const token = generateBookingToken();
+      const tokenHash = await sha256Hex(token);
 
       const { data: profile } = await supabase
         .from('profiles')
