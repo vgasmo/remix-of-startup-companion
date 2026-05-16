@@ -92,7 +92,7 @@ export const FounderJourneyMap = memo(function FounderJourneyMap({ currentStage 
                     isCompleted && 'text-foreground/80',
                     isLocked && 'text-muted-foreground/50',
                   )}>
-                    {t(`stages.${stage.key}`, stage.label)}
+                    {t(stage.i18nKey, { defaultValue: stage.fallback })}
                   </span>
 
                   {/* Current indicator */}
