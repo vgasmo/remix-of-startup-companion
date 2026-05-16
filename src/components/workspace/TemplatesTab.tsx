@@ -18,7 +18,6 @@ import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { 
   useTemplates, 
   useTemplateInstances, 
-  useUpsertTemplateInstance,
   useCompleteTemplateInstance,
   useSubmitForReview,
   useReviewTemplateInstance,
