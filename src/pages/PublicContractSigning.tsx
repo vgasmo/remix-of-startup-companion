@@ -286,21 +286,48 @@ export default function PublicContractSigning() {
     }
   };
 
-  // Save company data
+  // Server save callback — used by autosave hook and by explicit save button.
+  const persistFormDataServer = async (payload: Record<string, unknown>) => {
+    const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
+      body: {
+        action: 'save_data',
+        token,
+        formData: payload,
+        documents: Object.fromEntries(
+          Object.entries(uploadedDocs).filter(([, v]) => v).map(([k, v]) => [k, v!.path])
+        ),
+      },
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+  };
+
+  const isSigned =
+    contract?.signature_status === 'signed' ||
+    contract?.signature_status === 'completed';
+
+  // Debounced autosave — every keystroke → localStorage; server save 1.5s debounced.
+  const autosave = useContractDraftAutosave<Record<string, unknown>>({
+    scopeKey: token ?? null,
+    namespace: 'contract-signing',
+    serverData: contract ? (contract as unknown as Record<string, unknown>) : null,
+    serverUpdatedAt: (contract as any)?.updated_at ?? null,
+    disabled: isSigned,
+    debounceMs: 1500,
+    serverSave: persistFormDataServer,
+  });
+
+  useEffect(() => {
+    if (!contract || isSigned) return;
+    autosave.trackChange(formData as unknown as Record<string, unknown>);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData]);
+
+  // Save company data (explicit, on "Next" button)
   const saveCompanyData = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
-        body: {
-          action: 'save_data',
-          token,
-          formData,
-          documents: Object.fromEntries(
-            Object.entries(uploadedDocs).filter(([, v]) => v).map(([k, v]) => [k, v!.path])
-          ),
-        },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      await autosave.flush();
+      await persistFormDataServer(formData as unknown as Record<string, unknown>);
     },
     onSuccess: () => {
       setCurrentStep('review_contract');
