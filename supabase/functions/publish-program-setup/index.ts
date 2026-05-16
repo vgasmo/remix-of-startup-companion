@@ -742,7 +742,7 @@ Deno.serve(async (req) => {
 
     const { error: draftErr } = await supabase
       .from('program_setup_drafts')
-      .update({ status: 'published', program_id: programId })
+      .update({ status: 'published', program_id: programId, program_snapshot_json: null, last_publish_rollback_status: null })
       .eq('id', draft_id);
     if (draftErr) throw new Error(`Failed to mark draft published: ${draftErr.message}`);
 
