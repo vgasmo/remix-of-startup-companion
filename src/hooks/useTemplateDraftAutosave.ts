@@ -163,7 +163,7 @@ export function useTemplateDraftAutosave({
       }
       return true;
     } catch (err) {
-      logger.warn('template-draft: server save failed, keeping local draft', { templateId }, err as Error);
+      logger.error('template-draft: server save failed, keeping local draft', { templateId }, err);
       persistLocal();
       setStatus('local_only');
       return false;
