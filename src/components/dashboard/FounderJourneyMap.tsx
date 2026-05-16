@@ -10,11 +10,11 @@ interface FounderJourneyMapProps {
 }
 
 const JOURNEY_STAGES = [
-  { key: 'idea', icon: Lightbulb, label: 'Ideia', color: 'from-violet-500 to-purple-500' },
-  { key: 'mvp', icon: Cpu, label: 'MVP', color: 'from-blue-500 to-cyan-500' },
-  { key: 'validation', icon: FlaskConical, label: 'Validação', color: 'from-emerald-500 to-green-500' },
-  { key: 'scaling', icon: TrendingUp, label: 'Escalamento', color: 'from-amber-500 to-orange-500' },
-  { key: 'growth', icon: Rocket, label: 'Crescimento', color: 'from-rose-500 to-pink-500' },
+  { key: 'idea', icon: Lightbulb, i18nKey: 'founder.journeyStages.idea', fallback: 'Ideia', color: 'from-violet-500 to-purple-500' },
+  { key: 'mvp', icon: Cpu, i18nKey: 'founder.journeyStages.mvp', fallback: 'MVP', color: 'from-blue-500 to-cyan-500' },
+  { key: 'validation', icon: FlaskConical, i18nKey: 'founder.journeyStages.validation', fallback: 'Validação', color: 'from-emerald-500 to-green-500' },
+  { key: 'scaling', icon: TrendingUp, i18nKey: 'founder.journeyStages.scaling', fallback: 'Escalamento', color: 'from-amber-500 to-orange-500' },
+  { key: 'growth', icon: Rocket, i18nKey: 'founder.journeyStages.growth', fallback: 'Crescimento', color: 'from-rose-500 to-pink-500' },
 ] as const;
 
 function getStageIndex(stage?: string | null): number {
