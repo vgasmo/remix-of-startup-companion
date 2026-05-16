@@ -801,8 +801,28 @@ function TemplateEditorDialog({
                 ) : null}
               </div>
             )}
+            {schema.sections.length > 1 && (
+              <nav
+                aria-label={t('templates.sectionNav', { defaultValue: 'Sections' })}
+                className="sticky top-0 z-10 -mx-6 px-6 py-2 bg-background/95 backdrop-blur border-b flex flex-wrap gap-2"
+              >
+                {schema.sections.map((section, sIdx) => (
+                  <button
+                    key={sIdx}
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById(`tpl-section-${sIdx}`);
+                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                    className="text-xs px-2.5 py-1 rounded-full border border-border bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {sIdx + 1}. {translateSectionTitle(section.title, t)}
+                  </button>
+                ))}
+              </nav>
+            )}
             {schema.sections.map((section, sIdx) => (
-              <div key={sIdx} className="space-y-4">
+              <div key={sIdx} id={`tpl-section-${sIdx}`} className="space-y-4 scroll-mt-16">
                 <div>
                   <h3 className="font-medium text-sm">{translateSectionTitle(section.title, t)}</h3>
                   {section.description && (
