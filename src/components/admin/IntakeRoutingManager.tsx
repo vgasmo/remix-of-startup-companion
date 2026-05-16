@@ -438,8 +438,10 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
                 <TableBody>
                   {bookingLinks.map(link => (
                     <TableRow key={link.id}>
-                      <TableCell className="font-mono text-sm">
-                        /book/{link.token_hash.slice(0, 8)}...
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {/* SECURITY: plaintext token is unrecoverable after creation.
+                            Admin must use "Create new link" → it copies the URL once. */}
+                        #{link.token_hash.slice(0, 8)}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {new Date(link.created_at).toLocaleDateString()}
@@ -449,24 +451,9 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleCopyLink(link.token_hash)}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                          >
-                            <a href={`/book/${link.token_hash}`} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="h-4 w-4" />
-                            </a>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
                             onClick={() => deleteLinkMutation.mutate(link.id)}
                             className="text-destructive"
+                            title={t('admin.intakeRouting.revoke', 'Revoke link')}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
