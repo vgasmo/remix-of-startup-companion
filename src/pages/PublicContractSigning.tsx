@@ -287,12 +287,40 @@ export default function PublicContractSigning() {
   };
 
   // Server save callback — used by autosave hook and by explicit save button.
+  //
+  // SAFETY: This UI does not render `certidao_permanente_code` or
+  // `additional_representatives`. We therefore strip any field that isn't
+  // actually present in the visible formData before sending to the server,
+  // so autosave can never overwrite those hidden DB values with null/[].
+  // (The edge function also enforces this with an allow-list — defense in depth.)
+  const pickPresentFields = (
+    src: Record<string, unknown>,
+    allowed: ReadonlyArray<keyof CompanyFormData>,
+  ): Record<string, unknown> => {
+    const out: Record<string, unknown> = {};
+    for (const k of allowed) {
+      if (Object.prototype.hasOwnProperty.call(src, k)) out[k as string] = src[k as string];
+    }
+    return out;
+  };
+  const VISIBLE_KEYS: ReadonlyArray<keyof CompanyFormData> = [
+    'legal_representative_name',
+    'legal_representative_email',
+    'legal_representative_phone',
+    'company_nif',
+    'company_address',
+    'company_city',
+    'company_postal_code',
+    'project_name',
+  ];
+
   const persistFormDataServer = async (payload: Record<string, unknown>) => {
+    const safePayload = pickPresentFields(payload, VISIBLE_KEYS);
     const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
       body: {
         action: 'save_data',
         token,
-        formData: payload,
+        formData: safePayload,
         documents: Object.fromEntries(
           Object.entries(uploadedDocs).filter(([, v]) => v).map(([k, v]) => [k, v!.path])
         ),
