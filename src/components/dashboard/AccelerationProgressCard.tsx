@@ -129,6 +129,16 @@ export const AccelerationProgressCard = memo(function AccelerationProgressCard({
               <CalendarDays className="h-3 w-3" />
               {t('workspace.currentWeek', { week, defaultValue: 'Semana {{week}}' })}
             </Badge>
+            {nextGate && weeksToNextGate !== null && weeksToNextGate > 0 && (
+              <Badge variant="outline" className="text-xs gap-1 border-primary/30 text-primary">
+                <Flag className="h-3 w-3" />
+                {t('founder.nextGateIn', {
+                  name: nextGate.name,
+                  count: weeksToNextGate,
+                  defaultValue: 'Próximo gate ({{name}}) em {{count}} sem.'
+                })}
+              </Badge>
+            )}
           </div>
         </div>
 
