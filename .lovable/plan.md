@@ -1,224 +1,88 @@
-# v3.0 Plan — Mobile + Intelligence
+# Template Hotfix Plan — Data Loss & Scroll Reliability
 
-Sequencing (approved): **A) plan first → C) Mentor Impact dashboard → B) Quick wins**.
-Mobile direction (approved): **Full PWA with offline** (preview-safe).
+Live incident: founders lose typed template work. This plan adds a robust autosave layer, fixes canvas duplicates, repairs scroll, and closes the i18n lint gap. No destructive migration.
 
----
+## 1. New autosave hook — `src/hooks/useTemplateDraftAutosave.ts`
 
-## A. Mobile + Intelligence Plan (this document)
+A single reusable hook used by both the regular template editor and the canvas wrapper.
 
-### A.1 Full PWA with offline — preview-safe rollout
+Inputs: `workspaceId`, `templateId`, `userId`, `existingInstance?`, `initialData`.
 
-Constraint: Lovable preview runs the app inside an iframe. A naive
-`vite-plugin-pwa` setup will cache stale builds, break preview navigation,
-and intercept `/~oauth`. We follow the platform's documented PWA guard.
+Behavior:
+- Internal `data` state seeded from server instance, else from localStorage draft, else `initialData`.
+- localStorage key: `template-draft:${workspaceId}:${templateId}:${userId}`. Stores `{ data, updatedAt, instanceId }`.
+- On mount: if local draft is newer than server `updated_at`, restore it and expose `restoredFromLocal = true` so the UI can show a "Rascunho recuperado" banner.
+- `setField(path, value)` updates state, marks dirty, writes localStorage immediately, schedules debounced server save (850ms).
+- Server save uses `useUpsertTemplateInstance` (already supports `existingId`). After first successful insert we cache the returned `id` in a ref so subsequent saves update the same row — fixes the canvas duplicate bug regardless of prop staleness.
+- `flush()`: cancels timer and awaits a pending save (returns success/failure).
+- Flush triggers wired in the hook itself:
+  - `visibilitychange` (document hidden)
+  - `pagehide` / `beforeunload` (sync localStorage write + best-effort server flush)
+  - unmount (`useEffect` cleanup awaits flush before clearing timer)
+- Status state machine: `idle | saving | saved | local_only | error` plus `lastSavedAt`. Exposed for status pills.
+- On Supabase failure: keep localStorage draft, set `local_only`, toast once with calm PT-PT copy "Guardado localmente. Vamos sincronizar quando a ligação voltar."
+- After a successful server save matching the local draft, clear the local draft entry.
 
-**Steps**
-1. `bun add -D vite-plugin-pwa workbox-window`
-2. `vite.config.ts` — add `VitePWA` with:
-   - `registerType: "autoUpdate"`
-   - `devOptions: { enabled: false }` (never run SW in Lovable editor)
-   - `workbox.navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//, /^\/auth\//]`
-   - Precache **icons + manifest only** (per
-     `mem://infrastructure/app-version-cache-and-lifecycle-policy-v2`).
-     JS/CSS use `NetworkFirst`, never `CacheFirst`.
-3. `manifest.json`: name, short_name, theme/background from design tokens
-   (HSL → hex once), maskable icons 192/512, `display: "standalone"`,
-   `start_url: "/"`, `scope: "/"`, `lang: "pt-PT"`.
-4. Icons in `public/pwa/`: 192, 512, 512-maskable. Generate via imagegen
-   from existing brand mark.
-5. `src/main.tsx` — add the iframe + preview-host guard. If detected:
-   unregister any existing SW and skip registration. Only call
-   `registerSW()` outside iframe and on production hosts
-   (`fb.startupleiria.com`, `*.lovable.app` published — NOT
-   `id-preview--*.lovable.app`).
-6. Founder Home install prompt (`beforeinstallprompt` capture +
-   dismissable banner once per 30 days, stored in `localStorage`).
-7. Offline fallback page `/offline` shown by Workbox `navigateFallback`
-   when a navigation request fails. Read-only "you're offline" copy with
-   "Retry" — no fake data.
-8. Verify: published build registers SW; preview build does not. Check
-   `Application → Service Workers` in DevTools on both URLs.
+## 2. Regular template editor (`TemplateEditorDialog` inside `TemplatesTab.tsx`)
 
-**Out of scope this phase**: background sync of check-ins, push
-notifications, native share targets — defer to v3.1.
+- Replace ad-hoc `useState` field map with the autosave hook.
+- Every `onChange` calls `setField` (no explicit Save required).
+- Field `onBlur` calls `flush()`.
+- Dialog `onOpenChange(false)` and the footer Close button both go through one `guardedClose()` that:
+  1. calls `flush()`,
+  2. if `error` and dirty, opens existing `ConfirmDialog` ("Tem alterações não sincronizadas. Sair e manter cópia local?"),
+  3. otherwise closes.
+- Footer:
+  - "Save" → "Guardar agora", calls `flush()`.
+  - "Marcar como concluído" and "Submeter para revisão" are `disabled` while status is `saving` or `local_only`; they `await flush()` first and abort if it fails.
+- Add an `AutosaveStatus` inline component (small text + dot) shown next to the dialog title and in the footer: `A guardar…`, `Guardado às HH:mm`, `Cópia local guardada`, `Falha ao guardar`.
+- Add a "Precisa de ajuda?" ghost button in the header that opens existing AI assistant (reuse `AskAiMenu` trigger via a custom event or simple link to help — minimal: dispatch `window.dispatchEvent(new CustomEvent('open-ai-assistant'))` already used elsewhere; fall back to navigating `/help`).
+- Restored-from-local banner: `Alert` with calm copy above the form.
 
-### A.2 Intelligence layer (deferred to its own loop)
+## 3. Canvas templates (`CanvasTemplate.tsx` + `CanvasTemplateWrapper` in `TemplatesTab.tsx`)
 
-Tracked here for visibility, not built now:
-- KPI auto-ingestion (Stripe/Xero/QuickBooks).
-- Predictive churn signals on Silent Disengagement Detector.
-- AI-suggested next action on Work Queue items.
+- Wrapper switches to `useTemplateDraftAutosave` (same hook).
+- Pass `setField` down so `CanvasTemplate` updates state on every keystroke of `editValue` (autosave), not only on the per-section Save button.
+- Section-level Save button remains as "Confirmar secção" UX affordance but is no longer the only persistence path.
+- On `editingSection` change or component unmount, the wrapper calls `flush()` so the currently edited section text is committed.
+- Instance id cached in a ref inside the hook — eliminates duplicate inserts during rapid typing on a fresh canvas (the original `existingId` prop staleness bug).
+- App-level dedupe safeguard: on hook init, if `instances` for this template_id has >1 row, pick newest `updated_at`, shallow-merge `data_json` from older rows where keys are missing, and remember its id. Older rows are left untouched (no destructive deletes in this hotfix).
+- A separate, safe deduplication+unique-index migration is prepared **but not run** in this PR — noted as follow-up so it can be reviewed offline.
 
----
+## 4. Scroll and layout
 
-## C. Mentor Impact Dashboard (next loop — implementation)
+- `Dialog` content for `TemplateEditorDialog`: `max-h-[90vh]` + flex column. Header and footer `shrink-0`; middle wrapped in `<ScrollArea className="flex-1 min-h-0 pr-4">`. Mobile width `w-[95vw]`.
+- `CanvasTemplate` outer container: `h-[calc(90vh-8rem)] min-h-0 flex flex-col`. Horizontal scroller wraps in `overflow-x-auto`; each section card uses `max-h-full overflow-y-auto` so vertical content inside sections scrolls independently. Long checklist fields get `max-h-64 overflow-y-auto`.
+- Verified on 360px and 1280px viewports via browser tool.
 
-### C.1 Audit of what already exists
-- `src/components/mentors/MentorImpactDashboard.tsx` — shell exists.
-- `src/components/mentor/MentorImpactPanel.tsx` — fragment.
-- `src/components/mentor/MentorOpenLoops.tsx` — open follow-ups.
-- DB ready: `sessions`, `session_feedback`, `mentor_connections`,
-  `consultant_notes` (Quick Notes by mentors).
+## 5. i18n
 
-Action: consolidate into a **single canonical**
-`/mentors/impact` route under `src/pages/mentor/Impact.tsx`, reusing
-existing components, deleting `MentorImpactPanel.tsx` if redundant.
+- Add key `crm.linkCopyFailed` to `src/i18n/locales/pt.json` ("Falha ao gerar o link") and `en.json` ("Failed to generate link").
+- Add new keys used by autosave UI under `templates.autosave.*` (PT + EN parity): `saving`, `savedAt`, `localOnly`, `failed`, `restoredBanner`, `needHelp`, `saveNow`, `unsavedExitConfirm`.
+- Run `node scripts/i18n-check.cjs` and `node scripts/i18n-lint.mjs` to confirm green.
 
-### C.2 Sections (all four approved)
+## 6. Verification
 
-1. **Sessions delivered + hours contributed**
-   - Hook: `useMentorSessionStats(mentorUserId)`
-   - Query: `sessions` where `mentor_id = me` AND `status = 'completed'`,
-     aggregate `count` + `sum(duration_minutes)`.
-   - KPIs: all-time, last 30 days, last 90 days. Sparkline by week.
+- `bun run typecheck`
+- `bun run test` (if present)
+- `node scripts/i18n-check.cjs`, `node scripts/i18n-lint.mjs`, `node scripts/secret-scan.cjs`
+- Manual browser smoke for the 8 scenarios in the brief (tab switch, dialog close/reopen, route switch, simulated network failure via offline toggle in code path, canvas rapid type → single instance, mobile scroll, submit-for-review awaits flush).
 
-2. **Startups helped + current assignments**
-   - Hook: `useMentorAssignments(mentorUserId)`
-   - Query: `mentor_connections` where `mentor_user_id = me` AND
-     `status = 'accepted'`, join `workspaces` → `startups` for stage,
-     health score, last interaction.
-   - Card grid; click → workspace overview (respect NDA gate).
+## Out of scope (explicit)
 
-3. **Open loops / follow-ups**
-   - Reuse `MentorOpenLoops.tsx`.
-   - Sources: Quick Notes (`consultant_notes` where author = me AND
-     `resolved_at IS NULL`), action items mentor created, pending
-     session recap notes.
+- No changes to programs/cohorts/contracts/CRM logic beyond the one missing i18n key.
+- No DB migration in this PR; dedupe handled at app level. Migration drafted separately.
+- No change to review/approval semantics besides gating on flush success.
 
-4. **Founder feedback / ratings**
-   - Hook: `useMentorFeedback(mentorUserId)`
-   - Query: `session_feedback` joined to `sessions` where
-     `mentor_id = me`. Show `avg(rating)`, count, latest 5 anonymized
-     comments (no founder names if `is_anonymous = true`).
-   - Empty state honest: "No feedback yet" — no fake stars.
+## Files touched
 
-### C.3 Privacy + RLS
-- All queries scoped via existing RLS (`is_connected_mentor`,
-  `has_workspace_access`).
-- No PII leakage: feedback comments through `profiles_safe` view if
-  reviewer info is shown; otherwise anonymous.
-- i18n: every string in `src/i18n/locales/{pt,en}.json` under
-  `mentor.impact.*`. PT-PT first, EN parity. Zero hardcoded strings
-  (per `mem://infrastructure/unified-i18n-and-content-trust-standards-v4`).
+- New: `src/hooks/useTemplateDraftAutosave.ts`
+- Edit: `src/components/workspace/TemplatesTab.tsx` (editor dialog, canvas wrapper, autosave wiring, scroll classes, help CTA, banner)
+- Edit: `src/components/workspace/CanvasTemplate.tsx` (scroll classes, propagate live edits up via callback, flush on section change/unmount)
+- Edit: `src/i18n/locales/pt.json`, `src/i18n/locales/en.json`
 
-### C.4 Navigation
-- Add "Impact" tab to mentor area sidebar/top nav, after "Sessions".
-- Add `BackToHomeLink` (per
-  `mem://architecture/navigation-resilience-standards`).
+## Technical notes
 
-### C.5 Verification checklist
-- Mentor with 0 sessions → all four sections show empty states (no NaN, no crash).
-- Mentor with sessions in multiple workspaces → counts match raw SQL.
-- Founder cannot reach `/mentors/impact` (route guard).
-- PT and EN parity (key count diff = 0).
-
----
-
-## B. Quick wins (loop after C)
-
-All four approved.
-
-### B.1 Work Queue keyboard shortcuts (`j`/`k`/`e`/`c`)
-- `src/components/work-queue/WorkQueueList.tsx`: add `useHotkeys`
-  (already in deps) — `j`/`k` move focus, `e` open detail, `c` mark
-  complete via existing mutation. Skip when focus is in input/textarea.
-- Discoverability: `?` opens existing shortcut help dialog (extend list).
-
-### B.2 Bulk actions bar (Work Queue + CRM)
-- New `src/components/shared/BulkActionsBar.tsx` (sticky bottom).
-- Selection state via `useSelection` hook (Set of ids).
-- Work Queue actions: Complete, Snooze, Reassign.
-- CRM actions: Move stage, Assign consultant, Archive.
-- Each action calls existing single-item mutation in a `Promise.all`
-  with batched `toast.promise()` — surfaces partial failures honestly
-  (per `mem://features/contracts/manual-action-honesty.md` principle).
-- No new RPCs; respects existing RLS.
-
-### B.3 Founder welcome wizard (3 steps)
-- `src/components/founder/WelcomeWizard.tsx` — Sheet/Dialog.
-- Steps: (1) confirm profile (logo, contact phone, NIF if missing),
-  (2) pick first template from `templates` (Lean Canvas or Pitch Deck),
-  (3) schedule first session with assigned consultant (reuses
-  `MentorBookingPanel` infra).
-- Trigger: `profiles.has_seen_welcome_wizard` boolean
-  (migration). Show on `TransitionalFounderDashboard` after
-  `needs_onboarding` flips false, **only if** booleans missing.
-- Persist across devices in DB, not localStorage.
-- Dismissable; "Skip for now" sets the flag.
-
-### B.4 Milestone celebrations (confetti + toast)
-- `bun add canvas-confetti @types/canvas-confetti`
-- Hook `useCelebration()` triggers on:
-  - first template submitted (per workspace),
-  - milestone completed (any),
-  - first weekly check-in submitted.
-- Idempotency via `workspace_celebrations` table:
-  `{workspace_id, event_key, fired_at}` unique. Edge function or
-  trigger inserts the row; frontend listens via Realtime channel and
-  fires confetti + sonner toast.
-- Reduced motion: respect `prefers-reduced-motion` — toast only.
-
----
-
-## Files expected to change (plan only)
-
-### A.1 PWA
-- `vite.config.ts` (modify)
-- `public/manifest.webmanifest` (new)
-- `public/pwa/icon-192.png`, `icon-512.png`, `icon-512-maskable.png` (new)
-- `src/main.tsx` (guarded SW registration)
-- `src/pages/Offline.tsx` (new)
-- `src/components/pwa/InstallPrompt.tsx` (new)
-- `index.html` (manifest link, theme-color meta)
-
-### C Mentor Impact
-- `src/pages/mentor/Impact.tsx` (new)
-- `src/hooks/useMentorSessionStats.ts` (new)
-- `src/hooks/useMentorAssignments.ts` (new)
-- `src/hooks/useMentorFeedback.ts` (new)
-- `src/components/mentors/MentorImpactDashboard.tsx` (rewire)
-- `src/components/mentor/MentorImpactPanel.tsx` (delete if redundant)
-- `src/App.tsx` (route)
-- `src/i18n/locales/{pt,en}.json` (`mentor.impact.*`)
-
-### B Quick wins
-- `src/components/work-queue/WorkQueueList.tsx` (hotkeys)
-- `src/components/shared/BulkActionsBar.tsx` (new)
-- `src/hooks/useSelection.ts` (new)
-- `src/components/founder/WelcomeWizard.tsx` (new)
-- `src/components/founder/TransitionalFounderDashboard.tsx` (mount wizard)
-- `src/components/celebrations/useCelebration.ts` (new)
-- migrations:
-  - add `profiles.has_seen_welcome_wizard boolean default false`
-  - create `workspace_celebrations` table + RLS + realtime publication
-
-## Migrations (plan only)
-
-1. `alter table profiles add column has_seen_welcome_wizard boolean default false`
-2. `create table workspace_celebrations (...)` + RLS (`has_workspace_access`)
-   + `alter publication supabase_realtime add table workspace_celebrations`
-
-## Verification commands (to run after each loop)
-
-- `bun run build` — must pass with PWA plugin.
-- DevTools: Service Worker registered ONLY on `fb.startupleiria.com`
-  and published `*.lovable.app`, NOT on `id-preview--*`.
-- `psql -c "select count(*) from sessions where mentor_id = '<id>'"`
-  vs UI counter parity.
-- i18n parity: `node scripts/check-i18n-parity.mjs` (key diff = 0).
-- Lighthouse PWA score ≥ 90 on published URL.
-
-## Risks / intentionally not touched
-
-- **Frozen flows**: contract lifecycle, intake state machine, mentor NDA
-  acceptance flow — untouched. Quick wins only add UI affordances on top.
-- **Offline writes**: not implemented this phase. Offline = read-only +
-  graceful fallback. Background sync deferred to v3.1.
-- **Push notifications**: not in scope. Requires VAPID keys + user
-  permission flows; treat as v3.2.
-- **Native app**: explicitly deferred. Capacitor not added.
-- **Mentor Impact "ratings"**: only shown if `session_feedback` rows
-  exist — never fabricated.
-- **Bulk actions**: no new server RPCs; bounded by existing per-item
-  RLS to avoid privilege escalation.
+- `useUpsertTemplateInstance` already accepts `existingId`; the hook owns the canonical id via `useRef` after the first insert, so prop staleness is moot.
+- `beforeunload`/`pagehide` only guarantees the localStorage write; Supabase calls there are best-effort (`navigator.sendBeacon` not used because the SDK signs requests — acceptable since localStorage covers recovery).
+- All new strings translated PT-PT first, EN parity required by `i18n-lint`.
