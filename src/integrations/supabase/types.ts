@@ -1139,9 +1139,11 @@ export type Database = {
       }
       contract_intakes: {
         Row: {
+          additional_representatives: Json
           approved_data_snapshot: Json | null
           assigned_to: string | null
           billing_email: string | null
+          certidao_permanente_code: string | null
           changes_requested_notes: string | null
           company_address: string | null
           company_city: string | null
@@ -1164,6 +1166,7 @@ export type Database = {
           legal_representative_phone: string | null
           missing_documents: string[] | null
           organization_name: string | null
+          project_name: string | null
           reminder_count: number | null
           review_notes: string | null
           reviewed_at: string | null
@@ -1175,9 +1178,11 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          additional_representatives?: Json
           approved_data_snapshot?: Json | null
           assigned_to?: string | null
           billing_email?: string | null
+          certidao_permanente_code?: string | null
           changes_requested_notes?: string | null
           company_address?: string | null
           company_city?: string | null
@@ -1200,6 +1205,7 @@ export type Database = {
           legal_representative_phone?: string | null
           missing_documents?: string[] | null
           organization_name?: string | null
+          project_name?: string | null
           reminder_count?: number | null
           review_notes?: string | null
           reviewed_at?: string | null
@@ -1211,9 +1217,11 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          additional_representatives?: Json
           approved_data_snapshot?: Json | null
           assigned_to?: string | null
           billing_email?: string | null
+          certidao_permanente_code?: string | null
           changes_requested_notes?: string | null
           company_address?: string | null
           company_city?: string | null
@@ -1236,6 +1244,7 @@ export type Database = {
           legal_representative_phone?: string | null
           missing_documents?: string[] | null
           organization_name?: string | null
+          project_name?: string | null
           reminder_count?: number | null
           review_notes?: string | null
           reviewed_at?: string | null
@@ -6126,6 +6135,7 @@ export type Database = {
       }
       startup_contracts: {
         Row: {
+          additional_representatives: Json
           archive_attempt_count: number | null
           archive_checksum: string | null
           archive_filename: string | null
@@ -6135,6 +6145,7 @@ export type Database = {
           archived_at: string | null
           billing_day: number | null
           building_id: string | null
+          certidao_permanente_code: string | null
           company_address: string | null
           company_city: string | null
           company_country: string | null
@@ -6169,6 +6180,7 @@ export type Database = {
           last_price_review_date: string | null
           legal_representative_email: string | null
           legal_representative_name: string | null
+          legal_representative_phone: string | null
           monthly_fee: number
           next_price_review_date: string | null
           notes: string | null
@@ -6182,6 +6194,7 @@ export type Database = {
           pricing_line_id: string | null
           pricing_snapshot_json: Json | null
           pricing_version_id: string | null
+          project_name: string | null
           provider_completed_at: string | null
           provider_document_id: string | null
           provider_last_error: string | null
@@ -6208,6 +6221,7 @@ export type Database = {
           workspace_id: string | null
         }
         Insert: {
+          additional_representatives?: Json
           archive_attempt_count?: number | null
           archive_checksum?: string | null
           archive_filename?: string | null
@@ -6217,6 +6231,7 @@ export type Database = {
           archived_at?: string | null
           billing_day?: number | null
           building_id?: string | null
+          certidao_permanente_code?: string | null
           company_address?: string | null
           company_city?: string | null
           company_country?: string | null
@@ -6251,6 +6266,7 @@ export type Database = {
           last_price_review_date?: string | null
           legal_representative_email?: string | null
           legal_representative_name?: string | null
+          legal_representative_phone?: string | null
           monthly_fee?: number
           next_price_review_date?: string | null
           notes?: string | null
@@ -6264,6 +6280,7 @@ export type Database = {
           pricing_line_id?: string | null
           pricing_snapshot_json?: Json | null
           pricing_version_id?: string | null
+          project_name?: string | null
           provider_completed_at?: string | null
           provider_document_id?: string | null
           provider_last_error?: string | null
@@ -6290,6 +6307,7 @@ export type Database = {
           workspace_id?: string | null
         }
         Update: {
+          additional_representatives?: Json
           archive_attempt_count?: number | null
           archive_checksum?: string | null
           archive_filename?: string | null
@@ -6299,6 +6317,7 @@ export type Database = {
           archived_at?: string | null
           billing_day?: number | null
           building_id?: string | null
+          certidao_permanente_code?: string | null
           company_address?: string | null
           company_city?: string | null
           company_country?: string | null
@@ -6333,6 +6352,7 @@ export type Database = {
           last_price_review_date?: string | null
           legal_representative_email?: string | null
           legal_representative_name?: string | null
+          legal_representative_phone?: string | null
           monthly_fee?: number
           next_price_review_date?: string | null
           notes?: string | null
@@ -6346,6 +6366,7 @@ export type Database = {
           pricing_line_id?: string | null
           pricing_snapshot_json?: Json | null
           pricing_version_id?: string | null
+          project_name?: string | null
           provider_completed_at?: string | null
           provider_document_id?: string | null
           provider_last_error?: string | null
