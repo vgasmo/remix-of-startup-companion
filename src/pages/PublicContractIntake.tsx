@@ -22,8 +22,9 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
   Building2, CheckCircle2,
-  Shield, Loader2, AlertTriangle, Upload, Globe, Info
+  Shield, Loader2, AlertTriangle, Upload, Globe, Info, RotateCcw, X
 } from 'lucide-react';
+import { useContractDraftAutosave } from '@/hooks/useContractDraftAutosave';
 
 interface RepresentativeEntry {
   name: string;
