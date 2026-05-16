@@ -988,6 +988,7 @@ function TemplateFormField({ field, value, onChange, onBlur, disabled }: Templat
           <Input
             value={(value as string) || ''}
             onChange={e => onChange(e.target.value)}
+            onBlur={onBlur}
             placeholder={field.placeholder}
             disabled={disabled}
           />
@@ -998,6 +999,7 @@ function TemplateFormField({ field, value, onChange, onBlur, disabled }: Templat
           <Textarea
             value={(value as string) || ''}
             onChange={e => onChange(e.target.value)}
+            onBlur={onBlur}
             placeholder={field.placeholder}
             rows={field.rows || 3}
             disabled={disabled}
@@ -1010,6 +1012,7 @@ function TemplateFormField({ field, value, onChange, onBlur, disabled }: Templat
             type="number"
             value={(value as number) ?? ''}
             onChange={e => onChange(e.target.value ? parseFloat(e.target.value) : null)}
+            onBlur={onBlur}
             placeholder={field.placeholder}
             disabled={disabled}
           />
