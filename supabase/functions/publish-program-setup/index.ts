@@ -311,7 +311,7 @@ Deno.serve(async (req) => {
           supabase.from('program_gates').select('*').eq('program_id', programId),
           supabase.from('program_weeks').select('*').eq('program_id', programId),
           supabase.from('program_alert_rules').select('*').eq('program_id', programId),
-          supabase.from('program_health_models').select('*').eq('program_id', programId),
+          supabase.from('program_health_model').select('*').eq('program_id', programId),
         ]);
         const playbookIds = (playbooksRows.data ?? []).map((p: { id: string }) => p.id);
         const playbookItemsRows = playbookIds.length
@@ -327,7 +327,7 @@ Deno.serve(async (req) => {
           program_gates: gatesRows.data ?? [],
           program_weeks: weeksRows.data ?? [],
           program_alert_rules: alertRulesRows.data ?? [],
-          program_health_models: healthRows.data ?? [],
+          program_health_model: healthRows.data ?? [],
         };
         await supabase
           .from('program_setup_drafts')
@@ -816,7 +816,7 @@ Deno.serve(async (req) => {
               supabase.from('program_weeks').delete().eq('program_id', restoreProgramId),
               supabase.from('program_gates').delete().eq('program_id', restoreProgramId),
               supabase.from('program_alert_rules').delete().eq('program_id', restoreProgramId),
-              supabase.from('program_health_models').delete().eq('program_id', restoreProgramId),
+              supabase.from('program_health_model').delete().eq('program_id', restoreProgramId),
             ]);
 
             const inserts: Array<Promise<unknown>> = [];
@@ -830,7 +830,9 @@ Deno.serve(async (req) => {
             pushIfAny('program_gates', snap.program_gates);
             pushIfAny('program_weeks', snap.program_weeks);
             pushIfAny('program_alert_rules', snap.program_alert_rules);
-            pushIfAny('program_health_models', snap.program_health_models);
+            // Snapshot key migrated from 'program_health_models' → 'program_health_model'.
+            // Read both for backward compatibility with snapshots captured by older code.
+            pushIfAny('program_health_model', snap.program_health_model ?? (snap as any).program_health_models);
             await Promise.all(inserts);
             // playbook_items restored after parent playbooks (FK).
             if (Array.isArray(snap.playbook_items) && (snap.playbook_items as unknown[]).length) {
