@@ -516,7 +516,7 @@ export default function PublicContractIntake() {
               !formData.legal_representative_email ||
               !formData.legal_representative_phone
             }
-            onClick={() => submitMutation.mutate()}
+            onClick={async () => { await autosave.flush(); submitMutation.mutate(); }}
           >
             {submitMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
