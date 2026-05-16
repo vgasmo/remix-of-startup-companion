@@ -249,9 +249,8 @@ END:VCALENDAR`;
     });
 
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     log.error('Calendar feed error', error);
-    return new Response(`Error generating calendar: ${errorMessage}`, {
+    return new Response('Internal error', {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
     });
