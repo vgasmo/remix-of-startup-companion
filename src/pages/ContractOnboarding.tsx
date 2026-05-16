@@ -108,32 +108,42 @@ export default function ContractOnboarding() {
   useEffect(() => {
     if (contract) {
       const startup = (contract as any).workspace?.startup;
-      if (startup) {
-        setFormData(prev => ({
-          ...prev,
-          legal_representative_name: (contract as any).legal_representative_name || startup.main_contact_name || '',
-          legal_representative_email: (contract as any).legal_representative_email || startup.main_contact_email || '',
-          company_nif: (contract as any).company_nif || startup.nif || '',
-          company_address: (contract as any).company_address || startup.address || '',
-          company_city: (contract as any).company_city || '',
-          company_postal_code: (contract as any).company_postal_code || '',
-        }));
-      }
+      const c = contract as any;
+      setFormData(prev => ({
+        ...prev,
+        legal_representative_name: c.legal_representative_name || startup?.main_contact_name || '',
+        legal_representative_email: c.legal_representative_email || startup?.main_contact_email || '',
+        legal_representative_phone: c.legal_representative_phone || '',
+        certidao_permanente_code: c.certidao_permanente_code || '',
+        additional_representatives: Array.isArray(c.additional_representatives) ? c.additional_representatives : [],
+        company_nif: c.company_nif || startup?.nif || '',
+        company_address: c.company_address || startup?.address || '',
+        company_city: c.company_city || '',
+        company_postal_code: c.company_postal_code || '',
+      }));
     }
   }, [contract]);
+
+  // Explicit visible-field → persisted-field map. Every editable input in the
+  // company-data step MUST appear here. Adding a new input to the form without
+  // adding it here is a regression caught by the contract-onboarding tests.
+  const buildPersistedPayload = () => ({
+    legal_representative_name: formData.legal_representative_name,
+    legal_representative_email: formData.legal_representative_email,
+    legal_representative_phone: formData.legal_representative_phone || null,
+    certidao_permanente_code: formData.certidao_permanente_code || null,
+    additional_representatives: formData.additional_representatives ?? [],
+    company_nif: formData.company_nif,
+    company_address: formData.company_address,
+    company_city: formData.company_city,
+    company_postal_code: formData.company_postal_code,
+  });
 
   const saveCompanyData = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
         .from('startup_contracts')
-        .update({
-          legal_representative_name: formData.legal_representative_name,
-          legal_representative_email: formData.legal_representative_email,
-          company_nif: formData.company_nif,
-          company_address: formData.company_address,
-          company_city: formData.company_city,
-          company_postal_code: formData.company_postal_code,
-        } as any)
+        .update(buildPersistedPayload() as any)
         .eq('id', contractId!);
       if (error) throw error;
     },
