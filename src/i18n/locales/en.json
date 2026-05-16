@@ -8124,7 +8124,9 @@
       "flushPending": "Finishing save…",
       "unsavedExitTitle": "Unsynced changes",
       "unsavedExitDescription": "We could not sync right now, but a local backup is kept. Close anyway?",
-      "unsavedExitConfirm": "Close and keep local copy"
+      "unsavedExitConfirm": "Close and keep local copy",
+      "error": "Save error",
+      "restoreBanner": "We found unsaved edits on your device. Want to restore them?"
     }
   },
   "tests": {
