@@ -536,22 +536,18 @@ function TemplateEditorDialog({
   onClose,
 }: TemplateEditorDialogProps) {
   const { t } = useTranslation();
-  const { roles } = useAuth();
-  const upsertInstance = useUpsertTemplateInstance(workspaceId);
+  const { roles, user } = useAuth();
   const completeInstance = useCompleteTemplateInstance(workspaceId);
   const submitForReview = useSubmitForReview(workspaceId);
   const reviewInstance = useReviewTemplateInstance(workspaceId);
   const uploadDocument = useUploadDocument();
   const { data: documents } = useDocuments(workspaceId);
-  
-  const [formData, setFormData] = useState<Record<string, unknown>>({});
-  const [hasChanges, setHasChanges] = useState(false);
+
   const [reviewNotes, setReviewNotes] = useState('');
   const { confirm: confirmClose, dialogProps: confirmCloseProps } = useConfirmDialog();
-  
+
   const canReview = roles.includes('admin') || roles.includes('consultor') || roles.includes('mentor_externo');
 
-  // Check if this is the Pitch Deck Checklist template
   // Map templates to their dataroom document categories for upload support
   const TEMPLATE_CATEGORY_MAP: Record<string, { category: string; labelKey: string; defaultLabel: string }> = {
     'Pitch Deck Checklist': { category: 'pitch_deck', labelKey: 'dataroomChecklist.uploadPitchDeck', defaultLabel: 'Upload do Pitch Deck' },
@@ -565,106 +561,96 @@ function TemplateEditorDialog({
     ? documents?.find(d => d.category === templateUploadConfig.category)
     : null;
 
-  // Initialize form data when template/instance changes
+  const autosave = useTemplateDraftAutosave({
+    workspaceId,
+    templateId: template?.id ?? null,
+    userId: user?.id,
+    instance,
+    disabled: !canWrite || !template,
+  });
+
+  // Local-only toast (once per transition).
+  const prevStatusRef = useRef<AutosaveStatus>('idle');
   useEffect(() => {
-    if (template) {
-      const instanceData = instance?.data_json || {};
-      setFormData(instanceData);
-      setHasChanges(false);
+    if (autosave.status === 'local_only' && prevStatusRef.current !== 'local_only') {
+      toast.warning(t('templates.autosave.localOnlyToast'));
     }
-  }, [template?.id, instance?.id, instance?.data_json]);
+    prevStatusRef.current = autosave.status;
+  }, [autosave.status, t]);
 
-  const performClose = () => {
+  const performClose = useCallback(() => {
     onClose();
-    setFormData({});
-    setHasChanges(false);
-  };
+    setReviewNotes('');
+  }, [onClose]);
 
-  // Handle dialog close with unsaved changes protection
-  const handleOpenChange = (open: boolean) => {
-    if (open) return;
-    if (hasChanges) {
+  const guardedClose = useCallback(async () => {
+    // Try to flush first; never discard dirty data silently.
+    const ok = await autosave.flush();
+    if (!ok && autosave.status !== 'idle') {
       confirmClose({
-        title: t('templates.unsavedChangesTitle', 'Discard unsaved changes?'),
-        description: t('templates.unsavedChangesWarning', 'You have unsaved changes. Are you sure you want to close?'),
-        confirmLabel: t('common.discard', 'Discard'),
+        title: t('templates.autosave.unsavedExitTitle'),
+        description: t('templates.autosave.unsavedExitDescription'),
+        confirmLabel: t('templates.autosave.unsavedExitConfirm'),
         variant: 'destructive',
         onConfirm: performClose,
       });
       return;
     }
     performClose();
+  }, [autosave, confirmClose, performClose, t]);
+
+  const handleOpenChange = (open: boolean) => {
+    if (open) return;
+    void guardedClose();
   };
 
   const handleFieldChange = (fieldId: string, value: unknown) => {
-    setFormData(prev => ({ ...prev, [fieldId]: value }));
-    setHasChanges(true);
+    autosave.setField(fieldId, value);
   };
 
-  const handleSave = async () => {
-    if (!template) return;
-    try {
-      await upsertInstance.mutateAsync({
-        template_id: template.id,
-        data_json: formData,
-        existingId: instance?.id,
-      });
-      toast.success(t('templates.canvasSaved'));
-      setHasChanges(false);
-    } catch {
-      toast.error(t('templates.canvasSaveFailed'));
+  const handleSaveNow = async () => {
+    const ok = await autosave.flush();
+    if (ok) toast.success(t('templates.autosave.saved'));
+    else toast.warning(t('templates.autosave.localOnlyToast'));
+  };
+
+  const requireFlushed = async (): Promise<string | null> => {
+    const ok = await autosave.flush();
+    if (!ok) {
+      toast.error(t('templates.autosave.failed'));
+      return null;
     }
+    return autosave.instanceId;
   };
 
   const handleMarkComplete = async () => {
+    const id = await requireFlushed();
+    if (!id) return;
     try {
-      let targetInstanceId = instance?.id;
-      if (!targetInstanceId && template) {
-        const saved = await upsertInstance.mutateAsync({
-          template_id: template.id,
-          data_json: formData,
-          existingId: instance?.id,
-        });
-        targetInstanceId = saved?.id;
-      }
-
-      if (targetInstanceId) {
-        await completeInstance.mutateAsync(targetInstanceId);
-        toast.success(t('templates.completed'));
-        setHasChanges(false);
-      }
+      await completeInstance.mutateAsync(id);
+      toast.success(t('templates.completed'));
     } catch {
       toast.error(t('templates.submitFailed'));
     }
   };
 
   const handleSubmitForReview = async () => {
+    const id = await requireFlushed();
+    if (!id) return;
     try {
-      let targetInstanceId = instance?.id;
-      if (!targetInstanceId && template) {
-        const saved = await upsertInstance.mutateAsync({
-          template_id: template.id,
-          data_json: formData,
-          existingId: instance?.id,
-        });
-        targetInstanceId = saved?.id;
-      }
-
-      if (targetInstanceId) {
-        await submitForReview.mutateAsync(targetInstanceId);
-        toast.success(t('templates.submittedForReview'));
-        setHasChanges(false);
-      }
+      await submitForReview.mutateAsync(id);
+      toast.success(t('templates.submittedForReview'));
     } catch {
       toast.error(t('templates.submitFailed'));
     }
   };
 
   const handleReview = async (status: 'approved' | 'needs_changes') => {
-    if (!instance?.id) return;
+    const id = autosave.instanceId ?? instance?.id;
+    if (!id) return;
     try {
       await reviewInstance.mutateAsync({
-        instanceId: instance.id,
+        instanceId: id,
         review_status: status,
         review_notes: reviewNotes.trim() || undefined,
       });
@@ -675,7 +661,20 @@ function TemplateEditorDialog({
     }
   };
 
+  const openHelp = () => {
+    // Re-use existing global AI assistant trigger if available; otherwise no-op gracefully.
+    try {
+      window.dispatchEvent(new CustomEvent('open-ai-assistant'));
+    } catch {
+      /* noop */
+    }
+  };
+
   if (!template) return null;
+
+  const formData = autosave.data;
+  const busyFlush = autosave.status === 'saving';
+  const actionsBlocked = busyFlush || autosave.status === 'local_only';
 
   const schema = template.schema_json;
   if (!schema?.sections) {
@@ -699,21 +698,39 @@ function TemplateEditorDialog({
   return (
     <>
     <Dialog open={!!template} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>{getLocalizedTemplateMeta(template, t).title}</span>
-            {instance?.status === 'completed' && (
-              <Badge className="bg-green-100 text-green-700">{t('templates.completed', 'Completed')}</Badge>
-            )}
+      <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-3 border-b">
+          <DialogTitle className="flex items-center justify-between gap-3">
+            <span className="truncate">{getLocalizedTemplateMeta(template, t).title}</span>
+            <div className="flex items-center gap-2 shrink-0">
+              <AutosaveBadge status={autosave.status} lastSavedAt={autosave.lastSavedAt} />
+              {instance?.status === 'completed' && (
+                <Badge className="bg-green-100 text-green-700">{t('templates.completed', 'Completed')}</Badge>
+              )}
+              <Button variant="ghost" size="sm" onClick={openHelp} className="gap-1">
+                <HelpCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('templates.autosave.needHelp')}</span>
+              </Button>
+            </div>
           </DialogTitle>
           {template.description && (
             <p className="text-sm text-muted-foreground">{getLocalizedTemplateMeta(template, t).description}</p>
           )}
         </DialogHeader>
-        
-        <ScrollArea className="flex-1 -mx-6 px-6">
+
+        <div className="flex-1 min-h-0 overflow-y-auto px-6">
           <div className="space-y-6 py-4">
+            {autosave.restoredFromLocal && (
+              <Alert>
+                <CircleAlert className="h-4 w-4" />
+                <AlertDescription className="flex items-center justify-between gap-3">
+                  <span>{t('templates.autosave.restoredBanner')}</span>
+                  <Button variant="ghost" size="sm" onClick={autosave.dismissRestoredBanner}>
+                    {t('templates.autosave.restoredBannerDismiss')}
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
             {/* Document Upload Section (for dataroom-linked templates) */}
             {templateUploadConfig && (
               <div className="rounded-lg border-2 border-dashed border-muted-foreground/25 p-4 space-y-3">
@@ -800,94 +817,95 @@ function TemplateEditorDialog({
                       field={field}
                       value={formData[field.id]}
                       onChange={(val) => handleFieldChange(field.id, val)}
+                      onBlur={() => { void autosave.flush(); }}
                       disabled={!canWrite}
                     />
                   ))}
                 </div>
               </div>
             ))}
+
+            {/* Review feedback display */}
+            {instance?.review_status === 'needs_changes' && instance.review_notes && (
+              <Alert className="border-amber-200 bg-amber-50">
+                <MessageSquare className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-sm">
+                  <strong>{t('templates.reviewerFeedback', 'Reviewer feedback')}:</strong> {instance.review_notes}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* AI Coach Panel for consultants/mentors */}
+            {canReview && (autosave.instanceId ?? instance?.id) && (
+              <TemplateCoachPanel
+                instanceId={(autosave.instanceId ?? instance?.id) as string}
+                workspaceId={workspaceId}
+                onCopyToNotes={(notes) => setReviewNotes(notes)}
+                showReviewActions={instance?.review_status === 'pending_review'}
+                onApplyReview={(recommendation, notes) => {
+                  setReviewNotes(notes);
+                  handleReview(recommendation);
+                }}
+              />
+            )}
+
+            {/* Review section for consultants/mentors */}
+            {canReview && instance?.review_status === 'pending_review' && (
+              <div className="border-t pt-4 space-y-3">
+                <Label>{t('templates.reviewNotesOptional', 'Review Notes (optional)')}</Label>
+                <Textarea
+                  value={reviewNotes}
+                  onChange={(e) => setReviewNotes(e.target.value)}
+                  placeholder={t('templates.feedbackPlaceholder', 'Add feedback for the founder...')}
+                  rows={2}
+                />
+                <div className="flex gap-2">
+                  <Button onClick={() => handleReview('approved')} className="flex-1">
+                    <CheckCircle2 className="h-4 w-4 mr-1" />
+                    {t('templates.approve', 'Approve')}
+                  </Button>
+                  <Button variant="outline" onClick={() => handleReview('needs_changes')} className="flex-1">
+                    {t('templates.requestChanges', 'Request Changes')}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
-        </ScrollArea>
-
-        {/* Review feedback display */}
-        {instance?.review_status === 'needs_changes' && instance.review_notes && (
-          <Alert className="border-amber-200 bg-amber-50">
-            <MessageSquare className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-sm">
-              <strong>{t('templates.reviewerFeedback', 'Reviewer feedback')}:</strong> {instance.review_notes}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* AI Coach Panel for consultants/mentors */}
-        {canReview && instance?.id && (
-          <TemplateCoachPanel 
-            instanceId={instance.id}
-            workspaceId={workspaceId}
-            onCopyToNotes={(notes) => setReviewNotes(notes)}
-            showReviewActions={instance?.review_status === 'pending_review'}
-            onApplyReview={(recommendation, notes) => {
-              setReviewNotes(notes);
-              handleReview(recommendation);
-            }}
-          />
-        )}
-
-        {/* Review section for consultants/mentors */}
-        {canReview && instance?.review_status === 'pending_review' && (
-          <div className="border-t pt-4 space-y-3">
-            <Label>{t('templates.reviewNotesOptional', 'Review Notes (optional)')}</Label>
-            <Textarea
-              value={reviewNotes}
-              onChange={(e) => setReviewNotes(e.target.value)}
-              placeholder={t('templates.feedbackPlaceholder', 'Add feedback for the founder...')}
-              rows={2}
-            />
-            <div className="flex gap-2">
-              <Button onClick={() => handleReview('approved')} className="flex-1">
-                <CheckCircle2 className="h-4 w-4 mr-1" />
-                {t('templates.approve', 'Approve')}
-              </Button>
-              <Button variant="outline" onClick={() => handleReview('needs_changes')} className="flex-1">
-                {t('templates.requestChanges', 'Request Changes')}
-              </Button>
-            </div>
-          </div>
-        )}
+        </div>
 
         {/* Footer actions - role-specific */}
-        <div className="flex items-center justify-between pt-4 border-t">
-          <Button variant="outline" onClick={onClose}>
-            {t('common.close', 'Close')}
-          </Button>
-          <div className="flex items-center gap-2">
-            {/* Save button - founders only when they can write */}
+        <div className="shrink-0 flex items-center justify-between gap-2 px-6 py-3 border-t bg-background">
+          <div className="flex items-center gap-3 min-w-0">
+            <Button variant="outline" onClick={() => void guardedClose()}>
+              {t('common.close', 'Close')}
+            </Button>
+            <AutosaveBadge status={autosave.status} lastSavedAt={autosave.lastSavedAt} />
+          </div>
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             {canWrite && isFounder && (
-              <Button 
-                variant="outline" 
-                onClick={handleSave} 
-                disabled={!hasChanges || upsertInstance.isPending}
+              <Button
+                variant="outline"
+                onClick={handleSaveNow}
+                disabled={busyFlush}
               >
                 <Save className="h-4 w-4 mr-1" />
-                {t('common.save', 'Save')}
+                {t('templates.autosave.saveNow')}
               </Button>
             )}
-            {/* Submit for review - founders only, when not already pending/approved */}
             {canWrite && isFounder && instance?.review_status !== 'pending_review' && instance?.review_status !== 'approved' && (
-              <Button 
+              <Button
                 variant="outline"
                 onClick={handleSubmitForReview}
-                disabled={submitForReview.isPending}
+                disabled={actionsBlocked || submitForReview.isPending}
               >
                 <Send className="h-4 w-4 mr-1" />
                 {t('templates.submitForReview')}
               </Button>
             )}
-            {/* Mark Complete - founders only */}
             {canWrite && isFounder && instance?.status !== 'completed' && (
-              <Button 
+              <Button
                 onClick={handleMarkComplete}
-                disabled={completeInstance.isPending}
+                disabled={actionsBlocked || completeInstance.isPending}
               >
                 <Check className="h-4 w-4 mr-1" />
                 {t('templates.markComplete', 'Mark Complete')}
