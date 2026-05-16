@@ -303,7 +303,7 @@ Deno.serve(async (req) => {
       // active program founders are using.
       try {
         const [progRow, stagesRows, playbooksRows, stageKpiRows,
-               gatesRows, weeksRows, alertRulesRows, healthRows] = await Promise.all([
+               gatesRows, weeksRows, alertRulesRows, healthRows, coreKpisRows] = await Promise.all([
           supabase.from('programs').select('*').eq('id', programId).maybeSingle(),
           supabase.from('stages').select('*').eq('program_id', programId),
           supabase.from('playbooks').select('*').eq('program_id', programId),
@@ -312,6 +312,7 @@ Deno.serve(async (req) => {
           supabase.from('program_weeks').select('*').eq('program_id', programId),
           supabase.from('program_alert_rules').select('*').eq('program_id', programId),
           supabase.from('program_health_model').select('*').eq('program_id', programId),
+          supabase.from('program_core_kpis').select('*').eq('program_id', programId),
         ]);
         const playbookIds = (playbooksRows.data ?? []).map((p: { id: string }) => p.id);
         const playbookItemsRows = playbookIds.length
@@ -328,6 +329,7 @@ Deno.serve(async (req) => {
           program_weeks: weeksRows.data ?? [],
           program_alert_rules: alertRulesRows.data ?? [],
           program_health_model: healthRows.data ?? [],
+          program_core_kpis: coreKpisRows.data ?? [],
         };
         await supabase
           .from('program_setup_drafts')
