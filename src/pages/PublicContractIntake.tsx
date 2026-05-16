@@ -118,6 +118,25 @@ export default function PublicContractIntake() {
   const isSubmitted = intake?.status === 'intake_submitted' || intake?.status === 'review_pending';
   const hasChangesRequested = intake?.status === 'changes_requested';
 
+  // Autosave: localStorage-backed draft restoration so typed work survives
+  // tab/window switch, refresh, accidental close. No server draft endpoint
+  // exists for the intake yet — submit still goes through the existing
+  // intake_submit_by_token action.
+  const autosave = useContractDraftAutosave<IntakeFormData>({
+    scopeKey: token ?? null,
+    namespace: 'contract-intake',
+    serverData: intake ? (intake as unknown as IntakeFormData) : null,
+    serverUpdatedAt: intake?.updated_at ?? null,
+    disabled: isSubmitted,
+  });
+
+  // Track every change against the autosave hook (localStorage every keystroke).
+  useEffect(() => {
+    if (!intake || isSubmitted) return;
+    autosave.trackChange(formData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData]);
+
   // Submit form via edge function (no direct DB access)
   const submitMutation = useMutation({
     mutationFn: async () => {
@@ -136,6 +155,7 @@ export default function PublicContractIntake() {
       if (data?.error) throw new Error(data.error);
     },
     onSuccess: () => {
+      autosave.clearDraft();
       toast.success(isPt ? 'Dados submetidos com sucesso!' : 'Data submitted successfully!');
     },
     onError: (err: any) => {
