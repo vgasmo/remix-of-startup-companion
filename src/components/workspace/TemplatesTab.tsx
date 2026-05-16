@@ -972,7 +972,7 @@ const SECTION_TITLE_MAP: Record<string, string> = {
   'Goals': 'goals',
 };
 
-function TemplateFormField({ field, value, onChange, disabled }: TemplateFormFieldProps) {
+function TemplateFormField({ field, value, onChange, onBlur, disabled }: TemplateFormFieldProps) {
   const { t } = useTranslation();
   
   // Try to get translated label
