@@ -133,7 +133,7 @@ export default function PublicContractIntake() {
   // Track every change against the autosave hook (localStorage every keystroke).
   useEffect(() => {
     if (!intake || isSubmitted) return;
-    autosave.trackChange(formData);
+    autosave.trackChange(formData as unknown as Record<string, unknown>);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
