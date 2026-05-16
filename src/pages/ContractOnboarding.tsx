@@ -20,6 +20,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Building2, FileText, PenTool, CheckCircle2, ArrowRight, ArrowLeft, Download, Shield, Loader2, ExternalLink } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { useContractDraftAutosave } from '@/hooks/useContractDraftAutosave';
 
 type WizardStep = 'company_data' | 'review_contract' | 'signing';
 
@@ -139,8 +140,33 @@ export default function ContractOnboarding() {
     company_postal_code: formData.company_postal_code,
   });
 
+  // Debounced autosave — every keystroke goes to localStorage immediately,
+  // server save is debounced 1.5s. Submit awaits flush().
+  const autosave = useContractDraftAutosave<Record<string, unknown>>({
+    scopeKey: contractId ?? null,
+    namespace: 'contract-onboarding',
+    serverData: contract ? buildPersistedPayload() : null,
+    serverUpdatedAt: (contract as any)?.updated_at ?? null,
+    disabled: !contractId || (contract as any)?.signature_status === 'signed',
+    debounceMs: 1500,
+    serverSave: async (payload) => {
+      const { error } = await supabase
+        .from('startup_contracts')
+        .update(payload as any)
+        .eq('id', contractId!);
+      if (error) throw error;
+    },
+  });
+
+  useEffect(() => {
+    if (!contract) return;
+    autosave.trackChange(buildPersistedPayload() as Record<string, unknown>);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData]);
+
   const saveCompanyData = useMutation({
     mutationFn: async () => {
+      await autosave.flush();
       const { error } = await supabase
         .from('startup_contracts')
         .update(buildPersistedPayload() as any)

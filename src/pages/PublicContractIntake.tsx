@@ -22,8 +22,9 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
   Building2, CheckCircle2,
-  Shield, Loader2, AlertTriangle, Upload, Globe, Info
+  Shield, Loader2, AlertTriangle, Upload, Globe, Info, RotateCcw, X
 } from 'lucide-react';
+import { useContractDraftAutosave } from '@/hooks/useContractDraftAutosave';
 
 interface RepresentativeEntry {
   name: string;
@@ -117,6 +118,25 @@ export default function PublicContractIntake() {
   const isSubmitted = intake?.status === 'intake_submitted' || intake?.status === 'review_pending';
   const hasChangesRequested = intake?.status === 'changes_requested';
 
+  // Autosave: localStorage-backed draft restoration so typed work survives
+  // tab/window switch, refresh, accidental close. No server draft endpoint
+  // exists for the intake yet — submit still goes through the existing
+  // intake_submit_by_token action.
+  const autosave = useContractDraftAutosave<Record<string, unknown>>({
+    scopeKey: token ?? null,
+    namespace: 'contract-intake',
+    serverData: intake ? (intake as unknown as Record<string, unknown>) : null,
+    serverUpdatedAt: intake?.updated_at ?? null,
+    disabled: isSubmitted,
+  });
+
+  // Track every change against the autosave hook (localStorage every keystroke).
+  useEffect(() => {
+    if (!intake || isSubmitted) return;
+    autosave.trackChange(formData as unknown as Record<string, unknown>);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData]);
+
   // Submit form via edge function (no direct DB access)
   const submitMutation = useMutation({
     mutationFn: async () => {
@@ -135,6 +155,7 @@ export default function PublicContractIntake() {
       if (data?.error) throw new Error(data.error);
     },
     onSuccess: () => {
+      autosave.clearDraft();
       toast.success(isPt ? 'Dados submetidos com sucesso!' : 'Data submitted successfully!');
     },
     onError: (err: any) => {
@@ -257,10 +278,60 @@ export default function PublicContractIntake() {
           </CardContent>
         </Card>
 
+        {/* Restore-from-local-draft banner */}
+        {autosave.restoredFromLocal && autosave.restorePreview && !isSubmitted && (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="p-3 flex items-start gap-3">
+              <RotateCcw className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <div className="flex-1 text-xs">
+                <p className="font-semibold">
+                  {isPt ? 'Encontrámos dados não guardados' : 'Unsaved data found'}
+                </p>
+                <p className="text-muted-foreground mt-0.5">
+                  {isPt
+                    ? 'Quer restaurar o rascunho ou começar de novo?'
+                    : 'Restore your draft or start fresh?'}
+                </p>
+              </div>
+              <div className="flex gap-1.5 shrink-0">
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    const draft = autosave.restorePreview as unknown as Partial<IntakeFormData> | null;
+                    if (draft) {
+                      setFormData(prev => ({ ...prev, ...draft, additional_representatives: Array.isArray((draft as any).additional_representatives) ? (draft as any).additional_representatives : prev.additional_representatives }));
+                    }
+                    autosave.dismissRestoredBanner();
+                  }}
+                >
+                  {isPt ? 'Restaurar' : 'Restore'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-xs"
+                  onClick={() => { autosave.clearDraft(); }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Form */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg">{isPt ? 'Dados da Empresa' : 'Company Data'}</CardTitle>
+            <span className="text-[11px] text-muted-foreground" aria-live="polite">
+              {autosave.status === 'saving' && (isPt ? 'A guardar…' : 'Saving…')}
+              {autosave.status === 'saved' && (isPt ? 'Guardado' : 'Saved')}
+              {autosave.status === 'local_only' && (isPt ? 'Guardado neste dispositivo' : 'Saved on this device')}
+              {autosave.status === 'error' && (isPt ? 'Erro ao guardar' : 'Save error')}
+              {autosave.status === 'idle' && ''}
+            </span>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -445,7 +516,7 @@ export default function PublicContractIntake() {
               !formData.legal_representative_email ||
               !formData.legal_representative_phone
             }
-            onClick={() => submitMutation.mutate()}
+            onClick={async () => { await autosave.flush(); submitMutation.mutate(); }}
           >
             {submitMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
