@@ -256,9 +256,11 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
   // Create booking link mutation
   const createLinkMutation = useMutation({
     mutationFn: async () => {
-      const token = crypto.randomUUID().replace(/-/g, '').slice(0, 16);
-      const tokenHash = token;
-      
+      // SECURITY: persist only the SHA-256 hash; plaintext lives in the URL.
+      const { generateBookingToken, sha256Hex } = await import('@/lib/bookingTokens');
+      const token = generateBookingToken();
+      const tokenHash = await sha256Hex(token);
+
       const { data, error } = await supabase
         .from('public_booking_links')
         .insert({
@@ -268,7 +270,7 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return { ...data, plainToken: token };
     },
@@ -282,7 +284,7 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
       toast.error(t('admin.failedToCreateLink', { message: error.message }));
     },
   });
-  
+
   // Delete booking link mutation
   const deleteLinkMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -297,13 +299,7 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
       toast.success(t('admin.linkDeactivated'));
     },
   });
-  
-  const handleCopyLink = (tokenHash: string) => {
-    const link = `${window.location.origin}/book/${tokenHash}`;
-    navigator.clipboard.writeText(link);
-    toast.success(t('admin.linkCopiedToClipboard'));
-  };
-  
+
   if (loadingRoutes || loadingConsultants) {
     return (
       <Card>
