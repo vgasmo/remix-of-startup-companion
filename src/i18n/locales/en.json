@@ -7601,6 +7601,7 @@
     "title": "Co-founders"
   },
   "templates": {
+    "sectionNav": "Sections",
     "actionsCreatedFromAI": "Created {{count}} action items from AI recommendations",
     "aiAnalysis": "AI Analysis",
     "aiAnalysisComplete": "AI analysis complete",

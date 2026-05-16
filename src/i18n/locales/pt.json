@@ -7601,6 +7601,7 @@
     "title": "Co-fundadores"
   },
   "templates": {
+    "sectionNav": "Secções",
     "actionsCreatedFromAI": "Criadas {{count}} ações a partir de recomendações IA",
     "aiAnalysis": "AI Analysis",
     "aiAnalysisComplete": "AI analysis complete",
