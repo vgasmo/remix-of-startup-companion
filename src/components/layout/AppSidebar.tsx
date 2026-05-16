@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -73,7 +73,15 @@ export function AppSidebar() {
   const isFounder = roles.includes('founder');
   const [collapsed, setCollapsed] = useState(false);
   const [messagingOpen, setMessagingOpen] = useState(false);
-  
+
+  // Global "messaging:open" event so any deep-linked CTA can open the panel
+  // without prop-drilling. Mirrors the existing `copilot:open` contract.
+  useEffect(() => {
+    const onOpen = () => setMessagingOpen(true);
+    window.addEventListener('messaging:open', onOpen as EventListener);
+    return () => window.removeEventListener('messaging:open', onOpen as EventListener);
+  }, []);
+
   // Get founder's workspace for contact info
   const { data: workspaces = [] } = useWorkspaces();
   const workspaceIdFromRoute = location.pathname.startsWith('/workspace/')
