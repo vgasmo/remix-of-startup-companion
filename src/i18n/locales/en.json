@@ -6086,6 +6086,7 @@
     "updatedDescription": "Workspace priority has been updated"
   },
   "programSetup": {
+    "restoredFromBackup": "We restored your latest unsaved edits.",
     "acceleration": {
       "addDeliverable": "Add",
       "addGate": "Add Gate",
@@ -6719,6 +6720,7 @@
     "title": "Session Timeout Warning"
   },
   "sessions": {
+    "askConsultor": "Ask your consultant",
     "actionItemCreated": "Action item created",
     "actionItemsFromSession": "Action Items from this Session",
     "actions": "Actions",
@@ -7610,6 +7612,9 @@
     "title": "Co-founders"
   },
   "templates": {
+    "emptyAiPrompt": "Which template should I start with for my startup?",
+    "emptyAskAi": "Ask AI",
+    "emptyOpenGuide": "Open guide",
     "sectionNav": "Sections",
     "actionsCreatedFromAI": "Created {{count}} action items from AI recommendations",
     "aiAnalysis": "AI Analysis",
@@ -8124,7 +8129,9 @@
       "flushPending": "Finishing save…",
       "unsavedExitTitle": "Unsynced changes",
       "unsavedExitDescription": "We could not sync right now, but a local backup is kept. Close anyway?",
-      "unsavedExitConfirm": "Close and keep local copy"
+      "unsavedExitConfirm": "Close and keep local copy",
+      "error": "Save error",
+      "restoreBanner": "We found unsaved edits on your device. Want to restore them?"
     }
   },
   "tests": {

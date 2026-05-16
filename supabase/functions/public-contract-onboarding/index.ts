@@ -409,8 +409,10 @@ Deno.serve(async (req) => {
       .select(`
         id, contract_number, status, monthly_fee, currency, start_date, end_date,
         square_meters, signature_status, signature_provider, legal_representative_name,
-        legal_representative_email, company_nif, company_address,
-        company_city, company_postal_code, onboarding_token_expires_at,
+        legal_representative_email, legal_representative_phone, company_nif, company_address,
+        company_city, company_postal_code, project_name,
+        certidao_permanente_code, additional_representatives,
+        onboarding_token_expires_at, updated_at,
         regulation_accepted_at, regulation_version,
         workspace:workspaces(id, startup:startups(id, name, nif, main_contact_name, main_contact_email, address)),
         incubation_type:incubation_types(name),
@@ -513,27 +515,45 @@ Deno.serve(async (req) => {
     // === Save company data ===
     if (action === 'save_data') {
       const { formData } = body
-      if (!formData) {
+      if (!formData || typeof formData !== 'object') {
         return new Response(JSON.stringify({ error: 'formData required' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
 
-      // Explicit visible→persisted map for the public signing form.
+      // SAFETY: only persist keys actually present in the payload so this flow
+      // (which doesn't render certidao_permanente_code or additional_representatives)
+      // NEVER overwrites existing DB values with null / []. Absent keys are
+      // preserved verbatim from the server record.
+      const ALLOWED_KEYS = [
+        'legal_representative_name',
+        'legal_representative_email',
+        'legal_representative_phone',
+        'project_name',
+        'certidao_permanente_code',
+        'additional_representatives',
+        'company_nif',
+        'company_address',
+        'company_city',
+        'company_postal_code',
+      ] as const
+      const patch: Record<string, unknown> = {}
+      for (const k of ALLOWED_KEYS) {
+        if (Object.prototype.hasOwnProperty.call(formData, k)) {
+          // additional_representatives must be an array if present
+          if (k === 'additional_representatives' && !Array.isArray((formData as any)[k])) continue
+          patch[k] = (formData as any)[k]
+        }
+      }
+      if (Object.keys(patch).length === 0) {
+        return new Response(JSON.stringify({ success: true, skipped: 'no_fields' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
       const { error: saveErr } = await supabase
         .from('startup_contracts')
-        .update({
-          legal_representative_name: formData.legal_representative_name,
-          legal_representative_email: formData.legal_representative_email,
-          legal_representative_phone: formData.legal_representative_phone ?? null,
-          project_name: formData.project_name ?? null,
-          certidao_permanente_code: formData.certidao_permanente_code ?? null,
-          additional_representatives: Array.isArray(formData.additional_representatives) ? formData.additional_representatives : [],
-          company_nif: formData.company_nif,
-          company_address: formData.company_address,
-          company_city: formData.company_city,
-          company_postal_code: formData.company_postal_code,
-        })
+        .update(patch)
         .eq('id', contract.id)
 
       if (saveErr) throw saveErr
@@ -568,20 +588,52 @@ Deno.serve(async (req) => {
         })
       }
 
-      // Mark regulation as accepted + update canonical status (status + signature_status)
-      await supabase
+      // Persist any latest visible-only fields the client sent BEFORE we flip
+      // signature_status. We restrict to the same ALLOWED_KEYS set used by
+      // save_data so hidden DB fields are never clobbered, and we check the
+      // error so we never enter signing with stale data.
+      const PRE_SUBMIT_KEYS = [
+        'legal_representative_name',
+        'legal_representative_email',
+        'legal_representative_phone',
+        'project_name',
+        'company_nif',
+        'company_address',
+        'company_city',
+        'company_postal_code',
+      ] as const
+      const finalPatch: Record<string, unknown> = {
+        status: 'pending_signature',
+        regulation_accepted_at: new Date().toISOString(),
+        regulation_version: 'V11_2026',
+        signature_status: 'sent_for_signature',
+        signature_requested_at: new Date().toISOString(),
+      }
+      if (formData && typeof formData === 'object') {
+        for (const k of PRE_SUBMIT_KEYS) {
+          if (Object.prototype.hasOwnProperty.call(formData, k)) {
+            finalPatch[k] = (formData as any)[k]
+          }
+        }
+      }
+      // Always ensure signer identity is locked in (fallbacks to existing record).
+      finalPatch.legal_representative_name = finalPatch.legal_representative_name ?? signerName
+      finalPatch.legal_representative_email = finalPatch.legal_representative_email ?? signerEmail
+      finalPatch.company_nif = finalPatch.company_nif ?? contract.company_nif
+
+      const { error: preSubmitErr } = await supabase
         .from('startup_contracts')
-        .update({
-          status: 'pending_signature',
-          regulation_accepted_at: new Date().toISOString(),
-          regulation_version: 'V11_2026',
-          signature_status: 'sent_for_signature',
-          signature_requested_at: new Date().toISOString(),
-          legal_representative_name: signerName,
-          legal_representative_email: signerEmail,
-          company_nif: formData?.company_nif || contract.company_nif,
-        })
+        .update(finalPatch)
         .eq('id', contract.id)
+      if (preSubmitErr) {
+        console.error('[public-contract-onboarding] pre-submit persist failed:', preSubmitErr)
+        return new Response(JSON.stringify({
+          error: 'pre_submit_persist_failed',
+          message: preSubmitErr.message,
+        }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
 
       // === CANONICAL SYNC (shared helper) ===
       const sentSyncPublic = await syncIntakeOnSent(supabase, contract.id, null, 'public_submit_signing')

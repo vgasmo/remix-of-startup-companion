@@ -6086,6 +6086,7 @@
     "updatedDescription": "A prioridade do workspace foi atualizada"
   },
   "programSetup": {
+    "restoredFromBackup": "Restaurámos as últimas edições não guardadas.",
     "acceleration": {
       "addDeliverable": "Adicionar",
       "addGate": "Adicionar Gate",
@@ -6719,6 +6720,7 @@
     "title": "Aviso de Expiração de Sessão"
   },
   "sessions": {
+    "askConsultor": "Pedir ajuda ao consultor",
     "actionItemCreated": "Action item created",
     "actionItemsFromSession": "Itens de Ação desta Sessão",
     "actions": "Ações",
@@ -7610,6 +7612,9 @@
     "title": "Co-fundadores"
   },
   "templates": {
+    "emptyAiPrompt": "Que template devo começar primeiro para a minha startup?",
+    "emptyAskAi": "Perguntar à IA",
+    "emptyOpenGuide": "Abrir guia",
     "sectionNav": "Secções",
     "actionsCreatedFromAI": "Criadas {{count}} ações a partir de recomendações IA",
     "aiAnalysis": "AI Analysis",
@@ -8124,7 +8129,9 @@
       "flushPending": "A terminar de guardar…",
       "unsavedExitTitle": "Alterações por sincronizar",
       "unsavedExitDescription": "Não conseguimos sincronizar agora, mas guardámos uma cópia local. Sair na mesma?",
-      "unsavedExitConfirm": "Sair e manter cópia local"
+      "unsavedExitConfirm": "Sair e manter cópia local",
+      "error": "Erro ao guardar",
+      "restoreBanner": "Encontrámos edições não guardadas no seu dispositivo. Quer restaurá-las?"
     }
   },
   "tests": {

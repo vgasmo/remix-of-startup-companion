@@ -119,6 +119,15 @@ export default function ProgramSetupWizard() {
     setPrevStep(currentStep);
     setCurrentStep(step);
   };
+
+  // Async wrapper that flushes any pending autosave BEFORE navigating.
+  // Use this for direct user-driven navigation (progress bubbles, review
+  // step jumps) — handleNext/handleBack already flush.
+  const safeGoToStep = async (step: WizardStep) => {
+    if (!STEPS.some(s => s.key === step)) return;
+    try { await flushAutosave(); } catch { /* surfaced via autosaveStatus */ }
+    goToStep(step);
+  };
   
   const direction = STEPS.findIndex(s => s.key === currentStep) > STEPS.findIndex(s => s.key === prevStep) ? 'forward' : 'backward';
 
@@ -395,7 +404,7 @@ export default function ProgramSetupWizard() {
                   <button
                     key={step.key}
                     type="button"
-                    onClick={() => goToStep(step.key)}
+                    onClick={() => { void safeGoToStep(step.key); }}
                     className={`flex flex-col items-center gap-1 text-xs transition-all hover:scale-105 ${
                       isActive
                         ? 'text-primary font-medium'
@@ -491,7 +500,7 @@ export default function ProgramSetupWizard() {
                       availableSteps={STEPS.map((step) => step.key)}
                       showAlertRulesCard={showAlertRulesCard}
                       showHealthCard={showHealthCard}
-                      onNavigateToStep={(step) => goToStep(step as WizardStep)}
+                      onNavigateToStep={(step) => { void safeGoToStep(step as WizardStep); }}
                     />
                   )}
                 </>

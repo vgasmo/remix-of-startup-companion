@@ -311,7 +311,7 @@ Deno.serve(async (req) => {
           supabase.from('program_gates').select('*').eq('program_id', programId),
           supabase.from('program_weeks').select('*').eq('program_id', programId),
           supabase.from('program_alert_rules').select('*').eq('program_id', programId),
-          supabase.from('program_health_models').select('*').eq('program_id', programId),
+          supabase.from('program_health_model').select('*').eq('program_id', programId),
         ]);
         const playbookIds = (playbooksRows.data ?? []).map((p: { id: string }) => p.id);
         const playbookItemsRows = playbookIds.length
@@ -327,7 +327,7 @@ Deno.serve(async (req) => {
           program_gates: gatesRows.data ?? [],
           program_weeks: weeksRows.data ?? [],
           program_alert_rules: alertRulesRows.data ?? [],
-          program_health_models: healthRows.data ?? [],
+          program_health_model: healthRows.data ?? [],
         };
         await supabase
           .from('program_setup_drafts')
@@ -439,7 +439,7 @@ Deno.serve(async (req) => {
         .single();
 
       if (existing) {
-        await supabase
+        const { error: stageUpdErr } = await supabase
           .from('stages')
           .update({
             name: stage.name,
@@ -448,8 +448,9 @@ Deno.serve(async (req) => {
             is_active: stage.is_active,
           })
           .eq('id', existing.id);
+        if (stageUpdErr) throw new Error(`Failed to update stage "${stage.stage_key}": ${stageUpdErr.message}`);
       } else {
-        await supabase.from('stages').insert({
+        const { error: stageInsErr } = await supabase.from('stages').insert({
           program_id: programId,
           stage_key: stage.stage_key,
           name: stage.name,
@@ -457,6 +458,7 @@ Deno.serve(async (req) => {
           position: stage.position,
           is_active: stage.is_active,
         });
+        if (stageInsErr) throw new Error(`Failed to insert stage "${stage.stage_key}": ${stageInsErr.message}`);
       }
     }
     console.log(`[publish-program-setup] Upserted ${draftData.stages?.length || 0} stages`);
@@ -584,17 +586,20 @@ Deno.serve(async (req) => {
 
     // Second pass: upsert stage_kpi_defaults
     // First, remove existing defaults for this program
-    await supabase
-      .from('stage_kpi_defaults')
-      .delete()
-      .eq('program_id', programId);
+    {
+      const { error: kpiDelErr } = await supabase
+        .from('stage_kpi_defaults')
+        .delete()
+        .eq('program_id', programId);
+      if (kpiDelErr) throw new Error(`Failed to clear stage_kpi_defaults: ${kpiDelErr.message}`);
+    }
 
     for (const stageKpis of draftData.kpis || []) {
       for (const kpi of stageKpis.kpis) {
         const kpiDefId = kpiDefinitionMap[kpi.name];
         if (!kpiDefId) continue;
 
-        await supabase.from('stage_kpi_defaults').insert({
+        const { error: kpiInsErr } = await supabase.from('stage_kpi_defaults').insert({
           program_id: programId,
           stage: stageKpis.stage_key,
           kpi_definition_id: kpiDefId,
@@ -602,22 +607,27 @@ Deno.serve(async (req) => {
           order_index: kpi.order_index,
           target_value: kpi.target_value || null,
         });
+        if (kpiInsErr) throw new Error(`Failed to insert stage_kpi_default for "${kpi.name}": ${kpiInsErr.message}`);
       }
     }
     console.log(`[publish-program-setup] Upserted stage KPI defaults`);
 
     // 4. Upsert core KPIs
-    await supabase.from('program_core_kpis').delete().eq('program_id', programId);
-    
+    {
+      const { error: coreDelErr } = await supabase.from('program_core_kpis').delete().eq('program_id', programId);
+      if (coreDelErr) throw new Error(`Failed to clear program_core_kpis: ${coreDelErr.message}`);
+    }
+
     for (const coreKpi of draftData.coreKpis || []) {
       const kpiDefId = coreKpi.kpi_definition_id || kpiDefinitionMap[coreKpi.name];
       if (!kpiDefId) continue;
 
-      await supabase.from('program_core_kpis').insert({
+      const { error: coreInsErr } = await supabase.from('program_core_kpis').insert({
         program_id: programId,
         kpi_definition_id: kpiDefId,
         order_index: coreKpi.order_index,
       });
+      if (coreInsErr) throw new Error(`Failed to insert core KPI "${coreKpi.name}": ${coreInsErr.message}`);
     }
     console.log(`[publish-program-setup] Upserted ${draftData.coreKpis?.length || 0} core KPIs`);
 
@@ -633,7 +643,7 @@ Deno.serve(async (req) => {
 
       let playbookId: string;
       if (existingPlaybook) {
-        await supabase
+        const { error: pbUpdErr } = await supabase
           .from('playbooks')
           .update({
             title: playbook.title,
@@ -641,10 +651,12 @@ Deno.serve(async (req) => {
             is_active: true,
           })
           .eq('id', existingPlaybook.id);
+        if (pbUpdErr) throw new Error(`Failed to update playbook "${playbook.stage_key}": ${pbUpdErr.message}`);
         playbookId = existingPlaybook.id;
 
         // Delete existing items (will recreate)
-        await supabase.from('playbook_items').delete().eq('playbook_id', playbookId);
+        const { error: itemDelErr } = await supabase.from('playbook_items').delete().eq('playbook_id', playbookId);
+        if (itemDelErr) throw new Error(`Failed to clear playbook_items for ${playbookId}: ${itemDelErr.message}`);
       } else {
         const { data: newPlaybook, error: pbError } = await supabase
           .from('playbooks')
@@ -659,15 +671,14 @@ Deno.serve(async (req) => {
           .single();
 
         if (pbError || !newPlaybook) {
-          console.error(`[publish-program-setup] Failed to create playbook`, pbError);
-          continue;
+          throw new Error(`Failed to create playbook "${playbook.stage_key}": ${pbError?.message ?? 'unknown error'}`);
         }
         playbookId = newPlaybook.id;
       }
 
       // Create playbook items
       for (const item of playbook.items || []) {
-        await supabase.from('playbook_items').insert({
+        const { error: itemInsErr } = await supabase.from('playbook_items').insert({
           playbook_id: playbookId,
           item_type: item.item_type,
           title: item.title,
@@ -678,21 +689,26 @@ Deno.serve(async (req) => {
           default_owner_role: item.default_owner_role,
           metadata_json: item.metadata_json || {},
         });
+        if (itemInsErr) throw new Error(`Failed to insert playbook_item "${item.title}": ${itemInsErr.message}`);
       }
     }
     console.log(`[publish-program-setup] Upserted ${draftData.playbooks?.length || 0} playbooks`);
 
     // 6. Upsert alert rules
-    await supabase.from('program_alert_rules').delete().eq('program_id', programId);
-    
+    {
+      const { error: alertDelErr } = await supabase.from('program_alert_rules').delete().eq('program_id', programId);
+      if (alertDelErr) throw new Error(`Failed to clear program_alert_rules: ${alertDelErr.message}`);
+    }
+
     for (const rule of draftData.alertRules || []) {
-      await supabase.from('program_alert_rules').insert({
+      const { error: alertInsErr } = await supabase.from('program_alert_rules').insert({
         program_id: programId,
         rule_type: rule.rule_type,
         threshold: rule.threshold,
         severity: rule.severity,
         is_enabled: rule.is_enabled,
       });
+      if (alertInsErr) throw new Error(`Failed to insert alert rule "${rule.rule_type}": ${alertInsErr.message}`);
     }
     console.log(`[publish-program-setup] Upserted ${draftData.alertRules?.length || 0} alert rules`);
 
@@ -705,7 +721,7 @@ Deno.serve(async (req) => {
         .single();
 
       if (existingModel) {
-        await supabase
+        const { error: hmUpdErr } = await supabase
           .from('program_health_model')
           .update({
             weights_json: draftData.healthModel.weights_json,
@@ -713,13 +729,15 @@ Deno.serve(async (req) => {
             is_enabled: draftData.healthModel.is_enabled,
           })
           .eq('id', existingModel.id);
+        if (hmUpdErr) throw new Error(`Failed to update program_health_model: ${hmUpdErr.message}`);
       } else {
-        await supabase.from('program_health_model').insert({
+        const { error: hmInsErr } = await supabase.from('program_health_model').insert({
           program_id: programId,
           weights_json: draftData.healthModel.weights_json,
           thresholds_json: draftData.healthModel.thresholds_json,
           is_enabled: draftData.healthModel.is_enabled,
         });
+        if (hmInsErr) throw new Error(`Failed to insert program_health_model: ${hmInsErr.message}`);
       }
       console.log(`[publish-program-setup] Upserted health model`);
     }
@@ -816,7 +834,7 @@ Deno.serve(async (req) => {
               supabase.from('program_weeks').delete().eq('program_id', restoreProgramId),
               supabase.from('program_gates').delete().eq('program_id', restoreProgramId),
               supabase.from('program_alert_rules').delete().eq('program_id', restoreProgramId),
-              supabase.from('program_health_models').delete().eq('program_id', restoreProgramId),
+              supabase.from('program_health_model').delete().eq('program_id', restoreProgramId),
             ]);
 
             const inserts: Array<Promise<unknown>> = [];
@@ -830,7 +848,9 @@ Deno.serve(async (req) => {
             pushIfAny('program_gates', snap.program_gates);
             pushIfAny('program_weeks', snap.program_weeks);
             pushIfAny('program_alert_rules', snap.program_alert_rules);
-            pushIfAny('program_health_models', snap.program_health_models);
+            // Snapshot key migrated from 'program_health_models' → 'program_health_model'.
+            // Read both for backward compatibility with snapshots captured by older code.
+            pushIfAny('program_health_model', snap.program_health_model ?? (snap as any).program_health_models);
             await Promise.all(inserts);
             // playbook_items restored after parent playbooks (FK).
             if (Array.isArray(snap.playbook_items) && (snap.playbook_items as unknown[]).length) {
