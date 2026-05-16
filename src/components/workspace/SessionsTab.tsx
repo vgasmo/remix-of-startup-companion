@@ -117,13 +117,7 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
             label: t('sessions.askConsultor', { defaultValue: 'Pedir sessão ao consultor' }),
             onClick: () => {
               try {
-                window.dispatchEvent(new CustomEvent('copilot:open', {
-                  detail: {
-                    prompt: t('sessions.askConsultorPrompt', {
-                      defaultValue: 'Gostava de marcar uma sessão com o meu consultor. Podes ajudar-me a redigir o pedido?',
-                    }),
-                  },
-                }));
+                window.dispatchEvent(new CustomEvent('messaging:open'));
               } catch { /* ignore */ }
             },
           } : undefined)}
