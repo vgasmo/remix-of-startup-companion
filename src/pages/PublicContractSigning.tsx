@@ -185,7 +185,7 @@ export default function PublicContractSigning() {
         company_address: contract.company_address || startup?.address || '',
         company_city: contract.company_city || '',
         company_postal_code: contract.company_postal_code || '',
-        project_name: '',
+        project_name: (contract as any).project_name || '',
       }));
 
       if (contract.signature_status === 'sent_for_signature' || contract.signature_status === 'completed') {

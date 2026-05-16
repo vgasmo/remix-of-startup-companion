@@ -284,7 +284,7 @@ Deno.serve(async (req) => {
       const tokenHashLoad = await sha256Hex(token)
       const { data: intake, error: iErr } = await supabase
         .from('contract_intakes')
-        .select('id, status, organization_name, company_nif, company_address, company_city, company_postal_code, iban, legal_representative_name, legal_representative_email, legal_representative_phone, billing_email, startup_description, website, documents_json, missing_documents, changes_requested_notes, intake_token_expires_at, submitted_at')
+        .select('id, status, organization_name, company_nif, company_address, company_city, company_postal_code, iban, legal_representative_name, legal_representative_email, legal_representative_phone, billing_email, startup_description, website, documents_json, missing_documents, changes_requested_notes, intake_token_expires_at, submitted_at, project_name, certidao_permanente_code, additional_representatives')
         .eq('intake_token_hash', tokenHashLoad)
         .maybeSingle()
 
@@ -354,19 +354,22 @@ Deno.serve(async (req) => {
         })
       }
 
-      // Update intake with form data
+      // Update intake with form data (explicit visible→persisted field map).
       const { error: updateErr } = await supabase
         .from('contract_intakes')
         .update({
           organization_name: fd.organization_name,
+          project_name: fd.project_name ?? null,
           company_nif: fd.company_nif ? String(fd.company_nif).replace(/\s|-/g, '') : null,
           company_address: fd.company_address,
           company_city: fd.company_city,
           company_postal_code: fd.company_postal_code,
           iban: fd.iban ? String(fd.iban).replace(/\s/g, '').toUpperCase() : null,
+          certidao_permanente_code: fd.certidao_permanente_code ?? null,
           legal_representative_name: fd.legal_representative_name,
           legal_representative_email: fd.legal_representative_email,
           legal_representative_phone: fd.legal_representative_phone,
+          additional_representatives: Array.isArray(fd.additional_representatives) ? fd.additional_representatives : [],
           billing_email: fd.billing_email,
           startup_description: fd.startup_description,
           website: fd.website,
@@ -516,11 +519,16 @@ Deno.serve(async (req) => {
         })
       }
 
+      // Explicit visible→persisted map for the public signing form.
       const { error: saveErr } = await supabase
         .from('startup_contracts')
         .update({
           legal_representative_name: formData.legal_representative_name,
           legal_representative_email: formData.legal_representative_email,
+          legal_representative_phone: formData.legal_representative_phone ?? null,
+          project_name: formData.project_name ?? null,
+          certidao_permanente_code: formData.certidao_permanente_code ?? null,
+          additional_representatives: Array.isArray(formData.additional_representatives) ? formData.additional_representatives : [],
           company_nif: formData.company_nif,
           company_address: formData.company_address,
           company_city: formData.company_city,

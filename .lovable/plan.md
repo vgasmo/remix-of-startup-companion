@@ -1,65 +1,119 @@
-# Template Data-Loss Hotfix — Status Plan
 
-## TL;DR
+# Production Data-Loss Hardening Plan
 
-Across the previous incident turns the full hotfix from your brief has already landed. This plan is a **verification + close-out plan**, not a re-implementation. I want your approval before I run the verification scripts and do the browser smoke pass, because that's the only remaining work.
+Live incident. 7 batches, executed in priority order. Each batch is independently shippable and verifiable. I will not bundle batches that touch unrelated files; if a batch fails verification I stop and report.
 
-## What is already in place (verified by file/DB inspection)
+---
 
-1. **Autosave hook** — `src/hooks/useTemplateDraftAutosave.ts`
-   - 850ms debounce, server save via `useUpsertTemplateInstance`.
-   - `localStorage` fallback key `template-draft:${workspaceId}:${templateId}:${userId}`.
-   - Flush on `visibilitychange`, `pagehide`, `beforeunload`, unmount, manual `flush()`.
-   - Canonical `instanceId` cached in a `ref` — kills the canvas duplicate-insert bug regardless of stale `existingId` prop.
-   - State machine: `idle | saving | saved | local_only | error` + `lastSavedAt`, with telemetry (`logger.info/warn/error` on every transition incl. `templateId`/`workspaceId`/`instanceId`).
-   - `restoredFromLocal` + dismiss flag for the "Rascunho recuperado" banner.
+## P0 — BATCH 1: Contract field persistence
 
-2. **Regular template editor** (`TemplateEditorDialog` in `TemplatesTab.tsx`)
-   - Every field change → `autosave.setField` (no explicit-save-only path).
-   - `guardedClose()` shared by `DialogOnOpenChange` and footer Close button → flushes first, confirms if `local_only`.
-   - "Submit for review" / "Mark complete" `await flush()` and bail on failure.
-   - Sticky `AutosaveStatus` pill in header + footer.
-   - "Precisa de ajuda?" CTA dispatches `open-ai-assistant`.
-   - Sticky section nav (added previously for the persona/journey/script disambiguation).
+**Files**
+- `src/pages/ContractOnboarding.tsx`
+- `src/pages/PublicContractIntake.tsx`
+- `src/pages/PublicContractSigning.tsx`
+- `supabase/functions/public-contract-onboarding/index.ts`
+- new migration
 
-3. **Canvas wrapper** (`CanvasTemplateWrapper` + `CanvasTemplate.tsx`)
-   - `editValue` propagates up via `onChange` on every keystroke (line 456) → autosaved live, not only on the section Save button.
-   - Flush on `editingSection` change + unmount.
+**Changes**
+1. Migration: add `certidao_permanente_code text`, `additional_representatives jsonb default '[]'::jsonb`, `project_name text` to `startup_contracts` (only the missing ones — verified against current schema first).
+2. In each of the 3 contract pages, extract an explicit `VISIBLE_TO_PERSISTED` field map at top of file. Save mutation iterates the map, no field is dropped.
+3. `ContractOnboarding`: include `legal_representative_phone`, `certidao_permanente_code`, `project_name`, `additional_representatives` in the save mutation.
+4. `public-contract-onboarding` edge function: load returns + submit persists the same expanded set.
+5. `PublicContractSigning.save_data`: persists `legal_representative_phone` + `project_name`.
 
-4. **DB migration — dedupe + unique index** (already shipped)
-   - `supabase/migrations/20260516141410_*.sql` backs up duplicate rows, merges `data_json` (newest wins; older fills gaps), preserves status precedence `completed > submitted > in_review > draft`, then creates `template_instances_workspace_template_unique` unique index on `(workspace_id, template_id)`.
+**Acceptance:** fill every visible field → reload → all fields render with the saved values, for each of the 3 flows.
 
-5. **Scroll & layout**
-   - Editor dialog: `w-[95vw] max-w-3xl max-h-[90vh] flex flex-col p-0`, body `flex-1 min-h-0 overflow-y-auto`, footer `shrink-0`.
-   - Canvas: outer `ScrollArea max-h-[calc(100vh-16rem)]`, long checklist fields `max-h-40 overflow-y-auto`.
+---
 
-6. **i18n**
-   - `crm.linkCopyFailed` present in `en.json` and `pt.json` (line 3214 in both).
-   - All new autosave strings under `templates.autosave.*` with PT/EN parity.
+## P0 — BATCH 2: Autosave + local recovery for contract pages
 
-## Remaining work (this loop)
+**Files**
+- new `src/hooks/useContractDraftAutosave.ts` (modeled on `useTemplateDraftAutosave` but keyed by token/contract id, no React Query coupling)
+- wire into all 3 contract pages
 
-A. **Run quality gates**, fix anything they flag:
-   - `bunx tsc --noEmit -p tsconfig.typecheck.json`
-   - `bunx vitest run` (unit)
-   - `node scripts/i18n-check.cjs`
-   - `node scripts/i18n-lint.mjs`
-   - `node scripts/secret-scan.cjs`
+**Behavior (mirrors existing template autosave contract)**
+- `setField`/`setAll` → localStorage write on every change.
+- 850ms debounce server save, flush on `blur`, `visibilitychange=hidden`, `pagehide`, `beforeunload`, route unmount.
+- Restore banner: "Encontrámos dados não guardados. Restaurar / Ignorar" with i18n PT/EN keys.
+- Status pill: `saving | saved | local_only | error`.
+- localStorage key: `contract-draft:{flow}:{tokenOrId}` — scoped so two contracts never share a draft.
+- Local draft only cleared after a confirmed server save / final submit.
 
-B. **Browser smoke pass** of the 8 acceptance scenarios from your brief (tab switch, dialog close/reopen, route switch, simulated network failure, canvas rapid type → single instance via SQL count, mobile 360px scroll, submit-for-review awaits flush, refresh recovery).
+**Acceptance:** the 3 manual smoke tests in the brief (refresh, tab switch, close/reopen) preserve typed data.
 
-C. **DB sanity check** post-migration: confirm `template_instances` has zero duplicate `(workspace_id, template_id)` pairs and the unique index exists.
+---
 
-D. If any gate fails: scope the fix narrowly to the failing surface — no unrelated refactors.
+## P1 — BATCH 3: True upsert for template instances
 
-## Out of scope
+**File:** `src/hooks/useTemplates.ts`
 
-- No new tables, no destructive deletes (the dedupe migration already keeps a backup table `template_instances_dedup_backup_20260516`).
-- No changes to programs/cohorts/contracts/CRM beyond the already-shipped `crm.linkCopyFailed` key.
-- No additional UX surface area beyond what's already wired.
+**Change** `useUpsertTemplateInstance` to use `.upsert(..., { onConflict: 'workspace_id,template_id' })` and `.select().single()`, returning the canonical row. If Supabase returns 23505 anyway (race), fall back to `select` by `(workspace_id, template_id)` then `update().eq('id', ...)`. Always return final id so `useTemplateDraftAutosave` cache stays correct.
 
-## Risk
+**Acceptance:** two tabs editing same template never stick on `local_only`; the second tab recovers and updates the same row.
 
-Low. All code paths already shipped; this loop only verifies and runs the existing gates. If a gate is red I will surface the exact failure before patching.
+---
 
-Approve and I'll run the verification suite + DB sanity check, then report back with a green/red table.
+## P1 — BATCH 4: Booking link token hashing
+
+**Files**
+- `src/components/admin/IntakeRoutingManager.tsx`
+- `src/components/admin/BookingLinksManager.tsx`
+- new shared helper `src/lib/bookingTokens.ts` (`generateToken()` + `sha256Hex()` via Web Crypto)
+- one-shot SQL: invalidate rows where `token_hash` looks like a plaintext token (length != 64 or non-hex), so old broken links return a clean "expired" error rather than partially working.
+
+**Change:** `IntakeRoutingManager` stops writing plaintext to `token_hash`. Both admin UIs only render the share URL (which contains the plaintext token), never the hash column. Public edge functions already hash incoming → match — no change there.
+
+**Acceptance:** brand-new booking link created from either admin surface works; admin UI never shows raw token after creation closes.
+
+---
+
+## P1 — BATCH 5: ProgramSetupWizard autosave
+
+**File:** `src/pages/ProgramSetupWizard.tsx`
+
+**Changes**
+1. `pendingUpdatesRef.current = { ...pendingUpdatesRef.current, ...updates }` (merge, not replace).
+2. `await flush()` before: step nav buttons, Back, Discard, Publish, and inside an unmount effect.
+3. `visibilitychange` / `pagehide` / `beforeunload` listeners → flush + localStorage backup keyed `program-setup-draft:{programId}`.
+4. On mount, if local draft newer than server `updated_at`, offer restore.
+
+**Acceptance:** three manual smoke tests in the brief.
+
+---
+
+## P1 — BATCH 6: Transactional program publish
+
+**File:** new migration with `publish_program_setup_tx(p_program_id uuid, p_payload jsonb)` SECURITY DEFINER RPC; refactor `supabase/functions/publish-program-setup/index.ts` to call the RPC.
+
+**Strategy:** inside one transaction — insert new gates/weeks/playbooks/stages with a temporary `is_pending=true` marker (or staging temp table via CTE), validate, then in same tx swap by deleting old + clearing pending flag. Wrap in `BEGIN/EXCEPTION WHEN OTHERS THEN` → mark draft `publish_failed` with error JSON, RAISE. Existing active program rows are never deleted before replacement rows exist + validate.
+
+**Acceptance:** forced failure mid-publish leaves prior active program fully usable.
+
+---
+
+## P2 — BATCH 7: Hygiene
+
+- `.env` cannot be removed from the sandbox (release-wrapper limitation, already documented in `RELEASE_WRAPPER_MANUAL_STEPS.md`). I will re-verify the doc covers this and stop there.
+- Lockfiles: same release-wrapper constraint. Doc already covers `bun.lockb` + `package-lock.json` removal post-export. No code change possible from sandbox.
+- Dedupe migration: add a **read-only** verification SQL (no DDL) inside a new `supabase/tests/` file; do NOT re-run the destructive migration. Run it once via `read_query` and report counts.
+
+---
+
+## Verification
+
+After each batch:
+- targeted code re-read
+- `node scripts/i18n-check.cjs && node scripts/i18n-lint.mjs && node scripts/secret-scan.cjs`
+- DB sanity SELECTs (template dupes, contract column presence, token_hash lengths)
+
+(Typecheck/vitest/build run automatically by the harness — I do not invoke them manually.)
+
+---
+
+## Risks / honest caveats
+
+- **Batch 6 is the riskiest.** Moving publish into a single RPC means rewriting the function body server-side; if the existing edge function does many cross-table writes with dynamic shapes, the RPC may need a multi-step API instead of one call. If that's the case I will fall back to the "interim" approach (staging rows + rollback) and flag clearly.
+- **Batch 7 hygiene items** (.env, lockfiles) genuinely cannot be done from the Lovable sandbox — they are post-export manual steps. I will not pretend otherwise.
+- I will only touch files listed per batch. No cosmetic edits, no unrelated refactors.
+
+Reply "go" (or name specific batches) to start. I will execute batches sequentially, reporting verification after each.

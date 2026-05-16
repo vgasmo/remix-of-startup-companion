@@ -217,6 +217,7 @@ export function useUpsertTemplateInstance(workspaceId: string) {
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
 
+      // Fast path: caller already has an instance id — straight UPDATE.
       if (existingId) {
         const { data, error } = await supabase
           .from('template_instances')
@@ -227,25 +228,51 @@ export function useUpsertTemplateInstance(workspaceId: string) {
           .eq('id', existingId)
           .select()
           .single();
-
         if (error) throw error;
         return data;
-      } else {
-        const { data, error } = await supabase
-          .from('template_instances')
-          .insert({
+      }
+
+      // No id yet — true upsert against the unique (workspace_id, template_id) index.
+      // Race-safe: if a parallel tab/insert wins, the conflict path returns the canonical row.
+      const upsertRes = await supabase
+        .from('template_instances')
+        .upsert(
+          {
             workspace_id: workspaceId,
             template_id,
             data_json: data_json as unknown as Json,
             status: 'in_progress',
             created_by: user?.id,
-          })
+          },
+          { onConflict: 'workspace_id,template_id', ignoreDuplicates: false },
+        )
+        .select()
+        .single();
+
+      if (!upsertRes.error) return upsertRes.data;
+
+      // Last-resort recovery: some Supabase setups still surface 23505 if the
+      // conflict target is partially indexed. Locate the existing row and patch it.
+      if (upsertRes.error.code === '23505') {
+        const { data: existing, error: selErr } = await supabase
+          .from('template_instances')
+          .select('id')
+          .eq('workspace_id', workspaceId)
+          .eq('template_id', template_id)
+          .maybeSingle();
+        if (selErr) throw selErr;
+        if (!existing) throw upsertRes.error;
+        const { data, error } = await supabase
+          .from('template_instances')
+          .update({ data_json: data_json as unknown as Json, status: 'in_progress' })
+          .eq('id', existing.id)
           .select()
           .single();
-
         if (error) throw error;
         return data;
       }
+
+      throw upsertRes.error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['template-instances', workspaceId] });
