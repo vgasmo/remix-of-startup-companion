@@ -475,6 +475,51 @@ export default function PublicContractSigning() {
         {/* ===== Step 1: Company Data + Document Uploads ===== */}
         {currentStep === 'company_data' && (
           <div className="space-y-6">
+            {/* Restore-from-local-draft banner */}
+            {autosave.restoredFromLocal && autosave.restorePreview && (
+              <Card className="border-primary/30 bg-primary/5">
+                <CardContent className="p-3 flex items-start gap-3">
+                  <RotateCcw className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <div className="flex-1 text-xs">
+                    <p className="font-semibold">
+                      {isPt ? 'Encontrámos dados não guardados' : 'Unsaved data found'}
+                    </p>
+                    <p className="text-muted-foreground mt-0.5">
+                      {isPt ? 'Quer restaurar o rascunho?' : 'Restore your draft?'}
+                    </p>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="h-7 text-xs"
+                      onClick={() => {
+                        const draft = autosave.restorePreview as Partial<CompanyFormData> | null;
+                        if (draft) setFormData(prev => ({ ...prev, ...draft }));
+                        autosave.dismissRestoredBanner();
+                      }}
+                    >
+                      {isPt ? 'Restaurar' : 'Restore'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-xs"
+                      onClick={() => autosave.clearDraft()}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            {/* Save-status pill */}
+            <div className="text-[11px] text-muted-foreground text-right" aria-live="polite">
+              {autosave.status === 'saving' && (isPt ? 'A guardar…' : 'Saving…')}
+              {autosave.status === 'saved' && (isPt ? 'Guardado' : 'Saved')}
+              {autosave.status === 'local_only' && (isPt ? 'Guardado neste dispositivo' : 'Saved on this device')}
+              {autosave.status === 'error' && (isPt ? 'Erro ao guardar' : 'Save error')}
+            </div>
             {/* Company & Legal Rep Data */}
             <Card>
               <CardHeader>
