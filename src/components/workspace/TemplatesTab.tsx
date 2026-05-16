@@ -342,82 +342,60 @@ interface CanvasTemplateWrapperProps {
 
 function CanvasTemplateWrapper({ template, instance, workspaceId, canWrite, type, isFounder = false }: CanvasTemplateWrapperProps) {
   const { t } = useTranslation();
-  const { roles } = useAuth();
-  const upsertInstance = useUpsertTemplateInstance(workspaceId);
+  const { roles, user } = useAuth();
   const submitForReview = useSubmitForReview(workspaceId);
   const reviewInstance = useReviewTemplateInstance(workspaceId);
-  const [canvasData, setCanvasData] = useState<Record<string, string>>({});
-  const [hasChanges, setHasChanges] = useState(false);
   const [reviewNotes, setReviewNotes] = useState('');
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const canReview = roles.includes('admin') || roles.includes('consultor') || roles.includes('mentor_externo');
   const isPendingReview = instance?.review_status === 'pending_review';
 
+  const autosave = useTemplateDraftAutosave({
+    workspaceId,
+    templateId: template.id,
+    userId: user?.id,
+    instance,
+    disabled: !canWrite,
+  });
+
+  // Surface the local-only toast once per transition.
+  const prevStatusRef = useRef<AutosaveStatus>('idle');
   useEffect(() => {
-    if (instance?.data_json) {
-      setCanvasData(instance.data_json as Record<string, string>);
+    if (autosave.status === 'local_only' && prevStatusRef.current !== 'local_only') {
+      toast.warning(t('templates.autosave.localOnlyToast'));
     }
-  }, [instance?.data_json]);
+    prevStatusRef.current = autosave.status;
+  }, [autosave.status, t]);
 
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    };
-  }, []);
-
-  const handleChange = (data: Record<string, string>) => {
-    setCanvasData(data);
-    setHasChanges(true);
-    
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    
-    saveTimeoutRef.current = setTimeout(async () => {
-      try {
-        await upsertInstance.mutateAsync({
-          template_id: template.id,
-          data_json: data,
-          existingId: instance?.id,
-        });
-        setHasChanges(false);
-        toast.success(t('templates.canvasSaved'));
-      } catch {
-        toast.error(t('templates.canvasSaveFailed'));
-      }
-    }, 1000);
+  const handleCanvasChange = (next: Record<string, string>) => {
+    autosave.setAll(next);
   };
 
   const handleSubmitForReview = async () => {
-    if (!instance?.id) {
-      // Save first if not saved
-      try {
-        const result = await upsertInstance.mutateAsync({
-          template_id: template.id,
-          data_json: canvasData,
-          existingId: instance?.id,
-        });
-        if (result?.id) {
-          await submitForReview.mutateAsync(result.id);
-          toast.success(t('templates.submittedForReview'));
-        }
-      } catch {
-        toast.error(t('templates.submitFailed'));
-      }
-    } else {
-      try {
-        await submitForReview.mutateAsync(instance.id);
-        toast.success(t('templates.submittedForReview'));
-      } catch {
-        toast.error(t('templates.submitFailed'));
-      }
+    const ok = await autosave.flush();
+    if (!ok) {
+      toast.error(t('templates.submitFailed'));
+      return;
+    }
+    const id = autosave.instanceId;
+    if (!id) {
+      toast.error(t('templates.submitFailed'));
+      return;
+    }
+    try {
+      await submitForReview.mutateAsync(id);
+      toast.success(t('templates.submittedForReview'));
+    } catch {
+      toast.error(t('templates.submitFailed'));
     }
   };
 
   const handleReview = async (status: 'approved' | 'needs_changes') => {
-    if (!instance?.id) return;
+    const id = autosave.instanceId ?? instance?.id;
+    if (!id) return;
     try {
       await reviewInstance.mutateAsync({
-        instanceId: instance.id,
+        instanceId: id,
         review_status: status,
         review_notes: reviewNotes.trim() || undefined,
       });
@@ -430,25 +408,34 @@ function CanvasTemplateWrapper({ template, instance, workspaceId, canWrite, type
 
   return (
     <div className="space-y-4">
-      {hasChanges && (
-        <div className="text-sm text-muted-foreground flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-          {t('common.saving')}
-        </div>
+      {autosave.restoredFromLocal && (
+        <Alert>
+          <CircleAlert className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between gap-3">
+            <span>{t('templates.autosave.restoredBanner')}</span>
+            <Button variant="ghost" size="sm" onClick={autosave.dismissRestoredBanner}>
+              {t('templates.autosave.restoredBannerDismiss')}
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
+      <div className="flex items-center justify-between">
+        <AutosaveBadge status={autosave.status} lastSavedAt={autosave.lastSavedAt} />
+        <div />
+      </div>
       <CanvasTemplate
         type={type}
-        data={canvasData}
-        onChange={handleChange}
+        data={(autosave.data as Record<string, string>) || {}}
+        onChange={handleCanvasChange}
         disabled={!canWrite || (canReview && !isFounder)}
         reviewStatus={instance?.review_status as 'draft' | 'pending_review' | 'approved' | 'needs_changes' | undefined}
         onSubmitForReview={canWrite && isFounder ? handleSubmitForReview : undefined}
       />
 
       {/* AI Coach Panel for consultants/mentors when reviewing */}
-      {canReview && instance?.id && (
-        <TemplateCoachPanel 
-          instanceId={instance.id}
+      {canReview && (autosave.instanceId ?? instance?.id) && (
+        <TemplateCoachPanel
+          instanceId={(autosave.instanceId ?? instance?.id) as string}
           workspaceId={workspaceId}
           onCopyToNotes={(notes) => setReviewNotes(notes)}
           showReviewActions={isPendingReview}
@@ -487,6 +474,48 @@ function CanvasTemplateWrapper({ template, instance, workspaceId, canWrite, type
       )}
     </div>
   );
+}
+
+// Small inline component for autosave status feedback.
+function AutosaveBadge({ status, lastSavedAt }: { status: AutosaveStatus; lastSavedAt: Date | null }) {
+  const { t } = useTranslation();
+  const time = lastSavedAt
+    ? lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : null;
+
+  if (status === 'saving') {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Loader2 className="h-3 w-3 animate-spin" />
+        {t('templates.autosave.saving')}
+      </div>
+    );
+  }
+  if (status === 'local_only') {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+        <WifiOff className="h-3 w-3" />
+        {t('templates.autosave.localOnly')}
+      </div>
+    );
+  }
+  if (status === 'error') {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-destructive">
+        <CircleAlert className="h-3 w-3" />
+        {t('templates.autosave.failed')}
+      </div>
+    );
+  }
+  if (status === 'saved' && time) {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <CircleCheck className="h-3 w-3 text-green-600" />
+        {t('templates.autosave.savedAt', { time })}
+      </div>
+    );
+  }
+  return <div className="h-4" />;
 }
 
 interface TemplateEditorDialogProps {
