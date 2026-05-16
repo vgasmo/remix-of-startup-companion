@@ -924,6 +924,7 @@ interface TemplateFormFieldProps {
   field: TemplateField;
   value: unknown;
   onChange: (value: unknown) => void;
+  onBlur?: () => void;
   disabled: boolean;
 }
 
