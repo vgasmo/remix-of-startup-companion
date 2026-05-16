@@ -1007,6 +1007,7 @@
       "perProgramDesc": "Configure qual calendário de consultor é usado para primeiros contactos. Defina uma regra global ou personalize por programa.",
       "programConfigured": "Program configured",
       "programNotConfigured": "Program not configured",
+      "revoke": "Revoke link",
       "roundRobin": "Round Robin",
       "roundRobinDesc": "Distribute leads across selected consultants",
       "routingMode": "Routing Mode",
