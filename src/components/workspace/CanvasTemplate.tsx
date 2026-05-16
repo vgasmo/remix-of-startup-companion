@@ -447,9 +447,24 @@ export function CanvasTemplate({ type, data, onChange, disabled = false, reviewS
                     <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
                       <Textarea
                         value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
+                        onChange={(e) => {
+                          const next = e.target.value;
+                          setEditValue(next);
+                          // Propagate every keystroke so the parent autosave layer
+                          // captures the draft even if the user switches tab/window
+                          // before pressing the per-section Save button.
+                          if (editingSection) {
+                            onChange({ ...data, [editingSection]: next });
+                          }
+                        }}
+                        onBlur={() => {
+                          // Commit on blur so leaving the section keeps the text.
+                          if (editingSection) {
+                            onChange({ ...data, [editingSection]: editValue });
+                          }
+                        }}
                         placeholder={section.placeholder}
-                        className="min-h-[80px] text-sm bg-background/80"
+                        className="min-h-[80px] max-h-[40vh] text-sm bg-background/80"
                         autoFocus
                       />
                       <div className="flex gap-1 justify-end">
@@ -464,7 +479,7 @@ export function CanvasTemplate({ type, data, onChange, disabled = false, reviewS
                       </div>
                     </div>
                   ) : hasContent ? (
-                    <div className="text-sm text-foreground/90 whitespace-pre-wrap line-clamp-6">
+                    <div className="text-sm text-foreground/90 whitespace-pre-wrap max-h-40 overflow-y-auto pr-1">
                       {data[section.id]}
                     </div>
                   ) : (
