@@ -144,6 +144,17 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
   }
 
   if (!templates?.length) {
+    const handleAskAi = () => {
+      try {
+        window.dispatchEvent(new CustomEvent('copilot:open', {
+          detail: {
+            prompt: t('templates.emptyAiPrompt', {
+              defaultValue: 'Que template devo começar primeiro para a minha startup?',
+            }),
+          },
+        }));
+      } catch { /* ignore */ }
+    };
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4">
         <div className="h-12 w-12 rounded-full bg-muted/60 flex items-center justify-center mb-4">
@@ -152,9 +163,21 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
         <h3 className="text-base font-medium text-foreground mb-1">
           {t('templates.emptyStateTitle', 'No templates yet')}
         </h3>
-        <p className="text-sm text-muted-foreground text-center max-w-xs">
+        <p className="text-sm text-muted-foreground text-center max-w-xs mb-4">
           {t('templates.emptyStateDesc', 'Templates help you structure your thinking and track progress.')}
         </p>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Button size="sm" variant="default" onClick={handleAskAi} className="gap-1.5">
+            <Sparkles className="h-3.5 w-3.5" />
+            {t('templates.emptyAskAi', { defaultValue: 'Perguntar à IA' })}
+          </Button>
+          <Button size="sm" variant="outline" asChild className="gap-1.5">
+            <a href="/guide">
+              <HelpCircle className="h-3.5 w-3.5" />
+              {t('templates.emptyOpenGuide', { defaultValue: 'Abrir Guia' })}
+            </a>
+          </Button>
+        </div>
       </div>
     );
   }

@@ -1,70 +1,80 @@
-# Founder UX Audit & Surgical Gap-Fill Plan
+# Founder UX Polish — Scoped Plan
 
-The brief says "do not change anything yet — first audit and plan." I read the live founder surfaces and almost every item is **already implemented**. Below: what exists, what's actually missing, and the minimal changes I propose.
+## Phase 0 — Reliability guardrail (verified, no changes)
 
-## 1. Audit — what's already there
+Quick check confirms baseline is intact:
+- `useContractDraftAutosave` is wired into all 3 contract surfaces.
+- `useUpsertTemplateInstance` keeps onConflict + 23505 recovery.
+- `BookingLinksManager` + `IntakeRoutingManager` both store only `token_hash` via shared `sha256Hex`.
+- `ProgramSetupWizard` has crash recovery + flush.
+- `publish-program-setup` snapshot/restore intact.
 
-`src/components/dashboard/FounderDashboard.tsx` (490 lines) already implements the calm founder view the brief asks for:
+No reliability code will be touched. If any item fails during implementation, I stop and fix it first.
 
-| Brief item | Status | Existing implementation |
-|---|---|---|
-| 2. Next Best Action focus area | ✅ Shipped | `<OneThingToday>` renders a single primary CTA above the fold; `NextBestActionPanels` exists for power users |
-| 3. "Feeling stuck?" help nudge | ✅ Shipped | `<FounderHelpNudge>` (168 lines): non-intrusive, per-user/path dismissal, opens search / AI copilot / quick guide / book session, respects `hasConsultant` |
-| 4. Progressive disclosure | ✅ Shipped | `<Collapsible>` "Mostrar mais detalhes de progresso" wrapping Journey Map, Progress Rings, Stage/Investor/Calendar, Streak, QuickGuide. Driven by `useFounderMaturity` (`isBeginner` → collapsed by default; experienced founders expand by default). User toggle is persisted in component state, but NOT to localStorage. |
-| 5. Template autosave confidence | ✅ Shipped last loop | `useContractDraftAutosave` flushes on blur/visibility/pagehide; "Saved locally" + Restore draft UI present |
-| 6. Programme-specific guidance | ✅ Shipped | `program_type === 'acceleration'` → `<AccelerationProgressCard>` (week/gate); else `<FounderJourneyMap>` (stage); `OneThingToday` already branches on programme type |
-| 7. Lightweight empty states | ✅ Mostly | `FounderWelcomePanel` checklist appears when setup incomplete; `OneThingToday` provides "Ask for help" fallback |
-| Calm hero / warm welcome | ✅ Shipped | Beginner-only gradient hero with first-name greeting |
-| Pending contract priority | ✅ Shipped | `<PendingContractBanner>` rendered above everything |
-| Multi-workspace switcher | ✅ Shipped | Inline pill switcher |
-| Quick KPI auto-prompt | ✅ Shipped | Suppressed for `new_founder` and on first visit; per-month sessionStorage dismiss |
-| Mobile QuickActionsFab | ✅ Shipped | Already present |
+## What I will change (founder-facing only)
 
-**What is actually overwhelming today:** very little above the fold for beginners (hero + OneThingToday + booking CTA + optional checklist = 3–4 cards). The brief's diagnosis ("founders feel overwhelmed") was largely true before recent work but is mostly addressed.
+### Phase 1 — Founder dashboard hierarchy (visual only)
+File: `src/components/dashboard/FounderDashboard.tsx`
+- Tighten above-the-fold rhythm: `OneThingToday` becomes the single hero card (larger title, more breathing room, single primary CTA emphasis). Programme progress (`AccelerationProgressCard` or `FounderJourneyMap`) sits directly below as the secondary anchor. `FounderHelpNudge` stays as the calm tertiary entry.
+- Reduce competing card weights in the "above the fold" region (downgrade secondary cards from `border-2` / heavy shadows to standard tokens).
+- Preserve every existing widget; nothing removed. Streak/Journey/Rings/InvestorReadiness etc. stay inside the persisted "Show more" collapsible.
+- Keep the `founder-advanced-open:${userId}` localStorage preference exactly as-is.
 
-## 2. Real gaps worth fixing (small, surgical)
+### Phase 2 — Programme visual language (copy/layout only)
+Files: `src/components/dashboard/AccelerationProgressCard.tsx`, `src/components/founder/FounderJourneyMap.tsx` (if present)
+- Acceleration card: emphasize "Semana X de 12 · Próximo gate em N dias" header line, compact week dots.
+- Incubation map: emphasize current stage label + next playbook item.
+- Unknown programme type already degrades; verify and fall back to generic "Próxima ação".
 
-These are the only deltas I'd ship — no rewrites, no new systems:
+### Phase 3 — Help nudge polish (copy + placement)
+File: `src/components/founder/FounderHelpNudge.tsx`
+- Keep all dismissal/TTL logic (already in `useFounderStuckSignal`).
+- Refine copy to: "Sentes-te perdido?" / "Diz-nos o que estás a tentar fazer e indicamos o sítio certo." (+ EN parity).
+- Ensure it renders as inline card, never modal.
 
-### G1. Persist the "Show more" preference across sessions
-`advancedOpen` lives in component state only. A founder who expands once must re-expand on every visit. Add a per-user localStorage key (`founder-advanced-open-${profile.id}`) that overrides `showAdvancedByDefault` once the user toggles. Reversible, ~10 LOC.
+### Phase 4 — Founder empty states
+Targeted audit + minimal CTA additions where dead-ends exist:
+- KPI tab empty state → "Começa por um KPI simples" + CTA to add.
+- Templates list empty → "Começa um template guiado" + CTA.
+- Sessions empty → "Marca ou pede a tua primeira sessão" if booking enabled.
+- Documents empty → "Carrega prova de progresso quando tiveres" + CTA.
+Only touch components where the empty state is currently a dead-end. Skip files that already have a CTA.
 
-### G2. Re-surface help nudge after stalled sessions
-`FounderHelpNudge` dismissal is sticky per path. Brief asks: "If a founder has been inactive or returns after a failed/unfinished action, allow the nudge to reappear." Add a 14-day TTL on the dismiss key so it returns silently for re-engaged founders. ~5 LOC inside `FounderHelpNudge`.
+### Phase 5 — Autosave status copy (visual only)
+- Confirm `useContractDraftAutosave` / `useTemplateDraftAutosave` status chip wording is calm ("A guardar…", "Guardado", "Guardado localmente", "Restaurar rascunho"). Only adjust labels in the *consumers* that render status — never the hooks themselves.
 
-### G3. Lightweight analytics events
-Brief lists 6 events. Confirm whether a tracker exists; if `@/lib/analytics` or similar is present, wire:
-- `founder_next_action_clicked` in `OneThingToday`
-- `founder_help_nudge_opened` / `_search_from_help_clicked` / `_ai_from_help_clicked` / `_guide_from_help_clicked` in `FounderHelpNudge`
-- `founder_advanced_section_expanded` in `FounderDashboard`
+### Phase 6 — Status colour + spacing consistency (founder surfaces only)
+- Spot-fix obvious inconsistencies (green/amber/red/blue) on the founder dashboard cards.
+- No global token redesign. No admin/staff changes.
 
-If no analytics module exists, **skip** rather than invent one (brief: "If an analytics/event taxonomy exists, use it").
+### Phase 7 — Analytics
+Skip. No canonical `@/lib/analytics` taxonomy exists in this codebase (previous audit confirmed).
 
-### G4. Empty-state polish (only if missing)
-Spot-check KPI tab, templates list, sessions tab for dead-end empty states. Add CTA-bearing empty states only where missing. Do not touch tabs that already have them.
+## Explicitly NOT doing
+- No rewrite of `useContractDraftAutosave`, `useTemplateDraftAutosave`, `useUpsertTemplateInstance`, `publish-program-setup`, booking token logic.
+- No changes to admin/staff/consultor/mentor surfaces.
+- No removal of any widget (StreakHero, JourneyMap, ProgressRings, InvestorReadiness, FAB, etc.).
+- No new task/social/LMS systems.
+- No dark-mode redesign, no purple-heavy theme.
+- No new dependencies.
 
-## 3. Explicitly NOT doing
+## Files expected to change (~6-9, all UI)
+- `src/components/dashboard/FounderDashboard.tsx`
+- `src/components/dashboard/OneThingToday.tsx` (typography only)
+- `src/components/dashboard/AccelerationProgressCard.tsx`
+- `src/components/founder/FounderJourneyMap.tsx` (if present)
+- `src/components/founder/FounderHelpNudge.tsx`
+- Up to 3 empty-state components for KPI / Templates / Sessions / Documents tabs (only those with dead-end states)
+- `src/i18n/*` PT/EN parity additions for any new strings
 
-- No rewrite of `FounderDashboard`, `OneThingToday`, `FounderHelpNudge`, `useFounderMaturity` — they already match the brief.
-- No new "next best action" engine — `OneThingToday` is the single source.
-- No new task system, social feed, LMS, or marketplace.
-- No removal of existing widgets (StreakHero, JourneyMap, ProgressRings, InvestorReadiness, etc.) — they stay inside "Show more".
-- No changes to admin/staff/consultor/mentor dashboards.
-- No mobile redesign — current layout uses `max-w-5xl space-y-6` with responsive grids; spot-check only.
+## Verification
+- `bun run typecheck`
+- `node scripts/i18n-check.cjs` + `node scripts/i18n-lint.mjs`
+- `node scripts/secret-scan.cjs`
+- Manual smoke on `/dashboard` as founder (acceleration + incubation + unknown).
+- Confirm "Show more" persistence still works.
+- Confirm no admin/staff regressions by spot-checking `/admin`.
 
-## 4. Files I expect to touch
-
-- `src/components/dashboard/FounderDashboard.tsx` — persist advanced-open preference (G1)
-- `src/components/founder/FounderHelpNudge.tsx` — TTL on dismissal + analytics hooks (G2, G3)
-- `src/components/dashboard/OneThingToday.tsx` — analytics hook (G3)
-- (conditional) one or two empty-state tweaks (G4)
-
-Estimated diff: **<80 lines net**. No migrations, no edge-function changes, no schema changes, no i18n breakage.
-
-## 5. Verification after implementation
-
-`bun run typecheck` · `node scripts/i18n-check.cjs` · `node scripts/i18n-lint.mjs` · `node scripts/secret-scan.cjs` · manual smoke on `/dashboard` as beginner founder.
-
-## 6. Open question for you
-
-Should I proceed with **G1 + G2 only** (lowest risk, highest signal), or include **G3 analytics** as well? G3 depends on whether you already have an analytics taxonomy I should plug into — say the module name and I'll wire it; otherwise I'll skip G3 per the brief.
+## Risks / follow-ups
+- Empty-state additions need PT/EN parity — I will run `i18n-check` before declaring done.
+- If a founder surface I touch happens to share a component with admin, I'll wrap changes in role checks rather than mutating shared code.

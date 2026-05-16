@@ -89,6 +89,15 @@ export const AccelerationProgressCard = memo(function AccelerationProgressCard({
   const totalWeeks = weeks.length > 0 ? Math.max(...weeks.map(w => w.week_number)) : 12;
   const progressPercent = Math.min(((week) / totalWeeks) * 100, 100);
 
+  // Next upcoming gate (first gate whose start week is in the future)
+  const nextGate = useMemo(() => {
+    return gates.find(g => (g.target_start_week ?? 1) > week)
+      ?? gates.find(g => week >= (g.target_start_week ?? 1) && week <= (g.target_end_week ?? totalWeeks));
+  }, [gates, week, totalWeeks]);
+  const weeksToNextGate = nextGate
+    ? Math.max((nextGate.target_start_week ?? week) - week, 0)
+    : null;
+
   // Map gates to their weeks and determine status
   const gateStatus = useMemo(() => {
     return gates.map((gate, idx) => {
@@ -120,6 +129,16 @@ export const AccelerationProgressCard = memo(function AccelerationProgressCard({
               <CalendarDays className="h-3 w-3" />
               {t('workspace.currentWeek', { week, defaultValue: 'Semana {{week}}' })}
             </Badge>
+            {nextGate && weeksToNextGate !== null && weeksToNextGate > 0 && (
+              <Badge variant="outline" className="text-xs gap-1 border-primary/30 text-primary">
+                <Flag className="h-3 w-3" />
+                {t('founder.nextGateIn', {
+                  name: nextGate.name,
+                  count: weeksToNextGate,
+                  defaultValue: 'Próximo gate ({{name}}) em {{count}} sem.'
+                })}
+              </Badge>
+            )}
           </div>
         </div>
 
