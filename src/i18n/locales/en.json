@@ -3210,7 +3210,8 @@
     "viewAll": "View All",
     "viewSession": "View Session",
     "weighted": "EUR",
-    "winProbability": "Probabilidade (%)"
+    "winProbability": "Probabilidade (%)",
+    "linkCopyFailed": "Failed to generate link"
   },
   "dashboard": {
     "acrossPrograms": "Across {{count}} program",
@@ -8098,7 +8099,23 @@
     "unitEconomics": "Unit Economics",
     "unsavedChangesTitle": "Discard unsaved changes?",
     "unsavedChangesWarning": "You have unsaved changes. Are you sure you want to close?",
-    "useTemplate": "Use Template"
+    "useTemplate": "Use Template",
+    "autosave": {
+      "saving": "Saving…",
+      "saved": "Saved",
+      "savedAt": "Saved at {{time}}",
+      "localOnly": "Local backup saved",
+      "localOnlyToast": "Saved locally. We will sync as soon as connection is back.",
+      "failed": "Save failed",
+      "restoredBanner": "Recovered a local draft. You can pick up where you left off.",
+      "restoredBannerDismiss": "Got it",
+      "needHelp": "Need help?",
+      "saveNow": "Save now",
+      "flushPending": "Finishing save…",
+      "unsavedExitTitle": "Unsynced changes",
+      "unsavedExitDescription": "We could not sync right now, but a local backup is kept. Close anyway?",
+      "unsavedExitConfirm": "Close and keep local copy"
+    }
   },
   "tests": {
     "fail": "Fail",

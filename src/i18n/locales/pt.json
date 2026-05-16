@@ -3210,7 +3210,8 @@
     "viewAll": "Ver Tudo",
     "viewSession": "Ver Sessão",
     "weighted": "EUR",
-    "winProbability": "Probabilidade (%)"
+    "winProbability": "Probabilidade (%)",
+    "linkCopyFailed": "Falha ao gerar o link"
   },
   "dashboard": {
     "acrossPrograms": "Em {{count}} programa",
@@ -8098,7 +8099,23 @@
     "unitEconomics": "Unit Economics",
     "unsavedChangesTitle": "Descartar alterações não guardadas?",
     "unsavedChangesWarning": "Tem alterações não guardadas. Tem a certeza que deseja fechar?",
-    "useTemplate": "Usar Template"
+    "useTemplate": "Usar Template",
+    "autosave": {
+      "saving": "A guardar…",
+      "saved": "Guardado",
+      "savedAt": "Guardado às {{time}}",
+      "localOnly": "Cópia local guardada",
+      "localOnlyToast": "Guardado localmente. Vamos sincronizar quando a ligação voltar.",
+      "failed": "Falha ao guardar",
+      "restoredBanner": "Rascunho recuperado da cópia local. Pode continuar onde parou.",
+      "restoredBannerDismiss": "Ok, entendi",
+      "needHelp": "Precisa de ajuda?",
+      "saveNow": "Guardar agora",
+      "flushPending": "A terminar de guardar…",
+      "unsavedExitTitle": "Alterações por sincronizar",
+      "unsavedExitDescription": "Não conseguimos sincronizar agora, mas guardámos uma cópia local. Sair na mesma?",
+      "unsavedExitConfirm": "Sair e manter cópia local"
+    }
   },
   "tests": {
     "fail": "Falhou",
