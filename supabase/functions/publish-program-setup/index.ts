@@ -300,6 +300,47 @@ Deno.serve(async (req) => {
     let snapshotCaptured = false;
 
     if (programId) {
+      // ---- SNAPSHOT existing program + children BEFORE any destructive
+      // write. The catch block uses this to restore the live program when a
+      // mid-publish failure occurs, so re-publishing never damages the
+      // active program founders are using.
+      try {
+        const [progRow, stagesRows, playbooksRows, playbookItemsRows, stageKpiRows,
+               gatesRows, weeksRows, alertRulesRows, healthRows] = await Promise.all([
+          supabase.from('programs').select('*').eq('id', programId).maybeSingle(),
+          supabase.from('stages').select('*').eq('program_id', programId),
+          supabase.from('playbooks').select('*').eq('program_id', programId),
+          supabase.from('playbook_items').select('*, playbook:playbooks!inner(program_id)').eq('playbooks.program_id', programId),
+          supabase.from('stage_kpi_defaults').select('*').eq('program_id', programId),
+          supabase.from('program_gates').select('*').eq('program_id', programId),
+          supabase.from('program_weeks').select('*').eq('program_id', programId),
+          supabase.from('program_alert_rules').select('*').eq('program_id', programId),
+          supabase.from('program_health_models').select('*').eq('program_id', programId),
+        ]);
+        const snapshot = {
+          captured_at: new Date().toISOString(),
+          program: progRow.data ?? null,
+          stages: stagesRows.data ?? [],
+          playbooks: playbooksRows.data ?? [],
+          playbook_items: playbookItemsRows.data ?? [],
+          stage_kpi_defaults: stageKpiRows.data ?? [],
+          program_gates: gatesRows.data ?? [],
+          program_weeks: weeksRows.data ?? [],
+          program_alert_rules: alertRulesRows.data ?? [],
+          program_health_models: healthRows.data ?? [],
+        };
+        await supabase
+          .from('program_setup_drafts')
+          .update({ program_snapshot_json: snapshot })
+          .eq('id', draft_id);
+        snapshotCaptured = true;
+        console.log(`[publish-program-setup] Captured pre-publish snapshot for program ${programId}`);
+      } catch (snapErr) {
+        // Non-fatal — if snapshot capture fails we still proceed, but the
+        // catch block will not be able to roll back.
+        console.warn(`[publish-program-setup] Snapshot capture failed (proceeding without rollback safety):`, snapErr);
+      }
+
       // Update existing program — keep current status, do not flip to active yet.
       const { error: updateError } = await supabase
         .from('programs')
