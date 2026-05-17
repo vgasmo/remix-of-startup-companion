@@ -18,6 +18,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 const STARTUP_TYPES = ['b2b', 'b2c', 'marketplace', 'deep_tech', 'impact', 'saas'];
 const STARTUP_STAGES = ['idea', 'validation', 'early_traction', 'growth', 'scale'];
 const CATEGORIES = ['guide', 'checklist', 'example', 'template'];
+const humanize = (s: string) => s.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
 interface SupportMaterial {
   id: string;
