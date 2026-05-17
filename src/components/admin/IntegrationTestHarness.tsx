@@ -38,10 +38,10 @@ interface TestRun {
 }
 
 const TEST_DEFINITIONS = [
-  { key: 'graph_auth', name: 'Graph API Authentication', description: 'Verify Microsoft Graph API credentials are valid', icon: Wifi },
-  { key: 'get_schedule', name: 'Get Schedule / Availability', description: 'Check if we can fetch free/busy calendar data', icon: Calendar },
-  { key: 'create_event', name: 'Create Calendar Event', description: 'Test creating a calendar event (dry-run mode)', icon: Clock },
-  { key: 'teams_meeting', name: 'Teams Meeting Link', description: 'Verify Teams online meeting creation', icon: Video },
+  { key: 'graph_auth', nameKey: 'admin.integrationTests.tests.graph_auth.name', descKey: 'admin.integrationTests.tests.graph_auth.desc', nameFallback: 'Graph API Authentication', descFallback: 'Verify Microsoft Graph API credentials are valid', icon: Wifi },
+  { key: 'get_schedule', nameKey: 'admin.integrationTests.tests.get_schedule.name', descKey: 'admin.integrationTests.tests.get_schedule.desc', nameFallback: 'Get Schedule / Availability', descFallback: 'Check if we can fetch free/busy calendar data', icon: Calendar },
+  { key: 'create_event', nameKey: 'admin.integrationTests.tests.create_event.name', descKey: 'admin.integrationTests.tests.create_event.desc', nameFallback: 'Create Calendar Event', descFallback: 'Test creating a calendar event (dry-run mode)', icon: Clock },
+  { key: 'teams_meeting', nameKey: 'admin.integrationTests.tests.teams_meeting.name', descKey: 'admin.integrationTests.tests.teams_meeting.desc', nameFallback: 'Teams Meeting Link', descFallback: 'Verify Teams online meeting creation', icon: Video },
 ];
 
 export function IntegrationTestHarness() {
