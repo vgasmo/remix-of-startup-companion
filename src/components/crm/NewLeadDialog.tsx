@@ -61,8 +61,12 @@ export function NewLeadDialog() {
   // Persist draft on every change
   useEffect(() => { saveDraft(form); }, [form]);
 
+  const hasAngleBrackets = (s: string) => /[<>]/.test(s);
+  const nameInvalid = hasAngleBrackets(form.contact_name) || hasAngleBrackets(form.organization_name);
+
   const handleSubmit = async () => {
     if (!form.contact_name && !form.organization_name) return;
+    if (nameInvalid) return;
 
     await createLead.mutateAsync({
       contact_name: form.contact_name || null,
