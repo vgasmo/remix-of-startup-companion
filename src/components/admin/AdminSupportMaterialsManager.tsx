@@ -230,10 +230,10 @@ export function AdminSupportMaterialsManager() {
                         <Badge variant="secondary" className="text-xs">{material.category}</Badge>
                       )}
                       {material.startup_type && (
-                        <Badge variant="outline" className="text-xs">{material.startup_type}</Badge>
+                        <Badge variant="outline" className="text-xs">{humanize(material.startup_type)}</Badge>
                       )}
                       {material.startup_stage && (
-                        <Badge variant="outline" className="text-xs">{material.startup_stage}</Badge>
+                        <Badge variant="outline" className="text-xs">{humanize(material.startup_stage)}</Badge>
                       )}
                     </div>
                   </div>
