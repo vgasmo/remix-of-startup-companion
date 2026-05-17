@@ -2600,6 +2600,16 @@
     "viewWorkspace": "Ver Workspace"
   },
   "contractOnboarding": {
+    "autosave": {
+      "saving": "A guardar…",
+      "saved": "Guardado",
+      "localOnly": "Guardado localmente",
+      "error": "Erro ao guardar",
+      "restoreBanner": "Encontrámos edições não guardadas no seu dispositivo. Quer restaurá-las?",
+      "conflictBanner": "Este contrato foi atualizado no servidor depois do seu rascunho local. Recomendamos usar a versão do servidor.",
+      "useServer": "Usar servidor",
+      "restoreLocal": "Restaurar local"
+    },
     "acceptContract": "Li e aceito os termos do Contrato de Incubação, incluindo as condições de prestação de serviços, obrigações e direitos das partes.",
     "acceptRegulation": "Li e aceito o Regulamento da Startup Leiria, comprometendo-me a cumprir as normas e procedimentos nele estabelecidos.",
     "addRep": "+ Adicionar Representante/Gerente",
