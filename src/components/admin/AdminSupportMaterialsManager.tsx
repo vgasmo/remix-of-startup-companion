@@ -371,7 +371,7 @@ export function AdminSupportMaterialsManager() {
                   <SelectContent>
                     <SelectItem value="any">{t('admin.supportMaterials.anyStage')}</SelectItem>
                     {STARTUP_STAGES.map(stage => (
-                      <SelectItem key={stage} value={stage}>{stage.replace('_', ' ')}</SelectItem>
+                      <SelectItem key={stage} value={stage}>{humanize(stage)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
