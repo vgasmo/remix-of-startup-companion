@@ -502,6 +502,15 @@ export function AdminProgramsManager() {
                             {t('adminPrograms.draft')}
                           </Badge>
                         )}
+                        {program.is_active && getProgramDraft(program.id) && (
+                          <Badge
+                            variant="outline"
+                            className="text-destructive border-destructive/40"
+                            title={t('adminPrograms.inconsistentStateTooltip')}
+                          >
+                            ⚠ {t('adminPrograms.inconsistentState')}
+                          </Badge>
+                        )}
                       </div>
                       {program.description && <p className="text-sm text-muted-foreground truncate">{program.description}</p>}
                       {(program.start_date || program.end_date) && (
