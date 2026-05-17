@@ -10,6 +10,8 @@ import { usePrograms } from '@/hooks/useWorkspaces';
 import { useState } from 'react';
 import { Users, AlertTriangle, CheckCircle, Clock, TrendingUp } from 'lucide-react';
 import { TopRisksPanel } from './TopRisksPanel';
+import { getStartupStageLabel, STARTUP_STAGE_KEYS } from '@/lib/stageLabels';
+import type { StartupStage } from '@/types/database';
 
 const HEALTH_COLORS: Record<string, string> = {
   critical: '#ef4444',
