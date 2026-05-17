@@ -2259,7 +2259,8 @@
     "workspace": "Workspace",
     "years": "anos",
     "yes": "Sim",
-    "dismiss": "Dispensar"
+    "dismiss": "Dispensar",
+    "restore": "Restaurar"
   },
   "communication": {
     "communicationLogged": "Communication logged",
