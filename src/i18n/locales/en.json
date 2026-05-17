@@ -1525,6 +1525,8 @@
     "gates": "Gates",
     "gatesAndWeeks": "Gates & Weeks",
     "inactive": "Inactive",
+    "inconsistentState": "Inconsistent: Active + Draft",
+    "inconsistentStateTooltip": "This program is active but has unpublished draft changes. Publish or discard the draft to resolve.",
     "incubation": "Incubation",
     "name": "Name",
     "namePlaceholder": "e.g., Accelerator 2025",
