@@ -237,7 +237,7 @@ export default function AppDiagnostics() {
   const runAll = useCallback(async () => {
     setIsRunning(true);
     firstFailRef.current = null;
-    const defs = buildTests();
+    const defs = buildTests(t);
     let totalCount = defs.reduce((s, c) => s + c.tests.length, 0);
     let completed = 0;
 
