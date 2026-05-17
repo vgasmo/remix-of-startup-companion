@@ -215,11 +215,11 @@ const buildTests = (t: (k: string, d?: string) => string): { name: string; icon:
   ];
 
   return [
-    { name: 'Database Access', icon: <Database className="h-4 w-4" />, tests: dbTests },
-    { name: 'RLS Policies', icon: <Shield className="h-4 w-4" />, tests: rlsTests },
-    { name: 'Edge Functions', icon: <Zap className="h-4 w-4" />, tests: edgeFunctionTests },
-    { name: 'i18n', icon: <Globe className="h-4 w-4" />, tests: i18nTests },
-    { name: 'Business Flows', icon: <BarChart3 className="h-4 w-4" />, tests: flowTests },
+    { name: t('diagnostics.categories.db', 'Acesso à Base de Dados'), icon: <Database className="h-4 w-4" />, tests: dbTests },
+    { name: t('diagnostics.categories.rls', 'Políticas RLS'), icon: <Shield className="h-4 w-4" />, tests: rlsTests },
+    { name: t('diagnostics.categories.edge', 'Funções Edge'), icon: <Zap className="h-4 w-4" />, tests: edgeFunctionTests },
+    { name: t('diagnostics.categories.i18n', 'i18n'), icon: <Globe className="h-4 w-4" />, tests: i18nTests },
+    { name: t('diagnostics.categories.flows', 'Fluxos de Negócio'), icon: <BarChart3 className="h-4 w-4" />, tests: flowTests },
   ];
 };
 
