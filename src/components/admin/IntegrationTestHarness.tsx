@@ -246,8 +246,8 @@ export function IntegrationTestHarness() {
                 <div className="flex items-center gap-3">
                   <Icon className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <div className="font-medium">{test.name}</div>
-                    <div className="text-sm text-muted-foreground">{test.description}</div>
+                    <div className="font-medium">{t(test.nameKey, test.nameFallback)}</div>
+                    <div className="text-sm text-muted-foreground">{t(test.descKey, test.descFallback)}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
