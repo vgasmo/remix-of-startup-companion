@@ -3085,7 +3085,7 @@
     "movedTo": "Moved to {{stage}}",
     "myItems": "Meus Items",
     "myItemsOnly": "My items only",
-    "nameAngleBracketsError": "Os nomes não podem conter < ou >.",
+    "nameAngleBracketsError": "Names cannot contain < or >.",
     "nameOrOrg": "Name / Organization",
     "nenhumContratoAssociadoAEste": "Nenhum contrato associado a este intake. Crie o contrato primeiro.",
     "neverSynced": "Nunca sincronizado",
