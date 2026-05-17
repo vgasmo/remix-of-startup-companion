@@ -2405,6 +2405,8 @@
     }
   },
   "consultorTools": {
+    "duration": "Duration",
+    "purpose": "Purpose",
     "agenda": "Agenda",
     "agendaCopied": "Agenda template copied",
     "allCategories": "All",
