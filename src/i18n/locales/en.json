@@ -2259,7 +2259,8 @@
     "workspace": "Workspace",
     "years": "years",
     "yes": "Yes",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "restore": "Restore"
   },
   "communication": {
     "communicationLogged": "Communication logged",
