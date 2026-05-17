@@ -2600,6 +2600,16 @@
     "viewWorkspace": "View Workspace"
   },
   "contractOnboarding": {
+    "autosave": {
+      "saving": "Saving…",
+      "saved": "Saved",
+      "localOnly": "Saved locally",
+      "error": "Save failed",
+      "restoreBanner": "We found unsaved edits on this device. Restore them?",
+      "conflictBanner": "This contract was updated on the server after your local draft. We recommend using the server version.",
+      "useServer": "Use server",
+      "restoreLocal": "Restore local"
+    },
     "acceptContract": "I have read and accept the terms of the Incubation Contract, including the conditions of service, obligations and rights of the parties.",
     "acceptRegulation": "I have read and accept the Startup Leiria Regulation, committing to comply with the rules and procedures established therein.",
     "addRep": "+ Add Representative/Manager",
