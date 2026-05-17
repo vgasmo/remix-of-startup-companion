@@ -3483,6 +3483,13 @@
   },
   "diagnostics": {
     "allOperational": "Tudo operacional",
+    "categories": {
+      "db": "Acesso à Base de Dados",
+      "edge": "Funções Edge",
+      "flows": "Fluxos de Negócio",
+      "i18n": "i18n",
+      "rls": "Políticas RLS"
+    },
     "clickToStart": "Clique para iniciar os testes",
     "copied": "Resultados copiados",
     "issuesFound": "problemas encontrados",
