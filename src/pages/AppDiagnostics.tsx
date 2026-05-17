@@ -72,7 +72,7 @@ async function runEdgeFunctionPreflight(functionName: string): Promise<{ pass: b
   }
 }
 
-const buildTests = (): { name: string; icon: React.ReactNode; tests: TestDef[] }[] => {
+const buildTests = (t: (k: string, d?: string) => string): { name: string; icon: React.ReactNode; tests: TestDef[] }[] => {
   const dbTables = [
     'profiles', 'workspaces', 'funnel_items', 'startup_contracts', 'sessions',
     'action_items', 'consultant_notes', 'programs', 'playbook_items',
