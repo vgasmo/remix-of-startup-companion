@@ -9,6 +9,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown, ChevronRight, User, Building2, Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { EcosystemItem } from '@/hooks/useEcosystemItems';
+import { getStartupStageLabel, getFunnelStageLabel, STARTUP_STAGE_KEYS, FUNNEL_STAGE_KEYS } from '@/lib/stageLabels';
+import type { StartupStage } from '@/types/database';
+import type { FunnelStage } from '@/constants/funnelStages';
 
 interface ConsultorPortfolioViewProps {
   items: EcosystemItem[];
