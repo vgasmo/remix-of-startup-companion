@@ -191,7 +191,7 @@ export function NewLeadDialog() {
           <Button
             className="w-full"
             onClick={handleSubmit}
-            disabled={createLead.isPending || (!form.contact_name && !form.organization_name)}
+            disabled={createLead.isPending || (!form.contact_name && !form.organization_name) || nameInvalid}
           >
             {createLead.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
             {t('crm.createLead', 'Criar Lead')}
