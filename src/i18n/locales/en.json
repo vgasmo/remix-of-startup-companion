@@ -1022,7 +1022,13 @@
     "integrationTests": {
       "allPassed": "All integration tests passed!",
       "completedWithWarnings": "Integration tests completed with warnings",
-      "someFailed": "Some integration tests failed"
+      "someFailed": "Some integration tests failed",
+      "tests": {
+        "graph_auth": { "name": "Graph API Authentication", "desc": "Verify Microsoft Graph API credentials are valid" },
+        "get_schedule": { "name": "Get Schedule / Availability", "desc": "Check if we can fetch free/busy calendar data" },
+        "create_event": { "name": "Create Calendar Event", "desc": "Test creating a calendar event (dry-run mode)" },
+        "teams_meeting": { "name": "Teams Meeting Link", "desc": "Verify Teams online meeting creation" }
+      }
     },
     "integrations": "Integrations",
     "kpiCreated": "KPI definition created",
