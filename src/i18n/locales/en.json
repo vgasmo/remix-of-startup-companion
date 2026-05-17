@@ -989,8 +989,8 @@
     },
     "intakeRouting": {
       "activeLabel": "Routing active",
-      "activeOnDesc": "This rule is receiving new bookings.",
       "activeOffDesc": "Rule disabled — new bookings will fall back to the global rule.",
+      "activeOnDesc": "This rule is receiving new bookings.",
       "bookingLinks": "Booking Links",
       "bookingLinksDesc": "Generate shareable links for external booking",
       "createdAt": "Created",
@@ -1024,10 +1024,22 @@
       "completedWithWarnings": "Integration tests completed with warnings",
       "someFailed": "Some integration tests failed",
       "tests": {
-        "graph_auth": { "name": "Graph API Authentication", "desc": "Verify Microsoft Graph API credentials are valid" },
-        "get_schedule": { "name": "Get Schedule / Availability", "desc": "Check if we can fetch free/busy calendar data" },
-        "create_event": { "name": "Create Calendar Event", "desc": "Test creating a calendar event (dry-run mode)" },
-        "teams_meeting": { "name": "Teams Meeting Link", "desc": "Verify Teams online meeting creation" }
+        "create_event": {
+          "desc": "Test creating a calendar event (dry-run mode)",
+          "name": "Create Calendar Event"
+        },
+        "get_schedule": {
+          "desc": "Check if we can fetch free/busy calendar data",
+          "name": "Get Schedule / Availability"
+        },
+        "graph_auth": {
+          "desc": "Verify Microsoft Graph API credentials are valid",
+          "name": "Graph API Authentication"
+        },
+        "teams_meeting": {
+          "desc": "Verify Teams online meeting creation",
+          "name": "Teams Meeting Link"
+        }
       }
     },
     "integrations": "Integrations",
@@ -1152,6 +1164,7 @@
       "allStages": "All Stages",
       "archive": "Archive",
       "certificationDocument": "Certification Document",
+      "certified": "Certified",
       "contactEmail": "Contact Email",
       "contactName": "Contact Name",
       "contactPhone": "Contact Phone",
@@ -1197,10 +1210,9 @@
       "uploadDocument": "Attach Document",
       "viewActive": "View active",
       "viewArchived": "View archived",
+      "viewCertification": "View certification",
       "viewDocument": "View document",
-      "website": "Website",
-      "certified": "Certified",
-      "viewCertification": "View certification"
+      "website": "Website"
     },
     "stats": {
       "actionsCompleted": "actions completed",
@@ -1525,6 +1537,8 @@
     "gates": "Gates",
     "gatesAndWeeks": "Gates & Weeks",
     "inactive": "Inactive",
+    "inconsistentState": "Inconsistent: Active + Draft",
+    "inconsistentStateTooltip": "This program is active but has unpublished draft changes. Publish or discard the draft to resolve.",
     "incubation": "Incubation",
     "name": "Name",
     "namePlaceholder": "e.g., Accelerator 2025",
@@ -1890,25 +1904,25 @@
       "programRequired": "Pick a programme before uploading. New workspaces will be attached to it.",
       "uploadFailed": "Upload failed"
     },
-    "program": {
-      "label": "Programme for new workspaces",
-      "placeholder": "Select a programme…",
-      "help": "Required. Any new workspaces created from this batch will be attached to this programme. Existing workspaces matched by NIF/name keep their current programme.",
-      "selected": "Programme: {{name}}"
-    },
     "extractComplete": "Extraction complete",
-    "noPrograms": {
-      "title": "No active programmes",
-      "desc": "Create or activate a programme before importing contracts in bulk. Every imported workspace must be attached to a programme.",
-      "cta": "Go to programmes"
-    },
     "extracting": {
       "title": "AI is reading your contracts"
     },
     "noErrors": "No errors to export",
+    "noPrograms": {
+      "cta": "Go to programmes",
+      "desc": "Create or activate a programme before importing contracts in bulk. Every imported workspace must be attached to a programme.",
+      "title": "No active programmes"
+    },
     "openWizard": "Bulk import (PDF)",
     "preview": {
       "title": "PDF preview"
+    },
+    "program": {
+      "help": "Required. Any new workspaces created from this batch will be attached to this programme. Existing workspaces matched by NIF/name keep their current programme.",
+      "label": "Programme for new workspaces",
+      "placeholder": "Select a programme…",
+      "selected": "Programme: {{name}}"
     },
     "review": {
       "desc": "Click any row to edit. Uncheck to skip. Errors won't be committed.",
@@ -2130,6 +2144,7 @@
     "details": "Details",
     "disabled": "disabled",
     "discard": "Discard",
+    "dismiss": "Dismiss",
     "done": "Done",
     "download": "Download",
     "draft": "Draft",
@@ -2212,6 +2227,7 @@
     "replace": "Replace",
     "required": "Required",
     "reset": "Reset",
+    "restore": "Restore",
     "results": "results",
     "resumoGerado": "Resumo gerado",
     "retry": "Tentar novamente",
@@ -2264,9 +2280,7 @@
     "viewAll": "View all",
     "workspace": "Workspace",
     "years": "years",
-    "yes": "Yes",
-    "dismiss": "Dismiss",
-    "restore": "Restore"
+    "yes": "Yes"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -2405,8 +2419,6 @@
     }
   },
   "consultorTools": {
-    "duration": "Duration",
-    "purpose": "Purpose",
     "agenda": "Agenda",
     "agendaCopied": "Agenda template copied",
     "allCategories": "All",
@@ -2423,6 +2435,7 @@
     "copyAllQuestions": "Copy All Questions",
     "createFirstExercise": "Create your first exercise to get started",
     "downloadFile": "Descarregar ficheiro",
+    "duration": "Duration",
     "examplePhrases": "Example Phrases",
     "exercises": "Exercises",
     "expectedOutcomes": "Expected Outcomes",
@@ -2466,6 +2479,7 @@
     },
     "powerfulQuestions": "Powerful Questions",
     "proTips": "Pro Tips",
+    "purpose": "Purpose",
     "qualityGates": {
       "criteria": {
         "actions": "Action items captured after session",
@@ -2608,16 +2622,6 @@
     "viewWorkspace": "View Workspace"
   },
   "contractOnboarding": {
-    "autosave": {
-      "saving": "Saving…",
-      "saved": "Saved",
-      "localOnly": "Saved locally",
-      "error": "Save failed",
-      "restoreBanner": "We found unsaved edits on this device. Restore them?",
-      "conflictBanner": "This contract was updated on the server after your local draft. We recommend using the server version.",
-      "useServer": "Use server",
-      "restoreLocal": "Restore local"
-    },
     "acceptContract": "I have read and accept the terms of the Incubation Contract, including the conditions of service, obligations and rights of the parties.",
     "acceptRegulation": "I have read and accept the Startup Leiria Regulation, committing to comply with the rules and procedures established therein.",
     "addRep": "+ Add Representative/Manager",
@@ -2626,6 +2630,16 @@
     "addressPlaceholder": "Street, number, floor",
     "annex": "Annex",
     "area": "Area:",
+    "autosave": {
+      "conflictBanner": "This contract was updated on the server after your local draft. We recommend using the server version.",
+      "error": "Save failed",
+      "localOnly": "Saved locally",
+      "restoreBanner": "We found unsaved edits on this device. Restore them?",
+      "restoreLocal": "Restore local",
+      "saved": "Saved",
+      "saving": "Saving…",
+      "useServer": "Use server"
+    },
     "awaitingSignature": "Awaiting Signature",
     "back": "Back",
     "backLater": "Come back later",
@@ -2760,17 +2774,6 @@
       "tooLarge": "File must be under 10MB.",
       "uploading": "Uploading document..."
     }
-  },
-  "founderHelpNudge": {
-    "aria": "Help suggestion",
-    "title": "Feeling stuck? We can help.",
-    "subtitle": "Ask the assistant, search the guide, or book time with your consultant.",
-    "askAi": "Ask AI",
-    "searchHelp": "Search help",
-    "bookSession": "Book a session",
-    "defaultPrompt": "I'm a bit lost. Where should I start right now?",
-    "dashboardPrompt": "I'm on my dashboard. What should be my next step?",
-    "searchQuery": "How do I start"
   },
   "copilot": {
     "askAnything": "Ask me anything about your startup, tasks, KPIs, or ecosystem.",
@@ -2909,16 +2912,16 @@
     "contractLinkCopied": "Link público do contrato copiado! Envie ao founder por email.",
     "contratoEnviadoParaAssinatura": "Contrato enviado para assinatura!",
     "convertToStartup": "Convert to Startup",
-    "convertedToStartup": "Converted to startup",
     "convertToWorkspace": {
+      "confirm": "Convert",
       "cta": "Convert to Workspace",
-      "title": "Convert Lead to Workspace",
       "description": "Creates the startup and workspace for \"{{name}}\". The workspace stays pending until activated by contract.",
       "program": "Program",
       "selectProgram": "Select program",
       "stage": "Initial stage",
-      "confirm": "Convert"
+      "title": "Convert Lead to Workspace"
     },
+    "convertedToStartup": "Converted to startup",
     "createLead": "Criar Lead",
     "createNewLead": "Criar Nova Lead",
     "createWorkspace": "Create Workspace",
@@ -3066,6 +3069,7 @@
     },
     "linkContract": "Link Contract",
     "linkCopiado": "Link copiado!",
+    "linkCopyFailed": "Failed to generate link",
     "linkHint": "O vínculo é criado automaticamente ao converter o lead ou pode ser feito manualmente.",
     "linkedContext": "Linked Context",
     "logCall": "Log Call",
@@ -3081,6 +3085,7 @@
     "movedTo": "Moved to {{stage}}",
     "myItems": "Meus Items",
     "myItemsOnly": "My items only",
+    "nameAngleBracketsError": "Names cannot contain < or >.",
     "nameOrOrg": "Name / Organization",
     "nenhumContratoAssociadoAEste": "Nenhum contrato associado a este intake. Crie o contrato primeiro.",
     "neverSynced": "Nunca sincronizado",
@@ -3230,8 +3235,7 @@
     "viewAll": "View All",
     "viewSession": "View Session",
     "weighted": "EUR",
-    "winProbability": "Probabilidade (%)",
-    "linkCopyFailed": "Failed to generate link"
+    "winProbability": "Probabilidade (%)"
   },
   "dashboard": {
     "acrossPrograms": "Across {{count}} program",
@@ -3674,6 +3678,7 @@
     "deleteLead": "Eliminar Lead",
     "deleteLeadError": "Error deleting lead",
     "description": "Unified view of all workspaces and leads",
+    "hasStartupPortugalFilter": "Startup Portugal certified",
     "lastActivity": "Last Activity",
     "lead": "Lead",
     "leadDeleted": "Lead deleted",
@@ -3688,6 +3693,8 @@
     "owner": "Owner",
     "scheduleSession": "Schedule Session",
     "searchPlaceholder": "Search by name...",
+    "startupPortugalBadge": "Startup Portugal certified",
+    "startupPortugalShort": "SP",
     "startupsTab": "Startups & Leads",
     "tag": "Tag",
     "tagCategory": "Tag Category",
@@ -3696,10 +3703,7 @@
     "unassigned": "Sem consultor atribuído",
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
-    "workspaces": "workspaces",
-    "hasStartupPortugalFilter": "Startup Portugal certified",
-    "startupPortugalBadge": "Startup Portugal certified",
-    "startupPortugalShort": "SP"
+    "workspaces": "workspaces"
   },
   "ecosystemHub": {
     "navLabel": "Management Hub",
@@ -4010,16 +4014,16 @@
   },
   "founder": {
     "accelerationProgress": "Progresso da Aceleração",
+    "advanced": {
+      "hide": "Hide progress details",
+      "show": "Show more progress details"
+    },
+    "applicationUnderReview": "Application Under Review",
     "calmHero": {
       "eyebrow": "Your startup space",
       "greeting": "Hi{{name}}, just one step today.",
       "subtitle": "No rush. Let's move forward one thing at a time — we're here to help."
     },
-    "advanced": {
-      "show": "Show more progress details",
-      "hide": "Hide progress details"
-    },
-    "applicationUnderReview": "Application Under Review",
     "claimFirst": {
       "cta": "Verificar a Minha Startup",
       "desc": "Esta plataforma é apenas por convite. A sua startup pode já estar preparada no sistema. Vamos verificar e associá-la à sua conta.",
@@ -4046,18 +4050,18 @@
     "firstDocument": "📁 First document! Your data room is growing.",
     "gateWeeks": "Semanas {{start}}–{{end}}",
     "journeyMap": "Your Journey",
-    "nextGateIn": "Next gate ({{name}}) in {{count}}w",
     "journeyStages": {
+      "growth": "Growth",
       "idea": "Idea",
       "mvp": "MVP",
-      "validation": "Validation",
       "scaling": "Scaling",
-      "growth": "Growth"
+      "validation": "Validation"
     },
     "multiWorkspace": {
       "hint": "Está a ver ",
       "title": "Tem {{count}} startups associadas"
     },
+    "nextGateIn": "Next gate ({{name}}) in {{count}}w",
     "openWorkspace": "Abrir",
     "pending": "Pending",
     "pendingContract": {
@@ -4124,6 +4128,17 @@
     "teamSupport": "The team is here to help. Get in touch if you need anything.",
     "welcomeBack": "Welcome back",
     "yourProgress": "Your progress"
+  },
+  "founderHelpNudge": {
+    "aria": "Help suggestion",
+    "askAi": "Ask AI",
+    "bookSession": "Book a session",
+    "dashboardPrompt": "I'm on my dashboard. What should be my next step?",
+    "defaultPrompt": "I'm a bit lost. Where should I start right now?",
+    "searchHelp": "Search help",
+    "searchQuery": "How do I start",
+    "subtitle": "Ask the assistant, search the guide, or book time with your consultant.",
+    "title": "Feeling stuck? We can help."
   },
   "founderHome": {
     "bookFirstContact": "Book Your First Meeting",
@@ -6112,7 +6127,6 @@
     "updatedDescription": "Workspace priority has been updated"
   },
   "programSetup": {
-    "restoredFromBackup": "We restored your latest unsaved edits.",
     "acceleration": {
       "addDeliverable": "Add",
       "addGate": "Add Gate",
@@ -6221,6 +6235,7 @@
     "publishProgram": "Publish Program",
     "publishSuccess": "🎉 Program published successfully!",
     "publishing": "🎉 Publishing...",
+    "restoredFromBackup": "We restored your latest unsaved edits.",
     "saveAndContinue": "Save & Continue",
     "saving": "A guardar...",
     "selectToClone": "Select a program to clone...",
@@ -6336,33 +6351,6 @@
     "organization": "Organization / Startup Name",
     "organizationPlaceholder": "Your company or project name",
     "pitchDeck": "Presentation / Pitch Deck",
-    "refEvent": "Event",
-    "refPress": "Press / Media",
-    "refReferral": "Referral",
-    "refSocial": "Social Media",
-    "refWebsite": "Website",
-    "referralPlaceholder": "Select",
-    "referralSource": "How did you hear about us?",
-    "sector": "Sector / Industry",
-    "sectorPlaceholder": "Select sector",
-    "selectProgram": "Select Program",
-    "selectProgramDesc": "Choose the program you'd like to apply to",
-    "selectTime": "Select a Time",
-    "selectTimeDesc": "Choose a convenient time for your first contact session",
-    "stage": "Startup Stage",
-    "stageEarlyRevenue": "Early Revenue",
-    "stageGrowth": "Growth / Scale",
-    "stageIdea": "Idea / Concept",
-    "stageMvp": "MVP / Prototype",
-    "stagePlaceholder": "Select stage",
-    "subtitle": "Schedule your first consultation with our team",
-    "teamForming": "Forming",
-    "title": "Book a Meeting",
-    "uploadPitch": "Upload presentation (PDF, PPTX, up to 10MB)",
-    "whatToDiscuss": "What would you like to discuss?",
-    "yourDetails": "Your Details",
-    "selectPlaceholder": "Select",
-    "unsure": "Not sure",
     "q1ProjectDescription": "Briefly describe your project or reason for contact",
     "q1ProjectDescriptionPlaceholder": "In a few lines, tell us about your project or the reason for this contact...",
     "q2ProjectName": "Project name",
@@ -6376,9 +6364,36 @@
     "q8PersonalIntro": "Give a brief personal introduction",
     "q8PersonalIntroPlaceholder": "Tell us about yourself: background, education, relevant experience...",
     "q9ReferralSource": "How did you hear about Startup Leiria?",
+    "refEvent": "Event",
+    "refPress": "Press / Media",
+    "refReferral": "Referral",
+    "refSocial": "Social Media",
+    "refWebsite": "Website",
+    "referralPlaceholder": "Select",
+    "referralSource": "How did you hear about us?",
+    "sector": "Sector / Industry",
+    "sectorPlaceholder": "Select sector",
+    "selectPlaceholder": "Select",
+    "selectProgram": "Select Program",
+    "selectProgramDesc": "Choose the program you'd like to apply to",
+    "selectTime": "Select a Time",
+    "selectTimeDesc": "Choose a convenient time for your first contact session",
+    "stage": "Startup Stage",
+    "stageEarlyRevenue": "Early Revenue",
+    "stageGrowth": "Growth / Scale",
+    "stageIdea": "Idea / Concept",
     "stageIdeation": "Ideation",
+    "stageMvp": "MVP / Prototype",
+    "stagePlaceholder": "Select stage",
+    "stageScale": "Scale",
     "stageValidation": "Validation",
-    "stageScale": "Scale"
+    "subtitle": "Schedule your first consultation with our team",
+    "teamForming": "Forming",
+    "title": "Book a Meeting",
+    "unsure": "Not sure",
+    "uploadPitch": "Upload presentation (PDF, PPTX, up to 10MB)",
+    "whatToDiscuss": "What would you like to discuss?",
+    "yourDetails": "Your Details"
   },
   "quality": {
     "blockingWarning": "This {{entityType}} cannot be marked as ready until the score reaches 70+",
@@ -6746,7 +6761,6 @@
     "title": "Session Timeout Warning"
   },
   "sessions": {
-    "askConsultor": "Ask your consultant",
     "actionItemCreated": "Action item created",
     "actionItemsFromSession": "Action Items from this Session",
     "actions": "Actions",
@@ -6783,6 +6797,7 @@
     "appendToNotes": "Append To Notes",
     "applyAll": "Aplicar Todas",
     "applySelected": "Apply Selected",
+    "askConsultor": "Ask your consultant",
     "availableSlots": "Available Slots",
     "browserNotSupported": "Your browser does not support audio recording",
     "calendarInvites": "Calendar Invites",
@@ -7386,8 +7401,12 @@
     "noExpiringContracts": "No contracts expiring in the next 30 days.",
     "noOverdueInvoices": "No overdue invoices. All up to date!",
     "noSessions": "No sessions",
+    "noStartupPortugalCertified": "No startups certified by Startup Portugal yet.",
+    "noStartupPortugalInPortfolio": "No Startup Portugal certified startups in this portfolio.",
     "onboardingPipeline": "Onboarding Pipeline",
     "onboardingPipelineDesc": "Overview of startup activation status in the ecosystem.",
+    "onlyStartupPortugal": "Only Startup Portugal",
+    "onlyStartupPortugalHint": "Show only Startup Portugal certified startups",
     "overdue": "overdue",
     "overdueActions": "overdue actions",
     "overdueSince": "Overdue since {{date}}",
@@ -7412,18 +7431,14 @@
       "reach": "Reach out",
       "title": "Silent Disengagement"
     },
+    "startupPortugalTitle": "Startup Portugal certified",
     "title": "Dashboard",
     "triage": "Smart Triage & Intake",
     "triageDesc": "What needs a decision now: approvals, claims and routing.",
     "upToDate": "Up to date",
-    "onlyStartupPortugalHint": "Show only Startup Portugal certified startups",
-    "onlyStartupPortugal": "Only Startup Portugal",
-    "viewConsultantPortfolioHint": "View this consultant’s portfolio",
+    "viewAllStartups": "View all startups",
     "viewConsultantPortfolio": "View consultant portfolio",
-    "noStartupPortugalInPortfolio": "No Startup Portugal certified startups in this portfolio.",
-    "startupPortugalTitle": "Startup Portugal certified",
-    "noStartupPortugalCertified": "No startups certified by Startup Portugal yet.",
-    "viewAllStartups": "View all startups"
+    "viewConsultantPortfolioHint": "View this consultant’s portfolio"
   },
   "staffTasks": {
     "moreTasks": "more tasks",
@@ -7638,10 +7653,6 @@
     "title": "Co-founders"
   },
   "templates": {
-    "emptyAiPrompt": "Which template should I start with for my startup?",
-    "emptyAskAi": "Ask AI",
-    "emptyOpenGuide": "Open guide",
-    "sectionNav": "Sections",
     "actionsCreatedFromAI": "Created {{count}} action items from AI recommendations",
     "aiAnalysis": "AI Analysis",
     "aiAnalysisComplete": "AI analysis complete",
@@ -7669,6 +7680,27 @@
     "approved": "Approved",
     "askAiCoach": "Ask AI Coach",
     "assumptionsToTest": "Assumptions to Test",
+    "autosave": {
+      "conflictBanner": "This contract was updated on the server after your local draft. We recommend keeping the server version.",
+      "error": "Save error",
+      "failed": "Save failed",
+      "flushPending": "Finishing save…",
+      "localOnly": "Local backup saved",
+      "localOnlyToast": "Saved locally. We will sync as soon as connection is back.",
+      "needHelp": "Need help?",
+      "restoreBanner": "We found unsaved edits on your device. Want to restore them?",
+      "restoreLocal": "Restore local",
+      "restoredBanner": "Recovered a local draft. You can pick up where you left off.",
+      "restoredBannerDismiss": "Got it",
+      "saveNow": "Save now",
+      "saved": "Saved",
+      "savedAt": "Saved at {{time}}",
+      "saving": "Saving…",
+      "unsavedExitConfirm": "Close and keep local copy",
+      "unsavedExitDescription": "We could not sync right now, but a local backup is kept. Close anyway?",
+      "unsavedExitTitle": "Unsynced changes",
+      "useServer": "Use server"
+    },
     "canvas": {
       "bmc": {
         "channels": "Channels",
@@ -8017,6 +8049,9 @@
     },
     "dueAndOwner": "{{days}} • {{owner}}",
     "dueInDaysShort": "{{count}}d",
+    "emptyAiPrompt": "Which template should I start with for my startup?",
+    "emptyAskAi": "Ask AI",
+    "emptyOpenGuide": "Open guide",
     "emptyStateDesc": "Templates help structure your thinking. Your consultant will add templates relevant to your stage.",
     "emptyStateTitle": "No templates yet",
     "export": "Export",
@@ -8124,6 +8159,7 @@
     "requestChanges": "Request Changes",
     "reviewNotesOptional": "Review Notes (optional)",
     "reviewerFeedback": "Reviewer feedback",
+    "sectionNav": "Sections",
     "severity": {
       "high": "HIGH",
       "low": "LOW",
@@ -8140,28 +8176,7 @@
     "unitEconomics": "Unit Economics",
     "unsavedChangesTitle": "Discard unsaved changes?",
     "unsavedChangesWarning": "You have unsaved changes. Are you sure you want to close?",
-    "useTemplate": "Use Template",
-    "autosave": {
-      "saving": "Saving…",
-      "saved": "Saved",
-      "savedAt": "Saved at {{time}}",
-      "localOnly": "Local backup saved",
-      "localOnlyToast": "Saved locally. We will sync as soon as connection is back.",
-      "failed": "Save failed",
-      "restoredBanner": "Recovered a local draft. You can pick up where you left off.",
-      "conflictBanner": "This contract was updated on the server after your local draft. We recommend keeping the server version.",
-      "useServer": "Use server",
-      "restoreLocal": "Restore local",
-      "restoredBannerDismiss": "Got it",
-      "needHelp": "Need help?",
-      "saveNow": "Save now",
-      "flushPending": "Finishing save…",
-      "unsavedExitTitle": "Unsynced changes",
-      "unsavedExitDescription": "We could not sync right now, but a local backup is kept. Close anyway?",
-      "unsavedExitConfirm": "Close and keep local copy",
-      "error": "Save error",
-      "restoreBanner": "We found unsaved edits on your device. Want to restore them?"
-    }
+    "useTemplate": "Use Template"
   },
   "tests": {
     "fail": "Fail",

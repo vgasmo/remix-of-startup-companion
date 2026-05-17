@@ -10,6 +10,8 @@ import { usePrograms } from '@/hooks/useWorkspaces';
 import { useState } from 'react';
 import { Users, AlertTriangle, CheckCircle, Clock, TrendingUp } from 'lucide-react';
 import { TopRisksPanel } from './TopRisksPanel';
+import { getStartupStageLabel, STARTUP_STAGE_KEYS } from '@/lib/stageLabels';
+import type { StartupStage } from '@/types/database';
 
 const HEALTH_COLORS: Record<string, string> = {
   critical: '#ef4444',
@@ -82,8 +84,12 @@ export function CohortAnalytics() {
   ) || [];
 
   // Group by stage for stacked view
+  const stageLabel = (stage: string) =>
+    (stage as StartupStage) in STARTUP_STAGE_KEYS
+      ? getStartupStageLabel(t, stage as StartupStage)
+      : stage.replace(/_/g, ' ');
   const stageChartData = Array.from(new Set(stageData.map(d => d.stage))).map(stage => ({
-    stage,
+    stage: stageLabel(stage),
     count: stageData.filter(d => d.stage === stage).reduce((sum, d) => sum + d.count, 0),
   }));
 

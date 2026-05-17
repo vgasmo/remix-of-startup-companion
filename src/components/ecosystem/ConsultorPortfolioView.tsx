@@ -9,6 +9,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown, ChevronRight, User, Building2, Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { EcosystemItem } from '@/hooks/useEcosystemItems';
+import { getStartupStageLabel, getFunnelStageLabel, STARTUP_STAGE_KEYS, FUNNEL_STAGE_KEYS } from '@/lib/stageLabels';
+import type { StartupStage } from '@/types/database';
+import type { FunnelStage } from '@/constants/funnelStages';
 
 interface ConsultorPortfolioViewProps {
   items: EcosystemItem[];
@@ -119,7 +122,13 @@ export function ConsultorPortfolioView({ items }: ConsultorPortfolioViewProps) {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{item.name || t('common.unnamed')}</p>
                           <p className="text-xs text-muted-foreground">
-                            {item.program_name || '—'} · {item.stage || '—'}
+                            {item.program_name || '—'} · {item.stage
+                              ? (item.stage in STARTUP_STAGE_KEYS
+                                  ? getStartupStageLabel(t, item.stage as StartupStage)
+                                  : item.stage in FUNNEL_STAGE_KEYS
+                                    ? getFunnelStageLabel(t, item.stage as FunnelStage)
+                                    : item.stage.replace(/_/g, ' '))
+                              : '—'}
                           </p>
                         </div>
                         {item.health_score && (

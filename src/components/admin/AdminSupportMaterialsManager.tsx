@@ -18,6 +18,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 const STARTUP_TYPES = ['b2b', 'b2c', 'marketplace', 'deep_tech', 'impact', 'saas'];
 const STARTUP_STAGES = ['idea', 'validation', 'early_traction', 'growth', 'scale'];
 const CATEGORIES = ['guide', 'checklist', 'example', 'template'];
+const humanize = (s: string) => s.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
 interface SupportMaterial {
   id: string;
@@ -229,10 +230,10 @@ export function AdminSupportMaterialsManager() {
                         <Badge variant="secondary" className="text-xs">{material.category}</Badge>
                       )}
                       {material.startup_type && (
-                        <Badge variant="outline" className="text-xs">{material.startup_type}</Badge>
+                        <Badge variant="outline" className="text-xs">{humanize(material.startup_type)}</Badge>
                       )}
                       {material.startup_stage && (
-                        <Badge variant="outline" className="text-xs">{material.startup_stage}</Badge>
+                        <Badge variant="outline" className="text-xs">{humanize(material.startup_stage)}</Badge>
                       )}
                     </div>
                   </div>
@@ -370,7 +371,7 @@ export function AdminSupportMaterialsManager() {
                   <SelectContent>
                     <SelectItem value="any">{t('admin.supportMaterials.anyStage')}</SelectItem>
                     {STARTUP_STAGES.map(stage => (
-                      <SelectItem key={stage} value={stage}>{stage.replace('_', ' ')}</SelectItem>
+                      <SelectItem key={stage} value={stage}>{humanize(stage)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

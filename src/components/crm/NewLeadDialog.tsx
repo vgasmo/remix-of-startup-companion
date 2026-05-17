@@ -61,8 +61,12 @@ export function NewLeadDialog() {
   // Persist draft on every change
   useEffect(() => { saveDraft(form); }, [form]);
 
+  const hasAngleBrackets = (s: string) => /[<>]/.test(s);
+  const nameInvalid = hasAngleBrackets(form.contact_name) || hasAngleBrackets(form.organization_name);
+
   const handleSubmit = async () => {
     if (!form.contact_name && !form.organization_name) return;
+    if (nameInvalid) return;
 
     await createLead.mutateAsync({
       contact_name: form.contact_name || null,
@@ -102,6 +106,7 @@ export function NewLeadDialog() {
                 value={form.contact_name}
                 onChange={e => setForm(f => ({ ...f, contact_name: e.target.value }))}
                 placeholder="João Silva"
+                aria-invalid={hasAngleBrackets(form.contact_name) || undefined}
               />
             </div>
             <div>
@@ -110,9 +115,15 @@ export function NewLeadDialog() {
                 value={form.organization_name}
                 onChange={e => setForm(f => ({ ...f, organization_name: e.target.value }))}
                 placeholder="Startup XYZ"
+                aria-invalid={hasAngleBrackets(form.organization_name) || undefined}
               />
             </div>
           </div>
+          {nameInvalid && (
+            <p className="text-xs text-destructive">
+              {t('crm.nameAngleBracketsError', 'Os nomes não podem conter < ou >.')}
+            </p>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Email</Label>
@@ -180,7 +191,7 @@ export function NewLeadDialog() {
           <Button
             className="w-full"
             onClick={handleSubmit}
-            disabled={createLead.isPending || (!form.contact_name && !form.organization_name)}
+            disabled={createLead.isPending || (!form.contact_name && !form.organization_name) || nameInvalid}
           >
             {createLead.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
             {t('crm.createLead', 'Criar Lead')}
