@@ -122,7 +122,13 @@ export function ConsultorPortfolioView({ items }: ConsultorPortfolioViewProps) {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{item.name || t('common.unnamed')}</p>
                           <p className="text-xs text-muted-foreground">
-                            {item.program_name || '—'} · {item.stage || '—'}
+                            {item.program_name || '—'} · {item.stage
+                              ? (item.stage in STARTUP_STAGE_KEYS
+                                  ? getStartupStageLabel(t, item.stage as StartupStage)
+                                  : item.stage in FUNNEL_STAGE_KEYS
+                                    ? getFunnelStageLabel(t, item.stage as FunnelStage)
+                                    : item.stage.replace(/_/g, ' '))
+                              : '—'}
                           </p>
                         </div>
                         {item.health_score && (
