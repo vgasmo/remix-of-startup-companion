@@ -3482,16 +3482,23 @@
     "wednesday": "Quarta"
   },
   "diagnostics": {
-    "allOperational": "Tudo operacional",
-    "clickToStart": "Clique para iniciar os testes",
-    "copied": "Resultados copiados",
-    "issuesFound": "problemas encontrados",
-    "ready": "Pronto para correr",
-    "runAll": "Correr Todos os Testes",
-    "running": "A correr...",
-    "subtitle": "Testes automáticos a todas as camadas",
-    "testsPassed": "testes passaram",
-    "title": "Diagnósticos da Plataforma"
+    "allOperational": "All operational",
+    "categories": {
+      "db": "Database Access",
+      "edge": "Edge Functions",
+      "flows": "Business Flows",
+      "i18n": "i18n",
+      "rls": "RLS Policies"
+    },
+    "clickToStart": "Click to start the tests",
+    "copied": "Results copied",
+    "issuesFound": "issues found",
+    "ready": "Ready to run",
+    "runAll": "Run All Tests",
+    "running": "Running...",
+    "subtitle": "Automated tests across all layers",
+    "testsPassed": "tests passed",
+    "title": "Platform Diagnostics"
   },
   "discounts": {
     "active": "Active",
