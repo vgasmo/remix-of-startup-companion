@@ -106,6 +106,7 @@ export function NewLeadDialog() {
                 value={form.contact_name}
                 onChange={e => setForm(f => ({ ...f, contact_name: e.target.value }))}
                 placeholder="João Silva"
+                aria-invalid={hasAngleBrackets(form.contact_name) || undefined}
               />
             </div>
             <div>
@@ -114,9 +115,15 @@ export function NewLeadDialog() {
                 value={form.organization_name}
                 onChange={e => setForm(f => ({ ...f, organization_name: e.target.value }))}
                 placeholder="Startup XYZ"
+                aria-invalid={hasAngleBrackets(form.organization_name) || undefined}
               />
             </div>
           </div>
+          {nameInvalid && (
+            <p className="text-xs text-destructive">
+              {t('crm.nameAngleBracketsError', 'Os nomes não podem conter < ou >.')}
+            </p>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Email</Label>
