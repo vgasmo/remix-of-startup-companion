@@ -72,7 +72,7 @@ async function runEdgeFunctionPreflight(functionName: string): Promise<{ pass: b
   }
 }
 
-const buildTests = (): { name: string; icon: React.ReactNode; tests: TestDef[] }[] => {
+const buildTests = (t: (k: string, d?: any) => string): { name: string; icon: React.ReactNode; tests: TestDef[] }[] => {
   const dbTables = [
     'profiles', 'workspaces', 'funnel_items', 'startup_contracts', 'sessions',
     'action_items', 'consultant_notes', 'programs', 'playbook_items',
@@ -215,11 +215,11 @@ const buildTests = (): { name: string; icon: React.ReactNode; tests: TestDef[] }
   ];
 
   return [
-    { name: 'Database Access', icon: <Database className="h-4 w-4" />, tests: dbTests },
-    { name: 'RLS Policies', icon: <Shield className="h-4 w-4" />, tests: rlsTests },
-    { name: 'Edge Functions', icon: <Zap className="h-4 w-4" />, tests: edgeFunctionTests },
-    { name: 'i18n', icon: <Globe className="h-4 w-4" />, tests: i18nTests },
-    { name: 'Business Flows', icon: <BarChart3 className="h-4 w-4" />, tests: flowTests },
+    { name: t('diagnostics.categories.db', 'Acesso à Base de Dados'), icon: <Database className="h-4 w-4" />, tests: dbTests },
+    { name: t('diagnostics.categories.rls', 'Políticas RLS'), icon: <Shield className="h-4 w-4" />, tests: rlsTests },
+    { name: t('diagnostics.categories.edge', 'Funções Edge'), icon: <Zap className="h-4 w-4" />, tests: edgeFunctionTests },
+    { name: t('diagnostics.categories.i18n', 'i18n'), icon: <Globe className="h-4 w-4" />, tests: i18nTests },
+    { name: t('diagnostics.categories.flows', 'Fluxos de Negócio'), icon: <BarChart3 className="h-4 w-4" />, tests: flowTests },
   ];
 };
 
@@ -237,7 +237,7 @@ export default function AppDiagnostics() {
   const runAll = useCallback(async () => {
     setIsRunning(true);
     firstFailRef.current = null;
-    const defs = buildTests();
+    const defs = buildTests(t as any);
     let totalCount = defs.reduce((s, c) => s + c.tests.length, 0);
     let completed = 0;
 

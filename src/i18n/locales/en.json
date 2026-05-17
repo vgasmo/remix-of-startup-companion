@@ -1022,7 +1022,13 @@
     "integrationTests": {
       "allPassed": "All integration tests passed!",
       "completedWithWarnings": "Integration tests completed with warnings",
-      "someFailed": "Some integration tests failed"
+      "someFailed": "Some integration tests failed",
+      "tests": {
+        "graph_auth": { "name": "Graph API Authentication", "desc": "Verify Microsoft Graph API credentials are valid" },
+        "get_schedule": { "name": "Get Schedule / Availability", "desc": "Check if we can fetch free/busy calendar data" },
+        "create_event": { "name": "Create Calendar Event", "desc": "Test creating a calendar event (dry-run mode)" },
+        "teams_meeting": { "name": "Teams Meeting Link", "desc": "Verify Teams online meeting creation" }
+      }
     },
     "integrations": "Integrations",
     "kpiCreated": "KPI definition created",
@@ -2399,6 +2405,8 @@
     }
   },
   "consultorTools": {
+    "duration": "Duration",
+    "purpose": "Purpose",
     "agenda": "Agenda",
     "agendaCopied": "Agenda template copied",
     "allCategories": "All",
@@ -3476,16 +3484,23 @@
     "wednesday": "Quarta"
   },
   "diagnostics": {
-    "allOperational": "Tudo operacional",
-    "clickToStart": "Clique para iniciar os testes",
-    "copied": "Resultados copiados",
-    "issuesFound": "problemas encontrados",
-    "ready": "Pronto para correr",
-    "runAll": "Correr Todos os Testes",
-    "running": "A correr...",
-    "subtitle": "Testes automáticos a todas as camadas",
-    "testsPassed": "testes passaram",
-    "title": "Diagnósticos da Plataforma"
+    "allOperational": "All operational",
+    "categories": {
+      "db": "Database Access",
+      "edge": "Edge Functions",
+      "flows": "Business Flows",
+      "i18n": "i18n",
+      "rls": "RLS Policies"
+    },
+    "clickToStart": "Click to start the tests",
+    "copied": "Results copied",
+    "issuesFound": "issues found",
+    "ready": "Ready to run",
+    "runAll": "Run All Tests",
+    "running": "Running...",
+    "subtitle": "Automated tests across all layers",
+    "testsPassed": "tests passed",
+    "title": "Platform Diagnostics"
   },
   "discounts": {
     "active": "Active",
