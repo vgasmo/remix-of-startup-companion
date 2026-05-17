@@ -1525,6 +1525,8 @@
     "gates": "Gates",
     "gatesAndWeeks": "Gates & Semanas",
     "inactive": "Inativo",
+    "inconsistentState": "Inconsistente: Ativo + Rascunho",
+    "inconsistentStateTooltip": "Este programa está ativo mas tem alterações em rascunho por publicar. Publique ou descarte o rascunho para resolver.",
     "incubation": "Incubação",
     "name": "Nome",
     "namePlaceholder": "ex.: Aceleradora 2025",
