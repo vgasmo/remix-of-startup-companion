@@ -203,11 +203,12 @@ serve(async (req) => {
         .eq("active", true)
         .order("scope", { ascending: true });
 
-      // Fetch all active programs
+      // Fetch all published, active programs (exclude drafts/archived)
       const { data: allPrograms } = await supabase
         .from("programs")
         .select("id, name")
         .eq("is_active", true)
+        .eq("status", "active")
         .order("name");
 
       // Build routing options: global + all active programs
@@ -314,11 +315,12 @@ serve(async (req) => {
           .eq("active", true)
           .order("scope", { ascending: true });
 
-        // Fetch all active programs to show all options
+        // Fetch all published, active programs to show all options (exclude drafts/archived)
         const { data: allPrograms } = await supabase
           .from("programs")
           .select("id, name")
           .eq("is_active", true)
+          .eq("status", "active")
           .order("name");
 
         // Build routing options: global + all active programs
