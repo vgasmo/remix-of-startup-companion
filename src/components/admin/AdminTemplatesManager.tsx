@@ -374,7 +374,7 @@ export function AdminTemplatesManager() {
           setEditingTemplate(null);
         }
       }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogContent className="max-w-2xl max-h-[90vh] !flex !flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>{editingTemplate ? t('adminTemplates.editTemplate', { defaultValue: 'Edit Template' }) : t('adminTemplates.newTemplate', { defaultValue: 'New Template' })}</DialogTitle>
           </DialogHeader>
