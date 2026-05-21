@@ -720,7 +720,7 @@ function TemplateEditorDialog({
   return (
     <>
     <Dialog open={!!template} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0">
+      <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] !flex !flex-col p-0 gap-0 overflow-hidden">
         <DialogHeader className="shrink-0 px-6 pt-6 pb-3 border-b">
           <DialogTitle className="flex items-center justify-between gap-3">
             <span className="truncate">{getLocalizedTemplateMeta(template, t).title}</span>
