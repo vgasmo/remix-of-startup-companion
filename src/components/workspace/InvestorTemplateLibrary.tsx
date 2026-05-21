@@ -336,7 +336,7 @@ export function InvestorTemplateLibrary({ onSelectTemplate }: InvestorTemplateLi
 
       {/* Editor Dialog - B3 Fix: Improved scroll layout */}
       <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col overflow-hidden">
+        <DialogContent className="max-w-4xl h-[90vh] !flex !flex-col overflow-hidden">
           {selectedTemplate && (
             <>
               <DialogHeader className="flex-shrink-0">
