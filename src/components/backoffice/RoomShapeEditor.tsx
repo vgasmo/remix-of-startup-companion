@@ -140,7 +140,7 @@ export function RoomShapeEditor({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] !flex !flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {t('admin.backoffice.editRoomShape', 'Edit Room Shape')}

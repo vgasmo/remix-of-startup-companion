@@ -129,7 +129,7 @@ export function InteractiveFloorMapViewer({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl w-[95vw] max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-5xl w-[95vw] max-h-[90vh] !flex !flex-col overflow-hidden">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
