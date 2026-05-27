@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.ensure_outlook_calendar_settings() FROM PUBLIC, anon, authenticated;
