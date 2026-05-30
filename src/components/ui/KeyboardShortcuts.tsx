@@ -142,7 +142,7 @@ export function KeyboardShortcutsDialog() {
             ))}
           </div>
         </ScrollArea>
-        <div className="flex items-center justify-center gap-2 pt-2 border-t">
+        <div className="shrink-0 flex items-center justify-center gap-2 pt-2 border-t">
           <span className="text-xs text-muted-foreground">{t('shortcuts.pressAnytime', 'Press')}</span>
           <kbd className="px-1.5 py-0.5 text-xs font-mono rounded bg-muted border">?</kbd>
           <span className="text-xs text-muted-foreground">{t('shortcuts.toShow', 'to show')}</span>
