@@ -93,8 +93,8 @@ export function KeyboardShortcutsDialog() {
           </kbd>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
+      <DialogContent className="max-w-lg max-h-[90vh] !flex !flex-col overflow-hidden">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Keyboard className="h-5 w-5 text-primary" />
             {t('shortcuts.title', 'Keyboard Shortcuts')}
@@ -103,7 +103,7 @@ export function KeyboardShortcutsDialog() {
             {t('shortcuts.description', 'Navigate faster with keyboard shortcuts')}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="max-h-[60vh]">
+        <ScrollArea className="flex-1 min-h-0">
           <div className="space-y-5 py-2 pr-4">
             {categories.map(category => (
               <div key={category}>
