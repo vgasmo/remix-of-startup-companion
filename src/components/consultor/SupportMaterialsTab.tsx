@@ -247,8 +247,8 @@ function MaterialDetailDialog({
   const { t } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh]">
-        <DialogHeader>
+      <DialogContent className="max-w-3xl max-h-[90vh] !flex !flex-col overflow-hidden">
+        <DialogHeader className="shrink-0">
           <div className="flex items-center gap-2">
             <DialogTitle>{material.title}</DialogTitle>
             {material.startup_type && (
@@ -257,7 +257,7 @@ function MaterialDetailDialog({
           </div>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[70vh] pr-4">
+        <ScrollArea className="flex-1 min-h-0 pr-4">
           <div className="space-y-6 py-2">
             {/* Meta */}
             <div className="flex flex-wrap gap-2">
