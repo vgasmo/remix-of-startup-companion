@@ -113,13 +113,13 @@ export function ExerciseFormDialog({ open, onOpenChange, exercise }: ExerciseFor
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh]">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] !flex !flex-col overflow-hidden">
+        <DialogHeader className="shrink-0">
           <DialogTitle>{exercise ? t('exercises.editExercise', 'Editar Exercício') : t('exercises.createNew', 'Criar Novo Exercício')}</DialogTitle>
           <DialogDescription>{t('exercises.formDesc', 'Defina os detalhes do exercício, passos e orientações de facilitação.')}</DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[60vh] pr-4">
+        <ScrollArea className="flex-1 min-h-0 pr-4">
           <div className="space-y-6 py-2">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
@@ -226,7 +226,7 @@ export function ExerciseFormDialog({ open, onOpenChange, exercise }: ExerciseFor
           </div>
         </ScrollArea>
 
-        <DialogFooter>
+        <DialogFooter className="shrink-0">
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel', 'Cancelar')}</Button>
           <Button onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending}>
             {exercise ? t('exercises.saveChanges', 'Guardar Alterações') : t('exercises.createExercise', 'Criar Exercício')}

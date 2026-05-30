@@ -93,8 +93,8 @@ export function KeyboardShortcutsDialog() {
           </kbd>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
+      <DialogContent className="max-w-lg max-h-[90vh] !flex !flex-col overflow-hidden">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Keyboard className="h-5 w-5 text-primary" />
             {t('shortcuts.title', 'Keyboard Shortcuts')}
@@ -103,7 +103,7 @@ export function KeyboardShortcutsDialog() {
             {t('shortcuts.description', 'Navigate faster with keyboard shortcuts')}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="max-h-[60vh]">
+        <ScrollArea className="flex-1 min-h-0">
           <div className="space-y-5 py-2 pr-4">
             {categories.map(category => (
               <div key={category}>
@@ -142,7 +142,7 @@ export function KeyboardShortcutsDialog() {
             ))}
           </div>
         </ScrollArea>
-        <div className="flex items-center justify-center gap-2 pt-2 border-t">
+        <div className="shrink-0 flex items-center justify-center gap-2 pt-2 border-t">
           <span className="text-xs text-muted-foreground">{t('shortcuts.pressAnytime', 'Press')}</span>
           <kbd className="px-1.5 py-0.5 text-xs font-mono rounded bg-muted border">?</kbd>
           <span className="text-xs text-muted-foreground">{t('shortcuts.toShow', 'to show')}</span>
