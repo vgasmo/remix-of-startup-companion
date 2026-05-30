@@ -178,7 +178,7 @@ export function PlaybookEvidenceDialog({ workspaceId, playbookItemId, playbookIt
 
         {/* Submit new evidence (founders only) */}
         {canWrite && !isStaff && (
-          <div className="space-y-3 border-t pt-3">
+          <div className="shrink-0 space-y-3 border-t pt-3">
             <Textarea
               placeholder={t('playbooks.evidence.notesPlaceholder', 'Descreva o que fez, resultados obtidos...')}
               value={notes}
