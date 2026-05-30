@@ -293,10 +293,10 @@ export function InvestorTemplateLibrary({ onSelectTemplate }: InvestorTemplateLi
 
       {/* Preview Dialog */}
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh]">
+        <DialogContent className="max-w-2xl max-h-[80vh] !flex !flex-col overflow-hidden">
           {selectedTemplate && (
             <>
-              <DialogHeader>
+              <DialogHeader className="shrink-0">
                 <DialogTitle className="flex items-center gap-2">
                   {selectedTemplate.name}
                   <Badge variant="outline" className={audienceLabels[selectedTemplate.audience].color}>
@@ -306,7 +306,7 @@ export function InvestorTemplateLibrary({ onSelectTemplate }: InvestorTemplateLi
                 <DialogDescription>{selectedTemplate.description}</DialogDescription>
               </DialogHeader>
               
-              <ScrollArea className="max-h-[50vh] pr-4">
+              <ScrollArea className="flex-1 min-h-0 pr-4">
                 <div className="space-y-4">
                   {selectedTemplate.sections.map((section, i) => (
                     <div key={i} className="border rounded-lg p-4">
@@ -319,7 +319,7 @@ export function InvestorTemplateLibrary({ onSelectTemplate }: InvestorTemplateLi
                 </div>
               </ScrollArea>
 
-              <DialogFooter className="flex-col sm:flex-row gap-2">
+              <DialogFooter className="shrink-0 flex-col sm:flex-row gap-2">
                 <Button variant="outline" onClick={() => handleUseTemplate(selectedTemplate)}>
                   <Copy className="h-4 w-4 mr-2" />
                   {t('investorUpdates.copyTemplate')}
