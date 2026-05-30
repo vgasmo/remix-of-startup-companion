@@ -106,8 +106,8 @@ export function PlaybookEvidenceDialog({ workspaceId, playbookItemId, playbookIt
           </span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] !flex !flex-col overflow-hidden">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
             {t('playbooks.evidence.title', 'Evidência')} — {playbookItemTitle}
@@ -116,7 +116,7 @@ export function PlaybookEvidenceDialog({ workspaceId, playbookItemId, playbookIt
 
         {/* Existing evidence */}
         {evidence.length > 0 && (
-          <ScrollArea className="max-h-60">
+          <ScrollArea className="flex-1 min-h-0">
             <div className="space-y-3">
               {evidence.map(ev => (
                 <div key={ev.id} className="rounded-lg border p-3 space-y-2">
