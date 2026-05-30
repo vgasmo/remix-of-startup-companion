@@ -409,7 +409,7 @@ export function CanvasTemplate({ type, data, onChange, disabled = false, reviewS
         </div>
       </CardHeader>
       <CardContent className="p-2">
-        <ScrollArea className="w-full max-h-[calc(100vh-16rem)]">
+        <div className="w-full overflow-x-auto">
           <div style={gridConfig.gridStyle} className="min-w-[600px]">
             {sections.map((section) => {
               const isEditing = editingSection === section.id;
@@ -479,7 +479,7 @@ export function CanvasTemplate({ type, data, onChange, disabled = false, reviewS
                       </div>
                     </div>
                   ) : hasContent ? (
-                    <div className="text-sm text-foreground/90 whitespace-pre-wrap max-h-40 overflow-y-auto pr-1">
+                    <div className="text-sm text-foreground/90 whitespace-pre-wrap">
                       {data[section.id]}
                     </div>
                   ) : (
@@ -491,7 +491,7 @@ export function CanvasTemplate({ type, data, onChange, disabled = false, reviewS
               );
             })}
           </div>
-        </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   );
