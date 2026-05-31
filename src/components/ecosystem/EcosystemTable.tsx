@@ -262,7 +262,13 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
               >
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
-                    {item.name || t('common.unknown', { defaultValue: 'Unknown' })}
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); onOpenItem(item); }}
+                      className="text-left text-primary hover:underline focus:outline-none focus-visible:underline"
+                    >
+                      {item.name || t('common.unknown', { defaultValue: 'Unknown' })}
+                    </button>
                     {item.has_startup_portugal_status && (
                       <Badge
                         variant="outline"

@@ -69,6 +69,8 @@ export default function Ecosystem() {
                 onOpenItem={(item) => {
                   if (item.item_type === 'workspace' && item.workspace_id) {
                     navigate(`/workspace/${item.workspace_id}`);
+                  } else if (item.item_type === 'lead' && item.funnel_item_id) {
+                    navigate(`/crm?open=${item.funnel_item_id}`);
                   }
                 }}
               />

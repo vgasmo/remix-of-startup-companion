@@ -70,7 +70,7 @@ export function useEcosystemItems(filters: EcosystemFilters = {}) {
           startup:startups(name, has_startup_portugal_status, startup_portugal_document_path),
           program:programs(name)
         `)
-        .in('status', ['imported_unclaimed', 'claimed', 'pending', 'active', 'archived']);
+        .in('status', ['imported_unclaimed', 'claimed', 'pending', 'active']);
 
       if (filters.programId && filters.programId !== 'all') {
         wsQuery = wsQuery.eq('program_id', filters.programId);
