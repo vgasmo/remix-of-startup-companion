@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
+import { documentUploadedKey } from '../_shared/notificationEventKey.ts';
 
 interface Body {
   document_id: string;
