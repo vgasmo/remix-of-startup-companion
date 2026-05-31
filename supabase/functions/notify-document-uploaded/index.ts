@@ -70,6 +70,8 @@ Deno.serve(async (req) => {
         link: `/workspace/${doc.workspace_id}?tab=documents&document=${doc.id}`,
         entity_type: 'document',
         entity_id: doc.id,
+        // Idempotency key: same (user, event) will never insert twice on retries
+        event_key: `document_uploaded:${doc.id}:${r.user_id}`,
         metadata: {
           workspace_id: doc.workspace_id,
           document_name: doc.name,
@@ -80,9 +82,11 @@ Deno.serve(async (req) => {
       }));
 
     if (rows.length) {
-      const { error: insErr } = await admin.from('notifications').insert(rows);
+      const { error: insErr } = await admin
+        .from('notifications')
+        .upsert(rows, { onConflict: 'user_id,event_key', ignoreDuplicates: true });
       if (insErr) {
-        console.error('[notify-document-uploaded] insert failed', insErr);
+        console.error('[notify-document-uploaded] upsert failed', insErr);
         return corsJsonResponse({ error: insErr.message }, req, 500);
       }
     }
