@@ -167,7 +167,7 @@ export const PortfolioPerformanceTable = memo(function PortfolioPerformanceTable
                       {ws.startup?.name?.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium truncate">{ws.startup?.name}</span>
+                  <span className="text-sm font-medium truncate group-hover:text-primary group-hover:underline transition-colors">{ws.startup?.name}</span>
                 </div>
 
                 {/* Stage */}
