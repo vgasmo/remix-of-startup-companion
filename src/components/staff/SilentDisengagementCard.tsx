@@ -85,7 +85,7 @@ export function SilentDisengagementCard({ workspaces }: SilentDisengagementCardP
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium truncate block">{ws.startup?.name}</span>
+                  <span className="text-sm font-medium truncate block group-hover:text-primary group-hover:underline transition-colors">{ws.startup?.name}</span>
                   <span className="text-[11px] text-muted-foreground">
                     {days
                       ? t('staffCockpit.silentDisengagement.daysAgo', { defaultValue: '{{days}}d sem interação', days })
