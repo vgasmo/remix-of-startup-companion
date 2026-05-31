@@ -151,6 +151,19 @@ export function BackofficeContractsTab() {
   const createContract = useCreateContract();
   const updateContract = useUpdateContract();
 
+  // Deep-link: open drawer when ?contract=<id> matches a loaded contract
+  const deepLinkedRef = useRef<string | null>(null);
+  useEffect(() => {
+    const contractId = searchParams.get('contract');
+    if (!contractId || !contracts) return;
+    if (deepLinkedRef.current === contractId) return;
+    const match = contracts.find(c => c.id === contractId);
+    if (match) {
+      deepLinkedRef.current = contractId;
+      setDetailContract(match);
+    }
+  }, [searchParams, contracts]);
+
   // Workspaces without contracts
   const workspacesWithoutContracts = useMemo(() => {
     if (!workspaces || !contracts) return [];
