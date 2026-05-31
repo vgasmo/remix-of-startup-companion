@@ -72,6 +72,7 @@ serve(async (req: Request) => {
 
       // In-app notifications: insert one per reviewer so they see the
       // submission in the bell/notification center even if email fails.
+      // Idempotent via (user_id, event_key) — retries won't duplicate.
       if (workspaceUsers?.length) {
         const notifRows = workspaceUsers
           .filter((wu) => !!wu.user_id)
@@ -83,11 +84,14 @@ serve(async (req: Request) => {
             link: `/workspace/${workspaceId}?tab=templates&instance=${body.instanceId}`,
             entity_type: "template_instance",
             entity_id: body.instanceId,
+            event_key: `template_submitted:${body.instanceId}:${wu.user_id}`,
             metadata: { template_name: templateName, startup_name: startupName, workspace_id: workspaceId },
           }));
         if (notifRows.length) {
-          const { error: notifErr } = await supabaseAdmin.from("notifications").insert(notifRows);
-          if (notifErr) console.error("notifications insert failed:", notifErr);
+          const { error: notifErr } = await supabaseAdmin
+            .from("notifications")
+            .upsert(notifRows, { onConflict: "user_id,event_key", ignoreDuplicates: true });
+          if (notifErr) console.error("notifications upsert failed:", notifErr);
         }
       }
 
