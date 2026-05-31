@@ -208,7 +208,17 @@ export function OccupancyDashboard() {
               {expiringContracts.map(c => (
                 <div key={c.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                   <div className="space-y-1">
-                    <span className="text-sm font-medium">{c.workspace?.startup?.name || '—'}</span>
+                    {c.workspace_id ? (
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/workspace/${c.workspace_id}`)}
+                        className="text-sm font-medium text-left text-primary hover:underline focus:outline-none focus-visible:underline"
+                      >
+                        {c.workspace?.startup?.name || '—'}
+                      </button>
+                    ) : (
+                      <span className="text-sm font-medium">{c.workspace?.startup?.name || '—'}</span>
+                    )}
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Calendar className="h-3 w-3" />
                       {t('admin.backoffice.occupancyDashboard.expiresOn', { defaultValue: 'Expira em' })} {format(new Date(c.end_date!), 'dd MMM yyyy')}
