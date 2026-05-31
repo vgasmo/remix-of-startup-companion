@@ -304,7 +304,7 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
               return (
                 <div
                   key={item.id}
-                  className={`p-3 rounded-lg border transition-colors hover:bg-muted/50 cursor-pointer ${
+                  className={`group p-3 rounded-lg border transition-colors hover:bg-muted/50 cursor-pointer ${
                     isOverdue ? 'border-destructive/30 bg-destructive/5' : ''
                   } ${isFocused ? 'ring-2 ring-primary/60' : ''} ${
                     isSelected ? 'bg-primary/5 border-primary/40' : ''
