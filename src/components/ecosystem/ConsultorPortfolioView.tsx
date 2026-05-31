@@ -105,10 +105,12 @@ export function ConsultorPortfolioView({ items }: ConsultorPortfolioViewProps) {
                     {group.items.map(item => (
                       <div
                         key={item.id}
-                        className="flex items-center gap-3 py-2 px-3 rounded-md hover:bg-muted/50 cursor-pointer transition-colors"
+                        className="group flex items-center gap-3 py-2 px-3 rounded-md hover:bg-muted/50 cursor-pointer transition-colors"
                         onClick={() => {
                           if (item.item_type === 'workspace' && item.workspace_id) {
                             navigate(`/workspace/${item.workspace_id}`);
+                          } else if (item.item_type === 'lead' && item.funnel_item_id) {
+                            navigate(`/crm?open=${item.funnel_item_id}`);
                           }
                         }}
                       >
@@ -120,7 +122,7 @@ export function ConsultorPortfolioView({ items }: ConsultorPortfolioViewProps) {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{item.name || t('common.unnamed')}</p>
+                          <p className="text-sm font-medium truncate group-hover:text-primary group-hover:underline transition-colors">{item.name || t('common.unnamed')}</p>
                           <p className="text-xs text-muted-foreground">
                             {item.program_name || '—'} · {item.stage
                               ? (item.stage in STARTUP_STAGE_KEYS

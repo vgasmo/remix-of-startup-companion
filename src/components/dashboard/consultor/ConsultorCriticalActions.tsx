@@ -42,7 +42,7 @@ export const ConsultorCriticalActions = memo(function ConsultorCriticalActions({
             {criticalActions.map(w => (
               <div
                 key={w.id}
-                className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors border-l-2 border-l-health-critical"
+                className="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors border-l-2 border-l-health-critical"
                 onClick={() => navigate(`/workspace/${w.id}?tab=milestones-actions-actions`)}
               >
                 <Avatar className="h-7 w-7 rounded">
@@ -52,7 +52,7 @@ export const ConsultorCriticalActions = memo(function ConsultorCriticalActions({
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{w.startup?.name}</p>
+                  <p className="font-medium text-sm truncate group-hover:text-primary group-hover:underline transition-colors">{w.startup?.name}</p>
                   <p className="text-xs text-health-critical">
                     {t('consultor.actions.overdueCount', { count: w.overdueActionsCount })}
                   </p>
