@@ -135,7 +135,7 @@ function TaskItem({
         <TaskIcon className="h-4 w-4 text-primary" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate">{task.title}</p>
+        <p className="font-medium text-sm truncate group-hover:text-primary group-hover:underline transition-colors">{task.title}</p>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
           {task.due_date && (
             <span
