@@ -111,7 +111,13 @@ export function useUploadDocument() {
         throw error;
       }
 
+      // Fire-and-forget: notify consultors/mentors in this workspace.
+      supabase.functions
+        .invoke('notify-document-uploaded', { body: { document_id: data.id } })
+        .catch((err) => logger.warn('notify_document_uploaded_failed', { error: String(err) }));
+
       return data;
+
     },
     onSuccess: async (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['documents', variables.workspaceId] });
@@ -172,7 +178,14 @@ export function useAddExternalLink() {
         .single();
 
       if (error) throw error;
+
+      // Fire-and-forget: notify consultors/mentors in this workspace.
+      supabase.functions
+        .invoke('notify-document-uploaded', { body: { document_id: data.id } })
+        .catch((err) => logger.warn('notify_document_uploaded_failed', { error: String(err) }));
+
       return data;
+
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['documents', variables.workspaceId] });

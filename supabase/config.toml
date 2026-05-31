@@ -184,6 +184,10 @@ verify_jwt = false
 [functions.teams-notify]
 verify_jwt = false
 
+[functions.notify-document-uploaded]
+verify_jwt = false
+
+
 # ============================================
 # WEBHOOK FUNCTIONS (Category C)
 # No JWT - requires x-webhook-secret header
