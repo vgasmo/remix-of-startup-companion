@@ -48,6 +48,7 @@ const EMPTY_FORM: FormState = {
 
 export function AdminStartupsManager() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStartup, setEditingStartup] = useState<{ id: string } | null>(null);
