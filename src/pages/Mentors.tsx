@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { sanitizeUrl } from '@/lib/sanitizeUrl';
 import { useQuery } from '@tanstack/react-query';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Linkedin,
@@ -556,9 +556,13 @@ export default function Mentors() {
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm truncate">
+                            <Link
+                              to={`/mentors/${mentor.profile?.id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="font-medium text-sm truncate text-primary hover:underline focus:outline-none focus-visible:underline block"
+                            >
                               {mentor.profile?.full_name || t('mentorsPage.unnamedMentor')}
-                            </p>
+                            </Link>
                             {mentor.profile?.expertise && mentor.profile.expertise.length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-1">
                                 {mentor.profile.expertise.slice(0, 3).map(exp => (
@@ -684,7 +688,15 @@ export default function Mentors() {
                               </Avatar>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <h4 className="truncate text-sm font-semibold">{mentor.full_name || t('mentorsPage.unnamedMentor')}</h4>
+                                  <h4 className="truncate text-sm font-semibold">
+                                    <Link
+                                      to={`/mentors/${mentor.id}`}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="text-primary hover:underline focus:outline-none focus-visible:underline"
+                                    >
+                                      {mentor.full_name || t('mentorsPage.unnamedMentor')}
+                                    </Link>
+                                  </h4>
                                   {mentor.linkedin_url && (
                                     <a 
                                       href={sanitizeUrl(mentor.linkedin_url)!} 

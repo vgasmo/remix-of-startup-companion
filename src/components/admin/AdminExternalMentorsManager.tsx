@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Search, UserPlus, Users2, Shield, ShieldCheck, Building2, Trash2, Plus, X, Linkedin } from 'lucide-react';
@@ -380,7 +381,9 @@ export function AdminExternalMentorsManager() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-medium truncate">
-                          {mentor.full_name || mentor.email}
+                          <Link to={`/mentors/${mentor.id}`} className="text-primary hover:underline focus:outline-none focus-visible:underline">
+                            {mentor.full_name || mentor.email}
+                          </Link>
                         </h3>
                         {mentor.linkedin_url && (
                           <a

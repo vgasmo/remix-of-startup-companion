@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { WorkspaceAssignmentDialog } from './WorkspaceAssignmentDialog';
 import { Plus, Trash2, UserCheck, Building2, Ban, UserX, RotateCcw, CheckCircle } from 'lucide-react';
@@ -198,7 +199,9 @@ export function AdminUsersManager() {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-medium">{profile.full_name || t('admin.userManagement.noName')}</h3>
+                        <Link to={`/profile/${profile.id}`} className="font-medium text-primary hover:underline focus:outline-none focus-visible:underline">
+                          {profile.full_name || t('admin.userManagement.noName')}
+                        </Link>
                         {isAdmin && <Badge variant="destructive">{t('roles.admin')}</Badge>}
                         {isSuspended && <Badge variant="outline" className="border-destructive text-destructive">{t('admin.userManagement.statusSuspended', { defaultValue: 'Suspensa' })}</Badge>}
                         {isPending && <Badge variant="outline" className="border-amber-500 text-amber-600">{t('admin.userManagement.statusPending', { defaultValue: 'Pendente' })}</Badge>}
