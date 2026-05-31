@@ -262,10 +262,17 @@ Guidelines:
 **Template**: ${template?.name || 'Unknown'} (${template?.category || 'General'})
 ${template?.description ? `Template Purpose: ${template.description}` : ''}
 
-**Submitted Responses**:
+**Submitted Responses (current tool)**:
 ${formattedResponses}
 
-Provide your analysis as a JSON object. Focus on ${mode === 'actions' ? 'specific recommended actions with realistic timelines' : mode === 'kpis' ? 'relevant KPI suggestions for tracking progress' : 'comprehensive review of all aspects'}.`;
+**Other tools already submitted by this founder** (use to spot contradictions, reuse insights, avoid duplicate advice):
+${otherToolsContext}
+
+**Recent documents uploaded by the founder** (titles only; treat as evidence of work done):
+${docsContext}
+
+Provide your analysis as a JSON object. Cross-reference the current tool with the other submitted tools and uploaded documents — flag contradictions, build on prior answers, and do NOT recommend work the founder has clearly already done. Focus on ${mode === 'actions' ? 'specific recommended actions with realistic timelines' : mode === 'kpis' ? 'relevant KPI suggestions for tracking progress' : 'comprehensive review of all aspects'}.`;
+
 
     console.log('[generate-template-coach] Calling AI for analysis');
 
