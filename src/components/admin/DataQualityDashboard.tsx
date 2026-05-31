@@ -328,7 +328,19 @@ export function DataQualityDashboard() {
                         />
                       )}
                     </TableCell>
-                    <TableCell className="font-medium">{issue.name}</TableCell>
+                    <TableCell className="font-medium">
+                      {issue.workspaceId ? (
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/workspace/${issue.workspaceId}`)}
+                          className="text-left text-primary hover:underline focus:outline-none focus-visible:underline"
+                        >
+                          {issue.name}
+                        </button>
+                      ) : (
+                        issue.name
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="gap-1">
                         {getIssueIcon(issue.type)}
