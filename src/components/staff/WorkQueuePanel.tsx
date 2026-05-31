@@ -304,7 +304,7 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
               return (
                 <div
                   key={item.id}
-                  className={`p-3 rounded-lg border transition-colors hover:bg-muted/50 cursor-pointer ${
+                  className={`group p-3 rounded-lg border transition-colors hover:bg-muted/50 cursor-pointer ${
                     isOverdue ? 'border-destructive/30 bg-destructive/5' : ''
                   } ${isFocused ? 'ring-2 ring-primary/60' : ''} ${
                     isSelected ? 'bg-primary/5 border-primary/40' : ''
@@ -327,7 +327,7 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium text-sm truncate">{item.title}</p>
+                          <p className="font-medium text-sm truncate group-hover:text-primary group-hover:underline transition-colors">{item.title}</p>
                           <Badge className={`text-xs ${PRIORITY_COLORS[item.priority] || ''}`}>
                             {item.priority}
                           </Badge>

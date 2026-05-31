@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabaseClient';
@@ -47,6 +48,7 @@ const EMPTY_FORM: FormState = {
 
 export function AdminStartupsManager() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStartup, setEditingStartup] = useState<{ id: string } | null>(null);
@@ -672,7 +674,17 @@ export function AdminStartupsManager() {
                   <TableRow key={startup.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{startup.name}</span>
+                        {workspace?.id ? (
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/workspace/${workspace.id}`)}
+                            className="font-medium text-left text-primary hover:underline focus:outline-none focus-visible:underline"
+                          >
+                            {startup.name}
+                          </button>
+                        ) : (
+                          <span className="font-medium">{startup.name}</span>
+                        )}
                         {startup.has_startup_portugal_status && (
                           <Badge variant="outline" className="text-xs">
                             <CheckCircle className="h-3 w-3 mr-1 text-green-600 dark:text-green-400" />

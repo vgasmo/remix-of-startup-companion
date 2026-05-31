@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabaseClient';
@@ -21,6 +22,7 @@ interface DataIssue {
 
 export function DataQualityDashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedIssues, setSelectedIssues] = useState<Set<string>>(new Set());
   const [isSendingInvites, setIsSendingInvites] = useState(false);
@@ -326,7 +328,19 @@ export function DataQualityDashboard() {
                         />
                       )}
                     </TableCell>
-                    <TableCell className="font-medium">{issue.name}</TableCell>
+                    <TableCell className="font-medium">
+                      {issue.workspaceId ? (
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/workspace/${issue.workspaceId}`)}
+                          className="text-left text-primary hover:underline focus:outline-none focus-visible:underline"
+                        >
+                          {issue.name}
+                        </button>
+                      ) : (
+                        issue.name
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="gap-1">
                         {getIssueIcon(issue.type)}

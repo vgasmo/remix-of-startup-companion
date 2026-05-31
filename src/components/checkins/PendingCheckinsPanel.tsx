@@ -65,7 +65,12 @@ export function PendingCheckinsPanel() {
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">{checkin.startup_name}</span>
+                    <Link
+                      to={`/workspace/${checkin.workspace_id}?tab=overview`}
+                      className="font-medium hover:text-primary hover:underline"
+                    >
+                      {checkin.startup_name}
+                    </Link>
                     {checkin.compliance_status === 'overdue' ? (
                       <Badge variant="destructive" className="text-xs">
                         <AlertTriangle className="h-3 w-3 mr-1" />

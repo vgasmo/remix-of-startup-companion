@@ -592,9 +592,19 @@ export function ContractLifecycleHub() {
                       return (
                         <div key={contract.id} className="flex items-center justify-between gap-3 p-3 rounded-xl border bg-muted/30 hover:bg-muted/50 transition-colors">
                           <div className="flex flex-col min-w-0">
-                            <span className="text-sm font-medium truncate">
-                              {displayName}
-                            </span>
+                            {(contract as any).workspace_id ? (
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/workspace/${(contract as any).workspace_id}`)}
+                                className="text-sm font-medium truncate text-left text-primary hover:underline focus:outline-none focus-visible:underline"
+                              >
+                                {displayName}
+                              </button>
+                            ) : (
+                              <span className="text-sm font-medium truncate">
+                                {displayName}
+                              </span>
+                            )}
                             {contractNumber && (
                               <span className="text-xs text-muted-foreground truncate">
                                 {contractNumber}
@@ -709,7 +719,13 @@ export function ContractLifecycleHub() {
                             <Building2 className="h-4 w-4" />
                           </div>
                           <div>
-                            <span className="font-medium">{item.organization_name || item.contact_name || 'Unnamed'}</span>
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/crm?open=${item.id}`)}
+                              className="font-medium text-left text-primary hover:underline focus:outline-none focus-visible:underline"
+                            >
+                              {item.organization_name || item.contact_name || 'Unnamed'}
+                            </button>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               {item.contact_email && <span>{item.contact_email}</span>}
                               {item.program && <Badge variant="outline" className="text-xs">{item.program.name}</Badge>}
