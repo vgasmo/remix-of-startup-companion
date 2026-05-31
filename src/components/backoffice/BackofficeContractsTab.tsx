@@ -151,18 +151,17 @@ export function BackofficeContractsTab() {
   const createContract = useCreateContract();
   const updateContract = useUpdateContract();
 
-  // Deep-link: open drawer when ?contract=<id> matches a loaded contract
-  const deepLinkedRef = useRef<string | null>(null);
+  // Sync drawer state from URL — reacts to deep-links and to browser back/forward.
+  const contractIdFromUrl = searchParams.get('contract');
   useEffect(() => {
-    const contractId = searchParams.get('contract');
-    if (!contractId || !contracts) return;
-    if (deepLinkedRef.current === contractId) return;
-    const match = contracts.find(c => c.id === contractId);
-    if (match) {
-      deepLinkedRef.current = contractId;
-      setDetailContract(match);
+    if (!contractIdFromUrl) {
+      setDetailContract(null);
+      return;
     }
-  }, [searchParams, contracts]);
+    if (!contracts) return; // wait for data; effect will re-run when loaded
+    const match = contracts.find(c => c.id === contractIdFromUrl) || null;
+    setDetailContract(prev => (prev?.id === contractIdFromUrl ? prev : match));
+  }, [contractIdFromUrl, contracts]);
 
   // Workspaces without contracts
   const workspacesWithoutContracts = useMemo(() => {
