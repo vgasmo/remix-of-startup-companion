@@ -49,7 +49,7 @@ Deno.test("upsert retries do not create duplicates and stay fast", { ignore: !DB
     psql(`
       INSERT INTO public.notifications (user_id, type, title, event_key, read)
       VALUES ('${testUserId}', 'test', 'Performance test', '${testEventKey}', false)
-      ON CONFLICT (user_id, event_key) DO NOTHING;
+      ON CONFLICT (user_id, event_key) WHERE event_key IS NOT NULL DO NOTHING;
     `)
   );
   const results = await Promise.all(upserts);
