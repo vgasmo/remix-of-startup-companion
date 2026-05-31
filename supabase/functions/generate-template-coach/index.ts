@@ -154,8 +154,8 @@ Deno.serve(async (req) => {
       .select('name, category, description, document_type, created_at')
       .eq('workspace_id', instance.workspace_id)
       .order('created_at', { ascending: false })
-      .limit: 15 as any
-      ;
+      .limit(15);
+
 
     const template = instance.template as any;
     const formData = instance.data_json || {};
