@@ -688,7 +688,15 @@ export default function Mentors() {
                               </Avatar>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <h4 className="truncate text-sm font-semibold">{mentor.full_name || t('mentorsPage.unnamedMentor')}</h4>
+                                  <h4 className="truncate text-sm font-semibold">
+                                    <Link
+                                      to={`/mentors/${mentor.id}`}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="text-primary hover:underline focus:outline-none focus-visible:underline"
+                                    >
+                                      {mentor.full_name || t('mentorsPage.unnamedMentor')}
+                                    </Link>
+                                  </h4>
                                   {mentor.linkedin_url && (
                                     <a 
                                       href={sanitizeUrl(mentor.linkedin_url)!} 
