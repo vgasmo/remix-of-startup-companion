@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { WorkspaceAssignmentDialog } from './WorkspaceAssignmentDialog';
 import { Plus, Trash2, UserCheck, Building2, Ban, UserX, RotateCcw, CheckCircle } from 'lucide-react';
