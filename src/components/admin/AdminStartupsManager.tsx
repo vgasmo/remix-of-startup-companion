@@ -672,7 +672,17 @@ export function AdminStartupsManager() {
                   <TableRow key={startup.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{startup.name}</span>
+                        {workspace?.id ? (
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/workspace/${workspace.id}`)}
+                            className="font-medium text-left text-primary hover:underline focus:outline-none focus-visible:underline"
+                          >
+                            {startup.name}
+                          </button>
+                        ) : (
+                          <span className="font-medium">{startup.name}</span>
+                        )}
                         {startup.has_startup_portugal_status && (
                           <Badge variant="outline" className="text-xs">
                             <CheckCircle className="h-3 w-3 mr-1 text-green-600 dark:text-green-400" />
