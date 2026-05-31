@@ -152,7 +152,7 @@ export function CockpitPortfolioOverview({ workspaces }: CockpitPortfolioOvervie
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium truncate">
+                      <span className="text-sm font-medium truncate group-hover:text-primary group-hover:underline transition-colors">
                         {ws.startup?.name || t('common.unknown', { defaultValue: 'Desconhecido' })}
                       </span>
                       {hasSp && (
