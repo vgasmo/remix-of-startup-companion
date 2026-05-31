@@ -592,9 +592,19 @@ export function ContractLifecycleHub() {
                       return (
                         <div key={contract.id} className="flex items-center justify-between gap-3 p-3 rounded-xl border bg-muted/30 hover:bg-muted/50 transition-colors">
                           <div className="flex flex-col min-w-0">
-                            <span className="text-sm font-medium truncate">
-                              {displayName}
-                            </span>
+                            {(contract as any).workspace_id ? (
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/workspace/${(contract as any).workspace_id}`)}
+                                className="text-sm font-medium truncate text-left text-primary hover:underline focus:outline-none focus-visible:underline"
+                              >
+                                {displayName}
+                              </button>
+                            ) : (
+                              <span className="text-sm font-medium truncate">
+                                {displayName}
+                              </span>
+                            )}
                             {contractNumber && (
                               <span className="text-xs text-muted-foreground truncate">
                                 {contractNumber}
