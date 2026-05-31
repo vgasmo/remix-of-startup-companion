@@ -133,6 +133,30 @@ Deno.serve(async (req) => {
       .in('status', ['pending', 'in_progress'])
       .lt('due_date', new Date().toISOString().split('T')[0]);
 
+    // CONTEXT EXPANSION: fetch other tools/templates already submitted by the
+    // founder so the coach reasons across the full picture, not the current
+    // tool in isolation. Bad advice usually comes from missing this context.
+    const { data: otherInstances } = await supabase
+      .from('template_instances')
+      .select(`
+        id, status, review_status, updated_at, data_json,
+        template:templates(name, category, schema_json)
+      `)
+      .eq('workspace_id', instance.workspace_id)
+      .neq('id', template_instance_id)
+      .in('status', ['in_progress', 'completed'])
+      .order('updated_at', { ascending: false })
+      .limit(12);
+
+    // Recent documents uploaded by the founder (names + category only — no file contents).
+    const { data: recentDocs } = await supabase
+      .from('documents')
+      .select('name, category, description, document_type, created_at')
+      .eq('workspace_id', instance.workspace_id)
+      .order('created_at', { ascending: false })
+      .limit: 15 as any
+      ;
+
     const template = instance.template as any;
     const formData = instance.data_json || {};
     const startupInfo = workspace?.startup as any;
@@ -159,11 +183,42 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Compact summary of other submitted tools for cross-context coaching
+    const summarizeInstance = (inst: any): string => {
+      const t = inst.template as any;
+      const data = inst.data_json || {};
+      const tmplSections = t?.schema_json?.sections || [];
+      const bullets: string[] = [];
+      for (const section of tmplSections) {
+        for (const field of (section.fields || [])) {
+          const v = data[field.id];
+          if (v === undefined || v === null || v === '') continue;
+          let s = Array.isArray(v) ? v.join(', ') : typeof v === 'object' ? JSON.stringify(v) : String(v);
+          if (s.length > 220) s = s.slice(0, 220) + '…';
+          bullets.push(`    - ${field.label}: ${s}`);
+          if (bullets.length >= 8) break;
+        }
+        if (bullets.length >= 8) break;
+      }
+      return `- **${t?.name || 'Template'}** (${t?.category || 'general'}, ${inst.status}/${inst.review_status || 'n/a'})\n${bullets.join('\n') || '    - (no answers yet)'}`;
+    };
+
+    const otherToolsContext = (otherInstances && otherInstances.length > 0)
+      ? otherInstances.map(summarizeInstance).join('\n')
+      : 'No other tools submitted yet.';
+
+    const docsContext = (recentDocs && (recentDocs as any[]).length > 0)
+      ? (recentDocs as any[]).map((d: any) =>
+          `- ${d.name}${d.category ? ` [${d.category}]` : ''}${d.document_type === 'link' ? ' (link)' : ''}${d.description ? ` — ${String(d.description).slice(0, 140)}` : ''}`
+        ).join('\n')
+      : 'No documents uploaded yet.';
+
     // Build context information
     const coreKpisList = coreKpis.map(k => k.kpi_definition?.name).filter(Boolean).join(', ') || 'None defined';
     const sessionContext = lastSession 
       ? `Last session: "${lastSession.title}" on ${lastSession.scheduled_at?.split('T')[0] || 'unknown date'}. ${lastSession.ai_summary ? `Summary: ${lastSession.ai_summary.slice(0, 200)}...` : ''}`
       : 'No previous sessions recorded.';
+
 
     // System prompt for AI Coach
     const systemPrompt = `You are an expert startup mentor and accelerator consultant providing actionable coaching feedback.
