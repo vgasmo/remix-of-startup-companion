@@ -3663,6 +3663,7 @@ export type Database = {
           created_at: string
           entity_id: string | null
           entity_type: string | null
+          event_key: string | null
           id: string
           link: string | null
           message: string | null
@@ -3676,6 +3677,7 @@ export type Database = {
           created_at?: string
           entity_id?: string | null
           entity_type?: string | null
+          event_key?: string | null
           id?: string
           link?: string | null
           message?: string | null
@@ -3689,6 +3691,7 @@ export type Database = {
           created_at?: string
           entity_id?: string | null
           entity_type?: string | null
+          event_key?: string | null
           id?: string
           link?: string | null
           message?: string | null
