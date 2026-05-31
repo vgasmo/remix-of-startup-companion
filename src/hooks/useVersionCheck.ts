@@ -46,7 +46,9 @@ export function useVersionCheck() {
           }
         }
 
-        // Show persistent, unmissable toast with clear action
+        // Show persistent, unmissable toast with clear action.
+        // IMPORTANT: never auto-reload — that would silently destroy
+        // unsaved work / scroll position when the user returns to the tab.
         toast(
           t('app.newVersionAvailable', 'Nova versão disponível!'),
           {
@@ -65,11 +67,6 @@ export function useVersionCheck() {
             },
           },
         );
-
-        // Auto-reload after 30 seconds if user hasn't clicked
-        setTimeout(() => {
-          window.location.reload();
-        }, 30_000);
       }
     } catch {
       // silently ignore network errors
@@ -83,12 +80,10 @@ export function useVersionCheck() {
     const onFocus = () => checkVersion();
     window.addEventListener('focus', onFocus);
 
-    // Listen for SW update events (Workbox prompt)
+    // Listen for SW update events — surface the same toast instead of
+    // silently reloading, so the user never loses their current view.
     const onControllerChange = () => {
-      if (!hasNotified.current) {
-        // SW updated silently — reload to pick up new assets
-        window.location.reload();
-      }
+      checkVersion();
     };
     navigator.serviceWorker?.addEventListener('controllerchange', onControllerChange);
 
@@ -99,3 +94,4 @@ export function useVersionCheck() {
     };
   }, [checkVersion]);
 }
+
