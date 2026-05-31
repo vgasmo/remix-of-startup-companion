@@ -132,6 +132,14 @@ export function BackofficeContractsTab() {
   const [isArchiving, setIsArchiving] = useState(false);
   const [detailContract, setDetailContract] = useState<StartupContract | null>(null);
 
+  const openContractDrawer = useCallback((contract: StartupContract | null) => {
+    setDetailContract(contract);
+    const next = new URLSearchParams(searchParams);
+    if (contract) next.set('contract', contract.id);
+    else next.delete('contract');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
   const { data: contracts, isLoading } = useContracts(
     statusFilter !== 'all' ? { status: statusFilter } : undefined
   );
@@ -142,6 +150,19 @@ export function BackofficeContractsTab() {
   const { data: crmItems } = useFunnelItems();
   const createContract = useCreateContract();
   const updateContract = useUpdateContract();
+
+  // Deep-link: open drawer when ?contract=<id> matches a loaded contract
+  const deepLinkedRef = useRef<string | null>(null);
+  useEffect(() => {
+    const contractId = searchParams.get('contract');
+    if (!contractId || !contracts) return;
+    if (deepLinkedRef.current === contractId) return;
+    const match = contracts.find(c => c.id === contractId);
+    if (match) {
+      deepLinkedRef.current = contractId;
+      setDetailContract(match);
+    }
+  }, [searchParams, contracts]);
 
   // Workspaces without contracts
   const workspacesWithoutContracts = useMemo(() => {
@@ -337,7 +358,7 @@ export function BackofficeContractsTab() {
         }))}
         onOpenContract={(id) => {
           const c = (contracts || []).find((x) => x.id === id) || null;
-          setDetailContract(c);
+          openContractDrawer(c);
         }}
       />
 
@@ -625,7 +646,7 @@ export function BackofficeContractsTab() {
                         alert?.severity === 'critical' && 'bg-red-50/50 dark:bg-red-950/10',
                         selectedContractIds.has(contract.id) && 'bg-primary/5'
                       )}
-                      onClick={() => setDetailContract(contract)}
+                      onClick={() => openContractDrawer(contract)}
                     >
                       <TableCell onClick={e => e.stopPropagation()}>
                         <Checkbox
@@ -700,7 +721,7 @@ export function BackofficeContractsTab() {
                         </div>
                       </TableCell>
                       <TableCell onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" onClick={() => setDetailContract(contract)}>
+                        <Button variant="ghost" size="sm" onClick={() => openContractDrawer(contract)}>
                           {t('common.edit', { defaultValue: 'Edit' })}
                         </Button>
                       </TableCell>
@@ -726,7 +747,7 @@ export function BackofficeContractsTab() {
         incubationTypes={incubationTypes}
         buildings={buildings}
         open={!!detailContract}
-        onOpenChange={(open) => { if (!open) setDetailContract(null); }}
+        onOpenChange={(open) => { if (!open) openContractDrawer(null); }}
       />
     </div>
   );
