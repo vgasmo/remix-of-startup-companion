@@ -381,7 +381,9 @@ export function AdminExternalMentorsManager() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-medium truncate">
-                          {mentor.full_name || mentor.email}
+                          <Link to={`/mentors/${mentor.id}`} className="text-primary hover:underline focus:outline-none focus-visible:underline">
+                            {mentor.full_name || mentor.email}
+                          </Link>
                         </h3>
                         {mentor.linkedin_url && (
                           <a
