@@ -166,6 +166,8 @@ function AppRoutes() {
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="/mentors" element={<ProtectedRoute><Mentors /></ProtectedRoute>} />
         <Route path="/mentors/impact" element={<ProtectedRoute><MentorImpact /></ProtectedRoute>} />
+        <Route path="/mentors/:mentorId" element={<ProtectedRoute><MentorProfile /></ProtectedRoute>} />
+        <Route path="/profile/:userId" element={<ProtectedRoute staffOnly><UserProfile /></ProtectedRoute>} />
         <Route path="/consultor-tools" element={<ProtectedRoute staffOnly><ConsultorTools /></ProtectedRoute>} />
         <Route path="/workspace/:workspaceId/value-prop" element={<ProtectedRoute><ValuePropWizardPage /></ProtectedRoute>} />
         <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
