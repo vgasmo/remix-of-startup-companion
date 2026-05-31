@@ -76,7 +76,7 @@ export const ConsultorRiskPanel = memo(function ConsultorRiskPanel({ riskItems, 
             return (
               <Card 
                 key={item.workspace.id}
-                className={`cursor-pointer transition-all hover:shadow-sm rounded-2xl border-border/60 border-l-2 ${
+                className={`group cursor-pointer transition-all hover:shadow-sm rounded-2xl border-border/60 border-l-2 ${
                   item.priority === 'critical' ? 'border-l-health-critical' :
                   item.priority === 'high' ? 'border-l-health-at-risk' :
                   'border-l-health-stable'
@@ -93,7 +93,7 @@ export const ConsultorRiskPanel = memo(function ConsultorRiskPanel({ riskItems, 
                     </Avatar>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm">{item.workspace.startup?.name}</span>
+                        <span className="font-medium text-sm group-hover:text-primary group-hover:underline transition-colors">{item.workspace.startup?.name}</span>
                         {health && <HealthBadge score={health} size="sm" />}
                       </div>
                       <p className="text-xs text-muted-foreground">{item.reason}</p>
