@@ -26,6 +26,7 @@ import { ProvenanceBadge } from '@/components/shared/ProvenanceBadge';
 import { LifecycleMismatchPanel } from '@/components/staff/LifecycleMismatchPanel';
 import { useContractIntakes } from '@/hooks/useContractIntakes';
 import { useFunnelItems } from '@/hooks/useFunnel';
+import { useUrlParam } from '@/hooks/useUrlParam';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
@@ -131,14 +132,12 @@ export function BackofficeContractsTab() {
   const [selectedContractIds, setSelectedContractIds] = useState<Set<string>>(new Set());
   const [isArchiving, setIsArchiving] = useState(false);
   const [detailContract, setDetailContract] = useState<StartupContract | null>(null);
+  const [contractIdFromUrl, setContractIdInUrl] = useUrlParam('contract');
 
   const openContractDrawer = useCallback((contract: StartupContract | null) => {
     // URL is the source of truth — push a history entry so browser back/forward toggles the drawer.
-    const next = new URLSearchParams(searchParams);
-    if (contract) next.set('contract', contract.id);
-    else next.delete('contract');
-    setSearchParams(next, { replace: false });
-  }, [searchParams, setSearchParams]);
+    setContractIdInUrl(contract ? contract.id : null);
+  }, [setContractIdInUrl]);
 
   const { data: contracts, isLoading } = useContracts(
     statusFilter !== 'all' ? { status: statusFilter } : undefined
@@ -152,7 +151,6 @@ export function BackofficeContractsTab() {
   const updateContract = useUpdateContract();
 
   // Sync drawer state from URL — reacts to deep-links and to browser back/forward.
-  const contractIdFromUrl = searchParams.get('contract');
   useEffect(() => {
     if (!contractIdFromUrl) {
       setDetailContract(null);
