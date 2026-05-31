@@ -133,11 +133,11 @@ export function BackofficeContractsTab() {
   const [detailContract, setDetailContract] = useState<StartupContract | null>(null);
 
   const openContractDrawer = useCallback((contract: StartupContract | null) => {
-    setDetailContract(contract);
+    // URL is the source of truth — push a history entry so browser back/forward toggles the drawer.
     const next = new URLSearchParams(searchParams);
     if (contract) next.set('contract', contract.id);
     else next.delete('contract');
-    setSearchParams(next, { replace: true });
+    setSearchParams(next, { replace: false });
   }, [searchParams, setSearchParams]);
 
   const { data: contracts, isLoading } = useContracts(
