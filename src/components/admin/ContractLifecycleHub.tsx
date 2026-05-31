@@ -719,7 +719,13 @@ export function ContractLifecycleHub() {
                             <Building2 className="h-4 w-4" />
                           </div>
                           <div>
-                            <span className="font-medium">{item.organization_name || item.contact_name || 'Unnamed'}</span>
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/crm?open=${item.id}`)}
+                              className="font-medium text-left text-primary hover:underline focus:outline-none focus-visible:underline"
+                            >
+                              {item.organization_name || item.contact_name || 'Unnamed'}
+                            </button>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               {item.contact_email && <span>{item.contact_email}</span>}
                               {item.program && <Badge variant="outline" className="text-xs">{item.program.name}</Badge>}
