@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireCronOrStaff } from "../_shared/security.ts";
+import { templateSubmittedKey } from "../_shared/notificationEventKey.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -81,10 +82,12 @@ serve(async (req: Request) => {
             type: "template_submitted",
             title: `${templateName} submetido para revisão`,
             message: `${startupName} submeteu uma nova ferramenta para revisão.`,
-            link: `/workspace/${workspaceId}?tab=templates&instance=${body.instanceId}`,
+            // Deep-link: DocumentsTab maps `doc=<instanceId>` to the template editor
+            // and opens it directly inside Documents → Tools.
+            link: `/workspace/${workspaceId}?tab=documents&sub=tools&doc=${body.instanceId}`,
             entity_type: "template_instance",
             entity_id: body.instanceId,
-            event_key: `template_submitted:${body.instanceId}:${wu.user_id}`,
+            event_key: templateSubmittedKey(body.instanceId, wu.user_id as string),
             metadata: { template_name: templateName, startup_name: startupName, workspace_id: workspaceId },
           }));
         if (notifRows.length) {

@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
+import { documentUploadedKey } from '../_shared/notificationEventKey.ts';
 
 interface Body {
   document_id: string;
@@ -67,11 +68,12 @@ Deno.serve(async (req) => {
         type: 'document_uploaded',
         title: `Novo documento: ${doc.name}`,
         message: `${startupName} ${doc.document_type === 'link' ? 'partilhou um link' : 'submeteu um documento'}${doc.category ? ` (${doc.category})` : ''}.`,
+        // Deep-link: open the workspace Documents tab and highlight this doc.
         link: `/workspace/${doc.workspace_id}?tab=documents&document=${doc.id}`,
         entity_type: 'document',
         entity_id: doc.id,
-        // Idempotency key: same (user, event) will never insert twice on retries
-        event_key: `document_uploaded:${doc.id}:${r.user_id}`,
+        // Idempotency key: same (user, event) will never insert twice on retries.
+        event_key: documentUploadedKey(doc.id, r.user_id as string),
         metadata: {
           workspace_id: doc.workspace_id,
           document_name: doc.name,
