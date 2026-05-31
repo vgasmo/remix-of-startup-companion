@@ -151,7 +151,6 @@ export function BackofficeContractsTab() {
   const updateContract = useUpdateContract();
 
   // Sync drawer state from URL — reacts to deep-links and to browser back/forward.
-  const contractIdFromUrl = searchParams.get('contract');
   useEffect(() => {
     if (!contractIdFromUrl) {
       setDetailContract(null);
