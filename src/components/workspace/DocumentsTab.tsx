@@ -128,6 +128,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
   const [externalLinkConfirmOpen, setExternalLinkConfirmOpen] = useState(false);
   const [pendingExternalUrl, setPendingExternalUrl] = useState<string | null>(null);
   const [reviewDoc, setReviewDoc] = useState<{ id: string; name: string } | null>(null);
+  const [highlightedDocId, setHighlightedDocId] = useState<string | null>(null);
 
   const canReview = isStaff || isMentor;
 
@@ -201,6 +202,28 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
     setActiveSubTab('tools');
     setSearchParams(newParams, { replace: true });
   }, [searchParams, setSearchParams, templateInstances, templates]);
+
+  // Deep-link from notifications: ?document=<id> scrolls to and highlights the file.
+  useEffect(() => {
+    const docId = searchParams.get('document');
+    if (!docId || !documents?.length) return;
+    const target = documents.find((d) => d.id === docId);
+    if (!target) return;
+
+    setHighlightedDocId(docId);
+    // Defer to next paint so the row exists in the DOM.
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`document-row-${docId}`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('document');
+    setSearchParams(newParams, { replace: true });
+
+    const timer = window.setTimeout(() => setHighlightedDocId(null), 3500);
+    return () => window.clearTimeout(timer);
+  }, [searchParams, setSearchParams, documents]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -576,7 +599,11 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
                             return (
                               <div
                                 key={doc.id}
-                                className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-card hover:bg-accent/50 transition-colors group"
+                                id={`document-row-${doc.id}`}
+                                className={cn(
+                                  "flex items-center justify-between p-3 rounded-lg border border-border/40 bg-card hover:bg-accent/50 transition-colors group",
+                                  highlightedDocId === doc.id && "ring-2 ring-primary bg-primary/5 animate-pulse"
+                                )}
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                   <div className={cn(
