@@ -102,7 +102,7 @@ export function useEcosystemItems(filters: EcosystemFilters = {}) {
           program:programs(name)
         `)
         .is('linked_workspace_id', null)
-        .not('stage', 'in', '(lost,disqualified)');
+        .not('stage', 'in', '(lost,disqualified,contracted)');
 
       if (filters.programId && filters.programId !== 'all') {
         fiQuery = fiQuery.eq('program_id', filters.programId);
