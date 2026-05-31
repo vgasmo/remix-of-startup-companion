@@ -132,6 +132,14 @@ export function BackofficeContractsTab() {
   const [isArchiving, setIsArchiving] = useState(false);
   const [detailContract, setDetailContract] = useState<StartupContract | null>(null);
 
+  const openContractDrawer = useCallback((contract: StartupContract | null) => {
+    setDetailContract(contract);
+    const next = new URLSearchParams(searchParams);
+    if (contract) next.set('contract', contract.id);
+    else next.delete('contract');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
   const { data: contracts, isLoading } = useContracts(
     statusFilter !== 'all' ? { status: statusFilter } : undefined
   );
