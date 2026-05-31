@@ -358,7 +358,7 @@ export function BackofficeContractsTab() {
         }))}
         onOpenContract={(id) => {
           const c = (contracts || []).find((x) => x.id === id) || null;
-          setDetailContract(c);
+          openContractDrawer(c);
         }}
       />
 
@@ -646,7 +646,7 @@ export function BackofficeContractsTab() {
                         alert?.severity === 'critical' && 'bg-red-50/50 dark:bg-red-950/10',
                         selectedContractIds.has(contract.id) && 'bg-primary/5'
                       )}
-                      onClick={() => setDetailContract(contract)}
+                      onClick={() => openContractDrawer(contract)}
                     >
                       <TableCell onClick={e => e.stopPropagation()}>
                         <Checkbox
@@ -721,7 +721,7 @@ export function BackofficeContractsTab() {
                         </div>
                       </TableCell>
                       <TableCell onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" onClick={() => setDetailContract(contract)}>
+                        <Button variant="ghost" size="sm" onClick={() => openContractDrawer(contract)}>
                           {t('common.edit', { defaultValue: 'Edit' })}
                         </Button>
                       </TableCell>
@@ -747,7 +747,7 @@ export function BackofficeContractsTab() {
         incubationTypes={incubationTypes}
         buildings={buildings}
         open={!!detailContract}
-        onOpenChange={(open) => { if (!open) setDetailContract(null); }}
+        onOpenChange={(open) => { if (!open) openContractDrawer(null); }}
       />
     </div>
   );
