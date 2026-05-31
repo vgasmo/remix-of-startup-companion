@@ -22,6 +22,7 @@ interface DataIssue {
 
 export function DataQualityDashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedIssues, setSelectedIssues] = useState<Set<string>>(new Set());
   const [isSendingInvites, setIsSendingInvites] = useState(false);
