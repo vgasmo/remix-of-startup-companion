@@ -70,6 +70,27 @@ serve(async (req: Request) => {
         .eq("active", true)
         .in("role", ["consultor", "mentor_externo"]);
 
+      // In-app notifications: insert one per reviewer so they see the
+      // submission in the bell/notification center even if email fails.
+      if (workspaceUsers?.length) {
+        const notifRows = workspaceUsers
+          .filter((wu) => !!wu.user_id)
+          .map((wu) => ({
+            user_id: wu.user_id,
+            type: "template_submitted",
+            title: `${templateName} submetido para revisão`,
+            message: `${startupName} submeteu uma nova ferramenta para revisão.`,
+            link: `/workspace/${workspaceId}?tab=templates&instance=${body.instanceId}`,
+            entity_type: "template_instance",
+            entity_id: body.instanceId,
+            metadata: { template_name: templateName, startup_name: startupName, workspace_id: workspaceId },
+          }));
+        if (notifRows.length) {
+          const { error: notifErr } = await supabaseAdmin.from("notifications").insert(notifRows);
+          if (notifErr) console.error("notifications insert failed:", notifErr);
+        }
+      }
+
       if (!workspaceUsers?.length) {
         console.log("No reviewers found for workspace");
         return new Response(
@@ -77,6 +98,7 @@ serve(async (req: Request) => {
           { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
         );
       }
+
 
       // Get submitter info
       let submitterName = "A founder";
