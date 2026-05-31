@@ -606,9 +606,14 @@ export function ContractLifecycleHub() {
                               </span>
                             )}
                             {contractNumber && (
-                              <span className="text-xs text-muted-foreground truncate">
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/admin?tab=backoffice&contract=${contract.id}`)}
+                                className="text-xs text-primary hover:underline focus:outline-none focus-visible:underline truncate text-left"
+                                title={t('admin.contracts.openDrawer', { defaultValue: 'Abrir contrato' })}
+                              >
                                 {contractNumber}
-                              </span>
+                              </button>
                             )}
                           </div>
                           <ContractIntelligenceCard
