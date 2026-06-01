@@ -269,21 +269,51 @@ export default function PublicContractSigning() {
     }
   };
 
-  // Download PDF handler
-  const handleDownloadPdf = async () => {
+  // PDF state — fetch once, reuse for inline preview + download
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfFileName, setPdfFileName] = useState<string>('contrato.pdf');
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const fetchPdf = async (): Promise<{ url: string; fileName: string } | null> => {
+    if (pdfUrl) return { url: pdfUrl, fileName: pdfFileName };
+    setPdfLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
         body: { action: 'download_pdf', token }
       });
       if (error) throw error;
-      if (data?.documentBase64) {
-        const blob = new Blob([Uint8Array.from(atob(data.documentBase64), c => c.charCodeAt(0))], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-      }
+      if (!data?.documentBase64) throw new Error('no pdf');
+      const blob = new Blob([Uint8Array.from(atob(data.documentBase64), c => c.charCodeAt(0))], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const fileName = data.fileName || 'contrato.pdf';
+      setPdfUrl(url);
+      setPdfFileName(fileName);
+      return { url, fileName };
     } catch {
       toast.error(isPt ? 'Erro ao descarregar PDF' : 'Failed to download PDF');
+      return null;
+    } finally {
+      setPdfLoading(false);
     }
+  };
+
+  // Auto-load PDF preview when in signing step
+  useEffect(() => {
+    if (currentStep === 'sign' && !pdfUrl && !pdfLoading) {
+      fetchPdf();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep]);
+
+  const handleDownloadPdf = async () => {
+    const res = await fetchPdf();
+    if (!res) return;
+    const a = document.createElement('a');
+    a.href = res.url;
+    a.download = res.fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   };
 
   // Server save callback — used by autosave hook and by explicit save button.
