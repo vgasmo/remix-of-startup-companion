@@ -129,7 +129,11 @@ export function ContractReviewForm({
                   <FormItem>
                     <FormLabel>
                       {t('admin.backoffice.startup', { defaultValue: 'Startup' })}
-                      {fromCRM && <span className="text-muted-foreground font-normal ml-1">(opcional)</span>}
+                      {fromCRM && (
+                        <span className="text-muted-foreground font-normal ml-1">
+                          ({t('common.optional', { defaultValue: 'optional' })})
+                        </span>
+                      )}
                     </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value || ''}>
                       <FormControl>
