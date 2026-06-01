@@ -483,107 +483,117 @@ export function BackofficeContractsTab() {
         />
       )}
 
-      {/* Workspaces Without Contracts - Bulk Create */}
+      {/* Workspaces Without Contracts - Bulk Create (collapsed by default to reduce noise) */}
       {workspacesWithoutContracts.length > 0 && (
         <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
-              <Zap className="h-5 w-5" />
-              {t('admin.backoffice.workspacesWithoutContracts', { defaultValue: 'Workspaces Without Contracts' })}
-              <Badge variant="secondary" className="ml-2 bg-amber-200 dark:bg-amber-800">
-                {workspacesWithoutContracts.length}
-              </Badge>
-            </CardTitle>
-            <CardDescription>
-              {t('admin.backoffice.bulkCreateDescription', { defaultValue: 'Select workspaces and create internal draft contracts in bulk. Drafts are not sent to founders until you explicitly send each one for signature.' })}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-wrap gap-3 items-end bg-background/80 p-3 rounded-lg border">
-              <div className="space-y-1.5">
-                <Label className="text-xs">{t('admin.backoffice.incubationType', { defaultValue: 'Incubation Type' })}</Label>
-                <Select value={bulkIncubationType} onValueChange={setBulkIncubationType}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder={t('admin.backoffice.selectType', { defaultValue: 'Select type' })} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {incubationTypes?.map(it => (
-                      <SelectItem key={it.id} value={it.id}>
-                        {it.name} (€{it.base_monthly_fee}/mo)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          <details className="group">
+            <summary className="list-none cursor-pointer">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-300 text-base">
+                  <Zap className="h-5 w-5" />
+                  {t('admin.backoffice.workspacesWithoutContracts', { defaultValue: 'Workspaces Without Contracts' })}
+                  <Badge variant="secondary" className="ml-2 bg-amber-200 dark:bg-amber-800">
+                    {workspacesWithoutContracts.length}
+                  </Badge>
+                  <span className="ml-auto text-xs font-normal text-muted-foreground group-open:hidden">
+                    {t('common.expand', { defaultValue: 'Expand' })}
+                  </span>
+                  <span className="ml-auto text-xs font-normal text-muted-foreground hidden group-open:inline">
+                    {t('common.collapse', { defaultValue: 'Collapse' })}
+                  </span>
+                </CardTitle>
+                <CardDescription>
+                  {t('admin.backoffice.bulkCreateDescription', { defaultValue: 'Select workspaces and create internal draft contracts in bulk. Drafts are not sent to founders until you explicitly send each one for signature.' })}
+                </CardDescription>
+              </CardHeader>
+            </summary>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap gap-3 items-end bg-background/80 p-3 rounded-lg border">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">{t('admin.backoffice.incubationType', { defaultValue: 'Incubation Type' })}</Label>
+                  <Select value={bulkIncubationType} onValueChange={setBulkIncubationType}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder={t('admin.backoffice.selectType', { defaultValue: 'Select type' })} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {incubationTypes?.map(it => (
+                        <SelectItem key={it.id} value={it.id}>
+                          {it.name} (€{it.base_monthly_fee}/mo)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">{t('admin.backoffice.building', { defaultValue: 'Building' })}</Label>
+                  <Select value={bulkBuilding} onValueChange={setBulkBuilding}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder={t('admin.backoffice.selectBuilding', { defaultValue: 'Select building' })} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t('common.none', { defaultValue: 'None' })}</SelectItem>
+                      {buildings?.filter(b => b.is_active).map(b => (
+                        <SelectItem key={b.id} value={b.id}>
+                          <span className="flex items-center gap-1">
+                            <Building2 className="h-3 w-3" />
+                            {b.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={handleBulkCreateContracts}
+                  disabled={selectedWorkspaces.size === 0 || isBulkCreating}
+                  className="bg-amber-600 hover:bg-amber-700"
+                >
+                  <Zap className="h-4 w-4 mr-2" />
+                  {isBulkCreating
+                    ? t('common.processing', { defaultValue: 'Processing...' })
+                    : t('admin.backoffice.createContractsCount', { count: selectedWorkspaces.size, defaultValue: 'Create {{count}} Contracts' })}
+                </Button>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">{t('admin.backoffice.building', { defaultValue: 'Building' })}</Label>
-                <Select value={bulkBuilding} onValueChange={setBulkBuilding}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder={t('admin.backoffice.selectBuilding', { defaultValue: 'Select building' })} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{t('common.none', { defaultValue: 'None' })}</SelectItem>
-                    {buildings?.filter(b => b.is_active).map(b => (
-                      <SelectItem key={b.id} value={b.id}>
-                        <span className="flex items-center gap-1">
-                          <Building2 className="h-3 w-3" />
-                          {b.name}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                onClick={handleBulkCreateContracts}
-                disabled={selectedWorkspaces.size === 0 || isBulkCreating}
-                className="bg-amber-600 hover:bg-amber-700"
-              >
-                <Zap className="h-4 w-4 mr-2" />
-                {isBulkCreating
-                  ? t('common.processing', { defaultValue: 'Processing...' })
-                  : t('admin.backoffice.createContractsCount', { count: selectedWorkspaces.size, defaultValue: 'Create {{count}} Contracts' })}
-              </Button>
-            </div>
-            <div className="max-h-64 overflow-auto border rounded-lg bg-background">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10">
-                      <Checkbox
-                        checked={selectedWorkspaces.size === workspacesWithoutContracts.length && workspacesWithoutContracts.length > 0}
-                        onCheckedChange={toggleSelectAll}
-                      />
-                    </TableHead>
-                    <TableHead>{t('admin.backoffice.startup', { defaultValue: 'Startup' })}</TableHead>
-                    <TableHead>{t('admin.backoffice.stage', { defaultValue: 'Stage' })}</TableHead>
-                    <TableHead>{t('admin.backoffice.createdAt', { defaultValue: 'Created' })}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {workspacesWithoutContracts.map(workspace => (
-                    <TableRow key={workspace.id}>
-                      <TableCell>
+              <div className="max-h-64 overflow-auto border rounded-lg bg-background">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-10">
                         <Checkbox
-                          checked={selectedWorkspaces.has(workspace.id)}
-                          onCheckedChange={() => toggleWorkspaceSelection(workspace.id)}
+                          checked={selectedWorkspaces.size === workspacesWithoutContracts.length && workspacesWithoutContracts.length > 0}
+                          onCheckedChange={toggleSelectAll}
                         />
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {workspace.startup?.name || t('common.unnamed', { defaultValue: 'Unnamed' })}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-xs">{workspace.stage || '-'}</Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {workspace.created_at ? format(new Date(workspace.created_at), 'dd MMM yyyy') : '-'}
-                      </TableCell>
+                      </TableHead>
+                      <TableHead>{t('admin.backoffice.startup', { defaultValue: 'Startup' })}</TableHead>
+                      <TableHead>{t('admin.backoffice.stage', { defaultValue: 'Stage' })}</TableHead>
+                      <TableHead>{t('admin.backoffice.createdAt', { defaultValue: 'Created' })}</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
+                  </TableHeader>
+                  <TableBody>
+                    {workspacesWithoutContracts.map(workspace => (
+                      <TableRow key={workspace.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedWorkspaces.has(workspace.id)}
+                            onCheckedChange={() => toggleWorkspaceSelection(workspace.id)}
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {workspace.startup?.name || t('common.unnamed', { defaultValue: 'Unnamed' })}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">{workspace.stage || '-'}</Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {workspace.created_at ? format(new Date(workspace.created_at), 'dd MMM yyyy') : '-'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </details>
         </Card>
       )}
 
