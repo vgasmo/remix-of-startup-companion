@@ -266,7 +266,7 @@ export default function PublicContractSigning() {
       toast.success(isPt ? 'Contrato assinado com sucesso!' : 'Contract signed successfully!');
       setSignSuccess(true);
     } catch (e: any) {
-      const msg = e?.message || (isPt ? 'Erro ao assinar' : 'Signing failed');
+      const msg = e?.message || t('publicContract.errors.signingFailed');
       setSigningError(msg);
       toast.error(msg);
     } finally {
