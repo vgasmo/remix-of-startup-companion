@@ -197,23 +197,6 @@ export function ContractReviewForm({
                   </FormItem>
                 )}
               />
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('admin.backoffice.selectType', { defaultValue: 'Select type' })} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {incubationTypes?.map(it => (
-                          <SelectItem key={it.id} value={it.id}>
-                            {it.name} (€{it.base_monthly_fee}/mo)
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               <FormField
                 control={form.control}
