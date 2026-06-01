@@ -273,23 +273,29 @@ export default function PublicContractSigning() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfFileName, setPdfFileName] = useState<string>('contrato.pdf');
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState(false);
 
   const fetchPdf = async (): Promise<{ url: string; fileName: string } | null> => {
     if (pdfUrl) return { url: pdfUrl, fileName: pdfFileName };
     setPdfLoading(true);
+    setPdfError(false);
     try {
       const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
         body: { action: 'download_pdf', token }
       });
       if (error) throw error;
-      if (!data?.documentBase64) throw new Error('no pdf');
-      const blob = new Blob([Uint8Array.from(atob(data.documentBase64), c => c.charCodeAt(0))], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
+      const url = data?.signedUrl
+        ? data.signedUrl
+        : data?.documentBase64
+          ? URL.createObjectURL(new Blob([Uint8Array.from(atob(data.documentBase64), c => c.charCodeAt(0))], { type: 'application/pdf' }))
+          : null;
+      if (!url) throw new Error('no pdf');
       const fileName = data.fileName || 'contrato.pdf';
       setPdfUrl(url);
       setPdfFileName(fileName);
       return { url, fileName };
     } catch {
+      setPdfError(true);
       toast.error(isPt ? 'Erro ao descarregar PDF' : 'Failed to download PDF');
       return null;
     } finally {
@@ -315,6 +321,14 @@ export default function PublicContractSigning() {
     a.click();
     a.remove();
   };
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(pdfUrl);
+      }
+    };
+  }, [pdfUrl]);
 
   // Server save callback — used by autosave hook and by explicit save button.
   //
