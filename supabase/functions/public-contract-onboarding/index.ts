@@ -69,8 +69,10 @@ function validateIntakeForm(fd: any): { ok: true } | { ok: false; error: string 
   }
   if (!optStr(fd.startup_description, 5000)) return { ok: false, error: 'description too long' }
   if (!optStr(fd.website, 500)) return { ok: false, error: 'website too long' }
+  if (!optStr(fd.project_name, 200)) return { ok: false, error: 'project_name too long (max 200)' }
   return { ok: true }
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -359,7 +361,7 @@ Deno.serve(async (req) => {
         .from('contract_intakes')
         .update({
           organization_name: fd.organization_name,
-          project_name: fd.project_name ?? null,
+          project_name: fd.project_name ? String(fd.project_name).trim().slice(0, 200) : null,
           company_nif: fd.company_nif ? String(fd.company_nif).replace(/\s|-/g, '') : null,
           company_address: fd.company_address,
           company_city: fd.company_city,

@@ -138,7 +138,10 @@ export default function PublicContractSigning() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedDigital, setAcceptedDigital] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [signingError, setSigningError] = useState<string | null>(null);
+  const [signSuccess, setSignSuccess] = useState(false);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
 
   const [formData, setFormData] = useState<CompanyFormData>({
     legal_representative_name: '',
@@ -241,6 +244,7 @@ export default function PublicContractSigning() {
   // Digital signature handler
   const handleDigitalSign = async () => {
     setIsSubmitting(true);
+    setSigningError(null);
     try {
       const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
         body: {
@@ -260,14 +264,16 @@ export default function PublicContractSigning() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success(isPt ? 'Contrato assinado com sucesso!' : 'Contract signed successfully!');
-      // Refresh to show completed state
-      window.location.reload();
+      setSignSuccess(true);
     } catch (e: any) {
-      toast.error(e.message || (isPt ? 'Erro ao assinar' : 'Signing failed'));
+      const msg = e?.message || (isPt ? 'Erro ao assinar' : 'Signing failed');
+      setSigningError(msg);
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   // PDF state — fetch once, reuse for inline preview + download
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -303,13 +309,14 @@ export default function PublicContractSigning() {
     }
   };
 
-  // Auto-load PDF preview when in signing step
+  // Pre-fetch PDF when entering review or signing steps for instant preview
   useEffect(() => {
-    if (currentStep === 'signing' && !pdfUrl && !pdfLoading) {
+    if ((currentStep === 'review_contract' || currentStep === 'signing') && !pdfUrl && !pdfLoading) {
       fetchPdf();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
+
 
   const handleDownloadPdf = async () => {
     const res = await fetchPdf();
@@ -786,12 +793,15 @@ export default function PublicContractSigning() {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             <p className="text-sm font-medium">
                               {isPt ? doc.labelPt : doc.labelEn}
                             </p>
-                            {/* Optional badge placeholder – removed to satisfy lint */}
+                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
+                              {isPt ? 'Opcional' : 'Optional'}
+                            </Badge>
                           </div>
+
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {isPt ? doc.descPt : doc.descEn}
                           </p>
@@ -1033,7 +1043,7 @@ export default function PublicContractSigning() {
               )}
             </CardHeader>
             <CardContent className="space-y-4">
-              {(sigStatus === 'completed' || sigStatus === 'signed') ? (
+              {(signSuccess || sigStatus === 'completed' || sigStatus === 'signed') ? (
                 <div className="text-center py-8 space-y-3">
                   <CheckCircle2 className="h-16 w-16 mx-auto text-primary" />
                   <h3 className="text-lg font-semibold text-primary">
@@ -1164,6 +1174,13 @@ export default function PublicContractSigning() {
                       </div>
                     </div>
                     
+                    {signingError && (
+                      <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive flex items-start gap-2">
+                        <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                        <span>{signingError}</span>
+                      </div>
+                    )}
+
                     <Button 
                       className="w-full gap-2"
                       disabled={!typedSignature || !acceptedTerms || !acceptedDigital || typedSignature.length < 3 || isSubmitting}
@@ -1172,6 +1189,7 @@ export default function PublicContractSigning() {
                       {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <PenTool className="h-4 w-4" />}
                       {isPt ? 'Assinar Contrato Digitalmente' : 'Sign Contract Digitally'}
                     </Button>
+
                     
                     <p className="text-[10px] text-muted-foreground text-center">
                       {isPt 
