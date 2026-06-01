@@ -1065,12 +1065,29 @@ export default function PublicContractSigning() {
                         ? (isPt ? 'A preparar PDF…' : 'Preparing PDF…')
                         : (isPt ? 'Descarregar PDF do Contrato' : 'Download Contract PDF')}
                     </Button>
+                    {pdfError && (
+                      <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive flex items-center justify-between gap-3">
+                        <span>{isPt ? 'Não foi possível carregar a pré-visualização do PDF.' : 'Could not load the PDF preview.'}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => {
+                            setPdfUrl(null);
+                            void fetchPdf();
+                          }}
+                        >
+                          {isPt ? 'Tentar novamente' : 'Try again'}
+                        </Button>
+                      </div>
+                    )}
                     {pdfUrl && (
                       <div className="mt-3 rounded-md overflow-hidden border bg-background">
                         <iframe
                           src={pdfUrl}
                           title={isPt ? 'Pré-visualização do contrato' : 'Contract preview'}
                           className="w-full h-[420px]"
+                          onError={() => setPdfError(true)}
                         />
                       </div>
                     )}
