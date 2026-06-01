@@ -480,13 +480,12 @@ export default function PublicContractSigning() {
           <CardContent className="py-12 text-center space-y-4">
             <AlertTriangle className="h-12 w-12 mx-auto text-destructive/60" />
             <h2 className="text-lg font-semibold">
-              {isPt ? 'Link inválido ou expirado' : 'Invalid or expired link'}
+              {t('publicContract.invalidLinkTitle')}
             </h2>
             <p className="text-muted-foreground text-sm">
-              {isPt
-                ? 'Este link de contrato já não é válido. Contacte a equipa da Startup Leiria para obter um novo link.'
-                : 'This contract link is no longer valid. Contact the Startup Leiria team for a new link.'}
+              {t('publicContract.invalidLinkDesc')}
             </p>
+
           </CardContent>
         </Card>
       </div>
