@@ -309,13 +309,14 @@ export default function PublicContractSigning() {
     }
   };
 
-  // Auto-load PDF preview when in signing step
+  // Pre-fetch PDF when entering review or signing steps for instant preview
   useEffect(() => {
-    if (currentStep === 'signing' && !pdfUrl && !pdfLoading) {
+    if ((currentStep === 'review_contract' || currentStep === 'signing') && !pdfUrl && !pdfLoading) {
       fetchPdf();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
+
 
   const handleDownloadPdf = async () => {
     const res = await fetchPdf();
