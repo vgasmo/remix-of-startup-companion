@@ -121,7 +121,7 @@ const getStepLabels = (provider: SignatureProvider): Record<WizardStep, { pt: st
 
 export default function PublicContractSigning() {
   const { token } = useParams<{ token: string }>();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [lang, setLang] = useState<'pt' | 'en'>(() =>
     i18n.language?.startsWith('pt') ? 'pt' : 'en'
   );
@@ -231,7 +231,7 @@ export default function PublicContractSigning() {
       }));
       toast.success(isPt ? 'Documento carregado' : 'Document uploaded');
     } catch (err: any) {
-      toast.error(err?.message || (isPt ? 'Erro ao carregar documento' : 'Upload error'));
+      toast.error(err?.message || t('publicContract.errors.uploadFailed'));
     } finally {
       setUploading(null);
     }
@@ -266,7 +266,7 @@ export default function PublicContractSigning() {
       toast.success(isPt ? 'Contrato assinado com sucesso!' : 'Contract signed successfully!');
       setSignSuccess(true);
     } catch (e: any) {
-      const msg = e?.message || (isPt ? 'Erro ao assinar' : 'Signing failed');
+      const msg = e?.message || t('publicContract.errors.signingFailed');
       setSigningError(msg);
       toast.error(msg);
     } finally {
@@ -302,7 +302,7 @@ export default function PublicContractSigning() {
       return { url, fileName };
     } catch {
       setPdfError(true);
-      toast.error(isPt ? 'Erro ao descarregar PDF' : 'Failed to download PDF');
+      toast.error(t('publicContract.errors.pdfDownloadFailed'));
       return null;
     } finally {
       setPdfLoading(false);
@@ -412,7 +412,7 @@ export default function PublicContractSigning() {
       setCurrentStep('review_contract');
       toast.success(isPt ? 'Dados guardados com sucesso' : 'Data saved successfully');
     },
-    onError: () => toast.error(isPt ? 'Erro ao guardar dados' : 'Error saving data'),
+    onError: () => toast.error(t('publicContract.errors.saveDataFailed')),
   });
 
   // Submit for signature (provider-agnostic — backend resolves provider)
@@ -440,7 +440,7 @@ export default function PublicContractSigning() {
       }
     },
     onError: (err: any) => {
-      toast.error(err?.message || (isPt ? 'Erro ao enviar para assinatura' : 'Signing error'));
+      toast.error(err?.message || t('publicContract.errors.sendSigningFailed'));
       setCurrentStep('signing');
     },
   });
@@ -465,7 +465,7 @@ export default function PublicContractSigning() {
         <div className="text-center space-y-4">
           <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
           <p className="text-muted-foreground text-sm">
-            {isPt ? 'A carregar contrato...' : 'Loading contract...'}
+            {t('publicContract.loadingContract')}
           </p>
         </div>
       </div>
@@ -480,13 +480,12 @@ export default function PublicContractSigning() {
           <CardContent className="py-12 text-center space-y-4">
             <AlertTriangle className="h-12 w-12 mx-auto text-destructive/60" />
             <h2 className="text-lg font-semibold">
-              {isPt ? 'Link inválido ou expirado' : 'Invalid or expired link'}
+              {t('publicContract.invalidLinkTitle')}
             </h2>
             <p className="text-muted-foreground text-sm">
-              {isPt
-                ? 'Este link de contrato já não é válido. Contacte a equipa da Startup Leiria para obter um novo link.'
-                : 'This contract link is no longer valid. Contact the Startup Leiria team for a new link.'}
+              {t('publicContract.invalidLinkDesc')}
             </p>
+
           </CardContent>
         </Card>
       </div>
@@ -798,7 +797,7 @@ export default function PublicContractSigning() {
                               {isPt ? doc.labelPt : doc.labelEn}
                             </p>
                             <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
-                              {isPt ? 'Opcional' : 'Optional'}
+                              {t('publicContract.optional')}
                             </Badge>
                           </div>
 

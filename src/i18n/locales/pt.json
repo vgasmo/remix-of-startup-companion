@@ -6327,7 +6327,22 @@
       "label": "Estado intake"
     }
   },
+  "publicContract": {
+    "optional": "Opcional",
+    "required": "Obrigatório",
+    "loadingContract": "A carregar contrato...",
+    "invalidLinkTitle": "Link inválido ou expirado",
+    "invalidLinkDesc": "Este link de contrato já não é válido. Contacte a equipa da Startup Leiria para obter um novo link.",
+    "errors": {
+      "uploadFailed": "Erro ao carregar documento",
+      "signingFailed": "Erro ao assinar contrato. Por favor tente novamente ou contacte a equipa.",
+      "pdfDownloadFailed": "Erro ao descarregar PDF do contrato",
+      "saveDataFailed": "Erro ao guardar dados. Verifique os campos e tente novamente.",
+      "sendSigningFailed": "Erro ao enviar contrato para assinatura"
+    }
+  },
   "publicBooking": {
+
     "backToSite": "Voltar ao site",
     "bookFirstMeeting": "Marcar Primeira Reunião",
     "bookFirstMeetingDesc": "Agende uma consulta gratuita para saber como podemos ajudar a sua startup a crescer.",
