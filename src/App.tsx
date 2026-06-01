@@ -51,6 +51,7 @@ const CrmDiagnostics = lazy(lazyWithRetry(() => import("./pages/CrmDiagnostics")
 const PublicBooking = lazy(lazyWithRetry(() => import("./pages/PublicBooking"), "lazy:public-booking"));
 const AdminDataImport = lazy(lazyWithRetry(() => import("./pages/AdminDataImport"), "lazy:admin-data-import"));
 const BulkContractImport = lazy(lazyWithRetry(() => import("./pages/BulkContractImport"), "lazy:bulk-contract-import"));
+const AdminContracts = lazy(lazyWithRetry(() => import("./pages/AdminContracts"), "lazy:admin-contracts"));
 const Ecosystem = lazy(lazyWithRetry(() => import("./pages/Ecosystem"), "lazy:ecosystem"));
 const Documents = lazy(lazyWithRetry(() => import("./pages/Documents"), "lazy:documents"));
 const Resources = lazy(lazyWithRetry(() => import("./pages/Resources"), "lazy:resources"));
