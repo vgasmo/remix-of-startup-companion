@@ -1174,6 +1174,13 @@ export default function PublicContractSigning() {
                       </div>
                     </div>
                     
+                    {signingError && (
+                      <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive flex items-start gap-2">
+                        <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                        <span>{signingError}</span>
+                      </div>
+                    )}
+
                     <Button 
                       className="w-full gap-2"
                       disabled={!typedSignature || !acceptedTerms || !acceptedDigital || typedSignature.length < 3 || isSubmitting}
@@ -1182,6 +1189,7 @@ export default function PublicContractSigning() {
                       {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <PenTool className="h-4 w-4" />}
                       {isPt ? 'Assinar Contrato Digitalmente' : 'Sign Contract Digitally'}
                     </Button>
+
                     
                     <p className="text-[10px] text-muted-foreground text-center">
                       {isPt 
