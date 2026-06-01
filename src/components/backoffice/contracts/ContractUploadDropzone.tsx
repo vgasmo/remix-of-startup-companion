@@ -25,9 +25,10 @@ interface ContractUploadDropzoneProps {
   workspaceId?: string;
   onAIDataExtracted: (data: AIExtractedData, documentUrl: string) => void;
   onManualEntry: () => void;
+  onCancel?: () => void;
 }
 
-export function ContractUploadDropzone({ workspaceId, onAIDataExtracted, onManualEntry }: ContractUploadDropzoneProps) {
+export function ContractUploadDropzone({ workspaceId, onAIDataExtracted, onManualEntry, onCancel }: ContractUploadDropzoneProps) {
   const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
