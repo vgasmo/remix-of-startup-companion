@@ -179,17 +179,21 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Log to email_log if intake context available
+    // Log to email_log if intake context available (non-blocking)
     if (body.intakeId) {
-      const supabase = createClient(supabaseUrl, serviceKey)
-      await supabase.from('email_log').insert({
-        email_type: `intake_${type}`,
-        subject,
-        recipients: JSON.stringify([recipientEmail]),
-        status: 'sent',
-        sent_at: new Date().toISOString(),
-        created_by: null,
-      }).catch(() => {}) // non-blocking
+      try {
+        const supabase = createClient(supabaseUrl, serviceKey)
+        await supabase.from('email_log').insert({
+          email_type: `intake_${type}`,
+          subject,
+          recipients: JSON.stringify([recipientEmail]),
+          status: 'sent',
+          sent_at: new Date().toISOString(),
+          created_by: null,
+        })
+      } catch (logErr) {
+        console.warn('email_log insert failed (non-blocking):', logErr)
+      }
     }
 
     return new Response(JSON.stringify({ success: true, messageId: emailResult?.id }), {
