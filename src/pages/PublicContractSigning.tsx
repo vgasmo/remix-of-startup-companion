@@ -299,7 +299,7 @@ export default function PublicContractSigning() {
 
   // Auto-load PDF preview when in signing step
   useEffect(() => {
-    if (currentStep === 'sign' && !pdfUrl && !pdfLoading) {
+    if (currentStep === 'signing' && !pdfUrl && !pdfLoading) {
       fetchPdf();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
