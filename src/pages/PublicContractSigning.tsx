@@ -269,21 +269,51 @@ export default function PublicContractSigning() {
     }
   };
 
-  // Download PDF handler
-  const handleDownloadPdf = async () => {
+  // PDF state — fetch once, reuse for inline preview + download
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfFileName, setPdfFileName] = useState<string>('contrato.pdf');
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const fetchPdf = async (): Promise<{ url: string; fileName: string } | null> => {
+    if (pdfUrl) return { url: pdfUrl, fileName: pdfFileName };
+    setPdfLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
         body: { action: 'download_pdf', token }
       });
       if (error) throw error;
-      if (data?.documentBase64) {
-        const blob = new Blob([Uint8Array.from(atob(data.documentBase64), c => c.charCodeAt(0))], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-      }
+      if (!data?.documentBase64) throw new Error('no pdf');
+      const blob = new Blob([Uint8Array.from(atob(data.documentBase64), c => c.charCodeAt(0))], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const fileName = data.fileName || 'contrato.pdf';
+      setPdfUrl(url);
+      setPdfFileName(fileName);
+      return { url, fileName };
     } catch {
       toast.error(isPt ? 'Erro ao descarregar PDF' : 'Failed to download PDF');
+      return null;
+    } finally {
+      setPdfLoading(false);
     }
+  };
+
+  // Auto-load PDF preview when in signing step
+  useEffect(() => {
+    if (currentStep === 'signing' && !pdfUrl && !pdfLoading) {
+      fetchPdf();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep]);
+
+  const handleDownloadPdf = async () => {
+    const res = await fetchPdf();
+    if (!res) return;
+    const a = document.createElement('a');
+    a.href = res.url;
+    a.download = res.fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   };
 
   // Server save callback — used by autosave hook and by explicit save button.
@@ -1015,10 +1045,21 @@ export default function PublicContractSigning() {
                         ? 'Reveja o contrato antes de assinar. Ao assinar, aceita todos os termos.'
                         : 'Review the contract before signing. By signing, you accept all terms.'}
                     </p>
-                    <Button variant="outline" size="sm" className="gap-2" onClick={handleDownloadPdf}>
+                    <Button variant="outline" size="sm" className="gap-2" onClick={handleDownloadPdf} disabled={pdfLoading}>
                       <FileText className="h-3.5 w-3.5" />
-                      {isPt ? 'Descarregar PDF do Contrato' : 'Download Contract PDF'}
+                      {pdfLoading
+                        ? (isPt ? 'A preparar PDF…' : 'Preparing PDF…')
+                        : (isPt ? 'Descarregar PDF do Contrato' : 'Download Contract PDF')}
                     </Button>
+                    {pdfUrl && (
+                      <div className="mt-3 rounded-md overflow-hidden border bg-background">
+                        <iframe
+                          src={pdfUrl}
+                          title={isPt ? 'Pré-visualização do contrato' : 'Contract preview'}
+                          className="w-full h-[420px]"
+                        />
+                      </div>
+                    )}
                   </div>
                   
                   {/* Secção 2: Dados do signatário */}
