@@ -395,6 +395,104 @@ Deno.serve(async (req) => {
       })
     }
 
+    // === INTAKE: Upload document by intake token (public, no auth) ===
+    if (action === 'intake_upload_document') {
+      if (!token) {
+        return new Response(JSON.stringify({ error: 'Token required' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      const { docKey, fileName, fileBase64, fileExt } = body
+      if (!docKey || !fileBase64) {
+        return new Response(JSON.stringify({ error: 'docKey and fileBase64 required' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      const SAFE_KEY_REGEX = /^[a-zA-Z0-9_-]{1,100}$/
+      if (!SAFE_KEY_REGEX.test(docKey)) {
+        return new Response(JSON.stringify({ error: 'Invalid document key' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      const ALLOWED_EXTS: Record<string, string> = {
+        pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
+      }
+      const ext = (fileExt || 'pdf').toString().toLowerCase()
+      if (!ALLOWED_EXTS[ext]) {
+        return new Response(JSON.stringify({ error: 'Unsupported file type' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      const safeContentType = ALLOWED_EXTS[ext]
+      const MAX_BYTES = 10 * 1024 * 1024
+      if (typeof fileBase64 !== 'string' || fileBase64.length > MAX_BYTES * 1.4) {
+        return new Response(JSON.stringify({ error: 'File too large (max 10MB)' }), {
+          status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      const intakeTokenHash = await sha256Hex(token)
+      const { data: intakeRow, error: intakeErr } = await supabase
+        .from('contract_intakes')
+        .select('id, status, intake_token_expires_at, documents_json')
+        .eq('intake_token_hash', intakeTokenHash)
+        .maybeSingle()
+      if (intakeErr || !intakeRow) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired link' }), {
+          status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      if (intakeRow.intake_token_expires_at && new Date(intakeRow.intake_token_expires_at) < new Date()) {
+        return new Response(JSON.stringify({ error: 'This link has expired' }), {
+          status: 410, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      const binaryStr = atob(fileBase64)
+      if (binaryStr.length > MAX_BYTES) {
+        return new Response(JSON.stringify({ error: 'File too large (max 10MB)' }), {
+          status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      const bytes = new Uint8Array(binaryStr.length)
+      for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i)
+
+      const path = `intake/${intakeRow.id}/${docKey}.${ext}`
+      const { error: uploadErr } = await supabase.storage
+        .from('contract-documents')
+        .upload(path, bytes, { upsert: true, contentType: safeContentType })
+      if (uploadErr) {
+        console.error('intake_upload_document storage error:', uploadErr)
+        return new Response(JSON.stringify({ error: uploadErr.message || 'Upload failed' }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      const currentDocs = intakeRow.documents_json && typeof intakeRow.documents_json === 'object'
+        ? intakeRow.documents_json as Record<string, any>
+        : {}
+      const nextDocs = {
+        ...currentDocs,
+        [docKey]: {
+          path,
+          file_name: fileName || `${docKey}.${ext}`,
+          mime_type: safeContentType,
+          uploaded_at: new Date().toISOString(),
+        },
+      }
+      const { error: persistErr } = await supabase
+        .from('contract_intakes')
+        .update({ documents_json: nextDocs })
+        .eq('id', intakeRow.id)
+      if (persistErr) {
+        console.warn('intake documents_json update failed:', persistErr)
+      }
+
+      return new Response(JSON.stringify({ success: true, path }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // === Public actions: require valid onboarding token ===
     if (!token) {
       return new Response(JSON.stringify({ error: 'Token required' }), {
