@@ -793,12 +793,15 @@ export default function PublicContractSigning() {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             <p className="text-sm font-medium">
                               {isPt ? doc.labelPt : doc.labelEn}
                             </p>
-                            {/* Optional badge placeholder – removed to satisfy lint */}
+                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
+                              {isPt ? 'Opcional' : 'Optional'}
+                            </Badge>
                           </div>
+
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {isPt ? doc.descPt : doc.descEn}
                           </p>
