@@ -479,6 +479,7 @@ export function BackofficeContractsTab() {
         <ContractUploadDropzone
           onAIDataExtracted={handleAIDataExtracted}
           onManualEntry={handleManualEntry}
+          onCancel={() => setFlowState('idle')}
         />
       )}
 
