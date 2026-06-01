@@ -76,6 +76,54 @@ export default function PublicContractIntake() {
     billing_email: '', startup_description: '', website: '',
   });
 
+  const [uploadingDocKey, setUploadingDocKey] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const handleUploadDoc = async (docKey: string, file: File) => {
+    const MAX_BYTES = 10 * 1024 * 1024;
+    if (file.size > MAX_BYTES) {
+      toast.error(isPt ? 'Ficheiro demasiado grande (máx. 10MB)' : 'File too large (max 10MB)');
+      return;
+    }
+    const ext = (file.name.split('.').pop() || 'pdf').toLowerCase();
+    const allowed = ['pdf', 'jpg', 'jpeg', 'png'];
+    if (!allowed.includes(ext)) {
+      toast.error(isPt ? 'Formato não suportado (PDF, JPG, PNG)' : 'Unsupported format (PDF, JPG, PNG)');
+      return;
+    }
+    setUploadingDocKey(docKey);
+    try {
+      const buf = await file.arrayBuffer();
+      // Convert to base64 in chunks to avoid stack overflow on large files
+      let binary = '';
+      const bytes = new Uint8Array(buf);
+      const chunkSize = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunkSize)));
+      }
+      const fileBase64 = btoa(binary);
+      const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
+        body: {
+          action: 'upload_document',
+          token,
+          docKey,
+          fileName: file.name,
+          fileBase64,
+          fileExt: ext,
+          mimeType: file.type,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(isPt ? 'Documento enviado' : 'Document uploaded');
+      await queryClient.invalidateQueries({ queryKey: ['public-intake', token] });
+    } catch (err: any) {
+      toast.error(err?.message || (isPt ? 'Erro ao enviar documento' : 'Failed to upload'));
+    } finally {
+      setUploadingDocKey(null);
+    }
+  };
+
   // Fetch intake via edge function (no direct DB access)
   const { data: intake, isLoading, error: fetchError } = useQuery({
     queryKey: ['public-intake', token],
