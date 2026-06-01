@@ -187,6 +187,7 @@ function AppRoutes() {
         <Route path="/admin/datarooms" element={<ProtectedRoute staffOnly><AdminDatarooms /></ProtectedRoute>} />
             <Route path="/admin/data-import" element={<ProtectedRoute adminOnly><AdminDataImport /></ProtectedRoute>} />
             <Route path="/admin/contracts/bulk-import" element={<ProtectedRoute adminOnly><BulkContractImport /></ProtectedRoute>} />
+            <Route path="/admin/contracts" element={<ProtectedRoute staffOnly><AdminContracts /></ProtectedRoute>} />
             <Route path="/admin/diagnostics" element={<ProtectedRoute adminOnly><AppDiagnostics /></ProtectedRoute>} />
         <Route path="/admin/programs/new" element={<ProtectedRoute staffOnly><ProgramSetupWizard /></ProtectedRoute>} />
         <Route path="/admin/programs/new/:draftId" element={<ProtectedRoute staffOnly><ProgramSetupWizard /></ProtectedRoute>} />
