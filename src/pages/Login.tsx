@@ -305,7 +305,14 @@ export default function Login() {
                 <EnrollmentModeIndicator />
               </div>
 
-              <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setError(null); }}>
+              <Tabs value={activeTab} onValueChange={(v) => {
+                setActiveTab(v);
+                setError(null);
+                // Clear cross-tab field bleed: password is sensitive, fullName only relevant for signup
+                setPassword('');
+                setFullName('');
+                setSignupSuccess(false);
+              }}>
                 <TabsList className="grid w-full grid-cols-2 mb-6">
                   <TabsTrigger value="login" className="data-[state=active]:shadow-sm">{t('auth.signIn')}</TabsTrigger>
                   <TabsTrigger value="signup" className="data-[state=active]:shadow-sm">{t('auth.signUp')}</TabsTrigger>
