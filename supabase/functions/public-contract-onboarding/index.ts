@@ -509,6 +509,7 @@ Deno.serve(async (req) => {
         square_meters, signature_status, signature_provider, legal_representative_name,
         legal_representative_email, legal_representative_phone, company_nif, company_address,
         company_city, company_postal_code, project_name,
+        document_url,
         certidao_permanente_code, additional_representatives,
         onboarding_token_expires_at, updated_at,
         regulation_accepted_at, regulation_version,
@@ -989,9 +990,27 @@ Deno.serve(async (req) => {
 
     // === Download PDF (public, token-validated) ===
     if (action === 'download_pdf') {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-      const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-      
+      const existingDocumentPath = typeof (contract as any).document_url === 'string'
+        ? (contract as any).document_url.trim()
+        : ''
+
+      if (existingDocumentPath) {
+        const { data: signedData, error: signedErr } = await supabase.storage
+          .from('contract-documents')
+          .createSignedUrl(existingDocumentPath, 60 * 60)
+
+        if (!signedErr && signedData?.signedUrl) {
+          return new Response(JSON.stringify({
+            signedUrl: signedData.signedUrl,
+            fileName: existingDocumentPath.split('/').pop() || 'contrato.pdf',
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+
+        console.warn('Failed to create signed URL for existing contract PDF:', signedErr)
+      }
+
       const pdfRes = await fetch(`${supabaseUrl}/functions/v1/generate-contract-pdf`, {
         method: 'POST',
         headers: {
@@ -1008,6 +1027,24 @@ Deno.serve(async (req) => {
       }
       
       const pdfData = await pdfRes.json()
+
+      if (pdfData?.documentPath) {
+        const { data: signedData, error: signedErr } = await supabase.storage
+          .from('contract-documents')
+          .createSignedUrl(pdfData.documentPath, 60 * 60)
+
+        if (!signedErr && signedData?.signedUrl) {
+          return new Response(JSON.stringify({
+            signedUrl: signedData.signedUrl,
+            fileName: pdfData.fileName || pdfData.documentPath.split('/').pop() || 'contrato.pdf',
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+
+        console.warn('Failed to create signed URL for freshly generated contract PDF:', signedErr)
+      }
+
       return new Response(JSON.stringify({ documentBase64: pdfData.documentBase64, fileName: pdfData.fileName }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
