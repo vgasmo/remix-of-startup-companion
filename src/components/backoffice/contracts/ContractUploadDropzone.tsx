@@ -148,7 +148,21 @@ export function ContractUploadDropzone({ workspaceId, onAIDataExtracted, onManua
           />
         </div>
 
-        <div className="flex items-center justify-center mt-4">
+        <div className="flex items-center justify-between gap-2 mt-4">
+          {onCancel ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCancel();
+              }}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t('common.back', { defaultValue: 'Back' })}
+            </Button>
+          ) : <span />}
           <Button
             variant="outline"
             size="sm"
