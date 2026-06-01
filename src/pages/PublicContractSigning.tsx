@@ -244,6 +244,7 @@ export default function PublicContractSigning() {
   // Digital signature handler
   const handleDigitalSign = async () => {
     setIsSubmitting(true);
+    setSigningError(null);
     try {
       const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
         body: {
@@ -263,14 +264,16 @@ export default function PublicContractSigning() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success(isPt ? 'Contrato assinado com sucesso!' : 'Contract signed successfully!');
-      // Refresh to show completed state
-      window.location.reload();
+      setSignSuccess(true);
     } catch (e: any) {
-      toast.error(e.message || (isPt ? 'Erro ao assinar' : 'Signing failed'));
+      const msg = e?.message || (isPt ? 'Erro ao assinar' : 'Signing failed');
+      setSigningError(msg);
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   // PDF state — fetch once, reuse for inline preview + download
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
