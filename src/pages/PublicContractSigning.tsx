@@ -1045,10 +1045,21 @@ export default function PublicContractSigning() {
                         ? 'Reveja o contrato antes de assinar. Ao assinar, aceita todos os termos.'
                         : 'Review the contract before signing. By signing, you accept all terms.'}
                     </p>
-                    <Button variant="outline" size="sm" className="gap-2" onClick={handleDownloadPdf}>
+                    <Button variant="outline" size="sm" className="gap-2" onClick={handleDownloadPdf} disabled={pdfLoading}>
                       <FileText className="h-3.5 w-3.5" />
-                      {isPt ? 'Descarregar PDF do Contrato' : 'Download Contract PDF'}
+                      {pdfLoading
+                        ? (isPt ? 'A preparar PDF…' : 'Preparing PDF…')
+                        : (isPt ? 'Descarregar PDF do Contrato' : 'Download Contract PDF')}
                     </Button>
+                    {pdfUrl && (
+                      <div className="mt-3 rounded-md overflow-hidden border bg-background">
+                        <iframe
+                          src={pdfUrl}
+                          title={isPt ? 'Pré-visualização do contrato' : 'Contract preview'}
+                          className="w-full h-[420px]"
+                        />
+                      </div>
+                    )}
                   </div>
                   
                   {/* Secção 2: Dados do signatário */}
