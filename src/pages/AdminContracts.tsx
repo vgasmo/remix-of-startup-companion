@@ -54,8 +54,8 @@ const isPreviewable = (name: string) =>
   /\.(pdf|png|jpe?g|gif|webp)$/i.test(name);
 
 export default function AdminContracts() {
-  const { language } = useLanguage();
-  const t = (pt: string, en: string) => (language === 'en' ? en : pt);
+  const { i18n } = useTranslation();
+  const t = (pt: string, en: string) => (i18n.language?.startsWith('en') ? en : pt);
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
