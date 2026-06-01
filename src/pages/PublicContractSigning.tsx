@@ -138,7 +138,10 @@ export default function PublicContractSigning() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedDigital, setAcceptedDigital] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [signingError, setSigningError] = useState<string | null>(null);
+  const [signSuccess, setSignSuccess] = useState(false);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
 
   const [formData, setFormData] = useState<CompanyFormData>({
     legal_representative_name: '',
