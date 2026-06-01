@@ -507,6 +507,28 @@ Deno.serve(async (req) => {
 
       if (uploadErr) throw uploadErr
 
+      // Persist into documents_json so UI can show "uploaded" badge across reloads
+      try {
+        const currentDocs = (contract as any).documents_json && typeof (contract as any).documents_json === 'object'
+          ? (contract as any).documents_json
+          : {}
+        const nextDocs = {
+          ...currentDocs,
+          [docKey]: {
+            path,
+            file_name: fileName || `${docKey}.${ext}`,
+            mime_type: safeContentType,
+            uploaded_at: new Date().toISOString(),
+          },
+        }
+        await supabase
+          .from('startup_contracts')
+          .update({ documents_json: nextDocs })
+          .eq('id', contract.id)
+      } catch (persistErr) {
+        console.warn('documents_json update failed (non-blocking):', persistErr)
+      }
+
       return new Response(JSON.stringify({ success: true, path }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })

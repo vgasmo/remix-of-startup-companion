@@ -10,7 +10,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -75,6 +75,54 @@ export default function PublicContractIntake() {
     additional_representatives: [],
     billing_email: '', startup_description: '', website: '',
   });
+
+  const [uploadingDocKey, setUploadingDocKey] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const handleUploadDoc = async (docKey: string, file: File) => {
+    const MAX_BYTES = 10 * 1024 * 1024;
+    if (file.size > MAX_BYTES) {
+      toast.error(isPt ? 'Ficheiro demasiado grande (máx. 10MB)' : 'File too large (max 10MB)');
+      return;
+    }
+    const ext = (file.name.split('.').pop() || 'pdf').toLowerCase();
+    const allowed = ['pdf', 'jpg', 'jpeg', 'png'];
+    if (!allowed.includes(ext)) {
+      toast.error(isPt ? 'Formato não suportado (PDF, JPG, PNG)' : 'Unsupported format (PDF, JPG, PNG)');
+      return;
+    }
+    setUploadingDocKey(docKey);
+    try {
+      const buf = await file.arrayBuffer();
+      // Convert to base64 in chunks to avoid stack overflow on large files
+      let binary = '';
+      const bytes = new Uint8Array(buf);
+      const chunkSize = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunkSize)));
+      }
+      const fileBase64 = btoa(binary);
+      const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
+        body: {
+          action: 'upload_document',
+          token,
+          docKey,
+          fileName: file.name,
+          fileBase64,
+          fileExt: ext,
+          mimeType: file.type,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(isPt ? 'Documento enviado' : 'Document uploaded');
+      await queryClient.invalidateQueries({ queryKey: ['public-intake', token] });
+    } catch (err: any) {
+      toast.error(err?.message || (isPt ? 'Erro ao enviar documento' : 'Failed to upload'));
+    } finally {
+      setUploadingDocKey(null);
+    }
+  };
 
   // Fetch intake via edge function (no direct DB access)
   const { data: intake, isLoading, error: fetchError } = useQuery({
@@ -490,15 +538,65 @@ export default function PublicContractIntake() {
                   : 'Documents can be sent later. Submission is not blocked by missing documents.'}
               </p>
               <div className="grid gap-2">
-                {OPTIONAL_DOCS.map(doc => (
-                  <div key={doc.key} className="flex items-center justify-between p-2 rounded border border-border/50 bg-muted/30">
-                    <span className="text-sm">{isPt ? doc.labelPt : doc.labelEn}</span>
-                    <Badge variant="outline" className="text-[10px]">
-                      {isPt ? 'Opcional' : 'Optional'}
-                    </Badge>
-                  </div>
-                ))}
+                {OPTIONAL_DOCS.map(doc => {
+                  const uploaded = intake?.documents_json?.[doc.key];
+                  const isUploading = uploadingDocKey === doc.key;
+                  return (
+                    <div key={doc.key} className="flex items-center justify-between gap-3 p-2 rounded border border-border/50 bg-muted/30">
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm truncate">{isPt ? doc.labelPt : doc.labelEn}</span>
+                        {uploaded?.file_name && (
+                          <span className="text-[11px] text-muted-foreground truncate">
+                            {uploaded.file_name}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {uploaded ? (
+                          <Badge variant="outline" className="text-[10px] bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-300">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            {isPt ? 'Enviado' : 'Uploaded'}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[10px]">
+                            {isPt ? 'Opcional' : 'Optional'}
+                          </Badge>
+                        )}
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={isSubmitted || isUploading}
+                          onClick={() => {
+                            const input = document.getElementById(`upload-${doc.key}`) as HTMLInputElement | null;
+                            input?.click();
+                          }}
+                          className="gap-1.5"
+                        >
+                          {isUploading ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Upload className="h-3.5 w-3.5" />
+                          )}
+                          {uploaded ? (isPt ? 'Substituir' : 'Replace') : (isPt ? 'Carregar' : 'Upload')}
+                        </Button>
+                        <input
+                          id={`upload-${doc.key}`}
+                          type="file"
+                          className="hidden"
+                          accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            e.target.value = '';
+                            if (f) handleUploadDoc(doc.key, f);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
+
             </div>
           </CardContent>
         </Card>
