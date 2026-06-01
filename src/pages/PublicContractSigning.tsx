@@ -1043,7 +1043,7 @@ export default function PublicContractSigning() {
               )}
             </CardHeader>
             <CardContent className="space-y-4">
-              {(sigStatus === 'completed' || sigStatus === 'signed') ? (
+              {(signSuccess || sigStatus === 'completed' || sigStatus === 'signed') ? (
                 <div className="text-center py-8 space-y-3">
                   <CheckCircle2 className="h-16 w-16 mx-auto text-primary" />
                   <h3 className="text-lg font-semibold text-primary">
