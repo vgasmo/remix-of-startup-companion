@@ -104,7 +104,7 @@ export default function PublicContractIntake() {
       const fileBase64 = btoa(binary);
       const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
         body: {
-          action: 'upload_document',
+          action: 'intake_upload_document',
           token,
           docKey,
           fileName: file.name,
