@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.staff_rotate_intake_token(uuid) TO authenticated;
