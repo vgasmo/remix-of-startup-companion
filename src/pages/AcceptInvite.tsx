@@ -36,8 +36,7 @@ export default function AcceptInvite() {
     
     if (!user) {
       setStatus('needs_login');
-      // Store the token in sessionStorage for after login
-      sessionStorage.setItem('pending_invite_token', token);
+      // Token is always re-read from the URL on return; no need to persist.
       return;
     }
     
@@ -76,8 +75,7 @@ export default function AcceptInvite() {
       setStatus('success');
       setWorkspaceId(data.workspaceId);
       
-      // Clear the stored token
-      sessionStorage.removeItem('pending_invite_token');
+      // (no token cleanup needed — token lives only in the URL)
       
       toast.success(t('invite.acceptedSuccess'));
       

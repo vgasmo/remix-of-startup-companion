@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Upload, FileText, Loader2, PenLine } from 'lucide-react';
+import { Upload, FileText, Loader2, PenLine, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/lib/supabaseClient';
@@ -25,9 +25,10 @@ interface ContractUploadDropzoneProps {
   workspaceId?: string;
   onAIDataExtracted: (data: AIExtractedData, documentUrl: string) => void;
   onManualEntry: () => void;
+  onCancel?: () => void;
 }
 
-export function ContractUploadDropzone({ workspaceId, onAIDataExtracted, onManualEntry }: ContractUploadDropzoneProps) {
+export function ContractUploadDropzone({ workspaceId, onAIDataExtracted, onManualEntry, onCancel }: ContractUploadDropzoneProps) {
   const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -147,7 +148,21 @@ export function ContractUploadDropzone({ workspaceId, onAIDataExtracted, onManua
           />
         </div>
 
-        <div className="flex items-center justify-center mt-4">
+        <div className="flex items-center justify-between gap-2 mt-4">
+          {onCancel ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCancel();
+              }}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t('common.back', { defaultValue: 'Back' })}
+            </Button>
+          ) : <span />}
           <Button
             variant="outline"
             size="sm"
