@@ -1,80 +1,68 @@
-# Founder UX Polish — Scoped Plan
+# Cleanup plan: Signup, Backoffice & Contract Signing
 
-## Phase 0 — Reliability guardrail (verified, no changes)
+Audit surfaced ~17 concrete issues across the three flows. Below is a focused, low‑risk plan that ships in three passes. No schema changes, no behavior regressions — only clarity, consistency and error‑handling improvements.
 
-Quick check confirms baseline is intact:
-- `useContractDraftAutosave` is wired into all 3 contract surfaces.
-- `useUpsertTemplateInstance` keeps onConflict + 23505 recovery.
-- `BookingLinksManager` + `IntakeRoutingManager` both store only `token_hash` via shared `sha256Hex`.
-- `ProgramSetupWizard` has crash recovery + flush.
-- `publish-program-setup` snapshot/restore intact.
+## Pass 1 — Signup & onboarding entry
 
-No reliability code will be touched. If any item fails during implementation, I stop and fix it first.
+**Goal:** remove dead ends and stale state in the auth funnel.
 
-## What I will change (founder-facing only)
+1. `src/pages/Login.tsx`
+   - Split `email`/`password`/`fullName`/`error` into separate state per tab so switching tabs no longer carries stale values or error messages.
+   - Add a small inline hint when the consultor auto‑detection kicks in (`@startupleiria.com`) instead of silently hiding the role picker.
+2. `src/pages/PendingApproval.tsx`
+   - Poll account status every 30 s (or on tab focus) and auto‑redirect to `/` when approved.
+   - Add a secondary "Check status now" button next to "Sign out".
+3. `src/pages/AcceptInvite.tsx`
+   - Remove dead `sessionStorage` write (token is always re‑read from URL).
+   - When redirecting to login, embed the full `/accept-invite?token=…` path in `returnTo` and also pass it through Supabase `emailRedirectTo` in `AuthContext.signUp` so invite tokens survive email verification.
+4. `src/components/founder/FounderWelcomeWizard.tsx`
+   - Visually mark contextual actions as "done" after click (check icon + muted style) instead of immediately closing the wizard.
+   - Make the contextual action open in a new tab (or keep wizard open) so users can still hit "Next".
+   - Add missing EN translation keys for step labels.
 
-### Phase 1 — Founder dashboard hierarchy (visual only)
-File: `src/components/dashboard/FounderDashboard.tsx`
-- Tighten above-the-fold rhythm: `OneThingToday` becomes the single hero card (larger title, more breathing room, single primary CTA emphasis). Programme progress (`AccelerationProgressCard` or `FounderJourneyMap`) sits directly below as the secondary anchor. `FounderHelpNudge` stays as the calm tertiary entry.
-- Reduce competing card weights in the "above the fold" region (downgrade secondary cards from `border-2` / heavy shadows to standard tokens).
-- Preserve every existing widget; nothing removed. Streak/Journey/Rings/InvestorReadiness etc. stay inside the persisted "Show more" collapsible.
-- Keep the `founder-advanced-open:${userId}` localStorage preference exactly as-is.
+## Pass 2 — Backoffice contract creation
 
-### Phase 2 — Programme visual language (copy/layout only)
-Files: `src/components/dashboard/AccelerationProgressCard.tsx`, `src/components/founder/FounderJourneyMap.tsx` (if present)
-- Acceleration card: emphasize "Semana X de 12 · Próximo gate em N dias" header line, compact week dots.
-- Incubation map: emphasize current stage label + next playbook item.
-- Unknown programme type already degrades; verify and fall back to generic "Próxima ação".
+**Goal:** make the create flow predictable and surface errors.
 
-### Phase 3 — Help nudge polish (copy + placement)
-File: `src/components/founder/FounderHelpNudge.tsx`
-- Keep all dismissal/TTL logic (already in `useFounderStuckSignal`).
-- Refine copy to: "Sentes-te perdido?" / "Diz-nos o que estás a tentar fazer e indicamos o sítio certo." (+ EN parity).
-- Ensure it renders as inline card, never modal.
+1. `src/components/backoffice/contracts/ContractUploadDropzone.tsx`
+   - Add an `onCancel` callback wired to a visible "← Back" button.
+2. `src/pages/BackofficeContractsTab.tsx` (or wherever the flow state lives)
+   - Wire `onCancel` to return to `idle`.
+   - Read `isError` from `useContracts` and render an inline error card with retry.
+   - Move the bulk‑create panel behind a collapsed `<details>` / accordion so it stops dominating the page.
+3. `src/components/backoffice/contracts/ContractReviewForm.tsx`
+   - Replace hardcoded `(opcional)` with a `t()` key.
+   - When incubation type auto‑fills `monthly_fee`, show a small "Auto‑filled from {type}" badge next to the field and only overwrite if the field is empty or untouched (use `form.formState.dirtyFields`).
+   - Guarantee PT/EN parity for `contractStatus.*` keys; fall back to a human label, never raw snake_case.
+   - Replace the disabled empty `contract_number` field with a muted helper line ("Será atribuído ao guardar — INC‑YYYY‑NNN") so it doesn't look like a broken input.
 
-### Phase 4 — Founder empty states
-Targeted audit + minimal CTA additions where dead-ends exist:
-- KPI tab empty state → "Começa por um KPI simples" + CTA to add.
-- Templates list empty → "Começa um template guiado" + CTA.
-- Sessions empty → "Marca ou pede a tua primeira sessão" if booking enabled.
-- Documents empty → "Carrega prova de progresso quando tiveres" + CTA.
-Only touch components where the empty state is currently a dead-end. Skip files that already have a CTA.
+## Pass 3 — Public contract signing
 
-### Phase 5 — Autosave status copy (visual only)
-- Confirm `useContractDraftAutosave` / `useTemplateDraftAutosave` status chip wording is calm ("A guardar…", "Guardado", "Guardado localmente", "Restaurar rascunho"). Only adjust labels in the *consumers* that render status — never the hooks themselves.
+**Goal:** consistent i18n, clear document requirements, no full‑page reloads.
 
-### Phase 6 — Status colour + spacing consistency (founder surfaces only)
-- Spot-fix obvious inconsistencies (green/amber/red/blue) on the founder dashboard cards.
-- No global token redesign. No admin/staff changes.
+1. `src/pages/PublicContractSigning.tsx`
+   - Move all `isPt ? 'a' : 'b'` strings into `t()` keys under a new `publicContract.*` namespace (PT + EN). Drop the custom `lang` state; use `i18n` directly.
+   - Add "Optional" / "Required" badges per document upload row driven by a single config array.
+   - Replace `window.location.reload()` after digital signing with a success screen + explicit "Voltar ao início" button.
+   - Pre‑fetch the contract PDF when the user enters Step 2 (Review), not Step 3 (Signing), so the preview is ready.
+   - Add inline error display (not just toast) on signing failure.
+2. `supabase/functions/public-contract-onboarding/index.ts`
+   - Add a small dispatch map at the top (`{ action: handler }`) and return `404 Unknown action` for typos.
+   - Add length cap (e.g. 200 chars) and trim on `project_name` in `validateIntakeForm`.
 
-### Phase 7 — Analytics
-Skip. No canonical `@/lib/analytics` taxonomy exists in this codebase (previous audit confirmed).
+## Out of scope (call out, do not change)
 
-## Explicitly NOT doing
-- No rewrite of `useContractDraftAutosave`, `useTemplateDraftAutosave`, `useUpsertTemplateInstance`, `publish-program-setup`, booking token logic.
-- No changes to admin/staff/consultor/mentor surfaces.
-- No removal of any widget (StreakHero, JourneyMap, ProgressRings, InvestorReadiness, FAB, etc.).
-- No new task/social/LMS systems.
-- No dark-mode redesign, no purple-heavy theme.
-- No new dependencies.
+- The duplicate `PublicContractIntake.tsx` page and the two token systems (`onboarding_token` vs `intake_token_hash`) — consolidating these is a separate, larger refactor with migration implications. Will document in `mem://` and flag for a follow‑up.
+- No DB schema changes.
+- No changes to pricing/discount logic (contract immutability rules).
 
-## Files expected to change (~6-9, all UI)
-- `src/components/dashboard/FounderDashboard.tsx`
-- `src/components/dashboard/OneThingToday.tsx` (typography only)
-- `src/components/dashboard/AccelerationProgressCard.tsx`
-- `src/components/founder/FounderJourneyMap.tsx` (if present)
-- `src/components/founder/FounderHelpNudge.tsx`
-- Up to 3 empty-state components for KPI / Templates / Sessions / Documents tabs (only those with dead-end states)
-- `src/i18n/*` PT/EN parity additions for any new strings
+## Technical notes
 
-## Verification
-- `bun run typecheck`
-- `node scripts/i18n-check.cjs` + `node scripts/i18n-lint.mjs`
-- `node scripts/secret-scan.cjs`
-- Manual smoke on `/dashboard` as founder (acceleration + incubation + unknown).
-- Confirm "Show more" persistence still works.
-- Confirm no admin/staff regressions by spot-checking `/admin`.
+- All work is UI + edge function ergonomics. No migrations.
+- All new copy goes through `react-i18next` with PT + EN keys to satisfy the bilingual parity rule.
+- React Query keys, RLS, and `invokeWithAuth` patterns are preserved.
+- Will verify by viewing the affected screens in preview after each pass.
 
-## Risks / follow-ups
-- Empty-state additions need PT/EN parity — I will run `i18n-check` before declaring done.
-- If a founder surface I touch happens to share a component with admin, I'll wrap changes in role checks rather than mutating shared code.
+## Suggested order
+
+Pass 1 → Pass 2 → Pass 3 (independent, can ship one at a time if you prefer to review between passes). If you want me to start with just one pass, tell me which; otherwise I'll proceed in order.
