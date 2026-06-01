@@ -302,7 +302,7 @@ export default function PublicContractSigning() {
       return { url, fileName };
     } catch {
       setPdfError(true);
-      toast.error(isPt ? 'Erro ao descarregar PDF' : 'Failed to download PDF');
+      toast.error(t('publicContract.errors.pdfDownloadFailed'));
       return null;
     } finally {
       setPdfLoading(false);
@@ -412,7 +412,7 @@ export default function PublicContractSigning() {
       setCurrentStep('review_contract');
       toast.success(isPt ? 'Dados guardados com sucesso' : 'Data saved successfully');
     },
-    onError: () => toast.error(isPt ? 'Erro ao guardar dados' : 'Error saving data'),
+    onError: () => toast.error(t('publicContract.errors.saveDataFailed')),
   });
 
   // Submit for signature (provider-agnostic — backend resolves provider)
@@ -440,7 +440,7 @@ export default function PublicContractSigning() {
       }
     },
     onError: (err: any) => {
-      toast.error(err?.message || (isPt ? 'Erro ao enviar para assinatura' : 'Signing error'));
+      toast.error(err?.message || t('publicContract.errors.sendSigningFailed'));
       setCurrentStep('signing');
     },
   });
@@ -465,7 +465,7 @@ export default function PublicContractSigning() {
         <div className="text-center space-y-4">
           <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
           <p className="text-muted-foreground text-sm">
-            {isPt ? 'A carregar contrato...' : 'Loading contract...'}
+            {t('publicContract.loadingContract')}
           </p>
         </div>
       </div>
