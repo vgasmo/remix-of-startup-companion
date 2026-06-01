@@ -75,8 +75,7 @@ export default function AcceptInvite() {
       setStatus('success');
       setWorkspaceId(data.workspaceId);
       
-      // Clear the stored token
-      sessionStorage.removeItem('pending_invite_token');
+      // (no token cleanup needed — token lives only in the URL)
       
       toast.success(t('invite.acceptedSuccess'));
       
