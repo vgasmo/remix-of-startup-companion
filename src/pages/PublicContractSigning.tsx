@@ -797,7 +797,7 @@ export default function PublicContractSigning() {
                               {isPt ? doc.labelPt : doc.labelEn}
                             </p>
                             <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
-                              {isPt ? 'Opcional' : 'Optional'}
+                              {t('publicContract.optional')}
                             </Badge>
                           </div>
 
