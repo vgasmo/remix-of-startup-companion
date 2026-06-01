@@ -61,7 +61,7 @@ const OPTIONAL_DOCS = [
 
 export default function PublicContractIntake() {
   const { token } = useParams<{ token: string }>();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [lang, setLang] = useState<'pt' | 'en'>(() =>
     i18n.language?.startsWith('pt') ? 'pt' : 'en'
   );
@@ -118,7 +118,7 @@ export default function PublicContractIntake() {
       toast.success(isPt ? 'Documento enviado' : 'Document uploaded');
       await queryClient.invalidateQueries({ queryKey: ['public-intake', token] });
     } catch (err: any) {
-      toast.error(err?.message || (isPt ? 'Erro ao enviar documento' : 'Failed to upload'));
+      toast.error(err?.message || t('publicContract.errors.uploadFailed'));
     } finally {
       setUploadingDocKey(null);
     }
@@ -559,7 +559,7 @@ export default function PublicContractIntake() {
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-[10px]">
-                            {isPt ? 'Opcional' : 'Optional'}
+                            {t('publicContract.optional')}
                           </Badge>
                         )}
                         <Button
