@@ -6327,7 +6327,22 @@
       "label": "Intake state"
     }
   },
+  "publicContract": {
+    "optional": "Optional",
+    "required": "Required",
+    "loadingContract": "Loading contract...",
+    "invalidLinkTitle": "Invalid or expired link",
+    "invalidLinkDesc": "This contract link is no longer valid. Contact the Startup Leiria team for a new link.",
+    "errors": {
+      "uploadFailed": "Failed to upload document",
+      "signingFailed": "Failed to sign contract. Please try again or contact the team.",
+      "pdfDownloadFailed": "Failed to download contract PDF",
+      "saveDataFailed": "Failed to save data. Check the fields and try again.",
+      "sendSigningFailed": "Failed to send contract for signature"
+    }
+  },
   "publicBooking": {
+
     "backToSite": "Back to site",
     "bookFirstMeeting": "Book Your First Meeting",
     "bookFirstMeetingDesc": "Schedule a free consultation to learn how we can help your startup grow.",
