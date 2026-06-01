@@ -231,7 +231,7 @@ export default function PublicContractSigning() {
       }));
       toast.success(isPt ? 'Documento carregado' : 'Document uploaded');
     } catch (err: any) {
-      toast.error(err?.message || (isPt ? 'Erro ao carregar documento' : 'Upload error'));
+      toast.error(err?.message || t('publicContract.errors.uploadFailed'));
     } finally {
       setUploading(null);
     }
