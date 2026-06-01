@@ -121,7 +121,7 @@ const getStepLabels = (provider: SignatureProvider): Record<WizardStep, { pt: st
 
 export default function PublicContractSigning() {
   const { token } = useParams<{ token: string }>();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [lang, setLang] = useState<'pt' | 'en'>(() =>
     i18n.language?.startsWith('pt') ? 'pt' : 'en'
   );
