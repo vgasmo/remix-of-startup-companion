@@ -69,8 +69,10 @@ function validateIntakeForm(fd: any): { ok: true } | { ok: false; error: string 
   }
   if (!optStr(fd.startup_description, 5000)) return { ok: false, error: 'description too long' }
   if (!optStr(fd.website, 500)) return { ok: false, error: 'website too long' }
+  if (!optStr(fd.project_name, 200)) return { ok: false, error: 'project_name too long (max 200)' }
   return { ok: true }
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
