@@ -173,12 +173,30 @@ export function ContractReviewForm({
                     <FormLabel>{t('admin.backoffice.incubationType', { defaultValue: 'Incubation Type' })}</FormLabel>
                     <Select onValueChange={(val) => {
                       field.onChange(val);
-                      // Auto-fill monthly fee from selected type
+                      // Only auto-fill fee if user hasn't manually edited it yet — never silently overwrite.
+                      const feeDirty = form.formState.dirtyFields.monthly_fee;
                       const selectedType = incubationTypes?.find(it => it.id === val);
-                      if (selectedType?.base_monthly_fee != null) {
-                        form.setValue('monthly_fee', selectedType.base_monthly_fee);
+                      if (!feeDirty && selectedType?.base_monthly_fee != null) {
+                        form.setValue('monthly_fee', selectedType.base_monthly_fee, { shouldDirty: false });
                       }
                     }} value={field.value || ''}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('admin.backoffice.selectType', { defaultValue: 'Select type' })} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {incubationTypes?.map(it => (
+                          <SelectItem key={it.id} value={it.id}>
+                            {it.name} (€{it.base_monthly_fee}/mo)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder={t('admin.backoffice.selectType', { defaultValue: 'Select type' })} />
