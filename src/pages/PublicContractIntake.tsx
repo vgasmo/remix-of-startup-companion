@@ -490,15 +490,65 @@ export default function PublicContractIntake() {
                   : 'Documents can be sent later. Submission is not blocked by missing documents.'}
               </p>
               <div className="grid gap-2">
-                {OPTIONAL_DOCS.map(doc => (
-                  <div key={doc.key} className="flex items-center justify-between p-2 rounded border border-border/50 bg-muted/30">
-                    <span className="text-sm">{isPt ? doc.labelPt : doc.labelEn}</span>
-                    <Badge variant="outline" className="text-[10px]">
-                      {isPt ? 'Opcional' : 'Optional'}
-                    </Badge>
-                  </div>
-                ))}
+                {OPTIONAL_DOCS.map(doc => {
+                  const uploaded = intake?.documents_json?.[doc.key];
+                  const isUploading = uploadingDocKey === doc.key;
+                  return (
+                    <div key={doc.key} className="flex items-center justify-between gap-3 p-2 rounded border border-border/50 bg-muted/30">
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm truncate">{isPt ? doc.labelPt : doc.labelEn}</span>
+                        {uploaded?.file_name && (
+                          <span className="text-[11px] text-muted-foreground truncate">
+                            {uploaded.file_name}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {uploaded ? (
+                          <Badge variant="outline" className="text-[10px] bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-300">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            {isPt ? 'Enviado' : 'Uploaded'}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[10px]">
+                            {isPt ? 'Opcional' : 'Optional'}
+                          </Badge>
+                        )}
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={isSubmitted || isUploading}
+                          onClick={() => {
+                            const input = document.getElementById(`upload-${doc.key}`) as HTMLInputElement | null;
+                            input?.click();
+                          }}
+                          className="gap-1.5"
+                        >
+                          {isUploading ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Upload className="h-3.5 w-3.5" />
+                          )}
+                          {uploaded ? (isPt ? 'Substituir' : 'Replace') : (isPt ? 'Carregar' : 'Upload')}
+                        </Button>
+                        <input
+                          id={`upload-${doc.key}`}
+                          type="file"
+                          className="hidden"
+                          accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            e.target.value = '';
+                            if (f) handleUploadDoc(doc.key, f);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
+
             </div>
           </CardContent>
         </Card>
