@@ -154,55 +154,64 @@ export function useCreateSession(workspaceId: string) {
       // P1.2: Log activity
       logActivity('created', 'session', data.id, workspaceId, { title: data.title });
 
-      // P0.1: Auto-trigger Outlook sync (graceful fail)
-      syncOutlookCalendar({
-        sessionId: data.id,
-        action: 'create',
-        workspaceId,
-      }).catch((err) => logger.warn('session_outlook_sync_failed', { error: String(err) }));
+      // Skip Outlook/Teams notifications for sessions logged after the fact
+      // (i.e. scheduled in the past). These are records of meetings that
+      // already happened off-platform, not new invites to send out.
+      const scheduledMs = new Date(data.scheduled_at).getTime();
+      const isPast = Number.isFinite(scheduledMs) && scheduledMs < Date.now() - 5 * 60 * 1000;
 
-      // P0.1: Auto-trigger Teams notification (graceful fail)
-      (async () => {
-        let startupName: string | undefined;
-        let ownerName: string | undefined;
-        try {
-          const { data: ws } = await supabase
-            .from('workspaces')
-            .select('startup:startups(name), owner_user_id')
-            .eq('id', workspaceId)
-            .maybeSingle();
-          startupName = (ws as any)?.startup?.name || undefined;
-          
-          // Fetch owner/consultant name if available
-          if ((ws as any)?.owner_user_id) {
-            const { data: profile } = await supabase
-              .from('profiles_safe')
-              .select('full_name, email')
-              .eq('id', (ws as any).owner_user_id)
-              .maybeSingle();
-            ownerName = profile?.full_name || profile?.email || undefined;
-          }
-        } catch {
-          // ignore
-        }
-
-        sendTeamsNotification({
+      if (!isPast) {
+        // P0.1: Auto-trigger Outlook sync (graceful fail)
+        syncOutlookCalendar({
+          sessionId: data.id,
+          action: 'create',
           workspaceId,
-          eventType: 'session_created',
-          payload: {
-            title: 'New Session Scheduled',
-            summary: `Session "${data.title}" has been scheduled`,
-            startup_name: startupName,
-            fields: [
-              ...(ownerName ? [{ name: 'Owner', value: ownerName }] : []),
-              { name: 'Date', value: new Date(data.scheduled_at).toLocaleDateString() },
-              { name: 'Duration', value: `${data.duration || 60} min` },
-            ],
-            link: `${getAppUrl()}/workspace/${workspaceId}?tab=agenda`,
-            linkText: 'View Session',
-          },
-        }).catch((err) => logger.warn('session_teams_notification_failed', { error: String(err) }));
-      })().catch((err) => logger.warn('session_teams_wrapper_failed', { error: String(err) }));
+        }).catch((err) => logger.warn('session_outlook_sync_failed', { error: String(err) }));
+
+        // P0.1: Auto-trigger Teams notification (graceful fail)
+        (async () => {
+          let startupName: string | undefined;
+          let ownerName: string | undefined;
+          try {
+            const { data: ws } = await supabase
+              .from('workspaces')
+              .select('startup:startups(name), owner_user_id')
+              .eq('id', workspaceId)
+              .maybeSingle();
+            startupName = (ws as any)?.startup?.name || undefined;
+
+            // Fetch owner/consultant name if available
+            if ((ws as any)?.owner_user_id) {
+              const { data: profile } = await supabase
+                .from('profiles_safe')
+                .select('full_name, email')
+                .eq('id', (ws as any).owner_user_id)
+                .maybeSingle();
+              ownerName = profile?.full_name || profile?.email || undefined;
+            }
+          } catch {
+            // ignore
+          }
+
+          sendTeamsNotification({
+            workspaceId,
+            eventType: 'session_created',
+            payload: {
+              title: 'New Session Scheduled',
+              summary: `Session "${data.title}" has been scheduled`,
+              startup_name: startupName,
+              fields: [
+                ...(ownerName ? [{ name: 'Owner', value: ownerName }] : []),
+                { name: 'Date', value: new Date(data.scheduled_at).toLocaleDateString() },
+                { name: 'Duration', value: `${data.duration || 60} min` },
+              ],
+              link: `${getAppUrl()}/workspace/${workspaceId}?tab=agenda`,
+              linkText: 'View Session',
+            },
+          }).catch((err) => logger.warn('session_teams_notification_failed', { error: String(err) }));
+        })().catch((err) => logger.warn('session_teams_wrapper_failed', { error: String(err) }));
+      }
+
     },
   });
 }
