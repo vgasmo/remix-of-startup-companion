@@ -183,7 +183,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
       // Convert explicitly so non-Lisbon browsers still produce the correct UTC.
       const startUtcIso = lisbonWallClockToUtcIso(selectedSlot);
 
-      if (meetingWith === 'consultor') {
+      if (meetingWith === 'consultor' && !logPast) {
         const durationMinutes = Number.parseInt(duration || '60', 10);
         const start = new Date(startUtcIso);
         const end = new Date(start.getTime() + durationMinutes * 60000);
@@ -216,13 +216,14 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
         scheduled_at: scheduledAtISO,
         duration: parseInt(duration),
         agenda: agenda.trim() || null,
-        notes: null,
-        decisions: null,
+        notes: logPast ? (notes.trim() || null) : null,
+        decisions: logPast ? (decisions.trim() || null) : null,
         location: location.trim() || null,
         join_url: joinUrl.trim() || null,
       });
 
-      if (sendInvites && members && members.length > 0) {
+      if (!logPast && sendInvites && members && members.length > 0) {
+
         try {
           const [workspaceInfo, currentUser] = await Promise.all([
             getWorkspaceInfo(),
