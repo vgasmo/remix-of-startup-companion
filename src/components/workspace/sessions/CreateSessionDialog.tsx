@@ -312,6 +312,32 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Log a past meeting (already happened off-platform) */}
+          <div className="flex items-start gap-3 p-3 rounded-lg border border-dashed bg-muted/30">
+            <Checkbox
+              id="log-past"
+              checked={logPast}
+              onCheckedChange={(checked) => {
+                const v = !!checked;
+                setLogPast(v);
+                if (v) {
+                  setUseManualTime(true);
+                  setSendInvites(false);
+                  setSelectedSlot('');
+                }
+              }}
+              className="mt-0.5"
+            />
+            <div className="flex-1">
+              <Label htmlFor="log-past" className="cursor-pointer font-medium">
+                {t('sessions.logPast', 'Reunião já realizada (registar fora da app)')}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t('sessions.logPastHelp', 'Registe uma reunião que já aconteceu com data passada, notas e decisões. Não envia convites nem sincroniza com o calendário.')}
+              </p>
+            </div>
+          </div>
+
           {sessionTemplates && sessionTemplates.length > 0 && (
             <div className="space-y-2">
               <Label>{t('sessions.useTemplateOptional', 'Use Template (optional)')}</Label>
