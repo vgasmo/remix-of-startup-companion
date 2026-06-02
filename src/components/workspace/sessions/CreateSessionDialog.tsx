@@ -626,23 +626,26 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
             />
           </div>
 
-          <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-            <Checkbox
-              id="send-invites"
-              checked={sendInvites}
-              onCheckedChange={(checked) => setSendInvites(!!checked)}
-            />
-            <div className="flex-1">
-              <Label htmlFor="send-invites" className="cursor-pointer font-medium">
-                Send calendar invites
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                {memberCount > 0
-                  ? `Email ${memberCount} workspace member${memberCount > 1 ? 's' : ''} with calendar invite`
-                  : 'No workspace members to invite'}
-              </p>
+          {!logPast && (
+            <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+              <Checkbox
+                id="send-invites"
+                checked={sendInvites}
+                onCheckedChange={(checked) => setSendInvites(!!checked)}
+              />
+              <div className="flex-1">
+                <Label htmlFor="send-invites" className="cursor-pointer font-medium">
+                  {t('sessions.sendInvites', 'Send calendar invites')}
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {memberCount > 0
+                    ? t('sessions.sendInvitesHelp', { count: memberCount, defaultValue: `Email ${memberCount} workspace member(s) with calendar invite` })
+                    : t('sessions.sendInvitesNone', 'No workspace members to invite')}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
+
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
