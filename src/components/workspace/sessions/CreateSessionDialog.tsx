@@ -578,6 +578,32 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
               rows={2}
             />
           </div>
+
+          {logPast && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="notes">{t('sessions.notes', 'Notas da reunião')}</Label>
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder={t('sessions.notesPlaceholder', 'O que se discutiu, pontos relevantes...')}
+                  rows={4}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="decisions">{t('sessions.decisions', 'Decisões / próximos passos')}</Label>
+                <Textarea
+                  id="decisions"
+                  value={decisions}
+                  onChange={(e) => setDecisions(e.target.value)}
+                  placeholder={t('sessions.decisionsPlaceholder', 'Decisões tomadas e próximos passos...')}
+                  rows={3}
+                />
+              </div>
+            </>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="location">{t('sessions.location', 'Location')}</Label>
             <Input
