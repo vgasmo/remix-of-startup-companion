@@ -63,6 +63,11 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [useManualTime, setUseManualTime] = useState(false);
   const [manualDateTime, setManualDateTime] = useState('');
+  // Log a meeting that already happened off-platform (no invites, captures notes/decisions)
+  const [logPast, setLogPast] = useState(false);
+  const [notes, setNotes] = useState('');
+  const [decisions, setDecisions] = useState('');
+
 
   const createMutation = useCreateSession(workspaceId);
   const { data: members } = useWorkspaceMembers(workspaceId);
