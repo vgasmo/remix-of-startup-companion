@@ -303,13 +303,20 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t('sessions.scheduleSession', 'Schedule Session')}</DialogTitle>
+          <DialogTitle>
+            {logPast
+              ? t('sessions.logPastTitle', 'Registar reunião realizada')
+              : t('sessions.scheduleSession', 'Schedule Session')}
+          </DialogTitle>
           <DialogDescription>
-            {hasConsultant
-              ? t('sessions.scheduleWithConsultant', 'Schedule based on {{name}}\'s availability', { name: consultantAvailability?.consultantName || consultantAvailability?.consultantEmail })
-              : t('sessions.scheduleSessionDesc', 'Schedule a new mentoring session')
+            {logPast
+              ? t('sessions.logPastDesc', 'Adicione uma reunião que já aconteceu fora da app, com notas e decisões.')
+              : hasConsultant
+                ? t('sessions.scheduleWithConsultant', 'Schedule based on {{name}}\'s availability', { name: consultantAvailability?.consultantName || consultantAvailability?.consultantEmail })
+                : t('sessions.scheduleSessionDesc', 'Schedule a new mentoring session')
             }
           </DialogDescription>
+
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Log a past meeting (already happened off-platform) */}
