@@ -281,7 +281,11 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
     setJoinUrl('');
     setSendInvites(true);
     setSelectedTemplate('');
+    setLogPast(false);
+    setNotes('');
+    setDecisions('');
   };
+
 
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
