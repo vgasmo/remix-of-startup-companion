@@ -63,6 +63,11 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [useManualTime, setUseManualTime] = useState(false);
   const [manualDateTime, setManualDateTime] = useState('');
+  // Log a meeting that already happened off-platform (no invites, captures notes/decisions)
+  const [logPast, setLogPast] = useState(false);
+  const [notes, setNotes] = useState('');
+  const [decisions, setDecisions] = useState('');
+
 
   const createMutation = useCreateSession(workspaceId);
   const { data: members } = useWorkspaceMembers(workspaceId);
@@ -178,7 +183,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
       // Convert explicitly so non-Lisbon browsers still produce the correct UTC.
       const startUtcIso = lisbonWallClockToUtcIso(selectedSlot);
 
-      if (meetingWith === 'consultor') {
+      if (meetingWith === 'consultor' && !logPast) {
         const durationMinutes = Number.parseInt(duration || '60', 10);
         const start = new Date(startUtcIso);
         const end = new Date(start.getTime() + durationMinutes * 60000);
@@ -211,13 +216,14 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
         scheduled_at: scheduledAtISO,
         duration: parseInt(duration),
         agenda: agenda.trim() || null,
-        notes: null,
-        decisions: null,
+        notes: logPast ? (notes.trim() || null) : null,
+        decisions: logPast ? (decisions.trim() || null) : null,
         location: location.trim() || null,
         join_url: joinUrl.trim() || null,
       });
 
-      if (sendInvites && members && members.length > 0) {
+      if (!logPast && sendInvites && members && members.length > 0) {
+
         try {
           const [workspaceInfo, currentUser] = await Promise.all([
             getWorkspaceInfo(),
@@ -275,7 +281,11 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
     setJoinUrl('');
     setSendInvites(true);
     setSelectedTemplate('');
+    setLogPast(false);
+    setNotes('');
+    setDecisions('');
   };
+
 
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
@@ -293,15 +303,48 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t('sessions.scheduleSession', 'Schedule Session')}</DialogTitle>
+          <DialogTitle>
+            {logPast
+              ? t('sessions.logPastTitle', 'Registar reunião realizada')
+              : t('sessions.scheduleSession', 'Schedule Session')}
+          </DialogTitle>
           <DialogDescription>
-            {hasConsultant
-              ? t('sessions.scheduleWithConsultant', 'Schedule based on {{name}}\'s availability', { name: consultantAvailability?.consultantName || consultantAvailability?.consultantEmail })
-              : t('sessions.scheduleSessionDesc', 'Schedule a new mentoring session')
+            {logPast
+              ? t('sessions.logPastDesc', 'Adicione uma reunião que já aconteceu fora da app, com notas e decisões.')
+              : hasConsultant
+                ? t('sessions.scheduleWithConsultant', 'Schedule based on {{name}}\'s availability', { name: consultantAvailability?.consultantName || consultantAvailability?.consultantEmail })
+                : t('sessions.scheduleSessionDesc', 'Schedule a new mentoring session')
             }
           </DialogDescription>
+
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Log a past meeting (already happened off-platform) */}
+          <div className="flex items-start gap-3 p-3 rounded-lg border border-dashed bg-muted/30">
+            <Checkbox
+              id="log-past"
+              checked={logPast}
+              onCheckedChange={(checked) => {
+                const v = !!checked;
+                setLogPast(v);
+                if (v) {
+                  setUseManualTime(true);
+                  setSendInvites(false);
+                  setSelectedSlot('');
+                }
+              }}
+              className="mt-0.5"
+            />
+            <div className="flex-1">
+              <Label htmlFor="log-past" className="cursor-pointer font-medium">
+                {t('sessions.logPast', 'Reunião já realizada (registar fora da app)')}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t('sessions.logPastHelp', 'Registe uma reunião que já aconteceu com data passada, notas e decisões. Não envia convites nem sincroniza com o calendário.')}
+              </p>
+            </div>
+          </div>
+
           {sessionTemplates && sessionTemplates.length > 0 && (
             <div className="space-y-2">
               <Label>{t('sessions.useTemplateOptional', 'Use Template (optional)')}</Label>
@@ -542,6 +585,32 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
               rows={2}
             />
           </div>
+
+          {logPast && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="notes">{t('sessions.notes', 'Notas da reunião')}</Label>
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder={t('sessions.notesPlaceholder', 'O que se discutiu, pontos relevantes...')}
+                  rows={4}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="decisions">{t('sessions.decisions', 'Decisões / próximos passos')}</Label>
+                <Textarea
+                  id="decisions"
+                  value={decisions}
+                  onChange={(e) => setDecisions(e.target.value)}
+                  placeholder={t('sessions.decisionsPlaceholder', 'Decisões tomadas e próximos passos...')}
+                  rows={3}
+                />
+              </div>
+            </>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="location">{t('sessions.location', 'Location')}</Label>
             <Input
@@ -564,23 +633,26 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
             />
           </div>
 
-          <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-            <Checkbox
-              id="send-invites"
-              checked={sendInvites}
-              onCheckedChange={(checked) => setSendInvites(!!checked)}
-            />
-            <div className="flex-1">
-              <Label htmlFor="send-invites" className="cursor-pointer font-medium">
-                Send calendar invites
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                {memberCount > 0
-                  ? `Email ${memberCount} workspace member${memberCount > 1 ? 's' : ''} with calendar invite`
-                  : 'No workspace members to invite'}
-              </p>
+          {!logPast && (
+            <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+              <Checkbox
+                id="send-invites"
+                checked={sendInvites}
+                onCheckedChange={(checked) => setSendInvites(!!checked)}
+              />
+              <div className="flex-1">
+                <Label htmlFor="send-invites" className="cursor-pointer font-medium">
+                  {t('sessions.sendInvites', 'Send calendar invites')}
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {memberCount > 0
+                    ? t('sessions.sendInvitesHelp', { count: memberCount, defaultValue: `Email ${memberCount} workspace member(s) with calendar invite` })
+                    : t('sessions.sendInvitesNone', 'No workspace members to invite')}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
+
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
