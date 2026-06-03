@@ -1469,6 +1469,9 @@
       "title": "Workspaces",
       "unblock": "Unblock",
       "unblocked": "Workspace unblocked"
+    },
+    "contracts": {
+      "openDrawer": "Open contract"
     }
   },
   "adminKpis": {
@@ -1691,7 +1694,10 @@
     "step3": "Access all workspace features after approval",
     "suspendedDescription": "Your account has been suspended. Please contact support if you believe this is an error.",
     "suspendedTitle": "Account Suspended",
-    "whatHappensNext": "What happens next?"
+    "whatHappensNext": "What happens next?",
+    "checking": "Checking…",
+    "checkNow": "Check now",
+    "autoCheck": "Automatic check every minute."
   },
   "askAi": {
     "askAnything": "Ask anything…",
@@ -2280,7 +2286,9 @@
     "viewAll": "View all",
     "workspace": "Workspace",
     "years": "years",
-    "yes": "Yes"
+    "yes": "Yes",
+    "expand": "Expand",
+    "collapse": "Collapse"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -2773,7 +2781,8 @@
       "step4": "Save the contract to the database",
       "tooLarge": "File must be under 10MB.",
       "uploading": "Uploading document..."
-    }
+    },
+    "numberAutoAssigned": "Number assigned automatically"
   },
   "copilot": {
     "askAnything": "Ask me anything about your startup, tasks, KPIs, or ecosystem.",
@@ -6349,7 +6358,6 @@
     }
   },
   "publicBooking": {
-
     "backToSite": "Back to site",
     "bookFirstMeeting": "Book Your First Meeting",
     "bookFirstMeetingDesc": "Schedule a free consultation to learn how we can help your startup grow.",
@@ -7034,7 +7042,19 @@
     "withConsultant": "Consultor",
     "withMentor": "Mentor",
     "workspaceMembers": "workspace members",
-    "zoomDesc": "Auto-import meeting recordings and transcripts"
+    "zoomDesc": "Auto-import meeting recordings and transcripts",
+    "loggedOffPlatform": "Logged off-platform",
+    "logPastTitle": "Log past session",
+    "logPastDesc": "Record a session that already happened off-platform.",
+    "logPast": "Log past session",
+    "logPastHelp": "No invites will be sent.",
+    "notesPlaceholder": "Notes…",
+    "decisionsPlaceholder": "Decisions taken…",
+    "sendInvitesHelp": "Participants will receive a calendar invite.",
+    "sendInvitesNone": "No participants to invite.",
+    "noDecisionsToConvert": "No decisions to convert into actions.",
+    "decisionsConverted": "Decisions converted into actions.",
+    "convertDecisionsToActions": "Convert decisions into actions"
   },
   "sessionsEmpty": {
     "description": "Your consultant or program will schedule your first session soon.",
@@ -8701,5 +8721,32 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
+  },
+  "Contratos & Documentos": "Contracts & Documents",
+  "Listagem de contratos e documentos enviados pelos fundadores. Pré-visualize ou faça download através de links assinados.": "List of contracts and documents uploaded by founders. Preview or download via signed links.",
+  "Procurar por nome, NIF, contrato…": "Search by name, NIF, contract…",
+  "Todos os estados": "All statuses",
+  "Sem contratos.": "No contracts.",
+  "Contrato": "Contract",
+  "Startup": "Startup",
+  "Estado": "Status",
+  "Criado": "Created",
+  "Ações": "Actions",
+  "Documentos": "Documents",
+  "Documentos do contrato": "Contract documents",
+  "Sem documentos enviados.": "No documents uploaded yet.",
+  "Pré-visualizar": "Preview",
+  "Download": "Download",
+  "Fechar pré-visualização": "Close preview",
+  "mentorProfile": {
+    "notFound": "Mentor not found.",
+    "expertise": "Expertise",
+    "workspaces": "Workspaces",
+    "noWorkspaces": "Not assigned to any workspace yet."
+  },
+  "userProfile": {
+    "notFound": "User not found.",
+    "workspaces": "Workspaces",
+    "noWorkspaces": "No workspaces yet."
   }
 }
