@@ -8723,10 +8723,8 @@
     "viewActions": "Ver Ações"
   },
   "Contratos & Documentos": "Contratos & Documentos",
-  "Listagem de contratos e documentos enviados pelos fundadores. Pré-visualize ou faça download através de links assinados.": "Listagem de contratos e documentos enviados pelos fundadores. Pré-visualize ou faça download através de links assinados.",
   "Procurar por nome, NIF, contrato…": "Procurar por nome, NIF, contrato…",
   "Todos os estados": "Todos os estados",
-  "Sem contratos.": "Sem contratos.",
   "Contrato": "Contrato",
   "Startup": "Startup",
   "Estado": "Estado",
@@ -8734,7 +8732,6 @@
   "Ações": "Ações",
   "Documentos": "Documentos",
   "Documentos do contrato": "Documentos do contrato",
-  "Sem documentos enviados.": "Sem documentos enviados.",
   "Pré-visualizar": "Pré-visualizar",
   "Download": "Transferir",
   "Fechar pré-visualização": "Fechar pré-visualização",
@@ -8748,5 +8745,16 @@
     "notFound": "Utilizador não encontrado.",
     "workspaces": "Workspaces",
     "noWorkspaces": "Ainda sem workspaces."
+  },
+  "Sem contratos": {
+    "": "Sem contratos."
+  },
+  "Sem documentos enviados": {
+    "": "Sem documentos enviados."
+  },
+  "Listagem de contratos e documentos enviados pelos fundadores": {
+    " Pré-visualize ou faça download através de links assinados": {
+      "": "Listagem de contratos e documentos enviados pelos fundadores. Pré-visualize ou faça download através de links assinados."
+    }
   }
 }

@@ -8723,10 +8723,8 @@
     "viewActions": "View Actions"
   },
   "Contratos & Documentos": "Contracts & Documents",
-  "Listagem de contratos e documentos enviados pelos fundadores. Pré-visualize ou faça download através de links assinados.": "List of contracts and documents uploaded by founders. Preview or download via signed links.",
   "Procurar por nome, NIF, contrato…": "Search by name, NIF, contract…",
   "Todos os estados": "All statuses",
-  "Sem contratos.": "No contracts.",
   "Contrato": "Contract",
   "Startup": "Startup",
   "Estado": "Status",
@@ -8734,7 +8732,6 @@
   "Ações": "Actions",
   "Documentos": "Documents",
   "Documentos do contrato": "Contract documents",
-  "Sem documentos enviados.": "No documents uploaded yet.",
   "Pré-visualizar": "Preview",
   "Download": "Download",
   "Fechar pré-visualização": "Close preview",
@@ -8748,5 +8745,16 @@
     "notFound": "User not found.",
     "workspaces": "Workspaces",
     "noWorkspaces": "No workspaces yet."
+  },
+  "Sem contratos": {
+    "": "No contracts."
+  },
+  "Sem documentos enviados": {
+    "": "No documents uploaded yet."
+  },
+  "Listagem de contratos e documentos enviados pelos fundadores": {
+    " Pré-visualize ou faça download através de links assinados": {
+      "": "List of contracts and documents submitted by founders. Preview or download via signed URLs."
+    }
   }
 }
