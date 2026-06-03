@@ -26,7 +26,6 @@ import {
   SurveyQuestion,
   SurveyResponse,
 } from "@/hooks/useSurveys";
-import { toast } from "sonner";
 import { Json } from "@/integrations/supabase/types";
 
 interface SurveyFormProps {

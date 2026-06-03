@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 
 interface Presence {
   id: string;

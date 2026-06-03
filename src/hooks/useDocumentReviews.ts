@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
 
 export interface DocumentReview {
   id: string;

@@ -24,7 +24,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useProgramAlertRules, useUpdateAlertRule, getRuleTypeLabel, getSeverityConfig } from '@/hooks/useWorkspaceAlerts';
-import { toast } from 'sonner';
 
 interface AlertRulesEditorProps {
   programId: string;
