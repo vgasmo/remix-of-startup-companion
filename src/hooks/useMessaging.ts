@@ -57,7 +57,7 @@ export function useConversations() {
       const { data: participations, error: partError } = await supabase
         .from('conversation_participants')
         .select('conversation_id, last_read_at')
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       if (partError) throw partError;
       if (!participations?.length) return [];
