@@ -160,7 +160,7 @@ export default function WorkspaceDetail() {
 
   const workspaceStatus = (workspace as any).status as string | undefined;
   const isPendingWorkspace = workspaceStatus === 'pending';
-  const isStaff = isAdmin || isConsultor;
+  
   
   if (isPendingWorkspace && !isStaff && isFounder) {
     return (
