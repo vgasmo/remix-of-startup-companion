@@ -60,15 +60,14 @@ export function useAICooldown({
   const trigger = useCallback(
     async <T>(fn: () => Promise<T>): Promise<T | false> => {
       if (isCoolingDown) {
-        // Import dynamically to avoid hook rules - toast is not a hook
-        const { toast } = await import('sonner');
-        toast.info(t('common.pleaseWait', { remainingSeconds: remainingSeconds }));
+        const { notify } = await import('@/lib/notify');
+        notify.info(t('common.pleaseWait', { remainingSeconds: remainingSeconds }));
         return false;
       }
 
       if (!checkRateLimit(rateLimitKey, maxRequests, windowMs)) {
-        const { toast } = await import('sonner');
-        toast.error(t('common.rateLimitReachedPleaseWait'));
+        const { notify } = await import('@/lib/notify');
+        notify.error(t('common.rateLimitReachedPleaseWait'));
         return false;
       }
 
