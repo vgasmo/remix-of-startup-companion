@@ -107,11 +107,13 @@ export function AdminFunnelManager() {
 function NewLeadForm({ 
   programs, 
   consultors,
-  onSubmit 
+  onSubmit,
+  isPending,
 }: { 
   programs: { id: string; name: string }[];
   consultors: { id: string; full_name: string | null }[];
   onSubmit: (data: Partial<FunnelItem>) => void;
+  isPending?: boolean;
 }) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
