@@ -12,6 +12,7 @@ import {
   Video,
   Copy,
   ExternalLink,
+  ListChecks,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useUpdateSession, useSessionActionItems, useWorkspaceMembers } from '@/hooks/useSessions';
+import { useUpdateSession, useSessionActionItems, useWorkspaceMembers, useCreateActionItem } from '@/hooks/useSessions';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from 'sonner';
@@ -69,9 +70,50 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
   const [refreshKey, setRefreshKey] = useState(0);
 
   const updateMutation = useUpdateSession(workspaceId);
+  const createActionItem = useCreateActionItem(workspaceId);
   const { data: actionItems, isLoading: actionsLoading, refetch: refetchActions } = useSessionActionItems(session.id);
   const { data: members } = useWorkspaceMembers(workspaceId);
   const addTranscript = useAddTranscript();
+
+  const handleConvertDecisionsToActions = async () => {
+    const text = (decisions || '').trim();
+    if (!text) {
+      toast.error(t('sessions.noDecisionsToConvert', { defaultValue: 'Nenhuma decisão para converter.' }));
+      return;
+    }
+    const lines = text
+      .split(/\r?\n+/)
+      .map((l) => l.replace(/^\s*([-*•\d.)]+)\s*/, '').trim())
+      .filter((l) => l.length > 2);
+    if (lines.length === 0) {
+      toast.error(t('sessions.noDecisionsToConvert', { defaultValue: 'Nenhuma decisão para converter.' }));
+      return;
+    }
+    let created = 0;
+    for (const title of lines) {
+      try {
+        await createActionItem.mutateAsync({
+          title: title.slice(0, 240),
+          session_id: session.id,
+          priority: 'medium',
+        });
+        created += 1;
+      } catch (err) {
+        logger.warn('decision_to_action_failed', { error: String(err) });
+      }
+    }
+    if (created > 0) {
+      toast.success(
+        t('sessions.decisionsConverted', {
+          defaultValue: '{{count}} ação(ões) criadas a partir das decisões.',
+          count: created,
+        })
+      );
+      refetchActions();
+    } else {
+      toast.error(t('common.error'));
+    }
+  };
 
   const handleVoiceTranscript = async (text: string) => {
     setNotes(prev => prev ? `${prev}\n\n${text}` : text);
