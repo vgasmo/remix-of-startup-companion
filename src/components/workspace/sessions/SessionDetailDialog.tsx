@@ -358,15 +358,25 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                   <Label htmlFor="notes">{t('sessions.sessionNotes', 'Session Notes')}</Label>
                   {isStaff && canWrite && <VoiceToTextButton onTranscript={handleVoiceTranscript} />}
                 </div>
-                {isStaff && canWrite ? (
-                  <CollaborativeNotesEditor
-                    value={notes}
-                    onChange={setNotes}
-                    workspaceId={workspaceId}
-                    sessionId={session.id}
-                    placeholder={t('sessions.addNotesPlaceholder', 'Add notes from this session...')}
-                    members={members || []}
-                  />
+                {canWrite ? (
+                  isStaff ? (
+                    <CollaborativeNotesEditor
+                      value={notes}
+                      onChange={setNotes}
+                      workspaceId={workspaceId}
+                      sessionId={session.id}
+                      placeholder={t('sessions.addNotesPlaceholder', 'Add notes from this session...')}
+                      members={members || []}
+                    />
+                  ) : (
+                    <Textarea
+                      id="notes"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder={t('sessions.addNotesPlaceholder', 'Add notes from this session...')}
+                      rows={5}
+                    />
+                  )
                 ) : (
                   <p className="text-sm whitespace-pre-wrap bg-muted/50 p-3 rounded-lg min-h-[80px]">
                     {notes || t('sessions.noNotesRecorded', 'No notes recorded')}
@@ -375,8 +385,22 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="decisions">{t('sessions.keyDecisions', 'Key Decisions')}</Label>
-                {isStaff && canWrite ? (
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="decisions">{t('sessions.keyDecisions', 'Key Decisions')}</Label>
+                  {canWrite && decisions.trim().length > 0 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleConvertDecisionsToActions}
+                      disabled={createActionItem.isPending}
+                    >
+                      <ListChecks className="h-4 w-4 mr-1" />
+                      {t('sessions.convertDecisionsToActions', { defaultValue: 'Transformar em ações' })}
+                    </Button>
+                  )}
+                </div>
+                {canWrite ? (
                   <Textarea
                     id="decisions"
                     value={decisions}
