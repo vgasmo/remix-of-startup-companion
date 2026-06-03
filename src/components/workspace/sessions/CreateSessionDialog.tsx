@@ -220,6 +220,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
         decisions: logPast ? (decisions.trim() || null) : null,
         location: location.trim() || null,
         join_url: joinUrl.trim() || null,
+        source: logPast ? 'off_platform' : null,
       });
 
       if (!logPast && sendInvites && members && members.length > 0) {

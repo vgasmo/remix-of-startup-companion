@@ -474,14 +474,23 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
                     {format(day, 'd')}
                   </span>
                   <div className="mt-1 space-y-0.5">
-                    {daySessions.slice(0, 2).map((session) => (
-                      <div
-                        key={session.id}
-                        className="text-xs truncate px-1 py-0.5 rounded bg-primary/20 text-primary font-medium"
-                      >
-                        {format(parseISO(session.scheduled_at), 'HH:mm')} {session.title}
-                      </div>
-                    ))}
+                    {daySessions.slice(0, 2).map((session) => {
+                      const offPlatform = session.source === 'off_platform';
+                      return (
+                        <div
+                          key={session.id}
+                          className={cn(
+                            'text-xs truncate px-1 py-0.5 rounded font-medium',
+                            offPlatform
+                              ? 'bg-muted text-muted-foreground border border-dashed border-muted-foreground/40'
+                              : 'bg-primary/20 text-primary'
+                          )}
+                          title={offPlatform ? t('sessions.loggedOffPlatform', { defaultValue: 'Reunião registada após acontecer' }) : undefined}
+                        >
+                          {format(parseISO(session.scheduled_at), 'HH:mm')} {session.title}
+                        </div>
+                      );
+                    })}
                     {daySessions.length > 2 && (
                       <div className="text-xs text-muted-foreground px-1">
                         +{daySessions.length - 2} {t('sessions.more')}
@@ -515,7 +524,15 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
                         className="p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <h4 className="font-medium text-sm">{session.title}</h4>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-medium text-sm">{session.title}</h4>
+                            {session.source === 'off_platform' && (
+                              <Badge variant="outline" className="text-[10px] gap-1 border-dashed">
+                                <FileText className="h-3 w-3" />
+                                {t('sessions.loggedOffPlatform', { defaultValue: 'Registada após reunião' })}
+                              </Badge>
+                            )}
+                          </div>
                           {canWrite && (
                             <div className="flex gap-1 shrink-0">
                               <Button
