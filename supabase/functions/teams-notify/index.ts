@@ -211,18 +211,31 @@ Deno.serve(async (req: Request) => {
     const cronSecret = req.headers.get('x-cron-secret');
     const expectedSecret = Deno.env.get('CRON_SECRET');
     const authHeader = req.headers.get('Authorization');
-    
-    const isSystemCall = cronSecret && cronSecret === expectedSecret;
+
+    const isSystemCall = !!cronSecret && !!expectedSecret && cronSecret === expectedSecret;
     const isUserCall = authHeader?.startsWith('Bearer ');
-    
+
     if (!isSystemCall && !isUserCall) {
       log.warn('Unauthorized request');
       return corsJsonResponse({ error: 'Unauthorized', code: ErrorCode.UNAUTHORIZED }, req, 401);
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Validate the JWT for user calls (cron path is already verified by the shared secret)
+    if (!isSystemCall && isUserCall) {
+      const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader! } },
+      });
+      const { data: { user }, error: userErr } = await userClient.auth.getUser();
+      if (userErr || !user) {
+        log.warn('Unauthorized: invalid bearer token');
+        return corsJsonResponse({ error: 'Unauthorized', code: ErrorCode.UNAUTHORIZED }, req, 401);
+      }
+    }
 
     const body = await req.json() as TeamsNotificationRequest;
     const { workspace_id, program_id, event_type, payload } = body;
