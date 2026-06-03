@@ -40,6 +40,8 @@ export function useGenerateSessionArtifacts() {
     onSuccess: (data, sessionId) => {
       queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
       queryClient.invalidateQueries({ queryKey: ['action-items'] });
+      queryClient.invalidateQueries({ queryKey: ['workspace-actions'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
       toast.success(t('sessions.generatedSummaryAnd', { length: data.actions_created.length }));
     },
     onError: (error: Error) => {
