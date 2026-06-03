@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
@@ -126,7 +127,7 @@ export function NewConversationDialog({ open, onOpenChange, onConversationCreate
                 {filteredUsers.map(user => (
                   <div
                     key={user.id}
-                    onClick={() => toggleUser(user.id)}
+                    {...clickableProps(() => toggleUser(user.id))}
                     className="w-full p-2 rounded-lg hover:bg-muted/50 flex items-center gap-3 text-left transition-colors cursor-pointer"
                   >
                     <Checkbox 

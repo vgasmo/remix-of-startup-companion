@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -309,11 +310,11 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
                   } ${isFocused ? 'ring-2 ring-primary/60' : ''} ${
                     isSelected ? 'bg-primary/5 border-primary/40' : ''
                   }`}
-                  onClick={() => item.workspace_id && navigate(`/workspace/${item.workspace_id}`)}
+                  {...clickableProps(() => item.workspace_id && navigate(`/workspace/${item.workspace_id}`))}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <div onClick={(e) => e.stopPropagation()} className="pt-1">
+                      <div {...clickableProps((e) => e.stopPropagation())} className="pt-1">
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={() => toggleSelect(item.id)}

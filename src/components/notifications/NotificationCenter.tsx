@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { Bell, CheckCheck, Trash2, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -152,7 +153,7 @@ export function NotificationCenter() {
           {items.map((notification) => (
             <div
               key={notification.id}
-              onClick={() => handleNotificationClick(notification)}
+              {...clickableProps(() => handleNotificationClick(notification))}
               className={cn(
                 'group flex items-start gap-3 p-3 cursor-pointer transition-colors hover:bg-muted/50 animate-fade-in',
                 !notification.read && 'bg-primary/5'

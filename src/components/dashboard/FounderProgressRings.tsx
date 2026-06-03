@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CheckSquare, BarChart3, Flag } from 'lucide-react';
@@ -56,7 +57,7 @@ export function FounderProgressRings({ workspaceId, className }: FounderProgress
           <div 
             key={ring.label} 
             className="flex flex-col items-center gap-1.5 cursor-pointer hover:scale-105 transition-transform"
-            onClick={() => navigate(`/workspace/${workspaceId}?tab=${ring.tab}`)}
+            {...clickableProps(() => navigate(`/workspace/${workspaceId}?tab=${ring.tab}`))}
           >
             <ProgressRing progress={ring.pct} size="lg" color={ring.color} />
             <div className="flex items-center gap-1 text-xs text-muted-foreground">

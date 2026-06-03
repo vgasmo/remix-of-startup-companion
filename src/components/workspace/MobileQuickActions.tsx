@@ -134,8 +134,10 @@ export function MobileQuickActions({
           <div
             className="fixed inset-0 bg-background/60 backdrop-blur-sm -z-10"
             onClick={() => setIsOpen(false)}
+            aria-hidden="true"
           />
         )}
+
       </div>
 
       <QuickKpiModal

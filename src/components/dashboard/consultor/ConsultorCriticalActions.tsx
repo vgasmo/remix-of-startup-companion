@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
@@ -43,7 +44,7 @@ export const ConsultorCriticalActions = memo(function ConsultorCriticalActions({
               <div
                 key={w.id}
                 className="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors border-l-2 border-l-health-critical"
-                onClick={() => navigate(`/workspace/${w.id}?tab=milestones-actions-actions`)}
+                {...clickableProps(() => navigate(`/workspace/${w.id}?tab=milestones-actions-actions`))}
               >
                 <Avatar className="h-7 w-7 rounded">
                   <AvatarImage src={w.startup?.logo_url || undefined} alt={w.startup?.name || 'Startup logo'} />

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { format, subDays } from 'date-fns';
@@ -201,7 +202,7 @@ export function ComplianceDashboard() {
                     <div 
                       key={item.id || item.workspace_id}
                       className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 cursor-pointer"
-                      onClick={() => navigate(`/workspace/${item.id || item.workspace_id}`)}
+                      {...clickableProps(() => navigate(`/workspace/${item.id || item.workspace_id}`))}
                     >
                       <div className="flex items-center gap-3">
                         <div>

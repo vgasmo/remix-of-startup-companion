@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { FileText, ChevronRight, Check, Save, FolderOpen, Calculator, Send, MessageSquare, CheckCircle2, Sparkles, LayoutGrid, Target, Users, Crosshair, TrendingUp, DollarSign, Rocket, BarChart3, Map, Upload, HelpCircle, Loader2, WifiOff, CircleCheck, CircleAlert } from 'lucide-react';
 import { useTemplateDraftAutosave, type AutosaveStatus } from '@/hooks/useTemplateDraftAutosave';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -305,7 +306,7 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
                         ? 'border-green-200 bg-green-50/50 dark:border-green-900/40 dark:bg-green-950/20' 
                         : 'border-border/60 hover:border-primary/30 hover:bg-muted/40'
                     }`}
-                    onClick={() => handleOpenTemplate(template)}
+                    {...clickableProps(() => handleOpenTemplate(template))}
                   >
                     {/* Status dot */}
                     {status && (

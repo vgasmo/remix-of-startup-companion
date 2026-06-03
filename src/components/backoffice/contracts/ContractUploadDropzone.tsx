@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { Upload, FileText, Loader2, PenLine, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -109,7 +110,7 @@ export function ContractUploadDropzone({ workspaceId, onAIDataExtracted, onManua
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          onClick={() => fileInputRef.current?.click()}
+          {...clickableProps(() => fileInputRef.current?.click())}
           className={cn(
             'flex flex-col items-center justify-center gap-4 py-10 px-6 rounded-xl cursor-pointer transition-all',
             isDragging

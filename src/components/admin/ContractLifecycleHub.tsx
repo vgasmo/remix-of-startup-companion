@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -503,7 +504,7 @@ export function ContractLifecycleHub() {
                           <div 
                             key={alert.id}
                             className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 cursor-pointer"
-                            onClick={() => handleAlertAction(alert)}
+                            {...clickableProps(() => handleAlertAction(alert))}
                           >
                             <div className="flex items-center gap-2">
                               <div className={cn(
@@ -545,7 +546,7 @@ export function ContractLifecycleHub() {
                           <div 
                             key={alert.id}
                             className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 cursor-pointer"
-                            onClick={() => handleAlertAction(alert)}
+                            {...clickableProps(() => handleAlertAction(alert))}
                           >
                             <div className="flex items-center gap-2">
                               <div className={cn(

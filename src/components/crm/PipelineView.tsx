@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { clickableProps } from '@/lib/clickable';
 import {
   DndContext,
   DragEndEvent,
@@ -378,7 +379,7 @@ function DraggableCard({ item, onOpenDrawer, isSelected, onToggleSelect }: Dragg
         <div className="flex items-start gap-2">
           <div
             className="pt-0.5 shrink-0"
-            onClick={(e) => e.stopPropagation()}
+            {...clickableProps((e) => e.stopPropagation())}
           >
             <Checkbox
               checked={isSelected}
@@ -390,7 +391,7 @@ function DraggableCard({ item, onOpenDrawer, isSelected, onToggleSelect }: Dragg
             {...listeners}
             {...attributes}
             className="cursor-grab active:cursor-grabbing p-1 -ml-1 -mt-0.5 hover:bg-muted rounded shrink-0 touch-none"
-            onClick={(e) => e.stopPropagation()}
+            {...clickableProps((e) => e.stopPropagation())}
             aria-label={t('crm.dragToMove', { defaultValue: 'Arrastar para mover' })}
           >
             <GripVertical className="h-4 w-4 text-muted-foreground" />

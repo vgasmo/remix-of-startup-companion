@@ -1,4 +1,5 @@
 import { memo, useMemo, useState } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -157,7 +158,7 @@ export const PortfolioPerformanceTable = memo(function PortfolioPerformanceTable
               <div
                 key={ws.id}
                 className="grid grid-cols-[1fr_100px_80px_90px_80px_80px] gap-2 items-center py-2 px-2 hover:bg-muted/40 cursor-pointer transition-colors group"
-                onClick={() => navigate(`/workspace/${ws.id}`)}
+                {...clickableProps(() => navigate(`/workspace/${ws.id}`))}
               >
                 {/* Startup Name */}
                 <div className="flex items-center gap-2 min-w-0">

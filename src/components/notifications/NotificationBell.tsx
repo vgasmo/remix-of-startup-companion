@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { Bell, CheckCheck, Trash2, Clock, AlertTriangle, Mail, Siren, Sparkles, Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -144,7 +145,7 @@ export function NotificationBell() {
                       'p-3 hover:bg-muted/50 cursor-pointer transition-colors flex gap-3 group',
                       !notification.read && 'bg-primary/5'
                     )}
-                    onClick={() => handleNotificationClick(notification)}
+                    {...clickableProps(() => handleNotificationClick(notification))}
                   >
                     <div className={cn(
                       'shrink-0 mt-0.5 h-8 w-8 rounded-full flex items-center justify-center',

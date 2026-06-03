@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { clickableProps } from '@/lib/clickable';
+
 import confetti from 'canvas-confetti';
 import { CheckCircle2, PartyPopper, Sparkles, Star, Trophy, Rocket } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -88,11 +90,12 @@ export function SuccessCelebration({
         'fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-fade-in',
         className
       )}
-      onClick={() => {
+      {...clickableProps(() => {
         setVisible(false);
         onComplete?.();
-      }}
+      }, { label: 'Dismiss celebration' })}
     >
+
       <div className="relative animate-bounce-in">
         {/* Glow effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-primary/30 rounded-full blur-3xl scale-150 animate-pulse" />

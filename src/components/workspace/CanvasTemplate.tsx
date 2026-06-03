@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -422,7 +423,7 @@ export function CanvasTemplate({ type, data, onChange, disabled = false, reviewS
                   className={`relative rounded-lg border-2 p-3 transition-all ${section.color} ${
                     !disabled ? 'hover:shadow-md cursor-pointer' : ''
                   }`}
-                  onClick={() => !disabled && !isEditing && handleEdit(section.id)}
+                  {...clickableProps(() => !disabled && !isEditing && handleEdit(section.id))}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <h4 className="font-semibold text-xs uppercase tracking-wide text-foreground/80">
@@ -444,7 +445,7 @@ export function CanvasTemplate({ type, data, onChange, disabled = false, reviewS
                   </div>
 
                   {isEditing ? (
-                    <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="space-y-2" {...clickableProps((e) => e.stopPropagation())}>
                       <Textarea
                         value={editValue}
                         onChange={(e) => {

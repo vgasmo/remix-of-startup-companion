@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Users, ChevronRight, Sparkles, MessageSquare, Send } from 'lucide-react';
@@ -226,7 +227,7 @@ export function MentorRecommendationsCard({ workspaceId, stage, className }: Men
                       ? 'border-primary bg-primary/5' 
                       : 'hover:bg-muted/50'
                   }`}
-                  onClick={() => toggleMentor(mentor.id)}
+                  {...clickableProps(() => toggleMentor(mentor.id))}
                 >
                   <Checkbox
                     checked={selectedMentors.includes(mentor.id)}

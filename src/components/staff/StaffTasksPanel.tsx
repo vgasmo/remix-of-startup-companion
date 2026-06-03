@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { format, isPast, isToday } from 'date-fns';
 import {
@@ -129,7 +130,7 @@ function TaskItem({
   return (
     <div 
       className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer group"
-      onClick={onClick}
+      {...clickableProps(onClick)}
     >
       <div className="mt-1 p-1.5 rounded bg-primary/10">
         <TaskIcon className="h-4 w-4 text-primary" />

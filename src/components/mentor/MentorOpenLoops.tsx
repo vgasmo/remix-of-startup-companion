@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -127,7 +128,7 @@ export function MentorOpenLoops({ workspaces }: MentorOpenLoopsProps) {
                   'flex items-center gap-3 p-2.5 rounded-xl text-sm cursor-pointer transition-colors hover:bg-muted/60',
                   loop.urgency === 'high' && 'bg-red-50/50 dark:bg-red-950/10'
                 )}
-                onClick={() => navigate(loop.actionPath)}
+                {...clickableProps(() => navigate(loop.actionPath))}
               >
                 <div className={cn(
                   'h-7 w-7 rounded-lg flex items-center justify-center shrink-0',

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import {
   Search,
@@ -204,7 +205,7 @@ function ExerciseCard({
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0 cursor-pointer" onClick={onView}>
+          <div className="flex-1 min-w-0 cursor-pointer" {...clickableProps(onView)}>
             <div className="flex items-center gap-2 mb-1">
               <CardTitle className="text-base truncate">{exercise.title}</CardTitle>
               {exercise.status === 'approved' ? (

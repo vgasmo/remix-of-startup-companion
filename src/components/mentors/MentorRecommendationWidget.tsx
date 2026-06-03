@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Star, Calendar, Award, Sparkles, User } from 'lucide-react';
@@ -199,7 +200,7 @@ export function MentorRecommendationWidget({
                 "flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer hover:bg-muted/50",
                 isSelected && "border-primary bg-primary/5"
               )}
-              onClick={() => onSelectMentor?.(mentor.id)}
+              {...clickableProps(() => onSelectMentor?.(mentor.id))}
             >
               <div className="relative">
                 <Avatar className="h-10 w-10">

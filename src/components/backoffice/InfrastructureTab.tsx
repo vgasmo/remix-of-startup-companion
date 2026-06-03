@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -481,7 +482,7 @@ export function InfrastructureTab() {
                   <div
                     ref={imageRef}
                     className={cn('relative aspect-[16/10] bg-muted', editMode && 'cursor-crosshair')}
-                    onClick={editMode ? handleMapClick : undefined}
+                    {...clickableProps(editMode ? handleMapClick : undefined)}
                   >
                     <img
                       src={displayImageUrl}
