@@ -47,7 +47,7 @@ export default function WorkspaceDetail() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
   const { data: workspace, isLoading, error } = useWorkspace(id);
-  const { isAdmin, isConsultor, isMentor, isFounder, isBackoffice } = useAuth();
+  const { isAdmin, isConsultor, isMentor, isFounder, isBackoffice, isStaff } = useAuth();
   
   const [showOnboardingWizard, setShowOnboardingWizard] = useState(false);
   const shouldShowOnboarding = searchParams.get('onboarding') === 'true';
