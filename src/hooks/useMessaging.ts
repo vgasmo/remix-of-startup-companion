@@ -45,11 +45,13 @@ export interface Message {
 }
 
 export function useConversations() {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   return useQuery({
-    queryKey: ['conversations'],
+    queryKey: ['conversations', userId],
+    enabled: !!userId,
     queryFn: async (): Promise<Conversation[]> => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!userId) return [];
 
       // Get conversations the user participates in
       const { data: participations, error: partError } = await supabase
