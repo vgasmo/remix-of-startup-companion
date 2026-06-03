@@ -9,7 +9,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
+import { DialogFooterActions } from '@/components/ui/dialog-footer-actions';
 
 interface NextActionDialogProps {
   open: boolean;
@@ -81,9 +81,13 @@ export function NextActionDialog({
               rows={2}
             />
           </div>
-          <Button onClick={handleSubmit} disabled={isPending || !date} className="w-full">
-            {isPending ? t('common.saving') : t('common.save')}
-          </Button>
+          <DialogFooterActions
+            onCancel={() => onOpenChange(false)}
+            onConfirm={handleSubmit}
+            confirmLabel={t('common.save')}
+            isLoading={isPending}
+            disabled={!date}
+          />
         </div>
       </DialogContent>
     </Dialog>
