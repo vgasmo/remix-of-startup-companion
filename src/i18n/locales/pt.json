@@ -8722,19 +8722,26 @@
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
   },
-  "Contratos & Documentos": "Contratos & Documentos",
-  "Procurar por nome, NIF, contrato…": "Procurar por nome, NIF, contrato…",
-  "Todos os estados": "Todos os estados",
-  "Contrato": "Contrato",
-  "Startup": "Startup",
-  "Estado": "Estado",
-  "Criado": "Criado",
-  "Ações": "Ações",
-  "Documentos": "Documentos",
-  "Documentos do contrato": "Documentos do contrato",
-  "Pré-visualizar": "Pré-visualizar",
-  "Download": "Transferir",
-  "Fechar pré-visualização": "Fechar pré-visualização",
+  "adminContracts": {
+    "title": "Contratos & Documentos",
+    "description": "Listagem de contratos e documentos enviados pelos fundadores. Pré-visualize ou faça download através de links assinados.",
+    "searchPlaceholder": "Procurar por nome, NIF, contrato…",
+    "allStatuses": "Todos os estados",
+    "empty": "Sem contratos.",
+    "documents": "Documentos",
+    "dialogTitle": "Documentos do contrato",
+    "noDocuments": "Sem documentos enviados.",
+    "preview": "Pré-visualizar",
+    "download": "Transferir",
+    "closePreview": "Fechar pré-visualização",
+    "cols": {
+      "contract": "Contrato",
+      "startup": "Startup",
+      "status": "Estado",
+      "created": "Criado",
+      "actions": "Ações"
+    }
+  },
   "mentorProfile": {
     "notFound": "Mentor não encontrado.",
     "expertise": "Áreas de especialização",
@@ -8745,16 +8752,5 @@
     "notFound": "Utilizador não encontrado.",
     "workspaces": "Workspaces",
     "noWorkspaces": "Ainda sem workspaces."
-  },
-  "Sem contratos": {
-    "": "Sem contratos."
-  },
-  "Sem documentos enviados": {
-    "": "Sem documentos enviados."
-  },
-  "Listagem de contratos e documentos enviados pelos fundadores": {
-    " Pré-visualize ou faça download através de links assinados": {
-      "": "Listagem de contratos e documentos enviados pelos fundadores. Pré-visualize ou faça download através de links assinados."
-    }
   }
 }
