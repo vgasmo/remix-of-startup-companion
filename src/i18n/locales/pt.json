@@ -1469,6 +1469,9 @@
       "title": "Workspaces",
       "unblock": "Desbloquear",
       "unblocked": "Workspace desbloqueado"
+    },
+    "contracts": {
+      "openDrawer": "Abrir contrato"
     }
   },
   "adminKpis": {
@@ -1691,7 +1694,10 @@
     "step3": "Aceda a todas as funcionalidades do workspace após aprovação",
     "suspendedDescription": "A sua conta foi suspensa. Por favor contacte o suporte se acredita que isto é um erro.",
     "suspendedTitle": "Conta Suspensa",
-    "whatHappensNext": "O que acontece a seguir?"
+    "whatHappensNext": "O que acontece a seguir?",
+    "checking": "A verificar…",
+    "checkNow": "Verificar agora",
+    "autoCheck": "Verificação automática a cada minuto."
   },
   "askAi": {
     "askAnything": "Pergunta o que quiseres…",
@@ -2280,7 +2286,9 @@
     "viewAll": "Ver todas",
     "workspace": "Workspace",
     "years": "anos",
-    "yes": "Sim"
+    "yes": "Sim",
+    "expand": "Expandir",
+    "collapse": "Recolher"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -2773,7 +2781,8 @@
       "step4": "Guarde o contrato na base de dados",
       "tooLarge": "O ficheiro deve ter menos de 10MB.",
       "uploading": "A carregar documento..."
-    }
+    },
+    "numberAutoAssigned": "Número atribuído automaticamente"
   },
   "copilot": {
     "askAnything": "Pergunte sobre a sua startup, tarefas, KPIs ou ecossistema.",
@@ -6349,7 +6358,6 @@
     }
   },
   "publicBooking": {
-
     "backToSite": "Voltar ao site",
     "bookFirstMeeting": "Marcar Primeira Reunião",
     "bookFirstMeetingDesc": "Agende uma consulta gratuita para saber como podemos ajudar a sua startup a crescer.",
@@ -7034,7 +7042,19 @@
     "withConsultant": "Consultor",
     "withMentor": "Mentor",
     "workspaceMembers": "membros do espaço",
-    "zoomDesc": "Importar gravações e transcrições automaticamente"
+    "zoomDesc": "Importar gravações e transcrições automaticamente",
+    "loggedOffPlatform": "Registada fora da plataforma",
+    "logPastTitle": "Registar sessão passada",
+    "logPastDesc": "Registar uma sessão que já ocorreu fora da plataforma.",
+    "logPast": "Registar sessão passada",
+    "logPastHelp": "Não serão enviados convites.",
+    "notesPlaceholder": "Notas…",
+    "decisionsPlaceholder": "Decisões tomadas…",
+    "sendInvitesHelp": "Os participantes receberão um convite no calendário.",
+    "sendInvitesNone": "Sem participantes para convidar.",
+    "noDecisionsToConvert": "Sem decisões para converter em ações.",
+    "decisionsConverted": "Decisões convertidas em ações.",
+    "convertDecisionsToActions": "Converter decisões em ações"
   },
   "sessionsEmpty": {
     "description": "O seu consultor ou programa vai agendar a primeira sessão em breve.",
@@ -8701,5 +8721,40 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
+  },
+  "Contratos & Documentos": "Contratos & Documentos",
+  "Procurar por nome, NIF, contrato…": "Procurar por nome, NIF, contrato…",
+  "Todos os estados": "Todos os estados",
+  "Contrato": "Contrato",
+  "Startup": "Startup",
+  "Estado": "Estado",
+  "Criado": "Criado",
+  "Ações": "Ações",
+  "Documentos": "Documentos",
+  "Documentos do contrato": "Documentos do contrato",
+  "Pré-visualizar": "Pré-visualizar",
+  "Download": "Transferir",
+  "Fechar pré-visualização": "Fechar pré-visualização",
+  "mentorProfile": {
+    "notFound": "Mentor não encontrado.",
+    "expertise": "Áreas de especialização",
+    "workspaces": "Workspaces",
+    "noWorkspaces": "Ainda sem workspaces atribuídos."
+  },
+  "userProfile": {
+    "notFound": "Utilizador não encontrado.",
+    "workspaces": "Workspaces",
+    "noWorkspaces": "Ainda sem workspaces."
+  },
+  "Sem contratos": {
+    "": "Sem contratos."
+  },
+  "Sem documentos enviados": {
+    "": "Sem documentos enviados."
+  },
+  "Listagem de contratos e documentos enviados pelos fundadores": {
+    " Pré-visualize ou faça download através de links assinados": {
+      "": "Listagem de contratos e documentos enviados pelos fundadores. Pré-visualize ou faça download através de links assinados."
+    }
   }
 }
