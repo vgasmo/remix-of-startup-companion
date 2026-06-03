@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { clickableProps } from '@/lib/clickable';
+
 import { useNavigate } from 'react-router-dom';
 import {
   Clock,
@@ -145,8 +147,9 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
                   <div
                     key={alert.key}
                     className="flex items-center gap-3 p-3 rounded-xl bg-background/80 cursor-pointer hover:shadow-md hover:scale-[1.01] transition-all duration-200"
-                    onClick={() => navigate(alert.href)}
+                    {...clickableProps(() => navigate(alert.href))}
                   >
+
                     <div className={cn(
                       'h-9 w-9 rounded-xl flex items-center justify-center shrink-0',
                       alert.variant === 'destructive' ? 'bg-destructive/10' : 'bg-amber-100 dark:bg-amber-900/30'
@@ -289,8 +292,9 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
                   "text-center p-2 rounded-xl transition-all duration-200 hover:shadow-sm cursor-pointer",
                   isAlert && count > 0 && 'bg-destructive/5 ring-1 ring-destructive/20'
                 )}
-                  onClick={() => navigate('/my-workspaces?filter=attention')}
+                  {...clickableProps(() => navigate('/my-workspaces?filter=attention'))}
                 >
+
                   <div className={cn('h-2 rounded-full mb-2', colors[health])} />
                   <p className={cn('text-lg font-bold', isAlert && count > 0 && 'text-destructive')}>{count}</p>
                   <p className="text-xs text-muted-foreground capitalize">

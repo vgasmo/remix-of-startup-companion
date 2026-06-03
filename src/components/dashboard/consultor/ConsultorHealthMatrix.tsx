@@ -1,4 +1,6 @@
 import { memo } from 'react';
+import { clickableProps } from '@/lib/clickable';
+
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
@@ -67,10 +69,11 @@ export const ConsultorHealthMatrix = memo(function ConsultorHealthMatrix({ works
               <TooltipTrigger asChild>
                 <div 
                   className={`h-8 rounded-md cursor-pointer transition-all hover:scale-110 hover:shadow-sm flex items-center justify-center text-[9px] font-bold text-primary-foreground ${bgColors[health] || 'bg-muted'}`}
-                  onClick={() => navigate(`/workspace/${w.id}`)}
+                  {...clickableProps(() => navigate(`/workspace/${w.id}`), { label: w.startup?.name })}
                 >
                   {w.startup?.name?.slice(0, 2).toUpperCase()}
                 </div>
+
               </TooltipTrigger>
               <TooltipContent>
                 <span>{w.startup?.name} — {t(`health.levels.${health}`)}</span>

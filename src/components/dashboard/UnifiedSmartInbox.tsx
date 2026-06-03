@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { clickableProps } from '@/lib/clickable';
+
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -171,8 +173,9 @@ export function UnifiedSmartInbox({
                       priorityBorder[item.priority],
                       !item.read && 'bg-primary/[0.02]'
                     )}
-                    onClick={() => item.href && navigate(item.href)}
+                    {...clickableProps(() => { if (item.href) navigate(item.href); })}
                   >
+
                     <div className="mt-0.5 shrink-0">{item.icon}</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground leading-tight">{item.title}</p>

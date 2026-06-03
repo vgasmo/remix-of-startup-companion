@@ -274,7 +274,7 @@ function EventRow({ item }: { item: EcosystemEvent }) {
   const cfg = typeConfig[item.type];
 
   return (
-    <div className="flex items-center gap-4 py-3 group hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors cursor-pointer">
+    <div className="flex items-center gap-4 py-3 group hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors">
       {/* Date block */}
       <div className="text-center shrink-0 w-12">
         <div className="text-2xl font-bold text-foreground leading-none">
