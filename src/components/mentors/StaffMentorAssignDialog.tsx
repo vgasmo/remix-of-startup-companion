@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { MentorRecommendationWidget } from './MentorRecommendationWidget';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 
 interface StaffMentorAssignDialogProps {
@@ -142,12 +142,12 @@ export function StaffMentorAssignDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-mentor-requests'] });
       queryClient.invalidateQueries({ queryKey: ['workspace-users'] });
-      toast.success(t('mentors.mentorAssigned', 'Mentor assigned successfully'));
+      notify.success(t('mentors.mentorAssigned', 'Mentor assigned successfully'));
       onOpenChange(false);
     },
     onError: (error) => {
       logger.error('Assignment error', {}, error);
-      toast.error(t('common.error'));
+      notify.error(t('common.error'));
     },
   });
 

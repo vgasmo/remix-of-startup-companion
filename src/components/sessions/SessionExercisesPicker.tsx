@@ -39,7 +39,7 @@ import {
   useExerciseLibrary,
   Exercise,
 } from '@/hooks/useExerciseLibrary';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 
 const t = i18n.t.bind(i18n);
@@ -65,9 +65,9 @@ export function SessionExercisesPicker({ sessionId, canEdit }: SessionExercisesP
   const handleRemove = async (id: string) => {
     try {
       await removeMutation.mutateAsync(id);
-      toast.success(t('sessions.exerciseRemoved'));
+      notify.success(t('sessions.exerciseRemoved'));
     } catch (error) {
-      toast.error(t('sessions.failedToRemoveExercise'));
+      notify.error(t('sessions.failedToRemoveExercise'));
     }
   };
 
@@ -219,13 +219,13 @@ function AddExerciseDialog({
     if (!selectedId) return;
     try {
       await addMutation.mutateAsync({ exerciseId: selectedId, notes: notes.trim() || undefined });
-      toast.success(t('sessions.exerciseAdded'));
+      notify.success(t('sessions.exerciseAdded'));
       onOpenChange(false);
       setSelectedId(null);
       setNotes('');
       setSearch('');
     } catch (error) {
-      toast.error(t('sessions.failedToAddExercise'));
+      notify.error(t('sessions.failedToAddExercise'));
     }
   };
 

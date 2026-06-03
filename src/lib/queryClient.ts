@@ -6,7 +6,7 @@
 
 import { QueryClient, MutationCache } from '@tanstack/react-query';
 import { logger } from '@/lib/logger';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import i18n from '@/i18n';
 
 const t = i18n.t.bind(i18n);
@@ -26,15 +26,15 @@ export const queryClient = new QueryClient({
       const message = error.message || t('common.operationFailed', { defaultValue: 'Operação falhou. Tente novamente.' });
 
       if (message.includes('JWT') || message.includes('401')) {
-        toast.error(t('errors.sessionExpired', { defaultValue: 'Sessão expirada. Faça login novamente.' }));
+        notify.error(t('errors.sessionExpired', { defaultValue: 'Sessão expirada. Faça login novamente.' }));
       } else if (message.includes('permission') || message.includes('policy') || message.includes('403')) {
-        toast.error(t('errors.noPermission', { defaultValue: 'Sem permissão para esta ação.' }));
+        notify.error(t('errors.noPermission', { defaultValue: 'Sem permissão para esta ação.' }));
       } else if (message.includes('duplicate') || message.includes('unique')) {
-        toast.error(t('errors.duplicateEntry', { defaultValue: 'Este registo já existe.' }));
+        notify.error(t('errors.duplicateEntry', { defaultValue: 'Este registo já existe.' }));
       } else if (message.includes('network') || message.includes('fetch') || message.includes('Failed to fetch')) {
-        toast.error(t('errors.networkError', { defaultValue: 'Erro de rede. Verifique a ligação.' }));
+        notify.error(t('errors.networkError', { defaultValue: 'Erro de rede. Verifique a ligação.' }));
       } else {
-        toast.error(message);
+        notify.error(message);
       }
     },
   }),

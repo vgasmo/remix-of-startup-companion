@@ -26,7 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { MentorAvailabilitySettings } from '@/components/mentors/MentorAvailabilitySettings';
 import { MentorImpactDashboard } from '@/components/mentors/MentorImpactDashboard';
 import { MentorBookingPanel } from '@/components/mentors/MentorBookingPanel';
@@ -383,10 +383,10 @@ export default function Mentors() {
     onSuccess: (_, { status }) => {
       queryClient.invalidateQueries({ queryKey: ['mentor-connections'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      toast.success(`${t('mentorsPage.connection')} ${status === 'accepted' ? t('mentorsPage.accepted') : t('mentorsPage.declined')}`);
+      notify.success(`${t('mentorsPage.connection')} ${status === 'accepted' ? t('mentorsPage.accepted') : t('mentorsPage.declined')}`);
     },
     onError: (error: any) => {
-      toast.error(error.message || t('mentorsPage.failedToUpdate'));
+      notify.error(error.message || t('mentorsPage.failedToUpdate'));
     },
   });
 
@@ -405,7 +405,7 @@ export default function Mentors() {
 
   const openMailTo = (email?: string | null, contextLabel?: string) => {
     if (!email) {
-      toast.error(
+      notify.error(
         t('mentorsPage.noEmailAvailableFor', {
           defaultValue: 'Sem email disponível para {{target}}',
           target: contextLabel || t('mentorsPage.thisContact', { defaultValue: 'este contacto' }),

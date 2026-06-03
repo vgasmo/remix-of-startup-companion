@@ -16,7 +16,7 @@ import { useWorkspaces, ALL_WORKSPACE_STATUSES } from '@/hooks/useWorkspaces';
 import { format, differenceInMonths, addYears, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/lib/supabaseClient';
 import { ContractUploadDropzone, type AIExtractedData } from './contracts/ContractUploadDropzone';
 import { ContractReviewForm, type ContractFormValues } from './contracts/ContractReviewForm';
@@ -195,7 +195,7 @@ export function BackofficeContractsTab() {
 
   const handleBulkCreateContracts = async () => {
     if (selectedWorkspaces.size === 0) {
-      toast.error(t('admin.backoffice.selectWorkspacesFirst', { defaultValue: 'Select workspaces first' }));
+      notify.error(t('admin.backoffice.selectWorkspacesFirst', { defaultValue: 'Select workspaces first' }));
       return;
     }
     const selectedType = incubationTypes?.find(it => it.id === bulkIncubationType);
@@ -217,9 +217,9 @@ export function BackofficeContractsTab() {
     setIsBulkCreating(false);
     setSelectedWorkspaces(new Set());
     if (errors > 0) {
-      toast.warning(t('admin.backoffice.bulkCreatePartial', { created, errors, defaultValue: 'Created {{created}} draft contracts, {{errors}} failed' }));
+      notify.warn(t('admin.backoffice.bulkCreatePartial', { created, errors, defaultValue: 'Created {{created}} draft contracts, {{errors}} failed' }));
     } else {
-      toast.success(t('admin.backoffice.bulkCreateSuccess', { count: created, defaultValue: 'Created {{count}} draft contracts successfully' }));
+      notify.success(t('admin.backoffice.bulkCreateSuccess', { count: created, defaultValue: 'Created {{count}} draft contracts successfully' }));
     }
   };
 
@@ -324,7 +324,7 @@ export function BackofficeContractsTab() {
     }
     setSelectedContractIds(new Set());
     setIsArchiving(false);
-    toast.success(t('contracts.bulk.archiveSuccess', { count: archived, defaultValue: '{{count}} contracts archived' }));
+    notify.success(t('contracts.bulk.archiveSuccess', { count: archived, defaultValue: '{{count}} contracts archived' }));
   };
 
   return (

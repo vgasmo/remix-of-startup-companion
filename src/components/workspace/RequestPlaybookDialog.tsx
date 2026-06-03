@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useQueryClient } from '@tanstack/react-query';
 import { logger } from '@/lib/logger';
 
@@ -52,7 +52,7 @@ export function RequestPlaybookDialog({
 
   const handleSubmit = async () => {
     if (!goal.trim()) {
-      toast.error(t('requestPlaybook.goalRequired'));
+      notify.error(t('requestPlaybook.goalRequired'));
       return;
     }
 
@@ -76,7 +76,7 @@ export function RequestPlaybookDialog({
 
       if (response.error) throw response.error;
 
-      toast.success(t('requestPlaybook.submitted'));
+      notify.success(t('requestPlaybook.submitted'));
       queryClient.invalidateQueries({ queryKey: ['consultant-notes', workspaceId] });
       setOpen(false);
       // Reset form
@@ -86,7 +86,7 @@ export function RequestPlaybookDialog({
     } catch (error: unknown) {
       logger.error('Failed to submit playbook request', {}, error);
       // Keep dialog open on failure so user can retry
-      toast.error(t('requestPlaybook.failed'), {
+      notify.error(t('requestPlaybook.failed'), {
         description: t('requestPlaybook.failedHint'),
         duration: 5000,
       });

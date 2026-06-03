@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { 
   CheckCircle2, 
   ExternalLink, 
@@ -51,17 +51,17 @@ export function GraphApiCalendarCard({ workspaceId, canEdit = true }: GraphApiCa
 
   const handleSaveCredentials = async () => {
     if (!tenantId || !clientId) {
-      toast.error(t('settings.tenantIdAndClientId'));
+      notify.error(t('settings.tenantIdAndClientId'));
       return;
     }
 
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(tenantId)) {
-      toast.error(t('settings.invalidTenantIdFormatShould'));
+      notify.error(t('settings.invalidTenantIdFormatShould'));
       return;
     }
     if (!uuidRegex.test(clientId)) {
-      toast.error(t('settings.invalidClientIdFormatShould'));
+      notify.error(t('settings.invalidClientIdFormatShould'));
       return;
     }
 
@@ -72,9 +72,9 @@ export function GraphApiCalendarCard({ workspaceId, canEdit = true }: GraphApiCa
         graph_client_id: clientId,
         sync_mode: 'graph',
       });
-      toast.success(t('settings.azureAdIdentifiersSaved'));
+      notify.success(t('settings.azureAdIdentifiersSaved'));
     } catch (error: any) {
-      toast.error(error.message || 'Failed to save identifiers');
+      notify.error(error.message || 'Failed to save identifiers');
     } finally {
       setIsSaving(false);
     }
@@ -82,7 +82,7 @@ export function GraphApiCalendarCard({ workspaceId, canEdit = true }: GraphApiCa
 
   const handleToggle = async (enabled: boolean) => {
     if (enabled && !isConfigured) {
-      toast.error(t('settings.pleaseConfigureAzureAdIdentifiers'));
+      notify.error(t('settings.pleaseConfigureAzureAdIdentifiers'));
       return;
     }
     try {
@@ -90,9 +90,9 @@ export function GraphApiCalendarCard({ workspaceId, canEdit = true }: GraphApiCa
         enabled,
         sync_mode: 'graph',
       });
-      toast.success(enabled ? t('settings.graphSyncEnabled', 'Sincronização Graph API ativada') : t('settings.graphSyncDisabled', 'Sincronização Graph API desativada'));
+      notify.success(enabled ? t('settings.graphSyncEnabled', 'Sincronização Graph API ativada') : t('settings.graphSyncDisabled', 'Sincronização Graph API desativada'));
     } catch (error: any) {
-      toast.error(error.message || t('settings.failedToUpdate', 'Erro ao atualizar'));
+      notify.error(error.message || t('settings.failedToUpdate', 'Erro ao atualizar'));
     }
   };
 

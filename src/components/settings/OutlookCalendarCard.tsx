@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { 
   CheckCircle2, 
   ExternalLink, 
@@ -52,7 +52,7 @@ export function OutlookCalendarCard({ workspaceId, canEdit = true }: OutlookCale
 
   const handleToggle = async (enabled: boolean) => {
     if (enabled && syncMode === 'webhook' && !hasWebhook) {
-      toast.error(t('integrations.pleaseConfigureAWebhookUrl'));
+      notify.error(t('integrations.pleaseConfigureAWebhookUrl'));
       return;
     }
     try {
@@ -60,22 +60,22 @@ export function OutlookCalendarCard({ workspaceId, canEdit = true }: OutlookCale
         enabled,
         ...(webhookUrl && { webhook_url: webhookUrl })
       });
-      toast.success(enabled ? t('settings.outlookSyncEnabled', 'Sincronização Outlook ativada') : t('settings.outlookSyncDisabled', 'Sincronização Outlook desativada'));
+      notify.success(enabled ? t('settings.outlookSyncEnabled', 'Sincronização Outlook ativada') : t('settings.outlookSyncDisabled', 'Sincronização Outlook desativada'));
     } catch (error: any) {
-      toast.error(error.message || t('settings.failedToUpdate', 'Erro ao atualizar'));
+      notify.error(error.message || t('settings.failedToUpdate', 'Erro ao atualizar'));
     }
   };
 
   const handleSaveWebhook = async () => {
     if (!webhookUrl) {
-      toast.error(t('integrations.pleaseEnterAWebhookUrl'));
+      notify.error(t('integrations.pleaseEnterAWebhookUrl'));
       return;
     }
     try {
       await updateSettings.mutateAsync({ webhook_url: webhookUrl, sync_mode: 'webhook' });
-      toast.success(t('integrations.webhookUrlSaved'));
+      notify.success(t('integrations.webhookUrlSaved'));
     } catch (error: any) {
-      toast.error(error.message || t('settings.failedToSaveWebhook', 'Erro ao guardar webhook'));
+      notify.error(error.message || t('settings.failedToSaveWebhook', 'Erro ao guardar webhook'));
     }
   };
 
@@ -83,7 +83,7 @@ export function OutlookCalendarCard({ workspaceId, canEdit = true }: OutlookCale
     try {
       await updateSettings.mutateAsync({ sync_mode: mode as 'webhook' | 'graph' });
     } catch (error: any) {
-      toast.error(error.message || t('settings.failedToUpdate', 'Erro ao atualizar'));
+      notify.error(error.message || t('settings.failedToUpdate', 'Erro ao atualizar'));
     }
   };
 

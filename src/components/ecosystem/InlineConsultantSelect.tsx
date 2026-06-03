@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { UserCog } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 import {
   Select,
@@ -57,12 +57,12 @@ export function InlineConsultantSelect({ workspaceId, currentOwnerId, currentOwn
 
       if (error) throw error;
 
-      toast.success(t('ecosystem.consultantAssigned', { defaultValue: 'Consultor atribuído com sucesso' }));
+      notify.success(t('ecosystem.consultantAssigned', { defaultValue: 'Consultor atribuído com sucesso' }));
       queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
       onAssigned?.();
     } catch (err) {
       logger.error('consultant_assign_failed', {}, err);
-      toast.error(t('common.errorSaving', { defaultValue: 'Erro ao guardar' }));
+      notify.error(t('common.errorSaving', { defaultValue: 'Erro ao guardar' }));
     } finally {
       setSaving(false);
     }

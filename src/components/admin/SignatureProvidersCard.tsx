@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import {
   PenTool,
   CheckCircle2,
@@ -76,10 +76,10 @@ function useSaveSignatureProvider() {
     },
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ['global-integration-settings', vars.integration_type] });
-      toast.success(t('admin.configuraçãoGuardada'));
+      notify.success(t('admin.configuraçãoGuardada'));
     },
     onError: (err: Error) => {
-      toast.error(err.message || 'Erro ao guardar');
+      notify.error(err.message || 'Erro ao guardar');
     },
   });
 }
@@ -132,7 +132,7 @@ function DocuSignSettingsCard() {
               checked={!!settings?.is_enabled}
               onCheckedChange={(enabled) => {
                 if (enabled && !isConfigured) {
-                  toast.error(t('admin.configureAsCredenciaisPrimeiro'));
+                  notify.error(t('admin.configureAsCredenciaisPrimeiro'));
                   return;
                 }
                 save.mutate({ integration_type: 'docusign', settings_json: json, is_enabled: enabled });
@@ -238,7 +238,7 @@ function PandaDocSettingsCard() {
               checked={!!settings?.is_enabled}
               onCheckedChange={(enabled) => {
                 if (enabled && !isConfigured) {
-                  toast.error(t('admin.configureAsCredenciaisPrimeiro'));
+                  notify.error(t('admin.configureAsCredenciaisPrimeiro'));
                   return;
                 }
                 save.mutate({ integration_type: 'pandadoc', settings_json: json, is_enabled: enabled });
@@ -277,7 +277,7 @@ function PandaDocSettingsCard() {
                     className="h-8 text-[10px] shrink-0"
                     onClick={() => {
                       navigator.clipboard.writeText(pandadocWebhookEndpoint);
-                      toast.success(t('admin.urlCopiado'));
+                      notify.success(t('admin.urlCopiado'));
                     }}
                   >
                     {t('common.copy', 'Copiar')}

@@ -15,7 +15,7 @@ import {
   ExternalLink,
   Info
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { WorkspaceCalendarCard } from '@/components/settings/WorkspaceCalendarCard';
 
 interface IntegrationSettingsProps {
@@ -45,9 +45,9 @@ export function IntegrationSettings({ workspaceId, emailAlias, canEdit }: Integr
         setCopiedWebhook(true);
         setTimeout(() => setCopiedWebhook(false), 2000);
       }
-      toast.success(t('integrations.copied'));
+      notify.success(t('integrations.copied'));
     } catch (err) {
-      toast.error(t('integrations.copyFailed'));
+      notify.error(t('integrations.copyFailed'));
     }
   };
 

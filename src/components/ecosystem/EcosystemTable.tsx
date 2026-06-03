@@ -5,7 +5,7 @@ import { MoreHorizontal, Building2, Users, ExternalLink, Calendar, AlertTriangle
 import { InlineConsultantSelect } from './InlineConsultantSelect';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,10 +71,10 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
         .update({ status: 'archived' })
         .eq('id', item.workspace_id);
       if (error) throw error;
-      toast.success(t('ecosystem.workspaceArchived', { defaultValue: 'Workspace arquivado' }));
+      notify.success(t('ecosystem.workspaceArchived', { defaultValue: 'Workspace arquivado' }));
       queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
     } catch (err: any) {
-      toast.error(t('ecosystem.archiveError', { defaultValue: 'Erro ao arquivar workspace' }), {
+      notify.error(t('ecosystem.archiveError', { defaultValue: 'Erro ao arquivar workspace' }), {
         description: err?.message,
       });
     }
@@ -96,7 +96,7 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
       ]);
 
       if ((contractCount || 0) > 0) {
-        toast.error(
+        notify.error(
           t('ecosystem.deleteBlockedByContract', { defaultValue: 'Não é possível eliminar: existe(m) contrato(s) associado(s) a esta lead.' })
         );
         return;
@@ -115,14 +115,14 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
         .delete()
         .eq('id', item.funnel_item_id);
       if (error) throw error;
-      toast.success(t('ecosystem.leadDeleted', { defaultValue: 'Lead eliminada' }));
+      notify.success(t('ecosystem.leadDeleted', { defaultValue: 'Lead eliminada' }));
       queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
     } catch (err: any) {
       const msg = err?.message || '';
       const friendly = msg.includes('foreign key') || msg.includes('violates')
         ? t('ecosystem.deleteBlockedByReferences', { defaultValue: 'Não é possível eliminar: esta lead está associada a outros registos (contrato, sala ou histórico).' })
         : t('ecosystem.deleteLeadError', { defaultValue: 'Erro ao eliminar lead' });
-      toast.error(friendly, { description: msg || undefined });
+      notify.error(friendly, { description: msg || undefined });
     }
   };
 

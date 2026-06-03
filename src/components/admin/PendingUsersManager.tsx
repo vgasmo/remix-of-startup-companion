@@ -18,7 +18,7 @@ import {
   AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
 import { Check, X, Clock, User, Mail, Calendar } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { formatDistanceToNow } from 'date-fns';
 
 interface PendingUser {
@@ -98,9 +98,9 @@ export function PendingUsersManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-users'] });
-      toast.success(t('admin.userApproved', 'User approved successfully'));
+      notify.success(t('admin.userApproved', 'User approved successfully'));
     },
-    onError: (error) => toast.error(`Error: ${error.message}`),
+    onError: (error) => notify.error(`Error: ${error.message}`),
   });
 
   const suspendMutation = useMutation({
@@ -113,10 +113,10 @@ export function PendingUsersManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-users'] });
-      toast.success(t('admin.userSuspended', 'User suspended'));
+      notify.success(t('admin.userSuspended', 'User suspended'));
       setRejectUserId(null);
     },
-    onError: (error) => toast.error(`Error: ${error.message}`),
+    onError: (error) => notify.error(`Error: ${error.message}`),
   });
 
   if (isLoading) {

@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/lib/supabaseClient';
 import { useIntakeRouting, useUpsertIntakeRoute, useConsultants, type IntakeRoute } from '@/hooks/useIntakeRouting';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -87,7 +87,7 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
   
   const handleSave = async () => {
     if (active && selectedConsultants.length === 0) {
-      toast.error(t('admin.pleaseSelectAtLeastOne'));
+      notify.error(t('admin.pleaseSelectAtLeastOne'));
       return;
     }
     
@@ -278,10 +278,10 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
       queryClient.invalidateQueries({ queryKey: ['booking-links'] });
       const link = `${window.location.origin}/book/${data.plainToken}`;
       navigator.clipboard.writeText(link);
-      toast.success(t('admin.linkCreatedAndCopiedTo'));
+      notify.success(t('admin.linkCreatedAndCopiedTo'));
     },
     onError: (error) => {
-      toast.error(t('admin.failedToCreateLink', { message: error.message }));
+      notify.error(t('admin.failedToCreateLink', { message: error.message }));
     },
   });
 
@@ -296,7 +296,7 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['booking-links'] });
-      toast.success(t('admin.linkDeactivated'));
+      notify.success(t('admin.linkDeactivated'));
     },
   });
 

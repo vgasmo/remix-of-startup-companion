@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { GraduationCap, Download, FileText, ExternalLink, Tag } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -88,7 +88,7 @@ function ProgramMaterialCard({ material }: { material: SupportMaterial }) {
       const url = await getUrl.mutateAsync(material.file_path);
       window.open(url, '_blank', 'noopener,noreferrer');
     } catch (err) {
-      toast.error(t('common.error', 'Erro'), { description: (err as Error).message });
+      notify.error(t('common.error', 'Erro'), { description: (err as Error).message });
     }
   };
 

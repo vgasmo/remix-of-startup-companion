@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/lib/supabaseClient';
 import { useUploadDocument, useGetDocumentUrl, Document } from '@/hooks/useDocuments';
 import {
@@ -179,10 +179,10 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
       if (response.ok) {
         window.open(url, '_blank');
       } else {
-        toast.error(t('workspace.templateNotAvailableYetAsk'));
+        notify.error(t('workspace.templateNotAvailableYetAsk'));
       }
     } catch {
-      toast.error(t('workspace.templateNotAvailableYetAsk'));
+      notify.error(t('workspace.templateNotAvailableYetAsk'));
     }
   };
 
@@ -195,7 +195,7 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
     const isValidExtension = /\.(xlsx|xlsm|xls|csv)$/i.test(fileName);
     
     if (!isValidExtension) {
-      toast.error(t('workspace.pleaseUploadAnExcelXlsx'));
+      notify.error(t('workspace.pleaseUploadAnExcelXlsx'));
       return;
     }
 
@@ -247,7 +247,7 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
   const handleCreateAllInsightActions = async () => {
     const actionsToCreate = insights.filter(i => i.suggested_action);
     if (actionsToCreate.length === 0) {
-      toast.info(t('workspace.noActionableInsights'));
+      notify.info(t('workspace.noActionableInsights'));
       return;
     }
     await createActionsFromInsights.mutateAsync(actionsToCreate);
@@ -264,7 +264,7 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
       const url = await getDocumentUrl(activeVersion.document.file_path);
       window.open(url, '_blank');
     } catch {
-      toast.error(t('workspace.failedToDownload'));
+      notify.error(t('workspace.failedToDownload'));
     }
   };
 
@@ -280,7 +280,7 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
   const copyInvestorNarrative = () => {
     if (!aiReview?.investor_narrative) return;
     navigator.clipboard.writeText(aiReview.investor_narrative);
-    toast.success(t('workspace.copiedToClipboard'));
+    notify.success(t('workspace.copiedToClipboard'));
   };
 
   if (isLoading) {

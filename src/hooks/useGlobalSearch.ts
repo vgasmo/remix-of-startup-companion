@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
@@ -577,7 +577,7 @@ export function useCreateTag() {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -598,7 +598,7 @@ export function useAddWorkspaceTag() {
       queryClient.invalidateQueries({ queryKey: ['workspace-tags', workspaceId] });
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -621,7 +621,7 @@ export function useRemoveWorkspaceTag() {
       queryClient.invalidateQueries({ queryKey: ['workspace-tags', workspaceId] });
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -642,7 +642,7 @@ export function useAddSessionTag() {
       queryClient.invalidateQueries({ queryKey: ['session-tags', sessionId] });
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -665,7 +665,7 @@ export function useRemoveSessionTag() {
       queryClient.invalidateQueries({ queryKey: ['session-tags', sessionId] });
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -686,7 +686,7 @@ export function useAddActionTag() {
       queryClient.invalidateQueries({ queryKey: ['action-tags', actionId] });
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -709,7 +709,7 @@ export function useRemoveActionTag() {
       queryClient.invalidateQueries({ queryKey: ['action-tags', actionId] });
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -741,10 +741,10 @@ export function useSaveSearch() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-filters'] });
-      toast.success(t('integrations.pesquisaGuardada'));
+      notify.success(t('integrations.pesquisaGuardada'));
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -784,10 +784,10 @@ export function useDeleteSavedSearch() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-searches'] });
-      toast.success(t('integrations.pesquisaRemovida'));
+      notify.success(t('integrations.pesquisaRemovida'));
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }

@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/select';
 import { useStageGateReviews, useStageGateCriteria, useRequestStageGateReview, useApproveStageGateReview } from '@/hooks/useGovernance';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { StartupStage } from '@/types/database';
 import { getStartupStageLabel } from '@/lib/stageLabels';
 
@@ -96,11 +96,11 @@ export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }
         toStage: nextStage,
         evidence: evidence.trim() || undefined,
       });
-      toast.success(t('workspace.stageGateReviewRequested'));
+      notify.success(t('workspace.stageGateReviewRequested'));
       setShowRequestDialog(false);
       setEvidence('');
     } catch (error) {
-      toast.error(t('workspace.failedToRequestReview'));
+      notify.error(t('workspace.failedToRequestReview'));
     } finally {
       setIsSubmitting(false);
     }
@@ -117,13 +117,13 @@ export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }
         status: decision,
         conditions: decision === 'conditional' ? conditions.trim() : undefined,
       });
-      toast.success(t('workspace.review', { decision: decision }));
+      notify.success(t('workspace.review', { decision: decision }));
       setShowApproveDialog(false);
       setSelectedReview(null);
       setDecision('approved');
       setConditions('');
     } catch (error) {
-      toast.error(t('workspace.failedToUpdateReview'));
+      notify.error(t('workspace.failedToUpdateReview'));
     } finally {
       setIsSubmitting(false);
     }

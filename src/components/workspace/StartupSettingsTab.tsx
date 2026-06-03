@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Building2, Upload, Loader2, Globe, Calendar, Phone, MapPin, Mail, BadgeCheck, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { IntegrationSettings } from './IntegrationSettings';
 
 interface StartupSettingsTabProps {
@@ -65,11 +65,11 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
 
     const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
     if (!allowedTypes.includes(file.type)) {
-      toast.error(t('admin.startupsManager.invalidFileType'));
+      notify.error(t('admin.startupsManager.invalidFileType'));
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast.error(t('admin.startupsManager.fileTooLarge'));
+      notify.error(t('admin.startupsManager.fileTooLarge'));
       return;
     }
 
@@ -94,9 +94,9 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
       await supabase.from('startups').update({ startup_portugal_document_path: publicUrl }).eq('id', startupId);
       queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] });
       
-      toast.success(t('admin.startupsManager.documentUploaded'));
+      notify.success(t('admin.startupsManager.documentUploaded'));
     } catch (error: any) {
-      toast.error(`${t('common.error')}: ${error.message}`);
+      notify.error(`${t('common.error')}: ${error.message}`);
     } finally {
       setIsUploadingDoc(false);
       if (docInputRef.current) docInputRef.current.value = '';
@@ -132,9 +132,9 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      toast.success(t('startupSettings.profileUpdated', 'Startup profile updated'));
+      notify.success(t('startupSettings.profileUpdated', 'Startup profile updated'));
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,11 +143,11 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
 
     // Validate file type and size
     if (!file.type.startsWith('image/')) {
-      toast.error(t('startupSettings.uploadImageOnly', 'Please upload an image file'));
+      notify.error(t('startupSettings.uploadImageOnly', 'Please upload an image file'));
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      toast.error(t('startupSettings.imageSizeLimit', 'Image must be less than 2MB'));
+      notify.error(t('startupSettings.imageSizeLimit', 'Image must be less than 2MB'));
       return;
     }
 
@@ -178,9 +178,9 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
 
       queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      toast.success(t('startupSettings.logoUploaded', 'Logo uploaded successfully'));
+      notify.success(t('startupSettings.logoUploaded', 'Logo uploaded successfully'));
     } catch (error: any) {
-      toast.error(`${t('startupSettings.uploadFailed', 'Upload failed')}: ${error.message}`);
+      notify.error(`${t('startupSettings.uploadFailed', 'Upload failed')}: ${error.message}`);
     } finally {
       setIsUploading(false);
     }
@@ -189,7 +189,7 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
-      toast.error(t('startupSettings.nameRequired', 'Name is required'));
+      notify.error(t('startupSettings.nameRequired', 'Name is required'));
       return;
     }
     updateMutation.mutate(formData);

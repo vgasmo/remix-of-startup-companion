@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
 
@@ -42,10 +42,10 @@ export function useGenerateSessionArtifacts() {
       queryClient.invalidateQueries({ queryKey: ['action-items'] });
       queryClient.invalidateQueries({ queryKey: ['workspace-actions'] });
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      toast.success(t('sessions.generatedSummaryAnd', { length: data.actions_created.length }));
+      notify.success(t('sessions.generatedSummaryAnd', { length: data.actions_created.length }));
     },
     onError: (error: Error) => {
-      toast.error(i18n.t('errors.aiGenerateFailed'));
+      notify.error(i18n.t('errors.aiGenerateFailed'));
     },
   });
 }
@@ -93,10 +93,10 @@ export function useAddTranscript() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['session-transcripts', variables.sessionId] });
-      toast.success(t('sessions.transcriptAdded'));
+      notify.success(t('sessions.transcriptAdded'));
     },
     onError: (error: Error) => {
-      toast.error(i18n.t('errors.aiTranscriptFailed'));
+      notify.error(i18n.t('errors.aiTranscriptFailed'));
     },
   });
 }

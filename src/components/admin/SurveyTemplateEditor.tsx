@@ -27,7 +27,6 @@ import {
   useCreateSurveyDefinition,
   useUpdateSurveyDefinition,
 } from "@/hooks/useSurveys";
-import { toast } from "sonner";
 
 // Default ecosystem survey based on the provided PDF
 const ECOSYSTEM_SURVEY_TEMPLATE: SurveyQuestion[] = [

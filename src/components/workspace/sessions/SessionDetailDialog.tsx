@@ -31,7 +31,7 @@ import {
 import { useUpdateSession, useSessionActionItems, useWorkspaceMembers, useCreateActionItem } from '@/hooks/useSessions';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { downloadICSFile } from '@/lib/icsExport';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
 import { SessionFeedbackCard } from '@/components/sessions/SessionFeedbackCard';
@@ -78,7 +78,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
   const handleConvertDecisionsToActions = async () => {
     const text = (decisions || '').trim();
     if (!text) {
-      toast.error(t('sessions.noDecisionsToConvert', { defaultValue: 'Nenhuma decisão para converter.' }));
+      notify.error(t('sessions.noDecisionsToConvert', { defaultValue: 'Nenhuma decisão para converter.' }));
       return;
     }
     const lines = text
@@ -86,7 +86,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
       .map((l) => l.replace(/^\s*([-*•\d.)]+)\s*/, '').trim())
       .filter((l) => l.length > 2);
     if (lines.length === 0) {
-      toast.error(t('sessions.noDecisionsToConvert', { defaultValue: 'Nenhuma decisão para converter.' }));
+      notify.error(t('sessions.noDecisionsToConvert', { defaultValue: 'Nenhuma decisão para converter.' }));
       return;
     }
     let created = 0;
@@ -103,7 +103,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
       }
     }
     if (created > 0) {
-      toast.success(
+      notify.success(
         t('sessions.decisionsConverted', {
           defaultValue: '{{count}} ação(ões) criadas a partir das decisões.',
           count: created,
@@ -111,7 +111,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
       );
       refetchActions();
     } else {
-      toast.error(t('common.error'));
+      notify.error(t('common.error'));
     }
   };
 
@@ -139,7 +139,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
       .map(m => m.profile!.email) || [];
 
     if (recipientEmails.length === 0) {
-      toast.error(t('sessions.noWorkspaceMembersWithEmail'));
+      notify.error(t('sessions.noWorkspaceMembersWithEmail'));
       return;
     }
 
@@ -178,13 +178,13 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
 
       if (error) {
         logger.error('Failed to resend invites', {}, error);
-        toast.error(t('sessions.failedToResendInvites'));
+        notify.error(t('sessions.failedToResendInvites'));
       } else {
-        toast.success(t('sessions.sent', { length: recipientEmails.length }));
+        notify.success(t('sessions.sent', { length: recipientEmails.length }));
       }
     } catch (error) {
       logger.error('Resend error', {}, error);
-      toast.error(t('sessions.failedToResendInvites'));
+      notify.error(t('sessions.failedToResendInvites'));
     } finally {
       setIsResending(false);
     }
@@ -197,9 +197,9 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
         notes: notes.trim() || null,
         decisions: decisions.trim() || null,
       });
-      toast.success(t('sessions.sessionUpdated'));
+      notify.success(t('sessions.sessionUpdated'));
     } catch (error) {
-      toast.error(t('sessions.failedToUpdateSession'));
+      notify.error(t('sessions.failedToUpdateSession'));
     }
   };
 
@@ -213,16 +213,16 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
       durationMinutes: session.duration || 60,
       meetingLink: session.join_url || undefined,
     });
-    toast.success(t('sessions.icsExported', { defaultValue: 'Sessão exportada para calendário' }));
+    notify.success(t('sessions.icsExported', { defaultValue: 'Sessão exportada para calendário' }));
   };
 
   const handleCopyJoinUrl = async () => {
     if (!session.join_url) return;
     try {
       await navigator.clipboard.writeText(session.join_url);
-      toast.success(t('sessions.joinUrlCopied'));
+      notify.success(t('sessions.joinUrlCopied'));
     } catch {
-      toast.error(t('common.error'));
+      notify.error(t('common.error'));
     }
   };
 

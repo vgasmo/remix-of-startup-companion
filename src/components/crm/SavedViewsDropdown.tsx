@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useCrmSavedViews, useSaveCrmView, useDeleteCrmView, CrmSavedView } from '@/hooks/useCrmSavedViews';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface SavedViewsDropdownProps {
   viewType: 'crm' | 'backoffice';
@@ -48,21 +48,21 @@ export function SavedViewsDropdown({ viewType, currentFilters, onApplyView }: Sa
         filters: currentFilters,
         isDefault,
       });
-      toast.success(t('savedViews.saved'));
+      notify.success(t('savedViews.saved'));
       setSaveDialog(false);
       setViewName('');
       setIsDefault(false);
     } catch {
-      toast.error(t('savedViews.saveFailed'));
+      notify.error(t('savedViews.saveFailed'));
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await deleteView.mutateAsync(id);
-      toast.success(t('savedViews.deleted'));
+      notify.success(t('savedViews.deleted'));
     } catch {
-      toast.error(t('savedViews.deleteFailed'));
+      notify.error(t('savedViews.deleteFailed'));
     }
   };
 

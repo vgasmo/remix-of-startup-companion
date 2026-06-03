@@ -24,7 +24,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useQueryClient } from '@tanstack/react-query';
 import { logger } from '@/lib/logger';
 
@@ -60,7 +60,7 @@ export function MentorPostSessionFeedback({
   const handleStructureNotes = async () => {
     const rawText = [clarified, blocked, nextSteps].filter(Boolean).join('\n');
     if (!rawText.trim()) {
-      toast.error(t('mentorFeedback.structureEmpty', { defaultValue: 'Write some notes first.' }));
+      notify.error(t('mentorFeedback.structureEmpty', { defaultValue: 'Write some notes first.' }));
       return;
     }
     setStructuring(true);
@@ -77,9 +77,9 @@ export function MentorPostSessionFeedback({
       if (result?.summary) setClarified(result.summary);
       if (result?.action_items) setNextSteps(Array.isArray(result.action_items) ? result.action_items.join('\n') : result.action_items);
       if (result?.private_note) setBlocked(result.private_note);
-      toast.success(t('mentorFeedback.structured', { defaultValue: 'Notes structured. Please review before submitting.' }));
+      notify.success(t('mentorFeedback.structured', { defaultValue: 'Notes structured. Please review before submitting.' }));
     } catch {
-      toast.error(t('mentorFeedback.structureError', { defaultValue: 'Could not structure notes. Try again.' }));
+      notify.error(t('mentorFeedback.structureError', { defaultValue: 'Could not structure notes. Try again.' }));
     } finally {
       setStructuring(false);
     }
@@ -119,7 +119,7 @@ export function MentorPostSessionFeedback({
         metadata: { rating, has_blockers: !!blocked },
       });
 
-      toast.success(t('mentorFeedback.saved'));
+      notify.success(t('mentorFeedback.saved'));
       queryClient.invalidateQueries({ queryKey: ['session-feedback', sessionId] });
       onOpenChange(false);
       
@@ -130,7 +130,7 @@ export function MentorPostSessionFeedback({
       setRating(0);
     } catch (error) {
       logger.error('Failed to save feedback', {}, error);
-      toast.error(t('mentorFeedback.error'));
+      notify.error(t('mentorFeedback.error'));
     } finally {
       setSubmitting(false);
     }

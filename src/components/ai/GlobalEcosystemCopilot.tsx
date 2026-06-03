@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { supabaseClient } from '@/lib/supabaseClient';
 
 interface Message {
@@ -99,7 +99,7 @@ export function GlobalEcosystemCopilot() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       const accessToken = session?.access_token;
       if (!accessToken) {
-        toast.error(t('errors.sessionExpired', { defaultValue: 'Session expired. Please sign in again.' }));
+        notify.error(t('errors.sessionExpired', { defaultValue: 'Session expired. Please sign in again.' }));
         setIsThinking(false);
         return;
       }
@@ -120,16 +120,16 @@ export function GlobalEcosystemCopilot() {
       if (!resp.ok) {
         const errData = await resp.json().catch(() => ({}));
         if (resp.status === 429) {
-          toast.error(t('errors.rateLimitReached', { defaultValue: 'Rate limit reached. Please wait a few minutes.' }));
+          notify.error(t('errors.rateLimitReached', { defaultValue: 'Rate limit reached. Please wait a few minutes.' }));
         } else {
-          toast.error(t('errors.aiProcessingError', { defaultValue: 'Error processing with AI. Please try again.' }));
+          notify.error(t('errors.aiProcessingError', { defaultValue: 'Error processing with AI. Please try again.' }));
         }
         setIsThinking(false);
         return;
       }
 
       if (!resp.body) {
-        toast.error(t('errors.aiTryAgainLater', { defaultValue: 'Could not process your request. Please try again later.' }));
+        notify.error(t('errors.aiTryAgainLater', { defaultValue: 'Could not process your request. Please try again later.' }));
         setIsThinking(false);
         return;
       }

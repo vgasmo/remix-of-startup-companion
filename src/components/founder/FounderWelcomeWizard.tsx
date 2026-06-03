@@ -17,7 +17,7 @@ import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, FileText, Calendar, User, ArrowRight, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface Props {
   workspaceId: string | null;
@@ -59,7 +59,7 @@ export function FounderWelcomeWizard({ workspaceId }: Props) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['welcome-wizard-eligibility'] });
     },
-    onError: (e: any) => toast.error(e?.message ?? t('common.error', 'Erro')),
+    onError: (e: any) => notify.error(e?.message ?? t('common.error', 'Erro')),
   });
 
   const open = !!shouldShow;

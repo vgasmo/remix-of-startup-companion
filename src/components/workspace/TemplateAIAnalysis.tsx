@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { AiFallbackCard } from '@/components/ui/AiFallbackCard';
 
 interface AIAnalysis {
@@ -44,12 +44,12 @@ export function TemplateAIAnalysis({ instanceId, onApplyRecommendation }: Templa
       if (fnError) throw fnError;
       if (data.error) {
         setError(data.error);
-        toast.error(data.error);
+        notify.error(data.error);
         return;
       }
 
       setAnalysis(data.analysis);
-      toast.success(t('templates.aiAnalysisComplete', 'AI analysis complete'));
+      notify.success(t('templates.aiAnalysisComplete', 'AI analysis complete'));
     } catch (err: any) {
       const status = err?.status ?? err?.context?.status;
       if (status === 401 || status === 500 || status === 404) {
@@ -57,7 +57,7 @@ export function TemplateAIAnalysis({ instanceId, onApplyRecommendation }: Templa
       } else {
         const message = err.message || 'Failed to analyze template';
         setError(message);
-        toast.error(message);
+        notify.error(message);
       }
     } finally {
       setAnalyzing(false);

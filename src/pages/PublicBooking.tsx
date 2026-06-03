@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Clock, CheckCircle, AlertCircle, Building2, ArrowLeft, Upload, FileText, X, Globe } from 'lucide-react';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface TimeSlot {
   date: string;
@@ -142,7 +142,7 @@ export default function PublicBooking() {
       setStep('success');
     },
     onError: (err: Error) => {
-      toast.error(err.message);
+      notify.error(err.message);
     },
   });
 
@@ -182,7 +182,7 @@ export default function PublicBooking() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message || !formData.organization || !formData.has_tech || !formData.is_iies || !formData.vertical || !formData.stage || !formData.help_expectation || !formData.personal_intro || !formData.referral_source) {
-      toast.error(t('publicBooking.fillRequired'));
+      notify.error(t('publicBooking.fillRequired'));
       return;
     }
 
@@ -606,7 +606,7 @@ export default function PublicBooking() {
                       const file = e.target.files?.[0];
                       if (file) {
                         if (file.size > 10 * 1024 * 1024) {
-                          toast.error(t('publicBooking.fileTooLarge', { defaultValue: 'Ficheiro demasiado grande (máx. 10MB)' }));
+                          notify.error(t('publicBooking.fileTooLarge', { defaultValue: 'Ficheiro demasiado grande (máx. 10MB)' }));
                           return;
                         }
                         setPitchFile(file);

@@ -21,7 +21,7 @@ import {
   type TemplateSchema,
 } from '@/hooks/useTemplates';
 import { INITIAL_TEMPLATES } from '@/data/initialTemplates';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
@@ -69,7 +69,7 @@ export function AdminTemplatesManager() {
 
   const handleAssetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!canUploadAssets) {
-      toast.error(t('adminTemplates.uploadPermissionDenied', { defaultValue: 'You do not have permission to upload assets' }));
+      notify.error(t('adminTemplates.uploadPermissionDenied', { defaultValue: 'You do not have permission to upload assets' }));
       return;
     }
     
@@ -81,7 +81,7 @@ export function AdminTemplatesManager() {
     const isXlsx = fileName.endsWith('.xlsx');
     
     if (!isXlsm && !isXlsx) {
-      toast.error(t('adminTemplates.uploadExcelOnly', { defaultValue: 'Please upload an Excel file (.xlsm or .xlsx)' }));
+      notify.error(t('adminTemplates.uploadExcelOnly', { defaultValue: 'Please upload an Excel file (.xlsm or .xlsx)' }));
       return;
     }
 
@@ -108,10 +108,10 @@ export function AdminTemplatesManager() {
 
       const publicUrl = getTemplatePublicUrl();
       setAssetUrl(publicUrl);
-      toast.success(t('adminTemplates.uploadSuccess', { defaultValue: 'Template uploaded successfully' }));
+      notify.success(t('adminTemplates.uploadSuccess', { defaultValue: 'Template uploaded successfully' }));
     } catch (error: any) {
       logger.error('Upload error', {}, error);
-      toast.error(error.message || t('adminTemplates.uploadFailed', { defaultValue: 'Failed to upload template' }));
+      notify.error(error.message || t('adminTemplates.uploadFailed', { defaultValue: 'Failed to upload template' }));
     } finally {
       setIsUploadingAsset(false);
       if (assetFileInputRef.current) assetFileInputRef.current.value = '';
@@ -122,9 +122,9 @@ export function AdminTemplatesManager() {
     const url = getTemplatePublicUrl();
     try {
       await navigator.clipboard.writeText(url);
-      toast.success(t('adminTemplates.copiedToClipboard', { defaultValue: 'Copied to clipboard' }));
+      notify.success(t('adminTemplates.copiedToClipboard', { defaultValue: 'Copied to clipboard' }));
     } catch {
-      toast.error(t('adminTemplates.copyFailed', { defaultValue: 'Failed to copy' }));
+      notify.error(t('adminTemplates.copyFailed', { defaultValue: 'Failed to copy' }));
     }
   };
 
@@ -145,7 +145,7 @@ export function AdminTemplatesManager() {
 
   const handleSave = async () => {
     if (!formData.name.trim()) {
-      toast.error(t('adminTemplates.nameRequired', { defaultValue: 'Name is required' }));
+      notify.error(t('adminTemplates.nameRequired', { defaultValue: 'Name is required' }));
       return;
     }
 
@@ -155,7 +155,7 @@ export function AdminTemplatesManager() {
         schema = JSON.parse(formData.schema_json);
       }
     } catch {
-      toast.error(t('adminTemplates.invalidJson', { defaultValue: 'Invalid JSON in schema' }));
+      notify.error(t('adminTemplates.invalidJson', { defaultValue: 'Invalid JSON in schema' }));
       return;
     }
 
@@ -168,7 +168,7 @@ export function AdminTemplatesManager() {
           category: formData.category || null,
           schema_json: schema,
         });
-        toast.success(t('adminTemplates.templateUpdated', { defaultValue: 'Template updated' }));
+        notify.success(t('adminTemplates.templateUpdated', { defaultValue: 'Template updated' }));
       } else {
         await createTemplate.mutateAsync({
           name: formData.name,
@@ -177,12 +177,12 @@ export function AdminTemplatesManager() {
           schema_json: schema,
           is_global: true,
         });
-        toast.success(t('adminTemplates.templateCreated', { defaultValue: 'Template created' }));
+        notify.success(t('adminTemplates.templateCreated', { defaultValue: 'Template created' }));
       }
       setEditingTemplate(null);
       setIsCreating(false);
     } catch {
-      toast.error(t('adminTemplates.templatesFailed', { defaultValue: 'Failed to save template' }));
+      notify.error(t('adminTemplates.templatesFailed', { defaultValue: 'Failed to save template' }));
     }
   };
 
@@ -190,10 +190,10 @@ export function AdminTemplatesManager() {
     if (!deleteTarget) return;
     try {
       await deleteTemplate.mutateAsync(deleteTarget.id);
-      toast.success(t('adminTemplates.templateDeleted', { defaultValue: 'Template deleted' }));
+      notify.success(t('adminTemplates.templateDeleted', { defaultValue: 'Template deleted' }));
       setDeleteTarget(null);
     } catch {
-      toast.error(t('adminTemplates.deleteFailed', { defaultValue: 'Failed to delete template' }));
+      notify.error(t('adminTemplates.deleteFailed', { defaultValue: 'Failed to delete template' }));
     }
   };
 
@@ -213,9 +213,9 @@ export function AdminTemplatesManager() {
         }
       }
       await refetch();
-      toast.success(t('adminTemplates.seedSuccess', { defaultValue: 'Initial templates created' }));
+      notify.success(t('adminTemplates.seedSuccess', { defaultValue: 'Initial templates created' }));
     } catch {
-      toast.error(t('adminTemplates.seedFailed', { defaultValue: 'Failed to seed templates' }));
+      notify.error(t('adminTemplates.seedFailed', { defaultValue: 'Failed to seed templates' }));
     }
   };
 

@@ -32,7 +32,7 @@ import {
   Rocket,
   CalendarDays,
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import {
   useProgramSetupDraft,
   useCreateProgramDraft,
@@ -212,7 +212,7 @@ export default function ProgramSetupWizard() {
   const handleSaveAndContinue = async () => {
     await flushAutosave();
     handleNext();
-    toast.success(t('programSetup.progressSaved'));
+    notify.success(t('programSetup.progressSaved'));
   };
 
   const handleUpdateDraft = useCallback(async (updates: Partial<ProgramSetupDraft['draft_json']>) => {
@@ -268,7 +268,7 @@ export default function ProgramSetupWizard() {
       if (localTs > serverTs) {
         // Replay through the autosave path so it lands in server + clears local on success.
         handleUpdateDraftWithAutosave(parsed.data);
-        toast.info(t('programSetup.restoredFromBackup', 'Restaurámos as últimas edições não guardadas.'));
+        notify.info(t('programSetup.restoredFromBackup', 'Restaurámos as últimas edições não guardadas.'));
       } else {
         // Server is newer — backup is stale.
         try { localStorage.removeItem(localKey); } catch { /* noop */ }
@@ -304,7 +304,7 @@ export default function ProgramSetupWizard() {
       await flushAutosave();
       triggerConfetti();
       await publishDraft.mutateAsync(activeDraftId);
-      toast.success(t('programSetup.publishSuccess'));
+      notify.success(t('programSetup.publishSuccess'));
       setTimeout(() => navigate('/admin'), 1500);
     } catch (error) {
       publishedRef.current = false;

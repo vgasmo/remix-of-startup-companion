@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Plus, Pencil, Trash2, Download, Search, Phone, CheckCircle, Upload, FileText, Loader2, AlertTriangle, Mail, Send, Archive, ArchiveRestore } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { startupSchema } from '@/lib/validations';
 import { logger } from '@/lib/logger';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -105,10 +105,10 @@ export function AdminStartupsManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-startups'] });
-      toast.success(t('admin.startupsManager.startupCreated'));
+      notify.success(t('admin.startupsManager.startupCreated'));
       resetForm();
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const updateMutation = useMutation({
@@ -128,10 +128,10 @@ export function AdminStartupsManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-startups'] });
-      toast.success(t('admin.startupsManager.startupUpdated'));
+      notify.success(t('admin.startupsManager.startupUpdated'));
       resetForm();
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   // Soft-archive mutation (default destructive action). Restorable via undo toast or
@@ -151,7 +151,7 @@ export function AdminStartupsManager() {
     },
     onSuccess: (id) => {
       queryClient.invalidateQueries({ queryKey: ['admin-startups'] });
-      toast.success(t('admin.startupsManager.startupArchived'), {
+      notify.success(t('admin.startupsManager.startupArchived'), {
         duration: 8000,
         action: {
           label: t('common.undo'),
@@ -159,7 +159,7 @@ export function AdminStartupsManager() {
         },
       });
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const restoreMutation = useMutation({
@@ -172,9 +172,9 @@ export function AdminStartupsManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-startups'] });
-      toast.success(t('admin.startupsManager.startupRestored'));
+      notify.success(t('admin.startupsManager.startupRestored'));
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   // Permanent delete remains available but is gated behind an explicit confirm
@@ -186,9 +186,9 @@ export function AdminStartupsManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-startups'] });
-      toast.success(t('admin.startupsManager.startupDeleted'));
+      notify.success(t('admin.startupsManager.startupDeleted'));
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const resetForm = () => {
@@ -205,11 +205,11 @@ export function AdminStartupsManager() {
     // Validate file type
     const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
     if (!allowedTypes.includes(file.type)) {
-      toast.error(t('admin.startupsManager.invalidFileType'));
+      notify.error(t('admin.startupsManager.invalidFileType'));
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast.error(t('admin.startupsManager.fileTooLarge'));
+      notify.error(t('admin.startupsManager.fileTooLarge'));
       return;
     }
 
@@ -230,9 +230,9 @@ export function AdminStartupsManager() {
         .getPublicUrl(filePath);
 
       setFormData(prev => ({ ...prev, startup_portugal_document_path: publicUrl }));
-      toast.success(t('admin.startupsManager.documentUploaded'));
+      notify.success(t('admin.startupsManager.documentUploaded'));
     } catch (error: any) {
-      toast.error(`${t('common.error')}: ${error.message}`);
+      notify.error(`${t('common.error')}: ${error.message}`);
     } finally {
       setIsUploadingDoc(false);
       if (docInputRef.current) docInputRef.current.value = '';
@@ -245,7 +245,7 @@ export function AdminStartupsManager() {
 
     // Validate Startup Portugal document requirement
     if (formData.has_startup_portugal_status && !formData.startup_portugal_document_path) {
-      toast.error(t('admin.startupsManager.documentRequired'));
+      notify.error(t('admin.startupsManager.documentRequired'));
       return;
     }
 
@@ -259,7 +259,7 @@ export function AdminStartupsManager() {
         }
       });
       setValidationErrors(errors);
-      toast.error(parseResult.error.errors[0]?.message || 'Validation error');
+      notify.error(parseResult.error.errors[0]?.message || 'Validation error');
       return;
     }
 
@@ -305,7 +305,7 @@ export function AdminStartupsManager() {
   // Export to CSV
   const handleExport = () => {
     if (!filteredStartups?.length) {
-      toast.error(t('admin.startupsManager.noDataToExport'));
+      notify.error(t('admin.startupsManager.noDataToExport'));
       return;
     }
 
@@ -336,20 +336,20 @@ export function AdminStartupsManager() {
     link.href = URL.createObjectURL(blob);
     link.download = `startups-export-${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
-    toast.success(t('admin.startupsManager.exported', { count: filteredStartups.length }));
+    notify.success(t('admin.startupsManager.exported', { count: filteredStartups.length }));
   };
 
   const uniqueStages = [...new Set(startups?.flatMap(s => s.workspaces?.map(w => w.stage) || []).filter(Boolean))];
 
   const handleSendInvite = async (startup: any) => {
     if (!startup.main_contact_email) {
-      toast.error(t('admin.startupsManager.noEmailForInvite'));
+      notify.error(t('admin.startupsManager.noEmailForInvite'));
       return;
     }
     
     const workspace = startup.workspaces?.[0];
     if (!workspace?.id) {
-      toast.error(t('admin.startupsManager.noWorkspaceForInvite'));
+      notify.error(t('admin.startupsManager.noWorkspaceForInvite'));
       return;
     }
 
@@ -364,10 +364,10 @@ export function AdminStartupsManager() {
       });
 
       if (error) throw error;
-      toast.success(t('invite.sentTo') + ' ' + startup.main_contact_email);
+      notify.success(t('invite.sentTo') + ' ' + startup.main_contact_email);
     } catch (err: any) {
       logger.error('Failed to send invite', {}, err);
-      toast.error(t('invite.error'));
+      notify.error(t('invite.error'));
     } finally {
       setSendingInviteFor(null);
     }
@@ -390,13 +390,13 @@ export function AdminStartupsManager() {
           .eq('id', workspaceId);
       }
       
-      toast.success(t('admin.stageUpdateSuccess', { count: workspaceIds.length, stage: bulkStage, defaultValue: `${workspaceIds.length} workspaces atualizados para ${bulkStage}` }));
+      notify.success(t('admin.stageUpdateSuccess', { count: workspaceIds.length, stage: bulkStage, defaultValue: `${workspaceIds.length} workspaces atualizados para ${bulkStage}` }));
       setSelectedStartups(new Set());
       setBulkStage('');
       setIsBulkStageOpen(false);
       queryClient.invalidateQueries({ queryKey: ['admin-startups'] });
     } catch (err: any) {
-      toast.error(t('admin.stageUpdateFailed', 'Erro ao atualizar estágios'));
+      notify.error(t('admin.stageUpdateFailed', 'Erro ao atualizar estágios'));
     } finally {
       setIsBulkProcessing(false);
     }

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Mic, MicOff, Loader2, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 
@@ -50,7 +50,7 @@ export function VoiceToTextButton({ onTranscript, disabled = false }: VoiceToTex
     try {
       // Check if MediaRecorder is supported
       if (!window.MediaRecorder) {
-        toast.error(t('sessions.browserNotSupported', 'Your browser does not support audio recording'));
+        notify.error(t('sessions.browserNotSupported', 'Your browser does not support audio recording'));
         return;
       }
 
@@ -101,11 +101,11 @@ export function VoiceToTextButton({ onTranscript, disabled = false }: VoiceToTex
     } catch (error: any) {
       logger.error('Error accessing microphone', {}, error);
       if (error.name === 'NotAllowedError') {
-        toast.error(t('sessions.microphonePermissionDenied', 'Microphone permission denied. Please allow access.'));
+        notify.error(t('sessions.microphonePermissionDenied', 'Microphone permission denied. Please allow access.'));
       } else if (error.name === 'NotFoundError') {
-        toast.error(t('sessions.noMicrophoneFound', 'No microphone found on this device.'));
+        notify.error(t('sessions.noMicrophoneFound', 'No microphone found on this device.'));
       } else {
-        toast.error(t('sessions.microphoneError'));
+        notify.error(t('sessions.microphoneError'));
       }
     }
   }, [t, getSupportedMimeType]);
@@ -150,19 +150,19 @@ export function VoiceToTextButton({ onTranscript, disabled = false }: VoiceToTex
 
       if (data?.text) {
         onTranscript(data.text);
-        toast.success(t('sessions.transcriptionComplete'));
+        notify.success(t('sessions.transcriptionComplete'));
       } else {
-        toast.error(t('sessions.noSpeechDetected'));
+        notify.error(t('sessions.noSpeechDetected'));
       }
     } catch (error: any) {
       logger.error('Transcription error', {}, error);
       
       if (error.message?.includes('429')) {
-        toast.error(t('sessions.rateLimitError'));
+        notify.error(t('sessions.rateLimitError'));
       } else if (error.message?.includes('402')) {
-        toast.error(t('sessions.creditsError'));
+        notify.error(t('sessions.creditsError'));
       } else {
-        toast.error(t('sessions.transcriptionFailed', 'Transcription failed. Check if the AI service is configured in System Settings.'));
+        notify.error(t('sessions.transcriptionFailed', 'Transcription failed. Check if the AI service is configured in System Settings.'));
       }
     } finally {
       setIsProcessing(false);

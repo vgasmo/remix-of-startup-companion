@@ -13,7 +13,7 @@ import { CardHeader } from '@/components/ui/card';
 import {
   Plus, CheckCircle2, Sparkles, ChevronDown, Lightbulb, AlertTriangle, ArrowRight, Calendar, FileText,
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface SessionInsightsSectionProps {
   workspaceId: string;
@@ -37,9 +37,9 @@ export function SessionInsightsSection({ workspaceId, startupId, canManage, user
   const handleSaveAsNote = async (content: string, sessionTitle: string) => {
     try {
       await createNote.mutateAsync({ workspaceId, content: `[From session: ${sessionTitle}]\n\n${content}`, isPrivate: false });
-      toast.success(t('notes.savedAsNote', { defaultValue: 'Saved as note' }));
+      notify.success(t('notes.savedAsNote', { defaultValue: 'Saved as note' }));
     } catch {
-      toast.error(t('notes.failedToSave', { defaultValue: 'Failed to save note' }));
+      notify.error(t('notes.failedToSave', { defaultValue: 'Failed to save note' }));
     }
   };
 
@@ -51,9 +51,9 @@ export function SessionInsightsSection({ workspaceId, startupId, canManage, user
         priority: suggestion.priority || 'medium', due_date: null, assignee_id: userId,
         workspace_id: workspaceId, related_startup_id: startupId || null,
       });
-      toast.success(t('notes.taskCreated'));
+      notify.success(t('notes.taskCreated'));
     } catch {
-      toast.error(t('notes.failedToCreate'));
+      notify.error(t('notes.failedToCreate'));
     }
   };
 

@@ -5,7 +5,7 @@
  */
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import confetti from 'canvas-confetti';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -80,7 +80,7 @@ export function useCelebration() {
 
       const c = COPY[event];
       fireConfetti();
-      toast.success(t(c.titleKey, c.fallback.title), {
+      notify.success(t(c.titleKey, c.fallback.title), {
         description: t(c.descKey, c.fallback.desc),
         duration: 5000,
       });

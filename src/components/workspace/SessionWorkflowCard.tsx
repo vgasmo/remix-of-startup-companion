@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useSessionWorkflow, useUpdateSessionWorkflow } from '@/hooks/useGovernance';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface SessionWorkflowCardProps {
   sessionId: string;
@@ -120,7 +120,7 @@ export function SessionWorkflowCard({
         updates: { [itemId]: !currentValue },
       });
     } catch (error) {
-      toast.error(t('sessions.checklistUpdateFailed', 'Failed to update checklist'));
+      notify.error(t('sessions.checklistUpdateFailed', 'Failed to update checklist'));
     } finally {
       setIsUpdating(null);
     }

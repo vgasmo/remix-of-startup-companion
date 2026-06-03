@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Upload } from 'lucide-react';
 import {
   Dialog,
@@ -68,11 +68,11 @@ export function UploadSupportMaterialDialog({
 
   const handleSubmit = async () => {
     if (!title.trim()) {
-      toast.error(t('consultorTools.upload.titleRequired'));
+      notify.error(t('consultorTools.upload.titleRequired'));
       return;
     }
     if (!file) {
-      toast.error(t('consultorTools.upload.fileRequired'));
+      notify.error(t('consultorTools.upload.fileRequired'));
       return;
     }
     setSubmitting(true);
@@ -102,12 +102,12 @@ export function UploadSupportMaterialDialog({
       // 3) Patch material row with file_path
       await updateMaterial.mutateAsync({ id: created.id, file_path: filePath });
 
-      toast.success(t('consultorTools.upload.success'));
+      notify.success(t('consultorTools.upload.success'));
       reset();
       onOpenChange(false);
     } catch (err) {
       logger.error('Failed to upload support material', {}, err as Error);
-      toast.error(
+      notify.error(
         t('consultorTools.upload.error'),
         { description: (err as Error).message }
       );

@@ -22,7 +22,7 @@ import { useAllDocuments, AggregatedDocument } from '@/hooks/useAllDocuments';
 import { useGetDocumentUrl } from '@/hooks/useDocuments';
 import { useTemplates } from '@/hooks/useTemplates';
 import { getLocalizedTemplateMeta } from '@/lib/templateCatalogI18n';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 const DOCUMENT_CATEGORY_KEYS = [
   'all', 'pitch_deck', 'financial_model', 'legal', 'marketing', 'product', 'team', 'other',
@@ -105,7 +105,7 @@ export default function Documents() {
         const url = await getDocumentUrl(doc.file_path);
         window.open(url, '_blank');
       } catch {
-        toast.error(t('documents.downloadFailed', { defaultValue: 'Falha no download' }));
+        notify.error(t('documents.downloadFailed', { defaultValue: 'Falha no download' }));
       }
     }
   };

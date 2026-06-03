@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
@@ -80,10 +80,10 @@ export function useUpdateWorkspaceOwner() {
     onSuccess: (_, params) => {
       queryClient.invalidateQueries({ queryKey: ['workspace-owner', params.workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      toast.success(t('workspace.workspaceUpdated'));
+      notify.success(t('workspace.workspaceUpdated'));
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -133,7 +133,7 @@ export function useMarkContact() {
     onSuccess: (_, workspaceId) => {
       queryClient.invalidateQueries({ queryKey: ['workspace-owner', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      toast.success(t('workspace.contactLogged'));
+      notify.success(t('workspace.contactLogged'));
     },
   });
 }

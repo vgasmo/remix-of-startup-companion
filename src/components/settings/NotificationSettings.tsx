@@ -5,7 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Bell, Mail } from 'lucide-react';
 
 export function NotificationSettings() {
@@ -26,27 +26,27 @@ export function NotificationSettings() {
   const handleToggleDigest = async (enabled: boolean) => {
     try {
       await updatePrefs.mutateAsync({ email_digest_enabled: enabled });
-      toast.success(enabled ? t('settingsPage.emailDigest') + ' ' + t('common.success').toLowerCase() : t('settingsPage.emailDigest') + ' disabled');
+      notify.success(enabled ? t('settingsPage.emailDigest') + ' ' + t('common.success').toLowerCase() : t('settingsPage.emailDigest') + ' disabled');
     } catch (error: any) {
-      toast.error(error.message || t('common.errorGeneric'));
+      notify.error(error.message || t('common.errorGeneric'));
     }
   };
 
   const handleFrequencyChange = async (frequency: string) => {
     try {
       await updatePrefs.mutateAsync({ digest_frequency: frequency });
-      toast.success(t('common.success'));
+      notify.success(t('common.success'));
     } catch (error: any) {
-      toast.error(error.message || t('common.errorGeneric'));
+      notify.error(error.message || t('common.errorGeneric'));
     }
   };
 
   const handleDayChange = async (day: string) => {
     try {
       await updatePrefs.mutateAsync({ digest_day: parseInt(day) });
-      toast.success(t('common.success'));
+      notify.success(t('common.success'));
     } catch (error: any) {
-      toast.error(error.message || t('common.errorGeneric'));
+      notify.error(error.message || t('common.errorGeneric'));
     }
   };
 

@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePrograms } from '@/hooks/useWorkspaces';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { StartupStage } from '@/types/database';
 import { logger } from '@/lib/logger';
 
@@ -93,7 +93,7 @@ export function CreateStartupDialog({ open, onOpenChange }: CreateStartupDialogP
 
       if (createError) throw createError;
 
-      toast.success(t('createStartup.successMessage'));
+      notify.success(t('createStartup.successMessage'));
       onOpenChange(false);
 
       const workspaceId = (data as any)?.workspace_id as string | undefined;

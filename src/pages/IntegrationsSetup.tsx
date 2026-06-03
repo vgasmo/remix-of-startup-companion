@@ -19,7 +19,7 @@ import {
   Copy,
   Info,
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 // Microsoft Teams icon
 const TeamsIcon = ({ className }: { className?: string }) => (
@@ -343,9 +343,9 @@ export default function IntegrationsSetup() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success(c.copied);
+      notify.success(c.copied);
     } catch {
-      toast.error(c.copyError);
+      notify.error(c.copyError);
     }
   };
 

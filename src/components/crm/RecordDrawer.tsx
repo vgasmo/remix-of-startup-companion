@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { format, isThisWeek, isThisMonth } from 'date-fns';
@@ -94,7 +94,7 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (detail?.itemId === item?.id) {
-        toast(t('crm.leadContracted', { name: detail.name, defaultValue: '{{name}} contratado! Criar workspace?' }), {
+        notify.info(t('crm.leadContracted', { name: detail.name, defaultValue: '{{name}} contratado! Criar workspace?' }), {
           action: {
             label: t('crm.createWorkspace', 'Criar Workspace'),
             onClick: () => {
@@ -448,9 +448,9 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
                     if (data?.error) throw new Error(data.error);
                     const url = data.url || `${window.location.origin}/contract-signing/${data.token}`;
                     await navigator.clipboard.writeText(url);
-                    toast.success(t('crm.contractLinkCopied', { defaultValue: 'Link público do contrato copiado! Envie ao founder por email.' }));
+                    notify.success(t('crm.contractLinkCopied', { defaultValue: 'Link público do contrato copiado! Envie ao founder por email.' }));
                   } catch (err: any) {
-                    toast.error(err?.message || 'Erro ao gerar link');
+                    notify.error(err?.message || 'Erro ao gerar link');
                   }
                 }}
               />
@@ -713,9 +713,9 @@ function IntakeActionsForDrawer({ item, user }: { item: FunnelItem; user: any })
                 });
                 await navigator.clipboard.writeText(result.publicUrl);
                 if (result.emailSent) {
-                  toast.success(t('crm.pedidoDeContrataçãoEnviadoPor'));
+                  notify.success(t('crm.pedidoDeContrataçãoEnviadoPor'));
                 } else {
-                  toast.warning(t('crm.intakeCreatedNoEmail', 'Intake criado mas o email não foi enviado. O link foi copiado — pode enviar manualmente.'), {
+                  notify.warn(t('crm.intakeCreatedNoEmail', 'Intake criado mas o email não foi enviado. O link foi copiado — pode enviar manualmente.'), {
                     duration: 8000,
                     action: {
                       label: t('crm.resend', 'Reenviar'),
@@ -732,9 +732,9 @@ function IntakeActionsForDrawer({ item, user }: { item: FunnelItem; user: any })
                             },
                           });
                           if (error) throw error;
-                          toast.success(t('crm.emailReenviadoComSucesso'));
+                          notify.success(t('crm.emailReenviadoComSucesso'));
                         } catch {
-                          toast.error(t('crm.falhaAoReenviarUseO'));
+                          notify.error(t('crm.falhaAoReenviarUseO'));
                         }
                       },
                     },
@@ -776,12 +776,12 @@ function IntakeActionsForDrawer({ item, user }: { item: FunnelItem; user: any })
                 onClick={async () => {
                   const { data: freshToken, error } = await supabase.rpc('staff_rotate_intake_token', { p_intake_id: intake.id });
                   if (error || !freshToken) {
-                    toast.error(t('crm.linkCopyFailed', 'Falha ao gerar o link'));
+                    notify.error(t('crm.linkCopyFailed', 'Falha ao gerar o link'));
                     return;
                   }
                   const url = `${window.location.origin}/contract-intake/${freshToken}`;
                   await navigator.clipboard.writeText(url);
-                  toast.success(t('crm.linkCopiado'));
+                  notify.success(t('crm.linkCopiado'));
                 }}
               >
                 <Copy className="h-3 w-3" />

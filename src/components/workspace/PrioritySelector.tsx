@@ -12,7 +12,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { PriorityBadge, type WorkspacePriority } from '@/components/ui/PriorityBadge';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 
@@ -96,11 +96,11 @@ export function PrioritySelector({
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] });
       
-      toast.success(t('priority.updated'));
+      notify.success(t('priority.updated'));
       setIsOpen(false);
     } catch (error) {
       logger.error('Failed to update priority', {}, error);
-      toast.error(t('priority.updateFailed'));
+      notify.error(t('priority.updateFailed'));
     } finally {
       setIsSaving(false);
     }

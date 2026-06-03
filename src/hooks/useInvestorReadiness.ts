@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import type { Database } from '@/integrations/supabase/types';
 
 type InvestorReadinessItem = Database['public']['Tables']['investor_readiness_items']['Row'];
@@ -98,7 +98,7 @@ export function useUpdateReadinessStatus() {
       queryClient.invalidateQueries({ queryKey: ['workspace-readiness-status', variables.workspaceId] });
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }

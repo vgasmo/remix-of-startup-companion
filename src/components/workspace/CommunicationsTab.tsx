@@ -29,7 +29,7 @@ import {
   useAddCommunication 
 } from '@/hooks/useCommunicationLog';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface CommunicationsTabProps {
   workspaceId: string;
@@ -52,7 +52,7 @@ export function CommunicationsTab({ workspaceId }: CommunicationsTabProps) {
   const handleCopyAlias = () => {
     if (emailAlias?.alias) {
       navigator.clipboard.writeText(`${emailAlias.alias}@yourdomain.com`);
-      toast.success(t('communications.aliasCopied'));
+      notify.success(t('communications.aliasCopied'));
     }
   };
 
@@ -62,7 +62,7 @@ export function CommunicationsTab({ workspaceId }: CommunicationsTabProps) {
 
   const handleAddCommunication = async () => {
     if (!newComm.subject.trim()) {
-      toast.error(t('communications.subjectRequired'));
+      notify.error(t('communications.subjectRequired'));
       return;
     }
     

@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Bookmark, Star, Trash2, Plus } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
@@ -44,7 +44,7 @@ export function SavedFiltersDropdown({ currentFilters, onApplyFilter }: SavedFil
 
   const handleSave = async () => {
     if (!filterName.trim()) {
-      toast.error(t('workspace.pleaseEnterAFilterName'));
+      notify.error(t('workspace.pleaseEnterAFilterName'));
       return;
     }
 
@@ -54,12 +54,12 @@ export function SavedFiltersDropdown({ currentFilters, onApplyFilter }: SavedFil
         filters: currentFilters,
         isDefault: setAsDefault,
       });
-      toast.success(t('workspace.filterSaved'));
+      notify.success(t('workspace.filterSaved'));
       setShowSaveDialog(false);
       setFilterName('');
       setSetAsDefault(false);
     } catch {
-      toast.error(t('workspace.failedToSaveFilter'));
+      notify.error(t('workspace.failedToSaveFilter'));
     }
   };
 
@@ -67,9 +67,9 @@ export function SavedFiltersDropdown({ currentFilters, onApplyFilter }: SavedFil
     e.stopPropagation();
     try {
       await deleteFilter.mutateAsync(id);
-      toast.success(t('workspace.filterDeleted'));
+      notify.success(t('workspace.filterDeleted'));
     } catch {
-      toast.error(t('workspace.failedToDeleteFilter'));
+      notify.error(t('workspace.failedToDeleteFilter'));
     }
   };
 
@@ -77,9 +77,9 @@ export function SavedFiltersDropdown({ currentFilters, onApplyFilter }: SavedFil
     e.stopPropagation();
     try {
       await setDefaultFilter.mutateAsync(id);
-      toast.success(t('workspace.defaultFilterUpdated'));
+      notify.success(t('workspace.defaultFilterUpdated'));
     } catch {
-      toast.error(t('workspace.failedToSetDefault'));
+      notify.error(t('workspace.failedToSetDefault'));
     }
   };
 

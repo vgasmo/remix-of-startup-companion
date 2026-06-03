@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sparkles, TrendingUp, ArrowRight, Loader2, RefreshCw } from 'lucide-react';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { AiFallbackCard } from '@/components/ui/AiFallbackCard';
 
 interface RelationshipRecapCardProps {
@@ -61,7 +61,7 @@ export function RelationshipRecapCard({ workspaceId }: RelationshipRecapCardProp
         // Don't toast on expected service-unavailable — fallback card is enough
       } else {
         setError(true);
-        toast.error(t('workspace.relationshipRecap.error', { defaultValue: 'Não foi possível gerar o resumo. Tente mais tarde.' }));
+        notify.error(t('workspace.relationshipRecap.error', { defaultValue: 'Não foi possível gerar o resumo. Tente mais tarde.' }));
       }
     } finally {
       setLoading(false);

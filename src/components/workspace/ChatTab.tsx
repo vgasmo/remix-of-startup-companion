@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { format } from 'date-fns';
 
 interface ChatTabProps {
@@ -216,7 +216,7 @@ export function ChatTab({ workspaceId }: ChatTabProps) {
       queryClient.invalidateQueries({ queryKey: ['chat-messages', conversation?.id] });
     },
     onError: () => {
-      toast.error(t('chat.sendError', 'Failed to send message'));
+      notify.error(t('chat.sendError', 'Failed to send message'));
     },
   });
 

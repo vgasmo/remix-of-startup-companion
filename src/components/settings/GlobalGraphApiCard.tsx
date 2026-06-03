@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { 
   CheckCircle2, 
   ExternalLink, 
@@ -60,17 +60,17 @@ export function GlobalGraphApiCard() {
 
   const handleSaveCredentials = async () => {
     if (!tenantId || !clientId) {
-      toast.error(t('settings.tenantIdAndClientId'));
+      notify.error(t('settings.tenantIdAndClientId'));
       return;
     }
 
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(tenantId)) {
-      toast.error(t('settings.invalidTenantIdFormatShould'));
+      notify.error(t('settings.invalidTenantIdFormatShould'));
       return;
     }
     if (!uuidRegex.test(clientId)) {
-      toast.error(t('settings.invalidClientIdFormatShould'));
+      notify.error(t('settings.invalidClientIdFormatShould'));
       return;
     }
 
@@ -82,7 +82,7 @@ export function GlobalGraphApiCard() {
 
   const handleToggle = async (enabled: boolean) => {
     if (enabled && !isConfigured) {
-      toast.error(t('settings.pleaseConfigureAzureAdCredentials'));
+      notify.error(t('settings.pleaseConfigureAzureAdCredentials'));
       return;
     }
     await toggleEnabled.mutateAsync(enabled);
@@ -90,7 +90,7 @@ export function GlobalGraphApiCard() {
 
   const handleTestGraph = async () => {
     if (!testEmail || !testEmail.includes('@')) {
-      toast.error(t('settings.enterAValidConsultantEmail'));
+      notify.error(t('settings.enterAValidConsultantEmail'));
       return;
     }
 
@@ -105,17 +105,17 @@ export function GlobalGraphApiCard() {
       }
 
       if (data?.success) {
-        toast.success(
+        notify.success(
           data.teams_url 
             ? `✓ Test passed! Teams URL: ${data.teams_url.slice(0, 50)}...` 
             : '✓ Event created and deleted successfully'
         );
       } else {
-        toast.error(data?.error || 'Test failed - check console for details');
+        notify.error(data?.error || 'Test failed - check console for details');
       }
     } catch (err: any) {
       logger.error('[GlobalGraphApiCard] Test failed', {}, err);
-      toast.error(err.message || 'Failed to run test - are you logged in as admin?');
+      notify.error(err.message || 'Failed to run test - are you logged in as admin?');
     } finally {
       setIsTesting(false);
     }

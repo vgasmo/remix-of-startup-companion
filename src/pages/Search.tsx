@@ -16,7 +16,7 @@ import { useGlobalSearch, useTags, useSaveSearch, useSavedSearches, useDeleteSav
 import { useWorkspaces, ALL_WORKSPACE_STATUSES } from '@/hooks/useWorkspaces';
 import { useAuth } from '@/contexts/AuthContext';
 import { Switch } from '@/components/ui/switch';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 const RESULT_TYPES = [
   { key: 'session', label: 'Sessions', icon: Calendar },
@@ -90,7 +90,7 @@ export default function SearchPage() {
 
   const handleSaveSearch = () => {
     if (!searchName.trim()) {
-      toast.error(t('search.enterName', 'Introduza um nome'));
+      notify.error(t('search.enterName', 'Introduza um nome'));
       return;
     }
     saveSearch.mutate({
@@ -98,7 +98,7 @@ export default function SearchPage() {
       filters: searchFilters,
     }, {
       onSuccess: () => {
-        toast.success(t('search.saved', 'Pesquisa guardada'));
+        notify.success(t('search.saved', 'Pesquisa guardada'));
         setSaveDialogOpen(false);
         setSearchName('');
       },
@@ -114,7 +114,7 @@ export default function SearchPage() {
       tagIds: savedFilters.tagIds || [],
       dateRange: savedFilters.dateRange,
     });
-    toast.success(t('search.loaded', { name: saved.name, defaultValue: `Carregada: ${saved.name}` }));
+    notify.success(t('search.loaded', { name: saved.name, defaultValue: `Carregada: ${saved.name}` }));
   };
 
   const getResultIcon = (type: string) => {

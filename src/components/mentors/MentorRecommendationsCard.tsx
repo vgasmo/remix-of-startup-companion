@@ -21,7 +21,7 @@ import { Label } from '@/components/ui/label';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface MentorRecommendationsCardProps {
   workspaceId: string;
@@ -90,20 +90,20 @@ export function MentorRecommendationsCard({ workspaceId, stage, className }: Men
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success(t('mentors.interestExpressed', 'Interest expressed! Your request has been sent.'));
+      notify.success(t('mentors.interestExpressed', 'Interest expressed! Your request has been sent.'));
       queryClient.invalidateQueries({ queryKey: ['mentor-requests'] });
       setShowInterestDialog(false);
       setSelectedMentors([]);
       setMessage('');
     },
     onError: () => {
-      toast.error(t('mentors.failedToExpress', 'Failed to express interest. Please try again.'));
+      notify.error(t('mentors.failedToExpress', 'Failed to express interest. Please try again.'));
     },
   });
 
   const handleExpressInterest = () => {
     if (selectedMentors.length === 0) {
-      toast.error(t('mentors.selectAtLeastOne', 'Please select at least one mentor.'));
+      notify.error(t('mentors.selectAtLeastOne', 'Please select at least one mentor.'));
       return;
     }
     expressInterest.mutate({ mentorIds: selectedMentors, message });

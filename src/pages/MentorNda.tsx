@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Shield, FileText } from 'lucide-react';
 import { BackToHomeLink } from '@/components/ui/BackToHomeLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -88,7 +88,7 @@ export default function MentorNda() {
   
   const handleSubmit = async () => {
     if (!accepted) {
-      toast.error(t('nda.mustAccept'));
+      notify.error(t('nda.mustAccept'));
       return;
     }
     
@@ -107,11 +107,11 @@ export default function MentorNda() {
         throw new Error(data.error);
       }
       
-      toast.success(t('nda.acceptedSuccess'));
+      notify.success(t('nda.acceptedSuccess'));
       navigate('/my-workspaces');
     } catch (error: any) {
       logger.error('NDA submission error', {}, error);
-      toast.error(error.message || t('nda.failedToAccept'));
+      notify.error(error.message || t('nda.failedToAccept'));
     } finally {
       setIsSubmitting(false);
     }

@@ -23,7 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 
 type Bi = { en: string; pt: string };
@@ -560,7 +560,7 @@ export function SessionFrameworksTab() {
       )
       .join('\n\n');
     navigator.clipboard.writeText(text);
-    toast.success(t('consultorTools.questionsCopied'));
+    notify.success(t('consultorTools.questionsCopied'));
   };
 
   const copyAgenda = (framework: SessionFramework) => {
@@ -568,7 +568,7 @@ export function SessionFrameworksTab() {
       .map((s) => `## ${pick(lang, s.name)} (${s.duration})\n${pick(lang, s.objectives).map((o) => `- ${o}`).join('\n')}`)
       .join('\n\n')}`;
     navigator.clipboard.writeText(text);
-    toast.success(t('consultorTools.agendaCopied'));
+    notify.success(t('consultorTools.agendaCopied'));
   };
 
   return (

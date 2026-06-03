@@ -12,7 +12,7 @@ import {
 import { useDocuments, useUploadDocument } from '@/hooks/useDocuments';
 import { useSearchParams } from 'react-router-dom';
 import { DocumentReviewPanel, DocumentReviewBadge } from './DocumentReviewPanel';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface DataroomChecklistProps {
   workspaceId: string;
@@ -74,10 +74,10 @@ export function DataroomChecklist({ workspaceId, canWrite, isStaff, isMentor }: 
         category: uploadItem.categoryKey,
         description: t(uploadItem.labelKey, { defaultValue: uploadItem.id }),
       });
-      toast.success(t('documents.uploadSuccess', { defaultValue: 'Document uploaded successfully' }));
+      notify.success(t('documents.uploadSuccess', { defaultValue: 'Document uploaded successfully' }));
       setUploadItem(null);
     } catch {
-      toast.error(t('documents.uploadFailed', { defaultValue: 'Upload failed' }));
+      notify.error(t('documents.uploadFailed', { defaultValue: 'Upload failed' }));
     }
     if (fileInputRef.current) fileInputRef.current.value = '';
   };

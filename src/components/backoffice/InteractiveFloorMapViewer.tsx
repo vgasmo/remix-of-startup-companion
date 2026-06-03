@@ -10,7 +10,7 @@ import { MapPin, Edit2, Eye, X, Building2, Users, Check, Trash2, Square, Pentago
 import { cn } from '@/lib/utils';
 import { type Room, type FloorMap, type RoomShapeRect, type RoomShapePolygon, useUpdateRoom } from '@/hooks/useBackoffice';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { format } from 'date-fns';
 import { renderPdfToImage, isPdfFile } from '@/lib/pdfRenderer';
 import { logger } from '@/lib/logger';
@@ -77,7 +77,7 @@ export function InteractiveFloorMapViewer({
               setDisplayImageUrl(result.dataUrl);
             } catch (pdfError) {
               logger.error('Failed to render PDF', {}, pdfError);
-              toast.error(t('admin.backoffice.pdfRenderError', 'Erro ao renderizar PDF'));
+              notify.error(t('admin.backoffice.pdfRenderError', 'Erro ao renderizar PDF'));
               setDisplayImageUrl('');
             }
           } else {
@@ -104,7 +104,7 @@ export function InteractiveFloorMapViewer({
       { id: selectedRoomForPin, pin_x: x, pin_y: y, floor_map_id: floorMap?.id },
       {
         onSuccess: () => {
-          toast.success(t('admin.backoffice.pinPlaced', 'Pin placed successfully'));
+          notify.success(t('admin.backoffice.pinPlaced', 'Pin placed successfully'));
           setPlacingPin(false);
           setSelectedRoomForPin('');
         },
@@ -117,7 +117,7 @@ export function InteractiveFloorMapViewer({
       { id: roomId, pin_x: null, pin_y: null, floor_map_id: null },
       {
         onSuccess: () => {
-          toast.success(t('admin.backoffice.pinRemoved', 'Pin removed'));
+          notify.success(t('admin.backoffice.pinRemoved', 'Pin removed'));
         },
       }
     );

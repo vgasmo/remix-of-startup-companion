@@ -48,7 +48,7 @@ import {
 } from '@/hooks/useDocuments';
 import { useTemplateInstances, useTemplates } from '@/hooks/useTemplates';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useTranslation } from 'react-i18next';
 import { FinancialModelPanel } from './FinancialModelPanel';
 import { TemplatesTab } from './TemplatesTab';
@@ -237,12 +237,12 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
         description: description || undefined,
       });
 
-      toast.success(
+      notify.success(
         t('documents.uploadSuccess', { defaultValue: '✅ Documento enviado com sucesso!' }),
         { duration: 4000 }
       );
     } catch {
-      toast.error(
+      notify.error(
         t('documents.uploadFailed', { defaultValue: 'Falha ao enviar documento' }),
         { duration: 4000 }
       );
@@ -256,7 +256,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
 
   const handleAddLink = async () => {
     if (!linkName.trim() || !linkUrl.trim()) {
-      toast.error(t('documents.provideNameAndUrl'));
+      notify.error(t('documents.provideNameAndUrl'));
       return;
     }
 
@@ -287,7 +287,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
         const url = await getDocumentUrl(doc.file_path);
         window.open(url, '_blank');
       } catch {
-        toast.error(t('documents.downloadFailed'));
+        notify.error(t('documents.downloadFailed'));
       }
     }
   };
@@ -312,7 +312,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
       confirmLabel: t('common.delete'),
       onConfirm: async () => {
         await deleteMutation.mutateAsync({ document: doc, workspaceId });
-        toast.success(t('documents.documentDeleted', { defaultValue: 'Documento eliminado' }));
+        notify.success(t('documents.documentDeleted', { defaultValue: 'Documento eliminado' }));
       },
     });
   };

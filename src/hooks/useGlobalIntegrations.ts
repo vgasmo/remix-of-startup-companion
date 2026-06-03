@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { logger } from '@/lib/logger';
 
@@ -84,10 +84,10 @@ export function useUpdateGlobalGraphSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['global-integration-settings', 'graph_api'] });
-      toast.success(t('integrations.globalGraphApiSettingsSaved'));
+      notify.success(t('integrations.globalGraphApiSettingsSaved'));
     },
     onError: (error: Error) => {
-      toast.error(t('integrations.failedToSaveSettings', { message: error.message }));
+      notify.error(t('integrations.failedToSaveSettings', { message: error.message }));
     },
   });
 }
@@ -130,10 +130,10 @@ export function useToggleGlobalGraph() {
     },
     onSuccess: (_, enabled) => {
       queryClient.invalidateQueries({ queryKey: ['global-integration-settings', 'graph_api'] });
-      toast.success(enabled ? 'Graph API enabled globally' : 'Graph API disabled');
+      notify.success(enabled ? 'Graph API enabled globally' : 'Graph API disabled');
     },
     onError: (error: Error) => {
-      toast.error(t('integrations.failedToUpdate', { message: error.message }));
+      notify.error(t('integrations.failedToUpdate', { message: error.message }));
     },
   });
 }

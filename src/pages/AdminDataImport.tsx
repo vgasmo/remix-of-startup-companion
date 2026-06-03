@@ -24,7 +24,7 @@ import { useConsultors } from '@/hooks/useWorkspaceOwner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 
 // ====================
@@ -480,12 +480,12 @@ export default function AdminDataImport() {
         const text = await file.text();
         rows = parseCSV(text);
       } else {
-        toast.error(t('dataImport.unsupportedFormat', 'Unsupported file format. Please use XLSX or CSV.'));
+        notify.error(t('dataImport.unsupportedFormat', 'Unsupported file format. Please use XLSX or CSV.'));
         return;
       }
 
       if (rows.length === 0) {
-        toast.error(t('dataImport.emptyFile', 'The file is empty or could not be parsed.'));
+        notify.error(t('dataImport.emptyFile', 'The file is empty or could not be parsed.'));
         return;
       }
 
@@ -497,11 +497,11 @@ export default function AdminDataImport() {
       const parsed = parseAndValidateRows(rows);
       setParsedRows(parsed);
 
-      toast.success(t('dataImport.fileParsed', 'File parsed successfully: {{count}} rows', { count: rows.length }));
+      notify.success(t('dataImport.fileParsed', 'File parsed successfully: {{count}} rows', { count: rows.length }));
       setStep(2);
     } catch (error) {
       logger.error('Error parsing file', {}, error);
-      toast.error(t('dataImport.parseError', 'Error parsing file. Please check the format.'));
+      notify.error(t('dataImport.parseError', 'Error parsing file. Please check the format.'));
     } finally {
       setIsProcessing(false);
       event.target.value = '';
@@ -514,7 +514,7 @@ export default function AdminDataImport() {
 
   const handleDryRun = useCallback(async () => {
     if (!config.program_id) {
-      toast.error(t('dataImport.selectProgram', 'Please select a program'));
+      notify.error(t('dataImport.selectProgram', 'Please select a program'));
       return;
     }
 
@@ -607,11 +607,11 @@ export default function AdminDataImport() {
         details: details.slice(0, 100), // Limit preview
       });
 
-      toast.success(t('dataImport.dryRunComplete', 'Dry run complete'));
+      notify.success(t('dataImport.dryRunComplete', 'Dry run complete'));
       setStep(3);
     } catch (error) {
       logger.error('Dry run error', {}, error);
-      toast.error(t('dataImport.dryRunError', 'Error during dry run'));
+      notify.error(t('dataImport.dryRunError', 'Error during dry run'));
     } finally {
       setIsProcessing(false);
     }
@@ -623,12 +623,12 @@ export default function AdminDataImport() {
 
   const handleImport = useCallback(async () => {
     if (!config.program_id) {
-      toast.error(t('dataImport.selectProgram', 'Please select a program'));
+      notify.error(t('dataImport.selectProgram', 'Please select a program'));
       return;
     }
 
     if (!Object.values(safetyChecks).every(Boolean)) {
-      toast.error(t('dataImport.confirmSafetyChecks', 'Please confirm all safety checks'));
+      notify.error(t('dataImport.confirmSafetyChecks', 'Please confirm all safety checks'));
       return;
     }
 
@@ -877,11 +877,11 @@ export default function AdminDataImport() {
       }
 
       setImportResult({ inserted, updated, errors });
-      toast.success(t('dataImport.importComplete', 'Import complete: {{inserted}} inserted, {{updated}} updated', { inserted, updated }));
+      notify.success(t('dataImport.importComplete', 'Import complete: {{inserted}} inserted, {{updated}} updated', { inserted, updated }));
       setStep(4);
     } catch (error) {
       logger.error('Import error', {}, error);
-      toast.error(t('dataImport.importError', 'Error during import'));
+      notify.error(t('dataImport.importError', 'Error during import'));
     } finally {
       setIsProcessing(false);
     }

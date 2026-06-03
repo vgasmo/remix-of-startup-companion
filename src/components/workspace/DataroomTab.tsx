@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { 
   FolderLock, Plus, Link2, Copy, Trash2, 
   Eye, EyeOff, FileText, TrendingUp, LinkIcon, GripVertical,
@@ -101,7 +101,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
         });
       }
       
-      toast.success(
+      notify.success(
         t('investorUpdates.updateGenerated', { defaultValue: '✅ Atualização gerada com sucesso!' }),
         {
           description: t('investorUpdates.updateGeneratedDesc', { defaultValue: 'A atualização foi adicionada ao Data Room automaticamente.' }),
@@ -109,7 +109,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
         }
       );
     } catch (error: any) {
-      toast.error(
+      notify.error(
         t('investorUpdates.failedToGenerate', { defaultValue: 'Falha ao gerar atualização' }),
         {
           description: error?.message || t('common.tryAgain', { defaultValue: 'Por favor tente novamente.' }),
@@ -135,11 +135,11 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
         url: itemType === 'link' ? itemForm.url || undefined : undefined,
         visibility: itemForm.visibility,
       });
-      toast.success(t('dataroom.itemAdded'));
+      notify.success(t('dataroom.itemAdded'));
       setAddItemOpen(false);
       setItemForm({ title: '', description: '', document_id: '', investor_update_id: '', url: '', visibility: 'investors' });
     } catch (error: any) {
-      toast.error(error.message || t('dataroom.failedToAdd'));
+      notify.error(error.message || t('dataroom.failedToAdd'));
     }
   };
   
@@ -151,9 +151,9 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
         allow_download: linkForm.allow_download,
       });
       setCreatedLink(result.url);
-      toast.success(t('dataroom.linkCreated'));
+      notify.success(t('dataroom.linkCreated'));
     } catch (error: any) {
-      toast.error(error.message || t('dataroom.failedToCreateLink'));
+      notify.error(error.message || t('dataroom.failedToCreateLink'));
     }
   };
   
@@ -161,9 +161,9 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
     if (!confirm(t('dataroom.confirmRevoke'))) return;
     try {
       await revokeShareLink.mutateAsync(linkId);
-      toast.success(t('dataroom.linkRevoked'));
+      notify.success(t('dataroom.linkRevoked'));
     } catch (error: any) {
-      toast.error(error.message || t('dataroom.failedToRevoke'));
+      notify.error(error.message || t('dataroom.failedToRevoke'));
     }
   };
   
@@ -171,9 +171,9 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
     if (!confirm(t('dataroom.confirmDelete'))) return;
     try {
       await deleteItem.mutateAsync(id);
-      toast.success(t('dataroom.itemDeleted'));
+      notify.success(t('dataroom.itemDeleted'));
     } catch (error: any) {
-      toast.error(error.message || t('dataroom.failedToDelete'));
+      notify.error(error.message || t('dataroom.failedToDelete'));
     }
   };
   
@@ -183,15 +183,15 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
         id: item.id,
         visibility: item.visibility === 'investors' ? 'internal' : 'investors',
       });
-      toast.success(t('dataroom.visibilityUpdated'));
+      notify.success(t('dataroom.visibilityUpdated'));
     } catch (error: any) {
-      toast.error(error.message);
+      notify.error(error.message);
     }
   };
   
   const copyLink = (url: string) => {
     navigator.clipboard.writeText(url);
-    toast.success(t('common.linkCopied'));
+    notify.success(t('common.linkCopied'));
   };
   
   const activeLinks = shareLinks?.filter(l => !l.revoked_at && (!l.expires_at || new Date(l.expires_at) > new Date())) || [];

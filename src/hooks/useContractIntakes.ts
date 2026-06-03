@@ -5,7 +5,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -232,7 +232,7 @@ export function useCreateIntake() {
       queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
     },
     onError: (err: any) => {
-      toast.error(err?.message || 'Erro ao criar pedido de contratação');
+      notify.error(err?.message || 'Erro ao criar pedido de contratação');
     },
   });
 }

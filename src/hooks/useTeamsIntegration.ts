@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
@@ -166,10 +166,10 @@ export function useTestTeamsWebhook() {
       return data;
     },
     onSuccess: () => {
-      toast.success(t('integrations.testMessageQueuedsentToTeams'));
+      notify.success(t('integrations.testMessageQueuedsentToTeams'));
     },
     onError: (error: Error) => {
-      toast.error(t('integrations.testFailed', { message: error.message }));
+      notify.error(t('integrations.testFailed', { message: error.message }));
     },
   });
 }

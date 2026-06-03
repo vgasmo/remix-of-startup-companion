@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 
 import i18n from '@/i18n';
@@ -92,7 +92,7 @@ export function InlineKpiEditor({ workspaceId, className }: InlineKpiEditorProps
       setValues(initialValues);
     } catch (error) {
       logger.error('Error loading KPIs', {}, error);
-      toast.error(t('workspace.erroAoCarregarKpis'));
+      notify.error(t('workspace.erroAoCarregarKpis'));
     } finally {
       setLoading(false);
     }
@@ -103,7 +103,7 @@ export function InlineKpiEditor({ workspaceId, className }: InlineKpiEditorProps
     const value = valueStr ? parseFloat(valueStr) : null;
 
     if (valueStr && isNaN(value as number)) {
-      toast.error(t('workspace.valorInválido'));
+      notify.error(t('workspace.valorInválido'));
       return;
     }
 
@@ -126,12 +126,12 @@ export function InlineKpiEditor({ workspaceId, className }: InlineKpiEditorProps
 
       if (error) throw error;
 
-      toast.success(t('workspace.kpiAtualizado'));
+      notify.success(t('workspace.kpiAtualizado'));
       queryClient.invalidateQueries({ queryKey: ['workspace-kpis', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['health-score', workspaceId] });
     } catch (error) {
       logger.error('Error saving KPI', {}, error);
-      toast.error(t('workspace.erroAoGuardarKpi'));
+      notify.error(t('workspace.erroAoGuardarKpi'));
     } finally {
       setSaving(prev => ({ ...prev, [kpiDefId]: false }));
     }

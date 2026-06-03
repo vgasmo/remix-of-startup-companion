@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Separator } from '@/components/ui/separator';
 import { useGenerateTemplateCoach, useCreateActionsFromAI, type AICoachFeedback } from '@/hooks/useTemplateAI';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface TemplateCoachPanelProps {
   instanceId: string;
@@ -95,7 +95,7 @@ export function TemplateCoachPanel({
   const handleCopyToNotes = () => {
     if (!feedback || !onCopyToNotes) return;
     onCopyToNotes(buildNotesMarkdown());
-    toast.success(t('templates.copiedToNotes'));
+    notify.success(t('templates.copiedToNotes'));
   };
 
   const handleApplyReview = (decision: 'approved' | 'needs_changes') => {

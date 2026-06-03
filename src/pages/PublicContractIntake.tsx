@@ -12,7 +12,7 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -82,13 +82,13 @@ export default function PublicContractIntake() {
   const handleUploadDoc = async (docKey: string, file: File) => {
     const MAX_BYTES = 10 * 1024 * 1024;
     if (file.size > MAX_BYTES) {
-      toast.error(isPt ? 'Ficheiro demasiado grande (máx. 10MB)' : 'File too large (max 10MB)');
+      notify.error(isPt ? 'Ficheiro demasiado grande (máx. 10MB)' : 'File too large (max 10MB)');
       return;
     }
     const ext = (file.name.split('.').pop() || 'pdf').toLowerCase();
     const allowed = ['pdf', 'jpg', 'jpeg', 'png'];
     if (!allowed.includes(ext)) {
-      toast.error(isPt ? 'Formato não suportado (PDF, JPG, PNG)' : 'Unsupported format (PDF, JPG, PNG)');
+      notify.error(isPt ? 'Formato não suportado (PDF, JPG, PNG)' : 'Unsupported format (PDF, JPG, PNG)');
       return;
     }
     setUploadingDocKey(docKey);
@@ -115,10 +115,10 @@ export default function PublicContractIntake() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success(isPt ? 'Documento enviado' : 'Document uploaded');
+      notify.success(isPt ? 'Documento enviado' : 'Document uploaded');
       await queryClient.invalidateQueries({ queryKey: ['public-intake', token] });
     } catch (err: any) {
-      toast.error(err?.message || t('publicContract.errors.uploadFailed'));
+      notify.error(err?.message || t('publicContract.errors.uploadFailed'));
     } finally {
       setUploadingDocKey(null);
     }
@@ -204,10 +204,10 @@ export default function PublicContractIntake() {
     },
     onSuccess: () => {
       autosave.clearDraft();
-      toast.success(isPt ? 'Dados submetidos com sucesso!' : 'Data submitted successfully!');
+      notify.success(isPt ? 'Dados submetidos com sucesso!' : 'Data submitted successfully!');
     },
     onError: (err: any) => {
-      toast.error(err?.message || 'Erro ao submeter');
+      notify.error(err?.message || 'Erro ao submeter');
     },
   });
 

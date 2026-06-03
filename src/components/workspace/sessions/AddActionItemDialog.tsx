@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCreateActionItem, useWorkspaceMembers } from '@/hooks/useSessions';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface AddActionItemDialogProps {
   workspaceId: string;
@@ -43,7 +43,7 @@ export function AddActionItemDialog({ workspaceId, sessionId, open, onOpenChange
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      toast.error(t('sessions.pleaseEnterATitle'));
+      notify.error(t('sessions.pleaseEnterATitle'));
       return;
     }
 
@@ -56,11 +56,11 @@ export function AddActionItemDialog({ workspaceId, sessionId, open, onOpenChange
         session_id: sessionId,
         owner_user_id: ownerId || undefined,
       });
-      toast.success(t('sessions.actionItemCreated'));
+      notify.success(t('sessions.actionItemCreated'));
       onOpenChange(false);
       resetForm();
     } catch (error) {
-      toast.error(t('sessions.failedToCreateActionItem'));
+      notify.error(t('sessions.failedToCreateActionItem'));
     }
   };
 

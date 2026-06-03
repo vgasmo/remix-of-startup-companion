@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import {
   Play, CheckCircle2, XCircle, AlertTriangle, RefreshCw,
   Calendar, Video, Clock, Wifi,
@@ -165,11 +165,11 @@ export function IntegrationTestHarness() {
     queryClient.invalidateQueries({ queryKey: ['integration-test-last-run'] });
 
     if (overallStatus === 'pass') {
-      toast.success(t('admin.integrationTests.allPassed', 'Todos os testes de integração passaram!'));
+      notify.success(t('admin.integrationTests.allPassed', 'Todos os testes de integração passaram!'));
     } else if (overallStatus === 'fail') {
-      toast.error(t('admin.integrationTests.someFailed', 'Alguns testes de integração falharam'));
+      notify.error(t('admin.integrationTests.someFailed', 'Alguns testes de integração falharam'));
     } else {
-      toast.info(t('admin.integrationTests.completedWithWarnings', 'Testes de integração concluídos com avisos'));
+      notify.info(t('admin.integrationTests.completedWithWarnings', 'Testes de integração concluídos com avisos'));
     }
   };
 

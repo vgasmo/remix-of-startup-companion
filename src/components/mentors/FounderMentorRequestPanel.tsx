@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { format } from 'date-fns';
 
 const EXPERTISE_OPTIONS = [
@@ -119,13 +119,13 @@ export function FounderMentorRequestPanel() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mentor-requests'] });
-      toast.success(t('mentorsPage.requestSubmitted'));
+      notify.success(t('mentorsPage.requestSubmitted'));
       setSelectedExpertise([]);
       setDescription('');
       setSelectedWorkspace('');
     },
     onError: () => {
-      toast.error(t('mentorsPage.requestFailed'));
+      notify.error(t('mentorsPage.requestFailed'));
     },
   });
 
@@ -141,7 +141,7 @@ export function FounderMentorRequestPanel() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mentor-requests'] });
-      toast.success(t('mentorsPage.requestCancelled'));
+      notify.success(t('mentorsPage.requestCancelled'));
     },
   });
 

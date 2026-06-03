@@ -26,7 +26,7 @@ import {
   ValuePropFields,
   ValuePropOutputs,
 } from '@/hooks/useValueProp';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 
 interface ValuePropWizardProps {
@@ -139,15 +139,15 @@ export function ValuePropWizard({ workspaceId, onComplete }: ValuePropWizardProp
   const handleSave = async () => {
     if (!outputs) return;
     if (!workspaceId) {
-      toast.info(t('consultor.practiceModeCopyTheOutputs'));
+      notify.info(t('consultor.practiceModeCopyTheOutputs'));
       return;
     }
     try {
       await createMutation.mutateAsync({ fields, outputs });
-      toast.success(t('consultor.valuePropositionSaved'));
+      notify.success(t('consultor.valuePropositionSaved'));
       onComplete?.();
     } catch (error) {
-      toast.error(t('consultor.failedToSave'));
+      notify.error(t('consultor.failedToSave'));
     }
   };
 
@@ -155,7 +155,7 @@ export function ValuePropWizard({ workspaceId, onComplete }: ValuePropWizardProp
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success(t('consultor.copiedToClipboard'));
+    notify.success(t('consultor.copiedToClipboard'));
   };
 
   if (showResults && outputs) {

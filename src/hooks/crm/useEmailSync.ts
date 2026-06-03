@@ -5,7 +5,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useTranslation } from 'react-i18next';
 
 export interface EmailSyncStatus {
@@ -98,14 +98,14 @@ export function useTriggerEmailSync() {
       queryClient.invalidateQueries({ queryKey: ['unmatched-emails'] });
       queryClient.invalidateQueries({ queryKey: ['crm-emails'] });
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
-      toast.success(
+      notify.success(
         t('crm.emailSyncComplete', {
           defaultValue: `Sincronização concluída: ${data?.logged || 0} emails registados, ${data?.unmatched || 0} para revisão`,
         })
       );
     },
     onError: (err: Error) => {
-      toast.error(err.message || t('crm.emailSyncFailed', { defaultValue: 'Erro na sincronização de emails' }));
+      notify.error(err.message || t('crm.emailSyncFailed', { defaultValue: 'Erro na sincronização de emails' }));
     },
   });
 }
@@ -140,7 +140,7 @@ export function useAttachEmailToCrm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['unmatched-emails'] });
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
-      toast.success(t('crm.emailAttached', { defaultValue: 'Email associado ao CRM' }));
+      notify.success(t('crm.emailAttached', { defaultValue: 'Email associado ao CRM' }));
     },
   });
 }

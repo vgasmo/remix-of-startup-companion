@@ -30,7 +30,7 @@ import { UnitEconomicsCalculator } from './UnitEconomicsCalculator';
 import { TemplateCoachPanel } from './TemplateCoachPanel';
 import { CanvasTemplate, CanvasType, getCanvasType } from './CanvasTemplate';
 import { getLocalizedTemplateMeta, getLocalizedCategoryLabel } from '@/lib/templateCatalogI18n';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useDocuments, useUploadDocument } from '@/hooks/useDocuments';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
@@ -384,7 +384,7 @@ function CanvasTemplateWrapper({ template, instance, workspaceId, canWrite, type
   const prevStatusRef = useRef<AutosaveStatus>('idle');
   useEffect(() => {
     if (autosave.status === 'local_only' && prevStatusRef.current !== 'local_only') {
-      toast.warning(t('templates.autosave.localOnlyToast'));
+      notify.warn(t('templates.autosave.localOnlyToast'));
     }
     prevStatusRef.current = autosave.status;
   }, [autosave.status, t]);
@@ -396,19 +396,19 @@ function CanvasTemplateWrapper({ template, instance, workspaceId, canWrite, type
   const handleSubmitForReview = async () => {
     const ok = await autosave.flush();
     if (!ok) {
-      toast.error(t('templates.submitFailed'));
+      notify.error(t('templates.submitFailed'));
       return;
     }
     const id = autosave.instanceId;
     if (!id) {
-      toast.error(t('templates.submitFailed'));
+      notify.error(t('templates.submitFailed'));
       return;
     }
     try {
       await submitForReview.mutateAsync(id);
-      toast.success(t('templates.submittedForReview'));
+      notify.success(t('templates.submittedForReview'));
     } catch {
-      toast.error(t('templates.submitFailed'));
+      notify.error(t('templates.submitFailed'));
     }
   };
 
@@ -421,10 +421,10 @@ function CanvasTemplateWrapper({ template, instance, workspaceId, canWrite, type
         review_status: status,
         review_notes: reviewNotes.trim() || undefined,
       });
-      toast.success(status === 'approved' ? t('templates.approved') : t('templates.requestChanges'));
+      notify.success(status === 'approved' ? t('templates.approved') : t('templates.requestChanges'));
       setReviewNotes('');
     } catch {
-      toast.error(t('templates.submitFailed'));
+      notify.error(t('templates.submitFailed'));
     }
   };
 
@@ -595,7 +595,7 @@ function TemplateEditorDialog({
   const prevStatusRef = useRef<AutosaveStatus>('idle');
   useEffect(() => {
     if (autosave.status === 'local_only' && prevStatusRef.current !== 'local_only') {
-      toast.warning(t('templates.autosave.localOnlyToast'));
+      notify.warn(t('templates.autosave.localOnlyToast'));
     }
     prevStatusRef.current = autosave.status;
   }, [autosave.status, t]);
@@ -632,14 +632,14 @@ function TemplateEditorDialog({
 
   const handleSaveNow = async () => {
     const ok = await autosave.flush();
-    if (ok) toast.success(t('templates.autosave.saved'));
-    else toast.warning(t('templates.autosave.localOnlyToast'));
+    if (ok) notify.success(t('templates.autosave.saved'));
+    else notify.warn(t('templates.autosave.localOnlyToast'));
   };
 
   const requireFlushed = async (): Promise<string | null> => {
     const ok = await autosave.flush();
     if (!ok) {
-      toast.error(t('templates.autosave.failed'));
+      notify.error(t('templates.autosave.failed'));
       return null;
     }
     return autosave.instanceId;
@@ -650,9 +650,9 @@ function TemplateEditorDialog({
     if (!id) return;
     try {
       await completeInstance.mutateAsync(id);
-      toast.success(t('templates.completed'));
+      notify.success(t('templates.completed'));
     } catch {
-      toast.error(t('templates.submitFailed'));
+      notify.error(t('templates.submitFailed'));
     }
   };
 
@@ -661,9 +661,9 @@ function TemplateEditorDialog({
     if (!id) return;
     try {
       await submitForReview.mutateAsync(id);
-      toast.success(t('templates.submittedForReview'));
+      notify.success(t('templates.submittedForReview'));
     } catch {
-      toast.error(t('templates.submitFailed'));
+      notify.error(t('templates.submitFailed'));
     }
   };
 
@@ -676,10 +676,10 @@ function TemplateEditorDialog({
         review_status: status,
         review_notes: reviewNotes.trim() || undefined,
       });
-      toast.success(status === 'approved' ? t('templates.approved') : t('templates.requestChanges'));
+      notify.success(status === 'approved' ? t('templates.approved') : t('templates.requestChanges'));
       setReviewNotes('');
     } catch {
-      toast.error(t('templates.submitFailed'));
+      notify.error(t('templates.submitFailed'));
     }
   };
 

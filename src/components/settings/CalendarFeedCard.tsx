@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { AppConfig } from '@/lib/appConfig';
@@ -127,10 +127,10 @@ export function CalendarFeedCard({ workspaceId }: CalendarFeedCardProps) {
       setCalendarToken(token);
       setTokenExpiresAt(expiresAt);
       setNeedsRegeneration(false);
-      toast.success(t('calendarFeed.tokenGenerated', { defaultValue: 'Token de calendário gerado com sucesso (válido por 90 dias)' }));
+      notify.success(t('calendarFeed.tokenGenerated', { defaultValue: 'Token de calendário gerado com sucesso (válido por 90 dias)' }));
     } catch (err) {
       logger.error('Error generating token', {}, err);
-      toast.error(t('calendarFeed.generateFailed', { defaultValue: 'Falha ao gerar token de calendário' }));
+      notify.error(t('calendarFeed.generateFailed', { defaultValue: 'Falha ao gerar token de calendário' }));
     } finally {
       setIsGenerating(false);
     }
@@ -150,9 +150,9 @@ export function CalendarFeedCard({ workspaceId }: CalendarFeedCardProps) {
       await navigator.clipboard.writeText(feedUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      toast.success(t('calendarFeed.urlCopied', { defaultValue: 'URL do calendário copiado' }));
+      notify.success(t('calendarFeed.urlCopied', { defaultValue: 'URL do calendário copiado' }));
     } catch (err) {
-      toast.error(t('calendarFeed.copyFailed', { defaultValue: 'Falha ao copiar URL' }));
+      notify.error(t('calendarFeed.copyFailed', { defaultValue: 'Falha ao copiar URL' }));
     }
   };
 

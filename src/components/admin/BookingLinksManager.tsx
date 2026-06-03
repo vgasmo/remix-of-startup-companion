@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Link2, Copy, Plus, Trash2, Calendar, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -104,18 +104,16 @@ export function BookingLinksManager() {
       const bookingUrl = `${baseUrl}/book/${token}`;
       navigator.clipboard.writeText(bookingUrl);
       
-      toast.success(
-        <div className="space-y-1">
-          <p>{t('admin.bookingLinkCreatedCopied', 'Link de reserva criado e copiado!')}</p>
-          <p className="text-xs font-mono break-all">{bookingUrl}</p>
-        </div>
+      notify.success(
+        t('admin.bookingLinkCreatedCopied', 'Link de reserva criado e copiado!'),
+        { description: bookingUrl }
       );
       
       setIsDialogOpen(false);
       setSelectedProgram('');
     },
     onError: (error: Error) => {
-      toast.error(t('admin.failedToCreateLink', { message: error.message }));
+      notify.error(t('admin.failedToCreateLink', { message: error.message }));
     },
   });
 
@@ -130,10 +128,10 @@ export function BookingLinksManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['public-booking-links'] });
-      toast.success(t('admin.bookingLinkDeactivated'));
+      notify.success(t('admin.bookingLinkDeactivated'));
     },
     onError: (error: Error) => {
-      toast.error(t('admin.failedToDeactivate', { message: error.message }));
+      notify.error(t('admin.failedToDeactivate', { message: error.message }));
     },
   });
 
@@ -148,10 +146,10 @@ export function BookingLinksManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['public-booking-links'] });
-      toast.success(t('admin.bookingLinkDeleted', 'Link apagado'));
+      notify.success(t('admin.bookingLinkDeleted', 'Link apagado'));
     },
     onError: (error: Error) => {
-      toast.error(t('admin.failedToDelete', { message: error.message }));
+      notify.error(t('admin.failedToDelete', { message: error.message }));
     },
   });
 

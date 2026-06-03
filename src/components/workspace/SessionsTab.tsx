@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useSessions, useDeleteSession } from '@/hooks/useSessions';
 import { useExportSessions, exportSessionsToCsv } from '@/hooks/useExportData';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useAuth } from '@/contexts/AuthContext';
 import { FacilitatorMode } from '@/components/sessions/FacilitatorMode';
 import { SessionCard } from './sessions/SessionCard';
@@ -49,9 +49,9 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
     const { data } = await fetchExportData();
     if (data && data.length > 0) {
       exportSessionsToCsv(data, `sessions-${workspaceId}`);
-      toast.success(t('sessions.exportedSuccess'));
+      notify.success(t('sessions.exportedSuccess'));
     } else {
-      toast.error(t('sessions.noDataToExport'));
+      notify.error(t('sessions.noDataToExport'));
     }
   };
 
@@ -64,11 +64,11 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
     if (!sessionToDelete) return;
     try {
       await deleteMutation.mutateAsync(sessionToDelete);
-      toast.success(t('sessions.sessionDeleted'));
+      notify.success(t('sessions.sessionDeleted'));
       setShowDeleteAlert(false);
       setSessionToDelete(null);
     } catch (error) {
-      toast.error(t('common.error'));
+      notify.error(t('common.error'));
     }
   };
 
@@ -157,7 +157,7 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
           onOpenChange={(open) => !open && setSelectedSession(null)}
           onOpenFacilitator={(session) => {
             if (!canUseFacilitator) {
-              toast.error(t('sessions.facilitatorStaffOnly', 'Facilitator Mode is only available for consultants.'));
+              notify.error(t('sessions.facilitatorStaffOnly', 'Facilitator Mode is only available for consultants.'));
               return;
             }
             setSelectedSession(null);

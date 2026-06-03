@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface AccelerationCalendarSectionProps {
   programId: string;
@@ -133,10 +133,10 @@ export function AccelerationCalendarSection({ programId, isStaff, currentWeek }:
         scheduled_at,
         meeting_url: editUrl.trim() || null,
       });
-      toast.success(t('accelerationCalendar.saved', { defaultValue: 'Sessão atualizada' }));
+      notify.success(t('accelerationCalendar.saved', { defaultValue: 'Sessão atualizada' }));
       setEditingWeekId(null);
     } catch {
-      toast.error(t('accelerationCalendar.saveFailed', { defaultValue: 'Erro ao guardar' }));
+      notify.error(t('accelerationCalendar.saveFailed', { defaultValue: 'Erro ao guardar' }));
     }
   };
 

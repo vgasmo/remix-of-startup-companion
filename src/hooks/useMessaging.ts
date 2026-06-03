@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { useEffect } from 'react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import i18n from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
 const t = i18n.t.bind(i18n);
@@ -264,7 +264,7 @@ export function useCreateConversation() {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
     onError: (err: any) => {
-      toast.error(t('messaging.conversationFailed', 'Não foi possível iniciar conversa'), {
+      notify.error(t('messaging.conversationFailed', 'Não foi possível iniciar conversa'), {
         description: err?.message ?? t('common.tryAgain', 'Tente novamente.'),
       });
     },

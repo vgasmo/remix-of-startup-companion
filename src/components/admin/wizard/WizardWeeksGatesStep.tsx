@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/accordion';
 import { Plus, Trash2, GripVertical, ChevronUp, ChevronDown, CalendarDays, Flag, FileText, Library, Upload, Undo2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import type { DraftGate, DraftWeek } from '@/hooks/useProgramSetup';
 
 // Stable local ID generator: prefer existing DB id, otherwise mint a UUID.
@@ -209,7 +209,7 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
       const last = prev[prev.length - 1];
       setWeeks(last.weeksBefore);
       setLibrarySelected(new Set());
-      toast.success(t('programSetup.acceleration.undoneToast', 'Undone: {{label}}', { label: last.label }));
+      notify.success(t('programSetup.acceleration.undoneToast', 'Undone: {{label}}', { label: last.label }));
       return prev.slice(0, -1);
     });
   };
@@ -284,7 +284,7 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
     pushUndo(label, before);
     setWeeks(next);
     setLibrarySelected(new Set());
-    toast.success(
+    notify.success(
       t('programSetup.acceleration.bulkRemoved', '{{n}} deliverables removed', { n: removedCount }),
       {
         duration: 8000,
@@ -293,7 +293,7 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
           onClick: () => {
             setWeeks(before);
             setUndoStack(prev => prev.filter(e => e.ts !== prev[prev.length - 1]?.ts));
-            toast.success(t('programSetup.acceleration.undoneToast', 'Undone: {{label}}', { label }));
+            notify.success(t('programSetup.acceleration.undoneToast', 'Undone: {{label}}', { label }));
           },
         },
       }
@@ -303,7 +303,7 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
   const bulkAddDeliverables = () => {
     const lines = bulkAddText.split('\n').map(l => l.trim()).filter(Boolean);
     if (lines.length === 0) {
-      toast.error(t('programSetup.acceleration.bulkAddEmpty', 'Add at least one deliverable line'));
+      notify.error(t('programSetup.acceleration.bulkAddEmpty', 'Add at least one deliverable line'));
       return;
     }
     const tplId = bulkAddTemplate === 'none' ? null : bulkAddTemplate;
@@ -346,7 +346,7 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
     });
 
     if (errors.length > 0) {
-      toast.error(errors.slice(0, 3).join(' • '));
+      notify.error(errors.slice(0, 3).join(' • '));
       return;
     }
 
@@ -387,14 +387,14 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
       ? t('programSetup.acceleration.bulkAddedWithWeeks', '{{a}} deliverables added ({{w}} new weeks created)', { a: added, w: weeksCreated })
       : t('programSetup.acceleration.bulkAdded', '{{a}} deliverables added', { a: added });
 
-    toast.success(successMsg, {
+    notify.success(successMsg, {
       duration: 8000,
       action: {
         label: t('programSetup.acceleration.undo', 'Undo'),
         onClick: () => {
           setWeeks(before);
           setUndoStack(prev => prev.filter(e => e.ts !== prev[prev.length - 1]?.ts));
-          toast.success(t('programSetup.acceleration.undoneToast', 'Undone: {{label}}', { label }));
+          notify.success(t('programSetup.acceleration.undoneToast', 'Undone: {{label}}', { label }));
         },
       },
     });

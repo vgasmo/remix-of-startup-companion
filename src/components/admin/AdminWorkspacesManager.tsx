@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Plus, Trash2, UserPlus, Ban, CheckCircle, ChevronDown, User, ExternalLink } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { StageBadge } from '@/components/ui/StageBadge';
 import { HealthBadge } from '@/components/ui/HealthBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -169,10 +169,10 @@ export function AdminWorkspacesManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workspaces'] });
-      toast.success(t('admin.workspaceCreated', 'Workspace criado'));
+      notify.success(t('admin.workspaceCreated', 'Workspace criado'));
       resetForm();
     },
-    onError: (error) => toast.error(`${t('common.error', 'Erro')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error', 'Erro')}: ${error.message}`),
   });
 
   const deleteMutation = useMutation({
@@ -182,9 +182,9 @@ export function AdminWorkspacesManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workspaces'] });
-      toast.success(t('admin.workspacesManager.deleted'));
+      notify.success(t('admin.workspacesManager.deleted'));
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const blockMutation = useMutation({
@@ -197,12 +197,12 @@ export function AdminWorkspacesManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workspaces'] });
-      toast.success(t('admin.workspacesManager.blocked'));
+      notify.success(t('admin.workspacesManager.blocked'));
       setBlockDialogOpen(false);
       setWorkspaceToBlock(null);
       setBlockReason('');
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const unblockMutation = useMutation({
@@ -214,9 +214,9 @@ export function AdminWorkspacesManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workspaces'] });
-      toast.success(t('admin.workspacesManager.unblocked'));
+      notify.success(t('admin.workspacesManager.unblocked'));
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   // Change stage mutation
@@ -230,9 +230,9 @@ export function AdminWorkspacesManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workspaces'] });
-      toast.success(t('admin.workspacesManager.stageChanged', 'Stage updated'));
+      notify.success(t('admin.workspacesManager.stageChanged', 'Stage updated'));
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   // Assign consultor mutation
@@ -253,11 +253,11 @@ export function AdminWorkspacesManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workspace-users'] });
-      toast.success(t('admin.workspacesManager.consultorAssigned', 'Consultant assigned'));
+      notify.success(t('admin.workspacesManager.consultorAssigned', 'Consultant assigned'));
       setConsultorSearch('');
       setOpenConsultorPopover(null);
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   // Remove consultor mutation
@@ -272,10 +272,10 @@ export function AdminWorkspacesManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workspace-users'] });
-      toast.success(t('admin.workspacesManager.consultorRemoved', 'Consultant removed'));
+      notify.success(t('admin.workspacesManager.consultorRemoved', 'Consultant removed'));
       setOpenConsultorPopover(null);
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const resetForm = () => {
@@ -290,7 +290,7 @@ export function AdminWorkspacesManager() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStartup || !selectedProgram) {
-      toast.error(t('admin.selectStartupProgram', 'Selecione uma startup e um programa'));
+      notify.error(t('admin.selectStartupProgram', 'Selecione uma startup e um programa'));
       return;
     }
     createMutation.mutate({

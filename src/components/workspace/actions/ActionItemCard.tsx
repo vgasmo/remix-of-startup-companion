@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import type { ActionItem } from '@/hooks/useActionItems';
 import type { ActionDeliverable } from '@/hooks/useActionDeliverables';
 import type { Database } from '@/integrations/supabase/types';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 type ActionStatus = Database['public']['Enums']['action_status'];
 
@@ -81,11 +81,11 @@ export const ActionItemCard = memo(function ActionItemCard({
 
   const handleStatusChange = (newStatus: string) => {
     if (newStatus === 'completed' && !isStaff) {
-      toast.error(t('actions.onlyStaffCanComplete', 'Apenas o consultor pode marcar como concluída'));
+      notify.error(t('actions.onlyStaffCanComplete', 'Apenas o consultor pode marcar como concluída'));
       return;
     }
     if (newStatus === 'completed' && totalDeliverables > 0 && !allDeliverablesCompleted) {
-      toast.error(t('actions.deliverablesRequired', 'Todos os entregáveis devem estar concluídos antes de concluir a ação'));
+      notify.error(t('actions.deliverablesRequired', 'Todos os entregáveis devem estar concluídos antes de concluir a ação'));
       return;
     }
     onStatusChange(item, newStatus as ActionStatus);
@@ -101,18 +101,18 @@ export const ActionItemCard = memo(function ActionItemCard({
 
   const handleAddDeliverable = () => {
     if (!newDeliverable.document_id) {
-      toast.error(t('actions.selectPlatformDoc', 'Selecione um documento da plataforma'));
+      notify.error(t('actions.selectPlatformDoc', 'Selecione um documento da plataforma'));
       return;
     }
     const doc = selectedDoc;
     if (!doc) {
-      toast.error(t('actions.selectPlatformDoc', 'Selecione um documento da plataforma'));
+      notify.error(t('actions.selectPlatformDoc', 'Selecione um documento da plataforma'));
       return;
     }
 
     if (doc.isReadyToAttach) {
       if (selectedDocAlreadyLinked) {
-        toast.error(t('actions.deliverableAlreadyLinked', 'Este documento já está ligado a esta ação'));
+        notify.error(t('actions.deliverableAlreadyLinked', 'Este documento já está ligado a esta ação'));
         return;
       }
 

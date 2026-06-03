@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import i18n from '@/i18n';
 import { logger } from '@/lib/logger';
 
@@ -55,16 +55,16 @@ export function useGenerateTemplateCoach() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['template-instances'] });
-      toast.success(t('templates.aiCoachComplete', 'AI Coach analysis complete'));
+      notify.success(t('templates.aiCoachComplete', 'AI Coach analysis complete'));
     },
     onError: (error: Error) => {
       logger.error('[useGenerateTemplateCoach] Error', {}, error);
       if (error.message.includes('429') || error.message.includes('rate limit')) {
-        toast.error(t('sessions.rateLimitError', 'Rate limit exceeded. Please try again later.'));
+        notify.error(t('sessions.rateLimitError', 'Rate limit exceeded. Please try again later.'));
       } else if (error.message.includes('402') || error.message.includes('credits')) {
-        toast.error(t('sessions.creditsError', 'AI credits exhausted. Please add credits.'));
+        notify.error(t('sessions.creditsError', 'AI credits exhausted. Please add credits.'));
       } else {
-        toast.error(error.message || t('templates.aiCoachFailed', 'Failed to generate AI feedback'));
+        notify.error(error.message || t('templates.aiCoachFailed', 'Failed to generate AI feedback'));
       }
     },
   });
@@ -104,10 +104,10 @@ export function useCreateActionsFromAI(workspaceId: string) {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-actions', workspaceId] });
-      toast.success(t('templates.actionsCreatedFromAI', 'Created {{count}} action items from AI recommendations', { count: data.length }));
+      notify.success(t('templates.actionsCreatedFromAI', 'Created {{count}} action items from AI recommendations', { count: data.length }));
     },
     onError: (error: Error) => {
-      toast.error(error.message || t('actions.failedToCreate', 'Failed to create actions'));
+      notify.error(error.message || t('actions.failedToCreate', 'Failed to create actions'));
     },
   });
 }
@@ -146,7 +146,7 @@ export function useSaveAIFeedback() {
       queryClient.invalidateQueries({ queryKey: ['template-instances'] });
     },
     onError: (error: Error) => {
-      toast.error(error.message || t('templates.aiCoachFailed', 'Failed to save AI feedback'));
+      notify.error(error.message || t('templates.aiCoachFailed', 'Failed to save AI feedback'));
     },
   });
 }

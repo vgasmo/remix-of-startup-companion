@@ -36,7 +36,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { supabase } from '@/lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 import type { CrmInboxItem } from '@/hooks/useCrmInbox';
 import { PIPELINE_STAGES, type FunnelStage } from '@/constants/funnelStages';
@@ -101,11 +101,11 @@ export function CrmBulkActions({
           .in('id', ids);
         if (error) throw error;
       }
-      toast.success(t(successKey, { defaultValue: 'Reverted' }));
+      notify.success(t(successKey, { defaultValue: 'Reverted' }));
       queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
     } catch (err) {
-      toast.error(t('crm.bulk.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
+      notify.error(t('crm.bulk.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
       logger.error('crm_bulk_undo_failed', { column }, err);
     }
   };
@@ -153,7 +153,7 @@ export function CrmBulkActions({
             }
           }
 
-          toast.success(t('crm.bulk.moveSuccess', { count: selectedCount, stage: stageLabel }), {
+          notify.success(t('crm.bulk.moveSuccess', { count: selectedCount, stage: stageLabel }), {
             duration: 8000,
             action: {
               label: t('common.undo'),
@@ -164,7 +164,7 @@ export function CrmBulkActions({
           queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
           onClearSelection();
         } catch (error) {
-          toast.error(t('crm.bulk.moveFailed'));
+          notify.error(t('crm.bulk.moveFailed'));
           logger.error('operation_error', {}, error);
         } finally {
           setIsProcessing(false);
@@ -200,7 +200,7 @@ export function CrmBulkActions({
 
           if (error) throw error;
 
-          toast.success(t('crm.bulk.assignSuccess', { count: selectedCount, name: consultant?.full_name }), {
+          notify.success(t('crm.bulk.assignSuccess', { count: selectedCount, name: consultant?.full_name }), {
             duration: 8000,
             action: {
               label: t('common.undo'),
@@ -211,7 +211,7 @@ export function CrmBulkActions({
           queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
           onClearSelection();
         } catch (error) {
-          toast.error(t('crm.bulk.assignFailed'));
+          notify.error(t('crm.bulk.assignFailed'));
           logger.error('operation_error', {}, error);
         } finally {
           setIsProcessing(false);
@@ -245,12 +245,12 @@ export function CrmBulkActions({
 
           if (error) throw error;
 
-          toast.success(t('crm.bulk.nextActionSuccess'));
+          notify.success(t('crm.bulk.nextActionSuccess'));
           queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
           queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
           onClearSelection();
         } catch (error) {
-          toast.error(t('crm.bulk.nextActionFailed'));
+          notify.error(t('crm.bulk.nextActionFailed'));
           logger.error('operation_error', {}, error);
         } finally {
           setIsProcessing(false);
@@ -283,7 +283,7 @@ export function CrmBulkActions({
 
           if (error) throw error;
 
-          toast.success(t('crm.bulk.archiveSuccess', { count: selectedCount }), {
+          notify.success(t('crm.bulk.archiveSuccess', { count: selectedCount }), {
             duration: 8000,
             action: {
               label: t('common.undo'),
@@ -294,7 +294,7 @@ export function CrmBulkActions({
           queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
           onClearSelection();
         } catch (error) {
-          toast.error(t('crm.bulk.archiveFailed'));
+          notify.error(t('crm.bulk.archiveFailed'));
           logger.error('operation_error', {}, error);
         } finally {
           setIsProcessing(false);

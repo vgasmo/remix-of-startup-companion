@@ -10,7 +10,7 @@ import { HealthBadge } from '@/components/ui/HealthBadge';
 import { StageBadge } from '@/components/ui/StageBadge';
 import { useWorkspaceActions, useWorkspaceKpis, useWorkspaceMilestones, useWorkspaceSessions } from '@/hooks/useWorkspaceData';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { HealthScore, StartupStage } from '@/types/database';
 import { logger } from '@/lib/logger';
 
@@ -49,13 +49,13 @@ export function ProgressReportView({ workspaceId, workspace }: ProgressReportVie
 
   const handlePrint = () => {
     window.print();
-    toast.success(t('common.success'));
+    notify.success(t('common.success'));
   };
 
   const handleShare = async () => {
     const shareUrl = window.location.href.replace(/\?.*/, '') + '?tab=overview';
     await navigator.clipboard.writeText(shareUrl);
-    toast.success(t('common.linkCopied'));
+    notify.success(t('common.linkCopied'));
   };
 
   const handleExportPdf = async () => {
@@ -79,10 +79,10 @@ export function ProgressReportView({ workspaceId, workspace }: ProgressReportVie
         };
       }
 
-      toast.success(t('common.success'));
+      notify.success(t('common.success'));
     } catch (error) {
       logger.error('Failed to generate report', {}, error);
-      toast.error(t('common.error'));
+      notify.error(t('common.error'));
     } finally {
       setIsGeneratingPdf(false);
     }

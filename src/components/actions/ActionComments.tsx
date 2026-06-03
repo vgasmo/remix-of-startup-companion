@@ -20,7 +20,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useAuth } from '@/contexts/AuthContext';
 
 import i18n from '@/i18n';
@@ -95,10 +95,10 @@ export function ActionComments({ actionId, canWrite }: ActionCommentsProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['action-comments', actionId] });
       setNewComment('');
-      toast.success(t('actions.commentAdded'));
+      notify.success(t('actions.commentAdded'));
     },
     onError: () => {
-      toast.error(t('actions.failedToAddComment'));
+      notify.error(t('actions.failedToAddComment'));
     },
   });
 
@@ -113,10 +113,10 @@ export function ActionComments({ actionId, canWrite }: ActionCommentsProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['action-comments', actionId] });
-      toast.success(t('actions.commentDeleted'));
+      notify.success(t('actions.commentDeleted'));
     },
     onError: () => {
-      toast.error(t('actions.failedToDeleteComment'));
+      notify.error(t('actions.failedToDeleteComment'));
     },
   });
 

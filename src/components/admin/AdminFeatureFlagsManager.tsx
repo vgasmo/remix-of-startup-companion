@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Flag, Globe, Building2 } from 'lucide-react';
 import { useFeatureFlags, useUpdateFeatureFlag } from '@/hooks/useFeatureFlags';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 const FLAG_DESCRIPTIONS: Record<string, { label: string; description: string }> = {
   public_first_contact_booking: {
@@ -45,10 +45,10 @@ export function AdminFeatureFlagsManager() {
       { id: flagId, enabled: !currentEnabled },
       {
         onSuccess: () => {
-          toast.success(t('admin.featureFlags.flagToggled', { state: !currentEnabled ? t('common.enabled', 'ativada') : t('common.disabled', 'desativada'), defaultValue: `Feature flag ${!currentEnabled ? 'ativada' : 'desativada'}` }));
+          notify.success(t('admin.featureFlags.flagToggled', { state: !currentEnabled ? t('common.enabled', 'ativada') : t('common.disabled', 'desativada'), defaultValue: `Feature flag ${!currentEnabled ? 'ativada' : 'desativada'}` }));
         },
         onError: (error) => {
-          toast.error(t('admin.flagUpdateFailed', 'Erro ao atualizar flag'), { description: error.message });
+          notify.error(t('admin.flagUpdateFailed', 'Erro ao atualizar flag'), { description: error.message });
         },
       }
     );

@@ -31,7 +31,7 @@ import { ActionItemCard, type PlatformDocument } from './actions/ActionItemCard'
 import { buildPlatformDocumentOptions } from '@/lib/platformDocuments';
 import { MilestoneActionGroup } from './actions/MilestoneActionGroup';
 import { KanbanColumn } from './actions/KanbanColumn';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import type { Database } from '@/integrations/supabase/types';
 
 type ActionStatus = Database['public']['Enums']['action_status'];
@@ -93,20 +93,20 @@ export function ActionItemsTab({ workspaceId, canWrite }: ActionItemsTabProps) {
   const handleBulkStatusChange = async (ids: string[], status: string) => {
     try {
       await bulkUpdate.mutateAsync({ ids, status: status as ActionStatus });
-      toast.success(t('actions.updatedCount', { count: ids.length }));
+      notify.success(t('actions.updatedCount', { count: ids.length }));
       deselectAll();
     } catch {
-      toast.error(t('actions.failedToUpdate'));
+      notify.error(t('actions.failedToUpdate'));
     }
   };
 
   const handleBulkDelete = async (ids: string[]) => {
     try {
       await bulkDelete.mutateAsync(ids);
-      toast.success(t('actions.deletedCount', { count: ids.length }));
+      notify.success(t('actions.deletedCount', { count: ids.length }));
       deselectAll();
     } catch {
-      toast.error(t('actions.failedToDelete'));
+      notify.error(t('actions.failedToDelete'));
     }
   };
 
@@ -114,9 +114,9 @@ export function ActionItemsTab({ workspaceId, canWrite }: ActionItemsTabProps) {
     const { data } = await fetchExportData();
     if (data && data.length > 0) {
       exportActionsToCsv(data, `actions-${workspaceId}`);
-      toast.success(t('sessions.exportedSuccess'));
+      notify.success(t('sessions.exportedSuccess'));
     } else {
-      toast.error(t('sessions.noDataToExport'));
+      notify.error(t('sessions.noDataToExport'));
     }
   };
 
@@ -125,7 +125,7 @@ export function ActionItemsTab({ workspaceId, canWrite }: ActionItemsTabProps) {
     try {
       await updateAction.mutateAsync({ id: item.id, status: newStatus });
     } catch {
-      toast.error(t('actions.failedToUpdate'));
+      notify.error(t('actions.failedToUpdate'));
     }
   }, [canWrite, updateAction, t]);
 
@@ -137,7 +137,7 @@ export function ActionItemsTab({ workspaceId, canWrite }: ActionItemsTabProps) {
         due_date: date ? format(date, 'yyyy-MM-dd') : null 
       });
     } catch {
-      toast.error(t('actions.failedToUpdate'));
+      notify.error(t('actions.failedToUpdate'));
     }
   }, [canWrite, updateAction, t]);
 
@@ -149,7 +149,7 @@ export function ActionItemsTab({ workspaceId, canWrite }: ActionItemsTabProps) {
         owner_user_id: ownerId === 'none' ? null : ownerId 
       });
     } catch {
-      toast.error(t('actions.failedToUpdate'));
+      notify.error(t('actions.failedToUpdate'));
     }
   }, [canWrite, updateAction, t]);
 
@@ -157,10 +157,10 @@ export function ActionItemsTab({ workspaceId, canWrite }: ActionItemsTabProps) {
     if (!deleteTarget || !canWrite) return;
     try {
       await deleteAction.mutateAsync(deleteTarget.id);
-      toast.success(t('actions.actionDeleted'));
+      notify.success(t('actions.actionDeleted'));
       setDeleteTarget(null);
     } catch {
-      toast.error(t('actions.failedToDelete'));
+      notify.error(t('actions.failedToDelete'));
     }
   }, [deleteTarget, canWrite, deleteAction, t]);
 
@@ -170,7 +170,7 @@ export function ActionItemsTab({ workspaceId, canWrite }: ActionItemsTabProps) {
       const externalUrl = deliverable.external_url || fallbackUrl;
       const documentId = deliverable.document_id && /^[0-9a-f-]{36}$/i.test(deliverable.document_id) ? deliverable.document_id : null;
       if (!externalUrl && !documentId) {
-        toast.error(t('actions.failedToAddDeliverable', 'Erro ao adicionar entregável'));
+        notify.error(t('actions.failedToAddDeliverable', 'Erro ao adicionar entregável'));
         return;
       }
       await createDeliverable.mutateAsync({
@@ -180,27 +180,27 @@ export function ActionItemsTab({ workspaceId, canWrite }: ActionItemsTabProps) {
         external_url: externalUrl,
         document_id: documentId,
       });
-      toast.success(t('actions.deliverableAdded', 'Entregável adicionado'));
+      notify.success(t('actions.deliverableAdded', 'Entregável adicionado'));
     } catch (err: any) {
       console.error('[handleAddDeliverable] failed', err);
-      toast.error(err?.message || t('actions.failedToAddDeliverable', 'Erro ao adicionar entregável'));
+      notify.error(err?.message || t('actions.failedToAddDeliverable', 'Erro ao adicionar entregável'));
     }
   }, [createDeliverable, t, workspaceId]);
 
   const handleCompleteDeliverable = useCallback(async (id: string, actionId: string) => {
     try {
       await completeDeliverable.mutateAsync({ id, actionId });
-      toast.success(t('actions.deliverableCompleted', 'Entregável validado'));
-    } catch { toast.error(t('actions.failedToCompleteDeliverable', 'Erro ao validar entregável')); }
+      notify.success(t('actions.deliverableCompleted', 'Entregável validado'));
+    } catch { notify.error(t('actions.failedToCompleteDeliverable', 'Erro ao validar entregável')); }
   }, [completeDeliverable, t]);
 
   const handleCreate = async () => {
     if (!newAction.title.trim()) {
-      toast.error(t('actions.titleRequired'));
+      notify.error(t('actions.titleRequired'));
       return;
     }
     if (!newAction.milestone_id) {
-      toast.error(t('actions.selectMilestoneRequired'));
+      notify.error(t('actions.selectMilestoneRequired'));
       return;
     }
     try {
@@ -212,11 +212,11 @@ export function ActionItemsTab({ workspaceId, canWrite }: ActionItemsTabProps) {
         owner_user_id: newAction.owner_user_id || null,
         milestone_id: newAction.milestone_id,
       });
-      toast.success(t('actions.actionCreated'));
+      notify.success(t('actions.actionCreated'));
       setCreateDialogOpen(false);
       setNewAction({ title: '', description: '', due_date: '', priority: 'medium', owner_user_id: '', milestone_id: '' });
     } catch {
-      toast.error(t('actions.failedToCreate'));
+      notify.error(t('actions.failedToCreate'));
     }
   };
 

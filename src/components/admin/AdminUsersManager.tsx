@@ -6,7 +6,7 @@ import { Plus, Trash2, UserCheck, Building2, Ban, UserX, RotateCcw, CheckCircle 
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -125,9 +125,9 @@ export function AdminUsersManager() {
       .update({ account_status: newStatus })
       .eq('id', suspendTarget.userId);
     if (error) {
-      toast.error(t('admin.userManagement.suspendError', { defaultValue: 'Erro ao alterar estado da conta' }));
+      notify.error(t('admin.userManagement.suspendError', { defaultValue: 'Erro ao alterar estado da conta' }));
     } else {
-      toast.success(newStatus === 'suspended' 
+      notify.success(newStatus === 'suspended' 
         ? t('admin.userManagement.suspended', { defaultValue: 'Conta suspensa' })
         : t('admin.userManagement.reactivated', { defaultValue: 'Conta reativada' })
       );
@@ -142,9 +142,9 @@ export function AdminUsersManager() {
       .update({ account_status: 'approved' })
       .eq('id', userId);
     if (error) {
-      toast.error(t('admin.approveError', 'Erro ao aprovar conta'));
+      notify.error(t('admin.approveError', 'Erro ao aprovar conta'));
     } else {
-      toast.success(t('admin.approveSuccess', 'Conta aprovada com sucesso'));
+      notify.success(t('admin.approveSuccess', 'Conta aprovada com sucesso'));
       queryClient.invalidateQueries({ queryKey: ['admin-profiles'] });
     }
   };
@@ -517,9 +517,9 @@ export function AdminUsersManager() {
                 if (!deleteUserTarget) return;
                 const { error } = await supabase.rpc('staff_delete_user', { target_user_id: deleteUserTarget.userId });
                 if (error) {
-                  toast.error(t('admin.userManagement.deleteError', { defaultValue: 'Erro ao apagar utilizador' }));
+                  notify.error(t('admin.userManagement.deleteError', { defaultValue: 'Erro ao apagar utilizador' }));
                 } else {
-                  toast.success(t('admin.userManagement.deleteSuccess', { defaultValue: 'Utilizador apagado com sucesso' }));
+                  notify.success(t('admin.userManagement.deleteSuccess', { defaultValue: 'Utilizador apagado com sucesso' }));
                   queryClient.invalidateQueries({ queryKey: ['admin-profiles'] });
                 }
                 setDeleteUserTarget(null);

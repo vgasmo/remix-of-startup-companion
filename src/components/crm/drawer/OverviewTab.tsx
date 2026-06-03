@@ -17,7 +17,7 @@ import { STAGE_COLORS } from './RecordDrawerHeader';
 import { CategoryBadge } from '@/components/ui/CategoryBadge';
 import { supabase } from '@/lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useIncubationTypes } from '@/hooks/backoffice/useIncubationTypes';
 
 interface OverviewTabProps {
@@ -569,9 +569,9 @@ function StartupCategorySelector({ workspaceId }: { workspaceId: string }) {
       .update({ startup_category: newValue })
       .eq('id', workspaceId);
     if (error) {
-      toast.error(t('common.error'));
+      notify.error(t('common.error'));
     } else {
-      toast.success(t('crm.categoryUpdated', { defaultValue: 'Categoria atualizada' }));
+      notify.success(t('crm.categoryUpdated', { defaultValue: 'Categoria atualizada' }));
       queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
     }
   };

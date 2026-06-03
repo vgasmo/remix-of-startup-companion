@@ -28,7 +28,7 @@ import { useNavigate } from 'react-router-dom';
 import { RoomAllocationHistory } from './RoomAllocationHistory';
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface SpaceDetailDrawerProps {
   open: boolean;
@@ -68,7 +68,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
     if (!allocation) return;
     await endAllocation.mutateAsync({ id: allocation.id, roomId: room.id });
     setVacateDialogOpen(false);
-    toast.success(t('admin.backoffice.spaceVacated', { defaultValue: 'Espaço desocupado com sucesso' }));
+    notify.success(t('admin.backoffice.spaceVacated', { defaultValue: 'Espaço desocupado com sucesso' }));
   };
 
   const handleAssign = async (formData: FormData) => {
@@ -83,7 +83,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
       created_by: user.id,
     });
     setAssignDialogOpen(false);
-    toast.success(t('admin.backoffice.spaceAssigned', { defaultValue: 'Espaço atribuído com sucesso' }));
+    notify.success(t('admin.backoffice.spaceAssigned', { defaultValue: 'Espaço atribuído com sucesso' }));
   };
 
   const handleMaintenance = async () => {
@@ -92,7 +92,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
       status: room.status === 'maintenance' ? 'available' : 'maintenance',
     });
     setMaintenanceDialogOpen(false);
-    toast.success(
+    notify.success(
       room.status === 'maintenance'
         ? t('admin.backoffice.maintenanceEnded', { defaultValue: 'Manutenção terminada' })
         : t('admin.backoffice.maintenanceStarted', { defaultValue: 'Espaço em manutenção' })

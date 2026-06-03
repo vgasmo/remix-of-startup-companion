@@ -13,7 +13,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { syncOutlookCalendar } from '@/hooks/useIntegrationTriggers';
 import { cn } from '@/lib/utils';
 
@@ -53,17 +53,17 @@ export function SessionSyncStatus({
       });
 
       if (result.success) {
-        toast.success(t('sessions.syncSuccess', 'Session synced to Outlook'));
+        notify.success(t('sessions.syncSuccess', 'Session synced to Outlook'));
         onSyncComplete?.();
       } else if (result.reason === 'not_configured') {
-        toast.info(t('sessions.syncNotConfigured', 'Outlook sync not configured for this workspace'));
+        notify.info(t('sessions.syncNotConfigured', 'Outlook sync not configured for this workspace'));
       } else {
-        toast.error(t('sessions.syncFailed', 'Sync failed'), {
+        notify.error(t('sessions.syncFailed', 'Sync failed'), {
           description: result.reason,
         });
       }
     } catch (err) {
-      toast.error(t('sessions.syncFailed', 'Sync failed'));
+      notify.error(t('sessions.syncFailed', 'Sync failed'));
     } finally {
       setIsSyncing(false);
     }

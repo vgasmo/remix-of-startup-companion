@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface MentorRequest {
   id: string;
@@ -156,12 +156,12 @@ export function PendingMentorRequestsPanel() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-mentor-requests'] });
       queryClient.invalidateQueries({ queryKey: ['admin-external-mentors'] });
-      toast.success(t('mentorsPage.mentorAssigned'));
+      notify.success(t('mentorsPage.mentorAssigned'));
       setAssignDialogRequest(null);
       setSelectedMentorId('');
     },
     onError: () => {
-      toast.error(t('mentorsPage.assignmentFailed'));
+      notify.error(t('mentorsPage.assignmentFailed'));
     },
   });
 

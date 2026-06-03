@@ -4,7 +4,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import type { IncubationType } from './useIncubationTypes';
 import type { Building } from './useBuildings';
 
@@ -94,9 +94,9 @@ export function useCreateContract() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
-      toast.success(t('backoffice.contratoCriado'));
+      notify.success(t('backoffice.contratoCriado'));
     },
-    onError: () => toast.error(t('backoffice.erroAoCriarContrato')),
+    onError: () => notify.error(t('backoffice.erroAoCriarContrato')),
   });
 }
 
@@ -115,8 +115,8 @@ export function useUpdateContract() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
-      toast.success(t('backoffice.contratoAtualizado'));
+      notify.success(t('backoffice.contratoAtualizado'));
     },
-    onError: () => toast.error(t('backoffice.erroAoAtualizarContrato')),
+    onError: () => notify.error(t('backoffice.erroAoAtualizarContrato')),
   });
 }

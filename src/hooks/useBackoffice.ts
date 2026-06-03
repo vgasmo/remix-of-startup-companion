@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
@@ -103,9 +103,9 @@ export function useCreateOfficeSpace() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['office-spaces'] });
-      toast.success(t('backoffice.spaceCreated'));
+      notify.success(t('backoffice.spaceCreated'));
     },
-    onError: () => toast.error(t('backoffice.spaceCreateError')),
+    onError: () => notify.error(t('backoffice.spaceCreateError')),
   });
 }
 
@@ -124,9 +124,9 @@ export function useUpdateOfficeSpace() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['office-spaces'] });
-      toast.success(t('backoffice.spaceUpdated'));
+      notify.success(t('backoffice.spaceUpdated'));
     },
-    onError: () => toast.error(t('backoffice.spaceUpdateError')),
+    onError: () => notify.error(t('backoffice.spaceUpdateError')),
   });
 }
 
@@ -176,9 +176,9 @@ export function useCreateSpaceAllocation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['space-allocations'] });
       queryClient.invalidateQueries({ queryKey: ['office-spaces'] });
-      toast.success(t('backoffice.spaceAllocated'));
+      notify.success(t('backoffice.spaceAllocated'));
     },
-    onError: () => toast.error(t('backoffice.spaceAllocateError')),
+    onError: () => notify.error(t('backoffice.spaceAllocateError')),
   });
 }
 
@@ -415,9 +415,9 @@ export function useCreateRoom() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rooms'] });
       queryClient.invalidateQueries({ queryKey: ['rooms-with-allocations'] });
-      toast.success(t('backoffice.roomCreated'));
+      notify.success(t('backoffice.roomCreated'));
     },
-    onError: () => toast.error(t('backoffice.roomCreateError')),
+    onError: () => notify.error(t('backoffice.roomCreateError')),
   });
 }
 
@@ -437,9 +437,9 @@ export function useUpdateRoom() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rooms'] });
       queryClient.invalidateQueries({ queryKey: ['rooms-with-allocations'] });
-      toast.success(t('backoffice.roomUpdated'));
+      notify.success(t('backoffice.roomUpdated'));
     },
-    onError: () => toast.error(t('backoffice.roomUpdateError')),
+    onError: () => notify.error(t('backoffice.roomUpdateError')),
   });
 }
 
@@ -453,9 +453,9 @@ export function useDeleteRoom() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rooms'] });
       queryClient.invalidateQueries({ queryKey: ['rooms-with-allocations'] });
-      toast.success(t('backoffice.roomDeleted'));
+      notify.success(t('backoffice.roomDeleted'));
     },
-    onError: () => toast.error(t('backoffice.roomDeleteError')),
+    onError: () => notify.error(t('backoffice.roomDeleteError')),
   });
 }
 
@@ -510,9 +510,9 @@ export function useCreateRoomAllocation() {
       queryClient.invalidateQueries({ queryKey: ['room-allocations'] });
       queryClient.invalidateQueries({ queryKey: ['rooms'] });
       queryClient.invalidateQueries({ queryKey: ['rooms-with-allocations'] });
-      toast.success(t('backoffice.roomAllocated'));
+      notify.success(t('backoffice.roomAllocated'));
     },
-    onError: () => toast.error(t('backoffice.roomAllocateError')),
+    onError: () => notify.error(t('backoffice.roomAllocateError')),
   });
 }
 
@@ -544,9 +544,9 @@ export function useEndRoomAllocation() {
       queryClient.invalidateQueries({ queryKey: ['room-allocations'] });
       queryClient.invalidateQueries({ queryKey: ['rooms'] });
       queryClient.invalidateQueries({ queryKey: ['rooms-with-allocations'] });
-      toast.success(t('backoffice.allocationEnded'));
+      notify.success(t('backoffice.allocationEnded'));
     },
-    onError: () => toast.error(t('backoffice.allocationEndError')),
+    onError: () => notify.error(t('backoffice.allocationEndError')),
   });
 }
 
@@ -588,9 +588,9 @@ export function useCreateFloorMap() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['floor-maps'] });
-      toast.success(t('backoffice.floorMapUploaded'));
+      notify.success(t('backoffice.floorMapUploaded'));
     },
-    onError: () => toast.error(t('backoffice.floorMapUploadError')),
+    onError: () => notify.error(t('backoffice.floorMapUploadError')),
   });
 }
 
@@ -606,9 +606,9 @@ export function useDeleteFloorMap() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['floor-maps'] });
-      toast.success(t('backoffice.floorMapDeleted'));
+      notify.success(t('backoffice.floorMapDeleted'));
     },
-    onError: () => toast.error(t('backoffice.floorMapDeleteError')),
+    onError: () => notify.error(t('backoffice.floorMapDeleteError')),
   });
 }
 
@@ -657,9 +657,9 @@ export function useCreateWaitingListRequest() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['space-waiting-list'] });
-      toast.success(t('backoffice.waitingListAdded'));
+      notify.success(t('backoffice.waitingListAdded'));
     },
-    onError: () => toast.error(t('backoffice.waitingListAddError')),
+    onError: () => notify.error(t('backoffice.waitingListAddError')),
   });
 }
 
@@ -678,9 +678,9 @@ export function useUpdateWaitingListRequest() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['space-waiting-list'] });
-      toast.success(t('backoffice.waitingListUpdated'));
+      notify.success(t('backoffice.waitingListUpdated'));
     },
-    onError: () => toast.error(t('backoffice.waitingListUpdateError')),
+    onError: () => notify.error(t('backoffice.waitingListUpdateError')),
   });
 }
 
@@ -738,8 +738,8 @@ export function useFulfillWaitingListRequest() {
       queryClient.invalidateQueries({ queryKey: ['rooms'] });
       queryClient.invalidateQueries({ queryKey: ['rooms-with-allocations'] });
       queryClient.invalidateQueries({ queryKey: ['room-allocations'] });
-      toast.success(t('backoffice.waitingListFulfilled'));
+      notify.success(t('backoffice.waitingListFulfilled'));
     },
-    onError: () => toast.error(t('backoffice.waitingListFulfillError')),
+    onError: () => notify.error(t('backoffice.waitingListFulfillError')),
   });
 }

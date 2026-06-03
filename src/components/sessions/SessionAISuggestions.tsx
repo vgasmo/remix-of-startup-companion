@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 
 interface AISuggestionsProps {
@@ -33,7 +33,7 @@ export function SessionAISuggestions({ sessionNotes, workspaceId, onApplySuggest
 
   const handleGenerate = async () => {
     if (!sessionNotes?.trim() || sessionNotes.length < 50) {
-      toast.error(t('sessions.notesMinLength'));
+      notify.error(t('sessions.notesMinLength'));
       return;
     }
 
@@ -49,7 +49,7 @@ export function SessionAISuggestions({ sessionNotes, workspaceId, onApplySuggest
     } catch (error: any) {
       logger.error('Error generating suggestions', {}, error);
       setAiError(true);
-      toast.error(error.message || t('sessions.aiSuggestionsFailed'));
+      notify.error(error.message || t('sessions.aiSuggestionsFailed'));
     } finally {
       setIsGenerating(false);
     }
@@ -59,7 +59,7 @@ export function SessionAISuggestions({ sessionNotes, workspaceId, onApplySuggest
     await navigator.clipboard.writeText(text);
     setCopiedItem(id);
     setTimeout(() => setCopiedItem(null), 2000);
-    toast.success(t('common.linkCopied'));
+    notify.success(t('common.linkCopied'));
   };
 
   if (!suggestions) {

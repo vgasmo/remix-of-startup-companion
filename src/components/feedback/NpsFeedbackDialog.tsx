@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Heart, Meh, Frown, X, Sparkles } from 'lucide-react';
 import { useNpsFeedback } from '@/hooks/useNpsFeedback';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface NpsFeedbackDialogProps {
   open: boolean;
@@ -50,12 +50,12 @@ export function NpsFeedbackDialog({ open, onOpenChange }: NpsFeedbackDialogProps
 
     if (success) {
       setSubmitted(true);
-      toast.success(t('nps.thankYou', 'Thank you for your feedback!'));
+      notify.success(t('nps.thankYou', 'Thank you for your feedback!'));
       setTimeout(() => {
         onOpenChange(false);
       }, 2000);
     } else {
-      toast.error(t('nps.error', 'Failed to submit feedback'));
+      notify.error(t('nps.error', 'Failed to submit feedback'));
     }
   };
 

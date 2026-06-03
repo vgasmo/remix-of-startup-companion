@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { 
   FolderLock, Users, Link2, Trash2, UserPlus, Shield, 
   CheckCircle, XCircle, Mail, Building, Eye, Copy, ExternalLink
@@ -116,13 +116,13 @@ export default function AdminDatarooms() {
       return profile;
     },
     onSuccess: () => {
-      toast.success(t('admin.mentorAdded'));
+      notify.success(t('admin.mentorAdded'));
       setAddMentorOpen(false);
       setMentorEmail('');
       queryClient.invalidateQueries({ queryKey: ['admin-mentors'] });
     },
     onError: (error: any) => {
-      toast.error(error.message || t('admin.failedToAddMentor'));
+      notify.error(error.message || t('admin.failedToAddMentor'));
     },
   });
   
@@ -148,17 +148,17 @@ export default function AdminDatarooms() {
       // Ignore workspace_users error (may not exist)
     },
     onSuccess: () => {
-      toast.success(t('admin.mentorRemoved'));
+      notify.success(t('admin.mentorRemoved'));
       queryClient.invalidateQueries({ queryKey: ['admin-mentors'] });
     },
     onError: (error: any) => {
-      toast.error(error.message || t('admin.failedToRemoveMentor'));
+      notify.error(error.message || t('admin.failedToRemoveMentor'));
     },
   });
   
   const copyLink = (token: string) => {
     navigator.clipboard.writeText(`${window.location.origin}/dataroom/shared/${token}`);
-    toast.success(t('common.linkCopied'));
+    notify.success(t('common.linkCopied'));
   };
   
   if (!isAdmin) {

@@ -23,7 +23,7 @@ import { usePrograms } from '@/hooks/useWorkspaces';
 import { useContractIntakes } from '@/hooks/useContractIntakes';
 import { differenceInDays, addDays, format, differenceInMonths, addYears } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 type AlertSeverity = 'critical' | 'warning' | 'info';
 type AlertType = 'pending_contract' | 'renewal_due' | 'anniversary' | 'missing_contract' | 'expired' | 'integrity_drift';
@@ -301,7 +301,7 @@ export function ContractLifecycleHub() {
         break;
       }
       case 'archive':
-        toast.info(t('lifecycle.archiveNotImplemented'));
+        notify.info(t('lifecycle.archiveNotImplemented'));
         break;
     }
   };
@@ -315,9 +315,9 @@ export function ContractLifecycleHub() {
         ...data,
       });
       setConvertDialogItem(null);
-      toast.success(t('lifecycle.converted'));
+      notify.success(t('lifecycle.converted'));
     } catch (err) {
-      toast.error(t('lifecycle.convertError'));
+      notify.error(t('lifecycle.convertError'));
     }
   };
   
