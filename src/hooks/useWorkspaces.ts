@@ -314,8 +314,10 @@ export interface PendingWorkspace {
 }
 
 export function useMyPendingWorkspaces() {
+  const { user: authUser } = useAuth();
   return useQuery({
-    queryKey: ['my-pending-workspaces'],
+    queryKey: ['my-pending-workspaces', authUser?.id ?? null],
+    enabled: !!authUser?.id,
     queryFn: async (): Promise<PendingWorkspace[]> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
