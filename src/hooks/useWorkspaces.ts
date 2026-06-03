@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { StartupStage, HealthScore, WorkspacePriority } from '@/types/database';
 import { logger } from '@/lib/logger';
+import { useAuth } from '@/contexts/AuthContext';
 
 export type WorkspaceStatus = 'imported_unclaimed' | 'claimed' | 'pending' | 'active' | 'rejected' | 'archived';
 /** All non-rejected statuses — use in admin/backoffice views that need full ecosystem visibility. */
@@ -64,8 +65,10 @@ export function useWorkspaces(
    *  Founders should pass ['active', 'claimed'] to see freshly claimed workspaces. */
   statuses: WorkspaceStatus[] = ['active'],
 ) {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   return useQuery({
-    queryKey: ['workspaces', filters, assignedOnly, statuses.slice().sort().join(',')],
+    queryKey: ['workspaces', userId, filters, assignedOnly, statuses.slice().sort().join(',')],
     queryFn: async (): Promise<WorkspaceWithDetails[]> => {
       // If assignedOnly, first get the user's assigned workspace IDs
       let assignedWorkspaceIds: string[] | null = null;
@@ -311,8 +314,10 @@ export interface PendingWorkspace {
 }
 
 export function useMyPendingWorkspaces() {
+  const { user: authUser } = useAuth();
   return useQuery({
-    queryKey: ['my-pending-workspaces'],
+    queryKey: ['my-pending-workspaces', authUser?.id ?? null],
+    enabled: !!authUser?.id,
     queryFn: async (): Promise<PendingWorkspace[]> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];

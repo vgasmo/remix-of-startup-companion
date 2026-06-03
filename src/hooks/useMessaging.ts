@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import i18n from '@/i18n';
+import { useAuth } from '@/contexts/AuthContext';
 const t = i18n.t.bind(i18n);
 
 export interface Conversation {
@@ -44,17 +45,19 @@ export interface Message {
 }
 
 export function useConversations() {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   return useQuery({
-    queryKey: ['conversations'],
+    queryKey: ['conversations', userId],
+    enabled: !!userId,
     queryFn: async (): Promise<Conversation[]> => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!userId) return [];
 
       // Get conversations the user participates in
       const { data: participations, error: partError } = await supabase
         .from('conversation_participants')
         .select('conversation_id, last_read_at')
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       if (partError) throw partError;
       if (!participations?.length) return [];
@@ -108,7 +111,7 @@ export function useConversations() {
         .from('messages')
         .select('conversation_id, created_at')
         .in('conversation_id', conversationIds)
-        .neq('sender_id', user.id)
+        .neq('sender_id', userId)
         .order('created_at', { ascending: false });
 
       if (allUnreadMessages) {

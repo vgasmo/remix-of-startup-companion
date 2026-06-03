@@ -30,7 +30,7 @@ const FUNNEL_ITEM_FIELDS = `
 
 export function useCrmPipeline(filters?: UseCrmPipelineFilters) {
   return useQuery({
-    queryKey: ['crm-pipeline', filters],
+    queryKey: ['crm-pipeline', filters?.currentUserId ?? null, filters],
     queryFn: async (): Promise<CrmPipelineGroups> => {
       let query = supabase
         .from('funnel_items')

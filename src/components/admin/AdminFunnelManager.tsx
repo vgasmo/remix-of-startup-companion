@@ -71,10 +71,12 @@ export function AdminFunnelManager() {
               <NewLeadForm 
                 programs={programs || []}
                 consultors={consultors || []}
+                isPending={createItem.isPending}
                 onSubmit={(data) => {
                   createItem.mutate(data, { onSuccess: () => setIsNewDialogOpen(false) });
                 }}
               />
+
             </DialogContent>
           </Dialog>
         </div>
@@ -105,11 +107,13 @@ export function AdminFunnelManager() {
 function NewLeadForm({ 
   programs, 
   consultors,
-  onSubmit 
+  onSubmit,
+  isPending,
 }: { 
   programs: { id: string; name: string }[];
   consultors: { id: string; full_name: string | null }[];
   onSubmit: (data: Partial<FunnelItem>) => void;
+  isPending?: boolean;
 }) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
@@ -159,7 +163,7 @@ function NewLeadForm({
         <Label>{t('common.notes')}</Label>
         <Textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} />
       </div>
-      <Button type="submit" className="w-full">{t('admin.funnel.createLead')}</Button>
+      <Button type="submit" disabled={isPending} className="w-full">{t('admin.funnel.createLead')}</Button>
     </form>
   );
 }

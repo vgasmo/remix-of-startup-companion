@@ -645,7 +645,7 @@ export function AdminStartupsManager() {
                   )}
                 </div>
 
-                <Button type="submit" className="w-full">{editingStartup ? t('admin.startupsManager.update') : t('admin.startupsManager.create')}</Button>
+                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="w-full">{editingStartup ? t('admin.startupsManager.update') : t('admin.startupsManager.create')}</Button>
               </form>
             </DialogContent>
           </Dialog>
