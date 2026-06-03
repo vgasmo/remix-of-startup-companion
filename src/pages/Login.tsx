@@ -61,12 +61,19 @@ export default function Login() {
 
   useEffect(() => {
     if (user && !isLoading) {
-      // If there's a returnTo param, redirect there instead of default
+      // Validate returnTo to prevent open-redirects: only allow same-origin relative paths
+      let safeReturnTo: string | null = null;
       if (returnTo) {
-        navigate(decodeURIComponent(returnTo));
-      } else {
-        navigate('/my-workspaces');
+        try {
+          const decoded = decodeURIComponent(returnTo);
+          if (decoded.startsWith('/') && !decoded.startsWith('//') && !decoded.startsWith('/\\')) {
+            safeReturnTo = decoded;
+          }
+        } catch {
+          safeReturnTo = null;
+        }
       }
+      navigate(safeReturnTo || '/my-workspaces');
     }
   }, [user, isLoading, navigate, returnTo]);
 
