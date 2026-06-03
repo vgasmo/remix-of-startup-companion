@@ -8722,19 +8722,26 @@
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
   },
-  "Contratos & Documentos": "Contracts & Documents",
-  "Procurar por nome, NIF, contrato…": "Search by name, NIF, contract…",
-  "Todos os estados": "All statuses",
-  "Contrato": "Contract",
-  "Startup": "Startup",
-  "Estado": "Status",
-  "Criado": "Created",
-  "Ações": "Actions",
-  "Documentos": "Documents",
-  "Documentos do contrato": "Contract documents",
-  "Pré-visualizar": "Preview",
-  "Download": "Download",
-  "Fechar pré-visualização": "Close preview",
+  "adminContracts": {
+    "title": "Contracts & Documents",
+    "description": "List of contracts and documents submitted by founders. Preview or download via signed URLs.",
+    "searchPlaceholder": "Search by name, NIF, contract…",
+    "allStatuses": "All statuses",
+    "empty": "No contracts.",
+    "documents": "Documents",
+    "dialogTitle": "Contract documents",
+    "noDocuments": "No documents uploaded yet.",
+    "preview": "Preview",
+    "download": "Download",
+    "closePreview": "Close preview",
+    "cols": {
+      "contract": "Contract",
+      "startup": "Startup",
+      "status": "Status",
+      "created": "Created",
+      "actions": "Actions"
+    }
+  },
   "mentorProfile": {
     "notFound": "Mentor not found.",
     "expertise": "Expertise",
@@ -8745,16 +8752,5 @@
     "notFound": "User not found.",
     "workspaces": "Workspaces",
     "noWorkspaces": "No workspaces yet."
-  },
-  "Sem contratos": {
-    "": "No contracts."
-  },
-  "Sem documentos enviados": {
-    "": "No documents uploaded yet."
-  },
-  "Listagem de contratos e documentos enviados pelos fundadores": {
-    " Pré-visualize ou faça download através de links assinados": {
-      "": "List of contracts and documents submitted by founders. Preview or download via signed URLs."
-    }
   }
 }
