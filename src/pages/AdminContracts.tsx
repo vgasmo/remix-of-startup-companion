@@ -387,7 +387,7 @@ function ContractDocumentsDialog({
                   )}
                   <Button size="sm" onClick={() => openSignedUrl(f, false)}>
                     <Download className="mr-1 h-3.5 w-3.5" />
-                    {t('Download', 'Download')}
+                    {t('adminContracts.download')}
                   </Button>
                 </div>
               </div>
