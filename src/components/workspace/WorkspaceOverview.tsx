@@ -62,7 +62,7 @@ import { useWorkspaceTags, useAddWorkspaceTag, useRemoveWorkspaceTag } from '@/h
 import { supabase } from '@/lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAutoMaterializeDeliverables } from '@/hooks/useAutoMaterializeDeliverables';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { StartupStage, HealthScore, WorkspacePriority } from '@/types/database';
 import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -136,9 +136,9 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
       .eq('id', workspace.id);
 
     if (error) {
-      toast.error(t('workspaceOverview.stageUpdateFailed', { defaultValue: 'Falha ao atualizar fase' }));
+      notify.error(t('workspaceOverview.stageUpdateFailed', { defaultValue: 'Falha ao atualizar fase' }));
     } else {
-      toast.success(t('workspaceOverview.stageUpdated', { defaultValue: 'Fase atualizada' }));
+      notify.success(t('workspaceOverview.stageUpdated', { defaultValue: 'Fase atualizada' }));
       queryClient.invalidateQueries({ queryKey: ['workspace', workspace.id] });
     }
   };

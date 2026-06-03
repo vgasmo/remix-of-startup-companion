@@ -31,7 +31,7 @@ import { useTemplateInstances, useTemplates } from '@/hooks/useTemplates';
 import { useExportActions, exportActionsToCsv } from '@/hooks/useExportData';
 import { ActionItemCard, type PlatformDocument } from './actions/ActionItemCard';
 import { buildPlatformDocumentOptions } from '@/lib/platformDocuments';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { useQuickWinToast } from '@/hooks/useQuickWinToast';
 import { toTitleCase } from '@/lib/textUtils';
 import type { Database } from '@/integrations/supabase/types';
@@ -143,17 +143,17 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
 
   // Milestone handlers
   const handleCreateMilestone = async () => {
-    if (!newMilestone.title.trim()) { toast.error(t('milestones.titleRequired')); return; }
+    if (!newMilestone.title.trim()) { notify.error(t('milestones.titleRequired')); return; }
     try {
       await createMilestone.mutateAsync({
         title: newMilestone.title,
         description: newMilestone.description || undefined,
         target_date: newMilestone.target_date || null,
       });
-      toast.success(t('milestones.milestoneCreated'));
+      notify.success(t('milestones.milestoneCreated'));
       setCreateMilestoneDialogOpen(false);
       setNewMilestone({ title: '', description: '', target_date: '' });
-    } catch { toast.error(t('milestones.failedToCreate')); }
+    } catch { notify.error(t('milestones.failedToCreate')); }
   };
 
   const handleMilestoneStatusChange = async (milestone: Milestone, status: MilestoneStatus) => {
@@ -161,7 +161,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
     try {
       await updateMilestone.mutateAsync({ id: milestone.id, status });
       if (status === 'completed') showQuickWin('milestone_completed');
-    } catch { toast.error(t('milestones.failedToUpdate')); }
+    } catch { notify.error(t('milestones.failedToUpdate')); }
   };
 
   // Snapshot a milestone + its child actions, delete it, then offer toast undo to re-insert both.
@@ -179,7 +179,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
 
       const restore = async () => {
         if (!msRow) {
-          toast.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
+          notify.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
           return;
         }
         try {
@@ -189,34 +189,34 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
             const { error: aErr } = await supabase.from('action_items').insert(childActions as any);
             if (aErr) throw aErr;
           }
-          toast.success(t('milestones.milestoneRestored', { defaultValue: 'Milestone restored' }));
+          notify.success(t('milestones.milestoneRestored', { defaultValue: 'Milestone restored' }));
         } catch {
-          toast.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
+          notify.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
         } finally {
           queryClient.invalidateQueries({ queryKey: ['milestones', workspaceId] });
           queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
         }
       };
 
-      toast.success(t('milestones.milestoneDeleted'), {
+      notify.success(t('milestones.milestoneDeleted'), {
         duration: 8000,
         action: { label: t('common.undo'), onClick: restore },
       });
       setDeleteMilestoneTarget(null);
-    } catch { toast.error(t('milestones.failedToDelete')); }
+    } catch { notify.error(t('milestones.failedToDelete')); }
   };
 
   // Action handlers
   const handleStatusChange = useCallback(async (item: ActionItem, newStatus: ActionStatus) => {
     if (!canWrite) return;
     try { await updateAction.mutateAsync({ id: item.id, status: newStatus }); }
-    catch { toast.error(t('actions.failedToUpdate')); }
+    catch { notify.error(t('actions.failedToUpdate')); }
   }, [canWrite, updateAction, t]);
 
   const handleDueDateChange = useCallback(async (item: ActionItem, date: Date | undefined) => {
     if (!canWrite) return;
     try { await updateAction.mutateAsync({ id: item.id, due_date: date ? format(date, 'yyyy-MM-dd') : null }); }
-    catch { toast.error(t('actions.failedToUpdate')); }
+    catch { notify.error(t('actions.failedToUpdate')); }
   }, [canWrite, updateAction, t]);
 
 
@@ -227,7 +227,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
       const externalUrl = deliverable.external_url || fallbackUrl;
       const documentId = deliverable.document_id && /^[0-9a-f-]{36}$/i.test(deliverable.document_id) ? deliverable.document_id : null;
       if (!externalUrl && !documentId) {
-        toast.error(t('actions.failedToAddDeliverable', 'Erro ao adicionar entregável'));
+        notify.error(t('actions.failedToAddDeliverable', 'Erro ao adicionar entregável'));
         return;
       }
       await createDeliverable.mutateAsync({
@@ -237,18 +237,18 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
         external_url: externalUrl,
         document_id: documentId,
       });
-      toast.success(t('actions.deliverableAdded', 'Entregável adicionado'));
+      notify.success(t('actions.deliverableAdded', 'Entregável adicionado'));
     } catch (err: any) {
       console.error('[handleAddDeliverable] failed', err);
-      toast.error(err?.message || t('actions.failedToAddDeliverable', 'Erro ao adicionar entregável'));
+      notify.error(err?.message || t('actions.failedToAddDeliverable', 'Erro ao adicionar entregável'));
     }
   }, [createDeliverable, t, workspaceId]);
 
   const handleCompleteDeliverable = useCallback(async (id: string, actionId: string) => {
     try {
       await completeDeliverable.mutateAsync({ id, actionId });
-      toast.success(t('actions.deliverableCompleted', 'Entregável validado'));
-    } catch { toast.error(t('actions.failedToCompleteDeliverable', 'Erro ao validar entregável')); }
+      notify.success(t('actions.deliverableCompleted', 'Entregável validado'));
+    } catch { notify.error(t('actions.failedToCompleteDeliverable', 'Erro ao validar entregável')); }
   }, [completeDeliverable, t]);
 
   // Generic action-restore: re-insert previously-deleted action_items rows.
@@ -257,9 +257,9 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
     try {
       const { error } = await supabase.from('action_items').insert(rows);
       if (error) throw error;
-      toast.success(t('actions.actionRestored', { count: rows.length, defaultValue: '{{count}} action(s) restored' }));
+      notify.success(t('actions.actionRestored', { count: rows.length, defaultValue: '{{count}} action(s) restored' }));
     } catch {
-      toast.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
+      notify.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
     } finally {
       queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['milestones', workspaceId] });
@@ -272,17 +272,17 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
     try {
       const { data: snapshot } = await supabase.from('action_items').select('*').eq('id', target.id).maybeSingle();
       await deleteAction.mutateAsync(target.id);
-      toast.success(t('actions.actionDeleted'), {
+      notify.success(t('actions.actionDeleted'), {
         duration: 8000,
         action: snapshot ? { label: t('common.undo'), onClick: () => restoreActions([snapshot]) } : undefined,
       });
       setDeleteActionTarget(null);
-    } catch { toast.error(t('actions.failedToDelete')); }
+    } catch { notify.error(t('actions.failedToDelete')); }
   };
 
   const handleCreateAction = async () => {
-    if (!newAction.title.trim()) { toast.error(t('actions.titleRequired')); return; }
-    if (!newAction.milestone_id) { toast.error(t('actions.selectMilestoneRequired')); return; }
+    if (!newAction.title.trim()) { notify.error(t('actions.titleRequired')); return; }
+    if (!newAction.milestone_id) { notify.error(t('actions.selectMilestoneRequired')); return; }
     try {
       await createAction.mutateAsync({
         title: newAction.title,
@@ -292,10 +292,10 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
         owner_user_id: founderId || null,
         milestone_id: newAction.milestone_id,
       });
-      toast.success(t('actions.actionCreated'));
+      notify.success(t('actions.actionCreated'));
       setCreateActionDialogOpen(false);
       setNewAction({ title: '', description: '', due_date: '', priority: 'medium', milestone_id: '' });
-    } catch { toast.error(t('actions.failedToCreate')); }
+    } catch { notify.error(t('actions.failedToCreate')); }
   };
 
   const openCreateActionForMilestone = (milestoneId: string) => {
@@ -311,7 +311,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
         .select('id, status, completed_at')
         .in('id', ids);
       await bulkUpdate.mutateAsync({ ids, status: status as ActionStatus });
-      toast.success(t('actions.updatedCount', { count: ids.length }), {
+      notify.success(t('actions.updatedCount', { count: ids.length }), {
         duration: 8000,
         action: prior && prior.length > 0 ? {
           label: t('common.undo'),
@@ -337,9 +337,9 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
               for (const r of prior) {
                 await supabase.from('action_items').update({ completed_at: (r as any).completed_at ?? null }).eq('id', r.id);
               }
-              toast.success(t('actions.statusReverted', { count: ids.length, defaultValue: 'Status reverted' }));
+              notify.success(t('actions.statusReverted', { count: ids.length, defaultValue: 'Status reverted' }));
             } catch {
-              toast.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
+              notify.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
             } finally {
               queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
               queryClient.invalidateQueries({ queryKey: ['milestones', workspaceId] });
@@ -348,14 +348,14 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
         } : undefined,
       });
       deselectAll();
-    } catch { toast.error(t('actions.failedToUpdate')); }
+    } catch { notify.error(t('actions.failedToUpdate')); }
   };
 
   const handleBulkDelete = async (ids: string[]) => {
     try {
       const { data: snapshots } = await supabase.from('action_items').select('*').in('id', ids);
       await bulkDelete.mutateAsync(ids);
-      toast.success(t('actions.deletedCount', { count: ids.length }), {
+      notify.success(t('actions.deletedCount', { count: ids.length }), {
         duration: 8000,
         action: snapshots && snapshots.length > 0 ? {
           label: t('common.undo'),
@@ -363,13 +363,13 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
         } : undefined,
       });
       deselectAll();
-    } catch { toast.error(t('actions.failedToDelete')); }
+    } catch { notify.error(t('actions.failedToDelete')); }
   };
 
   const handleExport = async () => {
     const { data } = await fetchExportData();
-    if (data?.length) { exportActionsToCsv(data, `actions-${workspaceId}`); toast.success(t('sessions.exportedSuccess')); }
-    else { toast.error(t('sessions.noDataToExport')); }
+    if (data?.length) { exportActionsToCsv(data, `actions-${workspaceId}`); notify.success(t('sessions.exportedSuccess')); }
+    else { notify.error(t('sessions.noDataToExport')); }
   };
 
   if (milestonesLoading || actionsLoading) {
@@ -472,7 +472,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
           disabled={!canWrite}
           onReorder={(reordered) => {
             const updates = reordered.map((m, i) => ({ id: m.id, position: i }));
-            reorderMilestones.mutateAsync(updates).catch(() => toast.error(t('milestones.failedToReorder')));
+            reorderMilestones.mutateAsync(updates).catch(() => notify.error(t('milestones.failedToReorder')));
           }}
           renderItem={(milestone, _index, dragHandle) => {
             const milestoneActions = actionsByMilestone.grouped.get(milestone.id) || [];

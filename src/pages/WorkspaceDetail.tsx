@@ -37,7 +37,7 @@ import { PendingWorkspaceView } from '@/components/workspace/PendingWorkspaceVie
 import { WorkspaceOnboardingWizard } from '@/components/workspace/WorkspaceOnboardingWizard';
 import { useWorkspace } from '@/hooks/useWorkspaces';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { cn } from '@/lib/utils';
 import { getVisibleTabs, type WorkspaceTab } from '@/lib/workspaceTabs';
 import { useWorkspaceTabBadges } from '@/hooks/useWorkspaceTabBadges';
@@ -180,7 +180,7 @@ export default function WorkspaceDetail() {
 
   const copyWorkspaceLink = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast.success(t('common.linkCopied'));
+    notify.success(t('common.linkCopied'));
   };
 
   const isOverflowTabActive = overflowTabs.some(tab => tab.id === activeTab);
