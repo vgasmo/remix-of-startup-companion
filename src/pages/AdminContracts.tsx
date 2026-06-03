@@ -354,7 +354,7 @@ function ContractDocumentsDialog({
           </div>
         ) : files.length === 0 ? (
           <div className="py-10 text-center text-sm text-muted-foreground">
-            {t('Sem documentos enviados.', 'No documents uploaded yet.')}
+            {t('adminContracts.noDocuments')}
           </div>
         ) : (
           <div className="space-y-2">
