@@ -336,7 +336,7 @@ function ContractDocumentsDialog({
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>
-            {t('Documentos do contrato', 'Contract documents')} —{' '}
+            {t('adminContracts.dialogTitle')} —{' '}
             {contract?.contract_number || contract?.id.slice(0, 8)}
           </DialogTitle>
           <DialogDescription>
