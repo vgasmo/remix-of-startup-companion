@@ -222,7 +222,7 @@ function ContractDocumentsDialog({
 }: {
   contract: ContractRow | null;
   onClose: () => void;
-  t: (pt: string, en: string) => string;
+  t: (key: string) => string;
 }) {
   const [files, setFiles] = useState<StorageFile[]>([]);
   const [loading, setLoading] = useState(false);
