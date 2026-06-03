@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useRecomputeHealth, useUpdateHealthNotes, type HealthComputationResult } from '@/hooks/useHealthScore';
 import { HealthBadge } from '@/components/ui/HealthBadge';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import type { Database } from '@/integrations/supabase/types';
 
 type HealthScore = Database['public']['Enums']['health_score'];
@@ -40,19 +40,19 @@ export function HealthScorePanel({
     try {
       const result = await recomputeHealth.mutateAsync();
       setLastComputation(result.computation);
-      toast.success(t('workspace.healthScoreRecomputed'));
+      notify.success(t('workspace.healthScoreRecomputed'));
     } catch {
-      toast.error(t('workspace.failedToRecomputeHealthScore'));
+      notify.error(t('workspace.failedToRecomputeHealthScore'));
     }
   };
 
   const handleSaveNotes = async () => {
     try {
       await updateHealthNotes.mutateAsync(editedNotes || null);
-      toast.success(t('workspace.healthNotesSaved'));
+      notify.success(t('workspace.healthNotesSaved'));
       setShowNotesEditor(false);
     } catch {
-      toast.error(t('workspace.failedToSaveNotes'));
+      notify.error(t('workspace.failedToSaveNotes'));
     }
   };
 

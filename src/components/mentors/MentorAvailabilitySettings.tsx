@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Clock, Plus, Trash2, Save, Loader2, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -96,7 +96,7 @@ export function MentorAvailabilitySettings() {
   const handleSave = async () => {
     for (const slot of slots) {
       if (slot.start_time >= slot.end_time) {
-        toast.error(t('mentor.startBeforeEnd', 'A hora de início deve ser anterior ao fim'));
+        notify.error(t('mentor.startBeforeEnd', 'A hora de início deve ser anterior ao fim'));
         return;
       }
     }
@@ -111,10 +111,10 @@ export function MentorAvailabilitySettings() {
           is_active: s.is_active,
         }))
       );
-      toast.success(t('mentor.availabilitySaved', 'Disponibilidade guardada'));
+      notify.success(t('mentor.availabilitySaved', 'Disponibilidade guardada'));
       setHasChanges(false);
     } catch (error: any) {
-      toast.error(error.message || t('mentor.saveFailed', 'Falha ao guardar disponibilidade'));
+      notify.error(error.message || t('mentor.saveFailed', 'Falha ao guardar disponibilidade'));
     }
   };
 

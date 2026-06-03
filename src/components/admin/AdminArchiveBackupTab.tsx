@@ -20,7 +20,7 @@ import {
   ExternalLink, AlertTriangle, Play, Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 // ─── Contract Archive Section ──────────────────────────────
 
@@ -51,11 +51,11 @@ function ContractArchiveStatus() {
       return data;
     },
     onSuccess: () => {
-      toast.success(t('admin.archive.retryTriggered'));
+      notify.success(t('admin.archive.retryTriggered'));
       queryClient.invalidateQueries({ queryKey: ['contract-archive-status'] });
     },
     onError: (err: any) => {
-      toast.error(err?.message || t('admin.archive.retryError'));
+      notify.error(err?.message || t('admin.archive.retryError'));
     },
   });
 
@@ -70,11 +70,11 @@ function ContractArchiveStatus() {
     onSuccess: (data: any) => {
       const processed = data?.results?.length || 0;
       const succeeded = data?.results?.filter((r: any) => r.success).length || 0;
-      toast.success(t('admin.archive.runAllSuccess', { succeeded, processed }));
+      notify.success(t('admin.archive.runAllSuccess', { succeeded, processed }));
       queryClient.invalidateQueries({ queryKey: ['contract-archive-status'] });
     },
     onError: (err: any) => {
-      toast.error(err?.message || t('admin.archive.runAllError'));
+      notify.error(err?.message || t('admin.archive.runAllError'));
     },
   });
 
@@ -236,11 +236,11 @@ function EcosystemSnapshotStatus() {
       return data;
     },
     onSuccess: (data: any) => {
-      toast.success(t('admin.archive.snapshotSuccess', { count: data?.total_records || '?' }));
+      notify.success(t('admin.archive.snapshotSuccess', { count: data?.total_records || '?' }));
       queryClient.invalidateQueries({ queryKey: ['ecosystem-snapshots'] });
     },
     onError: (err: any) => {
-      toast.error(err?.message || t('admin.archive.snapshotError'));
+      notify.error(err?.message || t('admin.archive.snapshotError'));
       queryClient.invalidateQueries({ queryKey: ['ecosystem-snapshots'] });
     },
   });

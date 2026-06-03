@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Lock, MessageSquare, Plus, Trash2, Unlock } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface NotesSectionProps {
   workspaceId: string;
@@ -28,19 +28,19 @@ export function NotesSection({ workspaceId, canManage }: NotesSectionProps) {
   const deleteNote = useDeleteConsultantNote();
 
   const handleSubmit = async () => {
-    if (!newNote.trim()) { toast.error(t('notes.enterNote')); return; }
+    if (!newNote.trim()) { notify.error(t('notes.enterNote')); return; }
     try {
       await createNote.mutateAsync({ workspaceId, content: newNote, isPrivate });
       setNewNote('');
-      toast.success(t('notes.noteAdded'));
-    } catch { toast.error(t('notes.failedToAddNote')); }
+      notify.success(t('notes.noteAdded'));
+    } catch { notify.error(t('notes.failedToAddNote')); }
   };
 
   const handleDelete = async (noteId: string) => {
     try {
       await deleteNote.mutateAsync(noteId);
-      toast.success(t('notes.noteDeleted'));
-    } catch { toast.error(t('notes.failedToDeleteNote')); }
+      notify.success(t('notes.noteDeleted'));
+    } catch { notify.error(t('notes.failedToDeleteNote')); }
   };
 
   return (

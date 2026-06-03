@@ -17,7 +17,7 @@ import {
   Video,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -90,7 +90,7 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
   const handleGenerate = async () => {
     if (isCoolingDown) return;
     if (!checkRateLimit(`session-ai-${sessionId}`, 5, 300000)) {
-      toast.error(t('errors.rateLimitReached'));
+      notify.error(t('errors.rateLimitReached'));
       return;
     }
     setAiError(false);
@@ -152,29 +152,29 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
       });
 
       if (error) {
-        toast.error(t('errors.aiProcessingError'));
+        notify.error(t('errors.aiProcessingError'));
         logger.error('Teams transcript import error', {}, error);
         return;
       }
 
       if (data?.success && data?.status === 'ok' && data?.transcript_text) {
         setTranscript(data.transcript_text);
-        toast.success(t('sessions.transcriçãoImportadaEGuardadaCom'));
+        notify.success(t('sessions.transcriçãoImportadaEGuardadaCom'));
         onRefresh?.();
       } else if (data?.status === 'not_ready') {
-        toast.info(t('sessions.aindaNãoHáTranscriçãoDisponível'));
+        notify.info(t('sessions.aindaNãoHáTranscriçãoDisponível'));
       } else if (data?.status === 'no_meeting_url') {
-        toast.warning(t('sessions.estaSessãoNãoTemLink'));
+        notify.warn(t('sessions.estaSessãoNãoTemLink'));
       } else if (data?.status === 'not_found') {
-        toast.warning(t('sessions.reuniãoNãoEncontradaNoTeams'));
+        notify.warn(t('sessions.reuniãoNãoEncontradaNoTeams'));
       } else if (data?.status === 'forbidden_policy') {
-        toast.error(t('sessions.faltaApplicationAccessPolicyNo'));
+        notify.error(t('sessions.faltaApplicationAccessPolicyNo'));
       } else {
-        toast.error(data?.error || 'Erro ao importar transcrição');
+        notify.error(data?.error || 'Erro ao importar transcrição');
       }
     } catch (err) {
       logger.error('Teams transcript fetch error', {}, err);
-      toast.error(t('errors.aiProcessingError'));
+      notify.error(t('errors.aiProcessingError'));
     } finally {
       setIsFetchingTeams(false);
     }

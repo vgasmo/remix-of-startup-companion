@@ -14,7 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ContentSkeleton } from '@/components/ui/ContentSkeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface TagCategory {
   id: string;
@@ -105,11 +105,11 @@ export function AdminTagCategoriesManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tag-categories'] });
-      toast.success(editingCategory ? t('admin.tags.categoryUpdated') : t('admin.tags.categoryCreated'));
+      notify.success(editingCategory ? t('admin.tags.categoryUpdated') : t('admin.tags.categoryCreated'));
       closeCategoryDialog();
     },
     onError: () => {
-      toast.error(t('common.error'));
+      notify.error(t('common.error'));
     },
   });
 
@@ -132,11 +132,11 @@ export function AdminTagCategoriesManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tags-with-categories'] });
       queryClient.invalidateQueries({ queryKey: ['tags'] });
-      toast.success(editingTag ? t('admin.tags.tagUpdated') : t('admin.tags.tagCreated'));
+      notify.success(editingTag ? t('admin.tags.tagUpdated') : t('admin.tags.tagCreated'));
       closeTagDialog();
     },
     onError: () => {
-      toast.error(t('common.error'));
+      notify.error(t('common.error'));
     },
   });
 
@@ -157,12 +157,12 @@ export function AdminTagCategoriesManager() {
       queryClient.invalidateQueries({ queryKey: ['tag-categories'] });
       queryClient.invalidateQueries({ queryKey: ['tags-with-categories'] });
       queryClient.invalidateQueries({ queryKey: ['tags'] });
-      toast.success(t('common.deleted'));
+      notify.success(t('common.deleted'));
       setDeleteDialogOpen(false);
       setDeletingItem(null);
     },
     onError: () => {
-      toast.error(t('common.error'));
+      notify.error(t('common.error'));
     },
   });
 

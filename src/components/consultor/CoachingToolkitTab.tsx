@@ -24,7 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 
 interface CoachingTechnique {
@@ -245,7 +245,7 @@ export function CoachingToolkitTab() {
   const copyExamples = (technique: CoachingTechnique) => {
     const text = `# ${technique.name}\n\n${technique.examples.map((e) => `• ${e}`).join('\n')}`;
     navigator.clipboard.writeText(text);
-    toast.success(t('consultorTools.copiedToClipboard', { defaultValue: 'Examples copied to clipboard' }));
+    notify.success(t('consultorTools.copiedToClipboard', { defaultValue: 'Examples copied to clipboard' }));
   };
 
   return (

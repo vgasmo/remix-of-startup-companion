@@ -39,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useWorkQueue, useMarkWorkQueueItemDone, useSnoozeWorkQueueItem, useRecomputeWorkQueue } from '@/hooks/useWorkQueue';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface WorkQueuePanelProps {
   compact?: boolean;
@@ -102,9 +102,9 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
     setIsRecomputing(true);
     try {
       await recomputeWorkQueue.mutateAsync();
-      toast.success(t('workQueue.updated'));
+      notify.success(t('workQueue.updated'));
     } catch (error) {
-      toast.error(t('workQueue.updateFailed'));
+      notify.error(t('workQueue.updateFailed'));
     } finally {
       setIsRecomputing(false);
     }
@@ -113,18 +113,18 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
   const handleMarkDone = async (itemId: string) => {
     try {
       await markAsDone.mutateAsync(itemId);
-      toast.success(t('workQueue.markedDone'));
+      notify.success(t('workQueue.markedDone'));
     } catch (error) {
-      toast.error(t('workQueue.updateFailed'));
+      notify.error(t('workQueue.updateFailed'));
     }
   };
 
   const handleSnooze = async (itemId: string, days: number) => {
     try {
       await snoozeItem.mutateAsync({ id: itemId, days });
-      toast.success(t('workQueue.snoozedForDays', { days }));
+      notify.success(t('workQueue.snoozedForDays', { days }));
     } catch (error) {
-      toast.error(t('workQueue.snoozeFailed'));
+      notify.error(t('workQueue.snoozeFailed'));
     }
   };
 

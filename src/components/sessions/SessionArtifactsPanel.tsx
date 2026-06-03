@@ -27,7 +27,7 @@ import {
 import { useGenerateSessionArtifacts, useSessionTranscripts, useAddTranscript } from '@/hooks/useSessionArtifacts';
 import { SessionTranscriptsViewer } from './SessionTranscriptsViewer';
 import { MeetingIntegrationGuide } from './MeetingIntegrationGuide';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface SessionArtifactsPanelProps {
   sessionId: string;
@@ -75,7 +75,7 @@ export function SessionArtifactsPanel({
 
   const handleAddTranscript = async () => {
     if (!manualTranscript.trim()) {
-      toast.error(t('sessions.enterTranscript', 'Introduza o texto da transcrição'));
+      notify.error(t('sessions.enterTranscript', 'Introduza o texto da transcrição'));
       return;
     }
     

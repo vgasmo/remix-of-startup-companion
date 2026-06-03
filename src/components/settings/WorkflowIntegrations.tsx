@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Zap, Bell, Slack, ExternalLink, CheckCircle2, Database } from 'lucide-react';
 import { TeamsIntegrationCard } from './TeamsIntegrationCard';
 import { GlobalGraphApiCard } from './GlobalGraphApiCard';
@@ -26,7 +26,7 @@ export function WorkflowIntegrations() {
 
   const handleSlackToggle = async (enabled: boolean) => {
     if (enabled && !prefs?.slack_webhook_url && !webhookUrl) {
-      toast.error(t('integrations.slackWebhookRequired'));
+      notify.error(t('integrations.slackWebhookRequired'));
       return;
     }
     try {
@@ -34,29 +34,29 @@ export function WorkflowIntegrations() {
         slack_enabled: enabled,
         ...(webhookUrl && { slack_webhook_url: webhookUrl })
       });
-      toast.success(enabled ? t('integrations.slackEnabled') : t('integrations.slackDisabled'));
+      notify.success(enabled ? t('integrations.slackEnabled') : t('integrations.slackDisabled'));
     } catch (error: any) {
-      toast.error(error.message || t('common.error'));
+      notify.error(error.message || t('common.error'));
     }
   };
 
   const handleSaveWebhook = async () => {
     if (!webhookUrl.startsWith('https://hooks.slack.com/')) {
-      toast.error(t('integrations.invalidSlackWebhook'));
+      notify.error(t('integrations.invalidSlackWebhook'));
       return;
     }
     try {
       await updatePrefs.mutateAsync({ slack_webhook_url: webhookUrl });
-      toast.success(t('integrations.webhookSaved'));
+      notify.success(t('integrations.webhookSaved'));
     } catch (error: any) {
-      toast.error(error.message || t('common.error'));
+      notify.error(error.message || t('common.error'));
     }
   };
 
   const handleTestSlack = async () => {
     const url = webhookUrl || prefs?.slack_webhook_url;
     if (!url) {
-      toast.error(t('integrations.slackWebhookRequired'));
+      notify.error(t('integrations.slackWebhookRequired'));
       return;
     }
     
@@ -79,9 +79,9 @@ export function WorkflowIntegrations() {
           ]
         }),
       });
-      toast.success(t('integrations.slackTestSent'));
+      notify.success(t('integrations.slackTestSent'));
     } catch {
-      toast.error(t('integrations.slackTestFailed'));
+      notify.error(t('integrations.slackTestFailed'));
     } finally {
       setTestingSlack(false);
     }
@@ -90,18 +90,18 @@ export function WorkflowIntegrations() {
   const handleMilestoneRemindersToggle = async (enabled: boolean) => {
     try {
       await updatePrefs.mutateAsync({ milestone_reminders_enabled: enabled });
-      toast.success(enabled ? t('integrations.remindersEnabled') : t('integrations.remindersDisabled'));
+      notify.success(enabled ? t('integrations.remindersEnabled') : t('integrations.remindersDisabled'));
     } catch (error: any) {
-      toast.error(error.message || t('common.error'));
+      notify.error(error.message || t('common.error'));
     }
   };
 
   const handleReminderDaysChange = async (days: string) => {
     try {
       await updatePrefs.mutateAsync({ milestone_reminder_days: parseInt(days) });
-      toast.success(t('common.success'));
+      notify.success(t('common.success'));
     } catch (error: any) {
-      toast.error(error.message || t('common.error'));
+      notify.error(error.message || t('common.error'));
     }
   };
 

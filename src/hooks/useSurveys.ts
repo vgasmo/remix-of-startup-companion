@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { Json } from "@/integrations/supabase/types";
 import { logger } from '@/lib/logger';
 
@@ -116,10 +116,10 @@ export function useCreateSurveyDefinition() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["survey-definitions"] });
-      toast.success("Survey template created");
+      notify.success("Survey template created");
     },
     onError: (error) => {
-      toast.error("Failed to create survey template");
+      notify.error("Failed to create survey template");
       logger.error('operation_error', {}, error);
     },
   });
@@ -152,10 +152,10 @@ export function useUpdateSurveyDefinition() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["survey-definitions"] });
-      toast.success("Survey template updated");
+      notify.success("Survey template updated");
     },
     onError: (error) => {
-      toast.error("Failed to update survey template");
+      notify.error("Failed to update survey template");
       logger.error('operation_error', {}, error);
     },
   });
@@ -204,10 +204,10 @@ export function useCreateSurveyCampaign() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
-      toast.success("Survey campaign created");
+      notify.success("Survey campaign created");
     },
     onError: (error) => {
-      toast.error("Failed to create campaign");
+      notify.error("Failed to create campaign");
       logger.error('operation_error', {}, error);
     },
   });
@@ -282,10 +282,10 @@ export function useLaunchCampaign() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
       queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
-      toast.success(t('surveys.campaignLaunched', { instancesCreated: data.instancesCreated }));
+      notify.success(t('surveys.campaignLaunched', { instancesCreated: data.instancesCreated }));
     },
     onError: (error) => {
-      toast.error("Failed to launch campaign");
+      notify.error("Failed to launch campaign");
       logger.error('operation_error', {}, error);
     },
   });
@@ -305,10 +305,10 @@ export function useCloseCampaign() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
-      toast.success("Campaign closed");
+      notify.success("Campaign closed");
     },
     onError: (error) => {
-      toast.error("Failed to close campaign");
+      notify.error("Failed to close campaign");
       logger.error('operation_error', {}, error);
     },
   });
@@ -476,13 +476,13 @@ export function useSaveSurveyResponses() {
       queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
 
       if (variables.submit) {
-        toast.success("Survey submitted successfully!");
+        notify.success("Survey submitted successfully!");
       } else {
-        toast.success("Progress saved");
+        notify.success("Progress saved");
       }
     },
     onError: (error) => {
-      toast.error("Failed to save survey");
+      notify.error("Failed to save survey");
       logger.error('operation_error', {}, error);
     },
   });

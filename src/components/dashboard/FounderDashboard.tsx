@@ -34,7 +34,7 @@ import { HealthScore } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProgressStreak } from '@/hooks/useProgressStreak';
 import { useChecklistRecovery } from '@/hooks/useChecklistRecovery';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { SmartNudgeCard } from '@/components/dashboard/SmartNudgeCard';
 import { useSmartNudges } from '@/hooks/useSmartNudges';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
@@ -73,7 +73,7 @@ export function FounderDashboard({
 
   const handleRestoreChecklist = () => {
     restoreChecklist();
-    toast.success(t('checklistRecovery.restored', { defaultValue: 'Checklist reposta com sucesso' }));
+    notify.success(t('checklistRecovery.restored', { defaultValue: 'Checklist reposta com sucesso' }));
   };
 
   useEffect(() => {

@@ -30,7 +30,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePrograms } from "@/hooks/useWorkspaces";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { logger } from "@/lib/logger";
 import i18n from "@/i18n";
 
@@ -360,7 +360,7 @@ export function SmartImportDialog({
         }
       }
 
-      toast.success(t("smartImport.success", { defaultValue: "Smart import complete." }));
+      notify.success(t("smartImport.success", { defaultValue: "Smart import complete." }));
       qc.invalidateQueries({ queryKey: ["workspaces"] });
       qc.invalidateQueries({ queryKey: ["team-members", targetStartupId] });
       qc.invalidateQueries({ queryKey: ["funding-rounds", targetStartupId] });

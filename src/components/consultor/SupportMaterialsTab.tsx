@@ -34,7 +34,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSupportMaterials, useSupportMaterialDownloadUrl, SupportMaterial } from '@/hooks/useSupportMaterials';
 import { useAuth } from '@/contexts/AuthContext';
 import { UploadSupportMaterialDialog } from './UploadSupportMaterialDialog';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Download } from 'lucide-react';
 
 const STARTUP_TYPES = ['b2b', 'b2c', 'marketplace', 'deep_tech', 'impact', 'saas'];
@@ -326,7 +326,7 @@ function FileDownloadButton({ path }: { path: string }) {
       const url = await getUrl.mutateAsync(path);
       window.open(url, '_blank', 'noopener,noreferrer');
     } catch (err) {
-      toast.error(t('common.error', 'Erro'), { description: (err as Error).message });
+      notify.error(t('common.error', 'Erro'), { description: (err as Error).message });
     }
   };
   return (

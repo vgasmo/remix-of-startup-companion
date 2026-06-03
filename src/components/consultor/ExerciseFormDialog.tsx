@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCreateExercise, useUpdateExercise, Exercise } from '@/hooks/useExerciseLibrary';
 import { CONTEXT_TAGS } from './ExerciseLibraryTab';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 
 interface ExerciseFormDialogProps {
@@ -86,7 +86,7 @@ export function ExerciseFormDialog({ open, onOpenChange, exercise }: ExerciseFor
   const updateStep = (index: number, field: keyof ExerciseStep, value: string | number) => setSteps((prev) => prev.map((s, i) => (i === index ? { ...s, [field]: value } : s)));
 
   const handleSubmit = async () => {
-    if (!title.trim()) { toast.error(t('consultor.titleIsRequired')); return; }
+    if (!title.trim()) { notify.error(t('consultor.titleIsRequired')); return; }
     const exerciseStatus: 'draft' | 'approved' = isApproved ? 'approved' : 'draft';
     const data = {
       title: title.trim(), purpose: purpose.trim() || null, duration_minutes: durationMinutes,
@@ -100,14 +100,14 @@ export function ExerciseFormDialog({ open, onOpenChange, exercise }: ExerciseFor
     try {
       if (exercise) {
         await updateMutation.mutateAsync({ id: exercise.id, ...data });
-        toast.success(t('consultor.exerciseUpdated'));
+        notify.success(t('consultor.exerciseUpdated'));
       } else {
         await createMutation.mutateAsync(data);
-        toast.success(t('consultor.exerciseCreated'));
+        notify.success(t('consultor.exerciseCreated'));
       }
       onOpenChange(false);
     } catch (error) {
-      toast.error(t('consultor.failedToSaveExercise'));
+      notify.error(t('consultor.failedToSaveExercise'));
     }
   };
 

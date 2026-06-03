@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/lib/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -74,10 +74,10 @@ export function AdminSupportMaterialsManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-support-materials'] });
       queryClient.invalidateQueries({ queryKey: ['support-materials'] });
-      toast.success(t('admin.materialCreated'));
+      notify.success(t('admin.materialCreated'));
       setIsCreating(false);
     },
-    onError: () => toast.error(t('admin.failedToCreateMaterial')),
+    onError: () => notify.error(t('admin.failedToCreateMaterial')),
   });
 
   const updateMutation = useMutation({
@@ -91,10 +91,10 @@ export function AdminSupportMaterialsManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-support-materials'] });
       queryClient.invalidateQueries({ queryKey: ['support-materials'] });
-      toast.success(t('admin.materialUpdated'));
+      notify.success(t('admin.materialUpdated'));
       setEditingMaterial(null);
     },
-    onError: () => toast.error(t('admin.failedToUpdateMaterial')),
+    onError: () => notify.error(t('admin.failedToUpdateMaterial')),
   });
 
   const deleteMutation = useMutation({
@@ -108,10 +108,10 @@ export function AdminSupportMaterialsManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-support-materials'] });
       queryClient.invalidateQueries({ queryKey: ['support-materials'] });
-      toast.success(t('admin.materialDeleted'));
+      notify.success(t('admin.materialDeleted'));
       setDeleteTarget(null);
     },
-    onError: () => toast.error(t('admin.failedToDeleteMaterial')),
+    onError: () => notify.error(t('admin.failedToDeleteMaterial')),
   });
 
   const handleCreate = () => {
@@ -144,7 +144,7 @@ export function AdminSupportMaterialsManager() {
 
   const handleSave = async () => {
     if (!formData.title.trim()) {
-      toast.error(t('admin.titleIsRequired'));
+      notify.error(t('admin.titleIsRequired'));
       return;
     }
 

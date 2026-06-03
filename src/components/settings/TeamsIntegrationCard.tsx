@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { 
   CheckCircle2, 
   ExternalLink, 
@@ -60,7 +60,7 @@ export function TeamsIntegrationCard({ workspaceId, programId, canEdit }: TeamsI
 
   const handleToggle = async (enabled: boolean) => {
     if (enabled && !hasWebhook) {
-      toast.error(t('integrations.pleaseConfigureAWebhookUrl'));
+      notify.error(t('integrations.pleaseConfigureAWebhookUrl'));
       return;
     }
     try {
@@ -68,15 +68,15 @@ export function TeamsIntegrationCard({ workspaceId, programId, canEdit }: TeamsI
         enabled,
         ...(webhookUrl && { webhook_url: webhookUrl })
       });
-      toast.success(enabled ? t('integrations.teamsEnabled', 'Teams integration enabled') : t('integrations.teamsDisabled', 'Teams integration disabled'));
+      notify.success(enabled ? t('integrations.teamsEnabled', 'Teams integration enabled') : t('integrations.teamsDisabled', 'Teams integration disabled'));
     } catch (error: any) {
-      toast.error(error.message || t('settings.failedToUpdate', 'Erro ao atualizar'));
+      notify.error(error.message || t('settings.failedToUpdate', 'Erro ao atualizar'));
     }
   };
 
   const handleSaveWebhook = async () => {
     if (!webhookUrl) {
-      toast.error(t('integrations.pleaseEnterAWebhookUrl'));
+      notify.error(t('integrations.pleaseEnterAWebhookUrl'));
       return;
     }
     // Basic validation for Teams webhook URL patterns (Office 365, Power Automate, Azure Logic Apps)
@@ -87,20 +87,20 @@ export function TeamsIntegrationCard({ workspaceId, programId, canEdit }: TeamsI
       'flow.microsoft.com'
     ];
     if (!validPatterns.some(pattern => webhookUrl.includes(pattern))) {
-      toast.error(t('integrations.pleaseEnterAValidMicrosoft'));
+      notify.error(t('integrations.pleaseEnterAValidMicrosoft'));
       return;
     }
     try {
       await updateSettings.mutateAsync({ webhook_url: webhookUrl });
-      toast.success(t('integrations.webhookUrlSaved'));
+      notify.success(t('integrations.webhookUrlSaved'));
     } catch (error: any) {
-      toast.error(error.message || t('settings.failedToSaveWebhook', 'Erro ao guardar webhook'));
+      notify.error(error.message || t('settings.failedToSaveWebhook', 'Erro ao guardar webhook'));
     }
   };
 
   const handleTestWebhook = async () => {
     if (!currentWebhookUrl) {
-      toast.error(t('integrations.pleaseSaveAWebhookUrl'));
+      notify.error(t('integrations.pleaseSaveAWebhookUrl'));
       return;
     }
     testWebhook.mutate();
@@ -110,7 +110,7 @@ export function TeamsIntegrationCard({ workspaceId, programId, canEdit }: TeamsI
     try {
       await updateSettings.mutateAsync({ [eventKey]: enabled });
     } catch (error: any) {
-      toast.error(error.message || t('settings.failedToUpdate', 'Erro ao atualizar'));
+      notify.error(error.message || t('settings.failedToUpdate', 'Erro ao atualizar'));
     }
   };
 

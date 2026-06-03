@@ -68,7 +68,7 @@ import { useCalendarSessions, useCreateSession, useUpdateSession, useDeleteSessi
 import { useSessionTemplates } from '@/hooks/useSessionTemplates';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 
@@ -198,11 +198,11 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
 
       if (error) throw error;
 
-      toast.success(t('sessions.invitesSent', { defaultValue: 'Convites de calendário enviados para {{count}} destinatário(s)', count: emails.length }));
+      notify.success(t('sessions.invitesSent', { defaultValue: 'Convites de calendário enviados para {{count}} destinatário(s)', count: emails.length }));
       return data;
     } catch (error) {
       logger.error('Error sending session invite', {}, error);
-      toast.error(t('sessions.inviteSendError', { defaultValue: 'Erro ao enviar convites de calendário' }));
+      notify.error(t('sessions.inviteSendError', { defaultValue: 'Erro ao enviar convites de calendário' }));
       throw error;
     } finally {
       setIsSendingInvite(false);
@@ -244,12 +244,12 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
         }
       }
 
-      toast.success(t('sessions.sessionScheduled'));
+      notify.success(t('sessions.sessionScheduled'));
       resetForm();
       setIsAddDialogOpen(false);
     } catch (error) {
       logger.error('Error creating session', {}, error);
-      toast.error(t('sessions.createSession') + ' ' + t('common.error').toLowerCase());
+      notify.error(t('sessions.createSession') + ' ' + t('common.error').toLowerCase());
     }
   };
 
@@ -270,24 +270,24 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
         join_url: formData.joinUrl || null,
       });
 
-      toast.success(t('sessions.sessionUpdated'));
+      notify.success(t('sessions.sessionUpdated'));
       resetForm();
       setEditingSession(null);
       setIsEditDialogOpen(false);
     } catch (error) {
       logger.error('Error updating session', {}, error);
-      toast.error(t('sessions.editSession') + ' ' + t('common.error').toLowerCase());
+      notify.error(t('sessions.editSession') + ' ' + t('common.error').toLowerCase());
     }
   };
 
   const handleDeleteSession = async (id: string) => {
     try {
       await deleteSession.mutateAsync(id);
-      toast.success(t('sessions.sessionDeleted'));
+      notify.success(t('sessions.sessionDeleted'));
       setDeleteConfirmId(null);
     } catch (error) {
       logger.error('Error deleting session', {}, error);
-      toast.error(t('sessions.deleteSession') + ' ' + t('common.error').toLowerCase());
+      notify.error(t('sessions.deleteSession') + ' ' + t('common.error').toLowerCase());
     }
   };
 
@@ -729,7 +729,7 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
                   setSendInviteSession(null);
                   setQuickInviteEmails('');
                 } else {
-                  toast.error(t('sessions.enterValidEmail', { defaultValue: 'Introduza pelo menos um email válido' }));
+                  notify.error(t('sessions.enterValidEmail', { defaultValue: 'Introduza pelo menos um email válido' }));
                 }
               }}
               disabled={isSendingInvite || !quickInviteEmails.trim()}

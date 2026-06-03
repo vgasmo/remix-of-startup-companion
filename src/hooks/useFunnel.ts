@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { type FunnelStage, type FunnelType } from '@/constants/funnelStages';
 import { logger } from '@/lib/logger';
 
@@ -111,9 +111,9 @@ export function useCreateFunnelItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
-      toast.success(t('crm.leadCreated'));
+      notify.success(t('crm.leadCreated'));
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notify.error(e.message),
   });
 }
 
@@ -195,10 +195,10 @@ export function useUpdateFunnelItem() {
       if (context?.previousPipeline) {
         queryClient.setQueryData(['crm-pipeline'], context.previousPipeline);
       }
-      toast.error(e.message);
+      notify.error(e.message);
     },
     onSuccess: (_data, { id, ...updates }) => {
-      toast.success(t('crm.updated'));
+      notify.success(t('crm.updated'));
       
       // E1: Auto-suggest workspace creation when lead reaches "contracted"
       if (updates.stage === 'contracted') {
@@ -415,8 +415,8 @@ export function useConvertToStartup() {
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
-      toast.success(t('crm.convertedToStartup'));
+      notify.success(t('crm.convertedToStartup'));
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notify.error(e.message),
   });
 }

@@ -27,7 +27,7 @@ import { usePrograms } from '@/hooks/useAdminData';
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from '@/components/ui/select';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 
@@ -103,7 +103,7 @@ export default function BulkContractImport() {
       .eq('batch_id', id)
       .order('created_at', { ascending: true });
     if (error) {
-      toast.error(t('bulkImport.errors.loadFailed', 'Failed to load rows'));
+      notify.error(t('bulkImport.errors.loadFailed', 'Failed to load rows'));
       return;
     }
     setRows((data as BatchRow[]) || []);
@@ -136,7 +136,7 @@ export default function BulkContractImport() {
   const startBatch = async () => {
     if (!user || files.length === 0) return;
     if (!programId) {
-      toast.error(t('bulkImport.errors.programRequired'));
+      notify.error(t('bulkImport.errors.programRequired'));
       return;
     }
     setUploading(true);
@@ -172,7 +172,7 @@ export default function BulkContractImport() {
           .upload(path, file, { contentType: 'application/pdf', upsert: false });
         if (upErr) {
           logger.warn('Upload failed', { file: file.name, err: upErr.message });
-          toast.error(`${file.name}: ${upErr.message}`);
+          notify.error(`${file.name}: ${upErr.message}`);
           continue;
         }
         rowInserts.push({ batch_id: newBatchId, pdf_path: path, pdf_filename: file.name });
@@ -180,7 +180,7 @@ export default function BulkContractImport() {
       }
 
       if (rowInserts.length === 0) {
-        toast.error(t('bulkImport.errors.noUploads', 'No files uploaded successfully'));
+        notify.error(t('bulkImport.errors.noUploads', 'No files uploaded successfully'));
         setUploading(false);
         return;
       }
@@ -201,7 +201,7 @@ export default function BulkContractImport() {
       await runExtraction(newBatchId);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Unknown error';
-      toast.error(`${t('bulkImport.errors.uploadFailed', 'Upload failed')}: ${msg}`);
+      notify.error(`${t('bulkImport.errors.uploadFailed', 'Upload failed')}: ${msg}`);
       setUploading(false);
     }
   };
@@ -233,7 +233,7 @@ export default function BulkContractImport() {
       await refreshRows(id);
     }
     setExtracting(false);
-    toast.success(t('bulkImport.extractComplete', 'Extraction complete'));
+    notify.success(t('bulkImport.extractComplete', 'Extraction complete'));
   };
 
   // ============ ROW EDITING ============
@@ -252,7 +252,7 @@ export default function BulkContractImport() {
       .from('contract-imports')
       .createSignedUrl(row.pdf_path, 60 * 5);
     if (error || !data) {
-      toast.error(t('bulkImport.errors.previewFailed', 'Cannot open PDF'));
+      notify.error(t('bulkImport.errors.previewFailed', 'Cannot open PDF'));
       return;
     }
     setPreviewUrl(data.signedUrl);
@@ -265,7 +265,7 @@ export default function BulkContractImport() {
       r.selected && (r.status === 'will_create' || r.status === 'will_update')
     );
     if (selectedReady.length === 0) {
-      toast.error(t('bulkImport.errors.nothingToCommit', 'No rows ready to commit'));
+      notify.error(t('bulkImport.errors.nothingToCommit', 'No rows ready to commit'));
       return;
     }
     if (!confirm(t('bulkImport.confirmCommit', `Import ${selectedReady.length} contracts? This will create/update startups, workspaces, and contracts.`))) {
@@ -278,14 +278,14 @@ export default function BulkContractImport() {
         { body: { batch_id: batchId } }
       );
       if (error) throw error;
-      toast.success(
+      notify.success(
         t('bulkImport.commitSuccess', `Imported ${data?.committed ?? 0} contracts (${data?.failed ?? 0} failed)`)
       );
       await refreshRows(batchId);
       setStep('done');
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Unknown error';
-      toast.error(`${t('bulkImport.errors.commitFailed', 'Commit failed')}: ${msg}`);
+      notify.error(`${t('bulkImport.errors.commitFailed', 'Commit failed')}: ${msg}`);
     } finally {
       setCommitting(false);
     }
@@ -295,7 +295,7 @@ export default function BulkContractImport() {
   const downloadErrorsCsv = () => {
     const failed = rows.filter(r => r.status === 'error');
     if (failed.length === 0) {
-      toast.info(t('bulkImport.noErrors', 'No errors to export'));
+      notify.info(t('bulkImport.noErrors', 'No errors to export'));
       return;
     }
     const header = 'filename,error,extracted_startup_name,extracted_nif\n';

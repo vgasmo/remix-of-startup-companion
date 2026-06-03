@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AlertTriangle, Mail, Send, Users, Building2, Phone, Loader2, CheckCircle2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 
 interface DataIssue {
@@ -125,7 +125,7 @@ export function DataQualityDashboard() {
     ) || [];
 
     if (toInvite.length === 0) {
-      toast.error(t('dataQuality.noStartupsToInvite', 'No valid invites selected'));
+      notify.error(t('dataQuality.noStartupsToInvite', 'No valid invites selected'));
       return;
     }
 
@@ -161,10 +161,10 @@ export function DataQualityDashboard() {
     queryClient.invalidateQueries({ queryKey: ['data-quality-issues'] });
 
     if (successCount > 0) {
-      toast.success(t('dataQuality.invitesSent', '{{count}} invites sent successfully').replace('{{count}}', String(successCount)));
+      notify.success(t('dataQuality.invitesSent', '{{count}} invites sent successfully').replace('{{count}}', String(successCount)));
     }
     if (errorCount > 0) {
-      toast.error(t('dataQuality.invitesFailed', '{{count}} invites failed').replace('{{count}}', String(errorCount)));
+      notify.error(t('dataQuality.invitesFailed', '{{count}} invites failed').replace('{{count}}', String(errorCount)));
     }
   };
 
@@ -365,10 +365,10 @@ export function DataQualityDashboard() {
                                 },
                               });
                               if (error) throw error;
-                              toast.success(t('dataQuality.inviteSent', 'Invite sent'));
+                              notify.success(t('dataQuality.inviteSent', 'Invite sent'));
                               queryClient.invalidateQueries({ queryKey: ['data-quality-issues'] });
                             } catch {
-                              toast.error(t('dataQuality.inviteFailed', 'Failed to send invite'));
+                              notify.error(t('dataQuality.inviteFailed', 'Failed to send invite'));
                             }
                           }}
                         >

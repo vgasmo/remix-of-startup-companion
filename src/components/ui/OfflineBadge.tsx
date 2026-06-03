@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { WifiOff, Wifi } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 export function OfflineBadge() {
   const { t } = useTranslation();
@@ -19,7 +19,7 @@ export function OfflineBadge() {
       // Only show reconnection toast if user was previously offline
       if (wasOffline.current) {
         wasOffline.current = false;
-        toast.success(t('offline.backOnline', { defaultValue: 'Back online! Syncing your data...' }), {
+        notify.success(t('offline.backOnline', { defaultValue: 'Back online! Syncing your data...' }), {
           icon: <Wifi className="h-4 w-4 text-green-500" />,
           duration: 3000,
         });

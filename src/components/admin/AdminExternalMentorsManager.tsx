@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface ExternalMentor {
   id: string;
@@ -272,11 +272,11 @@ export function AdminExternalMentorsManager() {
     if (!selectedUserId) return;
     addMentorRole.mutate(selectedUserId, {
       onSuccess: () => {
-        toast.success(t('admin.mentors.mentorAdded'));
+        notify.success(t('admin.mentors.mentorAdded'));
         setAddDialogOpen(false);
         setSelectedUserId('');
       },
-      onError: () => toast.error(t('admin.mentors.failedToAddMentor')),
+      onError: () => notify.error(t('admin.mentors.failedToAddMentor')),
     });
   };
 
@@ -284,10 +284,10 @@ export function AdminExternalMentorsManager() {
     if (!removeTarget) return;
     removeMentorRole.mutate(removeTarget.id, {
       onSuccess: () => {
-        toast.success(t('admin.mentors.mentorRemoved'));
+        notify.success(t('admin.mentors.mentorRemoved'));
         setRemoveTarget(null);
       },
-      onError: () => toast.error(t('admin.mentors.failedToRemoveMentor')),
+      onError: () => notify.error(t('admin.mentors.failedToRemoveMentor')),
     });
   };
 
@@ -297,11 +297,11 @@ export function AdminExternalMentorsManager() {
       { mentorId: assignDialogMentor.id, workspaceId: selectedWorkspaceId },
       {
         onSuccess: () => {
-          toast.success(t('admin.mentors.workspaceAssigned'));
+          notify.success(t('admin.mentors.workspaceAssigned'));
           setAssignDialogMentor(null);
           setSelectedWorkspaceId('');
         },
-        onError: () => toast.error(t('admin.mentors.failedToAssign')),
+        onError: () => notify.error(t('admin.mentors.failedToAssign')),
       }
     );
   };
@@ -310,8 +310,8 @@ export function AdminExternalMentorsManager() {
     unassignMentor.mutate(
       { mentorId, workspaceId },
       {
-        onSuccess: () => toast.success(t('admin.mentors.workspaceUnassigned')),
-        onError: () => toast.error(t('admin.mentors.failedToUnassign')),
+        onSuccess: () => notify.success(t('admin.mentors.workspaceUnassigned')),
+        onError: () => notify.error(t('admin.mentors.failedToUnassign')),
       }
     );
   };

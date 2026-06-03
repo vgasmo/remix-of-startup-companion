@@ -13,7 +13,7 @@ import {
 import { useHealthAlerts, useAcknowledgeAlert, useSnoozeAlert, HealthAlert } from '@/hooks/useHealthHistory';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface HealthAlertsCardProps {
   workspaceId: string;
@@ -33,18 +33,18 @@ export function HealthAlertsCard({ workspaceId, canManage = false, className }: 
   const handleAcknowledge = async (alert: HealthAlert) => {
     try {
       await acknowledgeAlert.mutateAsync({ alertId: alert.id, workspaceId });
-      toast.success(t('alerts.acknowledged', 'Alert acknowledged'));
+      notify.success(t('alerts.acknowledged', 'Alert acknowledged'));
     } catch (error) {
-      toast.error(t('alerts.acknowledgeFailed', 'Failed to acknowledge alert'));
+      notify.error(t('alerts.acknowledgeFailed', 'Failed to acknowledge alert'));
     }
   };
 
   const handleSnooze = async (alert: HealthAlert, days: number) => {
     try {
       await snoozeAlert.mutateAsync({ alertId: alert.id, workspaceId, days });
-      toast.success(t('alerts.snoozedDays', 'Alert snoozed for {{days}} days', { days }));
+      notify.success(t('alerts.snoozedDays', 'Alert snoozed for {{days}} days', { days }));
     } catch (error) {
-      toast.error(t('alerts.snoozeFailed', 'Failed to snooze alert'));
+      notify.error(t('alerts.snoozeFailed', 'Failed to snooze alert'));
     }
   };
 

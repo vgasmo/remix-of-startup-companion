@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 
 type InviteStatus = 'loading' | 'needs_login' | 'processing' | 'success' | 'error';
@@ -77,7 +77,7 @@ export default function AcceptInvite() {
       
       // (no token cleanup needed — token lives only in the URL)
       
-      toast.success(t('invite.acceptedSuccess'));
+      notify.success(t('invite.acceptedSuccess'));
       
       // Redirect to workspace after a brief delay
       setTimeout(() => {

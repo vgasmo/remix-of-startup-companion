@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface InvestorTemplate {
   id: string;
@@ -200,7 +200,7 @@ export function InvestorTemplateLibrary({ onSelectTemplate }: InvestorTemplateLi
     navigator.clipboard.writeText(templateText);
     // B4 Fix: Clear draft after successful copy
     clearDraft();
-    toast.success(t('investorUpdates.templateCopied'), {
+    notify.success(t('investorUpdates.templateCopied'), {
       description: t('investorUpdates.templateCopiedDesc'),
     });
   };
@@ -221,7 +221,7 @@ export function InvestorTemplateLibrary({ onSelectTemplate }: InvestorTemplateLi
     
     // B4 Fix: Clear draft after successful export
     clearDraft();
-    toast.success(t('investorUpdates.exportSuccess'));
+    notify.success(t('investorUpdates.exportSuccess'));
   };
 
   const handleUseTemplate = (template: InvestorTemplate) => {
@@ -233,7 +233,7 @@ export function InvestorTemplateLibrary({ onSelectTemplate }: InvestorTemplateLi
     navigator.clipboard.writeText(templateText);
     
     setPreviewOpen(false);
-    toast.success(t('investorUpdates.templateCopied'), {
+    notify.success(t('investorUpdates.templateCopied'), {
       description: t('investorUpdates.templateCopiedDesc'),
       duration: 4000,
     });

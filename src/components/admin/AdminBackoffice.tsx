@@ -24,7 +24,7 @@ import {
 import { StageBadge } from '@/components/ui/StageBadge';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import type { StartupStage, WorkspacePriority } from '@/types/database';
 
 // Backoffice sub-tab components
@@ -201,9 +201,9 @@ export function AdminBackoffice() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['backoffice-unified'] });
-      toast.success(t('admin.backoffice.stageUpdated'));
+      notify.success(t('admin.backoffice.stageUpdated'));
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const changePriorityMutation = useMutation({
@@ -213,9 +213,9 @@ export function AdminBackoffice() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['backoffice-unified'] });
-      toast.success(t('admin.backoffice.priorityUpdated'));
+      notify.success(t('admin.backoffice.priorityUpdated'));
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const changeProgramMutation = useMutation({
@@ -225,9 +225,9 @@ export function AdminBackoffice() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['backoffice-unified'] });
-      toast.success(t('admin.backoffice.programUpdated'));
+      notify.success(t('admin.backoffice.programUpdated'));
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const assignConsultorMutation = useMutation({
@@ -241,11 +241,11 @@ export function AdminBackoffice() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['backoffice-unified'] });
-      toast.success(t('admin.backoffice.consultantAssigned'));
+      notify.success(t('admin.backoffice.consultantAssigned'));
       setOpenConsultorPopover(null);
       setConsultorSearch('');
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const removeConsultorMutation = useMutation({
@@ -255,10 +255,10 @@ export function AdminBackoffice() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['backoffice-unified'] });
-      toast.success(t('admin.backoffice.consultantRemoved'));
+      notify.success(t('admin.backoffice.consultantRemoved'));
       setOpenConsultorPopover(null);
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const blockMutation = useMutation({
@@ -268,12 +268,12 @@ export function AdminBackoffice() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['backoffice-unified'] });
-      toast.success(t('admin.backoffice.workspaceBlocked'));
+      notify.success(t('admin.backoffice.workspaceBlocked'));
       setBlockDialogOpen(false);
       setWorkspaceToBlock(null);
       setBlockReason('');
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const unblockMutation = useMutation({
@@ -283,9 +283,9 @@ export function AdminBackoffice() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['backoffice-unified'] });
-      toast.success(t('admin.backoffice.workspaceUnblocked'));
+      notify.success(t('admin.backoffice.workspaceUnblocked'));
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   // Apply filters

@@ -42,7 +42,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 
 // Room type config with i18n keys
@@ -244,7 +244,7 @@ export function RoomMappingTab() {
     if (!file || !user) return;
 
     if (!mapBuildingId) {
-      toast.error(t('admin.backoffice.selectBuildingFirst'));
+      notify.error(t('admin.backoffice.selectBuildingFirst'));
       inputEl.value = '';
       return;
     }
@@ -303,7 +303,7 @@ export function RoomMappingTab() {
     } catch (error) {
       logger.error('Upload floor map failed', {}, error);
       const details = getErrorMessage(error);
-      toast.error(
+      notify.error(
         details
            ? `${t('admin.backoffice.uploadMapFailed')}: ${details}`
            : t('admin.backoffice.uploadMapFailed')

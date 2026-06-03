@@ -46,7 +46,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useInvestorUpdates, useShareLinks, useGenerateInvestorUpdate, useCreateShareLink, useRevokeShareLink } from '@/hooks/useInvestorUpdates';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface InvestorUpdatesTabProps {
   workspaceId: string;
@@ -98,7 +98,7 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
     try {
       await generateInvestorUpdate.mutateAsync({ workspaceId, month: selectedMonth });
       setShowGenerateDialog(false);
-      toast.success(
+      notify.success(
         t('investorUpdates.updateGenerated', { defaultValue: '✅ Atualização gerada com sucesso!' }),
         {
           description: t('investorUpdates.updateGeneratedDesc', { defaultValue: 'A atualização foi adicionada ao Data Room automaticamente.' }),
@@ -107,7 +107,7 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
       );
     } catch (error: any) {
       const message = error?.message || t('investorUpdates.failedToGenerate', { defaultValue: 'Falha ao gerar atualização' });
-      toast.error(message, { duration: 5000 });
+      notify.error(message, { duration: 5000 });
     } finally {
       setIsGenerating(false);
     }
@@ -121,15 +121,15 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
         scope: shareScope,
         expiresInDays: parseInt(shareDays),
       });
-      toast.success(t('investorUpdates.linkCreated'));
+      notify.success(t('investorUpdates.linkCreated'));
       
       const shareUrl = `${window.location.origin}/dataroom/shared/${link.token}`;
       await navigator.clipboard.writeText(shareUrl);
-      toast.success(t('investorUpdates.linkCopied'));
+      notify.success(t('investorUpdates.linkCopied'));
       
       setShowShareDialog(false);
     } catch (error) {
-      toast.error(t('investorUpdates.failedToCreateLink'));
+      notify.error(t('investorUpdates.failedToCreateLink'));
     } finally {
       setIsCreatingLink(false);
     }
@@ -138,15 +138,15 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
   const handleCopyLink = async (token: string) => {
     const shareUrl = `${window.location.origin}/dataroom/shared/${token}`;
     await navigator.clipboard.writeText(shareUrl);
-    toast.success(t('investorUpdates.linkCopied'));
+    notify.success(t('investorUpdates.linkCopied'));
   };
 
   const handleRevokeLink = async (linkId: string) => {
     try {
       await revokeShareLink.mutateAsync({ id: linkId, workspaceId });
-      toast.success(t('investorUpdates.linkRevoked'));
+      notify.success(t('investorUpdates.linkRevoked'));
     } catch (error) {
-      toast.error(t('investorUpdates.failedToRevokeLink'));
+      notify.error(t('investorUpdates.failedToRevokeLink'));
     }
   };
 
@@ -189,7 +189,7 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
     }
 
     navigator.clipboard.writeText(markdown);
-    toast.success(t('investorUpdates.copiedMarkdown'));
+    notify.success(t('investorUpdates.copiedMarkdown'));
   };
 
   const getHealthColor = (score: number | null | undefined) => {

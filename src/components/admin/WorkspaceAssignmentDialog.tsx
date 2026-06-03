@@ -13,7 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, Building2, Plus, Sparkles, Search } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { usePrograms } from '@/hooks/useAdminData';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface WorkspaceAssignmentDialogProps {
   open: boolean;
@@ -127,10 +127,10 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
       });
       if (error) throw error;
       
-      toast.success(t('admin.workspaceAssigned', { defaultValue: 'Workspace atribuído e conta aprovada!' }));
+      notify.success(t('admin.workspaceAssigned', { defaultValue: 'Workspace atribuído e conta aprovada!' }));
       invalidateAndClose();
     } catch (e: any) {
-      toast.error(e.message);
+      notify.error(e.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -151,10 +151,10 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
       });
       if (error) throw error;
       
-      toast.success(t('admin.workspaceCreated', { defaultValue: 'Workspace criado e conta aprovada!' }));
+      notify.success(t('admin.workspaceCreated', { defaultValue: 'Workspace criado e conta aprovada!' }));
       invalidateAndClose();
     } catch (e: any) {
-      toast.error(e.message);
+      notify.error(e.message);
     } finally {
       setIsSubmitting(false);
     }

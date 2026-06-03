@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -175,9 +175,9 @@ export default function ContractOnboarding() {
     },
     onSuccess: () => {
       setCurrentStep('review_contract');
-      toast.success(t('contractOnboarding.dataSaved'));
+      notify.success(t('contractOnboarding.dataSaved'));
     },
-    onError: () => toast.error(t('contractOnboarding.dataSaveError')),
+    onError: () => notify.error(t('contractOnboarding.dataSaveError')),
   });
 
   const submitForSigning = useMutation({
@@ -211,10 +211,10 @@ export default function ContractOnboarding() {
     onSuccess: () => {
       setCurrentStep('signing');
       queryClient.invalidateQueries({ queryKey: ['contract-onboarding', contractId] });
-      toast.success(t('contractOnboarding.sentForSignature'));
+      notify.success(t('contractOnboarding.sentForSignature'));
     },
     onError: (err: any) => {
-      toast.error(err?.message || t('contractOnboarding.sendError'));
+      notify.error(err?.message || t('contractOnboarding.sendError'));
       setCurrentStep('signing');
     },
   });

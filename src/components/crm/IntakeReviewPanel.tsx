@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 import { type ContractIntake, useTransitionIntakeStatus, useIntakeEvents } from '@/hooks/useContractIntakes';
 import { INTAKE_STATE_LABELS, type IntakeState, REVIEWABLE_STATES } from '@/constants/intakeStates';
 import { formatRelativeTime } from '@/lib/dateUtils';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
 
 import i18n from '@/i18n';
@@ -64,22 +64,22 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
         newStatus,
         notes: actionNotes,
       });
-      toast.success(`Estado atualizado para: ${INTAKE_STATE_LABELS[newStatus]}`);
+      notify.success(`Estado atualizado para: ${INTAKE_STATE_LABELS[newStatus]}`);
       setShowNotes(null);
       setActionNotes('');
     } catch (err: any) {
-      toast.error(err?.message || 'Erro ao atualizar estado');
+      notify.error(err?.message || 'Erro ao atualizar estado');
     }
   };
 
   /** Send to signature — staff-authenticated action via edge function */
   const handleSendToSignature = async () => {
     if (!intake.contract_id) {
-      toast.error(t('crm.nenhumContratoAssociadoAEste'));
+      notify.error(t('crm.nenhumContratoAssociadoAEste'));
       return;
     }
     if (!selectedProvider) {
-      toast.error(t('crm.selecioneUmProviderDeAssinatura'));
+      notify.error(t('crm.selecioneUmProviderDeAssinatura'));
       return;
     }
     setSendingSignature(true);
@@ -102,9 +102,9 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
       // performed syncIntakeOnSent server-side. A duplicate client-side
       // transition would cause a false-failure or double audit event.
 
-      toast.success(t('crm.contratoEnviadoParaAssinatura'));
+      notify.success(t('crm.contratoEnviadoParaAssinatura'));
     } catch (err: any) {
-      toast.error(err?.message || 'Erro ao enviar para assinatura');
+      notify.error(err?.message || 'Erro ao enviar para assinatura');
     } finally {
       setSendingSignature(false);
     }

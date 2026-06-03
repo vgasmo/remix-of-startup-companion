@@ -24,7 +24,7 @@ import {
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface UnifiedRecord {
   room_id: string;
@@ -289,10 +289,10 @@ export function SpaceOperationsConsole() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['space-operations-console'] });
-      toast.success(t('spaces.roomsCleared', { count: staleRoomIds.length, defaultValue: '{{count}} sala(s) libertada(s) com sucesso' }));
+      notify.success(t('spaces.roomsCleared', { count: staleRoomIds.length, defaultValue: '{{count}} sala(s) libertada(s) com sucesso' }));
     },
     onError: () => {
-      toast.error(t('spaces.clearError', 'Erro ao limpar salas'));
+      notify.error(t('spaces.clearError', 'Erro ao limpar salas'));
     },
   });
 
@@ -599,7 +599,7 @@ export function SpaceOperationsConsole() {
                             onClick={(e) => {
                               e.stopPropagation();
                               navigator.clipboard.writeText(selectedRecord.startup_contact_email!);
-                              toast.success(t('common.emailCopied', 'Email copiado'));
+                              notify.success(t('common.emailCopied', 'Email copiado'));
                             }}
                           >
                             <Copy className="h-3 w-3" />

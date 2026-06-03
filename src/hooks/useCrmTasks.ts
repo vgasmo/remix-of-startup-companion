@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useTranslation } from 'react-i18next';
 import type { VisibilityType, TaskStatus, TaskPriority } from './useActivityTimeline';
 
@@ -90,9 +90,9 @@ export function useAddTask() {
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
-      toast.success(t('crm.taskAdded'));
+      notify.success(t('crm.taskAdded'));
     },
-    onError: () => toast.error(t('crm.taskError')),
+    onError: () => notify.error(t('crm.taskError')),
   });
 }
 
@@ -129,9 +129,9 @@ export function useCompleteTask() {
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
-      toast.success(t('crm.taskCompleted'));
+      notify.success(t('crm.taskCompleted'));
     },
-    onError: () => toast.error(t('crm.taskCompleteError')),
+    onError: () => notify.error(t('crm.taskCompleteError')),
   });
 }
 
@@ -158,9 +158,9 @@ export function useReopenTask() {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
-      toast.success(t('crm.taskReopened'));
+      notify.success(t('crm.taskReopened'));
     },
-    onError: () => toast.error(t('crm.taskReopenError')),
+    onError: () => notify.error(t('crm.taskReopenError')),
   });
 }
 
@@ -187,9 +187,9 @@ export function useCancelTask() {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
-      toast.success(t('crm.taskCanceled'));
+      notify.success(t('crm.taskCanceled'));
     },
-    onError: () => toast.error(t('crm.taskCancelError')),
+    onError: () => notify.error(t('crm.taskCancelError')),
   });
 }
 
@@ -222,8 +222,8 @@ export function useUpdateTask() {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
-      toast.success(t('crm.taskUpdated'));
+      notify.success(t('crm.taskUpdated'));
     },
-    onError: () => toast.error(t('crm.taskUpdateError')),
+    onError: () => notify.error(t('crm.taskUpdateError')),
   });
 }

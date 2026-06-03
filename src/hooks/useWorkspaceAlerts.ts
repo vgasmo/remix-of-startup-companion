@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
@@ -139,10 +139,10 @@ export function useResolveAlert() {
       queryClient.invalidateQueries({ queryKey: ['workspace-alerts'] });
       queryClient.invalidateQueries({ queryKey: ['all-workspace-alerts'] });
       queryClient.invalidateQueries({ queryKey: ['alert-counts'] });
-      toast.success(t('alerts.resolved'));
+      notify.success(t('alerts.resolved'));
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -171,10 +171,10 @@ export function useIgnoreAlert() {
       queryClient.invalidateQueries({ queryKey: ['workspace-alerts'] });
       queryClient.invalidateQueries({ queryKey: ['all-workspace-alerts'] });
       queryClient.invalidateQueries({ queryKey: ['alert-counts'] });
-      toast.success(t('alerts.ignored'));
+      notify.success(t('alerts.ignored'));
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -227,10 +227,10 @@ export function useUpdateAlertRule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['program-alert-rules'] });
-      toast.success(t('alerts.ruleUpdated'));
+      notify.success(t('alerts.ruleUpdated'));
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -249,10 +249,10 @@ export function useRecomputeAlerts() {
       queryClient.invalidateQueries({ queryKey: ['workspace-alerts'] });
       queryClient.invalidateQueries({ queryKey: ['all-workspace-alerts'] });
       queryClient.invalidateQueries({ queryKey: ['alert-counts'] });
-      toast.success(t('alerts.recalculated'));
+      notify.success(t('alerts.recalculated'));
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }

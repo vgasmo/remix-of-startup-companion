@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import type { Database } from '@/integrations/supabase/types';
 
 import i18n from '@/i18n';
@@ -237,7 +237,7 @@ export function useCreateProgramDraft() {
       queryClient.invalidateQueries({ queryKey: ['program-setup-drafts'] });
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -292,10 +292,10 @@ export function useDiscardProgramDraft() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['program-setup-drafts'] });
-      toast.success(t('programs.draftDiscarded'));
+      notify.success(t('programs.draftDiscarded'));
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -317,10 +317,10 @@ export function usePublishProgramDraft() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['program-setup-drafts'] });
       queryClient.invalidateQueries({ queryKey: ['programs'] });
-      toast.success(t('programs.programPublishedSuccessfully'));
+      notify.success(t('programs.programPublishedSuccessfully'));
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }

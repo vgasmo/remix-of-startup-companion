@@ -4,7 +4,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import type { StartupContract } from './useContracts';
 
 import i18n from '@/i18n';
@@ -81,9 +81,9 @@ export function useCreateInvoice() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      toast.success(t('backoffice.invoiceCreated'));
+      notify.success(t('backoffice.invoiceCreated'));
     },
-    onError: () => toast.error(t('backoffice.invoiceCreateError')),
+    onError: () => notify.error(t('backoffice.invoiceCreateError')),
   });
 }
 
@@ -102,9 +102,9 @@ export function useUpdateInvoice() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      toast.success(t('backoffice.invoiceUpdated'));
+      notify.success(t('backoffice.invoiceUpdated'));
     },
-    onError: () => toast.error(t('backoffice.invoiceUpdateError')),
+    onError: () => notify.error(t('backoffice.invoiceUpdateError')),
   });
 }
 
@@ -142,8 +142,8 @@ export function useRecordPayment() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payments'] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      toast.success(t('backoffice.paymentRecorded'));
+      notify.success(t('backoffice.paymentRecorded'));
     },
-    onError: () => toast.error(t('backoffice.paymentRecordError')),
+    onError: () => notify.error(t('backoffice.paymentRecordError')),
   });
 }

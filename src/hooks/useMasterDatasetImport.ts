@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import i18n from '@/i18n';
 import {
   MasterDataset,
@@ -103,10 +103,10 @@ export function useMasterDatasetImport() {
     },
     onSuccess: (result) => {
       setDryRunResult(result);
-      toast.success(t('common.dryRunCompleteResultsummarywould_insertTo', { would_update: result.summary.would_update }));
+      notify.success(t('common.dryRunCompleteResultsummarywould_insertTo', { would_update: result.summary.would_update }));
     },
     onError: (e: Error) => {
-      toast.error(e.message);
+      notify.error(e.message);
     },
   });
 
@@ -196,10 +196,10 @@ export function useMasterDatasetImport() {
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
-      toast.success(t('common.importCompleteResultinsertedInserted', { updated: result.updated }));
+      notify.success(t('common.importCompleteResultinsertedInserted', { updated: result.updated }));
     },
     onError: (e: Error) => {
-      toast.error(e.message);
+      notify.error(e.message);
     },
   });
 

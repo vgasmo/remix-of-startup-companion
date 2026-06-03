@@ -35,7 +35,7 @@ import { useCreateMilestone } from '@/hooks/useMilestones';
 import { useCreateActionItemFull } from '@/hooks/useActionItems';
 import { useCreateSession } from '@/hooks/useSessions';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { CompanyDetailsStep } from './CompanyDetailsStep';
 import type { StartupStage } from '@/types/database';
 import { logger } from '@/lib/logger';
@@ -410,13 +410,13 @@ export function WorkspaceOnboardingWizard({
       const result = await applyDefaults.mutateAsync(stage);
       setKpisApplied(true);
       if (result.length > 0) {
-        toast.success(t('onboardingWizard.kpisApplied', { defaultValue: 'KPIs applied successfully' }));
+        notify.success(t('onboardingWizard.kpisApplied', { defaultValue: 'KPIs applied successfully' }));
       } else {
-        toast.info(t('onboardingWizard.kpisAlreadyConfigured', { defaultValue: 'Default KPIs already configured' }));
+        notify.info(t('onboardingWizard.kpisAlreadyConfigured', { defaultValue: 'Default KPIs already configured' }));
       }
       goToStep('milestones');
     } catch {
-      toast.error(t('onboardingWizard.kpisFailed', { defaultValue: 'Failed to apply KPI defaults' }));
+      notify.error(t('onboardingWizard.kpisFailed', { defaultValue: 'Failed to apply KPI defaults' }));
     } finally {
       setIsProcessing(false);
     }
@@ -451,10 +451,10 @@ export function WorkspaceOnboardingWizard({
       }
       
       setMilestonesCreated(true);
-      toast.success(t('onboardingWizard.milestonesCreated', { defaultValue: 'Milestones created successfully' }));
+      notify.success(t('onboardingWizard.milestonesCreated', { defaultValue: 'Milestones created successfully' }));
       goToStep('meeting');
     } catch {
-      toast.error(t('onboardingWizard.milestonesFailed', { defaultValue: 'Failed to create milestones' }));
+      notify.error(t('onboardingWizard.milestonesFailed', { defaultValue: 'Failed to create milestones' }));
     } finally {
       setIsProcessing(false);
     }
@@ -462,7 +462,7 @@ export function WorkspaceOnboardingWizard({
 
   const handleScheduleSession = async () => {
     if (!meetingTitle.trim()) {
-      toast.error(t('onboardingWizard.meetingTitleRequired', { defaultValue: 'Please enter a session title' }));
+      notify.error(t('onboardingWizard.meetingTitleRequired', { defaultValue: 'Please enter a session title' }));
       return;
     }
     
@@ -481,10 +481,10 @@ export function WorkspaceOnboardingWizard({
       });
       
       setMeetingScheduled(true);
-      toast.success(t('onboardingWizard.meetingScheduled', { defaultValue: 'Session scheduled' }));
+      notify.success(t('onboardingWizard.meetingScheduled', { defaultValue: 'Session scheduled' }));
       goToStep('complete');
     } catch {
-      toast.error(t('onboardingWizard.meetingFailed', { defaultValue: 'Failed to schedule session' }));
+      notify.error(t('onboardingWizard.meetingFailed', { defaultValue: 'Failed to schedule session' }));
     } finally {
       setIsProcessing(false);
     }
@@ -513,11 +513,11 @@ export function WorkspaceOnboardingWizard({
       if (error) throw error;
       
       setCompanySaved(true);
-      toast.success(t('onboardingWizard.companySaved', { defaultValue: 'Company details saved' }));
+      notify.success(t('onboardingWizard.companySaved', { defaultValue: 'Company details saved' }));
       goToStep('kpis');
     } catch (err) {
       logger.error('Failed to save company details', {}, err);
-      toast.error(t('onboardingWizard.companyFailed', { defaultValue: 'Failed to save company details' }));
+      notify.error(t('onboardingWizard.companyFailed', { defaultValue: 'Failed to save company details' }));
     } finally {
       setIsProcessing(false);
     }

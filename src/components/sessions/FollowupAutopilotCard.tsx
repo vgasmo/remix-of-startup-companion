@@ -16,7 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 
 interface FollowupAutopilotCardProps {
@@ -135,10 +135,10 @@ export function FollowupAutopilotCard({
         metadata: { actions_count: newActions.length, created_task: createFollowupTask },
       });
 
-      toast.success(t('followup.sent'));
+      notify.success(t('followup.sent'));
     } catch (error) {
       logger.error('Failed to send follow-up', {}, error);
-      toast.error(t('followup.error'));
+      notify.error(t('followup.error'));
     } finally {
       setSending(false);
     }

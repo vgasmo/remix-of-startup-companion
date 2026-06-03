@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/lib/supabaseClient';
 import { WorkspacePriority } from '@/types/database';
 import { cn } from '@/lib/utils';
@@ -77,11 +77,11 @@ export function WorkspaceBulkActionsBar({
         .in('id', Array.from(selectedIds));
 
       if (error) throw error;
-      toast.success(t('staff.prioritySetToPriorityFor', { selectedCount: selectedCount }));
+      notify.success(t('staff.prioritySetToPriorityFor', { selectedCount: selectedCount }));
       onDeselectAll();
       onActionComplete?.();
     } catch (error) {
-      toast.error(t('staff.failedToUpdatePriority'));
+      notify.error(t('staff.failedToUpdatePriority'));
     } finally {
       setIsLoading(false);
     }
@@ -95,11 +95,11 @@ export function WorkspaceBulkActionsBar({
       const { data, error } = await supabase.rpc('generate_weekly_checkins');
       if (error) throw error;
       
-      toast.success(`Check-in requests processed`);
+      notify.success(`Check-in requests processed`);
       onDeselectAll();
       onActionComplete?.();
     } catch (error) {
-      toast.error(t('staff.failedToRequestCheckins'));
+      notify.error(t('staff.failedToRequestCheckins'));
     } finally {
       setIsLoading(false);
     }
@@ -108,7 +108,7 @@ export function WorkspaceBulkActionsBar({
   // Bulk create staff task
   const handleCreateBulkTask = async () => {
     if (!taskTitle.trim()) {
-      toast.error(t('staff.taskTitleIsRequired'));
+      notify.error(t('staff.taskTitleIsRequired'));
       return;
     }
 
@@ -133,14 +133,14 @@ export function WorkspaceBulkActionsBar({
 
       if (error) throw error;
       
-      toast.success(t('staff.created', { selectedCount: selectedCount }));
+      notify.success(t('staff.created', { selectedCount: selectedCount }));
       setShowTaskDialog(false);
       setTaskTitle('');
       setTaskDescription('');
       onDeselectAll();
       onActionComplete?.();
     } catch (error) {
-      toast.error(t('staff.failedToCreateTasks'));
+      notify.error(t('staff.failedToCreateTasks'));
     } finally {
       setIsLoading(false);
     }

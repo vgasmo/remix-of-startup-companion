@@ -43,7 +43,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/lib/supabaseClient';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 
@@ -73,7 +73,7 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
 
   const handleCreateQuickSession = async () => {
     if (!sessionWorkspaceId || !sessionTitle || !sessionDate) {
-      toast.error(t('staff.pleaseFillAllFields'));
+      notify.error(t('staff.pleaseFillAllFields'));
       return;
     }
 
@@ -92,11 +92,11 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
         });
 
       if (error) throw error;
-      toast.success(t('staff.sessionScheduledSuccessfully'));
+      notify.success(t('staff.sessionScheduledSuccessfully'));
       setShowQuickSession(false);
       resetSessionForm();
     } catch (error) {
-      toast.error(t('staff.failedToCreateSession'));
+      notify.error(t('staff.failedToCreateSession'));
     } finally {
       setIsLoading(false);
     }
@@ -104,7 +104,7 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
 
   const handleCreateQuickAction = async () => {
     if (!actionWorkspaceId || !actionTitle) {
-      toast.error(t('staff.pleaseFillRequiredFields'));
+      notify.error(t('staff.pleaseFillRequiredFields'));
       return;
     }
 
@@ -123,11 +123,11 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
         });
 
       if (error) throw error;
-      toast.success(t('staff.actionItemCreated'));
+      notify.success(t('staff.actionItemCreated'));
       setShowQuickAction(false);
       resetActionForm();
     } catch (error) {
-      toast.error(t('staff.failedToCreateAction'));
+      notify.error(t('staff.failedToCreateAction'));
     } finally {
       setIsLoading(false);
     }

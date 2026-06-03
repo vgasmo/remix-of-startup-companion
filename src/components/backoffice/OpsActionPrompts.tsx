@@ -16,7 +16,7 @@ import {
   Send, ClipboardCheck, Link2Off, Zap, Eye, Building2, Package
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useNavigate } from 'react-router-dom';
 
 interface ActionPrompt {
@@ -205,12 +205,12 @@ export function OpsActionPrompts() {
 
   const handleCopyTemplate = () => {
     navigator.clipboard.writeText(CONTRACT_EMAIL_TEMPLATE);
-    toast.success(t('ops.emailTemplateCopied', 'Template de email copiado'));
+    notify.success(t('ops.emailTemplateCopied', 'Template de email copiado'));
   };
 
   const handleCopyChecklist = () => {
     navigator.clipboard.writeText(ACTIVATION_CHECKLIST);
-    toast.success(t('ops.checklistCopied', 'Checklist copiada'));
+    notify.success(t('ops.checklistCopied', 'Checklist copiada'));
   };
 
   if (isLoading) {

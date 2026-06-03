@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import type { Json } from '@/integrations/supabase/types';
 
 import i18n from '@/i18n';
@@ -82,10 +82,10 @@ export function useCreateEmailAlias() {
     },
     onSuccess: (_, workspaceId) => {
       queryClient.invalidateQueries({ queryKey: ['email-alias', workspaceId] });
-      toast.success(t('communication.emailAliasCreated'));
+      notify.success(t('communication.emailAliasCreated'));
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }
@@ -113,10 +113,10 @@ export function useAddCommunication() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['communication-log', variables.workspace_id] });
-      toast.success(t('communication.communicationLogged'));
+      notify.success(t('communication.communicationLogged'));
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }

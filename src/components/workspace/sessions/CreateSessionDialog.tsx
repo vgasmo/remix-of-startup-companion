@@ -37,7 +37,7 @@ import {
 import { useCreateSession, useWorkspaceMembers } from '@/hooks/useSessions';
 import { useSessionTemplates } from '@/hooks/useSessionTemplates';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useConsultantAvailability, useValidateBookingSlot } from '@/hooks/useConsultantCalendar';
 import { useMentorAvailability } from '@/hooks/useMentorAvailability';
 import { logger } from '@/lib/logger';
@@ -165,7 +165,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
 
     if (useManualTime) {
       if (!title.trim() || !manualDateTime) {
-        toast.error(t('common.error'));
+        notify.error(t('common.error'));
         return;
       }
       // Manual datetime-local input is a wall-clock string. Treat it as
@@ -174,7 +174,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
       scheduledAtISO = lisbonWallClockToUtcIso(manualDateTime);
     } else {
       if (!title.trim() || !selectedDate || !selectedSlot) {
-        toast.error(t('sessions.selectDateAndSlot', 'Please select a date and time slot'));
+        notify.error(t('sessions.selectDateAndSlot', 'Please select a date and time slot'));
         return;
       }
 
@@ -195,12 +195,12 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
         });
 
         if (validation.checked && !validation.available) {
-          toast.error(t('sessions.slotBusy', 'Esse horário está ocupado no calendário do consultor.'));
+          notify.error(t('sessions.slotBusy', 'Esse horário está ocupado no calendário do consultor.'));
           return;
         }
 
         if (!validation.checked && validation.reason) {
-          toast.warning(
+          notify.warn(
             t('sessions.slotNotVerified', 'Não foi possível confirmar a disponibilidade no calendário; por favor confirme com o consultor.'),
           );
         }
@@ -261,11 +261,11 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
         }
       }
 
-      toast.success(t('sessions.sessionCreated'));
+      notify.success(t('sessions.sessionCreated'));
       onOpenChange(false);
       resetForm();
     } catch (error) {
-      toast.error(t('common.error'));
+      notify.error(t('common.error'));
     } finally {
       setIsSending(false);
     }

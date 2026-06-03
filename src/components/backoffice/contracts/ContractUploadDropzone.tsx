@@ -4,7 +4,7 @@ import { Upload, FileText, Loader2, PenLine, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 
@@ -37,11 +37,11 @@ export function ContractUploadDropzone({ workspaceId, onAIDataExtracted, onManua
 
   const handleFile = useCallback(async (file: File) => {
     if (file.type !== 'application/pdf') {
-      toast.error(t('contracts.upload.invalidType', { defaultValue: 'Only PDF files are accepted.' }));
+      notify.error(t('contracts.upload.invalidType', { defaultValue: 'Only PDF files are accepted.' }));
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast.error(t('contracts.upload.tooLarge', { defaultValue: 'File must be under 10MB.' }));
+      notify.error(t('contracts.upload.tooLarge', { defaultValue: 'File must be under 10MB.' }));
       return;
     }
 
@@ -67,15 +67,15 @@ export function ContractUploadDropzone({ workspaceId, onAIDataExtracted, onManua
 
       if (aiError || !aiResult?.extraction) {
         // AI failed — graceful degradation
-        toast.error(t('contracts.upload.aiFailed', { defaultValue: 'AI could not read the PDF. Please enter details manually.' }));
+        notify.error(t('contracts.upload.aiFailed', { defaultValue: 'AI could not read the PDF. Please enter details manually.' }));
         onAIDataExtracted({}, documentUrl);
       } else {
-        toast.success(t('contracts.upload.aiSuccess', { defaultValue: 'AI extracted contract data. Please review before saving.' }));
+        notify.success(t('contracts.upload.aiSuccess', { defaultValue: 'AI extracted contract data. Please review before saving.' }));
         onAIDataExtracted(aiResult.extraction, documentUrl);
       }
     } catch (err) {
       logger.error('Contract upload failed', {}, err);
-      toast.error(t('contracts.upload.error', { defaultValue: 'Upload failed. Please try again.' }));
+      notify.error(t('contracts.upload.error', { defaultValue: 'Upload failed. Please try again.' }));
     } finally {
       setIsProcessing(false);
       setProcessingStep('');

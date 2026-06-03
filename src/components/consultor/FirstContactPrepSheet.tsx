@@ -22,7 +22,7 @@ import {
   ArrowRight, Building2, Briefcase, BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface FirstContactPrepSheetProps {
   open: boolean;
@@ -208,7 +208,7 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
       '6. Próximos passos (10 min)',
     ];
     navigator.clipboard.writeText(lines.join('\n'));
-    toast.success(t('consultor.prepSheetCopied', 'Prep sheet copiado!'));
+    notify.success(t('consultor.prepSheetCopied', 'Prep sheet copiado!'));
   };
 
   return (

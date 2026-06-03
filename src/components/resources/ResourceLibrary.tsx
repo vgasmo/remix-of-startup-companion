@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { BookOpen, Plus, ExternalLink, Trash2, FileText } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -44,11 +44,11 @@ export function ResourceLibrary({ programId }: ResourceLibraryProps) {
 
   const handleSubmit = async () => {
     if (!formData.title.trim()) {
-      toast.error(t('resources.titleRequired', 'Título é obrigatório'));
+      notify.error(t('resources.titleRequired', 'Título é obrigatório'));
       return;
     }
     if (!formData.url.trim()) {
-      toast.error(t('resources.urlRequired', 'URL é obrigatório'));
+      notify.error(t('resources.urlRequired', 'URL é obrigatório'));
       return;
     }
     try {
@@ -56,11 +56,11 @@ export function ResourceLibrary({ programId }: ResourceLibraryProps) {
         ...formData,
         program_id: formData.is_global ? undefined : programId || undefined,
       });
-      toast.success(t('resources.resourceAdded', 'Recurso adicionado'));
+      notify.success(t('resources.resourceAdded', 'Recurso adicionado'));
       setDialogOpen(false);
       setFormData({ title: '', description: '', url: '', category: 'guides', is_global: true });
     } catch (error: any) {
-      toast.error(error.message || t('resources.failedToAdd', 'Falha ao adicionar recurso'));
+      notify.error(error.message || t('resources.failedToAdd', 'Falha ao adicionar recurso'));
     }
   };
 
@@ -72,9 +72,9 @@ export function ResourceLibrary({ programId }: ResourceLibraryProps) {
       onConfirm: async () => {
         try {
           await deleteResource.mutateAsync(id);
-          toast.success(t('resources.resourceDeleted', 'Recurso eliminado'));
+          notify.success(t('resources.resourceDeleted', 'Recurso eliminado'));
         } catch (error: any) {
-          toast.error(error.message || t('resources.failedToDelete', 'Falha ao eliminar recurso'));
+          notify.error(error.message || t('resources.failedToDelete', 'Falha ao eliminar recurso'));
         }
       },
     });

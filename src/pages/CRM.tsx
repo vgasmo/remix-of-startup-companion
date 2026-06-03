@@ -30,7 +30,7 @@ import {
 import { PipelineView } from '@/components/crm/PipelineView';
 import { useCrmInbox, useCrmTasksDue, CrmInboxItem } from '@/hooks/useCrmInbox';
 import { usePrograms } from '@/hooks/useWorkspaces';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useConsultors } from '@/hooks/useWorkspaceOwner';
 import { useCompleteTask } from '@/hooks/useCrmTasks';
 import { useAuth } from '@/contexts/AuthContext';
@@ -198,7 +198,7 @@ export default function CRM() {
           
           if (error || !data) {
             logger.error('Failed to load funnel item', {}, error);
-            toast.error(t('crm.itemNotFound'));
+            notify.error(t('crm.itemNotFound'));
             const next = new URLSearchParams(searchParams);
             next.delete('open');
             setSearchParams(next, { replace: true });
@@ -228,7 +228,7 @@ export default function CRM() {
           openDrawerDirect(crmItem);
         } catch (err) {
           logger.error('Error fetching funnel item', {}, err);
-          toast.error(t('crm.itemNotFound'));
+          notify.error(t('crm.itemNotFound'));
           const next = new URLSearchParams(searchParams);
           next.delete('open');
           setSearchParams(next, { replace: true });

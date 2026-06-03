@@ -11,7 +11,7 @@ import { CheckCircle2, Clock, Calendar, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
 
@@ -48,11 +48,11 @@ export function WorkQueueBulkActions({
         .update({ status: 'done', completed_at: new Date().toISOString() })
         .in('id', Array.from(selectedIds));
       if (error) throw error;
-      toast.success(t('workQueue.bulkMarkedDone', { count: selectedCount }));
+      notify.success(t('workQueue.bulkMarkedDone', { count: selectedCount }));
       onDeselectAll();
       invalidate();
     } catch (e) {
-      toast.error(t('workQueue.updateFailed'));
+      notify.error(t('workQueue.updateFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -68,11 +68,11 @@ export function WorkQueueBulkActions({
         .update({ status: 'snoozed', snoozed_until: snoozedUntil.toISOString() })
         .in('id', Array.from(selectedIds));
       if (error) throw error;
-      toast.success(t('workQueue.bulkSnoozed', { count: selectedCount, days }));
+      notify.success(t('workQueue.bulkSnoozed', { count: selectedCount, days }));
       onDeselectAll();
       invalidate();
     } catch (e) {
-      toast.error(t('workQueue.snoozeFailed'));
+      notify.error(t('workQueue.snoozeFailed'));
     } finally {
       setIsLoading(false);
     }

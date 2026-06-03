@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
@@ -88,16 +88,16 @@ export function useSyncSessionToOutlook() {
     },
     onSuccess: (data) => {
       if (data.success) {
-        toast.success(t('integrations.sessãoSincronizadaComOCalendário'));
+        notify.success(t('integrations.sessãoSincronizadaComOCalendário'));
       } else if (data.reason === 'not_configured') {
-        toast.info(t('integrations.sincronizaçãoOutlookNãoConfiguradaPara'));
+        notify.info(t('integrations.sincronizaçãoOutlookNãoConfiguradaPara'));
       } else {
-        toast.warning(data.message || 'Sincronização concluída com avisos');
+        notify.warn(data.message || 'Sincronização concluída com avisos');
       }
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
     },
     onError: (error: Error) => {
-      toast.error(t('integrations.erroNaSincronizaçãoOutlook', { message: error.message }));
+      notify.error(t('integrations.erroNaSincronizaçãoOutlook', { message: error.message }));
     },
   });
 }

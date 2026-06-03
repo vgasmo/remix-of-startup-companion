@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { 
   Send, 
   CheckCircle2, 
@@ -122,18 +122,18 @@ export function AdminTeamsTestPanel() {
     onSuccess: (result) => {
       setLastResult(result);
       if (result.sent) {
-        toast.success(t('admin.teamsTestSuccess', 'Mensagem de teste enviada!'), {
+        notify.success(t('admin.teamsTestSuccess', 'Mensagem de teste enviada!'), {
           description: `${t('admin.teams.usedSettings', 'Usou')} ${result.settings_source === 'global_fallback' ? t('admin.teams.globalSettings', 'definições globais') : t('admin.teams.workspaceSettings', 'definições do workspace')}`,
         });
       } else {
-        toast.info(t('admin.teamsTestNotSent', 'Mensagem não enviada'), {
+        notify.info(t('admin.teamsTestNotSent', 'Mensagem não enviada'), {
           description: result.reason || t('common.unknownReason', 'Razão desconhecida'),
         });
       }
     },
     onError: (error: Error) => {
       setLastResult({ success: false, error: error.message });
-      toast.error(t('admin.teamsTestFailed', 'Teste falhou'), { description: error.message });
+      notify.error(t('admin.teamsTestFailed', 'Teste falhou'), { description: error.message });
     },
   });
 

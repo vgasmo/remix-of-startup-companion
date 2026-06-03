@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { CategoryTagPicker } from '@/components/tags/CategoryTagPicker';
 import { MentorRecommendationWidget } from './MentorRecommendationWidget';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { format } from 'date-fns';
 
 interface MentorRequest {
@@ -136,11 +136,11 @@ export function EnhancedFounderMentorRequest() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mentor-requests'] });
-      toast.success(t('mentorsPage.requestSubmitted'));
+      notify.success(t('mentorsPage.requestSubmitted'));
       resetForm();
     },
     onError: () => {
-      toast.error(t('mentorsPage.requestFailed'));
+      notify.error(t('mentorsPage.requestFailed'));
     },
   });
 
@@ -155,7 +155,7 @@ export function EnhancedFounderMentorRequest() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mentor-requests'] });
-      toast.success(t('mentorsPage.requestCancelled'));
+      notify.success(t('mentorsPage.requestCancelled'));
     },
   });
 

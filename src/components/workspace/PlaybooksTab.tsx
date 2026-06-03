@@ -13,7 +13,7 @@ import { PlaybookEvidenceDialog } from '@/components/workspace/PlaybookEvidenceD
 import { formatShortDate } from '@/lib/dateUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConsultantNotes } from '@/hooks/useConsultantNotes';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import type { Database } from '@/integrations/supabase/types';
 import {
   AlertDialog,
@@ -76,16 +76,16 @@ export function PlaybooksTab({ workspaceId, currentStage, programId, canWrite }:
       { workspaceId, playbookId },
       {
         onSuccess: () => {
-          toast.success(t('playbooks.staff.deploySuccess', { 
+          notify.success(t('playbooks.staff.deploySuccess', { 
             milestones: milestonesCount, 
             actions: actionsCount 
           }));
         },
         onError: (error: Error) => {
           if (error.message.includes('already')) {
-            toast.info(t('playbooks.staff.alreadyDeployed'));
+            notify.info(t('playbooks.staff.alreadyDeployed'));
           } else {
-            toast.error(t('playbooks.staff.deployFailed'));
+            notify.error(t('playbooks.staff.deployFailed'));
           }
         }
       }

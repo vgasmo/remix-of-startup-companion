@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 
 interface ConsultorSessionsTodayProps {
@@ -114,7 +114,7 @@ function AiBriefingButton({ workspaceId }: { workspaceId: string }) {
       setRecap(data as { summary: string; key_points: string[]; next_best_actions: string[] });
       setCooldownEnd(Date.now() + 60000);
     } catch {
-      toast.error(t('consultor.aiBriefing.error', { defaultValue: 'Briefing indisponível neste momento. Tente mais tarde.' }));
+      notify.error(t('consultor.aiBriefing.error', { defaultValue: 'Briefing indisponível neste momento. Tente mais tarde.' }));
       setAiUnavailable(true);
     } finally {
       setLoading(false);

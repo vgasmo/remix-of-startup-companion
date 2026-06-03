@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useWorkspaceKpiDefinitions, useKpiValues, useUpsertKpiValue } from '@/hooks/useKpis';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -72,7 +72,7 @@ export function QuickKpiModal({ open, onOpenChange, workspaceId, programId }: Qu
     const entriesToSubmit = Object.entries(values).filter(([, v]) => v.trim() !== '');
 
     if (entriesToSubmit.length === 0) {
-      toast.error(t('quickKpi.enterAtLeastOne', { defaultValue: 'Introduza pelo menos um valor' }));
+      notify.error(t('quickKpi.enterAtLeastOne', { defaultValue: 'Introduza pelo menos um valor' }));
       return;
     }
 
@@ -109,7 +109,7 @@ export function QuickKpiModal({ open, onOpenChange, workspaceId, programId }: Qu
       }
     })();
 
-    toast.promise(submitPromise, {
+    notify.promise(submitPromise, {
       loading: t('quickKpi.saving', { defaultValue: 'A guardar KPIs...' }),
       success: () => {
         setValues({});

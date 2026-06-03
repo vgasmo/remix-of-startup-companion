@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
 
@@ -81,10 +81,10 @@ export function useSubmitEvidence() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['playbook-evidence', variables.workspaceId] });
-      toast.success(t('playbooks.evidenceSubmitted', 'Evidência submetida com sucesso'));
+      notify.success(t('playbooks.evidenceSubmitted', 'Evidência submetida com sucesso'));
     },
     onError: () => {
-      toast.error(t('playbooks.evidenceError', 'Erro ao submeter evidência'));
+      notify.error(t('playbooks.evidenceError', 'Erro ao submeter evidência'));
     },
   });
 }
@@ -120,7 +120,7 @@ export function useReviewEvidence() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['playbook-evidence', variables.workspaceId] });
-      toast.success(
+      notify.success(
         variables.status === 'approved'
           ? t('playbooks.evidenceApproved', 'Evidência aprovada')
           : t('playbooks.evidenceRejected', 'Evidência rejeitada')

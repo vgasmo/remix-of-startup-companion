@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Users, Plus, Pencil, Trash2, Crown, Linkedin, Mail, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -68,14 +68,14 @@ export function TeamTab({ startupId, canEdit = false }: TeamTabProps) {
 
   const handleSubmit = async () => {
     if (!formData.full_name.trim()) {
-      toast.error(t('team.nameRequired'));
+      notify.error(t('team.nameRequired'));
       return;
     }
 
     try {
       if (editingMember) {
         await updateMember.mutateAsync({ id: editingMember.id, ...formData });
-        toast.success(t('team.memberUpdated'));
+        notify.success(t('team.memberUpdated'));
       } else {
         await createMember.mutateAsync({
           startup_id: startupId,
@@ -84,12 +84,12 @@ export function TeamTab({ startupId, canEdit = false }: TeamTabProps) {
           joined_at: new Date().toISOString().split('T')[0],
           left_at: null,
         });
-        toast.success(t('team.memberAdded'));
+        notify.success(t('team.memberAdded'));
       }
       setDialogOpen(false);
       resetForm();
     } catch (error: any) {
-      toast.error(error.message || t('team.failedToSave'));
+      notify.error(error.message || t('team.failedToSave'));
     }
   };
 
@@ -101,9 +101,9 @@ export function TeamTab({ startupId, canEdit = false }: TeamTabProps) {
       onConfirm: async () => {
         try {
           await deleteMember.mutateAsync(id);
-          toast.success(t('team.memberRemoved'));
+          notify.success(t('team.memberRemoved'));
         } catch (error: any) {
-          toast.error(error.message || t('team.failedToRemove'));
+          notify.error(error.message || t('team.failedToRemove'));
         }
       },
     });

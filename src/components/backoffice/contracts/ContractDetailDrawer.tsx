@@ -31,7 +31,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { canonicalMarkAsSent, canonicalMarkAsSigned } from '@/lib/contractLifecycleSync';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 
 const STATUS_OPTIONS = ['draft', 'pending_signature', 'active', 'suspended', 'terminated', 'expired'];
@@ -180,7 +180,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
       return result.data;
     },
     onSuccess: (data) => {
-      toast.success(t('contractDetail.pdfGenerated', { defaultValue: 'PDF do contrato gerado com sucesso' }));
+      notify.success(t('contractDetail.pdfGenerated', { defaultValue: 'PDF do contrato gerado com sucesso' }));
       // Auto-download
       if (data?.documentBase64) {
         const byteChars = atob(data.documentBase64);
@@ -197,7 +197,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
     },
     onError: (err) => {
       logger.error('PDF generation error', {}, err);
-      toast.error(t('contractDetail.pdfGenerationFailed', { defaultValue: 'Erro ao gerar PDF' }));
+      notify.error(t('contractDetail.pdfGenerationFailed', { defaultValue: 'Erro ao gerar PDF' }));
     },
   });
 
@@ -228,9 +228,9 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
         notes: editValues.notes || null,
       });
       setIsEditing(false);
-      toast.success(t('contracts.updated'));
+      notify.success(t('contracts.updated'));
     } catch {
-      toast.error(t('contracts.updateFailed'));
+      notify.error(t('contracts.updateFailed'));
     }
   };
 
@@ -375,9 +375,9 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                     if (data?.error) throw new Error(data.error);
                     const url = data.url || `${window.location.origin}/contract-signing/${data.token}`;
                     await navigator.clipboard.writeText(url);
-                    toast.success(t('contractDetail.linkGenerated', { defaultValue: 'Link público gerado e copiado! Envie ao founder.' }));
+                    notify.success(t('contractDetail.linkGenerated', { defaultValue: 'Link público gerado e copiado! Envie ao founder.' }));
                   } catch (err: any) {
-                    toast.error(err?.message || 'Erro ao gerar link');
+                    notify.error(err?.message || 'Erro ao gerar link');
                   }
                 }}
               >
@@ -754,9 +754,9 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
         .eq('id', contract.id);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
-      toast.success(t('contractDetail.providerUpdated', { defaultValue: 'Fornecedor de assinatura atualizado' }));
+      notify.success(t('contractDetail.providerUpdated', { defaultValue: 'Fornecedor de assinatura atualizado' }));
     } catch {
-      toast.error(t('contractDetail.providerUpdateFailed', { defaultValue: 'Erro ao atualizar fornecedor' }));
+      notify.error(t('contractDetail.providerUpdateFailed', { defaultValue: 'Erro ao atualizar fornecedor' }));
     }
   };
 
@@ -778,9 +778,9 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
         a.click();
         URL.revokeObjectURL(url);
       }
-      toast.success(t('contractDetail.pdfGenerated'));
+      notify.success(t('contractDetail.pdfGenerated'));
     } catch {
-      toast.error(t('contractDetail.pdfGenerationFailed'));
+      notify.error(t('contractDetail.pdfGenerationFailed'));
     } finally {
       setSending(false);
     }
@@ -987,12 +987,12 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
                   const url = tokenResult.data?.url || `${window.location.origin}/contract-signing/${tokenResult.data?.token}`;
                   await navigator.clipboard.writeText(url);
                   
-                  toast.success(t('contractDetail.linkCopied'));
+                  notify.success(t('contractDetail.linkCopied'));
                   queryClient.invalidateQueries({ queryKey: ['contracts'] });
                   queryClient.invalidateQueries({ queryKey: ['contract-intakes'] });
                   queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
                 } catch (e: any) {
-                  toast.error(e.message || t('contractDetail.sendFailed'));
+                  notify.error(e.message || t('contractDetail.sendFailed'));
                 } finally {
                   setSending(false);
                 }
@@ -1042,7 +1042,7 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
               onClick={async () => {
                 const result = await canonicalMarkAsSent(contract.id, 'pandadoc_manual');
                 if (!result.success) {
-                  toast.error(
+                  notify.error(
                     result.error
                       || (result.syncError && `Sincronização parcial: ${result.syncError}`)
                       || 'Erro ao marcar como enviado'
@@ -1052,7 +1052,7 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
                 queryClient.invalidateQueries({ queryKey: ['contracts'] });
                 queryClient.invalidateQueries({ queryKey: ['contract-intakes'] });
                 queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
-                toast.success(t('contractDetail.markedAsSent'));
+                notify.success(t('contractDetail.markedAsSent'));
               }}
             >
               <CheckCircle2 className="h-3 w-3" />
@@ -1070,7 +1070,7 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
             onClick={async () => {
               const result = await canonicalMarkAsSigned(contract.id, contract.workspace_id || null);
               if (!result.success) {
-                toast.error(
+                notify.error(
                   result.error
                     || (result.syncError && `Sincronização parcial: ${result.syncError}`)
                     || 'Erro ao marcar como assinado'
@@ -1081,7 +1081,7 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
               queryClient.invalidateQueries({ queryKey: ['contract-intakes'] });
               queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
               queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-              toast.success(t('contractDetail.markedAsSigned'));
+              notify.success(t('contractDetail.markedAsSigned'));
             }}
           >
             <CheckCircle2 className="h-4 w-4" />
@@ -1097,7 +1097,7 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
             className="h-8 gap-1.5 text-xs"
             onClick={() => {
               queryClient.invalidateQueries({ queryKey: ['contracts'] });
-              toast.info(t('contractDetail.statusRefreshed'));
+              notify.info(t('contractDetail.statusRefreshed'));
             }}
           >
             <RefreshCw className="h-3.5 w-3.5" />

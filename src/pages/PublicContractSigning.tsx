@@ -9,7 +9,7 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -229,9 +229,9 @@ export default function PublicContractSigning() {
         ...prev,
         [docKey]: { name: file.name, path: data.path, size: file.size },
       }));
-      toast.success(isPt ? 'Documento carregado' : 'Document uploaded');
+      notify.success(isPt ? 'Documento carregado' : 'Document uploaded');
     } catch (err: any) {
-      toast.error(err?.message || t('publicContract.errors.uploadFailed'));
+      notify.error(err?.message || t('publicContract.errors.uploadFailed'));
     } finally {
       setUploading(null);
     }
@@ -263,12 +263,12 @@ export default function PublicContractSigning() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success(isPt ? 'Contrato assinado com sucesso!' : 'Contract signed successfully!');
+      notify.success(isPt ? 'Contrato assinado com sucesso!' : 'Contract signed successfully!');
       setSignSuccess(true);
     } catch (e: any) {
       const msg = e?.message || t('publicContract.errors.signingFailed');
       setSigningError(msg);
-      toast.error(msg);
+      notify.error(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -302,7 +302,7 @@ export default function PublicContractSigning() {
       return { url, fileName };
     } catch {
       setPdfError(true);
-      toast.error(t('publicContract.errors.pdfDownloadFailed'));
+      notify.error(t('publicContract.errors.pdfDownloadFailed'));
       return null;
     } finally {
       setPdfLoading(false);
@@ -410,9 +410,9 @@ export default function PublicContractSigning() {
     },
     onSuccess: () => {
       setCurrentStep('review_contract');
-      toast.success(isPt ? 'Dados guardados com sucesso' : 'Data saved successfully');
+      notify.success(isPt ? 'Dados guardados com sucesso' : 'Data saved successfully');
     },
-    onError: () => toast.error(t('publicContract.errors.saveDataFailed')),
+    onError: () => notify.error(t('publicContract.errors.saveDataFailed')),
   });
 
   // Submit for signature (provider-agnostic — backend resolves provider)
@@ -434,13 +434,13 @@ export default function PublicContractSigning() {
       setCurrentStep('signing');
       const sigProv: SignatureProvider = contract?.signature_provider || 'manual';
       if (sigProv === 'manual') {
-        toast.success(isPt ? 'Contrato submetido para assinatura manual!' : 'Contract submitted for manual signature!');
+        notify.success(isPt ? 'Contrato submetido para assinatura manual!' : 'Contract submitted for manual signature!');
       } else {
-        toast.success(isPt ? `Contrato enviado para assinatura via ${providerLabel(sigProv, 'pt')}!` : `Contract sent for signature via ${providerLabel(sigProv, 'en')}!`);
+        notify.success(isPt ? `Contrato enviado para assinatura via ${providerLabel(sigProv, 'pt')}!` : `Contract sent for signature via ${providerLabel(sigProv, 'en')}!`);
       }
     },
     onError: (err: any) => {
-      toast.error(err?.message || t('publicContract.errors.sendSigningFailed'));
+      notify.error(err?.message || t('publicContract.errors.sendSigningFailed'));
       setCurrentStep('signing');
     },
   });

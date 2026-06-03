@@ -32,7 +32,7 @@ import {
   STAGE_LABELS,
   type SimplePipelineStage,
 } from '@/constants/funnelStages';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import type { CrmInboxItem } from '@/hooks/useCrmInbox';
 import type { FunnelStage } from '@/hooks/useFunnel';
 
@@ -178,7 +178,7 @@ export function PipelineView({
         stage: newStage,
       });
       const stageLabel = t(`pipeline.simple.${targetSimple}`, targetSimple);
-      toast.success(
+      notify.success(
         t('crm.movedTo', { stage: stageLabel, defaultValue: `Movido para ${stageLabel}` }),
         {
           action: {
@@ -190,7 +190,7 @@ export function PipelineView({
         }
       );
     } catch (error) {
-      toast.error(t('crm.moveError', { defaultValue: 'Erro ao mover lead' }));
+      notify.error(t('crm.moveError', { defaultValue: 'Erro ao mover lead' }));
     }
   };
 

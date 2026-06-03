@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { DollarSign, Users, PieChartIcon, Plus, Trash2, HelpCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useTranslation } from 'react-i18next';
 import { QuickHelp } from '@/components/ui/GlossaryTooltip';
 
@@ -69,10 +69,10 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
         announced_at: null,
         closed_at: null,
       });
-      toast.success(t('funding.roundCreated'));
+      notify.success(t('funding.roundCreated'));
       setShowRoundDialog(false);
     } catch {
-      toast.error(t('funding.failedToCreate'));
+      notify.error(t('funding.failedToCreate'));
     }
   };
 
@@ -90,10 +90,10 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
         status: formData.get('status') as string,
         notes: formData.get('notes') as string || null,
       });
-      toast.success(t('funding.investorAdded'));
+      notify.success(t('funding.investorAdded'));
       setShowInvestorDialog(false);
     } catch {
-      toast.error(t('funding.failedToAddInvestor'));
+      notify.error(t('funding.failedToAddInvestor'));
     }
   };
 
@@ -114,10 +114,10 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
         cliff_months: null,
         notes: null,
       });
-      toast.success(t('funding.entryAdded'));
+      notify.success(t('funding.entryAdded'));
       setShowCapTableDialog(false);
     } catch {
-      toast.error(t('funding.failedToAddEntry'));
+      notify.error(t('funding.failedToAddEntry'));
     }
   };
 

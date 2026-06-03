@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { sendTeamsNotification, getAppUrl } from '@/hooks/useIntegrationTriggers';
 import { Json } from '@/integrations/supabase/types';
 import { logger } from '@/lib/logger';
@@ -209,7 +209,7 @@ export function useSubmitCheckin() {
       return { instanceId, workspaceId };
     },
     onSuccess: (result) => {
-      toast.success(t('checkins.submitted'));
+      notify.success(t('checkins.submitted'));
       queryClient.invalidateQueries({ queryKey: ['pending-checkin'] });
       queryClient.invalidateQueries({ queryKey: ['checkin-history'] });
       queryClient.invalidateQueries({ queryKey: ['all-pending-checkins'] });
@@ -250,7 +250,7 @@ export function useSubmitCheckin() {
        }
     },
     onError: (error: any) => {
-      toast.error(t('checkins.submitError'), {
+      notify.error(t('checkins.submitError'), {
         description: error.message,
       });
     },
@@ -303,11 +303,11 @@ export function useManageCheckinDefinition() {
       }
     },
     onSuccess: () => {
-      toast.success(t('checkins.definitionSaved'));
+      notify.success(t('checkins.definitionSaved'));
       queryClient.invalidateQueries({ queryKey: ['checkin-definitions'] });
     },
     onError: (error: any) => {
-      toast.error(t('checkins.definitionSaveError'), {
+      notify.error(t('checkins.definitionSaveError'), {
         description: error.message,
       });
     },
@@ -358,7 +358,7 @@ export function useSkipCheckin() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.info(t('checkins.skipped'));
+      notify.info(t('checkins.skipped'));
       queryClient.invalidateQueries({ queryKey: ['pending-checkin'] });
       queryClient.invalidateQueries({ queryKey: ['all-pending-checkins'] });
     },

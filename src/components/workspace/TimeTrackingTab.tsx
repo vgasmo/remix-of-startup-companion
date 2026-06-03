@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Clock, Plus, Trash2, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -47,7 +47,7 @@ export function TimeTrackingTab({ workspaceId }: TimeTrackingTabProps) {
 
   const handleSubmit = async () => {
     if (!formData.hours || parseFloat(formData.hours) <= 0) {
-      toast.error(t('time.validHoursRequired'));
+      notify.error(t('time.validHoursRequired'));
       return;
     }
     try {
@@ -58,11 +58,11 @@ export function TimeTrackingTab({ workspaceId }: TimeTrackingTabProps) {
         description: formData.description || undefined,
         category: formData.category,
       });
-      toast.success(t('time.timeLogged'));
+      notify.success(t('time.timeLogged'));
       setDialogOpen(false);
       setFormData({ date: new Date().toISOString().split('T')[0], hours: '', description: '', category: 'mentoring' });
     } catch (error: any) {
-      toast.error(error.message || t('time.failedToLog'));
+      notify.error(error.message || t('time.failedToLog'));
     }
   };
 
@@ -70,9 +70,9 @@ export function TimeTrackingTab({ workspaceId }: TimeTrackingTabProps) {
     if (!confirm(t('time.deleteConfirm'))) return;
     try {
       await deleteEntry.mutateAsync(id);
-      toast.success(t('time.timeDeleted'));
+      notify.success(t('time.timeDeleted'));
     } catch (error: any) {
-      toast.error(error.message || t('time.failedToDelete'));
+      notify.error(error.message || t('time.failedToDelete'));
     }
   };
 

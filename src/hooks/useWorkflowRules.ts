@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import type { Json } from '@/integrations/supabase/types';
 
 import i18n from '@/i18n';
@@ -63,10 +63,10 @@ export function useUpdateWorkflowRule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workflow-rules'] });
-      toast.success(t('workflow.ruleUpdated'));
+      notify.success(t('workflow.ruleUpdated'));
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 }

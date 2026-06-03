@@ -40,7 +40,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { renderPdfToImage, isPdfFile } from '@/lib/pdfRenderer';
 import { logger } from '@/lib/logger';
 
@@ -279,7 +279,7 @@ export function InfrastructureTab() {
         pin_y: pendingPinCoords.y,
         shape_type: 'pin',
       });
-      toast.success(t('admin.backoffice.pinPlaced', { defaultValue: 'Pin colocado com sucesso' }));
+      notify.success(t('admin.backoffice.pinPlaced', { defaultValue: 'Pin colocado com sucesso' }));
     } catch {
       // error handled by mutation
     }
@@ -320,7 +320,7 @@ export function InfrastructureTab() {
       setUploadDialogOpen(false);
     } catch (error) {
       logger.error('Upload floor map failed', {}, error);
-      toast.error(t('admin.backoffice.uploadMapFailed', { defaultValue: 'Erro ao carregar mapa' }));
+      notify.error(t('admin.backoffice.uploadMapFailed', { defaultValue: 'Erro ao carregar mapa' }));
     } finally {
       setUploading(false);
     }

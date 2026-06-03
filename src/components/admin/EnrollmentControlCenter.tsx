@@ -20,7 +20,7 @@ import { useFeatureFlag, useFeatureFlags, useUpdateFeatureFlag } from '@/hooks/u
 import { useAdminDashboardStats } from '@/hooks/useAdminDashboardStats';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 
 export function EnrollmentControlCenter() {
@@ -53,14 +53,14 @@ export function EnrollmentControlCenter() {
 
   const handleToggleEnrollment = () => {
     if (!openRegFlag) {
-      toast.error(t('enrollment.flagNotFound', { defaultValue: 'Feature flag "open_registration" not found. Create it in Feature Flags.' }));
+      notify.error(t('enrollment.flagNotFound', { defaultValue: 'Feature flag "open_registration" not found. Create it in Feature Flags.' }));
       return;
     }
     updateFlag.mutate(
       { id: openRegFlag.id, enabled: !openRegFlag.enabled },
       {
         onSuccess: () => {
-          toast.success(
+          notify.success(
             !openRegFlag.enabled
               ? t('enrollment.opened', { defaultValue: 'Enrollment opened — founders can now self-register.' })
               : t('enrollment.closed', { defaultValue: 'Enrollment closed — invite-only mode active.' })

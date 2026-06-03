@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface SmartPrepSheetProps {
   open: boolean;
@@ -89,7 +89,7 @@ export function SmartPrepSheet({ open, onOpenChange, workspaceName, stage, healt
     const text = prepData.map(s => `## ${s.title}\n\n${s.content}`).join('\n\n---\n\n');
     await navigator.clipboard.writeText(text);
     setCopied(true);
-    toast.success(t('sessions.copiedToClipboard', { defaultValue: 'Copied to clipboard' }));
+    notify.success(t('sessions.copiedToClipboard', { defaultValue: 'Copied to clipboard' }));
     setTimeout(() => setCopied(false), 2000);
   }, [prepData, t]);
 

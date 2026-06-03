@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { Star, MessageSquare } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -28,7 +28,7 @@ export function SessionFeedbackCard({ sessionId, sessionTitle }: SessionFeedback
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      toast.error(t('sessions.pleaseSelectARating'));
+      notify.error(t('sessions.pleaseSelectARating'));
       return;
     }
     try {
@@ -38,10 +38,10 @@ export function SessionFeedbackCard({ sessionId, sessionTitle }: SessionFeedback
         feedback: feedback.trim() || undefined,
         is_public: true,
       });
-      toast.success(t('sessions.feedbackSubmitted'));
+      notify.success(t('sessions.feedbackSubmitted'));
       setDialogOpen(false);
     } catch (error: any) {
-      toast.error(error.message || t('common.errorGeneric'));
+      notify.error(error.message || t('common.errorGeneric'));
     }
   };
 

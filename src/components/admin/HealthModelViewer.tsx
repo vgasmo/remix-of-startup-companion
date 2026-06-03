@@ -44,7 +44,7 @@ import {
   CheckCircle,
   Info,
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useAuth } from '@/contexts/AuthContext';
 
 interface HealthModel {
@@ -154,11 +154,11 @@ export function HealthModelViewer() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['programs-with-health-models'] });
-      toast.success(t('admin.healthModel.saved'));
+      notify.success(t('admin.healthModel.saved'));
       setEditingModel(null);
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 
@@ -169,10 +169,10 @@ export function HealthModelViewer() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success(t('admin.healthModel.recomputed'));
+      notify.success(t('admin.healthModel.recomputed'));
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      notify.error(error.message);
     },
   });
 
@@ -188,7 +188,7 @@ export function HealthModelViewer() {
     if (!editingModel) return;
     const sum = editWeights.actions + editWeights.sessions + editWeights.kpis + editWeights.checkins;
     if (sum !== 100) {
-      toast.error(t('admin.healthModel.weightsMustSum', { sum }));
+      notify.error(t('admin.healthModel.weightsMustSum', { sum }));
       return;
     }
     upsertModel.mutate({

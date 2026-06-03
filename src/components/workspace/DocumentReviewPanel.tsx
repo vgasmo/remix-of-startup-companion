@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useAuth } from '@/contexts/AuthContext';
 import {
   useDocumentReviews,
@@ -88,14 +88,14 @@ export function DocumentReviewPanel({ documentId, workspaceId, documentName, isS
         ai_analyzed_at: new Date().toISOString(),
         approval_status: 'pending',
       });
-      toast.success(t('review.aiAnalysisComplete', { defaultValue: 'Análise IA concluída!' }));
+      notify.success(t('review.aiAnalysisComplete', { defaultValue: 'Análise IA concluída!' }));
     } catch (error: any) {
       if (error?.message?.includes('Rate limit')) {
-        toast.error(t('review.rateLimited', { defaultValue: 'Limite de pedidos excedido. Tente novamente mais tarde.' }));
+        notify.error(t('review.rateLimited', { defaultValue: 'Limite de pedidos excedido. Tente novamente mais tarde.' }));
       } else if (error?.message?.includes('credits')) {
-        toast.error(t('review.creditsExhausted', { defaultValue: 'Créditos IA esgotados.' }));
+        notify.error(t('review.creditsExhausted', { defaultValue: 'Créditos IA esgotados.' }));
       } else {
-        toast.error(error?.message || t('review.aiAnalysisFailed', { defaultValue: 'Falha na análise IA.' }));
+        notify.error(error?.message || t('review.aiAnalysisFailed', { defaultValue: 'Falha na análise IA.' }));
       }
     }
   };
@@ -116,13 +116,13 @@ export function DocumentReviewPanel({ documentId, workspaceId, documentName, isS
         comments: comments || undefined,
         approval_status: approvalStatus,
       });
-      toast.success(t('review.reviewSubmitted', { defaultValue: 'Avaliação submetida!' }));
+      notify.success(t('review.reviewSubmitted', { defaultValue: 'Avaliação submetida!' }));
       setShowForm(false);
       setScores({});
       setComments('');
       setApprovalStatus('pending');
     } catch (error: any) {
-      toast.error(error?.message || t('review.submitFailed', { defaultValue: 'Falha ao submeter avaliação.' }));
+      notify.error(error?.message || t('review.submitFailed', { defaultValue: 'Falha ao submeter avaliação.' }));
     }
   };
 

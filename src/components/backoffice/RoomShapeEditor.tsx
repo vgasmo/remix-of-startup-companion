@@ -9,7 +9,7 @@ import { Square, Pentagon, MapPin, Undo, Save, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type Room, type RoomShapeRect, type RoomShapePolygon, type RoomShapeType, useUpdateRoom } from '@/hooks/useBackoffice';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 
 interface RoomShapeEditorProps {
@@ -113,7 +113,7 @@ export function RoomShapeEditor({
       } else if (shapeType === 'polygon' && polygonPoints.length >= 3) {
         shapeJson = { points: polygonPoints };
       } else {
-        toast.error(t('admin.backoffice.noShapeDrawn', 'Please draw a shape first'));
+        notify.error(t('admin.backoffice.noShapeDrawn', 'Please draw a shape first'));
         return;
       }
 
@@ -125,11 +125,11 @@ export function RoomShapeEditor({
         pin_x: pinX,
         pin_y: pinY,
       });
-      toast.success(t('admin.backoffice.shapeUpdated', 'Room shape updated'));
+      notify.success(t('admin.backoffice.shapeUpdated', 'Room shape updated'));
       onOpenChange(false);
     } catch (error) {
       logger.error('Failed to save shape', {}, error);
-      toast.error(t('admin.backoffice.shapeUpdateFailed', 'Failed to update room shape'));
+      notify.error(t('admin.backoffice.shapeUpdateFailed', 'Failed to update room shape'));
     }
   };
 

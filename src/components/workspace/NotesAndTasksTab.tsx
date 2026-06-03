@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { MessageSquare, Plus, CheckCircle2, Sparkles } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useAuth } from '@/contexts/AuthContext';
 import { TaskItem } from './notes/TaskItem';
 import { CreateWorkspaceTaskDialog } from './notes/CreateWorkspaceTaskDialog';
@@ -106,9 +106,9 @@ function TasksSection({
   const handleComplete = async (task: StaffTask) => {
     try {
       await completeMutation.mutateAsync(task.id);
-      toast.success(t('notes.taskCompleted'));
+      notify.success(t('notes.taskCompleted'));
     } catch {
-      toast.error(t('notes.failedToComplete'));
+      notify.error(t('notes.failedToComplete'));
     }
   };
 
@@ -116,10 +116,10 @@ function TasksSection({
     if (!deleteTaskId) return;
     try {
       await deleteMutation.mutateAsync(deleteTaskId);
-      toast.success(t('notes.taskDeleted'));
+      notify.success(t('notes.taskDeleted'));
       setDeleteTaskId(null);
     } catch {
-      toast.error(t('notes.failedToDelete'));
+      notify.error(t('notes.failedToDelete'));
     }
   };
 

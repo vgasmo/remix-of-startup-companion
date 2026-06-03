@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { startOfMonth, subMonths, format, isPast, isToday, parseISO } from 'date-fns';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import type { Database } from '@/integrations/supabase/types';
 
 import i18n from '@/i18n';
@@ -102,9 +102,9 @@ export function useSetHealthOverride() {
       queryClient.invalidateQueries({ queryKey: ['workspace-health', vars.workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['health-distribution'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      toast.success(vars.override ? 'Override aplicado' : 'Override removido');
+      notify.success(vars.override ? 'Override aplicado' : 'Override removido');
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: (error: Error) => notify.error(error.message),
   });
 }
 
@@ -121,9 +121,9 @@ export function useRecomputeHealthScores() {
       queryClient.invalidateQueries({ queryKey: ['workspace-health'] });
       queryClient.invalidateQueries({ queryKey: ['health-distribution'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      toast.success(t('health.healthScoresRecalculados'));
+      notify.success(t('health.healthScoresRecalculados'));
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: (error: Error) => notify.error(error.message),
   });
 }
 

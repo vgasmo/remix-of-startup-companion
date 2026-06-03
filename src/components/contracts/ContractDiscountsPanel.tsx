@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Percent, Plus, Trash2, Calendar, AlertCircle } from 'lucide-react';
 import { format, isAfter, isBefore, parseISO } from 'date-fns';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 
 interface ContractDiscountsPanelProps {
@@ -77,9 +77,9 @@ export function ContractDiscountsPanel({ contractId, monthlyFee, currency = 'EUR
       queryClient.invalidateQueries({ queryKey: ['contract-discounts', contractId] });
       setShowAddForm(false);
       setNewDiscount({ discount_percentage: '', start_date: '', end_date: '', reason: '' });
-      toast.success(t('discounts.added'));
+      notify.success(t('discounts.added'));
     },
-    onError: () => toast.error(t('discounts.addError')),
+    onError: () => notify.error(t('discounts.addError')),
   });
 
   const removeMutation = useMutation({
@@ -89,9 +89,9 @@ export function ContractDiscountsPanel({ contractId, monthlyFee, currency = 'EUR
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contract-discounts', contractId] });
-      toast.success(t('discounts.removed'));
+      notify.success(t('discounts.removed'));
     },
-    onError: () => toast.error(t('discounts.removeError')),
+    onError: () => notify.error(t('discounts.removeError')),
   });
 
   const today = new Date();

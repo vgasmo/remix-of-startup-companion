@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SortableList } from '@/components/ui/SortableList';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useMilestones, useCreateMilestone, useUpdateMilestone, useDeleteMilestone, useReorderMilestones, type Milestone } from '@/hooks/useMilestones';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useTranslation } from 'react-i18next';
 import { useQuickWinToast } from '@/hooks/useQuickWinToast';
 import { toTitleCase } from '@/lib/textUtils';
@@ -57,7 +57,7 @@ export function MilestonesTab({ workspaceId, canWrite }: MilestonesTabProps) {
 
   const handleCreate = async () => {
     if (!newMilestone.title.trim()) {
-      toast.error(t('milestones.titleRequired'));
+      notify.error(t('milestones.titleRequired'));
       return;
     }
     try {
@@ -66,11 +66,11 @@ export function MilestonesTab({ workspaceId, canWrite }: MilestonesTabProps) {
         description: newMilestone.description || undefined,
         target_date: newMilestone.target_date || null,
       });
-      toast.success(t('milestones.milestoneCreated'));
+      notify.success(t('milestones.milestoneCreated'));
       setCreateDialogOpen(false);
       setNewMilestone({ title: '', description: '', target_date: '' });
     } catch {
-      toast.error(t('milestones.failedToCreate'));
+      notify.error(t('milestones.failedToCreate'));
     }
   };
 
@@ -82,7 +82,7 @@ export function MilestonesTab({ workspaceId, canWrite }: MilestonesTabProps) {
         showQuickWin('milestone_completed');
       }
     } catch {
-      toast.error(t('milestones.failedToUpdate'));
+      notify.error(t('milestones.failedToUpdate'));
     }
   };
 
@@ -90,10 +90,10 @@ export function MilestonesTab({ workspaceId, canWrite }: MilestonesTabProps) {
     if (!deleteTarget || !canWrite) return;
     try {
       await deleteMilestone.mutateAsync(deleteTarget.id);
-      toast.success(t('milestones.milestoneDeleted'));
+      notify.success(t('milestones.milestoneDeleted'));
       setDeleteTarget(null);
     } catch {
-      toast.error(t('milestones.failedToDelete'));
+      notify.error(t('milestones.failedToDelete'));
     }
   };
 
@@ -161,7 +161,7 @@ export function MilestonesTab({ workspaceId, canWrite }: MilestonesTabProps) {
               onReorder={(reordered) => {
                 const updates = reordered.map((m, i) => ({ id: m.id, position: i }));
                 reorderMilestones.mutateAsync(updates).catch(() => {
-                  toast.error(t('milestones.failedToReorder'));
+                  notify.error(t('milestones.failedToReorder'));
                 });
               }}
               renderItem={(milestone, index, dragHandle) => (

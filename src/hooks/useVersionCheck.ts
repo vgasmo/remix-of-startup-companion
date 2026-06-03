@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 const POLL_INTERVAL = 2 * 60 * 1000; // 2 minutes (was 5)
 
@@ -49,7 +49,7 @@ export function useVersionCheck() {
         // Show persistent, unmissable toast with clear action.
         // IMPORTANT: never auto-reload — that would silently destroy
         // unsaved work / scroll position when the user returns to the tab.
-        toast(
+        notify.info(
           t('app.newVersionAvailable', 'Nova versão disponível!'),
           {
             description: t(

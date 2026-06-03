@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -45,7 +45,7 @@ export function DocumentFeedbackButton({
   const handleCopyLink = async () => {
     const shareUrl = `${window.location.origin}/workspace/${workspaceId}?tab=documents&doc=${documentId}`;
     await navigator.clipboard.writeText(shareUrl);
-    toast.success(t('documentFeedback.linkCopied', { defaultValue: 'Link copiado!' }));
+    notify.success(t('documentFeedback.linkCopied', { defaultValue: 'Link copiado!' }));
     setShowDialog(false);
   };
 
@@ -66,7 +66,7 @@ export function DocumentFeedbackButton({
       if (membersError) throw membersError;
 
       if (!members || members.length === 0) {
-        toast.info(t('documentFeedback.noReviewers', { defaultValue: 'Sem consultores ou mentores atribuídos para notificar.' }));
+        notify.info(t('documentFeedback.noReviewers', { defaultValue: 'Sem consultores ou mentores atribuídos para notificar.' }));
         setShowDialog(false);
         return;
       }
@@ -91,11 +91,11 @@ export function DocumentFeedbackButton({
 
       if (error) throw error;
 
-      toast.success(t('documentFeedback.requestSent', { defaultValue: 'Pedido de feedback enviado!' }));
+      notify.success(t('documentFeedback.requestSent', { defaultValue: 'Pedido de feedback enviado!' }));
       setShowDialog(false);
       setMessage('');
     } catch (error) {
-      toast.error(t('documentFeedback.requestFailed', { defaultValue: 'Falha ao enviar pedido.' }));
+      notify.error(t('documentFeedback.requestFailed', { defaultValue: 'Falha ao enviar pedido.' }));
     } finally {
       setIsSending(false);
     }

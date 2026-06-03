@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 
 interface QuickNoteDialogProps {
@@ -40,12 +40,12 @@ export function QuickNoteDialog({ open, onOpenChange, workspaceId, startupName }
         visibility: 'team',
       });
       if (error) throw error;
-      toast.success(t('mentor.noteAdded', { defaultValue: 'Nota adicionada com sucesso' }));
+      notify.success(t('mentor.noteAdded', { defaultValue: 'Nota adicionada com sucesso' }));
       setContent('');
       onOpenChange(false);
     } catch (err) {
       logger.error('mentor_quick_note_save_failed', { workspaceId }, err);
-      toast.error(t('common.error'));
+      notify.error(t('common.error'));
     } finally {
       setSaving(false);
     }

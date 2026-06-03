@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { 
   CheckCircle2, 
   Calendar,
@@ -90,7 +90,7 @@ export function WorkspaceCalendarCard({ workspaceId, canEdit = true }: Workspace
 
   const handleSaveCustomEmail = async () => {
     if (!email || !email.includes('@')) {
-      toast.error(t('settings.pleaseEnterAValidEmail'));
+      notify.error(t('settings.pleaseEnterAValidEmail'));
       return;
     }
     try {
@@ -99,9 +99,9 @@ export function WorkspaceCalendarCard({ workspaceId, canEdit = true }: Workspace
         use_custom_calendar_email: true,
         sync_mode: 'graph',
       });
-      toast.success(t('settings.customCalendarEmailSaved'));
+      notify.success(t('settings.customCalendarEmailSaved'));
     } catch (error: any) {
-      toast.error(error.message || t('common.errorGeneric'));
+      notify.error(error.message || t('common.errorGeneric'));
     }
   };
 
@@ -115,20 +115,20 @@ export function WorkspaceCalendarCard({ workspaceId, canEdit = true }: Workspace
           use_custom_calendar_email: false,
           sync_mode: 'graph',
         });
-        toast.success(t('settings.usingAssignedConsultantCalendar'));
+        notify.success(t('settings.usingAssignedConsultantCalendar'));
       } catch (error: any) {
-        toast.error(error.message || t('common.errorGeneric'));
+        notify.error(error.message || t('common.errorGeneric'));
       }
     }
   };
 
   const handleToggleSync = async (enabled: boolean) => {
     if (enabled && !hasEffectiveEmail) {
-      toast.error(t('settings.noCalendarEmailAvailableAssign'));
+      notify.error(t('settings.noCalendarEmailAvailableAssign'));
       return;
     }
     if (enabled && !globalEnabled) {
-      toast.error(t('settings.globalGraphApiIsNot'));
+      notify.error(t('settings.globalGraphApiIsNot'));
       return;
     }
     try {
@@ -138,9 +138,9 @@ export function WorkspaceCalendarCard({ workspaceId, canEdit = true }: Workspace
         use_custom_calendar_email: useCustomEmail,
         ...(useCustomEmail && email && { calendar_user_email: email }),
       });
-      toast.success(enabled ? t('settings.outlookSyncEnabled') : t('settings.outlookSyncDisabled'));
+      notify.success(enabled ? t('settings.outlookSyncEnabled') : t('settings.outlookSyncDisabled'));
     } catch (error: any) {
-      toast.error(error.message || t('common.errorGeneric'));
+      notify.error(error.message || t('common.errorGeneric'));
     }
   };
 

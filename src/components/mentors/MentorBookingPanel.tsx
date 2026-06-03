@@ -13,7 +13,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { 
   useMentorAvailability, 
   useMyBookings, 
@@ -71,7 +71,7 @@ export function MentorBookingPanel({
 
   const handleBookSession = () => {
     if (!selectedDate || !selectedSlot || !mentorId) {
-      toast.error(t('mentors.selectDateAndSlot', 'Please select a date and time slot'));
+      notify.error(t('mentors.selectDateAndSlot', 'Please select a date and time slot'));
       return;
     }
 
@@ -86,14 +86,14 @@ export function MentorBookingPanel({
       message: message.trim() || undefined,
     }, {
       onSuccess: () => {
-        toast.success(t('mentors.bookingRequestSent', 'Booking request sent!'));
+        notify.success(t('mentors.bookingRequestSent', 'Booking request sent!'));
         setShowBookingForm(false);
         setSelectedDate(undefined);
         setSelectedSlot('');
         setMessage('');
       },
       onError: (error: any) => {
-        toast.error(error.message || t('mentors.failedToCreateBooking', 'Failed to create booking'));
+        notify.error(error.message || t('mentors.failedToCreateBooking', 'Failed to create booking'));
       },
     });
   };
@@ -104,10 +104,10 @@ export function MentorBookingPanel({
         const statusText = status === 'accepted' 
           ? t('mentors.bookingAccepted', 'Booking accepted') 
           : t('mentors.bookingDeclined', 'Booking declined');
-        toast.success(statusText);
+        notify.success(statusText);
       },
       onError: (error: any) => {
-        toast.error(error.message || t('mentors.failedToUpdateBooking', 'Failed to update booking'));
+        notify.error(error.message || t('mentors.failedToUpdateBooking', 'Failed to update booking'));
       },
     });
   };

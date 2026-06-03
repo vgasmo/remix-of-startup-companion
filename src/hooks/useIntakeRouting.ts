@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
@@ -88,10 +88,10 @@ export function useUpsertIntakeRoute() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['intake-routing'] });
-      toast.success(t('intake.intakeRoutingUpdated'));
+      notify.success(t('intake.intakeRoutingUpdated'));
     },
     onError: (error) => {
-      toast.error(t('intake.failedToUpdateIntakeRouting', { message: error.message }));
+      notify.error(t('intake.failedToUpdateIntakeRouting', { message: error.message }));
     },
   });
 }

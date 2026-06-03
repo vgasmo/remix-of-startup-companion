@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import confetti from 'canvas-confetti';
 
 type QuickWinType = 
@@ -65,7 +65,7 @@ export function useQuickWinToast() {
     const message = messages[type];
     
     // Show toast
-    toast.success(message.title, {
+    notify.success(message.title, {
       description: message.description,
       duration: 4000,
     });

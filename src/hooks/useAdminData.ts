@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
@@ -30,9 +30,9 @@ export function useCreateProgram() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['programs'] });
-      toast.success(t('admin.programCreated'));
+      notify.success(t('admin.programCreated'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -49,9 +49,9 @@ export function useUpdateProgram() {
       queryClient.invalidateQueries({ queryKey: ['programs-for-routing'] });
       queryClient.invalidateQueries({ queryKey: ['programs-list'] });
       queryClient.invalidateQueries({ queryKey: ['intake-routing'] });
-      toast.success(t('admin.programUpdated'));
+      notify.success(t('admin.programUpdated'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -67,9 +67,9 @@ export function useDeleteProgram() {
       queryClient.invalidateQueries({ queryKey: ['programs-for-routing'] });
       queryClient.invalidateQueries({ queryKey: ['programs-list'] });
       queryClient.invalidateQueries({ queryKey: ['intake-routing'] });
-      toast.success(t('admin.programDeleted'));
+      notify.success(t('admin.programDeleted'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -101,9 +101,9 @@ export function useCreateStage() {
     },
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ['admin-stages', vars.program_id] });
-      toast.success(t('admin.stageCreated'));
+      notify.success(t('admin.stageCreated'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -117,9 +117,9 @@ export function useUpdateStage() {
     },
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ['admin-stages', vars.program_id] });
-      toast.success(t('admin.stageUpdated'));
+      notify.success(t('admin.stageUpdated'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -132,9 +132,9 @@ export function useDeleteStage() {
     },
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ['admin-stages', vars.program_id] });
-      toast.success(t('admin.stageDeleted'));
+      notify.success(t('admin.stageDeleted'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -182,9 +182,9 @@ export function useAddUserRole() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
-      toast.success(t('admin.roleAdded'));
+      notify.success(t('admin.roleAdded'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -197,9 +197,9 @@ export function useRemoveUserRole() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
-      toast.success(t('admin.roleRemoved'));
+      notify.success(t('admin.roleRemoved'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -243,9 +243,9 @@ export function useAddWorkspaceUser() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workspace-users'] });
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      toast.success(t('admin.userAssigned'));
+      notify.success(t('admin.userAssigned'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -259,9 +259,9 @@ export function useUpdateWorkspaceUser() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workspace-users'] });
-      toast.success(t('admin.assignmentUpdated'));
+      notify.success(t('admin.assignmentUpdated'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -274,9 +274,9 @@ export function useRemoveWorkspaceUser() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workspace-users'] });
-      toast.success(t('admin.userRemoved'));
+      notify.success(t('admin.userRemoved'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -324,9 +324,9 @@ export function useCreateKpiDefinition() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-kpi-definitions'] });
-      toast.success(t('admin.kpiCreated'));
+      notify.success(t('admin.kpiCreated'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -340,9 +340,9 @@ export function useUpdateKpiDefinition() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-kpi-definitions'] });
-      toast.success(t('admin.kpiUpdated'));
+      notify.success(t('admin.kpiUpdated'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -355,9 +355,9 @@ export function useDeleteKpiDefinition() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-kpi-definitions'] });
-      toast.success(t('admin.kpiDeleted'));
+      notify.success(t('admin.kpiDeleted'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -389,8 +389,8 @@ export function useUpsertWorkspaceKpi() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workspace-kpis'] });
-      toast.success(t('admin.workspaceKpiUpdated'));
+      notify.success(t('admin.workspaceKpiUpdated'));
     },
-    onError: (e) => toast.error(t('common.operationFailed', { error: e.message })),
+    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { addDays, format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import type { Database } from '@/integrations/supabase/types';
@@ -335,10 +335,10 @@ export function useDismissPlaybook() {
     },
     onSuccess: (_, { workspaceId }) => {
       queryClient.invalidateQueries({ queryKey: ['workspace-playbook-instances', workspaceId] });
-      toast.success(t('playbooks.dismissedSuccess'));
+      notify.success(t('playbooks.dismissedSuccess'));
     },
     onError: (error: Error) => {
-      toast.error(t('playbooks.errors.dismissFailed'));
+      notify.error(t('playbooks.errors.dismissFailed'));
       logger.error('Playbook dismiss error', {}, error.message);
     },
   });
@@ -370,10 +370,10 @@ export function useRestorePlaybook() {
     },
     onSuccess: (_, { workspaceId }) => {
       queryClient.invalidateQueries({ queryKey: ['workspace-playbook-instances', workspaceId] });
-      toast.success(t('playbooks.restoredSuccess', { defaultValue: 'Playbook restaurado' }));
+      notify.success(t('playbooks.restoredSuccess', { defaultValue: 'Playbook restaurado' }));
     },
     onError: (error: Error) => {
-      toast.error(t('playbooks.errors.restoreFailed', { defaultValue: 'Falha ao restaurar playbook' }));
+      notify.error(t('playbooks.errors.restoreFailed', { defaultValue: 'Falha ao restaurar playbook' }));
       logger.error('Playbook restore error', {}, error.message);
     },
   });
@@ -397,10 +397,10 @@ export function useCreatePlaybook() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['playbooks'] });
-      toast.success(t('playbooks.admin.created'));
+      notify.success(t('playbooks.admin.created'));
     },
     onError: (error: Error) => {
-      toast.error(t('playbooks.errors.createFailed'));
+      notify.error(t('playbooks.errors.createFailed'));
       logger.error('Playbook create error', {}, error.message);
     },
   });
@@ -425,10 +425,10 @@ export function useUpdatePlaybook() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['playbooks'] });
-      toast.success(t('playbooks.admin.updated'));
+      notify.success(t('playbooks.admin.updated'));
     },
     onError: (error: Error) => {
-      toast.error(t('playbooks.errors.updateFailed'));
+      notify.error(t('playbooks.errors.updateFailed'));
       logger.error('Playbook update error', {}, error.message);
     },
   });
@@ -463,10 +463,10 @@ export function useCreatePlaybookItem() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['playbook-items', variables.playbook_id] });
       queryClient.invalidateQueries({ queryKey: ['playbooks'] });
-      toast.success(t('playbooks.admin.itemAdded'));
+      notify.success(t('playbooks.admin.itemAdded'));
     },
     onError: (error: Error) => {
-      toast.error(t('playbooks.errors.itemAddFailed'));
+      notify.error(t('playbooks.errors.itemAddFailed'));
       logger.error('Playbook item create error', {}, error.message);
     },
   });
@@ -490,10 +490,10 @@ export function useDeletePlaybookItem() {
     onSuccess: (playbookId) => {
       queryClient.invalidateQueries({ queryKey: ['playbook-items', playbookId] });
       queryClient.invalidateQueries({ queryKey: ['playbooks'] });
-      toast.success(t('playbooks.admin.itemRemoved'));
+      notify.success(t('playbooks.admin.itemRemoved'));
     },
     onError: (error: Error) => {
-      toast.error(t('playbooks.errors.itemRemoveFailed'));
+      notify.error(t('playbooks.errors.itemRemoveFailed'));
       logger.error('Playbook item delete error', {}, error.message);
     },
   });

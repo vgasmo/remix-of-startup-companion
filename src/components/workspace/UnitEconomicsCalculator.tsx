@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import {
   Tooltip,
   TooltipContent,
@@ -255,16 +255,16 @@ export function UnitEconomicsCalculator({ workspaceId }: UnitEconomicsCalculator
         }
       });
       setValidationErrors(errors);
-      toast.error(t('unitEconomics.fixValidationErrors'));
+      notify.error(t('unitEconomics.fixValidationErrors'));
       return;
     }
 
     try {
       await saveUnitEconomics.mutateAsync(formData);
-      toast.success(t('unitEconomics.savedSuccess'));
+      notify.success(t('unitEconomics.savedSuccess'));
       setHasChanges(false);
     } catch (error: any) {
-      toast.error(error.message || t('common.errorGeneric'));
+      notify.error(error.message || t('common.errorGeneric'));
     }
   };
 

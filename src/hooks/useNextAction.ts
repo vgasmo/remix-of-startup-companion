@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useTranslation } from 'react-i18next';
 
 export function useUpdateNextAction() {
@@ -29,9 +29,9 @@ export function useUpdateNextAction() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
-      toast.success(t('crm.nextActionUpdated'));
+      notify.success(t('crm.nextActionUpdated'));
     },
-    onError: (e: Error) => toast.error(t('crm.nextActionError')),
+    onError: (e: Error) => notify.error(t('crm.nextActionError')),
   });
 }
 
@@ -57,8 +57,8 @@ export function useClearNextAction() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
-      toast.success(t('crm.nextActionCleared'));
+      notify.success(t('crm.nextActionCleared'));
     },
-    onError: (e: Error) => toast.error(t('crm.nextActionClearError')),
+    onError: (e: Error) => notify.error(t('crm.nextActionClearError')),
   });
 }

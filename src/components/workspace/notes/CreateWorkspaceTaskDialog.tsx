@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Clock, FileText, Phone, Users } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface CreateWorkspaceTaskDialogProps {
   open: boolean;
@@ -41,7 +41,7 @@ export function CreateWorkspaceTaskDialog({ open, onOpenChange, workspaceId, sta
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim()) {
-      toast.error(t('notes.titleRequired'));
+      notify.error(t('notes.titleRequired'));
       return;
     }
 
@@ -56,11 +56,11 @@ export function CreateWorkspaceTaskDialog({ open, onOpenChange, workspaceId, sta
         workspace_id: workspaceId,
         related_startup_id: startupId || null,
       });
-      toast.success(t('notes.taskCreated'));
+      notify.success(t('notes.taskCreated'));
       onOpenChange(false);
       setFormData({ title: '', description: '', task_type: 'general', priority: 'medium', due_date: '' });
     } catch {
-      toast.error(t('notes.failedToCreate'));
+      notify.error(t('notes.failedToCreate'));
     }
   };
 

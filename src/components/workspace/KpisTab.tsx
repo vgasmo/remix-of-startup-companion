@@ -35,7 +35,7 @@ import {
 import { useExportKpis, exportToCsv } from '@/hooks/useExportData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspace } from '@/hooks/useWorkspaces';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { triggerKpiCelebration } from '@/lib/confetti';
 import { useTranslation } from 'react-i18next';
 import { KpiImportDialog } from './KpiImportDialog';
@@ -154,9 +154,9 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
     const { data } = await fetchExportData();
     if (data && data.length > 0) {
       exportToCsv(data, `kpis-${workspaceId}`);
-      toast.success(t('kpis.exportedToCsv'));
+      notify.success(t('kpis.exportedToCsv'));
     } else {
-      toast.error(t('kpis.noDataToExport'));
+      notify.error(t('kpis.noDataToExport'));
     }
   };
 
@@ -273,7 +273,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
     const value = valueStr === '' ? null : parseFloat(valueStr);
 
     if (valueStr !== '' && isNaN(value as number)) {
-      toast.error(t('kpis.invalidNumber'));
+      notify.error(t('kpis.invalidNumber'));
       return;
     }
 
@@ -293,10 +293,10 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
         return newState;
       });
       
-      toast.success(t('kpis.kpiSaved'));
+      notify.success(t('kpis.kpiSaved'));
       triggerKpiCelebration();
     } catch {
-      toast.error(t('kpis.failedToSave'));
+      notify.error(t('kpis.failedToSave'));
     }
   };
 
@@ -309,11 +309,11 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
 
     try {
       await markCheckin.mutateAsync();
-      toast.success(t('kpis.checkinComplete'));
+      notify.success(t('kpis.checkinComplete'));
       showQuickWin('monthly_wins_submitted');
       setEditedValues({});
     } catch {
-      toast.error(t('kpis.failedCheckin'));
+      notify.error(t('kpis.failedCheckin'));
     }
   };
 
@@ -326,12 +326,12 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
     try {
       const result = await applyDefaults.mutateAsync(workspace.stage);
       if (result.length > 0) {
-        toast.success(t('kpis.addedDefaults', { count: result.length, stage: stageLabel }));
+        notify.success(t('kpis.addedDefaults', { count: result.length, stage: stageLabel }));
       } else {
-        toast.info(t('kpis.allDefaultsConfigured'));
+        notify.info(t('kpis.allDefaultsConfigured'));
       }
     } catch {
-      toast.error(t('kpis.failedDefaults'));
+      notify.error(t('kpis.failedDefaults'));
     }
   };
 
@@ -348,19 +348,19 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
         delete next[kpiDefId];
         return next;
       });
-      toast.success(t('kpis.kpiAdded'));
+      notify.success(t('kpis.kpiAdded'));
       showQuickWin('kpi_added');
     } catch {
-      toast.error(t('kpis.failedToAdd'));
+      notify.error(t('kpis.failedToAdd'));
     }
   };
 
   const handleRemoveKpi = async (workspaceKpiId: string) => {
     try {
       await removeKpi.mutateAsync(workspaceKpiId);
-      toast.success(t('kpis.kpiRemoved'));
+      notify.success(t('kpis.kpiRemoved'));
     } catch {
-      toast.error(t('kpis.failedToRemove'));
+      notify.error(t('kpis.failedToRemove'));
     }
   };
 
@@ -726,7 +726,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
               onSave={() => handleSaveKpi(wk)}
               onUnlock={async (kpiValueId) => {
                 await unlockKpi.mutateAsync(kpiValueId);
-                toast.success(t('kpis.unlocked', 'KPI unlocked for manual editing'));
+                notify.success(t('kpis.unlocked', 'KPI unlocked for manual editing'));
               }}
             />
           ))}

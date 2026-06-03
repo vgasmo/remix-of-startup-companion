@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { Play, Loader2, CheckCircle2, XCircle, Clock, Copy, ChevronDown, Database, Shield, Zap, Globe, BarChart3, Navigation } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 type TestStatus = 'pending' | 'running' | 'pass' | 'fail';
 
@@ -293,7 +293,7 @@ export default function AppDiagnostics() {
       tests: c.tests.map(t => ({ name: t.name, status: t.status, message: t.message })),
     }));
     navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-    toast.success(t('diagnostics.copied', 'Resultados copiados'));
+    notify.success(t('diagnostics.copied', 'Resultados copiados'));
   };
 
   const statusIcon = (status: TestStatus) => {

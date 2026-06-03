@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 
 import i18n from '@/i18n';
@@ -121,7 +121,7 @@ export function useUploadDocument() {
     },
     onSuccess: async (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['documents', variables.workspaceId] });
-      toast.success(t('documents.uploaded'));
+      notify.success(t('documents.uploaded'));
 
       // Check if this was their first ever document upload
       try {
@@ -131,14 +131,14 @@ export function useUploadDocument() {
           .eq('workspace_id', variables.workspaceId);
 
         if (count === 1) {
-          toast.success(t('documents.firstUploadCelebration'));
+          notify.success(t('documents.firstUploadCelebration'));
         }
       } catch {
         // Silent - celebration check is non-critical
       }
     },
     onError: (error) => {
-      toast.error(t('documents.uploadError', { error: error.message }));
+      notify.error(t('documents.uploadError', { error: error.message }));
     },
   });
 }
@@ -189,10 +189,10 @@ export function useAddExternalLink() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['documents', variables.workspaceId] });
-      toast.success(t('documents.linkAdded'));
+      notify.success(t('documents.linkAdded'));
     },
     onError: (error) => {
-      toast.error(t('documents.linkAddError', { error: error.message }));
+      notify.error(t('documents.linkAddError', { error: error.message }));
     },
   });
 }
@@ -224,10 +224,10 @@ export function useDeleteDocument() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['documents', variables.workspaceId] });
-      toast.success(t('documents.deleted'));
+      notify.success(t('documents.deleted'));
     },
     onError: (error) => {
-      toast.error(t('documents.deleteError', { error: error.message }));
+      notify.error(t('documents.deleteError', { error: error.message }));
     },
   });
 }

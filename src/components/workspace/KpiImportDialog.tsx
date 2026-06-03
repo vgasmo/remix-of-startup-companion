@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Download, Link2, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { useWorkspaceKpiDefinitions } from '@/hooks/useKpis';
 
 interface KpiImportDialogProps {
@@ -77,12 +77,12 @@ export function KpiImportDialog({ open, onOpenChange, workspaceId }: KpiImportDi
         return;
       }
 
-      toast.success(t('kpis.importSuccess', 'KPIs imported successfully'));
+      notify.success(t('kpis.importSuccess', 'KPIs imported successfully'));
       queryClient.invalidateQueries({ queryKey: ['kpi-values', workspaceId] });
       onOpenChange(false);
     } catch (err: any) {
       setError(err.message || 'Failed to import data');
-      toast.error(t('kpis.importError', 'Failed to import KPIs'));
+      notify.error(t('kpis.importError', 'Failed to import KPIs'));
     } finally {
       setImporting(false);
     }

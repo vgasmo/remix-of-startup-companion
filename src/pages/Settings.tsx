@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { profileUpdateSchema, validateFormData } from '@/lib/validations';
 import { NotificationSettings } from '@/components/settings/NotificationSettings';
 import { WorkflowIntegrations } from '@/components/settings/WorkflowIntegrations';
@@ -57,7 +57,7 @@ export default function Settings() {
 
   const handleRestoreChecklist = () => {
     restoreChecklist();
-    toast.success(t('checklistRecovery.restored', 'Checklist reposta com sucesso'));
+    notify.success(t('checklistRecovery.restored', 'Checklist reposta com sucesso'));
   };
   const initials = profile?.full_name
     ?.split(' ')
@@ -72,13 +72,13 @@ export default function Settings() {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error(t('settingsPage.uploadImageFile'));
+      notify.error(t('settingsPage.uploadImageFile'));
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error(t('settingsPage.imageTooLarge'));
+      notify.error(t('settingsPage.imageTooLarge'));
       return;
     }
 
@@ -102,10 +102,10 @@ export default function Settings() {
       // Add cache buster to force refresh
       const urlWithCacheBuster = `${publicUrl}?t=${Date.now()}`;
       setAvatarUrl(urlWithCacheBuster);
-      toast.success(t('settingsPage.avatarUploaded'));
+      notify.success(t('settingsPage.avatarUploaded'));
     } catch (error: any) {
       logger.error('Error uploading avatar', {}, error);
-      toast.error(error.message || 'Failed to upload avatar');
+      notify.error(error.message || 'Failed to upload avatar');
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -144,7 +144,7 @@ export default function Settings() {
       expertise: expertise,
     };
 
-    const result = validateFormData(profileUpdateSchema, formData, (msg) => toast.error(msg));
+    const result = validateFormData(profileUpdateSchema, formData, (msg) => notify.error(msg));
     
     if (!result.success) {
       return;
@@ -158,10 +158,10 @@ export default function Settings() {
         .eq('id', user.id);
 
       if (error) throw error;
-      toast.success(t('settingsPage.profileUpdated'));
+      notify.success(t('settingsPage.profileUpdated'));
     } catch (error: any) {
       logger.error('Error updating profile', {}, error);
-      toast.error(error.message || 'Failed to update profile');
+      notify.error(error.message || 'Failed to update profile');
     } finally {
       setIsUpdatingProfile(false);
     }
@@ -170,7 +170,7 @@ export default function Settings() {
   const handleUpdateEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmail.trim()) {
-      toast.error(t('settingsPage.pleaseEnterEmail'));
+      notify.error(t('settingsPage.pleaseEnterEmail'));
       return;
     }
 
@@ -181,11 +181,11 @@ export default function Settings() {
       });
 
       if (error) throw error;
-      toast.success(t('settingsPage.emailConfirmationSent'));
+      notify.success(t('settingsPage.emailConfirmationSent'));
       setNewEmail('');
     } catch (error: any) {
       logger.error('Error updating email', {}, error);
-      toast.error(error.message || 'Failed to update email');
+      notify.error(error.message || 'Failed to update email');
     } finally {
       setIsUpdatingEmail(false);
     }
@@ -195,12 +195,12 @@ export default function Settings() {
     e.preventDefault();
     
     if (newPassword.length < 6) {
-      toast.error(t('login.passwordMinLength'));
+      notify.error(t('login.passwordMinLength'));
       return;
     }
     
     if (newPassword !== confirmPassword) {
-      toast.error(t('settingsPage.passwordsDoNotMatch'));
+      notify.error(t('settingsPage.passwordsDoNotMatch'));
       return;
     }
 
@@ -211,13 +211,13 @@ export default function Settings() {
       });
 
       if (error) throw error;
-      toast.success(t('settingsPage.passwordUpdated'));
+      notify.success(t('settingsPage.passwordUpdated'));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (error: any) {
       logger.error('Error updating password', {}, error);
-      toast.error(error.message || 'Failed to update password');
+      notify.error(error.message || 'Failed to update password');
     } finally {
       setIsUpdatingPassword(false);
     }

@@ -19,7 +19,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { HealthBadge } from '@/components/ui/HealthBadge';
 import { useWorkspaces, ALL_WORKSPACE_STATUSES } from '@/hooks/useWorkspaces';
 import { useAllPendingCheckins } from '@/hooks/useCheckins';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 export function ComplianceDashboard() {
   const { t } = useTranslation();
@@ -100,7 +100,7 @@ export function ComplianceDashboard() {
     a.download = `compliance-report-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(t('compliance.exported'));
+    notify.success(t('compliance.exported'));
   };
 
   if (isLoading) {

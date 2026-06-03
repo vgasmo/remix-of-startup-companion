@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import type { Json } from '@/integrations/supabase/types';
 
 import i18n from '@/i18n';
@@ -147,9 +147,9 @@ export function useGenerateRecap() {
     },
     onSuccess: (_, params) => {
       queryClient.invalidateQueries({ queryKey: ['relationship-recap', params.workspaceId, params.funnelItemId] });
-      toast.success(t('common.resumoGerado'));
+      notify.success(t('common.resumoGerado'));
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notify.error(e.message),
   });
 }
 
@@ -174,9 +174,9 @@ export function useSyncEmails() {
       queryClient.invalidateQueries({ queryKey: ['unmatched-emails'] });
       const logged = data?.logged ?? 0;
       const unmatched = data?.unmatched ?? 0;
-      toast.success(`Sincronizados ${logged} emails${unmatched > 0 ? `, ${unmatched} para revisão` : ''}`);
+      notify.success(`Sincronizados ${logged} emails${unmatched > 0 ? `, ${unmatched} para revisão` : ''}`);
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notify.error(e.message),
   });
 }
 
@@ -261,6 +261,6 @@ export function useAddActivity() {
         queryClient.invalidateQueries({ queryKey: ['funnel-events', variables.funnel_item_id] });
       }
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notify.error(e.message),
   });
 }

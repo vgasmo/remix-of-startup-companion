@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 
 interface BulkReportGeneratorProps {
@@ -46,7 +46,7 @@ export function BulkReportGenerator({ programId }: BulkReportGeneratorProps) {
       if (wsError) throw wsError;
 
       if (!workspaces?.length) {
-        toast.error(t('reports.noWorkspaces', 'Sem workspaces encontrados'));
+        notify.error(t('reports.noWorkspaces', 'Sem workspaces encontrados'));
         return;
       }
 
@@ -142,10 +142,10 @@ export function BulkReportGenerator({ programId }: BulkReportGeneratorProps) {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      toast.success(t('analytics.exportedStartups', { count: workspaces.length }));
+      notify.success(t('analytics.exportedStartups', { count: workspaces.length }));
     } catch (error: any) {
       logger.error('Export error', {}, error);
-      toast.error(error.message || t('common.errorGeneric'));
+      notify.error(error.message || t('common.errorGeneric'));
     } finally {
       setLoading(false);
     }

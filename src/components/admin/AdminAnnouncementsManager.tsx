@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Mail, Package, AlertTriangle, Bell, Trash2, CheckCircle, Users, Send, MapPin, MessageSquare } from 'lucide-react';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { useBuildings } from '@/hooks/useBackoffice';
@@ -135,20 +135,20 @@ export function AdminAnnouncementsManager() {
         if (emailError) {
           logger.error('Email send error', {}, emailError);
           // Don't throw - announcement was created, just email failed
-          toast.warning(t('admin.announcements.emailFailed'));
+          notify.warn(t('admin.announcements.emailFailed'));
         }
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-announcements'] });
-      toast.success(formData.sendEmail 
+      notify.success(formData.sendEmail 
         ? t('admin.announcements.sentWithEmail') 
         : t('admin.announcements.sent')
       );
       setFormData(EMPTY_FORM);
       setIsDialogOpen(false);
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const deleteMutation = useMutation({
@@ -158,19 +158,19 @@ export function AdminAnnouncementsManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-announcements'] });
-      toast.success(t('admin.announcements.deleted'));
+      notify.success(t('admin.announcements.deleted'));
     },
-    onError: (error) => toast.error(`${t('common.error')}: ${error.message}`),
+    onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.sendToAll && formData.workspace_ids.length === 0) {
-      toast.error(t('admin.announcements.requiredFields'));
+      notify.error(t('admin.announcements.requiredFields'));
       return;
     }
     if (!formData.title) {
-      toast.error(t('admin.announcements.requiredFields'));
+      notify.error(t('admin.announcements.requiredFields'));
       return;
     }
     createMutation.mutate(formData);

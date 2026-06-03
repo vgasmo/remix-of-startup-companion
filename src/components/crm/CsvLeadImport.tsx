@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { notify } from "@/lib/notify";
 
 interface ParsedLead {
   contact_name: string;
@@ -39,7 +39,7 @@ export function CsvLeadImport() {
       const text = ev.target?.result as string;
       const lines = text.split('\n').filter(l => l.trim());
       if (lines.length < 2) {
-        toast.error(t('crm.import.noData', { defaultValue: 'CSV vazio ou sem dados' }));
+        notify.error(t('crm.import.noData', { defaultValue: 'CSV vazio ou sem dados' }));
         return;
       }
 
@@ -53,7 +53,7 @@ export function CsvLeadImport() {
       const valueIdx = headers.findIndex(h => ['deal_value', 'valor', 'value'].includes(h));
 
       if (nameIdx === -1 && emailIdx === -1) {
-        toast.error(t('crm.import.missingColumns', { defaultValue: 'CSV precisa de coluna "name" ou "email"' }));
+        notify.error(t('crm.import.missingColumns', { defaultValue: 'CSV precisa de coluna "name" ou "email"' }));
         return;
       }
 
@@ -124,14 +124,14 @@ export function CsvLeadImport() {
       const { error } = await supabase.from('funnel_items').insert(rows);
       if (error) throw error;
 
-      toast.success(t('crm.import.success', { count: validLeads.length, defaultValue: `${validLeads.length} leads importados` }));
+      notify.success(t('crm.import.success', { count: validLeads.length, defaultValue: `${validLeads.length} leads importados` }));
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
       queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       setParsed([]);
       setOpen(false);
     } catch (err: any) {
-      toast.error(err.message);
+      notify.error(err.message);
     } finally {
       setImporting(false);
     }
