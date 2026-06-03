@@ -175,8 +175,8 @@ export function useUpdateActionItem(workspaceId: string) {
             .eq('status', 'completed');
 
           if (count === 1) {
-            const { toast } = await import('sonner');
-            toast.success(t('actions.primeiraAçãoConcluídaOHábito'));
+            const { notify } = await import('@/lib/notify');
+            notify.success(t('actions.primeiraAçãoConcluídaOHábito'));
           }
         } catch {
           // Silent - celebration check is non-critical
