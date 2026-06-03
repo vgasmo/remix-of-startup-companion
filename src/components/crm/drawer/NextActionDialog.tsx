@@ -81,9 +81,13 @@ export function NextActionDialog({
               rows={2}
             />
           </div>
-          <Button onClick={handleSubmit} disabled={isPending || !date} className="w-full">
-            {isPending ? t('common.saving') : t('common.save')}
-          </Button>
+          <DialogFooterActions
+            onCancel={() => onOpenChange(false)}
+            onConfirm={handleSubmit}
+            confirmLabel={t('common.save')}
+            isLoading={isPending}
+            disabled={!date}
+          />
         </div>
       </DialogContent>
     </Dialog>
