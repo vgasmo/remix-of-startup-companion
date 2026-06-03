@@ -60,6 +60,7 @@ export interface SessionFormData {
   location?: string | null;
   join_url?: string | null;
   session_type?: string | null;
+  source?: string | null;
 }
 
 export function useSessions(workspaceId: string | undefined) {
@@ -138,6 +139,7 @@ export function useCreateSession(workspaceId: string) {
           location: session.location || null,
           join_url: session.join_url || null,
           created_by: user?.id,
+          source: session.source || null,
           outlook_sync_status: 'pending', // Mark for sync
         })
         .select()
