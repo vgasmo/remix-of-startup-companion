@@ -231,7 +231,7 @@ export function ProgressReportView({ workspaceId, workspace }: ProgressReportVie
                         <div className={`h-2 w-2 rounded-full ${
                           milestone.status === 'completed' ? 'bg-green-500' :
                           milestone.status === 'in_progress' ? 'bg-blue-500' :
-                          milestone.status === 'delayed' ? 'bg-red-500' : 'bg-gray-400'
+                          milestone.status === 'delayed' ? 'bg-destructive' : 'bg-muted-foreground/40'
                         }`} />
                         <span className="text-sm">{milestone.title}</span>
                       </div>

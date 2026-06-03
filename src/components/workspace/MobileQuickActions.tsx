@@ -106,7 +106,7 @@ export function MobileQuickActions({
               <Button
                 size="icon"
                 className={cn(
-                  'h-12 w-12 rounded-full shadow-lg text-white',
+                  'h-12 w-12 rounded-full shadow-lg text-primary-foreground',
                   action.color
                 )}
                 onClick={action.onClick}

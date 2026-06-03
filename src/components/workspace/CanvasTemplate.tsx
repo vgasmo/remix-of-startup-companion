@@ -47,7 +47,7 @@ const createSections = (t: (key: string) => string, canvasType: string): CanvasS
         getSectionData('customer_relationships', 'relationships', 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800'),
         getSectionData('channels', 'channels', 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800'),
         getSectionData('customer_segments', 'segments', 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'),
-        getSectionData('cost_structure', 'costs', 'bg-gray-50 dark:bg-gray-950/30 border-gray-200 dark:border-gray-700'),
+        getSectionData('cost_structure', 'costs', 'bg-muted/40 border-border'),
         getSectionData('revenue_streams', 'revenue', 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'),
       ];
     case 'lean':
@@ -59,7 +59,7 @@ const createSections = (t: (key: string) => string, canvasType: string): CanvasS
         getSectionData('unfair_advantage', 'advantage', 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800'),
         getSectionData('channels', 'channels', 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800'),
         getSectionData('customer_segments', 'segments', 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800'),
-        getSectionData('cost_structure', 'costs', 'bg-gray-50 dark:bg-gray-950/30 border-gray-200 dark:border-gray-700'),
+        getSectionData('cost_structure', 'costs', 'bg-muted/40 border-border'),
         getSectionData('revenue_streams', 'revenue', 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'),
       ];
     case 'value_prop':
@@ -141,7 +141,7 @@ const createSections = (t: (key: string) => string, canvasType: string): CanvasS
         getSectionData('now', 'now', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
         getSectionData('next', 'next', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
         getSectionData('later', 'later', 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'),
-        getSectionData('not_doing', 'notdoing', 'bg-gray-50 dark:bg-gray-950/30 border-gray-200 dark:border-gray-700'),
+        getSectionData('not_doing', 'notdoing', 'bg-muted/40 border-border'),
       ];
     default:
       return [];

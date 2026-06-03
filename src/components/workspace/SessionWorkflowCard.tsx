@@ -171,7 +171,7 @@ export function SessionWorkflowCard({
                   disabled={!canWrite || isLoading}
                   className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors ${
                     isDone 
-                      ? 'bg-green-500 border-green-500 text-white' 
+                      ? 'bg-success border-success text-success-foreground' 
                       : 'border-muted-foreground/30 hover:border-primary'
                   } ${!canWrite ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                 >
