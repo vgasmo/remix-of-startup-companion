@@ -5714,17 +5714,24 @@
     "visibleLabel": "Visível para membros do workspace"
   },
   "notifications": {
+    "earlier": "Mais antigas",
     "emailSyncDone": "Emails Sincronizados",
+    "filterAll": "Todas",
+    "filterUnread": "Não lidas",
     "markAllRead": "Marcar todas como lidas",
+    "newBadge": "Nova",
     "nextActionDue": "Ação a Vencer",
     "nextActionOverdue": "Ação Em Atraso",
     "noNotifications": "Sem notificações",
+    "noUnread": "Sem notificações por ler",
     "overdueEscalated": "Urgente: Escalonamento de Atraso",
     "recapReady": "Resumo Pronto",
     "settings": "Definições de Notificações",
     "taskDue": "Tarefa a Vencer",
     "taskOverdue": "Tarefa Em Atraso",
-    "title": "Notificações"
+    "title": "Notificações",
+    "today": "Hoje",
+    "yesterday": "Ontem"
   },
   "nps": {
     "description": "Qual a probabilidade de recomendar a Startup Leiria a outro fundador ou mentor?",
