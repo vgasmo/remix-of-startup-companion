@@ -5714,17 +5714,24 @@
     "visibleLabel": "Visible to workspace members"
   },
   "notifications": {
+    "earlier": "Earlier",
     "emailSyncDone": "Emails Synced",
+    "filterAll": "All",
+    "filterUnread": "Unread",
     "markAllRead": "Mark all read",
+    "newBadge": "New",
     "nextActionDue": "Action Due Soon",
     "nextActionOverdue": "Action Overdue",
     "noNotifications": "No notifications yet",
+    "noUnread": "No unread notifications",
     "overdueEscalated": "Urgent: Overdue Escalation",
     "recapReady": "Recap Ready",
     "settings": "Notification Settings",
     "taskDue": "Task Due Soon",
     "taskOverdue": "Task Overdue",
-    "title": "Notifications"
+    "title": "Notifications",
+    "today": "Today",
+    "yesterday": "Yesterday"
   },
   "nps": {
     "description": "How likely are you to recommend Startup Leiria to a fellow founder or mentor?",
