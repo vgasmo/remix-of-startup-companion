@@ -368,22 +368,33 @@ Deno.serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
+    const cronSecret = req.headers.get('x-cron-secret');
+    const expectedCronSecret = Deno.env.get('CRON_SECRET');
+
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Try to get authenticated user (optional - graceful fallback)
+    // Require either a valid cron secret OR an authenticated user.
     let userId: string | null = null;
+    const isSystemCall = !!cronSecret && !!expectedCronSecret && cronSecret === expectedCronSecret;
     const authHeader = req.headers.get('Authorization');
-    
-    if (authHeader) {
+
+    if (!isSystemCall) {
+      if (!authHeader?.startsWith('Bearer ')) {
+        log.warn('Unauthorized: missing bearer token and cron secret');
+        return corsJsonResponse({ error: 'Unauthorized', code: ErrorCode.UNAUTHORIZED }, req, 401);
+      }
       const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
         global: { headers: { Authorization: authHeader } }
       });
-      const { data: { user } } = await supabaseUser.auth.getUser();
-      userId = user?.id || null;
+      const { data: { user }, error: userErr } = await supabaseUser.auth.getUser();
+      if (userErr || !user) {
+        log.warn('Unauthorized: invalid bearer token');
+        return corsJsonResponse({ error: 'Unauthorized', code: ErrorCode.UNAUTHORIZED }, req, 401);
+      }
+      userId = user.id;
     }
-    
-    log.info('Auth check completed', { hasUser: !!userId });
+
+    log.info('Auth check completed', { hasUser: !!userId, isSystemCall });
 
     const body = await req.json() as SyncRequest;
     let { session_id, action } = body;

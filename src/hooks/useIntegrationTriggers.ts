@@ -46,7 +46,7 @@ export interface IntegrationResult {
  */
 export async function syncOutlookCalendar(params: SyncOutlookParams): Promise<IntegrationResult> {
   try {
-    const { data, error } = await supabase.functions.invoke('sync-outlook-calendar', {
+    const { data, error } = await invokeWithAuth('sync-outlook-calendar', {
       body: {
         session_id: params.sessionId,
         action: params.action,
