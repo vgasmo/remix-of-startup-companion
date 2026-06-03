@@ -65,8 +65,10 @@ export function useWorkspaces(
    *  Founders should pass ['active', 'claimed'] to see freshly claimed workspaces. */
   statuses: WorkspaceStatus[] = ['active'],
 ) {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   return useQuery({
-    queryKey: ['workspaces', filters, assignedOnly, statuses.slice().sort().join(',')],
+    queryKey: ['workspaces', userId, filters, assignedOnly, statuses.slice().sort().join(',')],
     queryFn: async (): Promise<WorkspaceWithDetails[]> => {
       // If assignedOnly, first get the user's assigned workspace IDs
       let assignedWorkspaceIds: string[] | null = null;
