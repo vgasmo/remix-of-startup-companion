@@ -111,7 +111,7 @@ export function useConversations() {
         .from('messages')
         .select('conversation_id, created_at')
         .in('conversation_id', conversationIds)
-        .neq('sender_id', user.id)
+        .neq('sender_id', userId)
         .order('created_at', { ascending: false });
 
       if (allUnreadMessages) {
