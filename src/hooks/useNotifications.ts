@@ -43,20 +43,24 @@ export interface Notification {
 
 export function useNotifications() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
 
   // Subscribe to realtime notifications
   useEffect(() => {
+    if (!userId) return;
     const channel = supabase
-      .channel('notifications')
+      .channel(`notifications:${userId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'notifications',
+          filter: `user_id=eq.${userId}`,
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['notifications'] });
+          queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
         }
       )
       .subscribe();
@@ -64,18 +68,18 @@ export function useNotifications() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, userId]);
 
   return useQuery({
-    queryKey: ['notifications'],
+    queryKey: ['notifications', userId],
+    enabled: !!userId,
     queryFn: async (): Promise<Notification[]> => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!userId) return [];
 
       const { data, error } = await supabase
         .from('notifications')
         .select('id, user_id, type, title, message, link, read, created_at, metadata, entity_type, entity_id')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(50);
 
