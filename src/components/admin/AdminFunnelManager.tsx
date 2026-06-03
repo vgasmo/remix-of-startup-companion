@@ -71,10 +71,12 @@ export function AdminFunnelManager() {
               <NewLeadForm 
                 programs={programs || []}
                 consultors={consultors || []}
+                isPending={createItem.isPending}
                 onSubmit={(data) => {
                   createItem.mutate(data, { onSuccess: () => setIsNewDialogOpen(false) });
                 }}
               />
+
             </DialogContent>
           </Dialog>
         </div>
