@@ -175,6 +175,8 @@ export function InteractiveFloorMapViewer({
                 </Button>
               </div>
             ) : (
+              // Interactive canvas surface (click-to-place pin). Not a button —
+              // keyboard pin-placement is provided via the edit form below.
               <div
                 ref={imageRef}
                 className={cn(
@@ -182,7 +184,10 @@ export function InteractiveFloorMapViewer({
                   editMode && placingPin && 'cursor-crosshair'
                 )}
                 onClick={handleMapClick}
+                role="application"
+                aria-label="Floor plan canvas"
               >
+
                 <img
                   src={displayImageUrl}
                   alt={floorMap.name}
