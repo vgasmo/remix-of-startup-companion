@@ -255,7 +255,7 @@ export function SpaceWaitingListTab() {
                   <Button type="button" variant="outline" onClick={() => setAddDialogOpen(false)}>
                     {t('common.cancel')}
                   </Button>
-                  <Button type="submit">
+                  <Button type="submit" disabled={createRequest.isPending}>
                     {t('admin.backoffice.addToList', 'Add to List')}
                   </Button>
                 </div>
@@ -502,7 +502,7 @@ export function SpaceWaitingListTab() {
               <Button type="button" variant="outline" onClick={() => setFulfillDialogOpen(false)}>
                 {t('common.cancel')}
               </Button>
-              <Button type="submit">
+              <Button type="submit" disabled={updateRequest.isPending}>
                 {t('admin.backoffice.confirmFulfill', 'Confirm & Assign')}
               </Button>
             </div>

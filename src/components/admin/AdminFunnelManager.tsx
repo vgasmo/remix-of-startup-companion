@@ -159,7 +159,7 @@ function NewLeadForm({
         <Label>{t('common.notes')}</Label>
         <Textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} />
       </div>
-      <Button type="submit" className="w-full">{t('admin.funnel.createLead')}</Button>
+      <Button type="submit" disabled={createItem.isPending} className="w-full">{t('admin.funnel.createLead')}</Button>
     </form>
   );
 }

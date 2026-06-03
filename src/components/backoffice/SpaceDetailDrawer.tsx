@@ -352,7 +352,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
               <Button type="button" variant="outline" onClick={() => setAssignDialogOpen(false)}>
                 {t('common.cancel', { defaultValue: 'Cancelar' })}
               </Button>
-              <Button type="submit">
+              <Button type="submit" disabled={createAllocation.isPending || updateRoom.isPending}>
                 {t('admin.backoffice.confirmAllocation', { defaultValue: 'Confirmar Atribuição' })}
               </Button>
             </DialogFooter>
