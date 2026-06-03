@@ -105,10 +105,8 @@ export function BookingLinksManager() {
       navigator.clipboard.writeText(bookingUrl);
       
       notify.success(
-        <div className="space-y-1">
-          <p>{t('admin.bookingLinkCreatedCopied', 'Link de reserva criado e copiado!')}</p>
-          <p className="text-xs font-mono break-all">{bookingUrl}</p>
-        </div>
+        t('admin.bookingLinkCreatedCopied', 'Link de reserva criado e copiado!'),
+        { description: bookingUrl }
       );
       
       setIsDialogOpen(false);
