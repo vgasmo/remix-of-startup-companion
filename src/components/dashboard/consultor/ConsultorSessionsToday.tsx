@@ -1,4 +1,5 @@
 import { memo, useState, useEffect } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Sparkles, Loader2, X } from 'lucide-react';
@@ -53,7 +54,7 @@ export const ConsultorSessionsToday = memo(function ConsultorSessionsToday({ upc
               <div
                 key={w.id}
                 className="relative flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 cursor-pointer transition-colors"
-                onClick={() => navigate(`/workspace/${w.id}?tab=agenda`)}
+                {...clickableProps(() => navigate(`/workspace/${w.id}?tab=agenda`))}
               >
                 <Avatar className="h-7 w-7 rounded">
                   <AvatarImage src={w.startup?.logo_url || undefined} alt={w.startup?.name || 'Startup logo'} />
@@ -123,7 +124,7 @@ function AiBriefingButton({ workspaceId }: { workspaceId: string }) {
 
   if (recap) {
     return (
-      <div className="absolute inset-0 z-10 bg-background/95 backdrop-blur-sm rounded-md p-3 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="absolute inset-0 z-10 bg-background/95 backdrop-blur-sm rounded-md p-3 overflow-y-auto" {...clickableProps((e) => e.stopPropagation())}>
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-semibold flex items-center gap-1">
             <Sparkles className="h-3 w-3 text-primary" />

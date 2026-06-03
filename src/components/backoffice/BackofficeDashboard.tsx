@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -372,7 +373,7 @@ export function BackofficeDashboard() {
                           alert.severity === 'warning' && 'bg-yellow-50/50 border-yellow-200 dark:bg-yellow-950/10 dark:border-yellow-800/50',
                           alert.severity === 'info' && 'bg-blue-50/50 border-blue-200 dark:bg-blue-950/10 dark:border-blue-800/50',
                         )}
-                        onClick={() => navigate(`/workspaces/${alert.id}`)}
+                        {...clickableProps(() => navigate(`/workspaces/${alert.id}`))}
                       >
                         <div className={cn(
                           alert.severity === 'critical' && 'text-red-600',
@@ -448,7 +449,7 @@ export function BackofficeDashboard() {
                           <div
                             key={contract.id}
                             className="p-3 rounded-xl border hover:bg-muted/30 transition-colors cursor-pointer"
-                            onClick={() => navigate(`/workspaces/${contract.workspace_id}`)}
+                            {...clickableProps(() => navigate(`/workspaces/${contract.workspace_id}`))}
                           >
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-sm font-medium truncate">

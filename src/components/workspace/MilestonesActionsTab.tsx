@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { format, isPast, isToday, parseISO } from 'date-fns';
 import { 
@@ -488,7 +489,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
                   <CollapsibleTrigger asChild>
                     <CardHeader className="py-3 px-4 cursor-pointer hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-2">
-                        {canWrite && dragHandle && <div className="shrink-0" onClick={e => e.stopPropagation()}>{dragHandle}</div>}
+                        {canWrite && dragHandle && <div className="shrink-0" {...clickableProps(e => e.stopPropagation())}>{dragHandle}</div>}
                         {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
                         <StatusIcon className={`h-4 w-4 shrink-0 ${
                           milestone.status === 'completed' ? 'text-green-600' :
@@ -518,7 +519,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
                             </div>
                           )}
                         </div>
-                        <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-1 shrink-0" {...clickableProps(e => e.stopPropagation())}>
                           {canWrite && (
                             <Select value={milestone.status} onValueChange={(v) => handleMilestoneStatusChange(milestone, v as MilestoneStatus)}>
                               <SelectTrigger className="h-7 w-auto px-2 text-xs">

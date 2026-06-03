@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -204,7 +205,7 @@ export function TriageWorkspaceList({
                   'hover:bg-accent/60 hover:shadow-sm hover:border-border/80',
                   isCritical && 'border-red-200/60 dark:border-red-800/40 bg-red-50/30 dark:bg-red-950/10',
                 )}
-                onClick={() => navigate(`/workspace/${workspace.id}`)}
+                {...clickableProps(() => navigate(`/workspace/${workspace.id}`))}
               >
                 {/* Urgency indicator */}
                 {triageMode && urgencyScore !== null && (
@@ -259,7 +260,7 @@ export function TriageWorkspaceList({
                 </div>
                 
                 {/* Action buttons */}
-                <div className="flex items-center gap-1 flex-shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-1 flex-shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" {...clickableProps((e) => e.stopPropagation())}>
                   <Button
                     variant="ghost"
                     size="icon"

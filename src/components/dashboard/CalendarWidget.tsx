@@ -1,4 +1,5 @@
 import { useMemo, forwardRef } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isToday, addDays } from 'date-fns';
 import { pt, enUS } from 'date-fns/locale';
@@ -145,7 +146,7 @@ export const CalendarWidget = forwardRef<HTMLDivElement, CalendarWidgetProps>(fu
                     {daySessions.map((session) => (
                       <div
                         key={session.id}
-                        onClick={() => handleSessionClick(session)}
+                        {...clickableProps(() => handleSessionClick(session))}
                         className="p-2 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer transition-colors group"
                       >
                         <div className="flex items-start justify-between gap-2">

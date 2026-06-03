@@ -5,6 +5,7 @@
  */
 
 import { useMemo } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -122,7 +123,7 @@ export function MentorSessionPrepEnhanced({ workspaces }: MentorSessionPrepEnhan
                   'flex items-center gap-2.5 p-2 rounded-lg text-xs cursor-pointer transition-colors hover:bg-muted/60',
                   !item.done && 'bg-amber-50/50 dark:bg-amber-950/10'
                 )}
-                onClick={() => navigate(item.path)}
+                {...clickableProps(() => navigate(item.path))}
               >
                 <div className={cn(
                   'h-5 w-5 rounded flex items-center justify-center shrink-0',

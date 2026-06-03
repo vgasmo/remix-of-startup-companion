@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
 import {
@@ -270,7 +271,7 @@ function AddExerciseDialog({
                         ? 'bg-primary/10 border-2 border-primary'
                         : 'hover:bg-muted border-2 border-transparent'
                     )}
-                    onClick={() => setSelectedId(exercise.id)}
+                    {...clickableProps(() => setSelectedId(exercise.id))}
                   >
                     <p className="font-medium text-sm">{exercise.title}</p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">

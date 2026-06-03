@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { Users, RotateCcw, User, Loader2, Copy, ExternalLink, Link, Plus, Trash2, Building2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -164,7 +165,7 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
                   ? 'border-primary bg-primary/5'
                   : 'hover:bg-muted/50'
               }`}
-              onClick={() => handleConsultantToggle(consultant.id)}
+              {...clickableProps(() => handleConsultantToggle(consultant.id))}
             >
               <Checkbox
                 checked={selectedConsultants.includes(consultant.id)}

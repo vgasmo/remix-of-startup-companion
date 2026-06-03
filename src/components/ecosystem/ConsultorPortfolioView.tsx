@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -106,13 +107,13 @@ export function ConsultorPortfolioView({ items }: ConsultorPortfolioViewProps) {
                       <div
                         key={item.id}
                         className="group flex items-center gap-3 py-2 px-3 rounded-md hover:bg-muted/50 cursor-pointer transition-colors"
-                        onClick={() => {
+                        {...clickableProps(() => {
                           if (item.item_type === 'workspace' && item.workspace_id) {
                             navigate(`/workspace/${item.workspace_id}`);
                           } else if (item.item_type === 'lead' && item.funnel_item_id) {
                             navigate(`/crm?open=${item.funnel_item_id}`);
                           }
-                        }}
+                        })}
                       >
                         <div className="flex-shrink-0">
                           {item.item_type === 'workspace' ? (

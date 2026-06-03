@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -224,7 +225,7 @@ export function DataroomChecklist({ workspaceId, canWrite, isStaff, isMentor }: 
               onChange={handleFileSelected}
             />
             <div
-              onClick={() => fileInputRef.current?.click()}
+              {...clickableProps(() => fileInputRef.current?.click())}
               className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 hover:bg-muted/20 transition-colors"
             >
               {uploadMutation.isPending ? (

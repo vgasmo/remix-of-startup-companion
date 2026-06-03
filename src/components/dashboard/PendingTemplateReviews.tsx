@@ -1,4 +1,5 @@
 import { FileText, ChevronRight, Clock, AlertCircle, LayoutGrid } from 'lucide-react';
+import { clickableProps } from '@/lib/clickable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -80,7 +81,7 @@ export function PendingTemplateReviews({ showEmpty = false }: PendingTemplateRev
             <div
               key={review.id}
               className="flex items-center justify-between p-3 bg-background rounded-lg border hover:border-primary/50 cursor-pointer transition-colors"
-              onClick={() => handleNavigate(review.workspace_id, templateName)}
+              {...clickableProps(() => handleNavigate(review.workspace_id, templateName))}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="p-2 rounded-md bg-amber-100 dark:bg-amber-900/30">
