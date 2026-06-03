@@ -382,7 +382,7 @@ function ContractDocumentsDialog({
                   {isPreviewable(f.name) && (
                     <Button size="sm" variant="outline" onClick={() => openSignedUrl(f, true)}>
                       <Eye className="mr-1 h-3.5 w-3.5" />
-                      {t('Pré-visualizar', 'Preview')}
+                      {t('adminContracts.preview')}
                     </Button>
                   )}
                   <Button size="sm" onClick={() => openSignedUrl(f, false)}>
