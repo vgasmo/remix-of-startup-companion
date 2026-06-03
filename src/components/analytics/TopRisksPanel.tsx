@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { clickableProps } from '@/lib/clickable';
+
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -146,12 +148,13 @@ export function TopRisksPanel({ workspaces, onDrillDown }: TopRisksPanelProps) {
             <div
               key={index}
               className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer"
-              onClick={() => {
+              {...clickableProps(() => {
                 if (metric.workspaceIds?.length && onDrillDown) {
                   onDrillDown(metric.workspaceIds);
                 }
-              }}
+              })}
             >
+
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-full ${getSeverityColor(metric.severity)}`}>
                   {metric.icon}
