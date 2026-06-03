@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { StartupStage, HealthScore, WorkspacePriority } from '@/types/database';
 import { logger } from '@/lib/logger';
+import { useAuth } from '@/contexts/AuthContext';
 
 export type WorkspaceStatus = 'imported_unclaimed' | 'claimed' | 'pending' | 'active' | 'rejected' | 'archived';
 /** All non-rejected statuses — use in admin/backoffice views that need full ecosystem visibility. */
