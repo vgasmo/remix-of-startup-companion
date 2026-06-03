@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { clickableProps } from '@/lib/clickable';
+
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -451,8 +453,9 @@ export default function CRM() {
                             <div 
                               key={item.id} 
                               className="p-3 hover:bg-muted/50 cursor-pointer flex items-center gap-3"
-                              onClick={() => handleOpenDrawer(item)}
+                              {...clickableProps(() => handleOpenDrawer(item))}
                             >
+
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
                                   <p className="text-sm font-medium truncate">
@@ -644,8 +647,9 @@ function InboxGroup({
                 <div 
                   key={item.id} 
                   className="p-3 hover:bg-muted/50 cursor-pointer flex items-center gap-3"
-                  onClick={() => onOpenDrawer(item)}
+                  {...clickableProps(() => onOpenDrawer(item))}
                 >
+
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium truncate">
                       {item.organization_name || item.contact_name || t('common.unnamed')}

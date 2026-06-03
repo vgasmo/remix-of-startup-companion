@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { clickableProps } from '@/lib/clickable';
+
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { isThisWeek, differenceInDays } from 'date-fns';
@@ -135,8 +137,9 @@ export function YourWeekCard({ workspace, streakWeeks = 0 }: YourWeekCardProps) 
                     ? 'border-border bg-muted/30'
                     : 'border-border/50 bg-muted/20'
                 }`}
-                onClick={() => navigate(`/workspace/${workspace.id}?tab=${item.tab}`)}
+                {...clickableProps(() => navigate(`/workspace/${workspace.id}?tab=${item.tab}`))}
               >
+
                 <div className="flex items-center gap-2.5">
                   <div className={`h-7 w-7 rounded-full flex items-center justify-center ${
                     item.urgency === 'high'
