@@ -109,13 +109,10 @@ export default function AdminContracts() {
       <div className="container mx-auto max-w-7xl space-y-6 p-4 md:p-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            {t('Contratos & Documentos', 'Contracts & Documents')}
+            {t('adminContracts.title')}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {t(
-              'Listagem de contratos e documentos enviados pelos fundadores. Pré-visualize ou faça download através de links assinados.',
-              'List of contracts and documents submitted by founders. Preview or download via signed URLs.',
-            )}
+            {t('adminContracts.description')}
           </p>
         </div>
 
@@ -125,7 +122,7 @@ export default function AdminContracts() {
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder={t('Procurar por nome, NIF, contrato…', 'Search by name, NIF, contract…')}
+                  placeholder={t('adminContracts.searchPlaceholder')}
                   className="pl-9"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -136,7 +133,7 @@ export default function AdminContracts() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t('Todos os estados', 'All statuses')}</SelectItem>
+                  <SelectItem value="all">{t('adminContracts.allStatuses')}</SelectItem>
                   {statuses.map((s) => (
                     <SelectItem key={s} value={s}>{s}</SelectItem>
                   ))}
@@ -151,19 +148,19 @@ export default function AdminContracts() {
               </div>
             ) : filtered.length === 0 ? (
               <div className="py-12 text-center text-sm text-muted-foreground">
-                {t('Sem contratos.', 'No contracts.')}
+                {t('adminContracts.empty')}
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
                     <tr>
-                      <th className="px-4 py-3 text-left">{t('Contrato', 'Contract')}</th>
-                      <th className="px-4 py-3 text-left">{t('Startup', 'Startup')}</th>
+                      <th className="px-4 py-3 text-left">{t('adminContracts.cols.contract')}</th>
+                      <th className="px-4 py-3 text-left">{t('adminContracts.cols.startup')}</th>
                       <th className="px-4 py-3 text-left">NIF</th>
-                      <th className="px-4 py-3 text-left">{t('Estado', 'Status')}</th>
-                      <th className="px-4 py-3 text-left">{t('Criado', 'Created')}</th>
-                      <th className="px-4 py-3 text-right">{t('Ações', 'Actions')}</th>
+                      <th className="px-4 py-3 text-left">{t('adminContracts.cols.status')}</th>
+                      <th className="px-4 py-3 text-left">{t('adminContracts.cols.created')}</th>
+                      <th className="px-4 py-3 text-right">{t('adminContracts.cols.actions')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -188,7 +185,7 @@ export default function AdminContracts() {
                           <div className="flex justify-end gap-2">
                             <Button size="sm" variant="outline" onClick={() => setSelected(c)}>
                               <Folder className="mr-1 h-3.5 w-3.5" />
-                              {t('Documentos', 'Documents')}
+                              {t('adminContracts.documents')}
                             </Button>
                             {c.workspace_id && (
                               <Button size="sm" variant="ghost" asChild>
