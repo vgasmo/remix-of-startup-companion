@@ -400,7 +400,7 @@ function ContractDocumentsDialog({
             <div className="flex items-center justify-between">
               <div className="text-xs text-muted-foreground truncate">{previewName}</div>
               <Button size="sm" variant="ghost" onClick={() => setPreviewUrl(null)}>
-                {t('Fechar pré-visualização', 'Close preview')}
+                {t('adminContracts.closePreview')}
               </Button>
             </div>
             <iframe
