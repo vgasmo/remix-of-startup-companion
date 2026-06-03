@@ -275,7 +275,7 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[600px] sm:max-w-[600px] h-full p-0 flex flex-col overflow-hidden" data-testid="record-drawer">
+      <SheetContent className="w-[95vw] sm:w-[600px] sm:max-w-[600px] h-full p-0 flex flex-col overflow-hidden" data-testid="record-drawer">
         <RecordDrawerHeader
           item={item}
           onStageChange={handleStageChange}
