@@ -61,9 +61,7 @@ export default function StaffCockpit() {
       <div className="space-y-6">
         {/* Command Bar */}
         <div className="rounded-xl border bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/60 px-5 py-4 flex flex-wrap items-center gap-4 shadow-sm">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <LayoutDashboard className="h-5 w-5 text-primary" />
-          </div>
+          <DayCompleteRing />
           <div className="min-w-0">
             <h2 className="text-lg font-heading font-semibold text-foreground truncate">{greeting}</h2>
             <p className="text-xs text-muted-foreground">
