@@ -1157,7 +1157,6 @@ export type Database = {
           funnel_item_id: string | null
           iban: string | null
           id: string
-          intake_token: string | null
           intake_token_expires_at: string | null
           intake_token_hash: string | null
           last_reminder_sent_at: string | null
@@ -1196,7 +1195,6 @@ export type Database = {
           funnel_item_id?: string | null
           iban?: string | null
           id?: string
-          intake_token?: string | null
           intake_token_expires_at?: string | null
           intake_token_hash?: string | null
           last_reminder_sent_at?: string | null
@@ -1235,7 +1233,6 @@ export type Database = {
           funnel_item_id?: string | null
           iban?: string | null
           id?: string
-          intake_token?: string | null
           intake_token_expires_at?: string | null
           intake_token_hash?: string | null
           last_reminder_sent_at?: string | null
@@ -6194,7 +6191,6 @@ export type Database = {
           next_price_review_date: string | null
           notes: string | null
           onboarding_completed_at: string | null
-          onboarding_token: string | null
           onboarding_token_expires_at: string | null
           onboarding_token_hash: string | null
           organization_name: string | null
@@ -6280,7 +6276,6 @@ export type Database = {
           next_price_review_date?: string | null
           notes?: string | null
           onboarding_completed_at?: string | null
-          onboarding_token?: string | null
           onboarding_token_expires_at?: string | null
           onboarding_token_hash?: string | null
           organization_name?: string | null
@@ -6366,7 +6361,6 @@ export type Database = {
           next_price_review_date?: string | null
           notes?: string | null
           onboarding_completed_at?: string | null
-          onboarding_token?: string | null
           onboarding_token_expires_at?: string | null
           onboarding_token_hash?: string | null
           organization_name?: string | null

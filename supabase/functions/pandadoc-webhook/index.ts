@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
         updatePayload.status = 'active'
         updatePayload.provider_completed_at = new Date().toISOString()
         updatePayload.onboarding_completed_at = new Date().toISOString()
-        updatePayload.onboarding_token = null
+        updatePayload.onboarding_token_hash = null
         updatePayload.onboarding_token_expires_at = null
       }
 
