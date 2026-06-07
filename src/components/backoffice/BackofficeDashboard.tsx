@@ -441,7 +441,7 @@ export function BackofficeDashboard() {
                     <div className="space-y-2">
                       {data.attentionContracts.map((contract: ContractWithDetails) => {
                         const statusColors: Record<string, string> = {
-                          draft: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+                          draft: 'bg-muted text-muted-foreground',
                           pending_signature: 'bg-warning/10 text-warning',
                           suspended: 'bg-warning/10 text-warning',
                         };
