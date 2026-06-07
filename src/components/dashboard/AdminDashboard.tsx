@@ -135,9 +135,9 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
     <div className="space-y-6 animate-fade-in">
       {/* HERO: Exception-Based Alerts */}
       {exceptionAlerts.length > 0 && (
-        <Card className="rounded-2xl border-amber-300/50 bg-gradient-to-r from-amber-50/40 via-orange-50/20 to-transparent dark:from-amber-950/20 dark:via-orange-950/10">
+        <Card className="rounded-2xl border-warning/40 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent">
           <CardContent className="p-4">
-            <p className="text-xs font-medium text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-3">
+            <p className="text-xs font-medium text-warning uppercase tracking-wide mb-3">
               {t('admin.exceptionsTitle', { defaultValue: 'Requires Your Attention' })}
             </p>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -152,11 +152,11 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
 
                     <div className={cn(
                       'h-9 w-9 rounded-xl flex items-center justify-center shrink-0',
-                      alert.variant === 'destructive' ? 'bg-destructive/10' : 'bg-amber-100 dark:bg-amber-900/30'
+                      alert.variant === 'destructive' ? 'bg-destructive/10' : 'bg-warning/15'
                     )}>
                       <Icon className={cn(
                         'h-4 w-4',
-                        alert.variant === 'destructive' ? 'text-destructive' : 'text-amber-600 dark:text-amber-400'
+                        alert.variant === 'destructive' ? 'text-destructive' : 'text-warning'
                       )} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -198,9 +198,9 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
           const trendColor = signal.variant === 'destructive' && signal.trend === 'up'
             ? 'text-destructive'
             : signal.trend === 'up'
-            ? 'text-green-600 dark:text-green-400'
+            ? 'text-success'
             : signal.trend === 'down'
-            ? 'text-green-600 dark:text-green-400'
+            ? 'text-success'
             : 'text-muted-foreground';
 
           return (
@@ -209,7 +209,7 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
               className={cn(
                 'group cursor-pointer transition-all duration-200 rounded-2xl hover:shadow-md hover:scale-[1.01]',
                 hasAlert && signal.variant === 'destructive' && 'border-destructive/30 bg-gradient-to-br from-destructive/5 to-transparent',
-                hasAlert && signal.variant === 'warning' && 'border-amber-300/50 bg-gradient-to-br from-amber-50/40 to-transparent dark:from-amber-950/20',
+                hasAlert && signal.variant === 'warning' && 'border-warning/40 bg-gradient-to-br from-warning/10 to-transparent',
               )}
               onClick={() => navigate(signal.href)}
             >
@@ -218,7 +218,7 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
                   <div className={cn(
                     'h-8 w-8 rounded-lg flex items-center justify-center',
                     hasAlert && signal.variant === 'destructive' ? 'bg-destructive/10' :
-                    hasAlert && signal.variant === 'warning' ? 'bg-amber-100 dark:bg-amber-900/30' :
+                    hasAlert && signal.variant === 'warning' ? 'bg-warning/15' :
                     'bg-muted/50'
                   )}>
                     <Icon className="h-4 w-4" />
@@ -230,7 +230,7 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
                     <span className={cn(
                       'text-2xl font-bold block',
                       hasAlert && signal.variant === 'destructive' && 'text-destructive',
-                      hasAlert && signal.variant === 'warning' && 'text-amber-600 dark:text-amber-400',
+                      hasAlert && signal.variant === 'warning' && 'text-warning',
                     )}>
                       {signal.value}
                     </span>
@@ -245,7 +245,7 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
                     height={24}
                     color={
                       hasAlert && signal.variant === 'destructive' ? 'hsl(var(--destructive))' :
-                      hasAlert && signal.variant === 'warning' ? '#d97706' :
+                      hasAlert && signal.variant === 'warning' ? 'hsl(var(--warning))' :
                       'hsl(var(--muted-foreground))'
                     }
                   />

@@ -93,7 +93,7 @@ export function FounderReadinessStrip({ workspace }: FounderReadinessStripProps)
                 className={cn(
                   'flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-colors',
                   item.done
-                    ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/30 text-emerald-700 dark:text-emerald-400'
+                    ? 'bg-success/5 border-success/30 text-success'
                     : 'bg-muted/50 border-border/50 text-muted-foreground'
                 )}
               >
@@ -108,7 +108,7 @@ export function FounderReadinessStrip({ workspace }: FounderReadinessStripProps)
         {/* Next Step CTA */}
         {nextStep?.action && (
           <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/40">
-            <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+            <AlertCircle className="h-3.5 w-3.5 text-warning shrink-0" />
             <span className="text-xs text-muted-foreground flex-1">
               {t('founderReadiness.nextStep', { defaultValue: 'Próximo passo:' })} {nextStep.label}
             </span>

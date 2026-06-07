@@ -127,25 +127,25 @@ export function OneThingToday({ workspace, className }: OneThingTodayProps) {
   if (!recommendation) {
     return (
       <Card className={cn(
-        'relative overflow-hidden border-green-500/20',
-        'bg-gradient-to-r from-green-500/8 via-emerald-500/5 to-transparent',
+        'relative overflow-hidden border-success/20',
+        'bg-gradient-to-r from-success/10 via-success/5 to-transparent',
         className
       )}>
-        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-green-400/10 to-transparent rounded-bl-full" />
+        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-success/10 to-transparent rounded-bl-full" />
         <CardContent className="p-4 relative">
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-green-500/10 flex items-center justify-center ring-1 ring-green-500/20">
-              <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <div className="h-11 w-11 rounded-xl bg-success/10 flex items-center justify-center ring-1 ring-success/20">
+              <CheckCircle2 className="h-5 w-5 text-success" />
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-green-700 dark:text-green-400">
+              <p className="font-semibold text-success">
                 {t('oneThingToday.allCaughtUp')}
               </p>
               <p className="text-sm text-muted-foreground">
                 {t('oneThingToday.keepMomentum')}
               </p>
             </div>
-            <Sparkles className="h-5 w-5 text-green-400/50" />
+            <Sparkles className="h-5 w-5 text-success/50" />
           </div>
         </CardContent>
       </Card>
@@ -159,16 +159,16 @@ export function OneThingToday({ workspace, className }: OneThingTodayProps) {
   return (
     <Card className={cn(
       'relative overflow-hidden transition-all duration-300 hover:shadow-md hover:scale-[1.005]',
-      isDestructive && 'border-red-400/30 bg-gradient-to-r from-red-500/8 via-orange-500/5 to-transparent',
-      isWarning && 'border-amber-400/30 bg-gradient-to-r from-amber-500/8 via-yellow-500/5 to-transparent',
+      isDestructive && 'border-destructive/30 bg-gradient-to-r from-destructive/10 via-destructive/5 to-transparent',
+      isWarning && 'border-warning/30 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent',
       !isDestructive && !isWarning && 'border-primary/20 bg-gradient-to-r from-primary/8 via-accent/5 to-transparent',
       className
     )}>
       {/* Subtle glow accent */}
       <div className={cn(
         'absolute top-0 right-0 w-32 h-32 rounded-bl-full opacity-40',
-        isDestructive && 'bg-gradient-to-bl from-red-400/15 to-transparent',
-        isWarning && 'bg-gradient-to-bl from-amber-400/15 to-transparent',
+        isDestructive && 'bg-gradient-to-bl from-destructive/15 to-transparent',
+        isWarning && 'bg-gradient-to-bl from-warning/15 to-transparent',
         !isDestructive && !isWarning && 'bg-gradient-to-bl from-primary/10 to-transparent',
       )} />
       
@@ -176,8 +176,8 @@ export function OneThingToday({ workspace, className }: OneThingTodayProps) {
         <div className="flex items-start gap-3">
           <div className={cn(
             'h-11 w-11 rounded-xl flex items-center justify-center shrink-0 ring-1 transition-transform duration-300',
-            isDestructive && 'bg-red-500/10 text-red-600 dark:text-red-400 ring-red-500/20',
-            isWarning && 'bg-amber-500/10 text-amber-600 dark:text-amber-400 ring-amber-500/20',
+            isDestructive && 'bg-destructive/10 text-destructive ring-destructive/20',
+            isWarning && 'bg-warning/10 text-warning ring-warning/20',
             !isDestructive && !isWarning && 'bg-primary/10 text-primary ring-primary/20',
           )}>
             <Icon className="h-5 w-5" />
@@ -186,8 +186,8 @@ export function OneThingToday({ workspace, className }: OneThingTodayProps) {
             <div className="flex items-center gap-2 mb-1">
               <Badge variant="outline" className={cn(
                 "text-xs flex items-center gap-1 font-medium",
-                isDestructive && 'border-red-300/50 text-red-700 dark:text-red-400',
-                isWarning && 'border-amber-300/50 text-amber-700 dark:text-amber-400',
+                isDestructive && 'border-destructive/40 text-destructive',
+                isWarning && 'border-warning/40 text-warning',
               )}>
                 <Lightbulb className="h-3 w-3" />
                 {t('oneThingToday.focusToday')}

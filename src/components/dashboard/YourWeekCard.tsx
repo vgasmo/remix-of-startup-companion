@@ -117,7 +117,7 @@ export function YourWeekCard({ workspace, streakWeeks = 0 }: YourWeekCardProps) 
           </CardTitle>
           {streakWeeks > 0 && (
             <Badge variant="secondary" className="gap-1 text-xs">
-              <Flame className="h-3 w-3 text-orange-500" />
+              <Flame className="h-3 w-3 text-warning" />
               {streakWeeks}w
             </Badge>
           )}
@@ -132,7 +132,7 @@ export function YourWeekCard({ workspace, streakWeeks = 0 }: YourWeekCardProps) 
                 key={item.id}
                 className={`flex items-center justify-between p-2.5 rounded-lg border transition-colors cursor-pointer hover:bg-muted/50 ${
                   item.urgency === 'high'
-                    ? 'border-amber-300/40 bg-amber-50/30 dark:border-amber-700/30 dark:bg-amber-900/10'
+                    ? 'border-warning/40 bg-warning/5'
                     : item.urgency === 'medium'
                     ? 'border-border bg-muted/30'
                     : 'border-border/50 bg-muted/20'
@@ -143,7 +143,7 @@ export function YourWeekCard({ workspace, streakWeeks = 0 }: YourWeekCardProps) 
                 <div className="flex items-center gap-2.5">
                   <div className={`h-7 w-7 rounded-full flex items-center justify-center ${
                     item.urgency === 'high'
-                      ? 'bg-amber-100/50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                      ? 'bg-warning/15 text-warning'
                       : item.urgency === 'medium'
                       ? 'bg-primary/10 text-primary'
                       : 'bg-muted text-muted-foreground'
@@ -160,15 +160,15 @@ export function YourWeekCard({ workspace, streakWeeks = 0 }: YourWeekCardProps) 
             ))}
           </div>
         ) : (
-          <div className="flex items-center gap-2.5 p-3 rounded-lg bg-green-50/50 dark:bg-green-950/20 border border-green-200 dark:border-green-900">
-            <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
-              <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+          <div className="flex items-center gap-2.5 p-3 rounded-lg bg-success/5 border border-success/30">
+            <div className="h-8 w-8 rounded-full bg-success/15 flex items-center justify-center">
+              <CheckCircle2 className="h-4 w-4 text-success" />
             </div>
             <div>
-              <p className="font-medium text-sm text-green-900 dark:text-green-100">
+              <p className="font-medium text-sm text-success">
                 {t('yourWeek.allCaughtUp')}
               </p>
-              <p className="text-xs text-green-700 dark:text-green-300">
+              <p className="text-xs text-success/80">
                 {t('yourWeek.greatWork')}
               </p>
             </div>

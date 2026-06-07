@@ -74,12 +74,12 @@ export function PendingContractBanner({ workspaceId }: PendingContractBannerProp
                 </div>
                 <div className="shrink-0">
                   {isSent ? (
-                    <div className="flex items-center gap-1.5 text-xs text-amber-600">
+                    <div className="flex items-center gap-1.5 text-xs text-warning">
                       <Clock className="h-4 w-4" />
                       {t('founder.pendingContract.awaitingSignature', { defaultValue: 'A aguardar assinatura' })}
                     </div>
                   ) : isSigned ? (
-                    <div className="flex items-center gap-1.5 text-xs text-emerald-600">
+                    <div className="flex items-center gap-1.5 text-xs text-success">
                       <CheckCircle2 className="h-4 w-4" />
                       {t('founder.pendingContract.signedStatus', { defaultValue: 'Assinado' })}
                     </div>

@@ -247,10 +247,10 @@ function getStatusConfig(status: string, t: (key: string, opts?: any) => string)
     case 'claimed':
       return {
         icon: ShieldCheck,
-        iconBgClass: 'bg-amber-100 dark:bg-amber-900/30',
-        iconClass: 'text-amber-600 dark:text-amber-400',
-        borderClass: 'border-amber-200 dark:border-amber-800/50',
-        badgeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+        iconBgClass: 'bg-warning/15',
+        iconClass: 'text-warning',
+        borderClass: 'border-warning/40',
+        badgeClass: 'bg-warning/15 text-warning',
         title: t('founder.transitional.titleClaimed', { defaultValue: 'A sua startup está a ser preparada' }),
         description: t('founder.transitional.descClaimed', { defaultValue: 'A equipa está a analisar a sua candidatura. Assim que for validada, terá acesso completo ao seu espaço de trabalho com KPIs, marcos e sessões.' }),
         badge: t('founder.transitional.badgeClaimed', { defaultValue: 'Candidatura em análise' }),

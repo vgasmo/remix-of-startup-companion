@@ -49,18 +49,18 @@ export function AlertsPanel() {
   }
 
   return (
-    <Card className={criticalCount > 0 ? 'border-amber-200/50 dark:border-amber-800/50' : ''}>
+    <Card className={criticalCount > 0 ? 'border-warning/40' : ''}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <AlertTriangle className={`h-5 w-5 ${criticalCount > 0 ? 'text-red-600' : 'text-amber-600'}`} />
+            <AlertTriangle className={`h-5 w-5 ${criticalCount > 0 ? 'text-destructive' : 'text-warning'}`} />
             <CardTitle>{t('alerts.activeAlerts', 'Active Alerts')}</CardTitle>
             <div className="flex gap-1 ml-2">
               {criticalCount > 0 && (
                 <Badge variant="destructive">{criticalCount}</Badge>
               )}
               {warningCount > 0 && (
-                <Badge variant="outline" className="border-amber-500 text-amber-600">{warningCount}</Badge>
+                <Badge variant="outline" className="border-warning text-warning">{warningCount}</Badge>
               )}
             </div>
           </div>
@@ -92,7 +92,7 @@ export function AlertsPanel() {
       <CardContent>
         {filteredAlerts.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <CheckCircle className="h-10 w-10 mx-auto mb-3 text-green-500 opacity-50" />
+            <CheckCircle className="h-10 w-10 mx-auto mb-3 text-success opacity-50" />
             <p className="font-medium">{t('alerts.noActiveAlerts', 'No active alerts')}</p>
             <p className="text-sm">{t('alerts.allOnTrack', 'All startups are on track!')}</p>
           </div>
@@ -107,7 +107,7 @@ export function AlertsPanel() {
                   key={alert.id}
                   className={`p-3 rounded-lg border ${
                     alert.severity === 'critical' 
-                      ? 'bg-muted/50 border-amber-300/50 dark:border-amber-700/50'
+                      ? 'bg-muted/50 border-warning/40'
                       : alert.severity === 'warning'
                       ? 'bg-muted/30 border-border'
                       : 'bg-muted/20 border-border/50'
@@ -156,7 +156,7 @@ export function AlertsPanel() {
                         onClick={() => resolveAlert.mutate(alert.id)}
                         disabled={resolveAlert.isPending}
                       >
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                       </Button>
                     </div>
                   </div>

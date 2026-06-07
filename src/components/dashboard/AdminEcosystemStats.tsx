@@ -143,7 +143,7 @@ export function AdminEcosystemStats({ stats, className }: AdminEcosystemStatsPro
                 </Badge>
               )}
               {healthyCount > 0 && (
-                <Badge variant="outline" className="text-xs text-green-600 border-green-200 bg-green-50">
+                <Badge variant="outline" className="text-xs text-success border-success/30 bg-success/5">
                   {healthyCount} {t('admin.stats.thriving')}
                 </Badge>
               )}
@@ -183,7 +183,7 @@ export function AdminEcosystemStats({ stats, className }: AdminEcosystemStatsPro
             variant="ghost"
             className={cn(
               'h-auto py-3 flex-col items-start',
-              stats.pendingApprovals > 0 && 'bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800'
+              stats.pendingApprovals > 0 && 'bg-warning/5 border border-warning/30'
             )}
             onClick={() => navigate('/admin')}
           >
@@ -191,7 +191,7 @@ export function AdminEcosystemStats({ stats, className }: AdminEcosystemStatsPro
               <Clock className="h-3.5 w-3.5" />
               {t('admin.pendingApprovals')}
             </div>
-            <span className={cn('text-lg font-bold', stats.pendingApprovals > 0 && 'text-amber-600')}>
+            <span className={cn('text-lg font-bold', stats.pendingApprovals > 0 && 'text-warning')}>
               {stats.pendingApprovals}
             </span>
           </Button>
@@ -200,7 +200,7 @@ export function AdminEcosystemStats({ stats, className }: AdminEcosystemStatsPro
             variant="ghost"
             className={cn(
               'h-auto py-3 flex-col items-start',
-              stats.overdueActionsCount > 0 && 'bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800'
+              stats.overdueActionsCount > 0 && 'bg-destructive/5 border border-destructive/30'
             )}
             onClick={() => navigate('/ecosystem?filter=overdue')}
           >
@@ -208,7 +208,7 @@ export function AdminEcosystemStats({ stats, className }: AdminEcosystemStatsPro
               <AlertTriangle className="h-3.5 w-3.5" />
               {t('admin.stats.overdueActions')}
             </div>
-            <span className={cn('text-lg font-bold', stats.overdueActionsCount > 0 && 'text-red-600')}>
+            <span className={cn('text-lg font-bold', stats.overdueActionsCount > 0 && 'text-destructive')}>
               {stats.overdueActionsCount}
             </span>
           </Button>
@@ -234,7 +234,7 @@ export function AdminEcosystemStats({ stats, className }: AdminEcosystemStatsPro
               <span>{stats.sessionsThisWeek} {t('admin.stats.sessionsThisWeek')}</span>
             </div>
             <div className="flex items-center gap-1.5 text-muted-foreground">
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <CheckCircle2 className="h-4 w-4 text-success" />
               <span>{stats.actionsCompletedThisWeek} {t('admin.stats.actionsCompleted')}</span>
             </div>
           </div>

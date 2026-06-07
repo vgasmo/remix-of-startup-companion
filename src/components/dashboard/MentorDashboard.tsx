@@ -55,7 +55,7 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
   
   const slotsThisWeek = mySlots?.filter(s => s.is_active).length ?? 0;
   const availabilityStatus = slotsThisWeek > 2 ? 'available' : slotsThisWeek > 0 ? 'limited' : 'full';
-  const statusColors = { available: 'bg-green-500', limited: 'bg-amber-500', full: 'bg-red-500' };
+  const statusColors = { available: 'bg-success', limited: 'bg-warning', full: 'bg-destructive' };
   const statusLabels = {
     available: t('mentor.availability.available', { defaultValue: 'Disponível' }),
     limited: t('mentor.availability.limited', { defaultValue: 'Limitado' }),
@@ -189,10 +189,10 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
 
       {/* No-availability banner — prevents founders from being unable to book */}
       {slotsThisWeek === 0 && (
-        <Card className="border-amber-400/50 bg-gradient-to-r from-amber-50/60 via-yellow-50/40 to-transparent dark:from-amber-950/20 dark:via-yellow-950/10 rounded-2xl">
+        <Card className="border-warning/40 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent rounded-2xl">
           <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
-              <Clock className="h-4 w-4 text-amber-600" />
+            <div className="h-9 w-9 rounded-xl bg-warning/15 flex items-center justify-center shrink-0">
+              <Clock className="h-4 w-4 text-warning" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold">
@@ -231,11 +231,11 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
 
       {/* Post-session feedback CTA */}
       {recentUnloggedSessions.length > 0 && (
-        <Card className="border-amber-400/40 bg-gradient-to-r from-amber-50/50 via-yellow-50/30 to-transparent dark:from-amber-950/20 dark:via-yellow-950/10 rounded-2xl">
+        <Card className="border-warning/30 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-2">
-              <div className="h-9 w-9 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
-                <FileText className="h-4 w-4 text-amber-600" />
+              <div className="h-9 w-9 rounded-xl bg-warning/15 flex items-center justify-center shrink-0">
+                <FileText className="h-4 w-4 text-warning" />
               </div>
               <div className="flex-1">
                 <p className="text-sm font-semibold">{t('mentor.postSession.title', { defaultValue: 'Regista as notas da sessão' })}</p>
@@ -248,7 +248,7 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
                   key={w.id}
                   variant="outline"
                   size="sm"
-                  className="gap-1.5 text-xs hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                  className="gap-1.5 text-xs hover:bg-warning/10"
                   onClick={() => navigate(`/workspace/${w.id}?tab=agenda`)}
                 >
                   {w.startup?.name?.slice(0, 12)}
@@ -284,10 +284,10 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{stat.label}</p>
-                  <p className={cn("text-3xl font-semibold", stat.accent && 'text-green-600 dark:text-green-400')}>{stat.value}</p>
+                  <p className={cn("text-3xl font-semibold", stat.accent && 'text-success')}>{stat.value}</p>
                 </div>
                 <div className="h-9 w-9 rounded-xl bg-muted/50 flex items-center justify-center">
-                  <Icon className={cn("h-4 w-4", stat.accent ? 'text-green-500' : 'text-muted-foreground/50')} />
+                  <Icon className={cn("h-4 w-4", stat.accent ? 'text-success' : 'text-muted-foreground/50')} />
                 </div>
               </div>
               {stat.extra !== undefined && stat.extra > 0 && (

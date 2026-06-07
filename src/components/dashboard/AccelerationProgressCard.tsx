@@ -231,7 +231,7 @@ export const AccelerationProgressCard = memo(function AccelerationProgressCard({
                     </div>
                   )}
                   {gate.isCompleted && (
-                    <Check className="h-4 w-4 text-green-500 shrink-0" />
+                    <Check className="h-4 w-4 text-success shrink-0" />
                   )}
                 </div>
 
