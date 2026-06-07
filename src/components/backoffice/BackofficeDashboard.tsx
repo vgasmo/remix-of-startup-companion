@@ -19,6 +19,7 @@ import { format, differenceInMonths, differenceInDays, addYears } from 'date-fns
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
+import { BillingSnapshotCard } from './BillingSnapshotCard';
 import { BuildingOccupancyPanel } from './BuildingOccupancyPanel';
 import { ContractLifecycleEventsCard } from './ContractLifecycleEventsCard';
 import { InteractiveFloorMapViewer } from './InteractiveFloorMapViewer';
@@ -223,6 +224,7 @@ export function BackofficeDashboard() {
 
   return (
     <div className="space-y-6">
+      <BillingSnapshotCard />
       {/* ═══════════════════ HERO METRICS ═══════════════════ */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Occupancy Rate */}

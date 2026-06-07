@@ -40,6 +40,7 @@ import { useMyAvailability } from '@/hooks/useMentorAvailability';
 import { StickyNote } from 'lucide-react';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
 import { NextBestActionMentor } from '@/components/dashboard/NextBestActionPanels';
+import { MentorPortfolioPulse } from '@/components/mentor/MentorPortfolioPulse';
 
 interface MentorDashboardProps {
   workspaces: WorkspaceWithDetails[];
@@ -299,6 +300,10 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
           );
         })}
       </div>
+
+      {/* Cross-startup portfolio pulse */}
+      <MentorPortfolioPulse workspaces={workspaces} />
+
 
       {/* Two-column layout: Startups + Calendar */}
       <div className="grid gap-6 lg:grid-cols-3">

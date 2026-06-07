@@ -34,6 +34,7 @@ import { DataQualityDashboard } from '@/components/admin/DataQualityDashboard';
 import { AdminProgramsManager } from '@/components/admin/AdminProgramsManager';
 import { AdminMissionControlDirectory } from '@/components/admin/AdminMissionControlDirectory';
 import { EnrollmentControlCenter } from '@/components/admin/EnrollmentControlCenter';
+import { EcosystemPulseCard } from '@/components/admin/EcosystemPulseCard';
 
 const ADMIN_ONLY_TABS = new Set(['users', 'data-quality']);
 
@@ -155,6 +156,7 @@ export default function Admin() {
 
   return (
     <AppLayout title={t('ecosystemHub.title', { defaultValue: 'Hub de Gestão' })} subtitle={t('ecosystemHub.subtitle', { defaultValue: 'Gerir startups, mentores, programas e fluxos operacionais' })}>
+      <EcosystemPulseCard />
       <AdminMissionControlDirectory />
 
       <Tabs value={activeTab} onValueChange={setActiveTabAndUrl} className="space-y-6">

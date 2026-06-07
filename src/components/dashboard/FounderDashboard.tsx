@@ -49,6 +49,7 @@ import { FounderProgressRings } from '@/components/dashboard/FounderProgressRing
 import { useAutoMaterializeDeliverables } from '@/hooks/useAutoMaterializeDeliverables';
 import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
 import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
+import { MySupportTeamCard } from '@/components/founder/MySupportTeamCard';
 // NextBestActionFounder removed from beginner view — kept available for power users via OneThingToday.
 
 interface FounderDashboardProps {
@@ -310,6 +311,16 @@ export function FounderDashboard({
 
       {/* 2. Today's focus — THE single primary CTA */}
       <OneThingToday workspace={workspace} />
+
+      {/* 2.5 My Support Team — relationship awareness */}
+      {(!isBeginner || hasConsultant || hasMentor) && (
+        <MySupportTeamCard
+          workspaceId={workspace.id}
+          consultantId={workspaceOwner?.assigned_consultor_id ?? null}
+          mentorMember={workspaceMembers?.find(m => m.role === 'mentor_externo') ?? null}
+          lastSessionDate={workspace.lastSession?.scheduled_at ?? null}
+        />
+      )}
 
       {/* 3. Consultant / next session */}
       <FounderBookingCTA workspaceId={workspace.id} />
