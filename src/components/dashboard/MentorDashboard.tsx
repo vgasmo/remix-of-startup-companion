@@ -40,6 +40,7 @@ import { useMyAvailability } from '@/hooks/useMentorAvailability';
 import { StickyNote } from 'lucide-react';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
 import { NextBestActionMentor } from '@/components/dashboard/NextBestActionPanels';
+import { MentorPortfolioPulse } from '@/components/mentor/MentorPortfolioPulse';
 
 interface MentorDashboardProps {
   workspaces: WorkspaceWithDetails[];
