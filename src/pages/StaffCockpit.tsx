@@ -15,6 +15,7 @@ import { PendingApprovalsManager } from '@/components/admin/PendingApprovalsMana
 import { IntakeRoutingManager } from '@/components/admin/IntakeRoutingManager';
 import { ClaimRequestsQueue } from '@/components/admin/ClaimRequestsQueue';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
+import { DayCompleteRing } from '@/components/staff/DayCompleteRing';
 import { LayoutDashboard, Inbox, ListTodo, Zap, Building2, UserCheck, FileText, ShieldCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
