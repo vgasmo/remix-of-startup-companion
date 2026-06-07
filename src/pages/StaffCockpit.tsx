@@ -58,25 +58,35 @@ export default function StaffCockpit() {
       subtitle={greeting}
     >
       <div className="space-y-6">
-        {/* Hero greeting */}
-        <div className="hero-greeting flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-heading font-semibold text-foreground">
-              {greeting}
-            </h2>
+        {/* Command Bar */}
+        <div className="rounded-xl border bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/60 px-5 py-4 flex flex-wrap items-center gap-4 shadow-sm">
+          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <LayoutDashboard className="h-5 w-5 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-lg font-heading font-semibold text-foreground truncate">{greeting}</h2>
+            <p className="text-xs text-muted-foreground">
+              {t('staffCockpit.heroTagline', { defaultValue: 'Painel operacional · decisões e prioridades do dia' })}
+            </p>
+          </div>
+          <div className="ml-auto flex flex-wrap items-center gap-2">
             {heroLoading ? (
-              <Skeleton className="h-4 w-64 mt-2" />
+              <Skeleton className="h-7 w-48" />
             ) : (
-              <p className="text-sm text-muted-foreground mt-1">
-                {t('staffCockpit.heroSubtitle', {
-                  defaultValue: '{{count}} startups no ecossistema · {{programs}} programas',
-                  count: workspaces.length,
-                  programs: programsCount,
-                })}
-              </p>
+              <>
+                <span className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2.5 py-1 text-xs font-medium">
+                  <Building2 className="h-3.5 w-3.5 text-primary" />
+                  {workspaces.length}
+                  <span className="text-muted-foreground font-normal">{t('staffCockpit.pillStartups', { defaultValue: 'startups' })}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2.5 py-1 text-xs font-medium">
+                  <Zap className="h-3.5 w-3.5 text-primary" />
+                  {programsCount}
+                  <span className="text-muted-foreground font-normal">{t('staffCockpit.pillPrograms', { defaultValue: 'programas' })}</span>
+                </span>
+              </>
             )}
           </div>
-          <LayoutDashboard className="h-10 w-10 text-primary/20" />
         </div>
 
         {/* Quick Actions Bar */}
@@ -123,11 +133,11 @@ export default function StaffCockpit() {
           </WidgetErrorBoundary>
         )}
 
-        {/* Main Grid: Triage + Daily Work */}
+        {/* Main Grid: Triage + Daily Work — Work Queue stacks first on mobile */}
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* LEFT: Smart Triage & Intake - Admin and Consultor */}
+          {/* LEFT (desktop) / SECOND (mobile): Smart Triage & Intake */}
           {(isAdmin || isConsultor) && (
-            <div className="space-y-0">
+            <div className="space-y-0 order-2 lg:order-1">
               <Card className="overflow-hidden">
                 <div className="px-6 pt-5 pb-3">
                   <div className="flex items-center gap-2">
@@ -143,14 +153,23 @@ export default function StaffCockpit() {
                 <CardContent className="p-0">
                   <Tabs defaultValue="approvals" className="w-full">
                     <div className="px-6">
-                      <TabsList className="w-full grid grid-cols-3">
-                        <TabsTrigger value="approvals" className="text-xs">
+                      <TabsList className="w-full grid grid-cols-3 h-10 p-1 bg-muted/60 rounded-lg">
+                        <TabsTrigger
+                          value="approvals"
+                          className="text-xs rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                        >
                           {t('staffCockpit.pendingApprovals', { defaultValue: 'Aprovações Pendentes' })}
                         </TabsTrigger>
-                        <TabsTrigger value="claims" className="text-xs">
+                        <TabsTrigger
+                          value="claims"
+                          className="text-xs rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                        >
                           {t('staffCockpit.claimRequests', { defaultValue: 'Associações' })}
                         </TabsTrigger>
-                        <TabsTrigger value="routing" className="text-xs">
+                        <TabsTrigger
+                          value="routing"
+                          className="text-xs rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                        >
                           {t('staffCockpit.intakeRouting', { defaultValue: 'Encaminhamento' })}
                         </TabsTrigger>
                       </TabsList>
@@ -172,8 +191,8 @@ export default function StaffCockpit() {
             </div>
           )}
 
-          {/* RIGHT: Daily Work Queue & Tasks */}
-          <div className="space-y-6">
+          {/* RIGHT (desktop) / FIRST (mobile): Daily Work Queue & Tasks */}
+          <div className="space-y-6 order-1 lg:order-2">
             {/* Work Queue */}
             <div>
               <div className="mb-3">
