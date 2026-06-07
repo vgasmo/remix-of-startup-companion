@@ -23,6 +23,7 @@ import { useCurrentPricingTable, findMatchingPricingLine, getIncubationYear } fr
 import { ContractDiscountsPanel } from '@/components/contracts/ContractDiscountsPanel';
 import { ContractIntelligenceCard } from '@/components/contracts/ContractIntelligenceCard';
 import { PricingBreakdown } from '@/components/contracts/PricingBreakdown';
+import { ContractStatusBadge } from './ContractStatusBadge';
 import { ContractLifecycleStepper } from '@/components/contracts/ContractLifecycleStepper';
 import { ContractReadinessChecklist } from '@/components/contracts/ContractReadinessChecklist';
 import { ProvenanceBadge } from '@/components/shared/ProvenanceBadge';
