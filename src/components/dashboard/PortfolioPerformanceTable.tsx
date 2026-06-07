@@ -39,10 +39,10 @@ function getInteractionStrength(ws: WorkspaceWithDetails): { level: 'hot' | 'war
 }
 
 const strengthConfig: Record<string, { label: string; bg: string; text: string }> = {
-  hot: { label: 'Hot', bg: 'bg-emerald-500/15', text: 'text-emerald-700 dark:text-emerald-400' },
-  warm: { label: 'Warm', bg: 'bg-blue-500/15', text: 'text-blue-700 dark:text-blue-400' },
-  cold: { label: 'Cold', bg: 'bg-amber-500/15', text: 'text-amber-700 dark:text-amber-400' },
-  frozen: { label: 'Frozen', bg: 'bg-red-500/15', text: 'text-red-700 dark:text-red-400' },
+  hot: { label: 'Hot', bg: 'bg-success/15', text: 'text-success' },
+  warm: { label: 'Warm', bg: 'bg-info/15', text: 'text-info' },
+  cold: { label: 'Cold', bg: 'bg-warning/15', text: 'text-warning' },
+  frozen: { label: 'Frozen', bg: 'bg-destructive/15', text: 'text-destructive' },
 };
 
 const healthOrder: Record<string, number> = { critical: 0, at_risk: 1, stable: 2, healthy: 3, thriving: 4 };

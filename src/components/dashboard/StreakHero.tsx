@@ -23,7 +23,7 @@ export function StreakHero({ streakWeeks, className }: StreakHeroProps) {
       className={cn(
         "flex items-center gap-3 p-4 rounded-xl border transition-all",
         isHotStreak 
-          ? "bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-yellow-500/10 border-orange-300/30 dark:border-orange-700/30" 
+          ? "bg-gradient-to-r from-warning/10 via-warning/10 to-warning/5 border-warning/30" 
           : "bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20",
         isMilestone && "animate-pulse",
         className
@@ -32,7 +32,7 @@ export function StreakHero({ streakWeeks, className }: StreakHeroProps) {
       <div className={cn(
         "flex items-center justify-center h-12 w-12 rounded-full",
         isHotStreak 
-          ? "bg-gradient-to-br from-orange-500 to-amber-500 text-white" 
+          ? "bg-gradient-to-br from-warning to-warning/80 text-warning-foreground" 
           : "bg-primary/20 text-primary"
       )}>
         {isHotStreak ? (
@@ -46,7 +46,7 @@ export function StreakHero({ streakWeeks, className }: StreakHeroProps) {
         <div className="flex items-center gap-2">
           <span className={cn(
             "text-xl font-bold tabular-nums",
-            isHotStreak ? "text-orange-600 dark:text-orange-400" : "text-foreground"
+            isHotStreak ? "text-warning" : "text-foreground"
           )}>
             {streakWeeks}
           </span>

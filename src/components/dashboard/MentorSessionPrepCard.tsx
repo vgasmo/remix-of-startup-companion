@@ -102,9 +102,9 @@ export function MentorSessionPrepCard({ workspace, meetingDate, className }: Men
     <Card className={cn(
       'overflow-hidden transition-all duration-300 hover:shadow-md',
       isImminent 
-        ? 'border-red-400/50 bg-gradient-to-br from-red-50/80 via-orange-50/50 to-transparent dark:from-red-950/30 dark:via-orange-950/20' 
+        ? 'border-destructive/40 bg-gradient-to-br from-destructive/10 via-destructive/5 to-transparent' 
         : isUrgent
-        ? 'border-amber-400/50 bg-gradient-to-br from-amber-50/80 via-yellow-50/50 to-transparent dark:from-amber-950/30 dark:via-yellow-950/20'
+        ? 'border-warning/40 bg-gradient-to-br from-warning/10 via-warning/5 to-transparent'
         : 'border-primary/30 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent',
       className
     )}>
@@ -114,9 +114,9 @@ export function MentorSessionPrepCard({ workspace, meetingDate, className }: Men
             <div className={cn(
               'h-10 w-10 rounded-xl flex items-center justify-center',
               isImminent 
-                ? 'bg-red-500 text-white animate-pulse' 
+                ? 'bg-destructive text-destructive-foreground animate-pulse' 
                 : isUrgent
-                ? 'bg-amber-500 text-white'
+                ? 'bg-warning text-warning-foreground'
                 : 'bg-primary/10 text-primary'
             )}>
               <Calendar className="h-5 w-5" />
@@ -127,7 +127,7 @@ export function MentorSessionPrepCard({ workspace, meetingDate, className }: Men
               </CardTitle>
               <p className={cn(
                 'text-sm font-medium',
-                isImminent ? 'text-red-600 dark:text-red-400' : isUrgent ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
+                isImminent ? 'text-destructive' : isUrgent ? 'text-warning' : 'text-muted-foreground'
               )}>
                 {getTimeLabel()}
               </p>
@@ -178,9 +178,9 @@ export function MentorSessionPrepCard({ workspace, meetingDate, className }: Men
           <div className="p-2 rounded-xl bg-muted/50">
             <p className="text-lg font-bold flex items-center justify-center gap-1">
               {workspace.hasCurrentMonthKpi ? (
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
               ) : (
-                <AlertCircle className="h-4 w-4 text-amber-500" />
+                <AlertCircle className="h-4 w-4 text-warning" />
               )}
             </p>
             <p className="text-xs text-muted-foreground">{t('sessionPrep.kpis', 'KPIs')}</p>
