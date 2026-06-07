@@ -193,10 +193,10 @@ function StatusBadge({ status, type }: { status: string | null; type: 'room' | '
     active: 'bg-success/10 text-success',
     claimed: 'bg-info/10 text-info',
     pending: 'bg-warning/10 text-warning',
-    imported_unclaimed: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+    imported_unclaimed: 'bg-muted text-muted-foreground',
     blocked: 'bg-destructive/10 text-destructive',
     // Contract
-    draft: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+    draft: 'bg-muted text-muted-foreground',
     pending_signature: 'bg-warning/10 text-warning',
     suspended: 'bg-warning/10 text-warning',
   };
@@ -247,7 +247,7 @@ function WarningBadges({ warnings }: { warnings: string[] }) {
           ? 'bg-destructive/10 text-destructive'
           : info.severity === 'warning'
           ? 'bg-warning/10 text-warning'
-          : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300';
+          : 'bg-muted text-muted-foreground';
         return (
           <Badge key={w} className={cn('text-[9px] border-0 gap-0.5', color)}>
             <AlertCircle className="h-2.5 w-2.5" />

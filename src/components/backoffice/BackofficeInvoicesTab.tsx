@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  draft: { label: 'Draft', className: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
+  draft: { label: 'Draft', className: 'bg-muted text-muted-foreground' },
   sent: { label: 'Sent', className: 'bg-info/10 text-info' },
   paid: { label: 'Paid', className: 'bg-success/10 text-success' },
   overdue: { label: 'Overdue', className: 'bg-destructive/10 text-destructive' },

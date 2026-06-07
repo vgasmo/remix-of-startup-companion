@@ -22,20 +22,15 @@ import { ContractUploadDropzone, type AIExtractedData } from './contracts/Contra
 import { ContractReviewForm, type ContractFormValues } from './contracts/ContractReviewForm';
 import { BulkActionsBar } from './contracts/BulkActionsBar';
 import { ContractDetailDrawer } from './contracts/ContractDetailDrawer';
+import { ContractStatusBadge } from './contracts/ContractStatusBadge';
 import { ProvenanceBadge } from '@/components/shared/ProvenanceBadge';
 import { LifecycleMismatchPanel } from '@/components/staff/LifecycleMismatchPanel';
 import { useContractIntakes } from '@/hooks/useContractIntakes';
 import { useFunnelItems } from '@/hooks/useFunnel';
 import { useUrlParam } from '@/hooks/useUrlParam';
 
-const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-  pending_signature: 'bg-warning/10 text-warning',
-  active: 'bg-success/10 text-success',
-  suspended: 'bg-warning/10 text-warning',
-  terminated: 'bg-destructive/10 text-destructive',
-  expired: 'bg-muted text-muted-foreground',
-};
+// Status key set for filter dropdown. Visual styling is owned by <ContractStatusBadge>.
+const STATUS_KEYS = ['draft', 'pending_signature', 'active', 'suspended', 'terminated', 'expired'] as const;
 
 function getIncubationTenure(startDate: string) {
   const start = new Date(startDate);
@@ -441,7 +436,7 @@ export function BackofficeContractsTab() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('admin.backoffice.allStatuses', { defaultValue: 'All Statuses' })}</SelectItem>
-            {Object.keys(STATUS_COLORS).map(key => (
+            {STATUS_KEYS.map(key => (
               <SelectItem key={key} value={key}>{t(`admin.backoffice.contractStatus.${key}`, { defaultValue: key })}</SelectItem>
             ))}
           </SelectContent>
@@ -638,8 +633,7 @@ export function BackofficeContractsTab() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredContracts?.map(contract => {
-                  const statusClassName = STATUS_COLORS[contract.status];
+                {filteredContracts?.map((contract, idx) => {
                   const startup = (contract.workspace as any)?.startup;
                   const incubationType = contract.incubation_type as IncubationType | null;
                   const building = contract.building as { name: string; city?: string } | null;
@@ -650,9 +644,10 @@ export function BackofficeContractsTab() {
                     <TableRow
                       key={contract.id}
                       className={cn(
-                        'cursor-pointer',
-                        alert?.severity === 'critical' && 'bg-destructive/50 dark:bg-destructive/10',
-                        selectedContractIds.has(contract.id) && 'bg-primary/5'
+                        'cursor-pointer transition-colors hover:bg-muted/40',
+                        idx % 2 === 1 && 'bg-muted/20',
+                        alert?.severity === 'critical' && 'bg-destructive/5 hover:bg-destructive/10',
+                        selectedContractIds.has(contract.id) && 'bg-primary/5 hover:bg-primary/10'
                       )}
                       onClick={() => openContractDrawer(contract)}
                     >
@@ -716,9 +711,7 @@ export function BackofficeContractsTab() {
                         </TooltipProvider>
                       </TableCell>
                       <TableCell>
-                        <Badge className={cn('text-xs', statusClassName)}>
-                          {t(`admin.backoffice.contractStatus.${contract.status}`, { defaultValue: contract.status })}
-                        </Badge>
+                        <ContractStatusBadge status={contract.status} />
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">

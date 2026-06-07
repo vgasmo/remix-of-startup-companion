@@ -23,6 +23,7 @@ import { useCurrentPricingTable, findMatchingPricingLine, getIncubationYear } fr
 import { ContractDiscountsPanel } from '@/components/contracts/ContractDiscountsPanel';
 import { ContractIntelligenceCard } from '@/components/contracts/ContractIntelligenceCard';
 import { PricingBreakdown } from '@/components/contracts/PricingBreakdown';
+import { ContractStatusBadge } from './ContractStatusBadge';
 import { ContractLifecycleStepper } from '@/components/contracts/ContractLifecycleStepper';
 import { ContractReadinessChecklist } from '@/components/contracts/ContractReadinessChecklist';
 import { ProvenanceBadge } from '@/components/shared/ProvenanceBadge';
@@ -254,9 +255,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                 <SheetDescription className="flex items-center gap-2 mt-1">
                   {contract.contract_number || t('contracts.noNumber')}
                   <span className="text-muted-foreground/50">·</span>
-                  <Badge className={cn('text-[10px] h-5', STATUS_COLORS[contract.status])}>
-                    {t(`admin.backoffice.contractStatus.${contract.status}`, { defaultValue: contract.status })}
-                  </Badge>
+                  <ContractStatusBadge status={contract.status} />
                 </SheetDescription>
                 {/* Stream F: provenance badges */}
                 <div className="flex flex-wrap gap-1.5 mt-2">
