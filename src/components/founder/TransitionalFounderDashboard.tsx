@@ -258,10 +258,10 @@ function getStatusConfig(status: string, t: (key: string, opts?: any) => string)
     case 'pending':
       return {
         icon: Clock,
-        iconBgClass: 'bg-blue-100 dark:bg-blue-900/30',
-        iconClass: 'text-blue-600 dark:text-blue-400',
-        borderClass: 'border-blue-200 dark:border-blue-800/50',
-        badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+        iconBgClass: 'bg-info/10',
+        iconClass: 'text-info',
+        borderClass: 'border-info/30',
+        badgeClass: 'bg-info/10 text-info',
         title: t('founder.transitional.titlePending', { defaultValue: 'Candidatura submetida' }),
         description: t('founder.transitional.descPending', { defaultValue: 'A sua candidatura foi recebida e está a aguardar análise. Contacte a equipa se tiver questões.' }),
         badge: t('founder.transitional.badgePending', { defaultValue: 'Aguarda aprovação' }),

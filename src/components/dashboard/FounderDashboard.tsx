@@ -9,6 +9,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useFounderMaturity } from '@/hooks/useFounderMaturity';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -215,33 +216,60 @@ export function FounderDashboard({
       <FounderWelcomeWizard workspaceId={workspace?.id ?? null} />
       {/* Multi-workspace notice */}
       {workspaces.length > 1 && (
-        <Card className="border-primary/20 bg-primary/5 rounded-2xl">
+        <Card className="border-primary/20 bg-primary/5 rounded-xl">
           <CardContent className="py-3 px-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10 shrink-0">
-                <Rocket className="h-4 w-4 text-primary" />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="p-2 rounded-lg bg-primary/10 shrink-0">
+                  <Rocket className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">
+                    {t('founder.multiWorkspace.title', { defaultValue: 'Tem {{count}} startups associadas', count: workspaces.length })}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {t('founder.multiWorkspace.hint', { defaultValue: 'Está a ver "{{name}}". Selecione outra abaixo.', name: workspace?.startup?.name || '' })}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground">
-                  {t('founder.multiWorkspace.title', { defaultValue: 'Tem {{count}} startups associadas', count: workspaces.length })}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t('founder.multiWorkspace.hint', { defaultValue: 'Está a ver "{{name}}". Selecione outra abaixo.', name: workspace?.startup?.name || '' })}
-                </p>
-              </div>
-              <div className="flex gap-1.5 shrink-0">
-                {workspaces.map((ws, idx) => (
-                  <Button
-                    key={ws.id}
-                    variant={idx === selectedWorkspaceIdx ? 'default' : 'outline'}
-                    size="sm"
-                    className="text-xs h-7 px-2.5"
-                    onClick={() => setSelectedWorkspaceIdx(idx)}
-                  >
-                    {ws.startup?.name?.slice(0, 12) || `Startup ${idx + 1}`}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 sm:max-w-[260px] justify-between shrink-0">
+                    <span className="flex items-center gap-2 min-w-0">
+                      <Avatar className="h-5 w-5 rounded-md">
+                        <AvatarImage src={workspace?.startup?.logo_url || undefined} className="object-cover" alt="" />
+                        <AvatarFallback className="rounded-md bg-primary/10 text-primary text-[9px] font-semibold">
+                          {workspace?.startup?.name?.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="truncate text-xs">{workspace?.startup?.name || `Startup ${selectedWorkspaceIdx + 1}`}</span>
+                    </span>
+                    <ChevronDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
                   </Button>
-                ))}
-              </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[260px]">
+                  {workspaces.map((ws, idx) => (
+                    <DropdownMenuItem
+                      key={ws.id}
+                      onClick={() => setSelectedWorkspaceIdx(idx)}
+                      className="gap-2"
+                    >
+                      <Avatar className="h-6 w-6 rounded-md">
+                        <AvatarImage src={ws.startup?.logo_url || undefined} className="object-cover" alt="" />
+                        <AvatarFallback className="rounded-md bg-primary/10 text-primary text-[10px] font-semibold">
+                          {ws.startup?.name?.slice(0, 2).toUpperCase() || `S${idx + 1}`}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="flex-1 truncate text-sm">{ws.startup?.name || `Startup ${idx + 1}`}</span>
+                      {idx === selectedWorkspaceIdx && (
+                        <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
+                          {t('common.current', { defaultValue: 'Atual' })}
+                        </Badge>
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </CardContent>
         </Card>
@@ -319,8 +347,8 @@ export function FounderDashboard({
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-6 pt-4">
           {/* Startup Card */}
-          <Card 
-            className="overflow-hidden border-border/60 rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+          <Card
+            className="overflow-hidden border-border/60 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-shadow animate-fade-in-up stagger-1"
             onClick={() => navigate(`/workspace/${workspace.id}`)}
           >
             <div className="bg-muted/40 p-4 sm:p-6">
@@ -341,7 +369,7 @@ export function FounderDashboard({
                     <HealthBadge score={health as HealthScore | null} size="sm" />
                   </div>
                 </div>
-                <Button 
+                <Button
                   variant="outline"
                   size="sm"
                   onClick={(e) => { e.stopPropagation(); navigate(`/workspace/${workspace.id}`); }}
@@ -354,37 +382,45 @@ export function FounderDashboard({
           </Card>
 
           {/* Readiness Strip */}
-          <WidgetErrorBoundary name="ReadinessStrip">
-            <FounderReadinessStrip workspace={workspace} />
-          </WidgetErrorBoundary>
+          <div className="animate-fade-in-up stagger-2">
+            <WidgetErrorBoundary name="ReadinessStrip">
+              <FounderReadinessStrip workspace={workspace} />
+            </WidgetErrorBoundary>
+          </div>
 
           {/* Progress Rings */}
-          <WidgetErrorBoundary name="ProgressRings">
-            <FounderProgressRings workspaceId={workspace.id} />
-          </WidgetErrorBoundary>
+          <div className="animate-fade-in-up stagger-3">
+            <WidgetErrorBoundary name="ProgressRings">
+              <FounderProgressRings workspaceId={workspace.id} />
+            </WidgetErrorBoundary>
+          </div>
 
           {/* Journey Map / Acceleration */}
-          <WidgetErrorBoundary name="JourneyMap">
-            {workspace.program?.program_type === 'acceleration' ? (
-              <AccelerationProgressCard
-                programId={workspace.program_id}
-                currentWeek={(workspace as any).current_week ?? null}
-                workspaceId={workspace.id}
-              />
-            ) : (
-              <FounderJourneyMap currentStage={workspace.stage} />
-            )}
-          </WidgetErrorBoundary>
+          <div className="animate-fade-in-up stagger-4">
+            <WidgetErrorBoundary name="JourneyMap">
+              {workspace.program?.program_type === 'acceleration' ? (
+                <AccelerationProgressCard
+                  programId={workspace.program_id}
+                  currentWeek={(workspace as any).current_week ?? null}
+                  workspaceId={workspace.id}
+                />
+              ) : (
+                <FounderJourneyMap currentStage={workspace.stage} />
+              )}
+            </WidgetErrorBoundary>
+          </div>
 
           {/* Smart Nudges */}
           {nudges.length > 0 && (
-            <WidgetErrorBoundary name="SmartNudges">
-              <SmartNudgeCard nudges={nudges} />
-            </WidgetErrorBoundary>
+            <div className="animate-fade-in-up stagger-5">
+              <WidgetErrorBoundary name="SmartNudges">
+                <SmartNudgeCard nudges={nudges} />
+              </WidgetErrorBoundary>
+            </div>
           )}
 
           {/* Stage Progress + Investor Readiness + Calendar */}
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2 animate-fade-in-up stagger-6">
             <div className="space-y-4">
               <StageProgressCard workspace={workspace} />
               <InvestorReadinessWidget workspaceId={workspace.id} compact />
