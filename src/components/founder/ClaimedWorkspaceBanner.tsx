@@ -73,10 +73,10 @@ export function ClaimedWorkspaceBanner({ founderState }: ClaimedWorkspaceBannerP
 
   if (founderState.status === 'has_pending_claim') {
     return (
-      <Card className="rounded-xl border-blue-300 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
+      <Card className="rounded-xl border-info/40 bg-info/5">
         <CardContent className="py-4 flex items-start gap-3">
-          <div className="h-10 w-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
-            <Building2 className="h-5 w-5 text-blue-600" />
+          <div className="h-10 w-10 rounded-xl bg-info/10 flex items-center justify-center shrink-0">
+            <Building2 className="h-5 w-5 text-info" />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-sm">
@@ -97,8 +97,8 @@ export function ClaimedWorkspaceBanner({ founderState }: ClaimedWorkspaceBannerP
               </Button>
             </div>
             {/* Next steps guidance */}
-            <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800/50">
-              <p className="text-xs font-medium text-blue-700 dark:text-blue-400 flex items-center gap-1">
+            <div className="mt-3 pt-3 border-t border-info/30">
+              <p className="text-xs font-medium text-info flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" />
                 {t('founder.claimed.nextSteps', { defaultValue: 'Próximos passos' })}
               </p>
