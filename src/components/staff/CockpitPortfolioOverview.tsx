@@ -21,6 +21,27 @@ export function CockpitPortfolioOverview({ workspaces }: CockpitPortfolioOvervie
   const navigate = useNavigate();
   const [onlyStartupPortugal, setOnlyStartupPortugal] = useState(false);
 
+  const startupPortugalCount = useMemo(
+    () => workspaces.filter(w => w.startup?.has_startup_portugal_status === true).length,
+    [workspaces],
+  );
+
+  const filtered = useMemo(
+    () => onlyStartupPortugal
+      ? workspaces.filter(w => w.startup?.has_startup_portugal_status === true)
+      : workspaces,
+    [workspaces, onlyStartupPortugal],
+  );
+
+  const sorted = useMemo(() => {
+    const order: Record<string, number> = { critical: 0, at_risk: 1, healthy: 2 };
+    return [...filtered].sort((a, b) => {
+      const aScore = order[a.health_score || 'healthy'] ?? 2;
+      const bScore = order[b.health_score || 'healthy'] ?? 2;
+      return aScore - bScore;
+    });
+  }, [filtered]);
+
   if (workspaces.length === 0) {
     return null;
   }
@@ -37,24 +58,6 @@ export function CockpitPortfolioOverview({ workspaces }: CockpitPortfolioOvervie
     healthy: t('health.healthy', { defaultValue: 'Saudável' }),
   };
 
-  const startupPortugalCount = useMemo(
-    () => workspaces.filter(w => w.startup?.has_startup_portugal_status === true).length,
-    [workspaces],
-  );
-
-  const filtered = useMemo(
-    () => onlyStartupPortugal
-      ? workspaces.filter(w => w.startup?.has_startup_portugal_status === true)
-      : workspaces,
-    [workspaces, onlyStartupPortugal],
-  );
-
-  const sorted = [...filtered].sort((a, b) => {
-    const order: Record<string, number> = { critical: 0, at_risk: 1, healthy: 2 };
-    const aScore = order[a.health_score || 'healthy'] ?? 2;
-    const bScore = order[b.health_score || 'healthy'] ?? 2;
-    return aScore - bScore;
-  });
 
   const criticalCount = filtered.filter(w => w.health_score === 'critical').length;
   const atRiskCount = filtered.filter(w => w.health_score === 'at_risk').length;
