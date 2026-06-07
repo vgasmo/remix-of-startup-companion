@@ -49,6 +49,7 @@ import { FounderProgressRings } from '@/components/dashboard/FounderProgressRing
 import { useAutoMaterializeDeliverables } from '@/hooks/useAutoMaterializeDeliverables';
 import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
 import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
+import { MySupportTeamCard } from '@/components/founder/MySupportTeamCard';
 // NextBestActionFounder removed from beginner view — kept available for power users via OneThingToday.
 
 interface FounderDashboardProps {
