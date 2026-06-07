@@ -30,10 +30,10 @@ import { useUrlParam } from '@/hooks/useUrlParam';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-  pending_signature: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-  active: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-  suspended: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-  terminated: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+  pending_signature: 'bg-warning/10 text-warning',
+  active: 'bg-success/10 text-success',
+  suspended: 'bg-warning/10 text-warning',
+  terminated: 'bg-destructive/10 text-destructive',
   expired: 'bg-muted text-muted-foreground',
 };
 
@@ -485,14 +485,14 @@ export function BackofficeContractsTab() {
 
       {/* Workspaces Without Contracts - Bulk Create (collapsed by default to reduce noise) */}
       {workspacesWithoutContracts.length > 0 && (
-        <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+        <Card className="border-warning/30 bg-warning/50 dark:bg-warning/20">
           <details className="group">
             <summary className="list-none cursor-pointer">
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-300 text-base">
+                <CardTitle className="flex items-center gap-2 text-warning text-base">
                   <Zap className="h-5 w-5" />
                   {t('admin.backoffice.workspacesWithoutContracts', { defaultValue: 'Workspaces Without Contracts' })}
-                  <Badge variant="secondary" className="ml-2 bg-amber-200 dark:bg-amber-800">
+                  <Badge variant="secondary" className="ml-2 bg-warning/10">
                     {workspacesWithoutContracts.length}
                   </Badge>
                   <span className="ml-auto text-xs font-normal text-muted-foreground group-open:hidden">
@@ -546,7 +546,7 @@ export function BackofficeContractsTab() {
                 <Button
                   onClick={handleBulkCreateContracts}
                   disabled={selectedWorkspaces.size === 0 || isBulkCreating}
-                  className="bg-amber-600 hover:bg-amber-700"
+                  className="bg-warning hover:bg-warning"
                 >
                   <Zap className="h-4 w-4 mr-2" />
                   {isBulkCreating
@@ -651,7 +651,7 @@ export function BackofficeContractsTab() {
                       key={contract.id}
                       className={cn(
                         'cursor-pointer',
-                        alert?.severity === 'critical' && 'bg-red-50/50 dark:bg-red-950/10',
+                        alert?.severity === 'critical' && 'bg-destructive/50 dark:bg-destructive/10',
                         selectedContractIds.has(contract.id) && 'bg-primary/5'
                       )}
                       onClick={() => openContractDrawer(contract)}
@@ -680,17 +680,17 @@ export function BackofficeContractsTab() {
                               <div className="flex items-center gap-2">
                                 <div className={cn(
                                   'flex items-center gap-1 text-sm',
-                                  tenure.years >= 3 && 'text-red-600 font-medium',
-                                  tenure.years === 2 && 'text-yellow-600'
+                                  tenure.years >= 3 && 'text-destructive font-medium',
+                                  tenure.years === 2 && 'text-warning'
                                 )}>
                                   <Clock className="h-3 w-3" />
                                   {tenure.years > 0 ? <span>{tenure.years}y {tenure.remainingMonths}m</span> : <span>{tenure.months}m</span>}
                                 </div>
                                 {alert && (
                                   <div className={cn(
-                                    alert.severity === 'critical' && 'text-red-600',
-                                    alert.severity === 'warning' && 'text-yellow-600',
-                                    alert.severity === 'info' && 'text-blue-600',
+                                    alert.severity === 'critical' && 'text-destructive',
+                                    alert.severity === 'warning' && 'text-warning',
+                                    alert.severity === 'info' && 'text-info',
                                   )}>
                                     {alert.type === 'year3' ? <AlertTriangle className="h-4 w-4" /> : <Cake className="h-4 w-4" />}
                                   </div>
@@ -704,8 +704,8 @@ export function BackofficeContractsTab() {
                                 {alert && (
                                   <div className={cn(
                                     'mt-1 font-medium',
-                                    alert.severity === 'critical' && 'text-red-400',
-                                    alert.severity === 'warning' && 'text-yellow-400',
+                                    alert.severity === 'critical' && 'text-destructive',
+                                    alert.severity === 'warning' && 'text-warning',
                                   )}>
                                     {t(`admin.backoffice.dashboardPanel.${alert.messageKey}`, alert.messageParams || {})}
                                   </div>
@@ -724,7 +724,7 @@ export function BackofficeContractsTab() {
                         <div className="text-sm">
                           €{contract.monthly_fee.toFixed(2)}
                           {contract.discount_percentage > 0 && (
-                            <span className="text-green-600 text-xs ml-1">(-{contract.discount_percentage}%)</span>
+                            <span className="text-success text-xs ml-1">(-{contract.discount_percentage}%)</span>
                           )}
                         </div>
                       </TableCell>

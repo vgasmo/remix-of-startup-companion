@@ -16,11 +16,11 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   draft: { label: 'Draft', className: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
-  sent: { label: 'Sent', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
-  paid: { label: 'Paid', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
-  overdue: { label: 'Overdue', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
+  sent: { label: 'Sent', className: 'bg-info/10 text-info' },
+  paid: { label: 'Paid', className: 'bg-success/10 text-success' },
+  overdue: { label: 'Overdue', className: 'bg-destructive/10 text-destructive' },
   cancelled: { label: 'Cancelled', className: 'bg-muted text-muted-foreground' },
-  refunded: { label: 'Refunded', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' },
+  refunded: { label: 'Refunded', className: 'bg-primary/10 text-primary' },
 };
 
 export function BackofficeInvoicesTab() {
@@ -93,13 +93,13 @@ export function BackofficeInvoicesTab() {
         </Card>
         <Card>
           <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.pending}</div>
+            <div className="text-2xl font-bold text-info">{stats.pending}</div>
             <p className="text-xs text-muted-foreground">{t('admin.backoffice.pendingPayment')}</p>
           </CardContent>
         </Card>
-        <Card className={cn(stats.overdue > 0 && 'border-amber-500/50')}>
+        <Card className={cn(stats.overdue > 0 && 'border-warning/50')}>
           <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-amber-600 flex items-center gap-1">
+            <div className="text-2xl font-bold text-warning flex items-center gap-1">
               {stats.overdue}
               {stats.overdue > 0 && <AlertTriangle className="h-4 w-4" />}
             </div>
@@ -174,7 +174,7 @@ export function BackofficeInvoicesTab() {
                   const statusConfig = STATUS_CONFIG[displayStatus];
 
                   return (
-                    <TableRow key={invoice.id} className={cn(isOverdue && 'bg-amber-50/50 dark:bg-amber-900/10')}>
+                    <TableRow key={invoice.id} className={cn(isOverdue && 'bg-warning/50')}>
                       <TableCell className="font-medium font-mono">
                         {invoice.invoice_number}
                       </TableCell>
@@ -183,7 +183,7 @@ export function BackofficeInvoicesTab() {
                         {format(new Date(invoice.issue_date), 'dd MMM yyyy')}
                       </TableCell>
                       <TableCell>
-                        <span className={cn(isOverdue && 'text-amber-600 font-medium')}>
+                        <span className={cn(isOverdue && 'text-warning font-medium')}>
                           {format(dueDate, 'dd MMM yyyy')}
                           {isOverdue && ` (${daysOverdue}d)`}
                         </span>

@@ -46,13 +46,13 @@ export function SilentDisengagementCard({ workspaces }: SilentDisengagementCardP
   if (silentStartups.length === 0) return null;
 
   return (
-    <Card className="border-amber-500/30 bg-amber-500/5">
+    <Card className="border-warning/30 bg-warning/5">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Ghost className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <Ghost className="h-4 w-4 text-warning" />
             {t('staffCockpit.silentDisengagement.title', { defaultValue: 'Disengagement Silencioso' })}
-            <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-700 dark:text-amber-400">
+            <Badge variant="outline" className="text-xs border-warning/30 text-warning">
               {silentStartups.length}
             </Badge>
           </CardTitle>
@@ -80,7 +80,7 @@ export function SilentDisengagementCard({ workspaces }: SilentDisengagementCardP
               >
                 <Avatar className="h-7 w-7 shrink-0">
                   {ws.startup?.logo_url && <AvatarImage src={ws.startup.logo_url} />}
-                  <AvatarFallback className="text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                  <AvatarFallback className="text-[10px] bg-warning/10 text-warning">
                     {ws.startup?.name?.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>

@@ -173,17 +173,17 @@ export function ContractLifecycleEventsCard() {
   };
 
   const EVENT_COLORS: Record<string, string> = {
-    anniversary: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    biennial_review: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-    notice_window: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-    incubation_limit: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+    anniversary: 'bg-info/10 text-info',
+    biennial_review: 'bg-warning/10 text-warning',
+    notice_window: 'bg-warning/10 text-warning',
+    incubation_limit: 'bg-destructive/10 text-destructive',
     post_incubation: 'bg-destructive/10 text-destructive',
   };
 
   const criticalCount = events.filter(e => e.severity === 'critical').length;
 
   return (
-    <Card className={cn('rounded-2xl', criticalCount > 0 && 'border-red-500/50')}>
+    <Card className={cn('rounded-2xl', criticalCount > 0 && 'border-destructive/50')}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <CalendarClock className="h-5 w-5" />
@@ -202,7 +202,7 @@ export function ContractLifecycleEventsCard() {
           </div>
         ) : events.length === 0 ? (
           <div className="flex items-center gap-2 text-muted-foreground py-6 justify-center">
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <CheckCircle2 className="h-4 w-4 text-success" />
             <span className="text-sm">{t('lifecycle.stepper.noEvents')}</span>
           </div>
         ) : (
@@ -213,16 +213,16 @@ export function ContractLifecycleEventsCard() {
                   key={`${event.contractId}-${event.eventType}-${idx}`}
                   className={cn(
                     'p-3 rounded-lg border flex items-start gap-3 text-sm',
-                    event.severity === 'critical' && 'bg-red-50/50 border-red-200 dark:bg-red-950/10 dark:border-red-800/50',
-                    event.severity === 'warning' && 'bg-amber-50/50 border-amber-200 dark:bg-amber-950/10 dark:border-amber-800/50',
-                    event.severity === 'info' && 'bg-blue-50/50 border-blue-200 dark:bg-blue-950/10 dark:border-blue-800/50',
+                    event.severity === 'critical' && 'bg-destructive/50 border-destructive/30 dark:bg-destructive/10',
+                    event.severity === 'warning' && 'bg-warning/50 border-warning/30 dark:bg-warning/10',
+                    event.severity === 'info' && 'bg-info/50 border-info/30 dark:bg-info/10',
                   )}
                 >
                   <div className={cn(
                     'mt-0.5',
-                    event.severity === 'critical' && 'text-red-600',
-                    event.severity === 'warning' && 'text-amber-600',
-                    event.severity === 'info' && 'text-blue-600',
+                    event.severity === 'critical' && 'text-destructive',
+                    event.severity === 'warning' && 'text-warning',
+                    event.severity === 'info' && 'text-info',
                   )}>
                     {EVENT_ICONS[event.eventType]}
                   </div>

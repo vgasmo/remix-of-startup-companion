@@ -99,7 +99,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
     );
   };
 
-  const statusColor = isOccupied ? 'bg-primary' : room.status === 'maintenance' ? 'bg-yellow-500' : 'bg-green-500';
+  const statusColor = isOccupied ? 'bg-primary' : room.status === 'maintenance' ? 'bg-warning' : 'bg-success';
 
   return (
     <>

@@ -160,8 +160,8 @@ export function LifecycleMismatchPanel({
 
   if (mismatches.length === 0) {
     return (
-      <Card className={cn('border-emerald-500/30 bg-emerald-500/5', className)}>
-        <CardContent className="py-3 flex items-center gap-2 text-sm text-emerald-800 dark:text-emerald-200">
+      <Card className={cn('border-success/30 bg-success/5', className)}>
+        <CardContent className="py-3 flex items-center gap-2 text-sm text-success">
           <ShieldCheck className="h-4 w-4" />
           {t('lifecycleMismatch.allConsistent', {
             defaultValue: 'Estados de contrato/intake/CRM/workspace consistentes.',
@@ -172,7 +172,7 @@ export function LifecycleMismatchPanel({
   }
 
   return (
-    <Card className={cn('border-amber-500/40', className)}>
+    <Card className={cn('border-warning/40', className)}>
       <CardHeader className="pb-2">
         <button
           type="button"
@@ -180,7 +180,7 @@ export function LifecycleMismatchPanel({
           className="w-full flex items-center justify-between gap-2 text-left"
         >
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <AlertTriangle className="h-4 w-4 text-warning" />
             {t('lifecycleMismatch.title', { defaultValue: 'Inconsistências de ciclo de vida' })}
             <Badge variant="outline" className="text-[11px]">
               {mismatches.length}
@@ -205,7 +205,7 @@ export function LifecycleMismatchPanel({
             {mismatches.map((m) => (
               <li
                 key={m.id}
-                className="rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5"
+                className="rounded-md border border-warning/30 bg-warning/5 p-2.5"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">

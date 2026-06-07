@@ -47,10 +47,10 @@ import { logger } from '@/lib/logger';
 
 // Status colors
 const STATUS_COLORS: Record<string, string> = {
-  available: 'bg-green-500',
-  occupied: 'bg-blue-500',
-  maintenance: 'bg-yellow-500',
-  reserved: 'bg-purple-500',
+  available: 'bg-success',
+  occupied: 'bg-info',
+  maintenance: 'bg-warning',
+  reserved: 'bg-primary',
 };
 
 export function InfrastructureTab() {
@@ -383,9 +383,9 @@ export function InfrastructureTab() {
           </Card>
           <Card className="rounded-xl border-l-4 border-l-green-500">
             <CardContent className="pt-4 flex items-center gap-3">
-              <DoorOpen className="h-5 w-5 text-green-600" />
+              <DoorOpen className="h-5 w-5 text-success" />
               <div>
-                <div className="text-2xl font-bold text-green-600">{availableCount}</div>
+                <div className="text-2xl font-bold text-success">{availableCount}</div>
                 <p className="text-xs text-muted-foreground">{t('admin.backoffice.available', { defaultValue: 'Disponíveis' })}</p>
               </div>
             </CardContent>
@@ -401,9 +401,9 @@ export function InfrastructureTab() {
           </Card>
           <Card className="rounded-xl border-l-4 border-l-yellow-500">
             <CardContent className="pt-4 flex items-center gap-3">
-              <Wrench className="h-5 w-5 text-yellow-600" />
+              <Wrench className="h-5 w-5 text-warning" />
               <div>
-                <div className="text-2xl font-bold text-yellow-600">{maintenanceCount}</div>
+                <div className="text-2xl font-bold text-warning">{maintenanceCount}</div>
                 <p className="text-xs text-muted-foreground">{t('admin.backoffice.maintenance', { defaultValue: 'Manutenção' })}</p>
               </div>
             </CardContent>
@@ -561,7 +561,7 @@ export function InfrastructureTab() {
                                 aria-label={`${room.name}${isOccupied ? `, ${t('admin.backoffice.occupied')} ${occupantName || ''}` : `, ${t('admin.backoffice.available')}`}`}
                               >
                                 <div className="flex flex-col items-center">
-                                  <MapPin className={cn('h-7 w-7 drop-shadow-lg', isOccupied ? 'text-primary fill-primary/20' : room.status === 'maintenance' ? 'text-yellow-500 fill-yellow-500/20' : 'text-green-500 fill-green-500/20')} />
+                                  <MapPin className={cn('h-7 w-7 drop-shadow-lg', isOccupied ? 'text-primary fill-primary/20' : room.status === 'maintenance' ? 'text-warning fill-yellow-500/20' : 'text-success fill-green-500/20')} />
                                   <span className={cn('text-[10px] font-medium px-1 py-0.5 rounded bg-background/90 shadow-sm -mt-1', isOccupied ? 'text-primary' : 'text-foreground')}>
                                     {room.name}
                                   </span>
@@ -605,8 +605,8 @@ export function InfrastructureTab() {
                     {/* Legend */}
                     <div className="absolute bottom-2 left-2 flex items-center gap-4 bg-background/90 rounded-lg px-3 py-1.5 shadow-sm text-xs">
                       <div className="flex items-center gap-1"><div className="h-2.5 w-2.5 rounded-full bg-primary" />{t('admin.backoffice.occupied', { defaultValue: 'Ocupado' })}</div>
-                      <div className="flex items-center gap-1"><div className="h-2.5 w-2.5 rounded-full bg-green-500" />{t('admin.backoffice.available', { defaultValue: 'Disponível' })}</div>
-                      <div className="flex items-center gap-1"><div className="h-2.5 w-2.5 rounded-full bg-yellow-500" />{t('admin.backoffice.maintenance', { defaultValue: 'Manutenção' })}</div>
+                      <div className="flex items-center gap-1"><div className="h-2.5 w-2.5 rounded-full bg-success" />{t('admin.backoffice.available', { defaultValue: 'Disponível' })}</div>
+                      <div className="flex items-center gap-1"><div className="h-2.5 w-2.5 rounded-full bg-warning" />{t('admin.backoffice.maintenance', { defaultValue: 'Manutenção' })}</div>
                       <span className="text-muted-foreground ml-2">{roomsOnMap.length} {t('admin.backoffice.roomsPlaced', { defaultValue: 'salas mapeadas' })}</span>
                     </div>
 
@@ -695,7 +695,7 @@ export function InfrastructureTab() {
                               onClick={() => handleRoomClick(room)}
                             >
                               <div className="flex items-center gap-2">
-                                <div className={cn('h-2 w-2 rounded-full', alloc ? 'bg-primary' : room.status === 'maintenance' ? 'bg-yellow-500' : 'bg-green-500')} />
+                                <div className={cn('h-2 w-2 rounded-full', alloc ? 'bg-primary' : room.status === 'maintenance' ? 'bg-warning' : 'bg-success')} />
                                 <span className="text-sm font-medium">{room.name}</span>
                                 {room.room_number && <span className="text-xs text-muted-foreground">#{room.room_number}</span>}
                               </div>
@@ -785,7 +785,7 @@ export function InfrastructureTab() {
                         className={cn(
                           'transition-all hover:shadow-lg hover:-translate-y-0.5 rounded-xl cursor-pointer group',
                           allocation && 'border-primary/30',
-                          room.status === 'maintenance' && 'border-yellow-500/50'
+                          room.status === 'maintenance' && 'border-warning/50'
                         )}
                         onClick={() => handleRoomClick(room)}
                         role="button"

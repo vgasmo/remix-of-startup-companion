@@ -127,9 +127,9 @@ export function TriageWorkspaceList({
 
   const getHealthBadgeStyle = (label: HealthScore | null) => {
     const l = label?.toLowerCase();
-    if (l === 'critical') return 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30 font-semibold';
-    if (l === 'at_risk' || l === 'at risk') return 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 font-semibold';
-    if (l === 'healthy' || l === 'thriving') return 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30';
+    if (l === 'critical') return 'bg-destructive/10 text-destructive border-destructive/30 font-semibold';
+    if (l === 'at_risk' || l === 'at risk') return 'bg-warning/10 text-warning border-warning/30 font-semibold';
+    if (l === 'healthy' || l === 'thriving') return 'bg-success/10 text-success border-success/30';
     return 'bg-muted text-muted-foreground border-border';
   };
 
@@ -164,8 +164,8 @@ export function TriageWorkspaceList({
               className={cn(
                 "cursor-pointer transition-all duration-200 gap-1",
                 quickFilter === filter.key && "bg-primary shadow-sm",
-                filter.key === 'overdue_actions' && (filter.count ?? 0) > 0 && quickFilter !== filter.key && 'border-red-300 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20',
-                filter.key === 'at_risk' && (filter.count ?? 0) > 0 && quickFilter !== filter.key && 'border-amber-300 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/20',
+                filter.key === 'overdue_actions' && (filter.count ?? 0) > 0 && quickFilter !== filter.key && 'border-destructive/30 text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20',
+                filter.key === 'at_risk' && (filter.count ?? 0) > 0 && quickFilter !== filter.key && 'border-warning/30 text-warning hover:bg-warning/10 dark:hover:bg-warning/20',
               )}
               onClick={() => setQuickFilter(filter.key)}
             >
@@ -203,7 +203,7 @@ export function TriageWorkspaceList({
                 className={cn(
                   'group flex items-center gap-2 p-2.5 rounded-xl border transition-all duration-200 cursor-pointer',
                   'hover:bg-accent/60 hover:shadow-sm hover:border-border/80',
-                  isCritical && 'border-red-200/60 dark:border-red-800/40 bg-red-50/30 dark:bg-red-950/10',
+                  isCritical && 'border-destructive/60 bg-destructive/30 dark:bg-destructive/10',
                 )}
                 {...clickableProps(() => navigate(`/workspace/${workspace.id}`))}
               >
@@ -211,10 +211,10 @@ export function TriageWorkspaceList({
                 {triageMode && urgencyScore !== null && (
                   <div className={cn(
                     "w-1.5 h-10 rounded-full flex-shrink-0 transition-all",
-                    urgencyScore >= 50 ? "bg-red-500 shadow-sm shadow-red-500/30" :
-                    urgencyScore >= 30 ? "bg-amber-500 shadow-sm shadow-amber-500/20" :
-                    urgencyScore >= 15 ? "bg-yellow-500" :
-                    "bg-green-500"
+                    urgencyScore >= 50 ? "bg-destructive shadow-sm shadow-destructive/30" :
+                    urgencyScore >= 30 ? "bg-warning shadow-sm shadow-warning/20" :
+                    urgencyScore >= 15 ? "bg-warning" :
+                    "bg-success"
                   )} />
                 )}
                 
@@ -245,14 +245,14 @@ export function TriageWorkspaceList({
                     </Badge>
                   )}
                   {hasMissingKpis && (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 border-amber-400/50 text-amber-600 dark:text-amber-400">
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 border-warning/50 text-warning">
                       <TrendingDown className="h-2.5 w-2.5" />
                       KPI
                     </Badge>
                   )}
                   <span className={cn(
                     "flex items-center gap-1 text-muted-foreground",
-                    daysSince !== null && daysSince >= 14 && 'text-amber-600 dark:text-amber-400 font-medium'
+                    daysSince !== null && daysSince >= 14 && 'text-warning font-medium'
                   )}>
                     <Clock className="h-3 w-3" />
                     {daysSince !== null ? `${daysSince}d` : '-'}
