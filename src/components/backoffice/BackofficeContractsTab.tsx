@@ -28,14 +28,8 @@ import { useContractIntakes } from '@/hooks/useContractIntakes';
 import { useFunnelItems } from '@/hooks/useFunnel';
 import { useUrlParam } from '@/hooks/useUrlParam';
 
-const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-  pending_signature: 'bg-warning/10 text-warning',
-  active: 'bg-success/10 text-success',
-  suspended: 'bg-warning/10 text-warning',
-  terminated: 'bg-destructive/10 text-destructive',
-  expired: 'bg-muted text-muted-foreground',
-};
+// Status key set for filter dropdown. Visual styling is owned by <ContractStatusBadge>.
+const STATUS_KEYS = ['draft', 'pending_signature', 'active', 'suspended', 'terminated', 'expired'] as const;
 
 function getIncubationTenure(startDate: string) {
   const start = new Date(startDate);

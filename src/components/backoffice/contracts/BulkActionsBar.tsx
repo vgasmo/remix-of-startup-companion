@@ -16,7 +16,7 @@ export function BulkActionsBar({ selectedCount, onArchive, onClearSelection, isA
   if (selectedCount === 0) return null;
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg animate-in slide-in-from-top-2">
+    <div className="sticky top-2 z-20 flex items-center gap-3 p-3 bg-primary/10 backdrop-blur supports-[backdrop-filter]:bg-primary/10 border border-primary/30 rounded-lg shadow-sm animate-in slide-in-from-top-2">
       <Badge variant="secondary" className="text-sm">
         {t('contracts.bulk.selected', { count: selectedCount, defaultValue: '{{count}} selected' })}
       </Badge>
