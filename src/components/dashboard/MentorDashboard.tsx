@@ -301,6 +301,10 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
         })}
       </div>
 
+      {/* Cross-startup portfolio pulse */}
+      <MentorPortfolioPulse workspaces={workspaces} />
+
+
       {/* Two-column layout: Startups + Calendar */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div id="mentor-startups-section" className="lg:col-span-2 space-y-4">
