@@ -347,8 +347,8 @@ export function FounderDashboard({
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-6 pt-4">
           {/* Startup Card */}
-          <Card 
-            className="overflow-hidden border-border/60 rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+          <Card
+            className="overflow-hidden border-border/60 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-shadow animate-fade-in-up stagger-1"
             onClick={() => navigate(`/workspace/${workspace.id}`)}
           >
             <div className="bg-muted/40 p-4 sm:p-6">
@@ -369,7 +369,7 @@ export function FounderDashboard({
                     <HealthBadge score={health as HealthScore | null} size="sm" />
                   </div>
                 </div>
-                <Button 
+                <Button
                   variant="outline"
                   size="sm"
                   onClick={(e) => { e.stopPropagation(); navigate(`/workspace/${workspace.id}`); }}
@@ -382,37 +382,45 @@ export function FounderDashboard({
           </Card>
 
           {/* Readiness Strip */}
-          <WidgetErrorBoundary name="ReadinessStrip">
-            <FounderReadinessStrip workspace={workspace} />
-          </WidgetErrorBoundary>
+          <div className="animate-fade-in-up stagger-2">
+            <WidgetErrorBoundary name="ReadinessStrip">
+              <FounderReadinessStrip workspace={workspace} />
+            </WidgetErrorBoundary>
+          </div>
 
           {/* Progress Rings */}
-          <WidgetErrorBoundary name="ProgressRings">
-            <FounderProgressRings workspaceId={workspace.id} />
-          </WidgetErrorBoundary>
+          <div className="animate-fade-in-up stagger-3">
+            <WidgetErrorBoundary name="ProgressRings">
+              <FounderProgressRings workspaceId={workspace.id} />
+            </WidgetErrorBoundary>
+          </div>
 
           {/* Journey Map / Acceleration */}
-          <WidgetErrorBoundary name="JourneyMap">
-            {workspace.program?.program_type === 'acceleration' ? (
-              <AccelerationProgressCard
-                programId={workspace.program_id}
-                currentWeek={(workspace as any).current_week ?? null}
-                workspaceId={workspace.id}
-              />
-            ) : (
-              <FounderJourneyMap currentStage={workspace.stage} />
-            )}
-          </WidgetErrorBoundary>
+          <div className="animate-fade-in-up stagger-4">
+            <WidgetErrorBoundary name="JourneyMap">
+              {workspace.program?.program_type === 'acceleration' ? (
+                <AccelerationProgressCard
+                  programId={workspace.program_id}
+                  currentWeek={(workspace as any).current_week ?? null}
+                  workspaceId={workspace.id}
+                />
+              ) : (
+                <FounderJourneyMap currentStage={workspace.stage} />
+              )}
+            </WidgetErrorBoundary>
+          </div>
 
           {/* Smart Nudges */}
           {nudges.length > 0 && (
-            <WidgetErrorBoundary name="SmartNudges">
-              <SmartNudgeCard nudges={nudges} />
-            </WidgetErrorBoundary>
+            <div className="animate-fade-in-up stagger-5">
+              <WidgetErrorBoundary name="SmartNudges">
+                <SmartNudgeCard nudges={nudges} />
+              </WidgetErrorBoundary>
+            </div>
           )}
 
           {/* Stage Progress + Investor Readiness + Calendar */}
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2 animate-fade-in-up stagger-6">
             <div className="space-y-4">
               <StageProgressCard workspace={workspace} />
               <InvestorReadinessWidget workspaceId={workspace.id} compact />
