@@ -71,8 +71,8 @@ const TYPE_KEYS = [
 
 const PRIORITY_COLORS: Record<string, string> = {
   urgent: 'bg-destructive text-destructive-foreground',
-  high: 'bg-amber-500 text-white',
-  medium: 'bg-blue-500 text-white',
+  high: 'bg-warning text-white',
+  medium: 'bg-info text-white',
   low: 'bg-muted text-muted-foreground',
 };
 
@@ -345,7 +345,7 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
                           {item.due_at && (
                             <span className={`text-xs ${
                               isOverdue ? 'text-destructive font-medium' : 
-                              isDueToday ? 'text-amber-600 dark:text-amber-400 font-medium' : 
+                              isDueToday ? 'text-warning font-medium' : 
                               'text-muted-foreground'
                             }`}>
                               {isOverdue ? `${t('workQueue.overdueLabel')}: ` : isDueToday ? t('common.today') : ''}

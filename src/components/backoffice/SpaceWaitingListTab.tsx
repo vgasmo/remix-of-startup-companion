@@ -32,19 +32,19 @@ import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
 
 const REQUEST_TYPE_CONFIG: Record<string, { labelKey: string; color: string }> = {
-  office: { labelKey: 'waitingList.privateOffice', color: 'bg-blue-500' },
-  desk: { labelKey: 'waitingList.dedicatedDesk', color: 'bg-green-500' },
-  hotdesk: { labelKey: 'waitingList.hotDesk', color: 'bg-yellow-500' },
-  virtual: { labelKey: 'waitingList.virtualIncubation', color: 'bg-purple-500' },
-  meeting_room: { labelKey: 'waitingList.meetingRoom', color: 'bg-orange-500' },
+  office: { labelKey: 'waitingList.privateOffice', color: 'bg-info' },
+  desk: { labelKey: 'waitingList.dedicatedDesk', color: 'bg-success' },
+  hotdesk: { labelKey: 'waitingList.hotDesk', color: 'bg-warning' },
+  virtual: { labelKey: 'waitingList.virtualIncubation', color: 'bg-primary' },
+  meeting_room: { labelKey: 'waitingList.meetingRoom', color: 'bg-warning' },
 };
 
 const STATUS_CONFIG: Record<string, { labelKey: string; icon: typeof Clock; color: string }> = {
-  waiting: { labelKey: 'waitingList.statusWaiting', icon: Clock, color: 'text-yellow-600' },
-  offered: { labelKey: 'waitingList.statusOffered', icon: ArrowRight, color: 'text-blue-600' },
-  accepted: { labelKey: 'waitingList.statusAccepted', icon: CheckCircle, color: 'text-green-600' },
-  declined: { labelKey: 'waitingList.statusDeclined', icon: XCircle, color: 'text-red-600' },
-  fulfilled: { labelKey: 'waitingList.statusFulfilled', icon: CheckCircle, color: 'text-green-600' },
+  waiting: { labelKey: 'waitingList.statusWaiting', icon: Clock, color: 'text-warning' },
+  offered: { labelKey: 'waitingList.statusOffered', icon: ArrowRight, color: 'text-info' },
+  accepted: { labelKey: 'waitingList.statusAccepted', icon: CheckCircle, color: 'text-success' },
+  declined: { labelKey: 'waitingList.statusDeclined', icon: XCircle, color: 'text-destructive' },
+  fulfilled: { labelKey: 'waitingList.statusFulfilled', icon: CheckCircle, color: 'text-success' },
   cancelled: { labelKey: 'waitingList.statusCancelled', icon: XCircle, color: 'text-muted-foreground' },
 };
 
@@ -267,10 +267,10 @@ export function SpaceWaitingListTab() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className={cn(waitingCount > 0 && 'border-yellow-500/50')}>
+        <Card className={cn(waitingCount > 0 && 'border-warning/50')}>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-yellow-600" />
+              <Clock className="h-5 w-5 text-warning" />
               <div>
                 <div className="text-2xl font-bold">{waitingCount}</div>
                 <p className="text-sm text-muted-foreground">{t('waitingList.statusWaiting', 'Waiting')}</p>
@@ -281,7 +281,7 @@ export function SpaceWaitingListTab() {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-green-600" />
+              <Building2 className="h-5 w-5 text-success" />
               <div>
                 <div className="text-2xl font-bold">{availableRooms.length}</div>
                 <p className="text-sm text-muted-foreground">{t('waitingList.availableRooms', 'Available Rooms')}</p>
@@ -292,7 +292,7 @@ export function SpaceWaitingListTab() {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <CheckCircle className="h-5 w-5 text-success" />
               <div>
                 <div className="text-2xl font-bold">
                   {waitingList?.filter(r => r.status === 'fulfilled').length || 0}
@@ -305,7 +305,7 @@ export function SpaceWaitingListTab() {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-orange-600" />
+              <AlertCircle className="h-5 w-5 text-warning" />
               <div>
                 <div className="text-2xl font-bold">
                   {waitingList?.filter(r => r.priority >= 80 && r.status === 'waiting').length || 0}
@@ -378,8 +378,8 @@ export function SpaceWaitingListTab() {
                             <div 
                               className={cn(
                                 'h-full rounded-full',
-                                item.priority >= 80 ? 'bg-red-500' :
-                                item.priority >= 50 ? 'bg-yellow-500' : 'bg-green-500'
+                                item.priority >= 80 ? 'bg-destructive' :
+                                item.priority >= 50 ? 'bg-warning' : 'bg-success'
                               )}
                               style={{ width: `${item.priority}%` }}
                             />

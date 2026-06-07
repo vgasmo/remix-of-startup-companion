@@ -19,9 +19,9 @@ interface StatusCount {
 
 const STATUS_CONFIG: Record<string, { label: string; icon: typeof Clock; colorClass: string }> = {
   imported_unclaimed: { label: 'Importadas', icon: Building2, colorClass: 'text-muted-foreground bg-muted' },
-  pending: { label: 'Pendentes', icon: Clock, colorClass: 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/30' },
-  claimed: { label: 'Reclamadas', icon: Users, colorClass: 'text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30' },
-  active: { label: 'Ativas', icon: CheckCircle2, colorClass: 'text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-900/30' },
+  pending: { label: 'Pendentes', icon: Clock, colorClass: 'text-warning bg-warning/10' },
+  claimed: { label: 'Reclamadas', icon: Users, colorClass: 'text-info bg-info/10' },
+  active: { label: 'Ativas', icon: CheckCircle2, colorClass: 'text-success bg-success/10' },
   blocked: { label: 'Bloqueadas', icon: AlertTriangle, colorClass: 'text-destructive bg-destructive/10' },
 };
 
@@ -80,7 +80,7 @@ export function OnboardingPipelineCard() {
           </CardTitle>
           <div className="flex items-center gap-2">
             {needsAttention > 0 && (
-              <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+              <Badge variant="secondary" className="text-xs bg-warning/10 text-warning">
                 {needsAttention} {t('staffCockpit.needsAttention', { defaultValue: 'aguardam ação' })}
               </Badge>
             )}

@@ -38,10 +38,10 @@ const STATUS_OPTIONS = ['draft', 'pending_signature', 'active', 'suspended', 'te
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground',
-  pending_signature: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-  active: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-  suspended: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-  terminated: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+  pending_signature: 'bg-warning/10 text-warning',
+  active: 'bg-success/10 text-success',
+  suspended: 'bg-warning/10 text-warning',
+  terminated: 'bg-destructive/10 text-destructive',
   expired: 'bg-muted text-muted-foreground',
 };
 
@@ -294,7 +294,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
           <div className={cn(
             'mt-3 flex items-center gap-3 rounded-lg px-3 py-2',
             years >= 3 ? 'bg-destructive/10 text-destructive' :
-            years >= 2 ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300' :
+            years >= 2 ? 'bg-warning/10 text-warning' :
             'bg-primary/5 text-foreground'
           )}>
             <Clock className="h-4 w-4 shrink-0" />
@@ -314,13 +314,13 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
 
           {/* Quick alerts */}
           {(daysUntilEnd !== null && daysUntilEnd <= 90 && daysUntilEnd > 0) && (
-            <div className="mt-2 flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded-lg px-3 py-1.5">
+            <div className="mt-2 flex items-center gap-2 text-xs text-warning bg-warning/10 rounded-lg px-3 py-1.5">
               <AlertTriangle className="h-3.5 w-3.5" />
               {t('lifecycle.renewalWarningDesc', { days: daysUntilEnd })}
             </div>
           )}
           {(daysUntilAnniversary > 0 && daysUntilAnniversary <= 30) && (
-            <div className="mt-2 flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 bg-blue-500/10 rounded-lg px-3 py-1.5">
+            <div className="mt-2 flex items-center gap-2 text-xs text-info bg-info/10 rounded-lg px-3 py-1.5">
               <Info className="h-3.5 w-3.5" />
               {t('lifecycle.anniversary', { year: years + 1 })} — {daysUntilAnniversary} {t('lifecycle.daysRemaining', { count: daysUntilAnniversary })}
             </div>
@@ -646,7 +646,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                     </Label>
                     <div className={cn(
                       'rounded-lg p-3 text-xs',
-                      daysToReview <= 90 ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300' : 'bg-muted/50 text-muted-foreground'
+                      daysToReview <= 90 ? 'bg-warning/10 text-warning' : 'bg-muted/50 text-muted-foreground'
                     )}>
                       <div className="flex items-center justify-between">
                         <span>{t('lifecycle.stepper.nextPriceReview')}</span>
@@ -714,18 +714,18 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
   const founderEmail = (contract as any).legal_representative_email || '';
 
   const STATUS_ICON: Record<string, React.ReactNode> = {
-    completed: <CheckCircle2 className="h-4 w-4 text-green-600" />,
-    signed: <CheckCircle2 className="h-4 w-4 text-green-600" />,
-    sent_for_signature: <Send className="h-4 w-4 text-blue-600" />,
-    sent: <Send className="h-4 w-4 text-blue-600" />,
-    viewed: <FileText className="h-4 w-4 text-blue-500" />,
+    completed: <CheckCircle2 className="h-4 w-4 text-success" />,
+    signed: <CheckCircle2 className="h-4 w-4 text-success" />,
+    sent_for_signature: <Send className="h-4 w-4 text-info" />,
+    sent: <Send className="h-4 w-4 text-info" />,
+    viewed: <FileText className="h-4 w-4 text-info" />,
     declined: <XCircle className="h-4 w-4 text-destructive" />,
     voided: <XCircle className="h-4 w-4 text-muted-foreground" />,
     failed: <AlertTriangle className="h-4 w-4 text-destructive" />,
-    pending_manual: <Clock className="h-4 w-4 text-amber-500" />,
+    pending_manual: <Clock className="h-4 w-4 text-warning" />,
     pending: <Clock className="h-4 w-4 text-muted-foreground" />,
     draft: <FileText className="h-4 w-4 text-muted-foreground" />,
-    ready_to_send: <Send className="h-4 w-4 text-amber-500" />,
+    ready_to_send: <Send className="h-4 w-4 text-warning" />,
   };
 
   const signerStatusLabel = (status: string) => {
@@ -740,8 +740,8 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
   };
 
   const signerStatusColor = (status: string) => {
-    if (status === 'signed' || status === 'completed') return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
-    if (status === 'sent') return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
+    if (status === 'signed' || status === 'completed') return 'bg-success/10 text-success';
+    if (status === 'sent') return 'bg-info/10 text-info';
     if (status === 'declined') return 'bg-destructive/10 text-destructive';
     return 'bg-muted text-muted-foreground';
   };
@@ -848,7 +848,7 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
         <div className="border rounded-lg p-3 space-y-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-full bg-amber-500/10 flex items-center justify-center text-xs font-bold text-amber-700 dark:text-amber-300">2</div>
+              <div className="h-6 w-6 rounded-full bg-warning/10 flex items-center justify-center text-xs font-bold text-warning">2</div>
               <div>
                 <p className="text-sm font-medium">{t('admin.backoffice.contractSigners.secondParty', 'Segundo Outorgante')}</p>
                 {hasBilateral ? (
@@ -878,7 +878,7 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
           </p>
         )}
         {isSent && founderStatus === 'signed' && counterSignerStatus !== 'signed' && counterSignerStatus !== 'completed' && (
-          <p className="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+          <p className="text-xs text-info flex items-center gap-1.5">
             <Send className="h-3.5 w-3.5" />
             Founder já assinou. Aguardando assinatura do representante da Startup Leiria.
           </p>
@@ -896,9 +896,9 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
           {STATUS_ICON[sigStatus || ''] || <Clock className="h-4 w-4 text-muted-foreground" />}
           <Badge className={cn(
             'text-xs',
-            sigStatus === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+            sigStatus === 'completed' ? 'bg-success/10 text-success' :
             sigStatus === 'declined' || sigStatus === 'failed' ? 'bg-destructive/10 text-destructive' :
-            sigStatus === 'sent_for_signature' || sigStatus === 'viewed' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+            sigStatus === 'sent_for_signature' || sigStatus === 'viewed' ? 'bg-info/10 text-info' :
             'bg-muted text-muted-foreground'
           )}>
             {t(`contractDetail.sigStatus.${sigStatus}`, { defaultValue: sigStatus || 'N/A' })}
@@ -1066,7 +1066,7 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
           <Button 
             size="sm" 
             variant="default"
-            className="w-full gap-2 mt-4 bg-green-600 hover:bg-green-700"
+            className="w-full gap-2 mt-4 bg-success hover:bg-success"
             onClick={async () => {
               const result = await canonicalMarkAsSigned(contract.id, contract.workspace_id || null);
               if (!result.success) {

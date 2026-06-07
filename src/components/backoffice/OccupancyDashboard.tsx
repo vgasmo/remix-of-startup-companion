@@ -100,7 +100,7 @@ export function OccupancyDashboard() {
                 <p className="text-xs text-muted-foreground">{t('admin.backoffice.occupancyDashboard.occupancyRate', { defaultValue: 'Taxa de Ocupação' })}</p>
                 <p className="text-2xl font-bold">{globalStats.rate}%</p>
               </div>
-              <div className={`p-2 rounded-lg ${globalStats.rate >= 80 ? 'bg-green-100 text-green-600' : globalStats.rate >= 50 ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'}`}>
+              <div className={`p-2 rounded-lg ${globalStats.rate >= 80 ? 'bg-success/10 text-success' : globalStats.rate >= 50 ? 'bg-warning/10 text-warning' : 'bg-destructive/10 text-destructive'}`}>
                 {globalStats.rate >= 80 ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
               </div>
             </div>
@@ -193,10 +193,10 @@ export function OccupancyDashboard() {
 
       {/* ── Expiring Contracts ── */}
       {expiringContracts.length > 0 && (
-        <Card className="rounded-xl border-yellow-500/30">
+        <Card className="rounded-xl border-warning/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+              <AlertTriangle className="h-4 w-4 text-warning" />
               {t('admin.backoffice.occupancyDashboard.expiringContracts', { defaultValue: 'Contratos a Expirar (90 dias)' })}
             </CardTitle>
             <CardDescription>

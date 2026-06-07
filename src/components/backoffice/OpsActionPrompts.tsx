@@ -219,9 +219,9 @@ export function OpsActionPrompts() {
 
   if (visiblePrompts.length === 0) {
     return (
-      <Card className="rounded-xl border-emerald-200 dark:border-emerald-900/40">
+      <Card className="rounded-xl border-success/30">
         <CardContent className="py-6 flex items-center gap-3 justify-center">
-          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+          <CheckCircle2 className="h-5 w-5 text-success" />
           <span className="text-sm text-muted-foreground">
             {t('ops.prompts.allClear', { defaultValue: 'Sem ações pendentes — tudo em ordem!' })}
           </span>
@@ -231,15 +231,15 @@ export function OpsActionPrompts() {
   }
 
   const severityColors = {
-    critical: 'border-red-300 bg-red-50/50 dark:border-red-900/50 dark:bg-red-950/20',
-    warning: 'border-amber-300 bg-amber-50/50 dark:border-amber-900/50 dark:bg-amber-950/20',
-    info: 'border-blue-200 bg-blue-50/30 dark:border-blue-900/50 dark:bg-blue-950/10',
+    critical: 'border-destructive/30 bg-destructive/50 dark:bg-destructive/20',
+    warning: 'border-warning/30 bg-warning/50 dark:bg-warning/20',
+    info: 'border-info/30 bg-info/30 dark:bg-info/10',
   };
 
   const severityIcons = {
-    critical: <AlertTriangle className="h-4 w-4 text-red-500" />,
-    warning: <AlertTriangle className="h-4 w-4 text-amber-500" />,
-    info: <Zap className="h-4 w-4 text-blue-500" />,
+    critical: <AlertTriangle className="h-4 w-4 text-destructive" />,
+    warning: <AlertTriangle className="h-4 w-4 text-warning" />,
+    info: <Zap className="h-4 w-4 text-info" />,
   };
 
   return (

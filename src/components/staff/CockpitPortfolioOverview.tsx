@@ -27,8 +27,8 @@ export function CockpitPortfolioOverview({ workspaces }: CockpitPortfolioOvervie
 
   const healthColorMap: Record<string, string> = {
     critical: 'bg-destructive text-destructive-foreground',
-    at_risk: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
-    healthy: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
+    at_risk: 'bg-warning/15 text-warning',
+    healthy: 'bg-success/15 text-success',
   };
 
   const healthLabelMap: Record<string, string> = {
@@ -82,7 +82,7 @@ export function CockpitPortfolioOverview({ workspaces }: CockpitPortfolioOvervie
                 className="text-xs cursor-pointer flex items-center gap-1"
                 title={t('staffCockpit.onlyStartupPortugalHint', { defaultValue: 'Mostrar apenas startups com estatuto Startup Portugal ativo' })}
               >
-                <ShieldCheck className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                <ShieldCheck className="h-3.5 w-3.5 text-success" />
                 {t('staffCockpit.onlyStartupPortugal', { defaultValue: 'Apenas Startup Portugal' })}
                 <Badge variant="outline" className="ml-1 text-[10px] px-1 py-0">
                   {startupPortugalCount}
@@ -116,7 +116,7 @@ export function CockpitPortfolioOverview({ workspaces }: CockpitPortfolioOvervie
               </span>
             )}
             {atRiskCount > 0 && (
-              <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
+              <span className="flex items-center gap-1 text-warning font-medium">
                 <AlertTriangle className="h-3 w-3" /> {atRiskCount} {t('health.atRisk', { defaultValue: 'em risco' })}
               </span>
             )}
@@ -158,7 +158,7 @@ export function CockpitPortfolioOverview({ workspaces }: CockpitPortfolioOvervie
                       {hasSp && (
                         <Badge
                           variant="outline"
-                          className="text-[10px] px-1.5 py-0 shrink-0 border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                          className="text-[10px] px-1.5 py-0 shrink-0 border-success/30 text-success"
                           title={t('ecosystem.startupPortugalBadge', { defaultValue: 'Estatuto Startup Portugal' })}
                         >
                           <ShieldCheck className="h-2.5 w-2.5 mr-0.5" />
@@ -194,7 +194,7 @@ export function CockpitPortfolioOverview({ workspaces }: CockpitPortfolioOvervie
                         </span>
                       )}
                       {ws.overdueActionsCount === 0 && ws.pendingActionsCount === 0 && (
-                        <span className="flex items-center gap-0.5 text-emerald-600">
+                        <span className="flex items-center gap-0.5 text-success">
                           <CheckCircle2 className="h-2.5 w-2.5" /> {t('staffCockpit.upToDate', { defaultValue: 'Em dia' })}
                         </span>
                       )}

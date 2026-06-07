@@ -177,15 +177,15 @@ export function WorkspaceBulkActionsBar({
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem onClick={() => handleSetPriority('star')}>
-              <span className="w-2 h-2 rounded-full bg-yellow-500 mr-2" />
+              <span className="w-2 h-2 rounded-full bg-warning mr-2" />
               Star
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleSetPriority('high')}>
-              <span className="w-2 h-2 rounded-full bg-amber-500 mr-2" />
+              <span className="w-2 h-2 rounded-full bg-warning mr-2" />
               High
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleSetPriority('standard')}>
-              <span className="w-2 h-2 rounded-full bg-blue-500 mr-2" />
+              <span className="w-2 h-2 rounded-full bg-info mr-2" />
               Standard
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleSetPriority('maintenance')}>

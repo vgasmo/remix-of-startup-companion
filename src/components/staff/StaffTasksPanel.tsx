@@ -30,8 +30,8 @@ const TASK_TYPES = [
 
 const PRIORITY_COLORS: Record<string, string> = {
   low: 'bg-muted text-muted-foreground',
-  medium: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  high: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  medium: 'bg-info/10 text-info',
+  high: 'bg-warning/10 text-warning',
   urgent: 'bg-destructive/10 text-destructive',
 };
 
@@ -144,7 +144,7 @@ function TaskItem({
                 isOverdue
                   ? 'text-destructive font-medium'
                   : isDueToday
-                  ? 'text-amber-600 font-medium'
+                  ? 'text-warning font-medium'
                   : 'text-muted-foreground'
               }`}
             >

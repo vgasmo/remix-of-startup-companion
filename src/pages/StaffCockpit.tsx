@@ -233,7 +233,7 @@ function BackofficeContractsExpiringCard() {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
-          <FileText className="h-4 w-4 text-amber-500" />
+          <FileText className="h-4 w-4 text-warning" />
           {t('staffCockpit.contractsExpiring', { defaultValue: 'Contratos a Expirar (30 dias)' })}
           {contracts.length > 0 && (
             <Badge variant="secondary" className="ml-auto">{contracts.length}</Badge>
@@ -255,7 +255,7 @@ function BackofficeContractsExpiringCard() {
                     {(c.startups as any)?.name}
                   </span>
                 </div>
-                <Badge variant="outline" className="text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-600">
+                <Badge variant="outline" className="text-warning border-warning/30">
                   {t('staffCockpit.expiresOn', { defaultValue: 'Expira em {{date}}', date: c.end_date ? format(new Date(c.end_date), 'dd/MM') : '-' })}
                 </Badge>
               </li>
@@ -300,7 +300,7 @@ function StartupPortugalCertifiedCard() {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
-          <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+          <ShieldCheck className="h-4 w-4 text-success" />
           {t('staffCockpit.startupPortugalTitle', { defaultValue: 'Estatuto Startup Portugal' })}
           {!isLoading && (
             <Badge variant="secondary" className="ml-auto">
@@ -323,7 +323,7 @@ function StartupPortugalCertifiedCard() {
                 <span className="font-medium truncate">{s.name}</span>
                 <Badge
                   variant="outline"
-                  className="text-xs border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                  className="text-xs border-success/30 text-success"
                 >
                   <ShieldCheck className="h-3 w-3 mr-1" />
                   {t('admin.startupsManager.startupPortugal', { defaultValue: 'Startup Portugal' })}

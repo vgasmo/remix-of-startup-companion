@@ -155,7 +155,7 @@ export function ConsultantWorkloadWidget({
                 stat.variant === 'destructive'
                   ? 'border-destructive/30 bg-destructive/5'
                   : stat.variant === 'warning'
-                  ? 'border-amber-300/50 bg-amber-50/50 dark:border-amber-700/30 dark:bg-amber-900/10'
+                  ? 'border-warning/50 bg-warning/50'
                   : 'bg-muted/30'
               }`}
             >
@@ -165,7 +165,7 @@ export function ConsultantWorkloadWidget({
                     stat.variant === 'destructive'
                       ? 'text-destructive'
                       : stat.variant === 'warning'
-                      ? 'text-amber-600 dark:text-amber-400'
+                      ? 'text-warning'
                       : 'text-muted-foreground'
                   }
                 >

@@ -56,10 +56,10 @@ const ROOM_TYPE_ICONS: Record<string, typeof DoorOpen> = {
 
 // Status colors (labels come from i18n)
 const STATUS_COLORS: Record<string, string> = {
-  available: 'bg-green-500',
-  occupied: 'bg-blue-500',
-  maintenance: 'bg-yellow-500',
-  reserved: 'bg-purple-500',
+  available: 'bg-success',
+  occupied: 'bg-info',
+  maintenance: 'bg-warning',
+  reserved: 'bg-primary',
 };
 
 // FloorMapCard component to handle async URL loading

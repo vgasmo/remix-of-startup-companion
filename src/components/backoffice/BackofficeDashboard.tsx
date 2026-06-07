@@ -226,7 +226,7 @@ export function BackofficeDashboard() {
       {/* ═══════════════════ HERO METRICS ═══════════════════ */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Occupancy Rate */}
-        <Card className={cn('rounded-2xl', data.occupancyRate < 70 && 'border-yellow-500/50')}>
+        <Card className={cn('rounded-2xl', data.occupancyRate < 70 && 'border-warning/50')}>
           <CardContent className="pt-5">
             <div className="flex items-center justify-between">
               <div>
@@ -249,7 +249,7 @@ export function BackofficeDashboard() {
 
 
         {/* Expiring Contracts (30 days) */}
-        <Card className={cn('rounded-2xl', data.expiringContractsCount > 0 && 'border-red-500/50')}>
+        <Card className={cn('rounded-2xl', data.expiringContractsCount > 0 && 'border-destructive/50')}>
           <CardContent className="pt-5">
             <div className="flex items-center justify-between">
               <div>
@@ -261,8 +261,8 @@ export function BackofficeDashboard() {
                   {t('admin.backoffice.opsHub.next30Days', { defaultValue: 'next 30 days' })}
                 </p>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-red-500/10 flex items-center justify-center">
-                <CalendarClock className="h-6 w-6 text-red-600" />
+              <div className="h-12 w-12 rounded-xl bg-destructive/10 flex items-center justify-center">
+                <CalendarClock className="h-6 w-6 text-destructive" />
               </div>
             </div>
           </CardContent>
@@ -278,7 +278,7 @@ export function BackofficeDashboard() {
                   {t('admin.backoffice.opsHub.availableRooms', { defaultValue: 'Available Rooms' })}
                 </p>
                 {data.waitingListCount > 0 && (
-                  <p className="text-xs text-orange-600">
+                  <p className="text-xs text-warning">
                     {data.waitingListCount} {t('admin.backoffice.opsHub.inWaitlist', { defaultValue: 'in waitlist' })}
                   </p>
                 )}
@@ -345,10 +345,10 @@ export function BackofficeDashboard() {
           </Card>
 
           {/* Alerts (compact) */}
-          <Card className={cn('rounded-2xl', data.criticalAlerts > 0 && 'border-red-500/50')}>
+          <Card className={cn('rounded-2xl', data.criticalAlerts > 0 && 'border-destructive/50')}>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-base">
-                <AlertTriangle className={cn('h-5 w-5', data.criticalAlerts > 0 ? 'text-red-500' : 'text-muted-foreground')} />
+                <AlertTriangle className={cn('h-5 w-5', data.criticalAlerts > 0 ? 'text-destructive' : 'text-muted-foreground')} />
                 {t('admin.backoffice.dashboardPanel.alerts')}
                 {data.criticalAlerts > 0 && (
                   <Badge variant="destructive" className="ml-auto">{data.criticalAlerts}</Badge>
@@ -358,7 +358,7 @@ export function BackofficeDashboard() {
             <CardContent>
               {data.alerts.length === 0 ? (
                 <div className="flex items-center gap-2 text-muted-foreground py-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 text-success" />
                   <span className="text-sm">{t('admin.backoffice.dashboardPanel.noAlerts')}</span>
                 </div>
               ) : (
@@ -369,16 +369,16 @@ export function BackofficeDashboard() {
                         key={`${alert.id}-${idx}`}
                         className={cn(
                           'p-2.5 rounded-lg border flex items-center gap-2 text-sm cursor-pointer hover:bg-muted/50 transition-colors',
-                          alert.severity === 'critical' && 'bg-red-50/50 border-red-200 dark:bg-red-950/10 dark:border-red-800/50',
-                          alert.severity === 'warning' && 'bg-yellow-50/50 border-yellow-200 dark:bg-yellow-950/10 dark:border-yellow-800/50',
-                          alert.severity === 'info' && 'bg-blue-50/50 border-blue-200 dark:bg-blue-950/10 dark:border-blue-800/50',
+                          alert.severity === 'critical' && 'bg-destructive/50 border-destructive/30 dark:bg-destructive/10',
+                          alert.severity === 'warning' && 'bg-warning/50 border-warning/30 dark:bg-warning/10',
+                          alert.severity === 'info' && 'bg-info/50 border-info/30 dark:bg-info/10',
                         )}
                         {...clickableProps(() => navigate(`/workspaces/${alert.id}`))}
                       >
                         <div className={cn(
-                          alert.severity === 'critical' && 'text-red-600',
-                          alert.severity === 'warning' && 'text-yellow-600',
-                          alert.severity === 'info' && 'text-blue-600',
+                          alert.severity === 'critical' && 'text-destructive',
+                          alert.severity === 'warning' && 'text-warning',
+                          alert.severity === 'info' && 'text-info',
                         )}>
                           {alert.alertType === 'year3' ? <AlertCircle className="h-4 w-4" /> :
                            alert.alertType === 'expiring' ? <CalendarClock className="h-4 w-4" /> :
@@ -433,7 +433,7 @@ export function BackofficeDashboard() {
               <CardContent>
                 {data.attentionContracts.length === 0 ? (
                   <div className="flex items-center gap-2 text-muted-foreground py-6 justify-center">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     <span className="text-sm">{t('admin.backoffice.opsHub.allContractsGood', { defaultValue: 'All contracts in good standing' })}</span>
                   </div>
                 ) : (
@@ -442,8 +442,8 @@ export function BackofficeDashboard() {
                       {data.attentionContracts.map((contract: ContractWithDetails) => {
                         const statusColors: Record<string, string> = {
                           draft: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-                          pending_signature: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-                          suspended: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+                          pending_signature: 'bg-warning/10 text-warning',
+                          suspended: 'bg-warning/10 text-warning',
                         };
                         return (
                           <div
@@ -492,10 +492,10 @@ export function BackofficeDashboard() {
         <CardContent>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { key: 'under1year', label: t('admin.backoffice.dashboardPanel.under1Year'), color: 'bg-green-500' },
-              { key: '1to2years', label: t('admin.backoffice.dashboardPanel.1to2Years'), color: 'bg-blue-500' },
-              { key: '2to3years', label: t('admin.backoffice.dashboardPanel.2to3Years'), color: 'bg-yellow-500' },
-              { key: 'over3years', label: t('admin.backoffice.dashboardPanel.over3Years'), color: 'bg-red-500' },
+              { key: 'under1year', label: t('admin.backoffice.dashboardPanel.under1Year'), color: 'bg-success' },
+              { key: '1to2years', label: t('admin.backoffice.dashboardPanel.1to2Years'), color: 'bg-info' },
+              { key: '2to3years', label: t('admin.backoffice.dashboardPanel.2to3Years'), color: 'bg-warning' },
+              { key: 'over3years', label: t('admin.backoffice.dashboardPanel.over3Years'), color: 'bg-destructive' },
             ].map(item => {
               const count = data.contractsByAge[item.key] || 0;
               const percentage = data.totalActiveContracts > 0
@@ -514,11 +514,11 @@ export function BackofficeDashboard() {
             })}
           </div>
           {data.contractsByAge['over3years'] > 0 && (
-            <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
+            <div className="mt-4 p-3 bg-destructive/10 dark:bg-destructive/20 rounded-lg border border-destructive/30">
               <div className="flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
+                <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
                 <div className="text-sm">
-                  <span className="font-medium text-red-700 dark:text-red-400">
+                  <span className="font-medium text-destructive">
                     {data.contractsByAge['over3years']} {t('admin.backoffice.dashboardPanel.startupsOver3Years')}
                   </span>
                   <p className="text-muted-foreground mt-0.5">

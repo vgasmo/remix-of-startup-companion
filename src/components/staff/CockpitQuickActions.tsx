@@ -164,11 +164,11 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
               {t('quickActions.addAction')}
             </Button>
             <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => navigate('/my-workspaces?filter=attention')}>
-              <Bell className="h-3.5 w-3.5 mr-1 text-amber-500" />
+              <Bell className="h-3.5 w-3.5 mr-1 text-warning" />
               {t('quickActions.viewAlerts')}
             </Button>
             <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => navigate('/consultor-tools')}>
-              <CheckCircle2 className="h-3.5 w-3.5 mr-1 text-green-500" />
+              <CheckCircle2 className="h-3.5 w-3.5 mr-1 text-success" />
               {t('consultorTools.title')}
             </Button>
           </div>
@@ -236,7 +236,7 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
             className="h-auto py-3 flex flex-col gap-1"
             onClick={() => navigate('/my-workspaces?filter=attention')}
           >
-            <Bell className="h-5 w-5 text-amber-500" />
+            <Bell className="h-5 w-5 text-warning" />
             <span className="text-xs">{t('quickActions.viewAlerts')}</span>
           </Button>
           <Button 
@@ -244,7 +244,7 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
             className="h-auto py-3 flex flex-col gap-1"
             onClick={() => navigate('/consultor-tools')}
           >
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
+            <CheckCircle2 className="h-5 w-5 text-success" />
             <span className="text-xs">{t('consultorTools.title')}</span>
           </Button>
         </div>

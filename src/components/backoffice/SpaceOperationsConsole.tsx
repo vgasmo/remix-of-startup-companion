@@ -185,20 +185,20 @@ function StatusBadge({ status, type }: { status: string | null; type: 'room' | '
 
   const colors: Record<string, string> = {
     // Room
-    available: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-    occupied: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    maintenance: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-    reserved: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+    available: 'bg-success/10 text-success',
+    occupied: 'bg-info/10 text-info',
+    maintenance: 'bg-warning/10 text-warning',
+    reserved: 'bg-primary/10 text-primary',
     // Workspace
-    active: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-    claimed: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    active: 'bg-success/10 text-success',
+    claimed: 'bg-info/10 text-info',
+    pending: 'bg-warning/10 text-warning',
     imported_unclaimed: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
-    blocked: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+    blocked: 'bg-destructive/10 text-destructive',
     // Contract
     draft: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-    pending_signature: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-    suspended: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+    pending_signature: 'bg-warning/10 text-warning',
+    suspended: 'bg-warning/10 text-warning',
   };
 
   const labels: Record<string, string> = {
@@ -244,9 +244,9 @@ function WarningBadges({ warnings }: { warnings: string[] }) {
         const info = warningLabels[w];
         if (!info) return null;
         const color = info.severity === 'error'
-          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+          ? 'bg-destructive/10 text-destructive'
           : info.severity === 'warning'
-          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+          ? 'bg-warning/10 text-warning'
           : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300';
         return (
           <Badge key={w} className={cn('text-[9px] border-0 gap-0.5', color)}>
@@ -358,27 +358,27 @@ export function SpaceOperationsConsole() {
             <p className="text-xs text-muted-foreground">{t('ops.console.totalRooms', { defaultValue: 'Total Salas' })}</p>
           </CardContent>
         </Card>
-        <Card className="rounded-xl border-blue-200 dark:border-blue-900/50">
+        <Card className="rounded-xl border-info/30">
           <CardContent className="pt-4 pb-3">
-            <div className="text-2xl font-bold text-blue-600">{stats.occupied}</div>
+            <div className="text-2xl font-bold text-info">{stats.occupied}</div>
             <p className="text-xs text-muted-foreground">{t('ops.console.occupied', { defaultValue: 'Ocupadas' })}</p>
           </CardContent>
         </Card>
-        <Card className="rounded-xl border-emerald-200 dark:border-emerald-900/50">
+        <Card className="rounded-xl border-success/30">
           <CardContent className="pt-4 pb-3">
-            <div className="text-2xl font-bold text-emerald-600">{stats.available}</div>
+            <div className="text-2xl font-bold text-success">{stats.available}</div>
             <p className="text-xs text-muted-foreground">{t('ops.console.available', { defaultValue: 'Disponíveis' })}</p>
           </CardContent>
         </Card>
-        <Card className={cn('rounded-xl', stats.withWarnings > 0 && 'border-amber-300 dark:border-amber-900/50')}>
+        <Card className={cn('rounded-xl', stats.withWarnings > 0 && 'border-warning/30')}>
           <CardContent className="pt-4 pb-3">
-            <div className="text-2xl font-bold text-amber-600">{stats.withWarnings}</div>
+            <div className="text-2xl font-bold text-warning">{stats.withWarnings}</div>
             <p className="text-xs text-muted-foreground">{t('ops.console.withWarnings', { defaultValue: 'Com Avisos' })}</p>
           </CardContent>
         </Card>
-        <Card className={cn('rounded-xl', stats.noContract > 0 && 'border-red-300 dark:border-red-900/50')}>
+        <Card className={cn('rounded-xl', stats.noContract > 0 && 'border-destructive/30')}>
           <CardContent className="pt-4 pb-3">
-            <div className="text-2xl font-bold text-red-600">{stats.noContract}</div>
+            <div className="text-2xl font-bold text-destructive">{stats.noContract}</div>
             <p className="text-xs text-muted-foreground">{t('ops.console.missingContract', { defaultValue: 'Sem Contrato' })}</p>
           </CardContent>
         </Card>
@@ -431,7 +431,7 @@ export function SpaceOperationsConsole() {
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 text-amber-700 border-amber-300 hover:bg-amber-50 dark:text-amber-400 dark:border-amber-800 dark:hover:bg-amber-900/20"
+            className="gap-2 text-warning border-warning/30 hover:bg-warning/10 dark:hover:bg-warning/20"
             disabled={cleanupMutation.isPending}
             onClick={() => cleanupMutation.mutate(staleRoomIds)}
           >
@@ -470,7 +470,7 @@ export function SpaceOperationsConsole() {
                     key={rec.room_id}
                     className={cn(
                       'cursor-pointer transition-colors hover:bg-muted/50',
-                      rec.warnings.length > 0 && 'bg-amber-50/30 dark:bg-amber-950/10'
+                      rec.warnings.length > 0 && 'bg-warning/30 dark:bg-warning/10'
                     )}
                     onClick={() => handleOpenDetail(rec)}
                   >
@@ -526,11 +526,11 @@ export function SpaceOperationsConsole() {
               <div className="mt-6 space-y-5">
                 {/* Warnings */}
                 {selectedRecord.warnings.length > 0 && (
-                  <Card className="border-amber-300 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20 rounded-xl">
+                  <Card className="border-warning/30 bg-warning/50 dark:bg-warning/20 rounded-xl">
                     <CardContent className="pt-4 pb-3">
                       <div className="flex items-center gap-2 mb-2">
-                        <AlertTriangle className="h-4 w-4 text-amber-600" />
-                        <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">
+                        <AlertTriangle className="h-4 w-4 text-warning" />
+                        <span className="text-sm font-semibold text-warning">
                           {t('ops.console.dataWarnings', { defaultValue: 'Avisos de Dados' })}
                         </span>
                       </div>
