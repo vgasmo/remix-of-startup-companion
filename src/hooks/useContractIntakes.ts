@@ -37,7 +37,6 @@ export interface ContractIntake {
   website: string | null;
   documents_json: Record<string, any> | null;
   missing_documents: string[] | null;
-  intake_token: string | null;
   intake_token_expires_at: string | null;
   reviewed_by: string | null;
   reviewed_at: string | null;
