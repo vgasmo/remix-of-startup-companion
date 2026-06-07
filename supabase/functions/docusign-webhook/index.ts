@@ -189,7 +189,7 @@ Deno.serve(async (req) => {
       updatePayload.onboarding_completed_at = new Date().toISOString()
       updatePayload.provider_completed_at = new Date().toISOString()
       updatePayload.canonical_signature_status = 'completed'
-      updatePayload.onboarding_token = null
+      updatePayload.onboarding_token_hash = null
       updatePayload.onboarding_token_expires_at = null
     } else if (status === 'declined') {
       updatePayload.canonical_signature_status = 'declined'

@@ -252,12 +252,13 @@ Deno.serve(async (req) => {
 
       // === Generate onboarding token ===
       const onboardingToken = generateToken()
+      const onboardingTokenHashStore = await sha256Hex(onboardingToken)
       const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
 
       const { error: updateErr } = await supabase
         .from('startup_contracts')
         .update({
-          onboarding_token: onboardingToken,
+          onboarding_token_hash: onboardingTokenHashStore,
           onboarding_token_expires_at: expiresAt.toISOString(),
         })
         .eq('id', contractId)

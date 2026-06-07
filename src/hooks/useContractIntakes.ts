@@ -157,6 +157,9 @@ export function useCreateIntake() {
       const tokenArr = new Uint8Array(32);
       crypto.getRandomValues(tokenArr);
       const token = Array.from(tokenArr, b => b.toString(16).padStart(2, '0')).join('');
+      // Hash the token before storing (plaintext never persisted)
+      const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+      const tokenHash = Array.from(new Uint8Array(hashBuffer), b => b.toString(16).padStart(2, '0')).join('');
       const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
       const { data, error } = await supabase
@@ -167,7 +170,7 @@ export function useCreateIntake() {
           organization_name: params.organizationName,
           legal_representative_email: params.contactEmail,
           legal_representative_name: params.contactName,
-          intake_token: token,
+          intake_token_hash: tokenHash,
           intake_token_expires_at: expiresAt.toISOString(),
           created_by: user?.id,
           assigned_to: params.assignedTo || user?.id,
