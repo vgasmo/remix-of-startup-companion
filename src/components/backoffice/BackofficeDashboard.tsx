@@ -19,6 +19,7 @@ import { format, differenceInMonths, differenceInDays, addYears } from 'date-fns
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
+import { BillingSnapshotCard } from './BillingSnapshotCard';
 import { BuildingOccupancyPanel } from './BuildingOccupancyPanel';
 import { ContractLifecycleEventsCard } from './ContractLifecycleEventsCard';
 import { InteractiveFloorMapViewer } from './InteractiveFloorMapViewer';
