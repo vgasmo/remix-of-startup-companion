@@ -31,8 +31,8 @@ export function ClaimedWorkspaceBanner({ founderState }: ClaimedWorkspaceBannerP
     return (
       <Card className="rounded-xl border-warning/60 dark:border-warning/40 bg-warning/5 dark:bg-warning/5">
         <CardContent className="py-4 flex items-start gap-3">
-          <div className="h-10 w-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
-            <Clock className="h-5 w-5 text-amber-600" />
+          <div className="h-10 w-10 rounded-xl bg-warning/10 dark:bg-warning/20 flex items-center justify-center shrink-0">
+            <Clock className="h-5 w-5 text-warning" />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-sm">
