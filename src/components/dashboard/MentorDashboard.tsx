@@ -139,21 +139,24 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
   // Enhanced empty state
   if (workspaces.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-0 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-accent/5 to-transparent" />
-        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-accent/10 to-transparent rounded-tr-full" />
-        <CardContent className="relative p-8 md:p-12 text-center">
-          <div className="h-20 w-20 mx-auto rounded-3xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mb-6 ring-1 ring-primary/20 shadow-lg shadow-primary/10">
-            <Heart className="h-10 w-10 text-primary" />
+      <BrandSurface
+        intensity="hero"
+        className="surface-hero rounded-2xl overflow-hidden border border-border/40"
+      >
+        <div className="relative p-8 md:p-12 text-center">
+          <div className="h-20 w-20 mx-auto rounded-3xl bg-primary/15 flex items-center justify-center mb-6 ring-1 ring-primary/20 shadow-lg shadow-primary/10">
+            <Heart className="h-10 w-10 text-primary-strong" />
           </div>
-          <h3 className="font-heading text-xl md:text-2xl font-bold mb-3">
+          <p className="label-eyebrow mb-2">
+            {t('mentor.hero.eyebrow', { defaultValue: 'Painel do mentor' })}
+          </p>
+          <h3 className="text-title mb-3">
             {t('mentor.welcomeTitle', 'Bem-vindo ao Painel de Mentor')}
           </h3>
           <p className="text-muted-foreground mb-2 max-w-md mx-auto">
             {t('mentor.noStartupsAssignedDesc', 'Ainda não tens startups atribuídas. Quando a equipa do programa te associar a startups, elas aparecerão aqui com toda a informação para preparares as tuas sessões.')}
           </p>
-          <p className="text-sm text-primary/70 mb-6 max-w-sm mx-auto flex items-center justify-center gap-1.5">
+          <p className="text-sm text-primary-strong mb-6 max-w-sm mx-auto flex items-center justify-center gap-1.5">
             <Sparkles className="h-4 w-4" />
             {t('mentor.thankYouMessage', 'O teu tempo e experiência fazem toda a diferença para estas startups.')}
           </p>
@@ -169,10 +172,11 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
           <p className="text-xs text-muted-foreground mt-6 max-w-sm mx-auto">
             {t('mentor.emptyHint', 'Enquanto espera, pode consultar o Guia Rápido na barra lateral para se familiarizar com a plataforma.')}
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </BrandSurface>
     );
   }
+
 
   const sessionsThisWeek = upcomingMeetings.length;
   const hour = new Date().getHours();
