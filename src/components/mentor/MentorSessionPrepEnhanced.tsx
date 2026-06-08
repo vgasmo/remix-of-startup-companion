@@ -121,18 +121,18 @@ export function MentorSessionPrepEnhanced({ workspaces }: MentorSessionPrepEnhan
                 key={item.label}
                 className={cn(
                   'flex items-center gap-2.5 p-2 rounded-lg text-xs cursor-pointer transition-colors hover:bg-muted/60',
-                  !item.done && 'bg-amber-50/50 dark:bg-amber-950/10'
+                  !item.done && 'bg-warning/5 dark:bg-warning/5'
                 )}
                 {...clickableProps(() => navigate(item.path))}
               >
                 <div className={cn(
                   'h-5 w-5 rounded flex items-center justify-center shrink-0',
-                  item.done ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
+                  item.done ? 'bg-success/10 dark:bg-success/30' : 'bg-warning/10 dark:bg-warning/30'
                 )}>
                   {item.done ? (
-                    <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                    <CheckCircle2 className="h-3 w-3 text-success" />
                   ) : (
-                    <AlertCircle className="h-3 w-3 text-amber-600" />
+                    <AlertCircle className="h-3 w-3 text-warning" />
                   )}
                 </div>
                 <span className="flex-1">{item.label}</span>

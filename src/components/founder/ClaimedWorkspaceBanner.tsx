@@ -29,10 +29,10 @@ export function ClaimedWorkspaceBanner({ founderState }: ClaimedWorkspaceBannerP
 
   if (founderState.status === 'has_pending_workspace') {
     return (
-      <Card className="rounded-xl border-amber-300 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+      <Card className="rounded-xl border-warning/60 dark:border-warning/40 bg-warning/5 dark:bg-warning/5">
         <CardContent className="py-4 flex items-start gap-3">
-          <div className="h-10 w-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
-            <Clock className="h-5 w-5 text-amber-600" />
+          <div className="h-10 w-10 rounded-xl bg-warning/10 dark:bg-warning/20 flex items-center justify-center shrink-0">
+            <Clock className="h-5 w-5 text-warning" />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-sm">
@@ -56,8 +56,8 @@ export function ClaimedWorkspaceBanner({ founderState }: ClaimedWorkspaceBannerP
               </Badge>
             </div>
             {/* Next steps guidance */}
-            <div className="mt-3 pt-3 border-t border-amber-200 dark:border-amber-800/50">
-              <p className="text-xs font-medium text-amber-700 dark:text-amber-400 flex items-center gap-1">
+            <div className="mt-3 pt-3 border-t border-warning/30 dark:border-warning/30">
+              <p className="text-xs font-medium text-warning flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" />
                 {t('founder.claimed.nextSteps', { defaultValue: 'Próximos passos' })}
               </p>

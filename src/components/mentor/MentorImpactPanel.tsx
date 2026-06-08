@@ -55,19 +55,19 @@ export function MentorImpactPanel({ workspaces }: MentorImpactPanelProps) {
       label: t('mentorImpact.recentSessions', { defaultValue: 'Sessões recentes (30d)' }), 
       value: metrics.withRecentSession, 
       icon: Calendar, 
-      color: 'text-emerald-600 dark:text-emerald-400' 
+      color: 'text-success' 
     },
     { 
       label: t('mentorImpact.staleFollowup', { defaultValue: 'Follow-up em atraso' }), 
       value: metrics.staleCount, 
       icon: AlertTriangle, 
-      color: metrics.staleCount > 0 ? 'text-amber-600' : 'text-muted-foreground' 
+      color: metrics.staleCount > 0 ? 'text-warning' : 'text-muted-foreground' 
     },
     { 
       label: t('mentorImpact.healthyMomentum', { defaultValue: 'Momentum saudável' }), 
       value: metrics.healthyCount, 
       icon: TrendingUp, 
-      color: 'text-emerald-600 dark:text-emerald-400' 
+      color: 'text-success' 
     },
   ];
 

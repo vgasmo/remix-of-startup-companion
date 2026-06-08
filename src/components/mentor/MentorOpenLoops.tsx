@@ -107,10 +107,10 @@ export function MentorOpenLoops({ workspaces }: MentorOpenLoopsProps) {
   if (loops.length === 0) return null;
 
   return (
-    <Card className="border-amber-200/50 dark:border-amber-800/30 rounded-2xl">
+    <Card className="border-warning/30 dark:border-warning/30 rounded-2xl">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <Clock className="h-4 w-4 text-amber-500" />
+          <Clock className="h-4 w-4 text-warning" />
           {t('mentor.openLoops.title', { defaultValue: 'Precisa da Sua Atenção' })}
           <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
             {loops.length}
@@ -126,20 +126,20 @@ export function MentorOpenLoops({ workspaces }: MentorOpenLoopsProps) {
                 key={`${loop.workspaceId}-${loop.type}-${idx}`}
                 className={cn(
                   'flex items-center gap-3 p-2.5 rounded-xl text-sm cursor-pointer transition-colors hover:bg-muted/60',
-                  loop.urgency === 'high' && 'bg-red-50/50 dark:bg-red-950/10'
+                  loop.urgency === 'high' && 'bg-destructive/5 dark:bg-destructive/5'
                 )}
                 {...clickableProps(() => navigate(loop.actionPath))}
               >
                 <div className={cn(
                   'h-7 w-7 rounded-lg flex items-center justify-center shrink-0',
-                  loop.urgency === 'high' ? 'bg-red-100 dark:bg-red-900/30' :
-                  loop.urgency === 'medium' ? 'bg-amber-100 dark:bg-amber-900/30' :
+                  loop.urgency === 'high' ? 'bg-destructive/10 dark:bg-destructive/30' :
+                  loop.urgency === 'medium' ? 'bg-warning/10 dark:bg-warning/30' :
                   'bg-muted'
                 )}>
                   <Icon className={cn(
                     'h-3.5 w-3.5',
-                    loop.urgency === 'high' ? 'text-red-600' :
-                    loop.urgency === 'medium' ? 'text-amber-600' :
+                    loop.urgency === 'high' ? 'text-destructive' :
+                    loop.urgency === 'medium' ? 'text-warning' :
                     'text-muted-foreground'
                   )} />
                 </div>
