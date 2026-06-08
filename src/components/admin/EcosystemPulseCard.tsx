@@ -22,7 +22,7 @@ function EcosystemPulseCardInner() {
     staleTime: 60_000,
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10);
-      const [contracts, atRisk, pending, programs] = await Promise.all([
+      const [contracts, atRisk, pending, programs] = await Promise.allSettled([
         supabase
           .from('startup_contracts' as any)
           .select('id', { count: 'exact', head: true })
@@ -40,11 +40,13 @@ function EcosystemPulseCardInner() {
           .select('id', { count: 'exact', head: true })
           .eq('is_active', true),
       ]);
+      const getCount = (r: PromiseSettledResult<any>) =>
+        r.status === 'fulfilled' ? (r.value?.count ?? 0) : 0;
       return {
-        contracts: contracts.count ?? 0,
-        atRisk: atRisk.count ?? 0,
-        pending: pending.count ?? 0,
-        programs: programs.count ?? 0,
+        contracts: getCount(contracts),
+        atRisk: getCount(atRisk),
+        pending: getCount(pending),
+        programs: getCount(programs),
         today,
       };
     },
