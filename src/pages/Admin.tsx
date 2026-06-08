@@ -266,6 +266,12 @@ export default function Admin() {
           <AdminSurveysManager />
         </TabsContent>
 
+        <TabsContent value="system-health">
+          <SystemHealthDashboard />
+        </TabsContent>
+
+
+
         {/* CRM/Funnel content moved to dedicated /crm page */}
       </Tabs>
     </AppLayout>
