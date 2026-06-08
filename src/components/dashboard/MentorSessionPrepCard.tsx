@@ -206,7 +206,7 @@ export function MentorSessionPrepCard({ workspace, meetingDate, className }: Men
                         <li key={idx} className={cn(
                           'flex items-center gap-2 text-sm p-2 rounded-lg',
                           item.priority === 'high' && 'bg-destructive/5 text-destructive',
-                          item.priority === 'medium' && 'bg-amber-500/5 text-amber-700 dark:text-amber-400',
+                          item.priority === 'medium' && 'bg-warning/5 text-warning',
                           item.priority === 'low' && 'bg-muted/50 text-muted-foreground'
                         )}>
                           <Icon className="h-3.5 w-3.5 flex-shrink-0" />
@@ -232,7 +232,7 @@ export function MentorSessionPrepCard({ workspace, meetingDate, className }: Men
                         <li key={idx} className={cn(
                           'flex items-center gap-2 text-sm p-2 rounded-lg',
                           item.priority === 'high' && 'bg-destructive/5 text-destructive',
-                          item.priority === 'medium' && 'bg-amber-500/5 text-amber-700 dark:text-amber-400',
+                          item.priority === 'medium' && 'bg-warning/5 text-warning',
                           item.priority === 'low' && 'bg-muted/50 text-muted-foreground'
                         )}>
                           <Icon className="h-3.5 w-3.5 flex-shrink-0" />
