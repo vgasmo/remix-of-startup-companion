@@ -128,32 +128,17 @@ export function OneThingToday({ workspace, className }: OneThingTodayProps) {
 
   if (!recommendation) {
     return (
-      <Card key="caught-up" className={cn(
-        'relative overflow-hidden border-success/20 animate-scale-in',
-        'bg-gradient-to-r from-success/10 via-success/5 to-transparent',
-        className
-      )}>
-
-        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-success/10 to-transparent rounded-bl-full" />
-        <CardContent className="p-4 relative">
-          <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-success/10 flex items-center justify-center ring-1 ring-success/20">
-              <CheckCircle2 className="h-5 w-5 text-success" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-success">
-                {t('oneThingToday.allCaughtUp')}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {t('oneThingToday.keepMomentum')}
-              </p>
-            </div>
-            <Sparkles className="h-5 w-5 text-success/50" />
-          </div>
-        </CardContent>
-      </Card>
+      <EmptyState
+        key="caught-up"
+        icon={CheckCircle2}
+        tone="success"
+        title={t('oneThingToday.allCaughtUp')}
+        description={t('oneThingToday.keepMomentum')}
+        className={cn('animate-scale-in', className)}
+      />
     );
   }
+
 
   const Icon = recommendation.icon;
   const isDestructive = recommendation.variant === 'destructive';
