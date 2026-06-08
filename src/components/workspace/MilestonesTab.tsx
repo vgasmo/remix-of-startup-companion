@@ -117,7 +117,28 @@ export function MilestonesTab({ workspaceId, canWrite }: MilestonesTabProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+    <div className="space-y-4 relative">
+      {celebrating && (
+        <div
+          className="pointer-events-none fixed inset-0 z-[60] flex flex-col items-center justify-center motion-reduce:hidden"
+          aria-hidden="true"
+        >
+          <div className="animate-scale-in flex flex-col items-center gap-3">
+            <div className="rounded-full bg-primary/10 p-6 ring-4 ring-primary/20 shadow-[0_0_60px_-10px_hsl(var(--primary)/0.55)]">
+              <BrandChevron size={56} color="lime" strokeWidth={3} />
+            </div>
+            <div className="rounded-full bg-card/95 backdrop-blur px-4 py-1.5 border border-primary/30 shadow-lg">
+              <span className="label-eyebrow text-primary-strong text-[11px]">
+                {t('milestones.levelUp', { defaultValue: 'Level up' })}
+              </span>
+              <span className="ml-2 text-sm font-semibold text-foreground">
+                {toTitleCase(celebrating.title)}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-64 w-full" />
       </div>
