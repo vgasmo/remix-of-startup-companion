@@ -48,10 +48,14 @@ import { PendingContractBanner } from '@/components/founder/PendingContractBanne
 import { FounderProgressRings } from '@/components/dashboard/FounderProgressRings';
 import { FounderStoryTimeline } from '@/components/founder/FounderStoryTimeline';
 import { useAutoMaterializeDeliverables } from '@/hooks/useAutoMaterializeDeliverables';
+import { useActionItems } from '@/hooks/useActionItems';
+import { useUpcomingSessions } from '@/hooks/useUpcomingSessions';
 import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
 import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
 import { MySupportTeamCard } from '@/components/founder/MySupportTeamCard';
 import { BrandSurface } from '@/components/ui/BrandSurface';
+import { WelcomeSplash } from '@/components/founder/WelcomeSplash';
+import { useIsFirstWeek } from '@/hooks/useIsFirstWeek';
 // NextBestActionFounder removed from beginner view — kept available for power users via OneThingToday.
 
 interface FounderDashboardProps {
@@ -214,9 +218,12 @@ export const FounderDashboard = memo(function FounderDashboard({
   const handleAddAction = () => navigate(`/workspace/${workspace.id}?tab=milestones-actions-actions`);
   const handleScheduleSession = () => navigate(`/workspace/${workspace.id}?tab=agenda`);
 
+  const isFirstWeek = useIsFirstWeek(profile?.created_at, (workspace as any)?.created_at);
+
   return (
     <div className="space-y-6 max-w-5xl animate-fade-in">
 
+      <WelcomeSplash userId={profile?.id} />
       <FounderWelcomeWizard workspaceId={workspace?.id ?? null} />
       {/* Multi-workspace notice */}
       {workspaces.length > 1 && (
@@ -341,6 +348,10 @@ export const FounderDashboard = memo(function FounderDashboard({
                     ? ` · ${t('founder.hero.calmHint', { defaultValue: 'hoje basta um passo.' })}`
                     : ''}
                 </p>
+                <WeeklyGreetingSubline
+                  userId={profile?.id}
+                  workspaceId={workspace.id}
+                />
               </div>
             </div>
           </BrandSurface>
@@ -352,7 +363,7 @@ export const FounderDashboard = memo(function FounderDashboard({
 
       {/* 2. Today's focus — THE single primary CTA */}
       <div className="animate-fade-in-up stagger-2">
-        <OneThingToday workspace={workspace} />
+        <OneThingToday workspace={workspace} isFirstWeek={isFirstWeek} />
       </div>
 
       {/* 2.5 My Support Team — relationship awareness */}
@@ -369,8 +380,9 @@ export const FounderDashboard = memo(function FounderDashboard({
 
       {/* 3. Consultant / next session */}
       <div className="animate-fade-in-up stagger-4">
-        <FounderBookingCTA workspaceId={workspace.id} />
+        <FounderBookingCTA workspaceId={workspace.id} isFirstWeek={isFirstWeek} />
       </div>
+
 
 
       {/* Optional: compact "Your setup" checklist — only when onboarding is incomplete */}
@@ -432,7 +444,7 @@ export const FounderDashboard = memo(function FounderDashboard({
                   variant="outline"
                   size="sm"
                   onClick={(e) => { e.stopPropagation(); navigate(`/workspace/${workspace.id}`); }}
-                  className="text-xs shrink-0"
+                  className={`text-xs shrink-0 ${isFirstWeek ? 'ring-2 ring-primary/30 motion-safe:animate-pulse-soft' : ''}`}
                 >
                   {t('founder.openWorkspace')}
                 </Button>
@@ -601,5 +613,49 @@ function QuickGuideBanner() {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function getISOWeek(d: Date): number {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
+function WeeklyGreetingSubline({ userId, workspaceId }: { userId?: string; workspaceId: string }) {
+  const { t } = useTranslation();
+  const { data: actions } = useActionItems(workspaceId);
+  const { data: sessions } = useUpcomingSessions();
+
+  const weekKey = useMemo(() => {
+    const now = new Date();
+    return `greeted_this_week_${userId ?? 'anon'}_${now.getFullYear()}_${getISOWeek(now)}`;
+  }, [userId]);
+
+  const [isFirstOfWeek] = useState<boolean>(() => {
+    try {
+      if (sessionStorage.getItem(weekKey) === '1') return false;
+      sessionStorage.setItem(weekKey, '1');
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
+  if (!isFirstOfWeek) return null;
+
+  const pending = (actions ?? []).filter((a) => a.status !== 'completed').length;
+  const upcoming = (sessions ?? []).length;
+
+  return (
+    <p className="text-sm text-muted-foreground motion-safe:animate-fade-in">
+      {t('founder.hero.weekly', {
+        defaultValue: 'Boa semana! Tem {{actions}} ações pendentes e {{sessions}} sessões agendadas.',
+        actions: pending,
+        sessions: upcoming,
+      })}
+    </p>
   );
 }
