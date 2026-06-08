@@ -91,11 +91,18 @@ export function MilestonesTab({ workspaceId, canWrite }: MilestonesTabProps) {
       await updateMilestone.mutateAsync({ id: milestone.id, status });
       if (status === 'completed') {
         showQuickWin('milestone_completed');
+        const gateKey = `celebrated_milestone_${milestone.id}`;
+        if (typeof window !== 'undefined' && !window.localStorage.getItem(gateKey)) {
+          window.localStorage.setItem(gateKey, '1');
+          triggerMilestoneCelebration();
+          setCelebrating({ id: milestone.id, title: milestone.title });
+        }
       }
     } catch {
       notify.error(t('milestones.failedToUpdate'));
     }
   };
+
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget || !canWrite) return;
