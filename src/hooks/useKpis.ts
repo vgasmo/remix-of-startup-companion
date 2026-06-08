@@ -204,6 +204,7 @@ export function useUpsertKpiValue(workspaceId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kpi-values', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-kpis', workspaceId] });
+      void track('kpi_submitted', { workspaceId });
     },
   });
 }
