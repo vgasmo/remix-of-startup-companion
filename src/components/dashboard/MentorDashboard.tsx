@@ -26,11 +26,12 @@ import { HealthBadge } from '@/components/ui/HealthBadge';
 import { StageBadge } from '@/components/ui/StageBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BrandSurface } from '@/components/ui/BrandSurface';
 import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
-import { MentorNextSessionPrep } from '@/components/dashboard/MentorNextSessionPrep';
 import { FirstContactPrepSheet } from '@/components/consultor/FirstContactPrepSheet';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { HealthScore } from '@/types/database';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { MentorOpenLoops } from '@/components/mentor/MentorOpenLoops';
 import { MentorImpactPanel } from '@/components/mentor/MentorImpactPanel';
@@ -52,6 +53,7 @@ interface MentorDashboardProps {
 export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoading }: MentorDashboardProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { profile } = useAuth();
   const [prepSheetWorkspaceId, setPrepSheetWorkspaceId] = useState<string | null>(null);
   const [quickNoteWorkspaceId, setQuickNoteWorkspaceId] = useState<string | null>(null);
   const { data: mySlots } = useMyAvailability();
@@ -137,21 +139,24 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
   // Enhanced empty state
   if (workspaces.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-0 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-accent/5 to-transparent" />
-        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-accent/10 to-transparent rounded-tr-full" />
-        <CardContent className="relative p-8 md:p-12 text-center">
-          <div className="h-20 w-20 mx-auto rounded-3xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mb-6 ring-1 ring-primary/20 shadow-lg shadow-primary/10">
-            <Heart className="h-10 w-10 text-primary" />
+      <BrandSurface
+        intensity="hero"
+        className="surface-hero rounded-2xl overflow-hidden border border-border/40"
+      >
+        <div className="relative p-8 md:p-12 text-center">
+          <div className="h-20 w-20 mx-auto rounded-3xl bg-primary/15 flex items-center justify-center mb-6 ring-1 ring-primary/20 shadow-lg shadow-primary/10">
+            <Heart className="h-10 w-10 text-primary-strong" />
           </div>
-          <h3 className="font-heading text-xl md:text-2xl font-bold mb-3">
+          <p className="label-eyebrow mb-2">
+            {t('mentor.hero.eyebrow', { defaultValue: 'Painel do mentor' })}
+          </p>
+          <h3 className="text-title mb-3">
             {t('mentor.welcomeTitle', 'Bem-vindo ao Painel de Mentor')}
           </h3>
           <p className="text-muted-foreground mb-2 max-w-md mx-auto">
             {t('mentor.noStartupsAssignedDesc', 'Ainda não tens startups atribuídas. Quando a equipa do programa te associar a startups, elas aparecerão aqui com toda a informação para preparares as tuas sessões.')}
           </p>
-          <p className="text-sm text-primary/70 mb-6 max-w-sm mx-auto flex items-center justify-center gap-1.5">
+          <p className="text-sm text-primary-strong mb-6 max-w-sm mx-auto flex items-center justify-center gap-1.5">
             <Sparkles className="h-4 w-4" />
             {t('mentor.thankYouMessage', 'O teu tempo e experiência fazem toda a diferença para estas startups.')}
           </p>
@@ -167,33 +172,58 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
           <p className="text-xs text-muted-foreground mt-6 max-w-sm mx-auto">
             {t('mentor.emptyHint', 'Enquanto espera, pode consultar o Guia Rápido na barra lateral para se familiarizar com a plataforma.')}
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </BrandSurface>
     );
   }
 
+
+  const sessionsThisWeek = upcomingMeetings.length;
+  const hour = new Date().getHours();
+  const greetingKey =
+    hour < 12 ? 'mentor.hero.morning'
+    : hour < 19 ? 'mentor.hero.afternoon'
+    : 'mentor.hero.evening';
+  const greetingDefault =
+    hour < 12 ? 'Bom dia{{name}}'
+    : hour < 19 ? 'Boa tarde{{name}}'
+    : 'Boa noite{{name}}';
+  const firstName = profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : '';
+
   return (
     <div className="space-y-6 max-w-5xl">
-      {/* Stream F: Next Best Action (read-only, derived from sessions/requests) */}
-      <WidgetErrorBoundary name="NextBestActionMentor">
-        <NextBestActionMentor
-          upcomingSessionsCount={(workspaces || []).reduce(
-            (acc, w: any) => acc + (w?.upcomingSessions?.length || 0),
-            0
-          )}
-        />
-      </WidgetErrorBoundary>
+      {/* 1. GREETING HERO — branded surface, availability inline */}
+      <BrandSurface
+        intensity="hero"
+        className="surface-hero rounded-2xl p-4 sm:p-7 overflow-hidden animate-fade-in-up stagger-1"
+      >
+        <div className="space-y-2">
+          <p className="label-eyebrow">
+            {t('mentor.hero.eyebrow', { defaultValue: 'Painel do mentor' })}
+          </p>
+          <h1 className="text-display text-foreground break-words">
+            {t(greetingKey, { defaultValue: greetingDefault, name: firstName })}
+          </h1>
+          <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground">
+            <span>
+              {t('mentor.hero.subline', {
+                defaultValue: '{{count}} startups · {{sessions}} sessões esta semana',
+                count: workspaces.length,
+                sessions: sessionsThisWeek,
+              })}
+            </span>
+            <Badge
+              variant="outline"
+              className="gap-1.5 rounded-full border-border/60 bg-background/70 text-xs font-medium"
+            >
+              <span className={cn('h-2 w-2 rounded-full', statusColors[availabilityStatus])} />
+              {statusLabels[availabilityStatus]}
+            </Badge>
+          </div>
+        </div>
 
-      {/* Availability badge */}
-      <div className="flex items-center gap-2">
-        <span className={cn('h-2.5 w-2.5 rounded-full', statusColors[availabilityStatus])} />
-        <span className="text-sm text-muted-foreground">{statusLabels[availabilityStatus]}</span>
-      </div>
-
-      {/* No-availability banner — prevents founders from being unable to book */}
-      {slotsThisWeek === 0 && (
-        <Card className="border-warning/40 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent rounded-2xl">
-          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+        {slotsThisWeek === 0 && (
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-warning/40 bg-warning/10 p-3">
             <div className="h-9 w-9 rounded-xl bg-warning/15 flex items-center justify-center shrink-0">
               <Clock className="h-4 w-4 text-warning" />
             </div>
@@ -213,19 +243,25 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
               {t('mentor.availability.emptyBanner.cta', { defaultValue: 'Configurar agora' })}
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
+      </BrandSurface>
 
-      {/* P0 HERO: Enhanced Session Prep */}
+      {/* Stream F: Next Best Action (read-only, derived from sessions/requests) */}
+      <WidgetErrorBoundary name="NextBestActionMentor">
+        <NextBestActionMentor
+          upcomingSessionsCount={(workspaces || []).reduce(
+            (acc, w: any) => acc + (w?.upcomingSessions?.length || 0),
+            0
+          )}
+        />
+      </WidgetErrorBoundary>
+
+      {/* P0 HERO: Single Session Prep surface (MentorNextSessionPrep removed — it duplicated this) */}
       <WidgetErrorBoundary name="MentorSessionPrep">
         <MentorSessionPrepEnhanced workspaces={workspaces} />
       </WidgetErrorBoundary>
 
-      {/* P0 HERO: Next Session Prep (fallback) */}
-      <WidgetErrorBoundary name="MentorNextSessionPrep">
-        <MentorNextSessionPrep workspaces={workspaces} />
-      </WidgetErrorBoundary>
 
       {/* Open Loops — what needs attention */}
       <WidgetErrorBoundary name="MentorOpenLoops">
@@ -312,7 +348,10 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
         <div id="mentor-startups-section" className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold">{t('mentor.myStartups')}</h2>
+              <p className="label-eyebrow mb-1.5">
+                {t('mentor.myStartupsEyebrow', { defaultValue: 'O teu portefólio' })}
+              </p>
+              <h2 className="text-heading">{t('mentor.myStartups')}</h2>
               <p className="text-xs text-muted-foreground">
                 {t('mentor.myStartupsHint', { defaultValue: 'Startups que acompanha. Use "Preparar Reunião" para contexto rápido antes de cada sessão.' })}
               </p>
