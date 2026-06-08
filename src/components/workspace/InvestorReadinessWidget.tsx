@@ -85,8 +85,26 @@ export function InvestorReadinessWidget({ workspaceId, compact = false }: Invest
     };
   }, [documents, updates, shareLinks, t]);
 
+  // Empty: no investor-readiness signals at all
+  if (completedItems === 0 && !compact) {
+    return (
+      <EmptyState
+        icon={TrendingUp}
+        title={t('investorReadiness.emptyTitle', { defaultValue: 'Preparação para investidores' })}
+        description={t('investorReadiness.emptyDesc', { defaultValue: 'Complete o checklist de investor readiness para ver a sua pontuação aqui.' })}
+        action={{
+          label: t('investorReadiness.viewChecklist', { defaultValue: 'Ver checklist' }),
+          onClick: () => navigate(`/workspace/${workspaceId}?tab=documents`),
+          icon: ChevronRight,
+        }}
+        variant="inline"
+      />
+    );
+  }
+
   // Compact mode - single line
   if (compact) {
+
     return (
       <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
         <div className="flex items-center gap-2">
