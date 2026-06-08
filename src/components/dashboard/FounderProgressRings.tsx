@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CheckSquare, BarChart3, Flag } from 'lucide-react';
 import { ProgressRing } from '@/components/ui/ProgressRing';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useWorkspaceActions, useWorkspaceKpis, useWorkspaceMilestones } from '@/hooks/useWorkspaceData';
 import { cn } from '@/lib/utils';
+
 
 interface FounderProgressRingsProps {
   workspaceId: string;
