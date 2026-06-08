@@ -20,6 +20,7 @@
  */
 import { supabase } from '@/lib/supabaseClient';
 import { logger } from '@/lib/logger';
+import { track } from '@/lib/analytics';
 import { INTAKE_TO_CRM_STAGE, type IntakeState } from '@/constants/intakeStates';
 
 /**
