@@ -310,9 +310,9 @@ export const FounderDashboard = memo(function FounderDashboard({
         return (
           <BrandSurface
             intensity="hero"
-            className="surface-hero rounded-2xl p-5 sm:p-7 overflow-hidden"
+            className="surface-hero rounded-2xl p-4 sm:p-7 overflow-hidden"
           >
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-3 sm:gap-4">
               <Avatar className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl border border-border/50 shrink-0">
                 <AvatarImage src={workspace.startup?.logo_url || undefined} className="object-cover" alt={workspace.startup?.name || 'Startup'} />
                 <AvatarFallback className="rounded-2xl bg-primary/10 text-primary text-sm font-semibold">
@@ -320,17 +320,17 @@ export const FounderDashboard = memo(function FounderDashboard({
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0 space-y-2">
-                <h1 className="text-display text-foreground truncate">
+                <h1 className="text-display text-foreground break-words">
                   {t(greetingKey, { defaultValue: greetingDefault, name: firstName })}
                 </h1>
                 <div className="flex items-center gap-2 flex-wrap min-w-0">
-                  <span className="text-heading text-foreground/90 truncate max-w-full">
+                  <span className="text-heading text-foreground/90 break-words line-clamp-2 max-w-full">
                     {workspace.startup?.name}
                   </span>
                   <StageBadge stage={workspace.stage} size="sm" />
                   <HealthBadge score={health as HealthScore | null} size="sm" />
                 </div>
-                <p className="text-caption">
+                <p className="text-caption break-words">
                   {workspace.program?.name}
                   {isAcceleration && currentWeek
                     ? ` · ${t('founder.hero.week', { defaultValue: 'Semana {{n}}', n: currentWeek })}`
@@ -342,6 +342,7 @@ export const FounderDashboard = memo(function FounderDashboard({
               </div>
             </div>
           </BrandSurface>
+
         );
       })()}
 
