@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Lightbulb, Cpu, FlaskConical, TrendingUp, Rocket, Check, Lock } from 'lucide-react';
@@ -8,6 +8,9 @@ import { cn } from '@/lib/utils';
 interface FounderJourneyMapProps {
   currentStage?: string | null;
 }
+
+const SESSION_KEY = 'founder_journey_drawn';
+
 
 const JOURNEY_STAGES = [
   { key: 'idea', icon: Lightbulb, i18nKey: 'founder.journeyStages.idea', fallback: 'Ideia', color: 'from-violet-500 to-purple-500' },
