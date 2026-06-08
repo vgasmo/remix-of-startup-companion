@@ -40,7 +40,21 @@ export function MentorSessionPrepEnhanced({ workspaces }: MentorSessionPrepEnhan
     return withSession[0] || null;
   }, [workspaces]);
 
-  if (!nextSessionWorkspace) return null;
+  if (!nextSessionWorkspace) {
+    return (
+      <EmptyState
+        icon={Calendar}
+        title={t('mentorPrep.emptyTitle', { defaultValue: 'Sem sessões próximas' })}
+        description={t('mentorPrep.emptyDesc', { defaultValue: 'Quando tiver sessões agendadas, a preparação aparecerá aqui automaticamente.' })}
+        action={{
+          label: t('mentorPrep.setAvailability', { defaultValue: 'Definir disponibilidade' }),
+          onClick: () => navigate('/mentors?tab=availability'),
+          icon: Calendar,
+        }}
+      />
+    );
+  }
+
 
   const w = nextSessionWorkspace;
   const health = (w.health_score_override || w.health_score) as HealthScore | null;
