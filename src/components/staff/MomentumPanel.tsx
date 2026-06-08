@@ -108,7 +108,7 @@ function MomentumPanelInner({ workspaces, limit = 8, title }: MomentumPanelProps
 
 export function MomentumPanel(props: MomentumPanelProps) {
   return (
-    <WidgetErrorBoundary widgetName="MomentumPanel">
+    <WidgetErrorBoundary name="MomentumPanel">
       <MomentumPanelInner {...props} />
     </WidgetErrorBoundary>
   );
