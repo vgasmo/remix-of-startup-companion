@@ -110,7 +110,8 @@ export default function Admin() {
       surveys: <ClipboardList className="h-4 w-4" />,
       analytics: <TrendingUp className="h-4 w-4" />,
       health: <Heart className="h-4 w-4" />,
-      
+      'system-health': <Activity className="h-4 w-4" />,
+
     };
     return icons[tab];
   };
