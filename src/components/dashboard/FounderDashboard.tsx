@@ -51,6 +51,7 @@ import { useAutoMaterializeDeliverables } from '@/hooks/useAutoMaterializeDelive
 import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
 import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
 import { MySupportTeamCard } from '@/components/founder/MySupportTeamCard';
+import { BrandSurface } from '@/components/ui/BrandSurface';
 // NextBestActionFounder removed from beginner view — kept available for power users via OneThingToday.
 
 interface FounderDashboardProps {
@@ -290,25 +291,31 @@ export const FounderDashboard = memo(function FounderDashboard({
           (+ optional compact setup checklist if incomplete)
           ============================================================ */}
 
-      {/* 1. Slim inline greeting — no card chrome so OneThingToday becomes the hero */}
+      {/* 1. Slim inline greeting — branded surface with subtle motif */}
       {isBeginner && (
-        <div className="flex items-center gap-3 px-1 pt-1">
-          <Avatar className="h-10 w-10 rounded-xl border border-border/40">
-            <AvatarImage src={workspace.startup?.logo_url || undefined} className="object-cover" alt={workspace.startup?.name || 'Startup'} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary text-xs font-semibold">
-              {workspace.startup?.name?.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base sm:text-lg font-semibold truncate leading-tight">
-              {t('founder.calmHero.greeting', { defaultValue: 'Olá{{name}}, hoje basta um passo.', name: profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : '' })}
-            </h1>
-            <p className="text-xs text-muted-foreground truncate">
-              {t('founder.calmHero.subtitle', { defaultValue: 'Sem pressa. Uma coisa de cada vez — estamos aqui para ajudar.' })}
-            </p>
+        <BrandSurface
+          intensity="hero"
+          className="surface-hero rounded-2xl px-4 py-4 sm:px-5 sm:py-5 overflow-hidden"
+        >
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10 rounded-xl border border-border/40 shrink-0">
+              <AvatarImage src={workspace.startup?.logo_url || undefined} className="object-cover" alt={workspace.startup?.name || 'Startup'} />
+              <AvatarFallback className="rounded-xl bg-primary/10 text-primary text-xs font-semibold">
+                {workspace.startup?.name?.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-heading truncate">
+                {t('founder.calmHero.greeting', { defaultValue: 'Olá{{name}}, hoje basta um passo.', name: profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : '' })}
+              </h1>
+              <p className="text-caption truncate">
+                {t('founder.calmHero.subtitle', { defaultValue: 'Sem pressa. Uma coisa de cada vez — estamos aqui para ajudar.' })}
+              </p>
+            </div>
           </div>
-        </div>
+        </BrandSurface>
       )}
+
 
       {/* 2. Today's focus — THE single primary CTA */}
       <OneThingToday workspace={workspace} />
@@ -360,7 +367,7 @@ export const FounderDashboard = memo(function FounderDashboard({
         <CollapsibleContent className="space-y-6 pt-4">
           {/* Startup Card */}
           <Card
-            className="overflow-hidden border-border/60 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-shadow animate-fade-in-up stagger-1"
+            className="surface-raised overflow-hidden rounded-xl cursor-pointer animate-fade-in-up stagger-1"
             onClick={() => navigate(`/workspace/${workspace.id}`)}
           >
             <div className="bg-muted/40 p-4 sm:p-6">
