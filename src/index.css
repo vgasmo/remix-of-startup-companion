@@ -324,6 +324,13 @@
   .stagger-5 { animation-delay: 250ms; }
   .stagger-6 { animation-delay: 300ms; }
 
+  /* Subtle press feedback for primary actions — opt-in via class */
+  .btn-press {
+    @apply transition-transform duration-150 ease-out active:scale-[0.98];
+  }
+
+
+
   /* Hover effects */
   .hover-lift {
     @apply transition-all duration-300 ease-out;
