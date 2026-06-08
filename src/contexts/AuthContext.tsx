@@ -179,6 +179,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) {
       logger.warn('sign_in_failed', { domain: email.split('@')[1] });
       setIsAuthReady(true);
+    } else {
+      void track('login');
     }
     return { error: error as Error | null };
   };
