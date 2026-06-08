@@ -15,9 +15,10 @@ import { useFeatureFlag } from '@/hooks/useFeatureFlags';
 interface FounderBookingCTAProps {
   workspaceId: string;
   className?: string;
+  isFirstWeek?: boolean;
 }
 
-export function FounderBookingCTA({ workspaceId, className }: FounderBookingCTAProps) {
+export function FounderBookingCTA({ workspaceId, className, isFirstWeek = false }: FounderBookingCTAProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { data: ownership } = useWorkspaceOwner(workspaceId);
