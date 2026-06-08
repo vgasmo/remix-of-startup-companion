@@ -41,6 +41,8 @@ import { StickyNote } from 'lucide-react';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
 import { NextBestActionMentor } from '@/components/dashboard/NextBestActionPanels';
 import { MentorPortfolioPulse } from '@/components/mentor/MentorPortfolioPulse';
+import { MomentumBadge } from '@/components/shared/MomentumBadge';
+import { computeMomentum } from '@/hooks/useWorkspaceMomentum';
 
 interface MentorDashboardProps {
   workspaces: WorkspaceWithDetails[];
