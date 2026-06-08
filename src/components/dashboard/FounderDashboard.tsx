@@ -367,7 +367,7 @@ export const FounderDashboard = memo(function FounderDashboard({
         <CollapsibleContent className="space-y-6 pt-4">
           {/* Startup Card */}
           <Card
-            className="overflow-hidden border-border/60 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-shadow animate-fade-in-up stagger-1"
+            className="surface-raised overflow-hidden rounded-xl cursor-pointer animate-fade-in-up stagger-1"
             onClick={() => navigate(`/workspace/${workspace.id}`)}
           >
             <div className="bg-muted/40 p-4 sm:p-6">
