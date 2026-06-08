@@ -56,8 +56,8 @@ export function ClaimedWorkspaceBanner({ founderState }: ClaimedWorkspaceBannerP
               </Badge>
             </div>
             {/* Next steps guidance */}
-            <div className="mt-3 pt-3 border-t border-amber-200 dark:border-amber-800/50">
-              <p className="text-xs font-medium text-amber-700 dark:text-amber-400 flex items-center gap-1">
+            <div className="mt-3 pt-3 border-t border-warning/30 dark:border-warning/30">
+              <p className="text-xs font-medium text-warning flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" />
                 {t('founder.claimed.nextSteps', { defaultValue: 'Próximos passos' })}
               </p>
