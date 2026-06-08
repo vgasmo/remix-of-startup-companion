@@ -13,7 +13,8 @@
 
 @layer base {
   :root {
-    /* Startup Leiria palette - Olive-green accent, clean whites */
+    /* Startup Leiria palette — derived from the official logo
+       (lime peak #B5C40D, crimson chevron #D81E28, ink #3C3C3B). */
     --background: 60 10% 98%;
     --foreground: 60 5% 15%;
 
@@ -23,28 +24,33 @@
     --popover: 0 0% 100%;
     --popover-foreground: 60 5% 15%;
 
-    /* Startup Leiria olive-green brand color */
-    --primary: 68 65% 45%;
-    --primary-foreground: 60 5% 10%;
+    /* Brand lime — usable as a FILL (badges, buttons, large headings). */
+    --primary: 67 72% 41%;
+    --primary-foreground: 60 10% 10%;
+    /* Text-safe deep olive for small green text/links on light surfaces. */
+    --primary-strong: 67 75% 27%;
 
-    /* Warm neutral secondary */
+    /* Neutral surfaces (shadcn semantics — keep neutral, NOT brand red). */
     --secondary: 60 8% 96%;
     --secondary-foreground: 60 5% 25%;
 
-    /* Muted for backgrounds */
     --muted: 60 8% 94%;
     --muted-foreground: 60 5% 45%;
 
-    /* Accent - matching olive-green */
-    --accent: 68 60% 48%;
-    --accent-foreground: 60 5% 10%;
+    --accent: 60 8% 94%;
+    --accent-foreground: 60 5% 20%;
 
-    /* Destructive - Startup Leiria red accent */
-    --destructive: 0 70% 45%;
+    /* Brand crimson — energy / forward-motion accent (NOT errors). */
+    --brand-red: 357 75% 48%;
+    --brand-red-foreground: 0 0% 100%;
+    --brand-ink: 60 3% 22%;
+
+    /* Errors — deepened so they stay distinct from brand-red. */
+    --destructive: 0 62% 42%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 68 60% 42%;
-    --success-foreground: 60 5% 10%;
+    --success: 67 65% 35%;
+    --success-foreground: 0 0% 100%;
 
     --warning: 45 90% 50%;
     --warning-foreground: 60 5% 10%;
@@ -54,51 +60,51 @@
 
     --border: 60 8% 88%;
     --input: 60 8% 88%;
-    --ring: 68 65% 45%;
+    --ring: 67 72% 41%;
 
     --radius: 0.5rem;
 
-    /* Sidebar - dark professional with high contrast */
-    --sidebar-background: 60 8% 10%;
+    /* Sidebar — dark professional with high contrast */
+    --sidebar-background: 60 4% 10%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 68 65% 50%;
+    --sidebar-primary: 67 72% 48%;
     --sidebar-primary-foreground: 60 5% 10%;
-    --sidebar-accent: 60 8% 18%;
+    --sidebar-accent: 60 4% 18%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 60 8% 22%;
-    --sidebar-ring: 68 60% 48%;
+    --sidebar-border: 60 4% 22%;
+    --sidebar-ring: 67 70% 48%;
     --sidebar-muted: 0 0% 88%;
 
-    /* Health score colors - professional tones */
-    --health-critical: 0 65% 48%;
-    --health-at-risk: 38 75% 50%;
+    /* Health score colors */
+    --health-critical: 357 75% 48%;
+    --health-at-risk: 38 80% 50%;
     --health-stable: 200 55% 50%;
-    --health-healthy: 68 55% 45%;
-    --health-thriving: 68 65% 40%;
+    --health-healthy: 67 60% 40%;
+    --health-thriving: 67 72% 35%;
 
-    /* Stage colors - cohesive */
+    /* Stage colors */
     --stage-ideation: 280 40% 55%;
     --stage-validation: 200 55% 50%;
     --stage-mvp: 180 45% 45%;
-    --stage-growth: 68 55% 45%;
+    --stage-growth: 67 60% 40%;
     --stage-scale: 45 70% 48%;
 
-    /* Chart colors - harmonious */
-    --chart-1: 68 65% 45%;
-    --chart-2: 200 55% 50%;
-    --chart-3: 45 70% 50%;
-    --chart-4: 0 65% 50%;
+    /* Chart colors — lead with brand lime + brand red */
+    --chart-1: 67 72% 41%;
+    --chart-2: 357 75% 48%;
+    --chart-3: 45 75% 50%;
+    --chart-4: 200 55% 50%;
     --chart-5: 280 40% 55%;
 
-    /* Gradient tokens - subtle */
-    --gradient-primary: linear-gradient(135deg, hsl(68 65% 45%) 0%, hsl(68 60% 52%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(68 60% 42%) 0%, hsl(68 55% 50%) 100%);
-    --gradient-sidebar: linear-gradient(180deg, hsl(60 8% 10%) 0%, hsl(60 10% 6%) 100%);
-    --gradient-brand: linear-gradient(135deg, hsl(68 65% 45%) 0%, hsl(68 55% 55%) 100%);
+    /* Gradient tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(67 72% 41%) 0%, hsl(67 68% 50%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(67 68% 38%) 0%, hsl(67 60% 50%) 100%);
+    --gradient-sidebar: linear-gradient(180deg, hsl(60 4% 10%) 0%, hsl(60 5% 6%) 100%);
+    --gradient-brand: linear-gradient(135deg, hsl(67 72% 41%) 0%, hsl(357 75% 48%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(60 10% 98%) 100%);
     --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.92) 0%, hsl(0 0% 100% / 0.75) 100%);
 
-    /* Enhanced shadows - softer */
+    /* Shadows */
     --shadow-xs: 0 1px 2px 0 hsl(60 10% 0% / 0.03);
     --shadow-sm: 0 1px 3px 0 hsl(60 10% 0% / 0.04), 0 1px 2px -1px hsl(60 10% 0% / 0.03);
     --shadow-md: 0 4px 6px -1px hsl(60 10% 0% / 0.06), 0 2px 4px -2px hsl(60 10% 0% / 0.04);
@@ -106,8 +112,8 @@
     --shadow-xl: 0 20px 25px -5px hsl(60 10% 0% / 0.08), 0 8px 10px -6px hsl(60 10% 0% / 0.04);
     --shadow-card: 0 1px 3px 0 hsl(60 10% 0% / 0.04), 0 1px 2px -1px hsl(60 10% 0% / 0.03);
     --shadow-card-hover: 0 6px 16px -4px hsl(60 10% 0% / 0.08), 0 3px 6px -2px hsl(60 10% 0% / 0.04);
-    --shadow-glow: 0 0 16px hsl(68 65% 45% / 0.15);
-    --shadow-glow-accent: 0 0 16px hsl(68 60% 48% / 0.2);
+    --shadow-glow: 0 0 16px hsl(67 72% 41% / 0.18);
+    --shadow-glow-accent: 0 0 16px hsl(357 75% 48% / 0.22);
     --shadow-inset: inset 0 1px 3px 0 hsl(60 10% 0% / 0.04);
   }
 
