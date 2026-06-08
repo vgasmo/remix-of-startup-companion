@@ -63,7 +63,20 @@ export function FounderBookingCTA({ workspaceId, className, isFirstWeek = false 
                 {t('founderHome.scheduleFirstMeeting', 'Schedule First Meeting')}
                 <ChevronRight className="h-4 w-4" />
               </Button>
+              {isFirstWeek && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  {t('founderHome.firstWeekHint', {
+                    defaultValue:
+                      'Agendar uma sessão com o mentor é o passo mais importante da primeira semana.',
+                  })}
+                </p>
+              )}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
           </div>
         </CardContent>
       </Card>
