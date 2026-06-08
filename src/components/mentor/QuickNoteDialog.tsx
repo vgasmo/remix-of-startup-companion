@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
+import { track } from '@/lib/analytics';
 
 interface QuickNoteDialogProps {
   open: boolean;
