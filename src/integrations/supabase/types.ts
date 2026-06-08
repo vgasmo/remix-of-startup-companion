@@ -375,6 +375,44 @@ export type Database = {
           },
         ]
       }
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_name: string
+          id: string
+          properties: Json
+          role: string | null
+          user_id: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_name: string
+          id?: string
+          properties?: Json
+          role?: string | null
+          user_id?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_name?: string
+          id?: string
+          properties?: Json
+          role?: string | null
+          user_id?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_runs: {
         Row: {
           automation_type: string
@@ -830,6 +868,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      client_error_logs: {
+        Row: {
+          context: Json
+          created_at: string
+          error_id: string
+          id: string
+          message: string
+          name: string | null
+          severity: string
+          stack: string | null
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          context?: Json
+          created_at?: string
+          error_id: string
+          id?: string
+          message: string
+          name?: string | null
+          severity?: string
+          stack?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          context?: Json
+          created_at?: string
+          error_id?: string
+          id?: string
+          message?: string
+          name?: string | null
+          severity?: string
+          stack?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       communication_log: {
         Row: {
