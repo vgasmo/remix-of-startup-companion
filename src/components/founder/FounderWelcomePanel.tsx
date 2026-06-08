@@ -258,24 +258,16 @@ export function FounderWelcomePanel({
         </Card>
       )}
 
-      {/* All Complete Celebration (brief) */}
+      {/* All Complete — static post-confetti view */}
       {allCompleted && !checklistDismissed && (
-        <Card className="border-success/30 bg-success/5">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-success/20 flex items-center justify-center">
-              <CheckCircle2 className="h-6 w-6 text-success" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-success">
-                {t('onboarding.allComplete', 'You\'re all set!')}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {t('onboarding.allCompleteDesc', 'Great job completing your setup. You\'re ready to make progress.')}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Sparkles}
+          tone="success"
+          title={t('onboarding.allCompleteTitle', { defaultValue: 'Integração completa!' })}
+          description={t('onboarding.allCompleteSubtitle', { defaultValue: 'Está pronto para tirar o máximo da plataforma.' })}
+        />
       )}
+
     </div>
   );
 }
