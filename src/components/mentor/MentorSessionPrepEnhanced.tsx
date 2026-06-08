@@ -8,19 +8,21 @@ import { useMemo } from 'react';
 import { clickableProps } from '@/lib/clickable';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { 
-  ClipboardList, Calendar, BarChart3, Target, FileText, 
-  ArrowRight, AlertCircle, Clock, CheckCircle2, TrendingUp 
+import {
+  ClipboardList, Calendar, BarChart3, Target, FileText,
+  ArrowRight, AlertCircle, Clock, CheckCircle2, TrendingUp
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { HealthBadge } from '@/components/ui/HealthBadge';
 import { StageBadge } from '@/components/ui/StageBadge';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { format, formatDistanceToNow, differenceInDays, isBefore } from 'date-fns';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { HealthScore } from '@/types/database';
 import { cn } from '@/lib/utils';
+
 
 interface MentorSessionPrepEnhancedProps {
   workspaces: WorkspaceWithDetails[];
