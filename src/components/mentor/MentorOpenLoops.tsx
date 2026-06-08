@@ -2,16 +2,18 @@ import { useMemo } from 'react';
 import { clickableProps } from '@/lib/clickable';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { 
-  AlertCircle, FileText, BarChart3, Calendar, ArrowRight, 
-  Target, Clock
+import {
+  AlertCircle, FileText, BarChart3, Calendar, ArrowRight,
+  Target, Clock, CheckCircle2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
+
 
 interface MentorOpenLoopsProps {
   workspaces: WorkspaceWithDetails[];
