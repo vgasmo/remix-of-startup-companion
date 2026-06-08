@@ -42,6 +42,7 @@ import { memo, useMemo, useState } from 'react';
 export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoading: workspacesLoading, programsCount, onSwitchToPortfolio }: AdminDashboardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const { data: stats, isLoading: statsLoading } = useAdminDashboardStats();
 
   const [showExport, setShowExport] = useState(false);
