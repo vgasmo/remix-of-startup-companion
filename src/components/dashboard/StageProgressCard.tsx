@@ -43,8 +43,20 @@ export function StageProgressCard({ workspace, className }: StageProgressCardPro
   const { t } = useTranslation();
   const { data: milestones } = useMilestones(workspace.id);
 
+  if (!workspace.stage) {
+    return (
+      <EmptyState
+        icon={Flag}
+        title={t('stageProgress.emptyTitle', { defaultValue: 'Etapa por definir' })}
+        description={t('stageProgress.emptyDesc', { defaultValue: 'O estado da sua startup será atualizado pela equipa do programa.' })}
+        className={className}
+      />
+    );
+  }
+
   const currentStageIndex = STAGE_ORDER.indexOf(workspace.stage);
   const progressPercent = ((currentStageIndex + 1) / STAGE_ORDER.length) * 100;
+
 
   // Calculate milestone completion for current stage
   const milestoneStats = useMemo(() => {
