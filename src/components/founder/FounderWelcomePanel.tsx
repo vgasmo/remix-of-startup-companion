@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { cn } from '@/lib/utils';
+import { triggerSuccessConfetti } from '@/lib/confetti';
 
 
 interface FounderWelcomePanelProps {
