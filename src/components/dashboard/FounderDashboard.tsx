@@ -52,6 +52,8 @@ import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
 import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
 import { MySupportTeamCard } from '@/components/founder/MySupportTeamCard';
 import { BrandSurface } from '@/components/ui/BrandSurface';
+import { WelcomeSplash } from '@/components/founder/WelcomeSplash';
+import { useIsFirstWeek } from '@/hooks/useIsFirstWeek';
 // NextBestActionFounder removed from beginner view — kept available for power users via OneThingToday.
 
 interface FounderDashboardProps {
