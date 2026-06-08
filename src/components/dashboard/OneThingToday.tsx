@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils';
 interface OneThingTodayProps {
   workspace: WorkspaceWithDetails;
   className?: string;
+  isFirstWeek?: boolean;
 }
 
 interface RecommendedAction {
@@ -38,7 +39,7 @@ interface RecommendedAction {
   variant: 'destructive' | 'warning' | 'default';
 }
 
-export function OneThingToday({ workspace, className }: OneThingTodayProps) {
+export function OneThingToday({ workspace, className, isFirstWeek = false }: OneThingTodayProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { data: actions } = useActionItems(workspace.id);
