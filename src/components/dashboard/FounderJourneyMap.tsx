@@ -113,9 +113,10 @@ export const FounderJourneyMap = memo(function FounderJourneyMap({ currentStage 
                   {/* Current indicator */}
                   {isCurrent && (
                     <motion.div
-                      initial={{ opacity: 0, scale: 0 }}
+                      initial={shouldAnimate ? { opacity: 0, scale: 0 } : false}
                       animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.8 }}
+                      transition={{ delay: shouldAnimate ? 0.8 : 0 }}
+
                       className="text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full"
                     >
                       {t('founder.youAreHere', { defaultValue: 'You are here' })}
