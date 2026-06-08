@@ -71,8 +71,9 @@ export function FounderBookingCTA({ workspaceId, className }: FounderBookingCTAP
   // Has consultant - show next session or book new
   return (
     <Card className={`overflow-hidden ${className}`}>
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-6">
         <div className="flex flex-col md:flex-row md:items-center gap-4">
+
           {/* Consultant info */}
           <div className="flex items-center gap-3 flex-shrink-0">
             <Avatar className="h-12 w-12 border-2 border-primary/20">
