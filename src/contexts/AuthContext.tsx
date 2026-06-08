@@ -5,6 +5,7 @@ import { AppRole } from '@/types/database';
 import { resetSession, setCacheOwner } from '@/lib/sessionReset';
 import { hydrateCache, queryClient } from '@/lib/queryClient';
 import { logger } from '@/lib/logger';
+import { track } from '@/lib/analytics';
 
 export type AccountStatus = 'pending' | 'approved' | 'suspended';
 
