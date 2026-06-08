@@ -109,9 +109,10 @@ export default function StaffCockpit() {
           <CockpitPortfolioOverview workspaces={workspaces} />
         )}
 
-        {/* Silent Disengagement Alerts - Admin and Consultor */}
+        {/* Momentum / Stall Prediction — consolidates SilentDisengagement
+            into a multi-signal, explainable view with recommended actions. */}
         {(isAdmin || isConsultor) && (
-          <SilentDisengagementCard workspaces={workspaces} />
+          <MomentumPanel workspaces={workspaces} />
         )}
 
         {/* Backoffice-specific: Contracts expiring + Startup Portugal status */}
