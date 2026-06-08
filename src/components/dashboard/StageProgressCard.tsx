@@ -1,14 +1,15 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { 
+import {
   Lightbulb,
-  Search, 
-  Hammer, 
-  TrendingUp, 
+  Search,
+  Hammer,
+  TrendingUp,
   Rocket,
   ChevronRight,
-  CheckCircle2
+  CheckCircle2,
+  Flag
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -16,9 +17,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { StageBadge } from '@/components/ui/StageBadge';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { useMilestones } from '@/hooks/useMilestones';
 import { StartupStage } from '@/types/database';
+
 
 interface StageProgressCardProps {
   workspace: WorkspaceWithDetails;
