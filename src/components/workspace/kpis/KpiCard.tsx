@@ -71,12 +71,31 @@ export function KpiCard({
 
   const chartDataFiltered = chartData.map(d => ({ ...d, value: d.value }));
 
+  // P75 breakout: fires once per (kpi, month) when current crosses p75 from below.
+  const breakout = useMemo(() => {
+    if (p75 == null) return false;
+    if (recentValues.length < 2) return false;
+    const [prev, curr] = recentValues;
+    if (prev.value == null || curr.value == null) return false;
+    const crossed = def.direction === 'up'
+      ? prev.value < p75 && curr.value >= p75
+      : prev.value > p75 && curr.value <= p75;
+    if (!crossed) return false;
+    if (typeof window === 'undefined') return true;
+    const key = `kpi_p75_celebrated_${workspaceKpi.id}_${curr.month}`;
+    if (window.localStorage.getItem(key)) return false;
+    window.localStorage.setItem(key, '1');
+    return true;
+  }, [p75, recentValues, def.direction, workspaceKpi.id]);
+
   return (
     <Card className={cn(
-      "transition-colors duration-300",
+      "transition-colors duration-300 relative",
       isLocked && 'border-amber-200 dark:border-amber-800',
       isSaved && 'border-green-300 dark:border-green-800',
+      breakout && 'breakout-glow border-primary/50',
     )}>
+
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div>
