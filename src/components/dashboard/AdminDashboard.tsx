@@ -134,13 +134,51 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
 
   const exceptionAlerts = signals.filter(s => typeof s.value === 'number' && s.value > 0 && s.variant !== 'default');
 
+  const hour = new Date().getHours();
+  const greetingKey =
+    hour < 12 ? 'admin.hero.morning'
+    : hour < 19 ? 'admin.hero.afternoon'
+    : 'admin.hero.evening';
+  const greetingDefault =
+    hour < 12 ? 'Bom dia{{name}}'
+    : hour < 19 ? 'Boa tarde{{name}}'
+    : 'Boa noite{{name}}';
+  const firstName = profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : '';
+
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* 1. GREETING HERO — branded surface, absorbs the Command Center header */}
+      <BrandSurface
+        intensity="hero"
+        className="surface-hero rounded-2xl p-4 sm:p-7 overflow-hidden animate-fade-in-up stagger-1"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="space-y-2 min-w-0">
+            <p className="label-eyebrow">
+              {t('admin.commandCenter')}
+            </p>
+            <h1 className="text-display text-foreground break-words">
+              {t(greetingKey, { defaultValue: greetingDefault, name: firstName })}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {t('admin.ecosystemSummary', {
+                startups: workspaces.length,
+                programs: programsCount,
+              })}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={onSwitchToPortfolio} className="gap-2 shrink-0">
+            <RefreshCw className="h-4 w-4" />
+            <span className="hidden sm:inline">{t('admin.portfolioView')}</span>
+          </Button>
+        </div>
+      </BrandSurface>
+
       {/* HERO: Exception-Based Alerts */}
       {exceptionAlerts.length > 0 && (
         <Card className="rounded-2xl border-warning/40 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent">
           <CardContent className="p-4">
-            <p className="text-xs font-medium text-warning uppercase tracking-wide mb-3">
+            <p className="label-eyebrow text-warning mb-3">
               {t('admin.exceptionsTitle', { defaultValue: 'Requires Your Attention' })}
             </p>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -152,7 +190,6 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
                     className="flex items-center gap-3 p-3 rounded-xl bg-background/80 cursor-pointer hover:shadow-md hover:scale-[1.01] transition-all duration-200"
                     {...clickableProps(() => navigate(alert.href))}
                   >
-
                     <div className={cn(
                       'h-9 w-9 rounded-xl flex items-center justify-center shrink-0',
                       alert.variant === 'destructive' ? 'bg-destructive/10' : 'bg-warning/15'
@@ -174,23 +211,6 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
           </CardContent>
         </Card>
       )}
-
-      {/* Switch to portfolio view */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold">{t('admin.commandCenter')}</h2>
-          <p className="text-sm text-muted-foreground">
-            {t('admin.ecosystemSummary', {
-              startups: workspaces.length,
-              programs: programsCount,
-            })}
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={onSwitchToPortfolio} className="gap-2">
-          <RefreshCw className="h-4 w-4" />
-          <span className="hidden sm:inline">{t('admin.portfolioView')}</span>
-        </Button>
-      </div>
 
       {/* Signal Cards — Enterprise Command Center style */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
