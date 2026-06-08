@@ -189,11 +189,11 @@ async function sendErrorToSink(entry: LoggedError): Promise<void> {
     const { supabase } = await import('@/lib/supabaseClient');
     const { data: auth } = await supabase.auth.getUser();
     const userId = auth?.user?.id ?? null;
-    await supabase.from('client_error_logs').insert({
+    const row = {
       error_id: entry.errorId,
       message: entry.message.slice(0, 2000),
-      name: entry.name?.slice(0, 200) ?? null,
-      stack: entry.stack ? entry.stack.slice(0, 8000) : null,
+      name: entry.name ? entry.name.slice(0, 200) : undefined,
+      stack: entry.stack ? entry.stack.slice(0, 8000) : undefined,
       severity: entry.context.severity ?? 'low',
       context: {
         component: entry.context.component,
@@ -205,8 +205,9 @@ async function sendErrorToSink(entry: LoggedError): Promise<void> {
       },
       url: entry.url.slice(0, 500),
       user_agent: entry.userAgent.slice(0, 500),
-      user_id: userId,
-    });
+      user_id: userId ?? undefined,
+    };
+    await supabase.from('client_error_logs').insert(row);
   } catch {
     // Swallow — never recurse, never surface sink failures to users.
   } finally {
