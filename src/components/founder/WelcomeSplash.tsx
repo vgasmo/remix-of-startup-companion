@@ -17,11 +17,16 @@ interface WelcomeSplashProps {
 export function WelcomeSplash({ userId, onDismiss }: WelcomeSplashProps) {
   const { t } = useTranslation();
   const storageKey = userId ? `welcomed_${userId}` : null;
+  const wizardCompletedKey = userId ? `celebrated_welcome_wizard_${userId}` : null;
 
   const [visible, setVisible] = useState<boolean>(() => {
-    if (!storageKey) return false;
+    if (!storageKey || !wizardCompletedKey) return false;
     try {
-      return localStorage.getItem(storageKey) !== '1';
+      // Only ever shown once per user, AND only after the welcome wizard
+      // has been completed (its celebration key is set).
+      if (localStorage.getItem(storageKey) === '1') return false;
+      if (localStorage.getItem(wizardCompletedKey) !== '1') return false;
+      return true;
     } catch {
       return false;
     }
