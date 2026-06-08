@@ -506,8 +506,10 @@
   }
 
   /* ============================================================
-     BRAND MOTIF — soft radial bloom + faint diagonal dot-grid.
-     Pseudo-element layer, pointer-events-none, uses --primary token.
+     BRAND MOTIF — the signature "A ›" chevron+peak watermark,
+     derived directly from the Startup Leiria logo.
+     SVG is inlined as a CSS background, very low opacity, layered
+     behind children. pointer-events-none. No animation.
      ============================================================ */
   .brand-motif {
     position: relative;
@@ -517,39 +519,61 @@
   .brand-motif::after {
     content: '';
     position: absolute;
-    inset: 0;
     pointer-events: none;
     z-index: 0;
   }
+  /* The forward chevron ">" in brand-red — top-right energy mark. */
   .brand-motif::before {
-    background:
-      radial-gradient(
-        circle at 85% 0%,
-        hsl(var(--primary) / 0.10) 0%,
-        transparent 55%
-      );
-    opacity: 0.9;
+    top: -10%;
+    right: -4%;
+    width: 55%;
+    height: 140%;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'><path d='M30 18 L70 50 L30 82' stroke='hsl(357,75%25,48%25)' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: center right;
+    background-size: contain;
+    opacity: 0.05;
   }
+  /* The upward peak "Λ" in brand-lime — bottom-left identity mark. */
   .brand-motif::after {
-    background-image: radial-gradient(
-      hsl(var(--primary) / 0.18) 1px,
-      transparent 1px
-    );
-    background-size: 18px 18px;
-    background-position: 0 0;
-    opacity: 0.06;
-    mask-image: linear-gradient(135deg, transparent 0%, black 40%, transparent 90%);
-    -webkit-mask-image: linear-gradient(135deg, transparent 0%, black 40%, transparent 90%);
+    bottom: -20%;
+    left: -6%;
+    width: 60%;
+    height: 150%;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'><path d='M12 86 L50 14 L88 86' stroke='hsl(67,72%25,41%25)' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: bottom left;
+    background-size: contain;
+    opacity: 0.05;
   }
   .brand-motif > * {
     position: relative;
     z-index: 1;
   }
+  .brand-motif-subtle::before { opacity: 0.035; }
+  .brand-motif-subtle::after  { opacity: 0.035; }
+  .brand-motif-hero::before   { opacity: 0.07; }
+  .brand-motif-hero::after    { opacity: 0.06; }
+  @media (prefers-reduced-motion: reduce) {
+    .brand-motif::before,
+    .brand-motif::after { transition: none; animation: none; }
+  }
 
-  .brand-motif-subtle::before { opacity: 0.5; }
-  .brand-motif-subtle::after { opacity: 0.04; }
-  .brand-motif-hero::before { opacity: 1; }
-  .brand-motif-hero::after { opacity: 0.08; }
+  /* Section divider with a small lime chevron — quick visual rhythm. */
+  .chevron-rule {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: hsl(var(--border));
+  }
+  .chevron-rule::before,
+  .chevron-rule::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: currentColor;
+  }
+  .chevron-rule > svg { color: hsl(var(--primary)); flex: none; }
 
   /* ============================================================
      ELEVATION / SURFACE TIERS — canonical card surfaces.
