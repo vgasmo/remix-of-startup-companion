@@ -442,7 +442,7 @@ export const FounderDashboard = memo(function FounderDashboard({
                   variant="outline"
                   size="sm"
                   onClick={(e) => { e.stopPropagation(); navigate(`/workspace/${workspace.id}`); }}
-                  className="text-xs shrink-0"
+                  className={`text-xs shrink-0 ${isFirstWeek ? 'ring-2 ring-primary/30 motion-safe:animate-pulse-soft' : ''}`}
                 >
                   {t('founder.openWorkspace')}
                 </Button>
