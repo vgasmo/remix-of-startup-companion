@@ -70,7 +70,7 @@ export function QuickActionsFab({
       <Button
         size="icon"
         className={cn(
-          "h-11 w-11 rounded-full shadow-lg transition-transform",
+          "h-14 w-14 rounded-full shadow-lg transition-transform",
           isOpen && "rotate-45"
         )}
         onClick={() => setIsOpen(!isOpen)}
