@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TrendingUp, TrendingDown, Minus, Lock, Unlock, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { cn } from '@/lib/utils';
+import { BrandChevron } from '@/components/ui/BrandChevron';
 import type { WorkspaceKpi, KpiValue } from '@/hooks/useKpis';
 
 interface KpiCardProps {
@@ -18,10 +20,13 @@ interface KpiCardProps {
   canEdit: boolean;
   isSaving: boolean;
   isSaved: boolean;
+  /** Optional p75 benchmark for this KPI. When crossed (prev<p75, curr>=p75), fires a one-shot breakout indicator. */
+  p75?: number | null;
   onValueChange: (field: 'value' | 'notes', val: string) => void;
   onSave: () => void;
   onUnlock?: (kpiValueId: string) => void;
 }
+
 
 export function KpiCard({
   workspaceKpi,
@@ -31,6 +36,7 @@ export function KpiCard({
   canEdit,
   isSaving,
   isSaved,
+  p75,
   onValueChange,
   onSave,
   onUnlock,
@@ -38,6 +44,7 @@ export function KpiCard({
   const { t } = useTranslation();
   const def = workspaceKpi.definition;
   if (!def) return null;
+
 
   const displayValue = editedValue?.value ?? currentValue?.value?.toString() ?? '';
   const displayNotes = editedValue?.notes ?? currentValue?.notes ?? '';
@@ -64,12 +71,31 @@ export function KpiCard({
 
   const chartDataFiltered = chartData.map(d => ({ ...d, value: d.value }));
 
+  // P75 breakout: fires once per (kpi, month) when current crosses p75 from below.
+  const breakout = useMemo(() => {
+    if (p75 == null) return false;
+    if (recentValues.length < 2) return false;
+    const [prev, curr] = recentValues;
+    if (prev.value == null || curr.value == null) return false;
+    const crossed = def.direction === 'up'
+      ? prev.value < p75 && curr.value >= p75
+      : prev.value > p75 && curr.value <= p75;
+    if (!crossed) return false;
+    if (typeof window === 'undefined') return true;
+    const key = `kpi_p75_celebrated_${workspaceKpi.id}_${curr.month}`;
+    if (window.localStorage.getItem(key)) return false;
+    window.localStorage.setItem(key, '1');
+    return true;
+  }, [p75, recentValues, def.direction, workspaceKpi.id]);
+
   return (
     <Card className={cn(
-      "transition-colors duration-300",
+      "transition-colors duration-300 relative",
       isLocked && 'border-amber-200 dark:border-amber-800',
       isSaved && 'border-green-300 dark:border-green-800',
+      breakout && 'breakout-glow border-primary/50',
     )}>
+
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div>
@@ -114,13 +140,23 @@ export function KpiCard({
                 </div>
               </div>
             ) : (
-              <div>
+              <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold">
                   {currentValue?.value !== null && currentValue?.value !== undefined ? currentValue.value.toLocaleString() : '—'}
                 </span>
-                {def.unit && <span className="text-sm text-muted-foreground ml-1">{def.unit}</span>}
+                {def.unit && <span className="text-sm text-muted-foreground">{def.unit}</span>}
+                {breakout && (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-strong animate-bounce-in"
+                    title={t('kpis.p75Breakout', { defaultValue: 'Above top-quartile benchmark' })}
+                  >
+                    <BrandChevron size={10} color="lime" strokeWidth={4} className="-rotate-90" />
+                    p75
+                  </span>
+                )}
               </div>
             )}
+
           </div>
           {workspaceKpi.target_value !== null && (
             <div className="text-right">

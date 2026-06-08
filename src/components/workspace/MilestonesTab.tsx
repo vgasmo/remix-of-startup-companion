@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { format, isPast, isToday, parseISO } from 'date-fns';
 import { Plus, Trash2, Calendar, Target, Clock, CheckCircle2, Circle, AlertTriangle, GripVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,12 +14,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SortableList } from '@/components/ui/SortableList';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { BrandChevron } from '@/components/ui/BrandChevron';
 import { useMilestones, useCreateMilestone, useUpdateMilestone, useDeleteMilestone, useReorderMilestones, type Milestone } from '@/hooks/useMilestones';
 import { notify } from "@/lib/notify";
 import { useTranslation } from 'react-i18next';
 import { useQuickWinToast } from '@/hooks/useQuickWinToast';
+import { triggerMilestoneCelebration } from '@/lib/confetti';
 import { toTitleCase } from '@/lib/textUtils';
 import type { Database } from '@/integrations/supabase/types';
+
 
 type MilestoneStatus = Database['public']['Enums']['milestone_status'];
 
@@ -49,11 +52,19 @@ export function MilestonesTab({ workspaceId, canWrite }: MilestonesTabProps) {
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Milestone | null>(null);
+  const [celebrating, setCelebrating] = useState<{ id: string; title: string } | null>(null);
   const [newMilestone, setNewMilestone] = useState({
     title: '',
     description: '',
     target_date: '',
   });
+
+  useEffect(() => {
+    if (!celebrating) return;
+    const tid = window.setTimeout(() => setCelebrating(null), 2000);
+    return () => window.clearTimeout(tid);
+  }, [celebrating]);
+
 
   const handleCreate = async () => {
     if (!newMilestone.title.trim()) {
@@ -80,11 +91,18 @@ export function MilestonesTab({ workspaceId, canWrite }: MilestonesTabProps) {
       await updateMilestone.mutateAsync({ id: milestone.id, status });
       if (status === 'completed') {
         showQuickWin('milestone_completed');
+        const gateKey = `celebrated_milestone_${milestone.id}`;
+        if (typeof window !== 'undefined' && !window.localStorage.getItem(gateKey)) {
+          window.localStorage.setItem(gateKey, '1');
+          triggerMilestoneCelebration();
+          setCelebrating({ id: milestone.id, title: milestone.title });
+        }
       }
     } catch {
       notify.error(t('milestones.failedToUpdate'));
     }
   };
+
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget || !canWrite) return;
@@ -99,7 +117,28 @@ export function MilestonesTab({ workspaceId, canWrite }: MilestonesTabProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+    <div className="space-y-4 relative">
+      {celebrating && (
+        <div
+          className="pointer-events-none fixed inset-0 z-[60] flex flex-col items-center justify-center motion-reduce:hidden"
+          aria-hidden="true"
+        >
+          <div className="animate-scale-in flex flex-col items-center gap-3">
+            <div className="rounded-full bg-primary/10 p-6 ring-4 ring-primary/20 shadow-[0_0_60px_-10px_hsl(var(--primary)/0.55)]">
+              <BrandChevron size={56} color="lime" strokeWidth={3} />
+            </div>
+            <div className="rounded-full bg-card/95 backdrop-blur px-4 py-1.5 border border-primary/30 shadow-lg">
+              <span className="label-eyebrow text-primary-strong text-[11px]">
+                {t('milestones.levelUp', { defaultValue: 'Level up' })}
+              </span>
+              <span className="ml-2 text-sm font-semibold text-foreground">
+                {toTitleCase(celebrating.title)}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-64 w-full" />
       </div>
