@@ -112,7 +112,7 @@ export function FounderBookingCTA({ workspaceId, className }: FounderBookingCTAP
                 </div>
                 <div className="flex gap-2">
                    {sanitizeUrl(nextSession.join_url) && (
-                    <Button asChild variant="default" size="sm" className="h-11 sm:h-9 flex-1 sm:flex-none">
+                    <Button asChild variant="default" size="sm" className="h-11 sm:h-9 flex-1 sm:flex-none btn-press">
                       <a href={sanitizeUrl(nextSession.join_url)!} target="_blank" rel="noopener noreferrer">
                         <Video className="h-4 w-4 mr-1" />
                         {t('founderHome.join', { defaultValue: 'Entrar' })}
@@ -133,7 +133,7 @@ export function FounderBookingCTA({ workspaceId, className }: FounderBookingCTAP
                     {t('founderHome.bookNextSession', 'Book your next check-in with your consultant')}
                   </p>
                 </div>
-                <Button onClick={handleBookSession} className="gap-2 h-11 sm:h-10 w-full sm:w-auto">
+                <Button onClick={handleBookSession} className="gap-2 h-11 sm:h-10 w-full sm:w-auto btn-press">
                   <Calendar className="h-4 w-4" />
                   {t('founderHome.bookSession', 'Book Session')}
                 </Button>
