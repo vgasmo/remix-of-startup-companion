@@ -348,9 +348,10 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
                       </Avatar>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <h3 className="font-semibold truncate group-hover:text-primary transition-colors">{workspace.startup?.name}</h3>
                           <HealthBadge score={health as HealthScore | null} size="sm" />
+                          {(() => { const m = computeMomentum(workspace); return <MomentumBadge band={m.band} score={m.momentumScore} size="sm" />; })()}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                           <StageBadge stage={workspace.stage} size="sm" />
