@@ -42,7 +42,8 @@ export function FounderBookingCTA({ workspaceId, className }: FounderBookingCTAP
   if (!hasConsultant) {
     return (
       <Card className={`overflow-hidden border-primary/30 bg-gradient-to-br from-primary/5 via-background to-accent/5 ${className}`}>
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
+
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <div className="flex-shrink-0">
               <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20">
@@ -71,8 +72,9 @@ export function FounderBookingCTA({ workspaceId, className }: FounderBookingCTAP
   // Has consultant - show next session or book new
   return (
     <Card className={`overflow-hidden ${className}`}>
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-6">
         <div className="flex flex-col md:flex-row md:items-center gap-4">
+
           {/* Consultant info */}
           <div className="flex items-center gap-3 flex-shrink-0">
             <Avatar className="h-12 w-12 border-2 border-primary/20">
@@ -110,17 +112,18 @@ export function FounderBookingCTA({ workspaceId, className }: FounderBookingCTAP
                 </div>
                 <div className="flex gap-2">
                    {sanitizeUrl(nextSession.join_url) && (
-                    <Button asChild variant="default" size="sm">
+                    <Button asChild variant="default" size="sm" className="h-11 sm:h-9 flex-1 sm:flex-none">
                       <a href={sanitizeUrl(nextSession.join_url)!} target="_blank" rel="noopener noreferrer">
                         <Video className="h-4 w-4 mr-1" />
-                        Join
+                        {t('founderHome.join', { defaultValue: 'Entrar' })}
                       </a>
                     </Button>
                   )}
-                  <Button variant="outline" size="sm" onClick={handleBookSession}>
+                  <Button variant="outline" size="sm" onClick={handleBookSession} className="h-11 sm:h-9 flex-1 sm:flex-none">
                     {t('founderHome.viewSessions', 'View Sessions')}
                   </Button>
                 </div>
+
               </div>
             ) : (
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -130,10 +133,11 @@ export function FounderBookingCTA({ workspaceId, className }: FounderBookingCTAP
                     {t('founderHome.bookNextSession', 'Book your next check-in with your consultant')}
                   </p>
                 </div>
-                <Button onClick={handleBookSession} className="gap-2">
+                <Button onClick={handleBookSession} className="gap-2 h-11 sm:h-10 w-full sm:w-auto">
                   <Calendar className="h-4 w-4" />
                   {t('founderHome.bookSession', 'Book Session')}
                 </Button>
+
               </div>
             )}
           </div>

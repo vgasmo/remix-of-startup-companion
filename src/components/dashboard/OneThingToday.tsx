@@ -196,15 +196,16 @@ export function OneThingToday({ workspace, className }: OneThingTodayProps) {
             <p className="text-heading truncate">{recommendation.title}</p>
             <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">{recommendation.why}</p>
           </div>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant={isDestructive ? 'destructive' : 'default'}
             onClick={() => navigate(recommendation.link)}
-            className="flex-shrink-0 gap-1.5 shadow-sm"
+            className="flex-shrink-0 gap-1.5 shadow-sm h-11 sm:h-9 px-4"
           >
             {t('common.go')}
             <ArrowRight className="h-4 w-4" />
           </Button>
+
         </div>
       </CardContent>
     </Card>

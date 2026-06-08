@@ -45,7 +45,7 @@ export function QuickActionsFab({
   };
 
   return (
-    <div className={cn("fixed bottom-5 right-5 z-50 md:hidden", className)}>
+    <div className={cn("fixed right-4 z-40 md:hidden bottom-[calc(5rem+env(safe-area-inset-bottom,0px))]", className)}>
       {/* Action buttons */}
       <div className={cn(
         "flex flex-col-reverse gap-1.5 mb-2 transition-all duration-150",
@@ -56,9 +56,10 @@ export function QuickActionsFab({
             key={action.id}
             variant="secondary"
             size="sm"
-            className="shadow-md flex items-center gap-2 justify-start pl-2.5 pr-3 h-8 text-xs"
+            className="shadow-md flex items-center gap-2 justify-start pl-3 pr-4 h-11 text-sm"
             onClick={() => handleActionClick(action)}
           >
+
             {action.icon}
             <span>{action.label}</span>
           </Button>
@@ -69,7 +70,7 @@ export function QuickActionsFab({
       <Button
         size="icon"
         className={cn(
-          "h-11 w-11 rounded-full shadow-lg transition-transform",
+          "h-14 w-14 rounded-full shadow-lg transition-transform",
           isOpen && "rotate-45"
         )}
         onClick={() => setIsOpen(!isOpen)}
