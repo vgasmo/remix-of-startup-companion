@@ -117,15 +117,37 @@ export function FounderWelcomePanel({
   const progress = (completedCount / checklistItems.length) * 100;
   const allCompleted = completedCount === checklistItems.length;
 
-  // Auto-dismiss checklist when complete
+  // Graceful collapse when checklist reaches 100%.
+  const [isCollapsing, setIsCollapsing] = useState(false);
+
   useEffect(() => {
-    if (allCompleted && !checklistDismissed) {
-      const timer = setTimeout(() => {
+    if (allCompleted && !checklistDismissed && !isCollapsing) {
+      const reduceMotion =
+        typeof window !== 'undefined' &&
+        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+      // Celebrate once per user
+      const celebrationKey = userId ? `celebrated_checklist_complete_${userId}` : null;
+      let alreadyCelebrated = false;
+      if (celebrationKey) {
+        try { alreadyCelebrated = localStorage.getItem(celebrationKey) === '1'; } catch { /* ignore */ }
+      }
+      if (!alreadyCelebrated && !reduceMotion) {
+        triggerSuccessConfetti();
+        if (celebrationKey) {
+          try { localStorage.setItem(celebrationKey, '1'); } catch { /* ignore */ }
+        }
+      }
+
+      if (reduceMotion) {
         dismissChecklist();
-      }, 3000);
-      return () => clearTimeout(timer);
+      } else {
+        setIsCollapsing(true);
+        const timer = setTimeout(() => dismissChecklist(), 500);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [allCompleted, checklistDismissed]);
+  }, [allCompleted, checklistDismissed, isCollapsing, userId]);
 
   // Don't show if everything is dismissed or complete
   if (welcomeDismissed && (checklistDismissed || allCompleted)) {
