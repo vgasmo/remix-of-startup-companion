@@ -495,7 +495,6 @@ export const FounderDashboard = memo(function FounderDashboard({
       />
     </div>
   );
-}
 
 function QuickGuideBanner() {
   const { t } = useTranslation();
