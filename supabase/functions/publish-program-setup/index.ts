@@ -399,6 +399,30 @@ Deno.serve(async (req) => {
       if (wipeErrs.length) {
         throw new Error(`Failed to quarantine stage-side artifacts: ${JSON.stringify(wipeErrs)}`);
       }
+      // Also wipe existing weeks+gates for this acceleration program — we
+      // re-insert them below from the draft, so leftover rows would trigger
+      // the program_weeks (program_id, week_number) unique constraint.
+      const { error: weeksWipeErr } = await supabase
+        .from('program_weeks')
+        .delete()
+        .eq('program_id', programId);
+      if (weeksWipeErr) {
+        throw new Error(`Failed to quarantine program_weeks: ${weeksWipeErr.message}`);
+      }
+      const { error: gatesWipeErr } = await supabase
+        .from('program_gates')
+        .delete()
+        .eq('program_id', programId);
+      if (gatesWipeErr) {
+        throw new Error(`Failed to quarantine program_gates: ${gatesWipeErr.message}`);
+      }
+      const [{ count: leftoverWeeks }, { count: leftoverGates }] = await Promise.all([
+        supabase.from('program_weeks').select('id', { count: 'exact', head: true }).eq('program_id', programId),
+        supabase.from('program_gates').select('id', { count: 'exact', head: true }).eq('program_id', programId),
+      ]);
+      if ((leftoverWeeks ?? 0) > 0 || (leftoverGates ?? 0) > 0) {
+        throw new Error(`Quarantine incomplete: ${leftoverWeeks} weeks / ${leftoverGates} gates still present for program ${programId}`);
+      }
     } else {
       // Sequential delete: weeks first (FK gate_id ON DELETE SET NULL), then gates.
       // Running these in parallel via Promise.all has historically left orphan
