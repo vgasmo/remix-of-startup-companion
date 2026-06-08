@@ -128,6 +128,25 @@ export function OneThingToday({ workspace, className, isFirstWeek = false }: One
   }, [actions, pendingCheckin, workspace, t]);
 
   if (!recommendation) {
+    if (isFirstWeek) {
+      return (
+        <EmptyState
+          key="first-week"
+          icon={Sparkles}
+          tone="info"
+          title={t('oneThingToday.firstWeekTitle', { defaultValue: 'Começa aqui' })}
+          description={t('oneThingToday.firstWeekDesc', {
+            defaultValue:
+              'Nos próximos dias, o programa vai-lhe atribuir ações e sessões. Entretanto, explore o seu workspace.',
+          })}
+          action={{
+            label: t('oneThingToday.firstWeekCta', { defaultValue: 'Abrir workspace' }),
+            onClick: () => navigate(`/workspace/${workspace.id}`),
+          }}
+          className={cn('animate-scale-in', className)}
+        />
+      );
+    }
     return (
       <EmptyState
         key="caught-up"
