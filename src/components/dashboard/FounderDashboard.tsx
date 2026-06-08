@@ -80,7 +80,7 @@ export function FounderDashboard({
 
   useEffect(() => {
     recordActivity();
-  }, []);
+  }, [recordActivity]);
 
   // Multi-workspace affordance: default to first but allow switching
   const [selectedWorkspaceIdx, setSelectedWorkspaceIdx] = useState(0);

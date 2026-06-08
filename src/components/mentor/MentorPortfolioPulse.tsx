@@ -131,11 +131,11 @@ function MentorPortfolioPulseInner({ workspaces }: Props) {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm">{a.message}</p>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {a.startups.slice(0, 4).map(n => (
-                      <Badge key={n} variant="outline" className="text-[10px] px-1.5 py-0">{n}</Badge>
+                    {a.startups.slice(0, 4).map((n, idx) => (
+                      <Badge key={`${a.key}-${idx}`} variant="outline" className="text-[10px] px-1.5 py-0">{n}</Badge>
                     ))}
                     {a.startups.length > 4 && (
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                      <Badge key={`${a.key}-more`} variant="outline" className="text-[10px] px-1.5 py-0">
                         +{a.startups.length - 4}
                       </Badge>
                     )}

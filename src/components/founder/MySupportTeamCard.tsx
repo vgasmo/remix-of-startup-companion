@@ -130,7 +130,7 @@ function MySupportTeamCardInner({ workspaceId, consultantId, mentorMember, lastS
               size="sm"
               variant="outline"
               className="gap-1.5 shrink-0"
-              onClick={() => navigate(`/workspace/${workspaceId}?tab=notes`)}
+              onClick={() => navigate(`/workspace/${workspaceId}?tab=overview`)}
             >
               <MessageSquare className="h-3.5 w-3.5" />
               {t('founder.supportTeam.sendNote', { defaultValue: 'Enviar nota' })}

@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useCallback } from 'react';
 
 const STREAK_KEY = 'founder_progress_streak';
 const LAST_ACTIVITY_KEY = 'founder_last_activity_week';
@@ -71,7 +71,7 @@ export function useProgressStreak() {
     return { currentStreak: 0, lastActivityWeek: data.lastActivityWeek };
   }, [currentWeek]);
 
-  const recordActivity = () => {
+  const recordActivity = useCallback(() => {
     const data = getStreakData();
     const previousWeek = getPreviousWeek(currentWeek);
     
@@ -96,7 +96,7 @@ export function useProgressStreak() {
       currentStreak: newStreak,
       lastActivityWeek: currentWeek,
     });
-  };
+  }, [currentWeek]);
 
   return {
     streakWeeks: streakData.currentStreak,
