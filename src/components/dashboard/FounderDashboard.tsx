@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -59,7 +59,7 @@ interface FounderDashboardProps {
   onCreateStartup: () => void;
 }
 
-export function FounderDashboard({ 
+export const FounderDashboard = memo(function FounderDashboard({ 
   workspaces, 
   pendingWorkspaces,
   isLoading, 
@@ -546,4 +546,4 @@ function QuickGuideBanner() {
       </CardContent>
     </Card>
   );
-}
+});
