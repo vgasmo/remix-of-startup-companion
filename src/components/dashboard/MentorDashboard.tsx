@@ -53,6 +53,7 @@ interface MentorDashboardProps {
 export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoading }: MentorDashboardProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { profile } = useAuth();
   const [prepSheetWorkspaceId, setPrepSheetWorkspaceId] = useState<string | null>(null);
   const [quickNoteWorkspaceId, setQuickNoteWorkspaceId] = useState<string | null>(null);
   const { data: mySlots } = useMyAvailability();
