@@ -29,7 +29,7 @@ export function ClaimedWorkspaceBanner({ founderState }: ClaimedWorkspaceBannerP
 
   if (founderState.status === 'has_pending_workspace') {
     return (
-      <Card className="rounded-xl border-amber-300 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+      <Card className="rounded-xl border-warning/60 dark:border-warning/40 bg-warning/5 dark:bg-warning/5">
         <CardContent className="py-4 flex items-start gap-3">
           <div className="h-10 w-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
             <Clock className="h-5 w-5 text-amber-600" />
