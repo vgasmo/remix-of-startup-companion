@@ -160,17 +160,46 @@ function ConsultorDashboardInner({ workspaces, isLoading, programsCount }: Consu
 
   if (!stats) return null;
 
+  const hour = new Date().getHours();
+  const greetingKey =
+    hour < 12 ? 'consultor.hero.morning'
+    : hour < 19 ? 'consultor.hero.afternoon'
+    : 'consultor.hero.evening';
+  const greetingDefault =
+    hour < 12 ? 'Bom dia{{name}}'
+    : hour < 19 ? 'Boa tarde{{name}}'
+    : 'Boa noite{{name}}';
+  const firstName = (user as any)?.user_metadata?.full_name || (user?.email?.split('@')[0]) || '';
+  const greetingName = firstName ? `, ${String(firstName).split(' ')[0]}` : '';
+
   return (
     <div className="space-y-6 max-w-6xl">
-      {/* Weekly Impact One-Liner */}
-      <p className="text-sm text-muted-foreground bg-muted/30 rounded-lg px-4 py-2.5 border border-border/40">
-        {t('consultor.weekSummary', {
-          defaultValue: 'Esta semana: {{sessions}} sessões · {{actions}} ações fechadas · {{health}} startups melhoraram',
-          sessions: upcomingSessions.length,
-          actions: criticalActions.reduce((sum, w) => sum + w.overdueActionsCount, 0),
-          health: stats.healthCounts.healthy + stats.healthCounts.thriving,
-        })}
-      </p>
+      {/* 1. GREETING HERO — branded surface, week summary inline */}
+      <BrandSurface
+        intensity="hero"
+        className="surface-hero rounded-2xl p-4 sm:p-7 overflow-hidden animate-fade-in-up stagger-1"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="space-y-2 min-w-0">
+            <p className="label-eyebrow">
+              {t('consultor.hero.eyebrow', { defaultValue: 'Cockpit do consultor' })}
+            </p>
+            <h1 className="text-display text-foreground break-words">
+              {t(greetingKey, { defaultValue: greetingDefault, name: greetingName })}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {t('consultor.weekSummary', {
+                defaultValue: 'Esta semana: {{sessions}} sessões · {{actions}} ações fechadas · {{health}} startups melhoraram',
+                sessions: upcomingSessions.length,
+                actions: criticalActions.reduce((sum, w) => sum + w.overdueActionsCount, 0),
+                health: stats.healthCounts.healthy + stats.healthCounts.thriving,
+              })}
+            </p>
+          </div>
+          <FocusModeToggle className="shrink-0" />
+        </div>
+      </BrandSurface>
+
 
       {/* Stream F: Next Best Action (read-only, derived) */}
       <WidgetErrorBoundary name="NextBestActionStaff">
