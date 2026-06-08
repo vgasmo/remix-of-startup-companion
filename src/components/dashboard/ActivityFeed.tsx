@@ -3,20 +3,23 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabaseClient';
 import { format } from 'date-fns';
 import { formatRelativeTime } from '@/lib/dateUtils';
-import { 
-  FileText, 
-  CheckCircle2, 
-  TrendingUp, 
+import {
+  FileText,
+  CheckCircle2,
+  TrendingUp,
   Target,
   Calendar,
   AlertCircle,
-  Clock
+  Clock,
+  ClipboardList
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { EmptyState } from '@/components/ui/EmptyState';
+
 
 interface ActivityItem {
   id: string;
