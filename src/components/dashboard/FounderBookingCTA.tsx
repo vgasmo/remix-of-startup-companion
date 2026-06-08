@@ -77,11 +77,6 @@ export function FounderBookingCTA({ workspaceId, className, isFirstWeek = false 
       </Card>
     );
   }
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   // Has consultant - show next session or book new
   return (
