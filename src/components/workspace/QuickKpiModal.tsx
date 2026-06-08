@@ -116,7 +116,15 @@ export function QuickKpiModal({ open, onOpenChange, workspaceId, programId }: Qu
         setCurrentIndex(0);
         onOpenChange(false);
         queryClient.invalidateQueries({ queryKey: ['kpi-values', workspaceId] });
-        triggerKpiCelebration();
+        // Celebrate first-ever KPI submission for this workspace exactly once.
+        const celebrationKey = `celebrated_first_kpi_${workspaceId}`;
+        const hadPriorKpis = (kpiValues?.length ?? 0) > 0;
+        let alreadyCelebrated = false;
+        try { alreadyCelebrated = localStorage.getItem(celebrationKey) === '1'; } catch { /* ignore */ }
+        if (!hadPriorKpis && !alreadyCelebrated) {
+          triggerKpiCelebration();
+          try { localStorage.setItem(celebrationKey, '1'); } catch { /* ignore */ }
+        }
         return t('kpis.savedSuccess', { defaultValue: 'KPIs atualizados! Continue assim 💪' });
       },
       error: () => {
@@ -125,6 +133,7 @@ export function QuickKpiModal({ open, onOpenChange, workspaceId, programId }: Qu
         return t('quickKpi.error', { defaultValue: 'Falha ao guardar KPIs' });
       },
     });
+
 
     try {
       await submitPromise;
