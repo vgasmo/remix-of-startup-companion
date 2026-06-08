@@ -348,7 +348,10 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
         <div id="mentor-startups-section" className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold">{t('mentor.myStartups')}</h2>
+              <p className="label-eyebrow mb-1.5">
+                {t('mentor.myStartupsEyebrow', { defaultValue: 'O teu portefólio' })}
+              </p>
+              <h2 className="text-heading">{t('mentor.myStartups')}</h2>
               <p className="text-xs text-muted-foreground">
                 {t('mentor.myStartupsHint', { defaultValue: 'Startups que acompanha. Use "Preparar Reunião" para contexto rápido antes de cada sessão.' })}
               </p>
