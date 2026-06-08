@@ -361,7 +361,7 @@ export const FounderDashboard = memo(function FounderDashboard({
 
       {/* 2. Today's focus — THE single primary CTA */}
       <div className="animate-fade-in-up stagger-2">
-        <OneThingToday workspace={workspace} />
+        <OneThingToday workspace={workspace} isFirstWeek={isFirstWeek} />
       </div>
 
       {/* 2.5 My Support Team — relationship awareness */}
@@ -378,8 +378,9 @@ export const FounderDashboard = memo(function FounderDashboard({
 
       {/* 3. Consultant / next session */}
       <div className="animate-fade-in-up stagger-4">
-        <FounderBookingCTA workspaceId={workspace.id} />
+        <FounderBookingCTA workspaceId={workspace.id} isFirstWeek={isFirstWeek} />
       </div>
+
 
 
       {/* Optional: compact "Your setup" checklist — only when onboarding is incomplete */}
