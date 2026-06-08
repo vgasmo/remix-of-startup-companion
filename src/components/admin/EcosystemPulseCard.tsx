@@ -19,7 +19,7 @@ function EcosystemPulseCardInner() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-ecosystem-pulse'],
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10);
       const [contracts, atRisk, pending, programs] = await Promise.allSettled([
