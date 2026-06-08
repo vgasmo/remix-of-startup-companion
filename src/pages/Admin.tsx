@@ -6,7 +6,7 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import {
   Users, Building2, FileText, BarChart3, Clock, TrendingUp,
   Heart, ShieldCheck, Users2, BookOpen, ClipboardList, Bell,
-  ChevronDown, Database, UserPlus
+  ChevronDown, Database, UserPlus, Activity
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
