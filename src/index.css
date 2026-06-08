@@ -1,7 +1,7 @@
-@import "@fontsource/dm-sans/400.css";
-@import "@fontsource/dm-sans/500.css";
-@import "@fontsource/dm-sans/600.css";
-@import "@fontsource/dm-sans/700.css";
+@import "@fontsource/space-grotesk/400.css";
+@import "@fontsource/space-grotesk/500.css";
+@import "@fontsource/space-grotesk/600.css";
+@import "@fontsource/space-grotesk/700.css";
 @import "@fontsource/outfit/300.css";
 @import "@fontsource/outfit/400.css";
 @import "@fontsource/outfit/500.css";
@@ -13,7 +13,8 @@
 
 @layer base {
   :root {
-    /* Startup Leiria palette - Olive-green accent, clean whites */
+    /* Startup Leiria palette — derived from the official logo
+       (lime peak #B5C40D, crimson chevron #D81E28, ink #3C3C3B). */
     --background: 60 10% 98%;
     --foreground: 60 5% 15%;
 
@@ -23,28 +24,33 @@
     --popover: 0 0% 100%;
     --popover-foreground: 60 5% 15%;
 
-    /* Startup Leiria olive-green brand color */
-    --primary: 68 65% 45%;
-    --primary-foreground: 60 5% 10%;
+    /* Brand lime — usable as a FILL (badges, buttons, large headings). */
+    --primary: 67 72% 41%;
+    --primary-foreground: 60 10% 10%;
+    /* Text-safe deep olive for small green text/links on light surfaces. */
+    --primary-strong: 67 75% 27%;
 
-    /* Warm neutral secondary */
+    /* Neutral surfaces (shadcn semantics — keep neutral, NOT brand red). */
     --secondary: 60 8% 96%;
     --secondary-foreground: 60 5% 25%;
 
-    /* Muted for backgrounds */
     --muted: 60 8% 94%;
     --muted-foreground: 60 5% 45%;
 
-    /* Accent - matching olive-green */
-    --accent: 68 60% 48%;
-    --accent-foreground: 60 5% 10%;
+    --accent: 60 8% 94%;
+    --accent-foreground: 60 5% 20%;
 
-    /* Destructive - Startup Leiria red accent */
-    --destructive: 0 70% 45%;
+    /* Brand crimson — energy / forward-motion accent (NOT errors). */
+    --brand-red: 357 75% 48%;
+    --brand-red-foreground: 0 0% 100%;
+    --brand-ink: 60 3% 22%;
+
+    /* Errors — deepened so they stay distinct from brand-red. */
+    --destructive: 0 62% 42%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 68 60% 42%;
-    --success-foreground: 60 5% 10%;
+    --success: 67 65% 35%;
+    --success-foreground: 0 0% 100%;
 
     --warning: 45 90% 50%;
     --warning-foreground: 60 5% 10%;
@@ -54,51 +60,51 @@
 
     --border: 60 8% 88%;
     --input: 60 8% 88%;
-    --ring: 68 65% 45%;
+    --ring: 67 72% 41%;
 
     --radius: 0.5rem;
 
-    /* Sidebar - dark professional with high contrast */
-    --sidebar-background: 60 8% 10%;
+    /* Sidebar — dark professional with high contrast */
+    --sidebar-background: 60 4% 10%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 68 65% 50%;
+    --sidebar-primary: 67 72% 48%;
     --sidebar-primary-foreground: 60 5% 10%;
-    --sidebar-accent: 60 8% 18%;
+    --sidebar-accent: 60 4% 18%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 60 8% 22%;
-    --sidebar-ring: 68 60% 48%;
+    --sidebar-border: 60 4% 22%;
+    --sidebar-ring: 67 70% 48%;
     --sidebar-muted: 0 0% 88%;
 
-    /* Health score colors - professional tones */
-    --health-critical: 0 65% 48%;
-    --health-at-risk: 38 75% 50%;
+    /* Health score colors */
+    --health-critical: 357 75% 48%;
+    --health-at-risk: 38 80% 50%;
     --health-stable: 200 55% 50%;
-    --health-healthy: 68 55% 45%;
-    --health-thriving: 68 65% 40%;
+    --health-healthy: 67 60% 40%;
+    --health-thriving: 67 72% 35%;
 
-    /* Stage colors - cohesive */
+    /* Stage colors */
     --stage-ideation: 280 40% 55%;
     --stage-validation: 200 55% 50%;
     --stage-mvp: 180 45% 45%;
-    --stage-growth: 68 55% 45%;
+    --stage-growth: 67 60% 40%;
     --stage-scale: 45 70% 48%;
 
-    /* Chart colors - harmonious */
-    --chart-1: 68 65% 45%;
-    --chart-2: 200 55% 50%;
-    --chart-3: 45 70% 50%;
-    --chart-4: 0 65% 50%;
+    /* Chart colors — lead with brand lime + brand red */
+    --chart-1: 67 72% 41%;
+    --chart-2: 357 75% 48%;
+    --chart-3: 45 75% 50%;
+    --chart-4: 200 55% 50%;
     --chart-5: 280 40% 55%;
 
-    /* Gradient tokens - subtle */
-    --gradient-primary: linear-gradient(135deg, hsl(68 65% 45%) 0%, hsl(68 60% 52%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(68 60% 42%) 0%, hsl(68 55% 50%) 100%);
-    --gradient-sidebar: linear-gradient(180deg, hsl(60 8% 10%) 0%, hsl(60 10% 6%) 100%);
-    --gradient-brand: linear-gradient(135deg, hsl(68 65% 45%) 0%, hsl(68 55% 55%) 100%);
+    /* Gradient tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(67 72% 41%) 0%, hsl(67 68% 50%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(67 68% 38%) 0%, hsl(67 60% 50%) 100%);
+    --gradient-sidebar: linear-gradient(180deg, hsl(60 4% 10%) 0%, hsl(60 5% 6%) 100%);
+    --gradient-brand: linear-gradient(135deg, hsl(67 72% 41%) 0%, hsl(357 75% 48%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(60 10% 98%) 100%);
     --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.92) 0%, hsl(0 0% 100% / 0.75) 100%);
 
-    /* Enhanced shadows - softer */
+    /* Shadows */
     --shadow-xs: 0 1px 2px 0 hsl(60 10% 0% / 0.03);
     --shadow-sm: 0 1px 3px 0 hsl(60 10% 0% / 0.04), 0 1px 2px -1px hsl(60 10% 0% / 0.03);
     --shadow-md: 0 4px 6px -1px hsl(60 10% 0% / 0.06), 0 2px 4px -2px hsl(60 10% 0% / 0.04);
@@ -106,8 +112,8 @@
     --shadow-xl: 0 20px 25px -5px hsl(60 10% 0% / 0.08), 0 8px 10px -6px hsl(60 10% 0% / 0.04);
     --shadow-card: 0 1px 3px 0 hsl(60 10% 0% / 0.04), 0 1px 2px -1px hsl(60 10% 0% / 0.03);
     --shadow-card-hover: 0 6px 16px -4px hsl(60 10% 0% / 0.08), 0 3px 6px -2px hsl(60 10% 0% / 0.04);
-    --shadow-glow: 0 0 16px hsl(68 65% 45% / 0.15);
-    --shadow-glow-accent: 0 0 16px hsl(68 60% 48% / 0.2);
+    --shadow-glow: 0 0 16px hsl(67 72% 41% / 0.18);
+    --shadow-glow-accent: 0 0 16px hsl(357 75% 48% / 0.22);
     --shadow-inset: inset 0 1px 3px 0 hsl(60 10% 0% / 0.04);
   }
 
@@ -121,8 +127,9 @@
     --popover: 60 6% 10%;
     --popover-foreground: 60 5% 95%;
 
-    --primary: 68 60% 52%;
+    --primary: 67 65% 50%;
     --primary-foreground: 60 5% 10%;
+    --primary-strong: 67 60% 65%;
 
     --secondary: 60 6% 15%;
     --secondary-foreground: 60 5% 88%;
@@ -130,37 +137,48 @@
     --muted: 60 6% 15%;
     --muted-foreground: 60 5% 65%;
 
-    --accent: 68 55% 48%;
-    --accent-foreground: 60 5% 10%;
+    --accent: 60 6% 18%;
+    --accent-foreground: 60 5% 92%;
 
-    --destructive: 0 60% 48%;
+    --brand-red: 357 70% 55%;
+    --brand-red-foreground: 0 0% 100%;
+    --brand-ink: 60 5% 88%;
+
+    --destructive: 0 58% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 68 55% 42%;
+    --success: 67 55% 48%;
     --success-foreground: 60 5% 10%;
 
-    --warning: 45 85% 48%;
+    --warning: 45 85% 55%;
     --warning-foreground: 60 5% 10%;
 
-    --info: 200 60% 52%;
+    --info: 200 60% 55%;
     --info-foreground: 0 0% 100%;
 
     --border: 60 6% 20%;
     --input: 60 6% 20%;
-    --ring: 68 60% 50%;
+    --ring: 67 65% 50%;
 
     --sidebar-background: 60 6% 5%;
     --sidebar-foreground: 60 5% 88%;
-    --sidebar-primary: 68 60% 52%;
+    --sidebar-primary: 67 65% 52%;
     --sidebar-primary-foreground: 60 5% 10%;
     --sidebar-accent: 60 6% 13%;
     --sidebar-accent-foreground: 60 5% 92%;
     --sidebar-border: 60 6% 18%;
-    --sidebar-ring: 68 55% 48%;
+    --sidebar-ring: 67 60% 50%;
     --sidebar-muted: 60 5% 55%;
+
+    --chart-1: 67 65% 50%;
+    --chart-2: 357 70% 55%;
+    --chart-3: 45 75% 55%;
+    --chart-4: 200 60% 55%;
+    --chart-5: 280 45% 60%;
 
     --gradient-card: linear-gradient(145deg, hsl(60 6% 12%) 0%, hsl(60 6% 10%) 100%);
     --gradient-glass: linear-gradient(135deg, hsl(60 6% 14% / 0.9) 0%, hsl(60 6% 11% / 0.7) 100%);
+    --gradient-brand: linear-gradient(135deg, hsl(67 65% 50%) 0%, hsl(357 70% 55%) 100%);
     --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.25), 0 1px 2px -1px hsl(0 0% 0% / 0.3);
     --shadow-card-hover: 0 8px 20px -4px hsl(0 0% 0% / 0.4), 0 4px 8px -2px hsl(0 0% 0% / 0.25);
   }
@@ -184,7 +202,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
     @apply font-semibold tracking-tight;
   }
 
@@ -439,21 +457,21 @@
      Use these utilities instead of ad-hoc text-* classes.
      ============================================================ */
   .text-display {
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
     font-size: clamp(2rem, 1.4rem + 2vw, 3rem);
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.05;
   }
   .text-title {
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
     font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
     font-weight: 600;
     letter-spacing: -0.015em;
     line-height: 1.15;
   }
   .text-heading {
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
     font-size: 1.25rem;
     font-weight: 600;
     line-height: 1.3;
@@ -471,9 +489,27 @@
     color: hsl(var(--muted-foreground));
   }
 
+  /* Eyebrow — echoes the spaced "STARTUP / LEIRIA" wordmark. */
+  .label-eyebrow {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Text-safe deep-olive variant for green TEXT/LINKS on light surfaces. */
+  .text-primary-strong {
+    color: hsl(var(--primary-strong));
+  }
+
   /* ============================================================
-     BRAND MOTIF — soft radial bloom + faint diagonal dot-grid.
-     Pseudo-element layer, pointer-events-none, uses --primary token.
+     BRAND MOTIF — the signature "A ›" chevron+peak watermark,
+     derived directly from the Startup Leiria logo.
+     SVG is inlined as a CSS background, very low opacity, layered
+     behind children. pointer-events-none. No animation.
      ============================================================ */
   .brand-motif {
     position: relative;
@@ -483,39 +519,61 @@
   .brand-motif::after {
     content: '';
     position: absolute;
-    inset: 0;
     pointer-events: none;
     z-index: 0;
   }
+  /* The forward chevron ">" in brand-red — top-right energy mark. */
   .brand-motif::before {
-    background:
-      radial-gradient(
-        circle at 85% 0%,
-        hsl(var(--primary) / 0.10) 0%,
-        transparent 55%
-      );
-    opacity: 0.9;
+    top: -10%;
+    right: -4%;
+    width: 55%;
+    height: 140%;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'><path d='M30 18 L70 50 L30 82' stroke='hsl(357,75%25,48%25)' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: center right;
+    background-size: contain;
+    opacity: 0.05;
   }
+  /* The upward peak "Λ" in brand-lime — bottom-left identity mark. */
   .brand-motif::after {
-    background-image: radial-gradient(
-      hsl(var(--primary) / 0.18) 1px,
-      transparent 1px
-    );
-    background-size: 18px 18px;
-    background-position: 0 0;
-    opacity: 0.06;
-    mask-image: linear-gradient(135deg, transparent 0%, black 40%, transparent 90%);
-    -webkit-mask-image: linear-gradient(135deg, transparent 0%, black 40%, transparent 90%);
+    bottom: -20%;
+    left: -6%;
+    width: 60%;
+    height: 150%;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'><path d='M12 86 L50 14 L88 86' stroke='hsl(67,72%25,41%25)' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: bottom left;
+    background-size: contain;
+    opacity: 0.05;
   }
   .brand-motif > * {
     position: relative;
     z-index: 1;
   }
+  .brand-motif-subtle::before { opacity: 0.035; }
+  .brand-motif-subtle::after  { opacity: 0.035; }
+  .brand-motif-hero::before   { opacity: 0.07; }
+  .brand-motif-hero::after    { opacity: 0.06; }
+  @media (prefers-reduced-motion: reduce) {
+    .brand-motif::before,
+    .brand-motif::after { transition: none; animation: none; }
+  }
 
-  .brand-motif-subtle::before { opacity: 0.5; }
-  .brand-motif-subtle::after { opacity: 0.04; }
-  .brand-motif-hero::before { opacity: 1; }
-  .brand-motif-hero::after { opacity: 0.08; }
+  /* Section divider with a small lime chevron — quick visual rhythm. */
+  .chevron-rule {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: hsl(var(--border));
+  }
+  .chevron-rule::before,
+  .chevron-rule::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: currentColor;
+  }
+  .chevron-rule > svg { color: hsl(var(--primary)); flex: none; }
 
   /* ============================================================
      ELEVATION / SURFACE TIERS — canonical card surfaces.

@@ -16,7 +16,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Outfit", "system-ui", "sans-serif"],
-        heading: ["DM Sans", "system-ui", "sans-serif"],
+        heading: ["Space Grotesk", "DM Sans", "system-ui", "sans-serif"],
+        display: ["Space Grotesk", "DM Sans", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -27,7 +28,14 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          strong: "hsl(var(--primary-strong))",
         },
+        "primary-strong": "hsl(var(--primary-strong))",
+        "brand-red": {
+          DEFAULT: "hsl(var(--brand-red))",
+          foreground: "hsl(var(--brand-red-foreground))",
+        },
+        "brand-ink": "hsl(var(--brand-ink))",
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
