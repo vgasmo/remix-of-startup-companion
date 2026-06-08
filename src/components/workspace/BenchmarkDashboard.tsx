@@ -5,16 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, Target, BarChart3, Activity, Users, ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { BarChart3, Users, ArrowUp, ArrowDown, Minus, Activity, Sparkles } from 'lucide-react';
 
-interface BenchmarkData {
+interface CohortBenchmark {
   program_id: string;
   stage: string;
-  startup_count: number;
-  avg_health_score: number | null;
-  avg_milestones_completed: number | null;
-  avg_actions_completed: number | null;
-  avg_kpi_entries: number | null;
+  metric_key: string;
+  metric_label: string | null;
+  cohort_size: number;
+  p25: number | null;
+  p50: number | null;
+  p75: number | null;
+  p90: number | null;
+  avg: number | null;
 }
 
 interface BenchmarkDashboardProps {
@@ -26,214 +29,145 @@ interface BenchmarkDashboardProps {
   myActionsCompleted?: number;
 }
 
-function useBenchmarks(programId?: string) {
+function useCohortBenchmarks(programId?: string, stage?: string) {
   return useQuery({
-    queryKey: ['program-benchmarks', programId],
-    queryFn: async (): Promise<BenchmarkData[]> => {
-      let query = supabase.from('program_benchmarks').select('*');
-      if (programId) query = query.eq('program_id', programId);
-      const { data, error } = await query;
+    queryKey: ['cohort-benchmarks', programId, stage],
+    queryFn: async (): Promise<CohortBenchmark[]> => {
+      if (!programId || !stage) return [];
+      const { data, error } = await supabase
+        .from('cohort_benchmarks')
+        .select('*')
+        .eq('program_id', programId)
+        .eq('stage', stage);
       if (error) throw error;
-      return (data || []) as BenchmarkData[];
+      return (data || []) as CohortBenchmark[];
     },
+    enabled: !!programId && !!stage,
+    staleTime: 30 * 60_000,
   });
 }
 
-function ComparisonIndicator({ myValue, avgValue, unit }: { myValue: number; avgValue: number; unit?: string }) {
-  const diff = myValue - avgValue;
-  const pct = avgValue > 0 ? Math.round((diff / avgValue) * 100) : 0;
-  
-  if (Math.abs(pct) < 5) {
-    return (
-      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-        <Minus className="h-3 w-3" /> Na média
-      </span>
-    );
-  }
-  
-  return diff > 0 ? (
-    <span className="flex items-center gap-1 text-xs text-green-600">
-      <ArrowUp className="h-3 w-3" /> +{pct}% {unit || ''}
-    </span>
-  ) : (
-    <span className="flex items-center gap-1 text-xs text-amber-600">
-      <ArrowDown className="h-3 w-3" /> {pct}% {unit || ''}
+function bandForValue(value: number, b: CohortBenchmark): { label: string; tone: 'success' | 'warning' | 'muted' | 'destructive'; pct: number } {
+  // determine which percentile band the user falls into
+  if (b.p90 != null && value >= b.p90) return { label: 'p90+', tone: 'success', pct: 95 };
+  if (b.p75 != null && value >= b.p75) return { label: 'p75', tone: 'success', pct: 80 };
+  if (b.p50 != null && value >= b.p50) return { label: 'p50', tone: 'muted', pct: 55 };
+  if (b.p25 != null && value >= b.p25) return { label: 'p25', tone: 'warning', pct: 35 };
+  return { label: '<p25', tone: 'destructive', pct: 15 };
+}
+
+function PercentileBadge({ band }: { band: ReturnType<typeof bandForValue> }) {
+  const toneClasses: Record<string, string> = {
+    success: 'bg-success/15 text-success border-success/30',
+    warning: 'bg-warning/15 text-warning border-warning/30',
+    destructive: 'bg-destructive/15 text-destructive border-destructive/30',
+    muted: 'bg-muted text-muted-foreground border-border',
+  };
+  const icon = band.tone === 'success' ? <ArrowUp className="h-3 w-3" /> : band.tone === 'destructive' ? <ArrowDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />;
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium ${toneClasses[band.tone]}`}>
+      {icon} {band.label}
     </span>
   );
 }
 
 export function BenchmarkDashboard({
-  workspaceId,
   programId,
   currentStage,
   myHealthScore,
-  myMilestonesCompleted = 0,
-  myActionsCompleted = 0,
 }: BenchmarkDashboardProps) {
   const { t } = useTranslation();
-  const { data: benchmarks, isLoading } = useBenchmarks(programId);
+  const { data: benchmarks, isLoading } = useCohortBenchmarks(programId, currentStage);
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-36" />)}
+      <div className="grid gap-4 md:grid-cols-2">
+        {[1, 2].map(i => <Skeleton key={i} className="h-36" />)}
       </div>
     );
   }
 
-  const stageBenchmark = benchmarks?.find(b => b.stage === currentStage);
-  const allStages = benchmarks || [];
-
-  if (!stageBenchmark && allStages.length === 0) {
+  if (!benchmarks || benchmarks.length === 0) {
     return (
       <Card>
         <CardContent className="py-10 text-center">
           <BarChart3 className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">
-            {t('benchmark.noData', 'Dados de benchmark ainda não disponíveis. Serão apresentados quando houver startups suficientes no programa.')}
+            {t('benchmark.smallCohort', 'Ainda não há dados suficientes no teu grupo para comparação. Os benchmarks são apresentados quando houver pelo menos 5 startups na mesma fase.')}
           </p>
         </CardContent>
       </Card>
     );
   }
 
-  const avg = stageBenchmark || { avg_health_score: 0, avg_milestones_completed: 0, avg_actions_completed: 0, avg_kpi_entries: 0, startup_count: 0 };
-
-  const metrics = [
-    {
-      icon: Activity,
-      label: t('benchmark.healthScore', 'Health Score'),
-      myValue: myHealthScore ?? 0,
-      avgValue: avg.avg_health_score ?? 0,
-      max: 100,
-      color: 'text-primary',
-    },
-    {
-      icon: Target,
-      label: t('benchmark.milestones', 'Milestones Concluídos'),
-      myValue: myMilestonesCompleted,
-      avgValue: avg.avg_milestones_completed ?? 0,
-      max: Math.max(myMilestonesCompleted, (avg.avg_milestones_completed ?? 0)) * 1.5 || 10,
-      color: 'text-green-600',
-    },
-    {
-      icon: TrendingUp,
-      label: t('benchmark.actions', 'Ações Concluídas'),
-      myValue: myActionsCompleted,
-      avgValue: avg.avg_actions_completed ?? 0,
-      max: Math.max(myActionsCompleted, (avg.avg_actions_completed ?? 0)) * 1.5 || 20,
-      color: 'text-blue-600',
-    },
-  ];
+  const cohortSize = benchmarks[0]?.cohort_size ?? 0;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
+      <Card className="border-primary/20">
         <CardContent className="py-4">
           <div className="flex items-center gap-3">
             <div className="rounded-full p-2 bg-primary/10">
-              <BarChart3 className="h-5 w-5 text-primary" />
+              <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
               <h3 className="font-semibold">
-                {t('benchmark.title', 'Benchmark do Programa')}
+                {t('benchmark.title', 'Benchmark anónimo do teu grupo')}
               </h3>
               <p className="text-sm text-muted-foreground">
-                {t('benchmark.description', 'Comparação anónima com startups na mesma fase')}
+                {t('benchmark.percentileDesc', 'Posição percentil entre startups na mesma fase (mínimo 5 para garantir anonimato).')}
               </p>
             </div>
             <Badge variant="secondary" className="gap-1">
               <Users className="h-3 w-3" />
-              {avg.startup_count} {t('benchmark.startups', 'startups')}
+              {cohortSize} {t('benchmark.startups', 'startups')}
             </Badge>
           </div>
         </CardContent>
       </Card>
 
-      {/* Metrics comparison */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {metrics.map((metric) => {
-          const Icon = metric.icon;
-          const myPct = metric.max > 0 ? Math.min((metric.myValue / metric.max) * 100, 100) : 0;
-          const avgPct = metric.max > 0 ? Math.min((metric.avgValue / metric.max) * 100, 100) : 0;
-
+      <div className="grid gap-4 md:grid-cols-2">
+        {benchmarks.map((b) => {
+          const myValue = b.metric_key === 'health_score' ? (myHealthScore ?? null) : null;
+          const band = myValue != null ? bandForValue(myValue, b) : null;
           return (
-            <Card key={metric.label}>
+            <Card key={b.metric_key}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Icon className={`h-4 w-4 ${metric.color}`} />
-                  {metric.label}
+                  <Activity className="h-4 w-4 text-primary" />
+                  {b.metric_label || b.metric_key}
                 </CardTitle>
+                <CardDescription className="text-xs">
+                  {t('benchmark.cohortRange', 'p25: {{p25}} · p50: {{p50}} · p75: {{p75}} · p90: {{p90}}', {
+                    p25: b.p25?.toFixed(1) ?? '—',
+                    p50: b.p50?.toFixed(1) ?? '—',
+                    p75: b.p75?.toFixed(1) ?? '—',
+                    p90: b.p90?.toFixed(1) ?? '—',
+                  })}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-end justify-between">
-                  <div>
-                    <p className="text-2xl font-bold">{Math.round(metric.myValue)}</p>
-                    <p className="text-xs text-muted-foreground">{t('benchmark.you', 'Tu')}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg text-muted-foreground">{Math.round(metric.avgValue)}</p>
-                    <p className="text-xs text-muted-foreground">{t('benchmark.avg', 'Média')}</p>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs w-12 text-muted-foreground">{t('benchmark.you', 'Tu')}</span>
-                    <Progress value={myPct} className="flex-1 h-2" />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs w-12 text-muted-foreground">{t('benchmark.avg', 'Média')}</span>
-                    <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                      <div className="h-full bg-muted-foreground/40 rounded-full" style={{ width: `${avgPct}%` }} />
+                {myValue != null && band ? (
+                  <>
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <p className="text-2xl font-bold">{Math.round(myValue)}</p>
+                        <p className="text-xs text-muted-foreground">{t('benchmark.you', 'Tu')}</p>
+                      </div>
+                      <PercentileBadge band={band} />
                     </div>
-                  </div>
-                </div>
-                <ComparisonIndicator myValue={metric.myValue} avgValue={metric.avgValue} />
+                    <Progress value={band.pct} className="h-2" />
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    {t('benchmark.noPersonalValue', 'Sem valor atual para comparar.')}
+                  </p>
+                )}
               </CardContent>
             </Card>
           );
         })}
       </div>
-
-      {/* Stage progression overview */}
-      {allStages.length > 1 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">{t('benchmark.stageOverview', 'Visão por Fase')}</CardTitle>
-            <CardDescription>{t('benchmark.stageDesc', 'Métricas médias de cada fase do programa')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {allStages.map(stage => (
-                <div
-                  key={stage.stage}
-                  className={`flex items-center gap-4 p-2 rounded-lg ${stage.stage === currentStage ? 'bg-primary/5 border border-primary/20' : ''}`}
-                >
-                  <Badge variant={stage.stage === currentStage ? 'default' : 'secondary'} className="min-w-[80px] justify-center">
-                    {t(`stages.${stage.stage}`, stage.stage)}
-                  </Badge>
-                  <div className="flex-1 grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground text-xs">{t('benchmark.healthScore', 'Health Score')}</span>
-                      <p className="font-medium">{stage.avg_health_score ?? '—'}</p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground text-xs">{t('benchmark.milestones', 'Milestones')}</span>
-                      <p className="font-medium">{stage.avg_milestones_completed ?? '—'}</p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground text-xs">{t('benchmark.actions', 'Actions')}</span>
-                      <p className="font-medium">{stage.avg_actions_completed ?? '—'}</p>
-                    </div>
-                  </div>
-                  <span className="text-xs text-muted-foreground">{stage.startup_count} startups</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
