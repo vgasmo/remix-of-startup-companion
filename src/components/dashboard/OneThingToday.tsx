@@ -15,6 +15,8 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/EmptyState';
+
 import { useActionItems } from '@/hooks/useActionItems';
 import { usePendingCheckin } from '@/hooks/useCheckins';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
