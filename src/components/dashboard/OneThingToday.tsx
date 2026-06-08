@@ -126,11 +126,12 @@ export function OneThingToday({ workspace, className }: OneThingTodayProps) {
 
   if (!recommendation) {
     return (
-      <Card className={cn(
-        'relative overflow-hidden border-success/20',
+      <Card key="caught-up" className={cn(
+        'relative overflow-hidden border-success/20 animate-scale-in',
         'bg-gradient-to-r from-success/10 via-success/5 to-transparent',
         className
       )}>
+
         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-success/10 to-transparent rounded-bl-full" />
         <CardContent className="p-4 relative">
           <div className="flex items-center gap-3">
@@ -157,13 +158,14 @@ export function OneThingToday({ workspace, className }: OneThingTodayProps) {
   const isWarning = recommendation.variant === 'warning';
 
   return (
-    <Card className={cn(
-      'relative overflow-hidden transition-all duration-300 hover:shadow-md hover:scale-[1.005]',
+    <Card key={recommendation.type} className={cn(
+      'relative overflow-hidden transition-all duration-300 hover:shadow-md hover:scale-[1.005] animate-scale-in',
       isDestructive && 'border-destructive/30 bg-gradient-to-r from-destructive/10 via-destructive/5 to-transparent',
       isWarning && 'border-warning/30 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent',
       !isDestructive && !isWarning && 'border-primary/20 bg-gradient-to-r from-primary/8 via-accent/5 to-transparent',
       className
     )}>
+
       {/* Subtle glow accent */}
       <div className={cn(
         'absolute top-0 right-0 w-32 h-32 rounded-bl-full opacity-40',
@@ -200,7 +202,7 @@ export function OneThingToday({ workspace, className }: OneThingTodayProps) {
             size="sm"
             variant={isDestructive ? 'destructive' : 'default'}
             onClick={() => navigate(recommendation.link)}
-            className="flex-shrink-0 gap-1.5 shadow-sm h-11 sm:h-9 px-4"
+            className="flex-shrink-0 gap-1.5 shadow-sm h-11 sm:h-9 px-4 btn-press"
           >
             {t('common.go')}
             <ArrowRight className="h-4 w-4" />

@@ -18,6 +18,7 @@ import { CheckCircle2, FileText, Calendar, User, ArrowRight, Sparkles } from 'lu
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { notify } from "@/lib/notify";
+import { triggerSuccessConfetti } from '@/lib/confetti';
 
 interface Props {
   workspaceId: string | null;
@@ -73,9 +74,25 @@ export function FounderWelcomeWizard({ workspaceId }: Props) {
   };
 
   const next = () => {
-    if (step < totalSteps - 1) setStep(step + 1);
-    else close();
+    if (step < totalSteps - 1) {
+      setStep(step + 1);
+    } else {
+      // Celebrate wizard completion exactly once per user.
+      const celebrationKey = user?.id ? `celebrated_welcome_wizard_${user.id}` : null;
+      let alreadyCelebrated = false;
+      if (celebrationKey) {
+        try { alreadyCelebrated = localStorage.getItem(celebrationKey) === '1'; } catch { /* ignore */ }
+      }
+      if (!alreadyCelebrated) {
+        triggerSuccessConfetti();
+        if (celebrationKey) {
+          try { localStorage.setItem(celebrationKey, '1'); } catch { /* ignore */ }
+        }
+      }
+      close();
+    }
   };
+
 
   const goToProfile = () => {
     close();
