@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { FileText, AlertTriangle, Clock, Activity } from 'lucide-react';
@@ -5,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
 import { supabase } from '@/lib/supabaseClient';
+import { useWorkspaces } from '@/hooks/useWorkspaces';
+import { useWorkspaceMomentum, type MomentumBand } from '@/hooks/useWorkspaceMomentum';
 
 interface Metric {
   key: string;
