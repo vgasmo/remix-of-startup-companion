@@ -155,6 +155,8 @@ export function useCreateSession(workspaceId: string) {
 
       // P1.2: Log activity
       logActivity('created', 'session', data.id, workspaceId, { title: data.title });
+      // Tier-0 analytics
+      void track('session_scheduled', { workspaceId, properties: { sessionId: data.id } });
 
       // Skip Outlook/Teams notifications for sessions logged after the fact
       // (i.e. scheduled in the past). These are records of meetings that
