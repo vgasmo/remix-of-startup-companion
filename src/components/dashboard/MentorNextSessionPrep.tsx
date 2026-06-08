@@ -68,7 +68,7 @@ export function MentorNextSessionPrep({ workspaces }: MentorNextSessionPrepProps
   };
 
   return (
-    <Card className={`overflow-hidden ${isUrgent ? 'border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20' : 'border-primary/20 bg-primary/5'}`}>
+    <Card className={`overflow-hidden ${isUrgent ? 'border-warning/50 bg-warning/5 dark:bg-warning/5' : 'border-primary/20 bg-primary/5'}`}>
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           {/* Left: Startup info */}
