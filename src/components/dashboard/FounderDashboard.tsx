@@ -546,4 +546,4 @@ function QuickGuideBanner() {
       </CardContent>
     </Card>
   );
-});
+}
