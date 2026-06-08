@@ -132,10 +132,11 @@ export function FounderBookingCTA({ workspaceId, className }: FounderBookingCTAP
                     {t('founderHome.bookNextSession', 'Book your next check-in with your consultant')}
                   </p>
                 </div>
-                <Button onClick={handleBookSession} className="gap-2">
+                <Button onClick={handleBookSession} className="gap-2 h-11 sm:h-10 w-full sm:w-auto">
                   <Calendar className="h-4 w-4" />
                   {t('founderHome.bookSession', 'Book Session')}
                 </Button>
+
               </div>
             )}
           </div>
