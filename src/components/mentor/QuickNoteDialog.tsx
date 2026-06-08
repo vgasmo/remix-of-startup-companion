@@ -41,6 +41,7 @@ export function QuickNoteDialog({ open, onOpenChange, workspaceId, startupName }
         visibility: 'team',
       });
       if (error) throw error;
+      void track('mentor_session_logged', { workspaceId });
       notify.success(t('mentor.noteAdded', { defaultValue: 'Nota adicionada com sucesso' }));
       setContent('');
       onOpenChange(false);
