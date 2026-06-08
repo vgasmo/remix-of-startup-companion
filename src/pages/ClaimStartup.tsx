@@ -83,6 +83,7 @@ export default function ClaimStartup() {
         setPageState('auto_claimed');
         setClaimedStartupName(result.startup_name || null);
         setClaimedWorkspaceId(result.workspace_id || null);
+        void track('claim_completed', { workspaceId: result.workspace_id, properties: { mode: 'auto' } });
         // Invalidate onboarding state so routing updates
         queryClient.invalidateQueries({ queryKey: ['founder-onboarding-state'] });
         toast({
