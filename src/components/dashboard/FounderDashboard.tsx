@@ -613,3 +613,47 @@ function QuickGuideBanner() {
     </Card>
   );
 }
+
+function getISOWeek(d: Date): number {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
+function WeeklyGreetingSubline({ userId, workspaceId }: { userId?: string; workspaceId: string }) {
+  const { t } = useTranslation();
+  const { data: actions } = useActionItems(workspaceId);
+  const { data: sessions } = useUpcomingSessions();
+
+  const weekKey = useMemo(() => {
+    const now = new Date();
+    return `greeted_this_week_${userId ?? 'anon'}_${now.getFullYear()}_${getISOWeek(now)}`;
+  }, [userId]);
+
+  const [isFirstOfWeek] = useState<boolean>(() => {
+    try {
+      if (sessionStorage.getItem(weekKey) === '1') return false;
+      sessionStorage.setItem(weekKey, '1');
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
+  if (!isFirstOfWeek) return null;
+
+  const pending = (actions ?? []).filter((a) => a.status !== 'completed').length;
+  const upcoming = (sessions ?? []).length;
+
+  return (
+    <p className="text-sm text-muted-foreground motion-safe:animate-fade-in">
+      {t('founder.hero.weekly', {
+        defaultValue: 'Boa semana! Tem {{actions}} ações pendentes e {{sessions}} sessões agendadas.',
+        actions: pending,
+        sessions: upcoming,
+      })}
+    </p>
+  );
+}
