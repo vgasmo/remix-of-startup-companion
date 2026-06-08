@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TrendingUp, TrendingDown, Minus, Lock, Unlock, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { cn } from '@/lib/utils';
+import { BrandChevron } from '@/components/ui/BrandChevron';
 import type { WorkspaceKpi, KpiValue } from '@/hooks/useKpis';
 
 interface KpiCardProps {
@@ -18,10 +20,13 @@ interface KpiCardProps {
   canEdit: boolean;
   isSaving: boolean;
   isSaved: boolean;
+  /** Optional p75 benchmark for this KPI. When crossed (prev<p75, curr>=p75), fires a one-shot breakout indicator. */
+  p75?: number | null;
   onValueChange: (field: 'value' | 'notes', val: string) => void;
   onSave: () => void;
   onUnlock?: (kpiValueId: string) => void;
 }
+
 
 export function KpiCard({
   workspaceKpi,
