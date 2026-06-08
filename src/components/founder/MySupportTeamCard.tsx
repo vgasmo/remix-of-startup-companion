@@ -96,12 +96,13 @@ function MySupportTeamCardInner({ workspaceId, consultantId, mentorMember, lastS
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 shrink-0"
+              className="gap-1.5 shrink-0 h-11 sm:h-9"
               onClick={() => navigate(`/workspace/${workspaceId}?tab=agenda`)}
             >
               <Calendar className="h-3.5 w-3.5" />
               {t('founder.supportTeam.book', { defaultValue: 'Agendar' })}
             </Button>
+
           </div>
         )}
 
