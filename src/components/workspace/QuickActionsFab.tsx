@@ -56,9 +56,10 @@ export function QuickActionsFab({
             key={action.id}
             variant="secondary"
             size="sm"
-            className="shadow-md flex items-center gap-2 justify-start pl-2.5 pr-3 h-8 text-xs"
+            className="shadow-md flex items-center gap-2 justify-start pl-3 pr-4 h-11 text-sm"
             onClick={() => handleActionClick(action)}
           >
+
             {action.icon}
             <span>{action.label}</span>
           </Button>
