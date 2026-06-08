@@ -346,6 +346,10 @@ export const FounderDashboard = memo(function FounderDashboard({
                     ? ` · ${t('founder.hero.calmHint', { defaultValue: 'hoje basta um passo.' })}`
                     : ''}
                 </p>
+                <WeeklyGreetingSubline
+                  userId={profile?.id}
+                  workspaceId={workspace.id}
+                />
               </div>
             </div>
           </BrandSurface>
