@@ -1,0 +1,112 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { handleCorsOptions, corsJsonResponse } from "../_shared/cors.ts";
+
+/**
+ * generate-board-pack
+ * Admin one-click board document: ecosystem KPIs, momentum distribution, recent wins, at-risk list.
+ */
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return handleCorsOptions(req);
+  try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) return corsJsonResponse({ error: 'Unauthorized' }, req, 401);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(
+      authHeader.replace('Bearer ', ''),
+    );
+    if (authError || !user) return corsJsonResponse({ error: 'Unauthorized' }, req, 401);
+    const { data: isAdmin } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
+    if (!isAdmin) return corsJsonResponse({ error: 'Forbidden' }, req, 403);
+
+    const since30 = new Date(Date.now() - 30 * 86400_000).toISOString();
+
+    const [wsRes, sessionsRes, milestonesRes, kpiRes] = await Promise.all([
+      supabase.from('workspaces').select('id, stage, status, health_score_numeric, health_status, startups(name)'),
+      supabase.from('sessions').select('id, scheduled_at, status').gte('scheduled_at', since30),
+      supabase.from('milestones').select('id, status, completed_at, workspace_id').gte('completed_at', since30).eq('status', 'completed'),
+      supabase.from('kpi_values').select('id').gte('created_at', since30),
+    ]);
+
+    const workspaces = (wsRes.data ?? []).filter((w: any) => w.status !== 'archived');
+    const active = workspaces.length;
+    const byStage = workspaces.reduce((acc: Record<string, number>, w: any) => { acc[w.stage || 'unknown'] = (acc[w.stage || 'unknown'] || 0) + 1; return acc; }, {});
+    const sessions30 = (sessionsRes.data ?? []).length;
+    const milestones30 = (milestonesRes.data ?? []).length;
+    const kpis30 = (kpiRes.data ?? []).length;
+
+    const atRisk = workspaces
+      .filter((w: any) => w.health_status === 'red' || (w.health_score_numeric != null && w.health_score_numeric < 40))
+      .slice(0, 10);
+
+    const healthyTop = workspaces
+      .filter((w: any) => w.health_score_numeric != null)
+      .sort((a: any, b: any) => (b.health_score_numeric ?? 0) - (a.health_score_numeric ?? 0))
+      .slice(0, 5);
+
+    const reportDate = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    const html = `<!DOCTYPE html><html lang="pt"><head><meta charset="utf-8"><title>Board Pack — Startup Leiria</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a1a; max-width: 900px; margin: 32px auto; padding: 20px; line-height: 1.55; }
+  .header { text-align: center; padding: 24px 0; border-bottom: 3px solid #0f172a; margin-bottom: 24px; }
+  .header h1 { margin: 0; font-size: 30px; color: #0f172a; letter-spacing: -0.5px; }
+  .header .sub { color: #475569; margin-top: 6px; }
+  h2 { color: #0f172a; margin-top: 36px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }
+  .kpi { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center; }
+  .kpi-value { font-size: 28px; font-weight: 700; color: #0f172a; }
+  .kpi-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+  .stage-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+  .stage-label { width: 120px; font-size: 13px; color: #334155; text-transform: capitalize; }
+  .stage-bar { flex: 1; height: 8px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+  .stage-fill { height: 100%; background: #6366f1; border-radius: 999px; }
+  .list { list-style: none; padding: 0; }
+  .list li { padding: 10px 12px; margin-bottom: 6px; border-radius: 6px; background: #f8fafc; display: flex; justify-content: space-between; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+  .pill-risk { background: #fef2f2; color: #b91c1c; }
+  .pill-ok { background: #ecfdf5; color: #047857; }
+  .footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 11px; text-align: center; }
+</style></head><body>
+  <div class="header">
+    <h1>Board Pack</h1>
+    <p class="sub">Resumo executivo do ecossistema · ${reportDate}</p>
+  </div>
+
+  <h2>KPIs principais (últimos 30 dias)</h2>
+  <div class="grid-4">
+    <div class="kpi"><div class="kpi-value">${active}</div><div class="kpi-label">Startups ativas</div></div>
+    <div class="kpi"><div class="kpi-value">${sessions30}</div><div class="kpi-label">Sessões</div></div>
+    <div class="kpi"><div class="kpi-value">${milestones30}</div><div class="kpi-label">Milestones concluídos</div></div>
+    <div class="kpi"><div class="kpi-value">${kpis30}</div><div class="kpi-label">KPIs reportados</div></div>
+  </div>
+
+  <h2>Distribuição por fase</h2>
+  ${Object.entries(byStage).map(([stage, count]) => {
+    const pct = Math.round(((count as number) / Math.max(active, 1)) * 100);
+    return `<div class="stage-row"><div class="stage-label">${stage}</div><div class="stage-bar"><div class="stage-fill" style="width:${pct}%"></div></div><div style="width:60px;text-align:right;font-size:13px;color:#475569;">${count} (${pct}%)</div></div>`;
+  }).join('')}
+
+  <h2>Top startups saudáveis</h2>
+  <ul class="list">
+    ${healthyTop.length ? healthyTop.map((w: any) => `<li><span>${w.startups?.name || w.id}</span><span class="pill pill-ok">${Math.round(w.health_score_numeric ?? 0)}</span></li>`).join('') : '<li style="color:#94a3b8;">Sem dados.</li>'}
+  </ul>
+
+  <h2>Startups em risco (atenção do board)</h2>
+  <ul class="list">
+    ${atRisk.length ? atRisk.map((w: any) => `<li><span>${w.startups?.name || w.id}</span><span class="pill pill-risk">${w.health_status || 'risco'}</span></li>`).join('') : '<li style="color:#94a3b8;">Nenhuma startup em estado crítico.</li>'}
+  </ul>
+
+  <div class="footer">Gerado por Startup Leiria · Confidencial</div>
+</body></html>`;
+
+    return corsJsonResponse({ html, metadata: { active, sessions30, milestones30, kpis30 } }, req);
+  } catch (err: any) {
+    console.error('[generate-board-pack]', err);
+    return corsJsonResponse({ error: err?.message || 'Failed' }, req, 500);
+  }
+});
