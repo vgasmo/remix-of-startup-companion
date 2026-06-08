@@ -11,7 +11,7 @@ const CIRC = 2 * Math.PI * RADIUS;
 export function DayCompleteRing() {
   const { t } = useTranslation();
   // Fetch all items (open + done) updated today by passing no status filter and merging
-  const { data: items = [] } = useWorkQueue({ statuses: ['open', 'in_progress', 'done'] });
+  const { data: items = [] } = useWorkQueue({ includeDone: true, staleTime: 2 * 60_000 });
 
   const { total, done, pct, isComplete } = useMemo(() => {
     const startOfDay = new Date();

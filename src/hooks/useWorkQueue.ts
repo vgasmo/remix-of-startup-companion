@@ -23,8 +23,9 @@ export interface WorkQueueItem {
   };
 }
 
-export function useWorkQueue(filters?: { status?: string; statuses?: string[]; type?: string; assignedTo?: string }) {
+export function useWorkQueue(filters?: { status?: string; statuses?: string[]; type?: string; assignedTo?: string; includeDone?: boolean; staleTime?: number }) {
   return useQuery({
+    staleTime: filters?.staleTime,
     queryKey: ['work-queue', filters],
     queryFn: async () => {
       let query = supabase
@@ -39,6 +40,8 @@ export function useWorkQueue(filters?: { status?: string; statuses?: string[]; t
         query = query.eq('status', filters.status);
       } else if (filters?.statuses && filters.statuses.length > 0) {
         query = query.in('status', filters.statuses);
+      } else if (filters?.includeDone) {
+        query = query.in('status', ['open', 'in_progress', 'done']);
       } else {
         query = query.in('status', ['open', 'in_progress']);
       }
