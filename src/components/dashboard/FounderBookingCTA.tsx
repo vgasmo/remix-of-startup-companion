@@ -42,7 +42,8 @@ export function FounderBookingCTA({ workspaceId, className }: FounderBookingCTAP
   if (!hasConsultant) {
     return (
       <Card className={`overflow-hidden border-primary/30 bg-gradient-to-br from-primary/5 via-background to-accent/5 ${className}`}>
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
+
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <div className="flex-shrink-0">
               <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20">
