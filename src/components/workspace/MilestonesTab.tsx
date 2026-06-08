@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { format, isPast, isToday, parseISO } from 'date-fns';
 import { Plus, Trash2, Calendar, Target, Clock, CheckCircle2, Circle, AlertTriangle, GripVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,12 +14,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SortableList } from '@/components/ui/SortableList';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { BrandChevron } from '@/components/ui/BrandChevron';
 import { useMilestones, useCreateMilestone, useUpdateMilestone, useDeleteMilestone, useReorderMilestones, type Milestone } from '@/hooks/useMilestones';
 import { notify } from "@/lib/notify";
 import { useTranslation } from 'react-i18next';
 import { useQuickWinToast } from '@/hooks/useQuickWinToast';
+import { triggerMilestoneCelebration } from '@/lib/confetti';
 import { toTitleCase } from '@/lib/textUtils';
 import type { Database } from '@/integrations/supabase/types';
+
 
 type MilestoneStatus = Database['public']['Enums']['milestone_status'];
 
