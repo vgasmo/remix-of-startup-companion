@@ -174,28 +174,52 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
     );
   }
 
+  const sessionsThisWeek = upcomingMeetings.length;
+  const hour = new Date().getHours();
+  const greetingKey =
+    hour < 12 ? 'mentor.hero.morning'
+    : hour < 19 ? 'mentor.hero.afternoon'
+    : 'mentor.hero.evening';
+  const greetingDefault =
+    hour < 12 ? 'Bom dia{{name}}'
+    : hour < 19 ? 'Boa tarde{{name}}'
+    : 'Boa noite{{name}}';
+  const firstName = profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : '';
+
   return (
     <div className="space-y-6 max-w-5xl">
-      {/* Stream F: Next Best Action (read-only, derived from sessions/requests) */}
-      <WidgetErrorBoundary name="NextBestActionMentor">
-        <NextBestActionMentor
-          upcomingSessionsCount={(workspaces || []).reduce(
-            (acc, w: any) => acc + (w?.upcomingSessions?.length || 0),
-            0
-          )}
-        />
-      </WidgetErrorBoundary>
+      {/* 1. GREETING HERO — branded surface, availability inline */}
+      <BrandSurface
+        intensity="hero"
+        className="surface-hero rounded-2xl p-4 sm:p-7 overflow-hidden animate-fade-in-up stagger-1"
+      >
+        <div className="space-y-2">
+          <p className="label-eyebrow">
+            {t('mentor.hero.eyebrow', { defaultValue: 'Painel do mentor' })}
+          </p>
+          <h1 className="text-display text-foreground break-words">
+            {t(greetingKey, { defaultValue: greetingDefault, name: firstName })}
+          </h1>
+          <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground">
+            <span>
+              {t('mentor.hero.subline', {
+                defaultValue: '{{count}} startups · {{sessions}} sessões esta semana',
+                count: workspaces.length,
+                sessions: sessionsThisWeek,
+              })}
+            </span>
+            <Badge
+              variant="outline"
+              className="gap-1.5 rounded-full border-border/60 bg-background/70 text-xs font-medium"
+            >
+              <span className={cn('h-2 w-2 rounded-full', statusColors[availabilityStatus])} />
+              {statusLabels[availabilityStatus]}
+            </Badge>
+          </div>
+        </div>
 
-      {/* Availability badge */}
-      <div className="flex items-center gap-2">
-        <span className={cn('h-2.5 w-2.5 rounded-full', statusColors[availabilityStatus])} />
-        <span className="text-sm text-muted-foreground">{statusLabels[availabilityStatus]}</span>
-      </div>
-
-      {/* No-availability banner — prevents founders from being unable to book */}
-      {slotsThisWeek === 0 && (
-        <Card className="border-warning/40 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent rounded-2xl">
-          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+        {slotsThisWeek === 0 && (
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-warning/40 bg-warning/10 p-3">
             <div className="h-9 w-9 rounded-xl bg-warning/15 flex items-center justify-center shrink-0">
               <Clock className="h-4 w-4 text-warning" />
             </div>
@@ -215,19 +239,25 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
               {t('mentor.availability.emptyBanner.cta', { defaultValue: 'Configurar agora' })}
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
+      </BrandSurface>
 
-      {/* P0 HERO: Enhanced Session Prep */}
+      {/* Stream F: Next Best Action (read-only, derived from sessions/requests) */}
+      <WidgetErrorBoundary name="NextBestActionMentor">
+        <NextBestActionMentor
+          upcomingSessionsCount={(workspaces || []).reduce(
+            (acc, w: any) => acc + (w?.upcomingSessions?.length || 0),
+            0
+          )}
+        />
+      </WidgetErrorBoundary>
+
+      {/* P0 HERO: Single Session Prep surface (MentorNextSessionPrep removed — it duplicated this) */}
       <WidgetErrorBoundary name="MentorSessionPrep">
         <MentorSessionPrepEnhanced workspaces={workspaces} />
       </WidgetErrorBoundary>
 
-      {/* P0 HERO: Next Session Prep (fallback) */}
-      <WidgetErrorBoundary name="MentorNextSessionPrep">
-        <MentorNextSessionPrep workspaces={workspaces} />
-      </WidgetErrorBoundary>
 
       {/* Open Loops — what needs attention */}
       <WidgetErrorBoundary name="MentorOpenLoops">
