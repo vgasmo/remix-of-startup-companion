@@ -11,23 +11,32 @@ const CIRC = 2 * Math.PI * RADIUS;
 export function DayCompleteRing() {
   const { t } = useTranslation();
   // Fetch all items (open + done) updated today by passing no status filter and merging
-  const { data: openItems = [] } = useWorkQueue();
-  const { data: doneItems = [] } = useWorkQueue({ status: 'done' });
+  const { data: items = [] } = useWorkQueue({ statuses: ['open', 'in_progress', 'done'] });
 
   const { total, done, pct, isComplete } = useMemo(() => {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
     const sod = startOfDay.getTime();
+    const eod = endOfDay.getTime();
 
-    const doneToday = doneItems.filter(i => {
+    const doneToday = items.filter(i => {
+      if (i.status !== 'done') return false;
       const ts = new Date((i as any).updated_at || i.created_at).getTime();
       return ts >= sod;
     });
-    const totalToday = openItems.length + doneToday.length;
+    const openToday = items.filter(i => {
+      if (i.status !== 'open' && i.status !== 'in_progress') return false;
+      const dueTs = i.due_at ? new Date(i.due_at).getTime() : null;
+      const createdTs = new Date(i.created_at).getTime();
+      return (dueTs !== null && dueTs <= eod) || createdTs >= sod;
+    });
+    const totalToday = doneToday.length + openToday.length;
     const doneCount = doneToday.length;
     const pct = totalToday === 0 ? 0 : Math.round((doneCount / totalToday) * 100);
     return { total: totalToday, done: doneCount, pct, isComplete: totalToday > 0 && doneCount === totalToday };
-  }, [openItems, doneItems]);
+  }, [items]);
 
   const dashOffset = CIRC * (1 - pct / 100);
   const colorClass = isComplete ? 'text-success' : 'text-primary';
