@@ -207,7 +207,7 @@ async function sendErrorToSink(entry: LoggedError): Promise<void> {
       user_agent: entry.userAgent.slice(0, 500),
       user_id: userId ?? undefined,
     };
-    await supabase.from('client_error_logs').insert(row);
+    await supabase.from('client_error_logs').insert([row]);
   } catch {
     // Swallow — never recurse, never surface sink failures to users.
   } finally {
