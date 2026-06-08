@@ -46,6 +46,7 @@ import { FounderWelcomeWizard } from '@/components/founder/FounderWelcomeWizard'
 import { FounderReadinessStrip } from '@/components/founder/FounderReadinessStrip';
 import { PendingContractBanner } from '@/components/founder/PendingContractBanner';
 import { FounderProgressRings } from '@/components/dashboard/FounderProgressRings';
+import { FounderStoryTimeline } from '@/components/founder/FounderStoryTimeline';
 import { useAutoMaterializeDeliverables } from '@/hooks/useAutoMaterializeDeliverables';
 import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
 import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
@@ -430,8 +431,16 @@ export const FounderDashboard = memo(function FounderDashboard({
             </div>
           )}
 
+          {/* Story Timeline (Magic Moment) */}
+          <div className="animate-fade-in-up stagger-5">
+            <WidgetErrorBoundary name="FounderStoryTimeline">
+              <FounderStoryTimeline workspaceId={workspace.id} />
+            </WidgetErrorBoundary>
+          </div>
+
           {/* Stage Progress + Investor Readiness + Calendar */}
           <div className="grid gap-6 md:grid-cols-2 animate-fade-in-up stagger-6">
+
             <div className="space-y-4">
               <StageProgressCard workspace={workspace} />
               <InvestorReadinessWidget workspaceId={workspace.id} compact />
