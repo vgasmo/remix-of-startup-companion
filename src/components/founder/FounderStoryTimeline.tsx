@@ -29,7 +29,7 @@ export function FounderStoryTimeline({ workspaceId }: FounderStoryTimelineProps)
     queryKey: ['founder-story', workspaceId],
     queryFn: async (): Promise<StoryEvent[]> => {
       const [ms, ss, st, kp] = await Promise.all([
-        supabase
+        (supabase as any)
           .from('milestones')
           .select('title, completed_at, status')
           .eq('workspace_id', workspaceId)
@@ -37,20 +37,20 @@ export function FounderStoryTimeline({ workspaceId }: FounderStoryTimelineProps)
           .not('completed_at', 'is', null)
           .order('completed_at', { ascending: false })
           .limit(20),
-        supabase
+        (supabase as any)
           .from('sessions')
           .select('title, scheduled_at, status')
           .eq('workspace_id', workspaceId)
           .eq('status', 'completed')
           .order('scheduled_at', { ascending: false })
           .limit(20),
-        supabase
+        (supabase as any)
           .from('stage_history')
           .select('to_stage, changed_at')
           .eq('workspace_id', workspaceId)
           .order('changed_at', { ascending: false })
           .limit(10),
-        supabase
+        (supabase as any)
           .from('kpi_values')
           .select('period_month, value, kpi_definition_id, kpi_definitions(name)')
           .eq('workspace_id', workspaceId)
