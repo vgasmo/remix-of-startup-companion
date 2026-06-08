@@ -111,17 +111,18 @@ export function FounderBookingCTA({ workspaceId, className }: FounderBookingCTAP
                 </div>
                 <div className="flex gap-2">
                    {sanitizeUrl(nextSession.join_url) && (
-                    <Button asChild variant="default" size="sm">
+                    <Button asChild variant="default" size="sm" className="h-11 sm:h-9 flex-1 sm:flex-none">
                       <a href={sanitizeUrl(nextSession.join_url)!} target="_blank" rel="noopener noreferrer">
                         <Video className="h-4 w-4 mr-1" />
-                        Join
+                        {t('founderHome.join', { defaultValue: 'Entrar' })}
                       </a>
                     </Button>
                   )}
-                  <Button variant="outline" size="sm" onClick={handleBookSession}>
+                  <Button variant="outline" size="sm" onClick={handleBookSession} className="h-11 sm:h-9 flex-1 sm:flex-none">
                     {t('founderHome.viewSessions', 'View Sessions')}
                   </Button>
                 </div>
+
               </div>
             ) : (
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
