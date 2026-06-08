@@ -133,7 +133,8 @@ export default function Admin() {
       surveys: t('admin.surveys.title'),
       analytics: t('admin.analytics'),
       health: t('admin.healthModels'),
-      
+      'system-health': t('admin.systemHealth.tab', { defaultValue: 'Saúde do Sistema' }),
+
     };
     return labels[tab] || tab;
   };
