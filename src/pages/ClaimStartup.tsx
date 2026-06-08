@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { logger } from '@/lib/logger';
+import { track } from '@/lib/analytics';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFounderOnboardingState } from '@/hooks/useFounderOnboardingState';
 import { useQueryClient } from '@tanstack/react-query';
@@ -66,6 +67,7 @@ export default function ClaimStartup() {
   const handleVerify = useCallback(async () => {
     if (!user) return;
     setPageState('verifying');
+    void track('claim_started');
 
     try {
       const { data, error } = await supabase.rpc('claim_startup');
@@ -81,6 +83,7 @@ export default function ClaimStartup() {
         setPageState('auto_claimed');
         setClaimedStartupName(result.startup_name || null);
         setClaimedWorkspaceId(result.workspace_id || null);
+        void track('claim_completed', { workspaceId: result.workspace_id, properties: { mode: 'auto' } });
         // Invalidate onboarding state so routing updates
         queryClient.invalidateQueries({ queryKey: ['founder-onboarding-state'] });
         toast({

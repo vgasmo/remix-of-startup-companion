@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { startOfMonth, subMonths, format } from 'date-fns';
 import type { Database } from '@/integrations/supabase/types';
+import { track } from '@/lib/analytics';
 
 type StartupStage = Database['public']['Enums']['startup_stage'];
 
@@ -203,6 +204,7 @@ export function useUpsertKpiValue(workspaceId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kpi-values', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-kpis', workspaceId] });
+      void track('kpi_submitted', { workspaceId });
     },
   });
 }

@@ -20,6 +20,7 @@
  */
 import { supabase } from '@/lib/supabaseClient';
 import { logger } from '@/lib/logger';
+import { track } from '@/lib/analytics';
 import { INTAKE_TO_CRM_STAGE, type IntakeState } from '@/constants/intakeStates';
 
 /**
@@ -247,6 +248,8 @@ export async function canonicalMarkAsSent(
       .eq('id', contractId);
 
     if (error) throw error;
+
+    void track('contract_sent_for_signature', { properties: { contractId, provider } });
 
     // Sync intake — surface failure
     const syncRes = await syncIntakeOnContractEvent(contractId, 'signature_sent', userId);

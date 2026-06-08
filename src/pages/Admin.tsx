@@ -6,7 +6,7 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import {
   Users, Building2, FileText, BarChart3, Clock, TrendingUp,
   Heart, ShieldCheck, Users2, BookOpen, ClipboardList, Bell,
-  ChevronDown, Database, UserPlus
+  ChevronDown, Database, UserPlus, Activity
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -35,14 +35,15 @@ import { AdminProgramsManager } from '@/components/admin/AdminProgramsManager';
 import { AdminMissionControlDirectory } from '@/components/admin/AdminMissionControlDirectory';
 import { EnrollmentControlCenter } from '@/components/admin/EnrollmentControlCenter';
 import { EcosystemPulseCard } from '@/components/admin/EcosystemPulseCard';
+import { SystemHealthDashboard } from '@/components/admin/SystemHealthDashboard';
 
-const ADMIN_ONLY_TABS = new Set(['users', 'data-quality']);
+const ADMIN_ONLY_TABS = new Set(['users', 'data-quality', 'system-health']);
 
 const TAB_GROUPS_BASE: Record<string, string[]> = {
   operations: ['approvals', 'enrollment', 'backoffice', 'announcements'],
   // CRM is accessed directly via /crm (no inline tab)
   programs: ['programs-setup', 'kpis', 'templates', 'support-materials', 'surveys'],
-  reports: ['analytics', 'health', 'compliance', 'data-quality'],
+  reports: ['analytics', 'health', 'compliance', 'data-quality', 'system-health'],
   users: ['users', 'mentors'],
 };
 
@@ -109,7 +110,8 @@ export default function Admin() {
       surveys: <ClipboardList className="h-4 w-4" />,
       analytics: <TrendingUp className="h-4 w-4" />,
       health: <Heart className="h-4 w-4" />,
-      
+      'system-health': <Activity className="h-4 w-4" />,
+
     };
     return icons[tab];
   };
@@ -131,7 +133,8 @@ export default function Admin() {
       surveys: t('admin.surveys.title'),
       analytics: t('admin.analytics'),
       health: t('admin.healthModels'),
-      
+      'system-health': t('admin.systemHealth.tab', { defaultValue: 'Saúde do Sistema' }),
+
     };
     return labels[tab] || tab;
   };
@@ -262,6 +265,12 @@ export default function Admin() {
         <TabsContent value="surveys">
           <AdminSurveysManager />
         </TabsContent>
+
+        <TabsContent value="system-health">
+          <SystemHealthDashboard />
+        </TabsContent>
+
+
 
         {/* CRM/Funnel content moved to dedicated /crm page */}
       </Tabs>

@@ -8,7 +8,7 @@ import { CockpitQuickActions } from '@/components/staff/CockpitQuickActions';
 import { WorkQueuePanel } from '@/components/staff/WorkQueuePanel';
 import { StaffTasksPanel } from '@/components/staff/StaffTasksPanel';
 import { CockpitPortfolioOverview } from '@/components/staff/CockpitPortfolioOverview';
-import { SilentDisengagementCard } from '@/components/staff/SilentDisengagementCard';
+import { MomentumPanel } from '@/components/staff/MomentumPanel';
 import { OnboardingPipelineCard } from '@/components/staff/OnboardingPipelineCard';
 import { AdminQuickAccessCard } from '@/components/staff/AdminQuickAccessCard';
 import { PendingApprovalsManager } from '@/components/admin/PendingApprovalsManager';
@@ -108,9 +108,10 @@ export default function StaffCockpit() {
           <CockpitPortfolioOverview workspaces={workspaces} />
         )}
 
-        {/* Silent Disengagement Alerts - Admin and Consultor */}
+        {/* Momentum / Stall Prediction — consolidates SilentDisengagement
+            into a multi-signal, explainable view with recommended actions. */}
         {(isAdmin || isConsultor) && (
-          <SilentDisengagementCard workspaces={workspaces} />
+          <MomentumPanel workspaces={workspaces} />
         )}
 
         {/* Backoffice-specific: Contracts expiring + Startup Portugal status */}

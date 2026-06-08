@@ -5,6 +5,7 @@ import { AppRole } from '@/types/database';
 import { resetSession, setCacheOwner } from '@/lib/sessionReset';
 import { hydrateCache, queryClient } from '@/lib/queryClient';
 import { logger } from '@/lib/logger';
+import { track } from '@/lib/analytics';
 
 export type AccountStatus = 'pending' | 'approved' | 'suspended';
 
@@ -178,6 +179,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) {
       logger.warn('sign_in_failed', { domain: email.split('@')[1] });
       setIsAuthReady(true);
+    } else {
+      void track('login');
     }
     return { error: error as Error | null };
   };

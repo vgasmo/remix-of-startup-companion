@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { FileText, AlertTriangle, Clock, Activity } from 'lucide-react';
@@ -5,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
 import { supabase } from '@/lib/supabaseClient';
+import { useWorkspaces } from '@/hooks/useWorkspaces';
+import { useWorkspaceMomentum, type MomentumBand } from '@/hooks/useWorkspaceMomentum';
 
 interface Metric {
   key: string;
@@ -83,9 +86,25 @@ function EcosystemPulseCardInner() {
     },
   ];
 
+  // Lightweight momentum distribution (reuses existing useWorkspaces cache).
+  const { data: workspaces = [] } = useWorkspaces();
+  const momentumResults = useWorkspaceMomentum(workspaces);
+  const momentumDist = useMemo(() => {
+    const counts: Record<MomentumBand, number> = { strong: 0, steady: 0, slowing: 0, at_risk: 0 };
+    for (const m of momentumResults) counts[m.band]++;
+    return counts;
+  }, [momentumResults]);
+
+  const momentumStrip: Array<{ band: MomentumBand; label: string; tone: string }> = [
+    { band: 'strong', label: t('admin.pulse.momentum.strong', { defaultValue: 'Forte' }), tone: 'text-success bg-success/10' },
+    { band: 'steady', label: t('admin.pulse.momentum.steady', { defaultValue: 'Estável' }), tone: 'text-info bg-info/10' },
+    { band: 'slowing', label: t('admin.pulse.momentum.slowing', { defaultValue: 'A abrandar' }), tone: 'text-warning bg-warning/10' },
+    { band: 'at_risk', label: t('admin.pulse.momentum.atRisk', { defaultValue: 'Em risco' }), tone: 'text-destructive bg-destructive/10' },
+  ];
+
   return (
     <Card className="border-border/60 rounded-xl bg-gradient-to-br from-card via-card to-muted/30">
-      <CardContent className="p-4">
+      <CardContent className="p-4 space-y-3">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {metrics.map(m => {
             const Icon = m.icon;
@@ -106,6 +125,21 @@ function EcosystemPulseCardInner() {
             );
           })}
         </div>
+        {momentumResults.length > 0 && (
+          <div className="pt-3 border-t border-border/40">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+              {t('admin.pulse.momentum.title', { defaultValue: 'Distribuição de momentum' })}
+            </p>
+            <div className="grid grid-cols-4 gap-2">
+              {momentumStrip.map(s => (
+                <div key={s.band} className={`rounded-md px-2 py-1.5 ${s.tone}`}>
+                  <p className="text-[10px] opacity-80 truncate">{s.label}</p>
+                  <p className="text-lg font-semibold tabular-nums leading-tight">{momentumDist[s.band]}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
+import { track } from '@/lib/analytics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -204,6 +205,7 @@ export default function PublicContractIntake() {
     },
     onSuccess: () => {
       autosave.clearDraft();
+      void track('intake_submitted', { properties: { token: token?.slice(0, 6) ?? null } });
       notify.success(isPt ? 'Dados submetidos com sucesso!' : 'Data submitted successfully!');
     },
     onError: (err: any) => {

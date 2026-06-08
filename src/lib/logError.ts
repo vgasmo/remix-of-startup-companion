@@ -163,13 +163,71 @@ export function logError(error: Error, context: ErrorContext = {}): LoggedError 
     console.error(`[${errorId}] Stack:`, error.stack);
   }
 
-  // TODO: In production, send to monitoring service
-  // Example integrations:
-  // - Sentry: Sentry.captureException(error, { extra: loggedError.context, level: severity });
-  // - LogRocket: LogRocket.captureException(error, { extra: loggedError.context });
-  // - Custom endpoint: fetch('/api/log-error', { method: 'POST', body: JSON.stringify(loggedError) });
+  // Fire-and-forget sink → Supabase client_error_logs (own-your-data first).
+  // Must never block, throw, or recurse into logError (insert failures swallowed).
+  void sendErrorToSink(loggedError);
+
+  // Optional external forwarder (Sentry) — only when VITE_SENTRY_DSN is set
+  // AND a global Sentry was attached by app code. Silently no-op otherwise.
+  void forwardToSentry(error, loggedError);
 
   return loggedError;
+}
+
+// ---------------------------------------------------------------------------
+// Remote sink (Supabase) — own-your-data, GDPR-respecting.
+// Loaded lazily so logError.ts has no hard dep on supabase at module init.
+// ---------------------------------------------------------------------------
+let sinkInFlight = 0;
+const SINK_MAX_INFLIGHT = 8;
+
+async function sendErrorToSink(entry: LoggedError): Promise<void> {
+  if (typeof window === 'undefined') return;
+  if (sinkInFlight >= SINK_MAX_INFLIGHT) return; // back-pressure guard
+  sinkInFlight++;
+  try {
+    const { supabase } = await import('@/lib/supabaseClient');
+    const { data: auth } = await supabase.auth.getUser();
+    const userId = auth?.user?.id ?? null;
+    const row = {
+      error_id: entry.errorId,
+      message: entry.message.slice(0, 2000),
+      name: entry.name ? entry.name.slice(0, 200) : undefined,
+      stack: entry.stack ? entry.stack.slice(0, 8000) : undefined,
+      severity: entry.context.severity ?? 'low',
+      context: {
+        component: entry.context.component,
+        action: entry.context.action,
+        tags: entry.context.tags,
+        workspaceId: entry.context.workspaceId,
+        sessionDuration: entry.sessionDuration,
+        breadcrumbs: (entry.breadcrumbs ?? []).slice(-10),
+      },
+      url: entry.url.slice(0, 500),
+      user_agent: entry.userAgent.slice(0, 500),
+      user_id: userId ?? undefined,
+    };
+    await supabase.from('client_error_logs').insert([row as never]);
+  } catch {
+    // Swallow — never recurse, never surface sink failures to users.
+  } finally {
+    sinkInFlight = Math.max(0, sinkInFlight - 1);
+  }
+}
+
+async function forwardToSentry(error: Error, entry: LoggedError): Promise<void> {
+  try {
+    const dsn = import.meta.env.VITE_SENTRY_DSN;
+    if (!dsn) return;
+    const sentry = (globalThis as { Sentry?: { captureException?: (e: unknown, opts?: unknown) => void } }).Sentry;
+    if (!sentry?.captureException) return;
+    sentry.captureException(error, {
+      level: entry.context.severity,
+      extra: { errorId: entry.errorId, context: entry.context },
+    });
+  } catch {
+    // Swallow — optional sink.
+  }
 }
 
 /**

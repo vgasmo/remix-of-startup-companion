@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
+import { track } from '@/lib/analytics';
 
 interface QuickNoteDialogProps {
   open: boolean;
@@ -40,6 +41,7 @@ export function QuickNoteDialog({ open, onOpenChange, workspaceId, startupName }
         visibility: 'team',
       });
       if (error) throw error;
+      void track('mentor_session_logged', { workspaceId });
       notify.success(t('mentor.noteAdded', { defaultValue: 'Nota adicionada com sucesso' }));
       setContent('');
       onOpenChange(false);
