@@ -35,6 +35,7 @@ import { AdminProgramsManager } from '@/components/admin/AdminProgramsManager';
 import { AdminMissionControlDirectory } from '@/components/admin/AdminMissionControlDirectory';
 import { EnrollmentControlCenter } from '@/components/admin/EnrollmentControlCenter';
 import { EcosystemPulseCard } from '@/components/admin/EcosystemPulseCard';
+import { SystemHealthDashboard } from '@/components/admin/SystemHealthDashboard';
 
 const ADMIN_ONLY_TABS = new Set(['users', 'data-quality']);
 
