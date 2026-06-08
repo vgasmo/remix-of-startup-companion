@@ -106,7 +106,17 @@ export function MentorOpenLoops({ workspaces }: MentorOpenLoopsProps) {
     return result.sort((a, b) => urgencyOrder[a.urgency] - urgencyOrder[b.urgency]).slice(0, 8);
   }, [workspaces, t]);
 
-  if (loops.length === 0) return null;
+  if (loops.length === 0) {
+    return (
+      <EmptyState
+        icon={CheckCircle2}
+        tone="success"
+        title={t('mentor.openLoops.allClearTitle', { defaultValue: 'Tudo em dia' })}
+        description={t('mentor.openLoops.allClearDesc', { defaultValue: 'Não há pendências com as suas startups. Bom trabalho!' })}
+      />
+    );
+  }
+
 
   return (
     <Card className="border-warning/30 dark:border-warning/30 rounded-2xl">
