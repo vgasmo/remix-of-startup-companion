@@ -215,7 +215,8 @@ export const FounderDashboard = memo(function FounderDashboard({
   const handleScheduleSession = () => navigate(`/workspace/${workspace.id}?tab=agenda`);
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6 max-w-5xl animate-fade-in">
+
       <FounderWelcomeWizard workspaceId={workspace?.id ?? null} />
       {/* Multi-workspace notice */}
       {workspaces.length > 1 && (
@@ -310,8 +311,9 @@ export const FounderDashboard = memo(function FounderDashboard({
         return (
           <BrandSurface
             intensity="hero"
-            className="surface-hero rounded-2xl p-4 sm:p-7 overflow-hidden"
+            className="surface-hero rounded-2xl p-4 sm:p-7 overflow-hidden animate-fade-in-up stagger-1"
           >
+
             <div className="flex items-start gap-3 sm:gap-4">
               <Avatar className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl border border-border/50 shrink-0">
                 <AvatarImage src={workspace.startup?.logo_url || undefined} className="object-cover" alt={workspace.startup?.name || 'Startup'} />
@@ -349,20 +351,27 @@ export const FounderDashboard = memo(function FounderDashboard({
 
 
       {/* 2. Today's focus — THE single primary CTA */}
-      <OneThingToday workspace={workspace} />
+      <div className="animate-fade-in-up stagger-2">
+        <OneThingToday workspace={workspace} />
+      </div>
 
       {/* 2.5 My Support Team — relationship awareness */}
       {(!isBeginner || hasConsultant || hasMentor) && (
-        <MySupportTeamCard
-          workspaceId={workspace.id}
-          consultantId={workspaceOwner?.assigned_consultor_id ?? null}
-          mentorMember={workspaceMembers?.find(m => m.role === 'mentor_externo') ?? null}
-          lastSessionDate={workspace.lastSession?.scheduled_at ?? null}
-        />
+        <div className="animate-fade-in-up stagger-3">
+          <MySupportTeamCard
+            workspaceId={workspace.id}
+            consultantId={workspaceOwner?.assigned_consultor_id ?? null}
+            mentorMember={workspaceMembers?.find(m => m.role === 'mentor_externo') ?? null}
+            lastSessionDate={workspace.lastSession?.scheduled_at ?? null}
+          />
+        </div>
       )}
 
       {/* 3. Consultant / next session */}
-      <FounderBookingCTA workspaceId={workspace.id} />
+      <div className="animate-fade-in-up stagger-4">
+        <FounderBookingCTA workspaceId={workspace.id} />
+      </div>
+
 
       {/* Optional: compact "Your setup" checklist — only when onboarding is incomplete */}
       {!setupComplete && (
