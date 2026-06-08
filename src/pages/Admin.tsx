@@ -37,13 +37,13 @@ import { EnrollmentControlCenter } from '@/components/admin/EnrollmentControlCen
 import { EcosystemPulseCard } from '@/components/admin/EcosystemPulseCard';
 import { SystemHealthDashboard } from '@/components/admin/SystemHealthDashboard';
 
-const ADMIN_ONLY_TABS = new Set(['users', 'data-quality']);
+const ADMIN_ONLY_TABS = new Set(['users', 'data-quality', 'system-health']);
 
 const TAB_GROUPS_BASE: Record<string, string[]> = {
   operations: ['approvals', 'enrollment', 'backoffice', 'announcements'],
   // CRM is accessed directly via /crm (no inline tab)
   programs: ['programs-setup', 'kpis', 'templates', 'support-materials', 'surveys'],
-  reports: ['analytics', 'health', 'compliance', 'data-quality'],
+  reports: ['analytics', 'health', 'compliance', 'data-quality', 'system-health'],
   users: ['users', 'mentors'],
 };
 
