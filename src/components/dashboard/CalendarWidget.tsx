@@ -9,9 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useUpcomingSessions } from '@/hooks/useUpcomingSessions';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+
 
 interface CalendarWidgetProps {
   className?: string;
