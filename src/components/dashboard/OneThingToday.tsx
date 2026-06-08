@@ -193,7 +193,7 @@ export function OneThingToday({ workspace, className }: OneThingTodayProps) {
                 {t('oneThingToday.focusToday')}
               </Badge>
             </div>
-            <p className="font-semibold truncate">{recommendation.title}</p>
+            <p className="text-heading truncate">{recommendation.title}</p>
             <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">{recommendation.why}</p>
           </div>
           <Button 

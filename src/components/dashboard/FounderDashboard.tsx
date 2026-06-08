@@ -284,37 +284,67 @@ export const FounderDashboard = memo(function FounderDashboard({
       </WidgetErrorBoundary>
 
       {/* ============================================================
-          PRIMARY CALM SCREEN — max 3 cards for beginners
-          1) Welcome / context hero
-          2) Today's focus (single next-action)
-          3) Consultant / next session card
-          (+ optional compact setup checklist if incomplete)
+          PRIMARY CALM SCREEN — clear hierarchy, V1 identity
+          1) Greeting hero (always)
+          2) [optional] Pending contract blocker — already rendered above
+          3) ONE next-action (OneThingToday)
+          4) Support team
+          5) Booking CTA
           ============================================================ */}
 
-      {/* 1. Slim inline greeting — branded surface with subtle motif */}
-      {isBeginner && (
-        <BrandSurface
-          intensity="hero"
-          className="surface-hero rounded-2xl px-4 py-4 sm:px-5 sm:py-5 overflow-hidden"
-        >
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 rounded-xl border border-border/40 shrink-0">
-              <AvatarImage src={workspace.startup?.logo_url || undefined} className="object-cover" alt={workspace.startup?.name || 'Startup'} />
-              <AvatarFallback className="rounded-xl bg-primary/10 text-primary text-xs font-semibold">
-                {workspace.startup?.name?.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-heading truncate">
-                {t('founder.calmHero.greeting', { defaultValue: 'Olá{{name}}, hoje basta um passo.', name: profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : '' })}
-              </h1>
-              <p className="text-caption truncate">
-                {t('founder.calmHero.subtitle', { defaultValue: 'Sem pressa. Uma coisa de cada vez — estamos aqui para ajudar.' })}
-              </p>
+      {/* 1. GREETING HERO — branded surface, .text-display, inline context */}
+      {(() => {
+        const hour = new Date().getHours();
+        const greetingKey =
+          hour < 12 ? 'founder.hero.morning'
+          : hour < 19 ? 'founder.hero.afternoon'
+          : 'founder.hero.evening';
+        const greetingDefault =
+          hour < 12 ? 'Bom dia{{name}}'
+          : hour < 19 ? 'Boa tarde{{name}}'
+          : 'Boa noite{{name}}';
+        const firstName = profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : '';
+        const currentWeek = (workspace as any).current_week as number | null | undefined;
+        const isAcceleration = workspace.program?.program_type === 'acceleration';
+
+        return (
+          <BrandSurface
+            intensity="hero"
+            className="surface-hero rounded-2xl p-5 sm:p-7 overflow-hidden"
+          >
+            <div className="flex items-start gap-4">
+              <Avatar className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl border border-border/50 shrink-0">
+                <AvatarImage src={workspace.startup?.logo_url || undefined} className="object-cover" alt={workspace.startup?.name || 'Startup'} />
+                <AvatarFallback className="rounded-2xl bg-primary/10 text-primary text-sm font-semibold">
+                  {workspace.startup?.name?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0 space-y-2">
+                <h1 className="text-display text-foreground truncate">
+                  {t(greetingKey, { defaultValue: greetingDefault, name: firstName })}
+                </h1>
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  <span className="text-heading text-foreground/90 truncate max-w-full">
+                    {workspace.startup?.name}
+                  </span>
+                  <StageBadge stage={workspace.stage} size="sm" />
+                  <HealthBadge score={health as HealthScore | null} size="sm" />
+                </div>
+                <p className="text-caption">
+                  {workspace.program?.name}
+                  {isAcceleration && currentWeek
+                    ? ` · ${t('founder.hero.week', { defaultValue: 'Semana {{n}}', n: currentWeek })}`
+                    : ''}
+                  {isBeginner
+                    ? ` · ${t('founder.hero.calmHint', { defaultValue: 'hoje basta um passo.' })}`
+                    : ''}
+                </p>
+              </div>
             </div>
-          </div>
-        </BrandSurface>
-      )}
+          </BrandSurface>
+        );
+      })()}
+
 
 
       {/* 2. Today's focus — THE single primary CTA */}
