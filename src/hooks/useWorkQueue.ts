@@ -23,7 +23,7 @@ export interface WorkQueueItem {
   };
 }
 
-export function useWorkQueue(filters?: { status?: string; type?: string; assignedTo?: string }) {
+export function useWorkQueue(filters?: { status?: string; statuses?: string[]; type?: string; assignedTo?: string }) {
   return useQuery({
     queryKey: ['work-queue', filters],
     queryFn: async () => {
@@ -37,6 +37,8 @@ export function useWorkQueue(filters?: { status?: string; type?: string; assigne
 
       if (filters?.status) {
         query = query.eq('status', filters.status);
+      } else if (filters?.statuses && filters.statuses.length > 0) {
+        query = query.in('status', filters.statuses);
       } else {
         query = query.in('status', ['open', 'in_progress']);
       }
