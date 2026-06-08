@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { syncOutlookCalendar, sendTeamsNotification, getAppUrl } from '@/hooks/useIntegrationTriggers';
 import { Json } from '@/integrations/supabase/types';
 import { logger } from '@/lib/logger';
+import { track } from '@/lib/analytics';
 
 // P1.2: Helper to log activity
 async function logActivity(action: string, entityType: string, entityId: string, workspaceId: string, metadata?: Record<string, unknown>) {
