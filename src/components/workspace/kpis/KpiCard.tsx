@@ -36,6 +36,7 @@ export function KpiCard({
   canEdit,
   isSaving,
   isSaved,
+  p75,
   onValueChange,
   onSave,
   onUnlock,
@@ -43,6 +44,7 @@ export function KpiCard({
   const { t } = useTranslation();
   const def = workspaceKpi.definition;
   if (!def) return null;
+
 
   const displayValue = editedValue?.value ?? currentValue?.value?.toString() ?? '';
   const displayNotes = editedValue?.notes ?? currentValue?.notes ?? '';
