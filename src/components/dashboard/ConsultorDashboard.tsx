@@ -1,11 +1,12 @@
 import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FocusModeProvider, useFocusMode } from '@/components/ui/FocusModeToggle';
+import { FocusModeProvider, FocusModeToggle, useFocusMode } from '@/components/ui/FocusModeToggle';
 import { UnifiedSmartInbox } from '@/components/dashboard/UnifiedSmartInbox';
 import { PortfolioPerformanceTable } from '@/components/dashboard/PortfolioPerformanceTable';
 import { isToday, isThisWeek, differenceInDays, isPast } from 'date-fns';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BrandSurface } from '@/components/ui/BrandSurface';
 import { WorkQueuePanel } from '@/components/staff/WorkQueuePanel';
 import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
 import { useCrmPipeline, PIPELINE_STAGES } from '@/hooks/useCrmPipeline';
