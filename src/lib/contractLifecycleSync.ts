@@ -249,6 +249,8 @@ export async function canonicalMarkAsSent(
 
     if (error) throw error;
 
+    void track('contract_sent_for_signature', { properties: { contractId, provider } });
+
     // Sync intake — surface failure
     const syncRes = await syncIntakeOnContractEvent(contractId, 'signature_sent', userId);
     if (isRealSyncFailure(syncRes)) {
