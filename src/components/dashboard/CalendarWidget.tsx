@@ -9,9 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useUpcomingSessions } from '@/hooks/useUpcomingSessions';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+
 
 interface CalendarWidgetProps {
   className?: string;
@@ -188,22 +190,19 @@ export const CalendarWidget = forwardRef<HTMLDivElement, CalendarWidgetProps>(fu
             })}
             
             {sessions?.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mb-4">
-                  <Calendar className="h-8 w-8 text-primary/60" />
-                </div>
-                <h4 className="font-medium text-foreground mb-1">
-                  {t('calendar.noSessions', 'Sem sessões agendadas')}
-                </h4>
-                <p className="text-sm text-muted-foreground max-w-[220px] mb-4">
-                  {t('calendar.noSessionsDesc', 'Agende uma sessão com o seu mentor para obter orientação.')}
-                </p>
-                <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/mentors')}>
-                  <CalendarPlus className="h-4 w-4" />
-                  {t('calendar.bookSession', 'Agendar Sessão')}
-                </Button>
-              </div>
+              <EmptyState
+                icon={Calendar}
+                title={t('calendar.noSessions', { defaultValue: 'Sem sessões agendadas' })}
+                description={t('calendar.noSessionsDesc', { defaultValue: 'Agende uma sessão com o seu mentor para receber orientação.' })}
+                action={{
+                  label: t('calendar.bookSession', { defaultValue: 'Agendar sessão' }),
+                  onClick: () => navigate('/mentors'),
+                  icon: CalendarPlus,
+                }}
+                variant="inline"
+              />
             )}
+
           </div>
         </ScrollArea>
       </CardContent>

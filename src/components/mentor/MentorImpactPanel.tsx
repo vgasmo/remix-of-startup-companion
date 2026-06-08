@@ -5,14 +5,16 @@
 
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  TrendingUp, Calendar, Users, AlertTriangle, CheckCircle2, Sparkles 
+import {
+  TrendingUp, Calendar, Users, AlertTriangle, CheckCircle2, Sparkles, Heart
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
+
 
 interface MentorImpactPanelProps {
   workspaces: WorkspaceWithDetails[];
@@ -42,7 +44,16 @@ export function MentorImpactPanel({ workspaces }: MentorImpactPanelProps) {
     return { activeCount, withRecentSession, staleCount, healthyCount };
   }, [workspaces]);
 
-  if (!metrics) return null;
+  if (!metrics) {
+    return (
+      <EmptyState
+        icon={Heart}
+        title={t('mentorImpact.emptyTitle', { defaultValue: 'O seu impacto aparecerá aqui' })}
+        description={t('mentorImpact.emptyDesc', { defaultValue: 'Após as suas primeiras sessões, verá métricas sobre o seu contributo para as startups.' })}
+      />
+    );
+  }
+
 
   const items = [
     { 

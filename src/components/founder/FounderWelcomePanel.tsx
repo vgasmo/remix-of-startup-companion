@@ -15,7 +15,9 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { cn } from '@/lib/utils';
+
 
 interface FounderWelcomePanelProps {
   hasStartup: boolean;
@@ -191,11 +193,21 @@ export function FounderWelcomePanel({
                   {t('onboarding.checklistTitle', 'Getting Started')}
                 </span>
                 <span className="text-xs text-muted-foreground ml-2">
-                  {completedCount}/{checklistItems.length}
+                  {t('onboarding.completedOfTotal', {
+                    defaultValue: '{{completed}} de {{total}} concluído',
+                    completed: completedCount,
+                    total: checklistItems.length,
+                  })}
                 </span>
               </div>
-              <Progress value={progress} className="h-1.5 w-20" />
             </div>
+            <div className="h-1.5 rounded-full bg-muted overflow-hidden mb-3">
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+
             
             <div className="space-y-1.5">
               {checklistItems.map((item) => (
@@ -246,24 +258,16 @@ export function FounderWelcomePanel({
         </Card>
       )}
 
-      {/* All Complete Celebration (brief) */}
+      {/* All Complete — static post-confetti view */}
       {allCompleted && !checklistDismissed && (
-        <Card className="border-success/30 bg-success/5">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-success/20 flex items-center justify-center">
-              <CheckCircle2 className="h-6 w-6 text-success" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-success">
-                {t('onboarding.allComplete', 'You\'re all set!')}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {t('onboarding.allCompleteDesc', 'Great job completing your setup. You\'re ready to make progress.')}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Sparkles}
+          tone="success"
+          title={t('onboarding.allCompleteTitle', { defaultValue: 'Integração completa!' })}
+          description={t('onboarding.allCompleteSubtitle', { defaultValue: 'Está pronto para tirar o máximo da plataforma.' })}
+        />
       )}
+
     </div>
   );
 }

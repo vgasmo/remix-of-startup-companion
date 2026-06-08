@@ -1,14 +1,15 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { 
+import {
   Lightbulb,
-  Search, 
-  Hammer, 
-  TrendingUp, 
+  Search,
+  Hammer,
+  TrendingUp,
   Rocket,
   ChevronRight,
-  CheckCircle2
+  CheckCircle2,
+  Flag
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -16,9 +17,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { StageBadge } from '@/components/ui/StageBadge';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { useMilestones } from '@/hooks/useMilestones';
 import { StartupStage } from '@/types/database';
+
 
 interface StageProgressCardProps {
   workspace: WorkspaceWithDetails;
@@ -40,8 +43,20 @@ export function StageProgressCard({ workspace, className }: StageProgressCardPro
   const { t } = useTranslation();
   const { data: milestones } = useMilestones(workspace.id);
 
+  if (!workspace.stage) {
+    return (
+      <EmptyState
+        icon={Flag}
+        title={t('stageProgress.emptyTitle', { defaultValue: 'Etapa por definir' })}
+        description={t('stageProgress.emptyDesc', { defaultValue: 'O estado da sua startup será atualizado pela equipa do programa.' })}
+        className={className}
+      />
+    );
+  }
+
   const currentStageIndex = STAGE_ORDER.indexOf(workspace.stage);
   const progressPercent = ((currentStageIndex + 1) / STAGE_ORDER.length) * 100;
+
 
   // Calculate milestone completion for current stage
   const milestoneStats = useMemo(() => {

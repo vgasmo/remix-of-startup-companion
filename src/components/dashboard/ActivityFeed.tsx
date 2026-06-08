@@ -3,20 +3,23 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabaseClient';
 import { format } from 'date-fns';
 import { formatRelativeTime } from '@/lib/dateUtils';
-import { 
-  FileText, 
-  CheckCircle2, 
-  TrendingUp, 
+import {
+  FileText,
+  CheckCircle2,
+  TrendingUp,
   Target,
   Calendar,
   AlertCircle,
-  Clock
+  Clock,
+  ClipboardList
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { EmptyState } from '@/components/ui/EmptyState';
+
 
 interface ActivityItem {
   id: string;
@@ -165,10 +168,13 @@ export function ActivityFeed() {
               ))}
             </div>
           ) : activities?.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" aria-hidden="true" />
-              <p>{t('dashboard.noRecentActivity', 'No recent activity')}</p>
-            </div>
+            <EmptyState
+              icon={ClipboardList}
+              title={t('dashboard.noRecentActivityTitle', { defaultValue: 'Sem atividade recente' })}
+              description={t('dashboard.noRecentActivityDesc', { defaultValue: 'A sua atividade na plataforma aparecerá aqui — sessões, KPIs, ações concluídas.' })}
+              variant="inline"
+            />
+
           ) : (
             <div className="space-y-4">
               {activities?.map((activity) => {
