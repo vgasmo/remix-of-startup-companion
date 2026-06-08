@@ -227,7 +227,7 @@ function ConsultorDashboardInner({ workspaces, isLoading, programsCount }: Consu
         <PortfolioPerformanceTable workspaces={workspaces} />
       </WidgetErrorBoundary>
 
-      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide pt-2">
+      <p className="label-eyebrow pt-2">
         {t('consultor.portfolioSection', { defaultValue: 'Gestão de Portefólio' })}
       </p>
       <div className="grid gap-6 lg:grid-cols-3">
