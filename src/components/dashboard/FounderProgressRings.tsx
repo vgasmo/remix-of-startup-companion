@@ -48,8 +48,25 @@ export function FounderProgressRings({ workspaceId, className }: FounderProgress
     ];
   }, [actions, kpiData, milestones, t]);
 
-  // Don't show if no data at all
-  if (!actions?.length && !milestones?.length) return null;
+  const allZero = rings.every(r => r.pct === 0);
+  const hasNoData = !actions?.length && !milestones?.length && !(kpiData?.current?.length);
+
+  if (hasNoData || allZero) {
+    return (
+      <EmptyState
+        icon={BarChart3}
+        title={t('founder.progressRings.emptyTitle', { defaultValue: 'Ainda sem dados de progresso' })}
+        description={t('founder.progressRings.emptyDesc', { defaultValue: 'Submeta os seus primeiros KPIs ou crie ações para ver o progresso aqui.' })}
+        action={{
+          label: t('founder.progressRings.updateKpis', { defaultValue: 'Atualizar KPIs' }),
+          onClick: () => navigate(`/workspace/${workspaceId}?tab=kpis`),
+          icon: BarChart3,
+        }}
+        className={className}
+      />
+    );
+  }
+
 
   return (
     <div className={cn('flex items-center justify-center gap-6 sm:gap-8 py-4', className)}>
