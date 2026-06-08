@@ -426,6 +426,110 @@
     background-image: var(--gradient-primary);
   }
 
+  /* ============================================================
+     TYPOGRAPHY SCALE — Startup Leiria identity
+     Fluid, opinionated, built on DM Sans (heading) + Outfit (body).
+     Use these utilities instead of ad-hoc text-* classes.
+     ============================================================ */
+  .text-display {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: clamp(2rem, 1.4rem + 2vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+  .text-title {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+  }
+  .text-heading {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .text-body {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .text-caption {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* ============================================================
+     BRAND MOTIF — soft radial bloom + faint diagonal dot-grid.
+     Pseudo-element layer, pointer-events-none, uses --primary token.
+     ============================================================ */
+  .brand-motif {
+    position: relative;
+    isolation: isolate;
+  }
+  .brand-motif::before,
+  .brand-motif::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .brand-motif::before {
+    background:
+      radial-gradient(
+        circle at 85% 0%,
+        hsl(var(--primary) / 0.10) 0%,
+        transparent 55%
+      );
+    opacity: 0.9;
+  }
+  .brand-motif::after {
+    background-image: radial-gradient(
+      hsl(var(--primary) / 0.18) 1px,
+      transparent 1px
+    );
+    background-size: 18px 18px;
+    background-position: 0 0;
+    opacity: 0.06;
+    mask-image: linear-gradient(135deg, transparent 0%, black 40%, transparent 90%);
+    -webkit-mask-image: linear-gradient(135deg, transparent 0%, black 40%, transparent 90%);
+  }
+  .brand-motif > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand-motif-subtle::before { opacity: 0.5; }
+  .brand-motif-subtle::after { opacity: 0.04; }
+  .brand-motif-hero::before { opacity: 1; }
+  .brand-motif-hero::after { opacity: 0.08; }
+
+  /* ============================================================
+     ELEVATION / SURFACE TIERS — canonical card surfaces.
+     ============================================================ */
+  .surface-flat {
+    @apply bg-card border border-border/60;
+    box-shadow: var(--shadow-xs);
+  }
+  .surface-raised {
+    @apply bg-card border border-border/50 transition-shadow duration-200;
+    box-shadow: var(--shadow-card);
+  }
+  .surface-raised:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+  .surface-hero {
+    @apply border border-primary/10;
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-md);
+  }
+
   /* Scrollbar */
   .scrollbar-thin {
     scrollbar-width: thin;
