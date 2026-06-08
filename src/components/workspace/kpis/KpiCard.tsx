@@ -140,13 +140,23 @@ export function KpiCard({
                 </div>
               </div>
             ) : (
-              <div>
+              <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold">
                   {currentValue?.value !== null && currentValue?.value !== undefined ? currentValue.value.toLocaleString() : '—'}
                 </span>
-                {def.unit && <span className="text-sm text-muted-foreground ml-1">{def.unit}</span>}
+                {def.unit && <span className="text-sm text-muted-foreground">{def.unit}</span>}
+                {breakout && (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-strong animate-bounce-in"
+                    title={t('kpis.p75Breakout', { defaultValue: 'Above top-quartile benchmark' })}
+                  >
+                    <BrandChevron size={10} color="lime" strokeWidth={4} className="-rotate-90" />
+                    p75
+                  </span>
+                )}
               </div>
             )}
+
           </div>
           {workspaceKpi.target_value !== null && (
             <div className="text-right">
