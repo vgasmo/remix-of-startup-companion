@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { AlertTriangle, Activity, TrendingUp, Bug } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
+import { DownloadHtmlReportButton } from '@/components/shared/DownloadHtmlReportButton';
 
 interface ErrorRow {
   id: string;
@@ -106,6 +107,15 @@ export function SystemHealthDashboard() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <DownloadHtmlReportButton
+          functionName="generate-board-pack"
+          label={t('admin.systemHealth.boardPack', { defaultValue: 'Gerar Board Pack' })}
+          variant="default"
+          size="sm"
+        />
+      </div>
+
       <div className="grid gap-4 md:grid-cols-4">
         <StatCard
           icon={<Bug className="h-4 w-4" />}

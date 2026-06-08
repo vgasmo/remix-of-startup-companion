@@ -911,6 +911,62 @@ export type Database = {
         }
         Relationships: []
       }
+      cohort_benchmarks: {
+        Row: {
+          avg: number | null
+          cohort_size: number
+          computed_at: string
+          created_at: string
+          id: string
+          metric_key: string
+          metric_label: string | null
+          p25: number | null
+          p50: number | null
+          p75: number | null
+          p90: number | null
+          program_id: string
+          stage: string
+        }
+        Insert: {
+          avg?: number | null
+          cohort_size: number
+          computed_at?: string
+          created_at?: string
+          id?: string
+          metric_key: string
+          metric_label?: string | null
+          p25?: number | null
+          p50?: number | null
+          p75?: number | null
+          p90?: number | null
+          program_id: string
+          stage: string
+        }
+        Update: {
+          avg?: number | null
+          cohort_size?: number
+          computed_at?: string
+          created_at?: string
+          id?: string
+          metric_key?: string
+          metric_label?: string | null
+          p25?: number | null
+          p50?: number | null
+          p75?: number | null
+          p90?: number | null
+          program_id?: string
+          stage?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_benchmarks_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       communication_log: {
         Row: {
           activity_type: string

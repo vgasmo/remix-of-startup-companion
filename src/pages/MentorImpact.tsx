@@ -15,6 +15,7 @@ import { MentorImpactDashboard } from '@/components/mentors/MentorImpactDashboar
 import { MentorOpenLoops } from '@/components/mentor/MentorOpenLoops';
 import { useWorkspaces } from '@/hooks/useWorkspaces';
 import { BackToHomeLink } from '@/components/ui/BackToHomeLink';
+import { DownloadHtmlReportButton } from '@/components/shared/DownloadHtmlReportButton';
 import { supabase } from '@/lib/supabaseClient';
 
 function MentorFeedbackCard({ mentorId }: { mentorId: string }) {
@@ -121,18 +122,29 @@ export default function MentorImpact() {
       <div className="space-y-6 max-w-5xl">
         <BackToHomeLink />
 
-        <div className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-primary" />
-          <h1 className="text-xl font-semibold">
-            {t('mentorImpact.pageTitle', 'O Seu Impacto')}
-          </h1>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {t(
-            'mentorImpact.pageDesc',
-            'Visão consolidada das suas sessões, startups ativas, follow-ups por fechar e feedback recebido.'
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              <h1 className="text-xl font-semibold">
+                {t('mentorImpact.pageTitle', 'O Seu Impacto')}
+              </h1>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
+              {t(
+                'mentorImpact.pageDesc',
+                'Visão consolidada das suas sessões, startups ativas, follow-ups por fechar e feedback recebido.'
+              )}
+            </p>
+          </div>
+          {isMentor && (
+            <DownloadHtmlReportButton
+              functionName="generate-mentor-impact-report"
+              label={t('mentorImpact.downloadReport', 'Descarregar relatório de impacto')}
+              variant="outline"
+            />
           )}
-        </p>
+        </div>
 
         <MentorImpactDashboard />
 
