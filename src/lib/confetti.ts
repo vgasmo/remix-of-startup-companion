@@ -1,6 +1,16 @@
 import confetti from 'canvas-confetti';
 
+function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined' || !window.matchMedia) return false;
+  try {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch {
+    return false;
+  }
+}
+
 export function triggerConfetti() {
+  if (prefersReducedMotion()) return;
   // Create burst from multiple angles
   const count = 200;
   const defaults = {
@@ -47,6 +57,7 @@ export function triggerConfetti() {
 }
 
 export function triggerSuccessConfetti() {
+  if (prefersReducedMotion()) return;
   // Simpler, celebratory burst
   confetti({
     particleCount: 100,
@@ -61,6 +72,7 @@ export function triggerSuccessConfetti() {
  * Mini celebration for action completions - subtle but satisfying
  */
 export function triggerMiniCelebration() {
+  if (prefersReducedMotion()) return;
   confetti({
     particleCount: 30,
     spread: 50,
@@ -77,6 +89,7 @@ export function triggerMiniCelebration() {
  * KPI update celebration - brand colors with upward trajectory
  */
 export function triggerKpiCelebration() {
+  if (prefersReducedMotion()) return;
   const colors = ['#c8e600', '#84cc16', '#22c55e', '#10b981'];
   
   // Upward burst suggesting growth
@@ -95,6 +108,7 @@ export function triggerKpiCelebration() {
  * Milestone completion - big celebration
  */
 export function triggerMilestoneCelebration() {
+  if (prefersReducedMotion()) return;
   const duration = 1500;
   const animationEnd = Date.now() + duration;
   const colors = ['#c8e600', '#cc2936', '#22c55e', '#f59e0b', '#3b82f6'];
