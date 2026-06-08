@@ -168,10 +168,13 @@ export function ActivityFeed() {
               ))}
             </div>
           ) : activities?.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" aria-hidden="true" />
-              <p>{t('dashboard.noRecentActivity', 'No recent activity')}</p>
-            </div>
+            <EmptyState
+              icon={ClipboardList}
+              title={t('dashboard.noRecentActivityTitle', { defaultValue: 'Sem atividade recente' })}
+              description={t('dashboard.noRecentActivityDesc', { defaultValue: 'A sua atividade na plataforma aparecerá aqui — sessões, KPIs, ações concluídas.' })}
+              variant="inline"
+            />
+
           ) : (
             <div className="space-y-4">
               {activities?.map((activity) => {
