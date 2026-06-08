@@ -45,7 +45,7 @@ export function QuickActionsFab({
   };
 
   return (
-    <div className={cn("fixed bottom-5 right-5 z-50 md:hidden", className)}>
+    <div className={cn("fixed right-4 z-40 md:hidden bottom-[calc(5rem+env(safe-area-inset-bottom,0px))]", className)}>
       {/* Action buttons */}
       <div className={cn(
         "flex flex-col-reverse gap-1.5 mb-2 transition-all duration-150",
