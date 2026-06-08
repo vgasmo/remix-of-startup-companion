@@ -5,14 +5,16 @@
 
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  TrendingUp, Calendar, Users, AlertTriangle, CheckCircle2, Sparkles 
+import {
+  TrendingUp, Calendar, Users, AlertTriangle, CheckCircle2, Sparkles, Heart
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
+
 
 interface MentorImpactPanelProps {
   workspaces: WorkspaceWithDetails[];
