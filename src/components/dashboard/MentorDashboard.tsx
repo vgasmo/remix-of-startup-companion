@@ -367,7 +367,7 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
                         {/* Compact summary cues */}
                         <div className="flex items-center gap-2.5 mt-1.5 text-[11px] text-muted-foreground">
                           {workspace.hasCurrentMonthKpi ? (
-                            <span className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400">
+                            <span className="flex items-center gap-0.5 text-success">
                               <BarChart3 className="h-3 w-3" />
                               {t('mentor.kpiUpToDate', { defaultValue: 'KPIs atualizados' })}
                             </span>
