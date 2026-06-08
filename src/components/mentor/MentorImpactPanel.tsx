@@ -44,7 +44,16 @@ export function MentorImpactPanel({ workspaces }: MentorImpactPanelProps) {
     return { activeCount, withRecentSession, staleCount, healthyCount };
   }, [workspaces]);
 
-  if (!metrics) return null;
+  if (!metrics) {
+    return (
+      <EmptyState
+        icon={Heart}
+        title={t('mentorImpact.emptyTitle', { defaultValue: 'O seu impacto aparecerá aqui' })}
+        description={t('mentorImpact.emptyDesc', { defaultValue: 'Após as suas primeiras sessões, verá métricas sobre o seu contributo para as startups.' })}
+      />
+    );
+  }
+
 
   const items = [
     { 
