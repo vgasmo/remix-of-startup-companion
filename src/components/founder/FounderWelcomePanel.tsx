@@ -198,8 +198,14 @@ export function FounderWelcomePanel({
       )}
 
       {/* P0: Compact Progress Checklist */}
-      {!checklistDismissed && !allCompleted && (
-        <Card className="relative">
+      {!checklistDismissed && (
+        <Card
+          className={cn(
+            'relative transition-all duration-500 ease-out overflow-hidden',
+            isCollapsing && 'motion-safe:opacity-0 motion-safe:scale-95 motion-safe:max-h-0 motion-safe:my-0 motion-safe:py-0',
+          )}
+          aria-hidden={isCollapsing}
+        >
           <Button
             variant="ghost"
             size="icon"
