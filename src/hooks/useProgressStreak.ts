@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useCallback } from 'react';
 
 const STREAK_KEY = 'founder_progress_streak';
 const LAST_ACTIVITY_KEY = 'founder_last_activity_week';
