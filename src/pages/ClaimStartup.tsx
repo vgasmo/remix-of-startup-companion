@@ -66,6 +66,7 @@ export default function ClaimStartup() {
   const handleVerify = useCallback(async () => {
     if (!user) return;
     setPageState('verifying');
+    void track('claim_started');
 
     try {
       const { data, error } = await supabase.rpc('claim_startup');
