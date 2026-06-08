@@ -71,7 +71,7 @@ export function useProgressStreak() {
     return { currentStreak: 0, lastActivityWeek: data.lastActivityWeek };
   }, [currentWeek]);
 
-  const recordActivity = () => {
+  const recordActivity = useCallback(() => {
     const data = getStreakData();
     const previousWeek = getPreviousWeek(currentWeek);
     
@@ -96,7 +96,7 @@ export function useProgressStreak() {
       currentStreak: newStreak,
       lastActivityWeek: currentWeek,
     });
-  };
+  }, [currentWeek]);
 
   return {
     streakWeeks: streakData.currentStreak,
