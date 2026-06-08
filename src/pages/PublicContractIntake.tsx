@@ -205,6 +205,7 @@ export default function PublicContractIntake() {
     },
     onSuccess: () => {
       autosave.clearDraft();
+      void track('intake_submitted', { properties: { token: token?.slice(0, 6) ?? null } });
       notify.success(isPt ? 'Dados submetidos com sucesso!' : 'Data submitted successfully!');
     },
     onError: (err: any) => {
