@@ -52,11 +52,19 @@ export function MilestonesTab({ workspaceId, canWrite }: MilestonesTabProps) {
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Milestone | null>(null);
+  const [celebrating, setCelebrating] = useState<{ id: string; title: string } | null>(null);
   const [newMilestone, setNewMilestone] = useState({
     title: '',
     description: '',
     target_date: '',
   });
+
+  useEffect(() => {
+    if (!celebrating) return;
+    const tid = window.setTimeout(() => setCelebrating(null), 2000);
+    return () => window.clearTimeout(tid);
+  }, [celebrating]);
+
 
   const handleCreate = async () => {
     if (!newMilestone.title.trim()) {
