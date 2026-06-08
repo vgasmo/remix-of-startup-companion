@@ -193,11 +193,21 @@ export function FounderWelcomePanel({
                   {t('onboarding.checklistTitle', 'Getting Started')}
                 </span>
                 <span className="text-xs text-muted-foreground ml-2">
-                  {completedCount}/{checklistItems.length}
+                  {t('onboarding.completedOfTotal', {
+                    defaultValue: '{{completed}} de {{total}} concluído',
+                    completed: completedCount,
+                    total: checklistItems.length,
+                  })}
                 </span>
               </div>
-              <Progress value={progress} className="h-1.5 w-20" />
             </div>
+            <div className="h-1.5 rounded-full bg-muted overflow-hidden mb-3">
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+
             
             <div className="space-y-1.5">
               {checklistItems.map((item) => (
