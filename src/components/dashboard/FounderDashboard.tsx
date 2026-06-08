@@ -48,6 +48,8 @@ import { PendingContractBanner } from '@/components/founder/PendingContractBanne
 import { FounderProgressRings } from '@/components/dashboard/FounderProgressRings';
 import { FounderStoryTimeline } from '@/components/founder/FounderStoryTimeline';
 import { useAutoMaterializeDeliverables } from '@/hooks/useAutoMaterializeDeliverables';
+import { useActionItems } from '@/hooks/useActionItems';
+import { useUpcomingSessions } from '@/hooks/useUpcomingSessions';
 import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
 import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
 import { MySupportTeamCard } from '@/components/founder/MySupportTeamCard';
