@@ -7,6 +7,27 @@ import "./i18n";
 import { validateEnv } from "./lib/env";
 validateEnv();
 
+// 🛰️ Global error capture → client_error_logs sink (Tier-0 observability).
+// logError is fire-and-forget; these handlers never block the app.
+import { logError } from "./lib/logError";
+
+if (typeof window !== "undefined") {
+  window.addEventListener("error", (event) => {
+    const err = event.error instanceof Error
+      ? event.error
+      : new Error(event.message || "window.onerror");
+    logError(err, { component: "window.onerror", severity: "high" });
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    const reason = event.reason;
+    const err = reason instanceof Error
+      ? reason
+      : new Error(typeof reason === "string" ? reason : "unhandledrejection");
+    logError(err, { component: "unhandledrejection", severity: "high" });
+  });
+}
+
 // 🛡️ PWA service-worker guard
 // Lovable preview runs the app inside an iframe. A registered SW would
 // cache stale builds and break preview navigation. We unregister any SW
