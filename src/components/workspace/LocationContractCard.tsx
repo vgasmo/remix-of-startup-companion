@@ -52,11 +52,11 @@ export function LocationContractCard({ workspaceId }: LocationContractCardProps)
   }
 
   const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 border-green-200',
-    draft: 'bg-yellow-500/10 text-yellow-600 border-yellow-200',
-    pending_signature: 'bg-blue-500/10 text-blue-600 border-blue-200',
+    active: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] border-[hsl(var(--success))]/30',
+    draft: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30',
+    pending_signature: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] border-[hsl(var(--info))]/30',
     suspended: 'bg-orange-500/10 text-orange-600 border-orange-200',
-    terminated: 'bg-red-500/10 text-red-600 border-red-200',
+    terminated: 'bg-destructive/10 text-destructive border-destructive/30',
     expired: 'bg-muted text-muted-foreground border-muted',
   };
 

@@ -359,7 +359,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              <AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))]" />
               {t('documents.openingExternalLink')}
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
@@ -367,7 +367,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
               <p className="font-mono text-sm bg-muted p-2 rounded break-all">
                 {pendingExternalUrl}
               </p>
-              <p className="text-amber-600 dark:text-amber-400">
+              <p className="text-[hsl(var(--warning))]">
                 {t('documents.externalLinkWarning')}
               </p>
             </AlertDialogDescription>
@@ -608,9 +608,9 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                   <div className={cn(
                                     "h-10 w-10 rounded-lg flex items-center justify-center shrink-0",
-                                    isLink ? "bg-blue-100 dark:bg-blue-900/30" : "bg-muted"
+                                    isLink ? "bg-[hsl(var(--info))]/10" : "bg-muted"
                                   )}>
-                                    <Icon className={cn("h-5 w-5", isLink ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground")} />
+                                    <Icon className={cn("h-5 w-5", isLink ? "text-[hsl(var(--info))]" : "text-muted-foreground")} />
                                   </div>
                                   <div className="min-w-0">
                                     <p className="font-medium text-sm truncate">{doc.name || t('documents.untitled', { defaultValue: 'Sem título' })}</p>

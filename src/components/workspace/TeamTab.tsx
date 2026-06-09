@@ -178,7 +178,7 @@ export function TeamTab({ startupId, canEdit = false }: TeamTabProps) {
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium truncate">{member.full_name}</h4>
                       {member.is_founder && (
-                        <Crown className="h-4 w-4 text-yellow-500" />
+                        <Crown className="h-4 w-4 text-[hsl(var(--warning))]" />
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">{member.title || member.role}</p>

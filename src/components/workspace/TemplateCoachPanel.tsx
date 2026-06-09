@@ -139,22 +139,22 @@ export function TemplateCoachPanel({
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'high':
-        return 'text-red-600 bg-red-100 dark:bg-red-900/30';
+        return 'text-destructive bg-destructive/10';
       case 'medium':
-        return 'text-amber-600 bg-amber-100 dark:bg-amber-900/30';
+        return 'text-[hsl(var(--warning))] bg-[hsl(var(--warning))]/10';
       default:
-        return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30';
+        return 'text-[hsl(var(--info))] bg-[hsl(var(--info))]/10';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return 'bg-red-100 text-red-700 dark:bg-red-900/30';
+        return 'bg-destructive/10 text-destructive';
       case 'high':
         return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30';
       case 'medium':
-        return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30';
+        return 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]';
       default:
         return 'bg-muted text-muted-foreground';
     }
@@ -234,7 +234,7 @@ export function TemplateCoachPanel({
             {feedback.strengths.length > 0 && (
               <Section
                 title={t('templates.strengths', 'Strengths')}
-                icon={<CheckCircle2 className="h-4 w-4 text-green-600" />}
+                icon={<CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />}
                 expanded={expandedSections.has('strengths')}
                 onToggle={() => toggleSection('strengths')}
                 count={feedback.strengths.length}
@@ -242,7 +242,7 @@ export function TemplateCoachPanel({
                 <ul className="space-y-1">
                   {feedback.strengths.map((s, i) => (
                     <li key={i} className="text-sm flex items-start gap-2">
-                      <span className="text-green-600 mt-1">•</span>
+                      <span className="text-[hsl(var(--success))] mt-1">•</span>
                       {s}
                     </li>
                   ))}
@@ -254,7 +254,7 @@ export function TemplateCoachPanel({
             {feedback.gaps.length > 0 && (
               <Section
                 title={t('templates.gaps', 'Gaps to Address')}
-                icon={<HelpCircle className="h-4 w-4 text-amber-600" />}
+                icon={<HelpCircle className="h-4 w-4 text-[hsl(var(--warning))]" />}
                 expanded={expandedSections.has('gaps')}
                 onToggle={() => toggleSection('gaps')}
                 count={feedback.gaps.length}
@@ -275,14 +275,14 @@ export function TemplateCoachPanel({
             {feedback.assumptions_to_test.length > 0 && (
               <Section
                 title={t('templates.assumptionsToTest', 'Assumptions to Test')}
-                icon={<Lightbulb className="h-4 w-4 text-blue-600" />}
+                icon={<Lightbulb className="h-4 w-4 text-[hsl(var(--info))]" />}
                 expanded={expandedSections.has('assumptions')}
                 onToggle={() => toggleSection('assumptions')}
                 count={feedback.assumptions_to_test.length}
               >
                 <ul className="space-y-2">
                   {feedback.assumptions_to_test.map((a, i) => (
-                    <li key={i} className="text-sm border-l-2 border-blue-300 pl-3">
+                    <li key={i} className="text-sm border-l-2 border-[hsl(var(--info))]/30 pl-3">
                       <div className="font-medium">{a.assumption}</div>
                       <div className="text-muted-foreground">{t('templates.test')}: {a.test}</div>
                       <div className="text-xs text-muted-foreground">{t('templates.metric')}: {a.metric}</div>
@@ -296,7 +296,7 @@ export function TemplateCoachPanel({
             {feedback.red_flags.length > 0 && (
               <Section
                 title={t('templates.redFlags', 'Red Flags')}
-                icon={<AlertTriangle className="h-4 w-4 text-red-600" />}
+                icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
                 expanded={expandedSections.has('redflags')}
                 onToggle={() => toggleSection('redflags')}
                 count={feedback.red_flags.length}
@@ -374,7 +374,7 @@ export function TemplateCoachPanel({
             {feedback.kpi_suggestions.length > 0 && (
               <Section
                 title={t('templates.kpiSuggestions', 'KPI Suggestions')}
-                icon={<TrendingUp className="h-4 w-4 text-green-600" />}
+                icon={<TrendingUp className="h-4 w-4 text-[hsl(var(--success))]" />}
                 expanded={expandedSections.has('kpis')}
                 onToggle={() => toggleSection('kpis')}
                 count={feedback.kpi_suggestions.length}

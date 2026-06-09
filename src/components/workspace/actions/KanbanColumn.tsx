@@ -11,7 +11,7 @@ type ActionStatus = Database['public']['Enums']['action_status'];
 const STATUS_CONFIG: Record<ActionStatus, { labelKey: string; color: string }> = {
   pending: { labelKey: 'actions.statusOpen', color: 'bg-muted text-muted-foreground' },
   in_progress: { labelKey: 'actions.statusDoing', color: 'bg-primary/20 text-primary' },
-  completed: { labelKey: 'actions.statusDone', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+  completed: { labelKey: 'actions.statusDone', color: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ' },
   cancelled: { labelKey: 'actions.statusCancelled', color: 'bg-muted text-muted-foreground line-through' },
 };
 

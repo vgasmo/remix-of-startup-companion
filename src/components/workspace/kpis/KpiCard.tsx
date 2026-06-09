@@ -66,8 +66,8 @@ export function KpiCard({
 
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
   const trendColor = def.direction === 'up' 
-    ? (trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground')
-    : (trend === 'down' ? 'text-green-600' : trend === 'up' ? 'text-destructive' : 'text-muted-foreground');
+    ? (trend === 'up' ? 'text-[hsl(var(--success))]' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground')
+    : (trend === 'down' ? 'text-[hsl(var(--success))]' : trend === 'up' ? 'text-destructive' : 'text-muted-foreground');
 
   const chartDataFiltered = chartData.map(d => ({ ...d, value: d.value }));
 
@@ -91,8 +91,8 @@ export function KpiCard({
   return (
     <Card className={cn(
       "transition-colors duration-300 relative",
-      isLocked && 'border-amber-200 dark:border-amber-800',
-      isSaved && 'border-green-300 dark:border-green-800',
+      isLocked && 'border-[hsl(var(--warning))]/30',
+      isSaved && 'border-[hsl(var(--success))]/30',
       breakout && 'breakout-glow border-primary/50',
     )}>
 
@@ -104,12 +104,12 @@ export function KpiCard({
               {workspaceKpi.required && (
                 <Badge variant="outline" className="text-xs">{t('kpis.required', 'Required')}</Badge>
               )}
-              {isLocked && <Lock className="h-3.5 w-3.5 text-amber-600" />}
+              {isLocked && <Lock className="h-3.5 w-3.5 text-[hsl(var(--warning))]" />}
             </CardTitle>
             {def.description && <p className="text-xs text-muted-foreground mt-0.5">{def.description}</p>}
             {isFromFinancialModel && currentValue && (
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant="secondary" className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                <Badge variant="secondary" className="text-xs bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]">
                   {t('financialPanel.fromFinancialModel', { defaultValue: 'From Financial Model' })}
                 </Badge>
                 {isLocked && canEdit && onUnlock && (
@@ -123,7 +123,7 @@ export function KpiCard({
           </div>
           <div className="flex items-center gap-1.5">
             {isSaving && <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />}
-            {isSaved && !isSaving && <Check className="h-4 w-4 text-green-600 animate-in fade-in duration-200" />}
+            {isSaved && !isSaving && <Check className="h-4 w-4 text-[hsl(var(--success))] animate-in fade-in duration-200" />}
             <TrendIcon className={`h-4 w-4 ${trendColor}`} />
           </div>
         </div>
@@ -179,7 +179,7 @@ export function KpiCard({
         ) : null}
 
         {isLocked && canEdit && (
-          <div className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+          <div className="text-xs text-[hsl(var(--warning))] flex items-center gap-1">
             <Lock className="h-3 w-3" />
             {t('financialPanel.lockedFromSync', { defaultValue: 'Locked from Financial Model sync. Unlock to edit manually.' })}
           </div>

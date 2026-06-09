@@ -486,8 +486,8 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <MilestoneCount label={t('workspaceOverview.planned')} count={milestoneCounts.planned} color="bg-muted" />
-                  <MilestoneCount label={t('workspaceOverview.inProgressMilestone')} count={milestoneCounts.inProgress} color="bg-blue-500/10 text-blue-600" />
-                  <MilestoneCount label={t('workspaceOverview.completedMilestone')} count={milestoneCounts.completed} color="bg-green-500/10 text-green-600" />
+                  <MilestoneCount label={t('workspaceOverview.inProgressMilestone')} count={milestoneCounts.inProgress} color="bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]" />
+                  <MilestoneCount label={t('workspaceOverview.completedMilestone')} count={milestoneCounts.completed} color="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]" />
                   <MilestoneCount label={t('workspaceOverview.delayed')} count={milestoneCounts.delayed} color="bg-destructive/10 text-destructive" />
                 </div>
               )}
@@ -642,15 +642,15 @@ function ActionItem({ action }: { action: any }) {
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer transition-colors">
       <div className={`h-2 w-2 rounded-full flex-shrink-0 ${
-        action.status === 'in_progress' ? 'bg-blue-500' : 
+        action.status === 'in_progress' ? 'bg-[hsl(var(--info))]' : 
         isOverdue ? 'bg-destructive' : 
-        isDueToday ? 'bg-amber-500' : 'bg-muted-foreground'
+        isDueToday ? 'bg-[hsl(var(--warning))]' : 'bg-muted-foreground'
       }`} />
       <div className="flex-1 min-w-0">
         <p className="font-medium text-sm truncate">{action.title}</p>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {action.due_date && (
-            <span className={isOverdue ? 'text-destructive font-medium' : isDueToday ? 'text-amber-600 font-medium' : ''}>
+            <span className={isOverdue ? 'text-destructive font-medium' : isDueToday ? 'text-[hsl(var(--warning))] font-medium' : ''}>
               {isOverdue ? t('workspaceOverview.overduePrefix', { defaultValue: 'Em atraso: ' }) : isDueToday ? t('workspaceOverview.today', { defaultValue: 'Hoje' }) : ''}
               {!isDueToday && format(new Date(action.due_date), 'dd MMM')}
             </span>
@@ -709,7 +709,7 @@ function KpiCard({ kpi, previousValue }: { kpi: any; previousValue?: number | nu
           {currentValue != null ? formatValue(currentValue) : '-'}
         </p>
         {hasChange && trend !== 'neutral' && (
-          <div className={`flex items-center text-xs ${isGoodTrend ? 'text-green-600' : 'text-destructive'}`}>
+          <div className={`flex items-center text-xs ${isGoodTrend ? 'text-[hsl(var(--success))]' : 'text-destructive'}`}>
             {trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
             <span className="ml-0.5">{Math.abs(trendPercent).toFixed(0)}%</span>
           </div>

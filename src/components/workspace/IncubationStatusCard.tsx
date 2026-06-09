@@ -120,7 +120,7 @@ export const IncubationStatusCard = memo(function IncubationStatusCard({
             className="rounded-xl border border-border/40 bg-muted/20 p-3"
           >
             <div className="flex items-center gap-2 mb-1.5">
-              <CalendarCheck className="h-3.5 w-3.5 text-amber-500" />
+              <CalendarCheck className="h-3.5 w-3.5 text-[hsl(var(--warning))]" />
               <span className="text-[11px] text-muted-foreground font-medium">
                 {t('workspace.incubationStatus.nextReview', { defaultValue: 'Próxima Revisão' })}
               </span>

@@ -264,9 +264,9 @@ function FounderActivityItem({ activity }: { activity: ActivityEntry }) {
           {activity.direction && (
             <span className="shrink-0">
               {activity.direction === 'inbound' ? (
-                <ArrowDownRight className="h-3.5 w-3.5 text-blue-500" />
+                <ArrowDownRight className="h-3.5 w-3.5 text-[hsl(var(--info))]" />
               ) : (
-                <ArrowUpRight className="h-3.5 w-3.5 text-green-500" />
+                <ArrowUpRight className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
               )}
             </span>
           )}

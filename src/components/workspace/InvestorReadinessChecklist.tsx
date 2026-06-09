@@ -107,7 +107,7 @@ export function InvestorReadinessChecklist({ workspaceId, canWrite }: InvestorRe
             className={cn(
               "flex items-center justify-between p-3 rounded-lg border",
               item.completed 
-                ? "border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20" 
+                ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/50 " 
                 : "border-border bg-muted/30"
             )}
           >
@@ -115,7 +115,7 @@ export function InvestorReadinessChecklist({ workspaceId, canWrite }: InvestorRe
               <div className={cn(
                 "h-8 w-8 rounded-full flex items-center justify-center",
                 item.completed 
-                  ? "bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400"
+                  ? "bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] "
                   : "bg-muted text-muted-foreground"
               )}>
                 {item.completed ? <CheckCircle2 className="h-4 w-4" /> : item.icon}

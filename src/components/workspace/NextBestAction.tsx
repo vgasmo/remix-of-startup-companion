@@ -179,18 +179,18 @@ export function NextBestAction({ workspaceId, programId, stage, canWrite }: Next
 
   if (nextActions.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-green-200 dark:border-green-900 bg-gradient-to-r from-green-50/80 via-emerald-50/50 to-transparent dark:from-green-950/30 dark:via-emerald-950/20">
+      <Card className="relative overflow-hidden border-[hsl(var(--success))]/30 bg-gradient-to-r from-green-50/80 via-emerald-50/50 to-transparent dark:from-green-950/30 dark:via-emerald-950/20">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-green-400/10 to-transparent rounded-bl-full" />
         <CardContent className="py-6 relative">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900/50 flex items-center justify-center ring-1 ring-green-500/20">
-              <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+            <div className="h-12 w-12 rounded-xl bg-[hsl(var(--success))]/10 flex items-center justify-center ring-1 ring-green-500/20">
+              <CheckCircle2 className="h-6 w-6 text-[hsl(var(--success))]" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-green-900 dark:text-green-100">{t('nextBestAction.allCaughtUp')}</h3>
-              <p className="text-sm text-green-700 dark:text-green-300">{t('nextBestAction.noUrgentActions')}</p>
+              <h3 className="font-semibold text-[hsl(var(--success))]">{t('nextBestAction.allCaughtUp')}</h3>
+              <p className="text-sm text-[hsl(var(--success))]">{t('nextBestAction.noUrgentActions')}</p>
             </div>
-            <Sparkles className="h-5 w-5 text-green-400/50" />
+            <Sparkles className="h-5 w-5 text-[hsl(var(--success))]/50" />
           </div>
         </CardContent>
       </Card>
@@ -218,9 +218,9 @@ export function NextBestAction({ workspaceId, programId, stage, canWrite }: Next
               'group flex items-center justify-between p-3 rounded-xl border transition-all duration-200',
               'hover:shadow-sm hover:scale-[1.005]',
               item.variant === 'destructive' 
-                ? 'border-amber-300/40 bg-amber-50/40 dark:border-amber-700/30 dark:bg-amber-900/10 hover:border-amber-400/60' 
+                ? 'border-[hsl(var(--warning))]/40 bg-[hsl(var(--warning))]/40 hover:border-[hsl(var(--warning))]/60' 
                 : item.variant === 'warning'
-                ? 'border-amber-200/50 bg-amber-50/30 dark:border-amber-800/30 dark:bg-amber-950/10 hover:border-amber-300/60'
+                ? 'border-[hsl(var(--warning))]/50 bg-[hsl(var(--warning))]/30 hover:border-[hsl(var(--warning))]/60'
                 : 'border-border bg-muted/30 hover:border-border/80 hover:bg-muted/50',
               index === 0 && 'ring-1 ring-primary/10'
             )}
@@ -229,9 +229,9 @@ export function NextBestAction({ workspaceId, programId, stage, canWrite }: Next
               <div className={cn(
                 'h-10 w-10 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-105',
                 item.variant === 'destructive' 
-                  ? 'bg-amber-100/80 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' 
+                  ? 'bg-[hsl(var(--warning))]/80 text-[hsl(var(--warning))] ' 
                   : item.variant === 'warning'
-                  ? 'bg-amber-50 text-amber-500 dark:bg-amber-900/30 dark:text-amber-400'
+                  ? 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] '
                   : 'bg-muted text-muted-foreground'
               )}>
                 {item.icon}

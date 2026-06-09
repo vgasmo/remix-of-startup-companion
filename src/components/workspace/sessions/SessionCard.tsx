@@ -51,7 +51,7 @@ export function SessionCard({ session, workspaceId, canWrite, onEdit, onDelete }
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <h3 className="font-semibold truncate">{session.title}</h3>
                 {isPastSession && !hasNotes && (
-                  <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">
+                  <Badge variant="outline" className="text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/10">
                     {t('sessions.needsNotes')}
                   </Badge>
                 )}

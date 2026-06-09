@@ -152,12 +152,12 @@ function SessionInsightCard({ session, canManage, onSaveAsNote, onCreateTask }: 
             {session.ai_decisions && session.ai_decisions.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-600" />{t('notes.decisions', { defaultValue: 'Decisions' })} ({session.ai_decisions.length})</h4>
+                  <h4 className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />{t('notes.decisions', { defaultValue: 'Decisions' })} ({session.ai_decisions.length})</h4>
                   {canManage && <Button variant="ghost" size="sm" onClick={() => onSaveAsNote(`Decisions:\n${session.ai_decisions!.map((d, i) => `${i + 1}. ${d}`).join('\n')}`, session.title)}><Plus className="h-3 w-3 mr-1" />{t('notes.saveAsNote', { defaultValue: 'Save as Note' })}</Button>}
                 </div>
                 <ul className="space-y-1">
                   {session.ai_decisions.map((decision, idx) => (
-                    <li key={idx} className="text-sm flex items-start gap-2 bg-green-50 dark:bg-green-950/20 p-2 rounded"><CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />{decision}</li>
+                    <li key={idx} className="text-sm flex items-start gap-2 bg-[hsl(var(--success))]/10 p-2 rounded"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))] mt-0.5 flex-shrink-0" />{decision}</li>
                   ))}
                 </ul>
               </div>
@@ -165,11 +165,11 @@ function SessionInsightCard({ session, canManage, onSaveAsNote, onCreateTask }: 
 
             {session.ai_risks && session.ai_risks.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-sm font-medium flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-amber-600" />{t('notes.risksIdentified', { defaultValue: 'Risks Identified' })} ({session.ai_risks.length})</h4>
+                <h4 className="text-sm font-medium flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))]" />{t('notes.risksIdentified', { defaultValue: 'Risks Identified' })} ({session.ai_risks.length})</h4>
                 <ul className="space-y-1">
                   {session.ai_risks.map((risk, idx) => (
-                    <li key={idx} className="text-sm flex items-start gap-2 bg-amber-50 dark:bg-amber-950/20 p-2 rounded">
-                      <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <li key={idx} className="text-sm flex items-start gap-2 bg-[hsl(var(--warning))]/10 p-2 rounded">
+                      <AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))] mt-0.5 flex-shrink-0" />
                       <span className="flex-1">{risk.risk}</span>
                       <Badge variant="outline" className="text-xs">{risk.severity}</Badge>
                     </li>

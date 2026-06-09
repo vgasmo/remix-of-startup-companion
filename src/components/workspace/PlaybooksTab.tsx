@@ -236,7 +236,7 @@ export function PlaybooksTab({ workspaceId, currentStage, programId, canWrite }:
                           </Badge>
                         )}
                         {isRequested && !isStaff && !isDismissed && (
-                          <Badge variant="outline" className="gap-1 border-amber-500 text-amber-600">
+                          <Badge variant="outline" className="gap-1 border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))]">
                             <Clock className="h-3 w-3" />
                             {t('playbooks.requested')}
                           </Badge>
@@ -406,14 +406,14 @@ export function PlaybooksTab({ workspaceId, currentStage, programId, canWrite }:
 
       {/* All applied - Role-specific success state */}
       {availablePlaybooks.length === 0 && instantiatedPlaybooks.length > 0 && (
-        <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
+        <Card className="bg-[hsl(var(--success))]/10 border-[hsl(var(--success))]/30">
           <CardContent className="py-6">
             <div className="text-center mb-6">
-              <CheckCircle className="h-10 w-10 mx-auto mb-3 text-green-500" />
-              <h3 className="font-semibold text-green-700 dark:text-green-400 mb-1">
+              <CheckCircle className="h-10 w-10 mx-auto mb-3 text-[hsl(var(--success))]" />
+              <h3 className="font-semibold text-[hsl(var(--success))] mb-1">
                 {isStaff ? t('playbooks.staff.allDeployedTitle') : t('playbooks.allAppliedTitle')}
               </h3>
-              <p className="text-sm text-green-600 dark:text-green-500">
+              <p className="text-sm text-[hsl(var(--success))]">
                 {isStaff ? t('playbooks.staff.allDeployedDescription') : t('playbooks.allAppliedDescription')}
               </p>
             </div>
@@ -457,7 +457,7 @@ export function PlaybooksTab({ workspaceId, currentStage, programId, canWrite }:
       {instantiatedPlaybooks.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
+            <CheckCircle className="h-5 w-5 text-[hsl(var(--success))]" />
             {isStaff ? t('playbooks.staff.deployed') : t('playbooks.applied')}
           </h3>
           <div className="space-y-3">
@@ -468,7 +468,7 @@ export function PlaybooksTab({ workspaceId, currentStage, programId, canWrite }:
               return (
                 <Card
                   key={instance.id}
-                  className="border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20"
+                  className="border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/50"
                 >
                   <CardContent className="py-4">
                     <div className="flex items-start justify-between gap-3">
@@ -481,7 +481,7 @@ export function PlaybooksTab({ workspaceId, currentStage, programId, canWrite }:
                           }
                         </p>
                       </div>
-                      <Badge variant="outline" className="border-green-500 text-green-600 gap-1">
+                      <Badge variant="outline" className="border-[hsl(var(--success))]/30 text-[hsl(var(--success))] gap-1">
                         <CheckCircle className="h-3 w-3" />
                         {isStaff ? t('playbooks.staff.deployedBadge') : t('playbooks.appliedBadge')}
                       </Badge>
@@ -498,7 +498,7 @@ export function PlaybooksTab({ workspaceId, currentStage, programId, canWrite }:
                           </div>
                           <div className="h-2 rounded-full bg-muted overflow-hidden">
                             <div
-                              className="h-full rounded-full bg-green-500 transition-all duration-500"
+                              className="h-full rounded-full bg-[hsl(var(--success))] transition-all duration-500"
                               style={{ width: `${progressData.progressPercent}%` }}
                             />
                           </div>

@@ -329,7 +329,7 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
 
           {/* Startup Portugal Document Upload */}
           {formData.has_startup_portugal_status && (
-            <div className="p-4 rounded-lg border bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800 space-y-3">
+            <div className="p-4 rounded-lg border bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/30 space-y-3">
               <Label className="text-sm flex items-center gap-2 font-medium">
                 <FileText className="h-4 w-4" />
                 {t('admin.startupsManager.certificationDocument')} *
@@ -337,7 +337,7 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
               
               {formData.startup_portugal_document_path ? (
                 <div className="flex items-center gap-3 flex-wrap">
-                  <Badge variant="outline" className="text-green-600 border-green-600">
+                  <Badge variant="outline" className="text-[hsl(var(--success))] border-[hsl(var(--success))]/30">
                     <CheckCircle className="h-3 w-3 mr-1" />
                     {t('admin.startupsManager.documentAttached')}
                   </Badge>

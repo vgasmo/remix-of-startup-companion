@@ -97,7 +97,7 @@ export function PlaybookProgressWidget({ workspaceId }: PlaybookProgressWidgetPr
               {t('playbookProgress.pendingCount', { count: pendingActions })}
             </span>
           ) : (
-            <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+            <span className="flex items-center gap-1 text-[hsl(var(--success))]">
               <CheckCircle className="h-3 w-3" />
               {t('playbookProgress.allComplete')}
             </span>

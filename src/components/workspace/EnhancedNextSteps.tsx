@@ -180,17 +180,17 @@ export function EnhancedNextSteps({ workspaceId, programId, stage, canWrite }: E
 
   if (steps.length === 0) {
     return (
-      <Card className="border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20">
+      <Card className="border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/50 ">
         <CardContent className="py-6">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
-              <Sparkles className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <div className="h-10 w-10 rounded-full bg-[hsl(var(--success))]/10 flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-[hsl(var(--success))]" />
             </div>
             <div>
-              <h3 className="font-semibold text-green-900 dark:text-green-100">
+              <h3 className="font-semibold text-[hsl(var(--success))]">
                 {t('nextSteps.allCaughtUp')}
               </h3>
-              <p className="text-sm text-green-700 dark:text-green-300">
+              <p className="text-sm text-[hsl(var(--success))]">
                 {t('nextSteps.greatProgress')}
               </p>
             </div>
@@ -220,7 +220,7 @@ export function EnhancedNextSteps({ workspaceId, programId, stage, canWrite }: E
               key={step.id}
               className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
                 step.variant === 'destructive'
-                  ? 'border-amber-400/40 bg-amber-50/30 dark:border-amber-700/40 dark:bg-amber-900/10 hover:bg-amber-50/50 dark:hover:bg-amber-900/20'
+                  ? 'border-[hsl(var(--warning))]/40 bg-[hsl(var(--warning))]/30 hover:bg-[hsl(var(--warning))]/50'
                   : step.variant === 'warning'
                   ? 'border-border bg-muted/30 hover:bg-muted/50'
                   : 'border-border/50 bg-muted/20 hover:bg-muted/40'
@@ -233,7 +233,7 @@ export function EnhancedNextSteps({ workspaceId, programId, stage, canWrite }: E
                 <div
                   className={`h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                     step.variant === 'destructive'
-                      ? 'bg-amber-100/50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                      ? 'bg-[hsl(var(--warning))]/50 text-[hsl(var(--warning))] '
                       : step.variant === 'warning'
                       ? 'bg-primary/10 text-primary'
                       : 'bg-muted text-muted-foreground'

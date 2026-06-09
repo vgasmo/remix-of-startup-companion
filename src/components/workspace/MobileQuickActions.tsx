@@ -44,7 +44,7 @@ export function MobileQuickActions({
         setShowQuickKpi(true);
         setIsOpen(false);
       },
-      color: 'bg-blue-500 hover:bg-blue-600',
+      color: 'bg-[hsl(var(--info))] hover:bg-[hsl(var(--info))]',
     },
     {
       id: 'action',
@@ -54,7 +54,7 @@ export function MobileQuickActions({
         onAddAction();
         setIsOpen(false);
       },
-      color: 'bg-green-500 hover:bg-green-600',
+      color: 'bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]',
     },
     {
       id: 'session',
@@ -78,7 +78,7 @@ export function MobileQuickActions({
         setSearchParams({ tab: 'dataroom' });
         setIsOpen(false);
       },
-      color: 'bg-amber-500 hover:bg-amber-600',
+      color: 'bg-[hsl(var(--warning))] hover:bg-[hsl(var(--warning))]',
     },
   ];
 

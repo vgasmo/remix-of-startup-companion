@@ -21,13 +21,13 @@ type ActionStatus = Database['public']['Enums']['action_status'];
 const STATUS_CONFIG: Record<ActionStatus, { labelKey: string; color: string }> = {
   pending: { labelKey: 'actions.statusOpen', color: 'bg-muted text-muted-foreground' },
   in_progress: { labelKey: 'actions.statusDoing', color: 'bg-primary/20 text-primary' },
-  completed: { labelKey: 'actions.statusDone', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+  completed: { labelKey: 'actions.statusDone', color: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ' },
   cancelled: { labelKey: 'actions.statusCancelled', color: 'bg-muted text-muted-foreground line-through' },
 };
 
 const PRIORITY_CONFIG: Record<string, { labelKey: string; color: string }> = {
   low: { labelKey: 'actions.priorityLow', color: 'text-muted-foreground' },
-  medium: { labelKey: 'actions.priorityMedium', color: 'text-yellow-600 dark:text-yellow-400' },
+  medium: { labelKey: 'actions.priorityMedium', color: 'text-[hsl(var(--warning))]' },
   high: { labelKey: 'actions.priorityHigh', color: 'text-destructive' },
 };
 
@@ -134,7 +134,7 @@ export const ActionItemCard = memo(function ActionItemCard({
       <div className={`
         group bg-background rounded-lg border p-3 space-y-2 transition-all
         ${isOverdue ? 'border-destructive/50 bg-destructive/5' : ''}
-        ${isDueToday ? 'border-yellow-500/50 bg-yellow-50/50 dark:bg-yellow-900/10' : ''}
+        ${isDueToday ? 'border-[hsl(var(--warning))]/50 bg-[hsl(var(--warning))]/50' : ''}
         ${isSelected ? 'ring-2 ring-primary/50 bg-primary/5' : ''}
       `}>
         <div className="flex items-start justify-between gap-2">
@@ -180,7 +180,7 @@ export const ActionItemCard = memo(function ActionItemCard({
           {canWrite ? (
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={`h-6 px-2 text-xs border-dashed ${isOverdue ? 'text-destructive border-destructive' : isDueToday ? 'text-yellow-600 border-yellow-500' : ''}`}>
+                <Button variant="outline" size="sm" className={`h-6 px-2 text-xs border-dashed ${isOverdue ? 'text-destructive border-destructive' : isDueToday ? 'text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30' : ''}`}>
                   <Calendar className="h-3 w-3 mr-1" />
                   {item.due_date ? format(parseISO(item.due_date), 'd MMM') : t('actions.dueDate')}
                 </Button>
@@ -224,10 +224,10 @@ export const ActionItemCard = memo(function ActionItemCard({
                   </a>
                 )}
                 {d.completed_at ? (
-                  <Check className="h-3 w-3 text-green-600 shrink-0" />
+                  <Check className="h-3 w-3 text-[hsl(var(--success))] shrink-0" />
                 ) : isStaff && onCompleteDeliverable ? (
                   <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 opacity-0 group-hover/del:opacity-100" onClick={() => onCompleteDeliverable(d.id, item.id)}>
-                    <Check className="h-3 w-3 text-green-600" />
+                    <Check className="h-3 w-3 text-[hsl(var(--success))]" />
                   </Button>
                 ) : null}
               </div>

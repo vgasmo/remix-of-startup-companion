@@ -131,7 +131,7 @@ export function SessionWorkflowCard({
   }
 
   return (
-    <Card className={isComplete ? 'border-green-200 dark:border-green-800' : ''}>
+    <Card className={isComplete ? 'border-[hsl(var(--success))]/30' : ''}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
@@ -139,7 +139,7 @@ export function SessionWorkflowCard({
             Post-Session Checklist
           </CardTitle>
           {isComplete ? (
-            <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+            <Badge className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ">
               <CheckCircle2 className="h-3 w-3 mr-1" />
               Complete
             </Badge>
@@ -161,7 +161,7 @@ export function SessionWorkflowCard({
               key={item.id}
               className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
                 isDone 
-                  ? 'bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-800/50' 
+                  ? 'bg-[hsl(var(--success))]/50 border-[hsl(var(--success))]/30 ' 
                   : 'bg-muted/30 border-transparent hover:bg-muted/50'
               }`}
             >
@@ -182,7 +182,7 @@ export function SessionWorkflowCard({
                   ) : null}
                 </button>
                 <div>
-                  <p className={`font-medium text-sm ${isDone ? 'text-green-700 dark:text-green-400' : ''}`}>
+                  <p className={`font-medium text-sm ${isDone ? 'text-[hsl(var(--success))]' : ''}`}>
                     {item.label}
                   </p>
                   <p className="text-xs text-muted-foreground">{item.description}</p>

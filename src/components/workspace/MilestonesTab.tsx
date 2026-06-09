@@ -36,7 +36,7 @@ function useStatusConfig() {
   return {
     not_started: { label: t('milestones.planned'), color: 'bg-muted text-muted-foreground', icon: Circle },
     in_progress: { label: t('milestones.inProgress'), color: 'bg-primary/20 text-primary', icon: Clock },
-    completed: { label: t('milestones.done'), color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', icon: CheckCircle2 },
+    completed: { label: t('milestones.done'), color: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ', icon: CheckCircle2 },
     delayed: { label: t('milestones.delayed'), color: 'bg-destructive/20 text-destructive', icon: AlertTriangle },
   } as Record<MilestoneStatus, { label: string; color: string; icon: typeof Circle }>;
 }
@@ -328,7 +328,7 @@ function MilestoneListItem({
 
           {/* Status icon */}
           <StatusIcon className={`h-5 w-5 mt-0.5 shrink-0 ${
-            milestone.status === 'completed' ? 'text-green-600' :
+            milestone.status === 'completed' ? 'text-[hsl(var(--success))]' :
             milestone.status === 'in_progress' ? 'text-primary' :
             milestone.status === 'delayed' ? 'text-destructive' :
             'text-muted-foreground'
@@ -445,13 +445,13 @@ function TimelineView({ milestones }: TimelineViewProps) {
                 <div key={milestone.id} className="relative flex items-start gap-4 pl-8">
                   {/* Timeline dot */}
                   <div className={`absolute left-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                    milestone.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30' :
+                    milestone.status === 'completed' ? 'bg-[hsl(var(--success))]/10' :
                     milestone.status === 'in_progress' ? 'bg-primary/20' :
                     milestone.status === 'delayed' ? 'bg-destructive/20' :
                     'bg-muted'
                   }`}>
                     <StatusIcon className={`h-3.5 w-3.5 ${
-                      milestone.status === 'completed' ? 'text-green-600' :
+                      milestone.status === 'completed' ? 'text-[hsl(var(--success))]' :
                       milestone.status === 'in_progress' ? 'text-primary' :
                       milestone.status === 'delayed' ? 'text-destructive' :
                       'text-muted-foreground'

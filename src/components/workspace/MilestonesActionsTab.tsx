@@ -492,7 +492,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
                         {canWrite && dragHandle && <div className="shrink-0" {...clickableProps(e => e.stopPropagation())}>{dragHandle}</div>}
                         {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
                         <StatusIcon className={`h-4 w-4 shrink-0 ${
-                          milestone.status === 'completed' ? 'text-green-600' :
+                          milestone.status === 'completed' ? 'text-[hsl(var(--success))]' :
                           milestone.status === 'in_progress' ? 'text-primary' :
                           milestone.status === 'delayed' ? 'text-destructive' :
                           'text-muted-foreground'
