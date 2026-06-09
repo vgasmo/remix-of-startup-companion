@@ -28,122 +28,142 @@ interface CanvasTemplateProps {
   onExport?: () => void;
 }
 
+// Canvas palette — centralized lookup for the deliberate visual taxonomy
+// used across BMC / Lean / VPC / SWOT / etc. Section colors are intentional
+// (each role in a canvas has a recognizable hue); this map keeps the raw
+// Tailwind classes in ONE place so component code can reference semantic keys.
+type CanvasPaletteKey =
+  | 'blue' | 'indigo' | 'purple' | 'green' | 'emerald'
+  | 'yellow' | 'amber' | 'orange' | 'red' | 'neutral';
+
+const CANVAS_PALETTE: Record<CanvasPaletteKey, string> = {
+  blue:    'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800',
+  indigo:  'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800',
+  purple:  'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800',
+  green:   'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800',
+  emerald: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800',
+  yellow:  'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800',
+  amber:   'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800',
+  orange:  'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800',
+  red:     'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800',
+  neutral: 'bg-muted/40 border-border',
+};
+
 // Section definitions with i18n keys
 const createSections = (t: (key: string) => string, canvasType: string): CanvasSection[] => {
-  const getSectionData = (id: string, gridArea: string, color: string): CanvasSection => ({
+  const getSectionData = (id: string, gridArea: string, paletteKey: CanvasPaletteKey): CanvasSection => ({
     id,
     label: t(`templates.canvas.${canvasType}.${id}`) || id,
     placeholder: t(`templates.canvas.${canvasType}.${id}_placeholder`) || '',
     gridArea,
-    color,
+    color: CANVAS_PALETTE[paletteKey],
   });
 
-  // intentional: per-section canvas colors are a deliberate visual taxonomy (BMC, Lean, VPC, etc.) — do not tokenize.
   switch (canvasType) {
     case 'bmc':
       return [
-        getSectionData('key_partners', 'partners', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
-        getSectionData('key_activities', 'activities', 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800'),
-        getSectionData('key_resources', 'resources', 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'),
-        getSectionData('value_propositions', 'value', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
-        getSectionData('customer_relationships', 'relationships', 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800'),
-        getSectionData('channels', 'channels', 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800'),
-        getSectionData('customer_segments', 'segments', 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'),
-        getSectionData('cost_structure', 'costs', 'bg-muted/40 border-border'),
-        getSectionData('revenue_streams', 'revenue', 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'),
+        getSectionData('key_partners', 'partners', 'blue'),
+        getSectionData('key_activities', 'activities', 'indigo'),
+        getSectionData('key_resources', 'resources', 'purple'),
+        getSectionData('value_propositions', 'value', 'green'),
+        getSectionData('customer_relationships', 'relationships', 'yellow'),
+        getSectionData('channels', 'channels', 'orange'),
+        getSectionData('customer_segments', 'segments', 'red'),
+        getSectionData('cost_structure', 'costs', 'neutral'),
+        getSectionData('revenue_streams', 'revenue', 'emerald'),
       ];
     case 'lean':
       return [
-        getSectionData('problem', 'problem', 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'),
-        getSectionData('solution', 'solution', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
-        getSectionData('key_metrics', 'metrics', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
-        getSectionData('unique_value', 'uvp', 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'),
-        getSectionData('unfair_advantage', 'advantage', 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800'),
-        getSectionData('channels', 'channels', 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800'),
-        getSectionData('customer_segments', 'segments', 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800'),
-        getSectionData('cost_structure', 'costs', 'bg-muted/40 border-border'),
-        getSectionData('revenue_streams', 'revenue', 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'),
+        getSectionData('problem', 'problem', 'red'),
+        getSectionData('solution', 'solution', 'green'),
+        getSectionData('key_metrics', 'metrics', 'blue'),
+        getSectionData('unique_value', 'uvp', 'purple'),
+        getSectionData('unfair_advantage', 'advantage', 'indigo'),
+        getSectionData('channels', 'channels', 'yellow'),
+        getSectionData('customer_segments', 'segments', 'orange'),
+        getSectionData('cost_structure', 'costs', 'neutral'),
+        getSectionData('revenue_streams', 'revenue', 'emerald'),
       ];
     case 'value_prop':
       return [
-        getSectionData('customer_jobs', 'jobs', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
-        getSectionData('pains', 'pains', 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'),
-        getSectionData('gains', 'gains', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
-        getSectionData('products_services', 'products', 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'),
-        getSectionData('pain_relievers', 'relievers', 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800'),
-        getSectionData('gain_creators', 'creators', 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'),
+        getSectionData('customer_jobs', 'jobs', 'blue'),
+        getSectionData('pains', 'pains', 'red'),
+        getSectionData('gains', 'gains', 'green'),
+        getSectionData('products_services', 'products', 'purple'),
+        getSectionData('pain_relievers', 'relievers', 'orange'),
+        getSectionData('gain_creators', 'creators', 'emerald'),
       ];
     case 'empathy':
       return [
-        getSectionData('think_feel', 'think', 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'),
-        getSectionData('hear', 'hear', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
-        getSectionData('see', 'see', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
-        getSectionData('say_do', 'saydo', 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800'),
-        getSectionData('pains', 'pains', 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'),
-        getSectionData('gains', 'gains', 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'),
+        getSectionData('think_feel', 'think', 'purple'),
+        getSectionData('hear', 'hear', 'blue'),
+        getSectionData('see', 'see', 'green'),
+        getSectionData('say_do', 'saydo', 'yellow'),
+        getSectionData('pains', 'pains', 'red'),
+        getSectionData('gains', 'gains', 'emerald'),
       ];
     case 'swot':
       return [
-        getSectionData('strengths', 'strengths', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
-        getSectionData('weaknesses', 'weaknesses', 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'),
-        getSectionData('opportunities', 'opportunities', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
-        getSectionData('threats', 'threats', 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800'),
+        getSectionData('strengths', 'strengths', 'green'),
+        getSectionData('weaknesses', 'weaknesses', 'red'),
+        getSectionData('opportunities', 'opportunities', 'blue'),
+        getSectionData('threats', 'threats', 'orange'),
       ];
     case 'gtm':
       return [
-        getSectionData('target_market', 'market', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
-        getSectionData('positioning', 'positioning', 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'),
-        getSectionData('channels', 'channels', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
-        getSectionData('launch', 'launch', 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800'),
+        getSectionData('target_market', 'market', 'blue'),
+        getSectionData('positioning', 'positioning', 'purple'),
+        getSectionData('channels', 'channels', 'green'),
+        getSectionData('launch', 'launch', 'amber'),
       ];
     case 'icp':
       return [
-        getSectionData('company_profile', 'company', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
-        getSectionData('buyer_persona', 'persona', 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'),
-        getSectionData('pain_points', 'pains', 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'),
-        getSectionData('buying_behavior', 'buying', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
+        getSectionData('company_profile', 'company', 'blue'),
+        getSectionData('buyer_persona', 'persona', 'purple'),
+        getSectionData('pain_points', 'pains', 'red'),
+        getSectionData('buying_behavior', 'buying', 'green'),
       ];
     case 'pricing':
       return [
-        getSectionData('pricing_model', 'model', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
-        getSectionData('tiers', 'tiers', 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'),
-        getSectionData('value_metric', 'metric', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
-        getSectionData('competition', 'competition', 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800'),
+        getSectionData('pricing_model', 'model', 'blue'),
+        getSectionData('tiers', 'tiers', 'purple'),
+        getSectionData('value_metric', 'metric', 'green'),
+        getSectionData('competition', 'competition', 'amber'),
       ];
     case 'growth_loops':
       return [
-        getSectionData('trigger', 'trigger', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
-        getSectionData('value', 'value', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
-        getSectionData('acquisition', 'acquisition', 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'),
-        getSectionData('retention', 'retention', 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800'),
+        getSectionData('trigger', 'trigger', 'blue'),
+        getSectionData('value', 'value', 'green'),
+        getSectionData('acquisition', 'acquisition', 'purple'),
+        getSectionData('retention', 'retention', 'amber'),
       ];
     case 'okrs':
       return [
-        getSectionData('north_star', 'northstar', 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'),
-        getSectionData('objective_1', 'obj1', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
-        getSectionData('key_results_1', 'kr1', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
-        getSectionData('objective_2', 'obj2', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
-        getSectionData('key_results_2', 'kr2', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
+        getSectionData('north_star', 'northstar', 'purple'),
+        getSectionData('objective_1', 'obj1', 'blue'),
+        getSectionData('key_results_1', 'kr1', 'green'),
+        getSectionData('objective_2', 'obj2', 'blue'),
+        getSectionData('key_results_2', 'kr2', 'green'),
       ];
     case 'fundraising':
       return [
-        getSectionData('round_target', 'target', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
-        getSectionData('metrics', 'metrics', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
-        getSectionData('materials', 'materials', 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'),
-        getSectionData('investors', 'investors', 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800'),
+        getSectionData('round_target', 'target', 'blue'),
+        getSectionData('metrics', 'metrics', 'green'),
+        getSectionData('materials', 'materials', 'purple'),
+        getSectionData('investors', 'investors', 'amber'),
       ];
     case 'sales_pipeline':
       return [
-        getSectionData('pipeline_overview', 'overview', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
-        getSectionData('stages', 'stages', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
-        getSectionData('metrics', 'metrics', 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'),
+        getSectionData('pipeline_overview', 'overview', 'blue'),
+        getSectionData('stages', 'stages', 'green'),
+        getSectionData('metrics', 'metrics', 'purple'),
       ];
     case 'roadmap':
       return [
-        getSectionData('now', 'now', 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'),
-        getSectionData('next', 'next', 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'),
-        getSectionData('later', 'later', 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800'),
-        getSectionData('not_doing', 'notdoing', 'bg-muted/40 border-border'),
+        getSectionData('now', 'now', 'green'),
+        getSectionData('next', 'next', 'blue'),
+        getSectionData('later', 'later', 'purple'),
+        getSectionData('not_doing', 'notdoing', 'neutral'),
       ];
     default:
       return [];
