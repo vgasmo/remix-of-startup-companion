@@ -50,7 +50,7 @@ export function CalendarFeedCard({ workspaceId }: CalendarFeedCardProps) {
         .from('profiles')
         .select('calendar_feed_token, calendar_token_expires_at')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
       
       if (!error && data?.calendar_feed_token) {
         // Token exists but is hashed - user needs to regenerate to get a usable URL

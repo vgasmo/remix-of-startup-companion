@@ -104,7 +104,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
         .from('funnel_items')
         .select('id, organization_name, contact_name, stage')
         .eq('id', contract.funnel_item_id)
-        .single();
+        .maybeSingle();
       if (error) return null;
       return data;
     },

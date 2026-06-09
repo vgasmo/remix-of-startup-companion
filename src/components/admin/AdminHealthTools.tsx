@@ -64,9 +64,9 @@ export function AdminHealthTools({ programId, className }: AdminHealthToolsProps
         .from('program_health_model')
         .select('*')
         .eq('program_id', programId)
-        .single();
-      
-      if (error && error.code !== 'PGRST116') throw error;
+        .maybeSingle();
+
+      if (error) throw error;
       return data;
     },
     enabled: !!programId,
