@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface MentorAvailability {
   id: string;
@@ -53,15 +54,18 @@ export function useMentorAvailability(mentorId: string | undefined) {
 }
 
 export function useMyAvailability() {
+  const { user } = useAuth();
+  const userId = user?.id;
   return useQuery({
-    queryKey: ['my-availability'],
+    // Defense-in-depth: scoping by userId prevents prior-session cache bleed.
+    queryKey: ['my-availability', userId],
+    enabled: !!userId,
     queryFn: async (): Promise<MentorAvailability[]> => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!userId) return [];
       const { data, error } = await supabase
         .from('mentor_availability')
         .select('*')
-        .eq('mentor_id', user.id)
+        .eq('mentor_id', userId)
         .order('day_of_week');
       if (error) throw error;
       return data || [];
@@ -97,16 +101,18 @@ export function useSetAvailability() {
 }
 
 export function useMyBookings() {
+  const { user } = useAuth();
+  const userId = user?.id;
   return useQuery({
-    queryKey: ['my-bookings'],
+    queryKey: ['my-bookings', userId],
+    enabled: !!userId,
     queryFn: async (): Promise<MentorBooking[]> => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!userId) return [];
 
       const { data, error } = await supabase
         .from('mentor_bookings')
         .select('*')
-        .or(`mentor_id.eq.${user.id},founder_id.eq.${user.id}`)
+        .or(`mentor_id.eq.${userId},founder_id.eq.${userId}`)
         .order('requested_date', { ascending: true });
 
       if (error) throw error;
