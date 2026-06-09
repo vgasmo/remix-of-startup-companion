@@ -140,7 +140,7 @@ export function ContractReadinessChecklist({
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             {ready ? (
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />
             ) : (
               <Circle className="h-4 w-4 text-muted-foreground" />
             )}
@@ -160,7 +160,7 @@ export function ContractReadinessChecklist({
               aria-label={`${it.label}: ${it.ok ? 'ok' : 'pending'}`}
             >
               {it.ok ? (
-                <CheckCircle2 className="h-4 w-4 mt-0.5 text-emerald-600 flex-shrink-0" />
+                <CheckCircle2 className="h-4 w-4 mt-0.5 text-[hsl(var(--success))] flex-shrink-0" />
               ) : (
                 <Circle className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
               )}

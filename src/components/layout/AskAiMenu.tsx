@@ -196,7 +196,7 @@ export function AskAiMenu() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 text-muted-foreground hover:text-violet-500 relative"
+          className="h-10 w-10 text-muted-foreground hover:text-primary relative"
           aria-label={t('askAi.button', { defaultValue: 'Ask AI' })}
           title={t('askAi.button', { defaultValue: 'Ask AI' })}
         >
@@ -205,7 +205,7 @@ export function AskAiMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80 animate-scale-in">
         <DropdownMenuLabel className="flex items-center gap-2">
-          <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
           <span className="text-xs">{title}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -224,7 +224,7 @@ export function AskAiMenu() {
           onClick={() => fireAskAi()}
           className="cursor-pointer text-xs text-muted-foreground gap-2"
         >
-          <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
           {t('askAi.askAnything', { defaultValue: 'Fazer outra pergunta…' })}
         </DropdownMenuItem>
       </DropdownMenuContent>

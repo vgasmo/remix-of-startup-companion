@@ -552,7 +552,7 @@ function ProgramHealthModelCard({
                   <div className="font-medium">🌟 {t('admin.healthModel.thriving')}</div>
                   <div>≥ {thresholds.thriving}</div>
                 </div>
-                <div className="p-2 rounded bg-emerald-100 dark:bg-emerald-900/30">
+                <div className="p-2 rounded bg-[hsl(var(--success))]/10 ">
                   <div className="font-medium">✅ {t('admin.healthModel.healthy')}</div>
                   <div>≥ {thresholds.healthy}</div>
                 </div>

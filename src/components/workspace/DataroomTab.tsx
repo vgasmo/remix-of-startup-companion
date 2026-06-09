@@ -283,7 +283,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
                   <div className="flex-shrink-0">
                     {item.type === 'document' && <FileText className="h-5 w-5 text-[hsl(var(--info))]" />}
                     {item.type === 'investor_update' && <TrendingUp className="h-5 w-5 text-[hsl(var(--success))]" />}
-                    {item.type === 'link' && <LinkIcon className="h-5 w-5 text-purple-500" />}
+                    {item.type === 'link' && <LinkIcon className="h-5 w-5 text-primary" />}
                   </div>
                   
                   <div className="flex-1 min-w-0">

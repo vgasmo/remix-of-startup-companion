@@ -171,7 +171,7 @@ const MOCK_EVENTS: EcosystemEvent[] = [
 
 function AnnouncementCard({ item }: { item: Announcement }) {
   const categoryConfig = {
-    perk: { color: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400', icon: Gift, label: 'Parceria' },
+    perk: { color: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ', icon: Gift, label: 'Parceria' },
     news: { color: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]', icon: Megaphone, label: 'Novidade' },
     update: { color: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]', icon: Sparkles, label: 'Atualização' },
   };
@@ -229,7 +229,7 @@ function ChallengeCard({ item }: { item: Challenge }) {
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <Avatar className="h-9 w-9 shrink-0">
-            <AvatarFallback className={`text-xs font-bold ${isNeed ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400'}`}>
+            <AvatarFallback className={`text-xs font-bold ${isNeed ? 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ' : 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] '}`}>
               {item.startupInitials}
             </AvatarFallback>
           </Avatar>
@@ -266,10 +266,10 @@ function ChallengeCard({ item }: { item: Challenge }) {
 function EventRow({ item }: { item: EcosystemEvent }) {
   const eventDate = new Date(item.date);
   const typeConfig = {
-    workshop: { color: 'bg-violet-500', label: 'Workshop' },
+    workshop: { color: 'bg-primary/10', label: 'Workshop' },
     networking: { color: 'bg-[hsl(var(--info))]', label: 'Networking' },
     pitch: { color: 'bg-destructive', label: 'Pitch Day' },
-    meetup: { color: 'bg-emerald-500', label: 'Meetup' },
+    meetup: { color: 'bg-[hsl(var(--success))]/10', label: 'Meetup' },
   };
   const cfg = typeConfig[item.type];
 

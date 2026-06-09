@@ -149,7 +149,7 @@ export default function SharedDataroom() {
                     <div className="flex-shrink-0 p-3 rounded-lg bg-muted">
                       {item.type === 'document' && <FileText className="h-6 w-6 text-[hsl(var(--info))]" />}
                       {item.type === 'investor_update' && <TrendingUp className="h-6 w-6 text-[hsl(var(--success))]" />}
-                      {item.type === 'link' && <Link2 className="h-6 w-6 text-purple-500" />}
+                      {item.type === 'link' && <Link2 className="h-6 w-6 text-primary" />}
                     </div>
                     
                     <div className="flex-1 min-w-0">

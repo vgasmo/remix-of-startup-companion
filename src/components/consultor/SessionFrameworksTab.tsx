@@ -157,8 +157,8 @@ const FRAMEWORKS: SessionFramework[] = [
     },
     duration: '60-90 min',
     icon: Brain,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10 ',
     bestFor: {
       en: ['Strategic decisions', 'Technical architecture', 'Pricing strategy'],
       pt: ['Decisões estratégicas', 'Arquitetura técnica', 'Estratégia de pricing'],
@@ -459,8 +459,8 @@ const FRAMEWORKS: SessionFramework[] = [
     },
     duration: '45-60 min',
     icon: Users,
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+    color: 'text-[hsl(var(--info))]',
+    bgColor: 'bg-[hsl(var(--info))]/10 ',
     bestFor: {
       en: ['Co-founder conflict', 'Scaling team', 'Culture issues'],
       pt: ['Conflito entre co-founders', 'Escalar a equipa', 'Questões de cultura'],

@@ -195,9 +195,9 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
   const getHealthColor = (score: number | null | undefined) => {
     if (score === null || score === undefined) return 'bg-muted';
     if (score >= 80) return 'bg-[hsl(var(--success))]';
-    if (score >= 60) return 'bg-emerald-500';
+    if (score >= 60) return 'bg-[hsl(var(--success))]/10';
     if (score >= 40) return 'bg-[hsl(var(--warning))]';
-    if (score >= 20) return 'bg-orange-500';
+    if (score >= 20) return 'bg-[hsl(var(--warning))]/10';
     return 'bg-destructive';
   };
 
@@ -463,15 +463,15 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
 
                         {/* Asks */}
                         {content.asks && content.asks.length > 0 && (
-                          <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+                          <div className="p-4 rounded-lg bg-primary/10 border border-primary/30 ">
                             <div className="flex items-center gap-2 mb-3">
                               <span className="text-lg">🙏</span>
-                              <span className="font-semibold text-purple-700 dark:text-purple-400">{t('investorUpdates.asks')}</span>
+                              <span className="font-semibold text-primary ">{t('investorUpdates.asks')}</span>
                             </div>
                             <ul className="space-y-2">
                               {content.asks.map((a, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-purple-800 dark:text-purple-200">
-                                  <span className="text-purple-500">•</span>
+                                <li key={i} className="flex items-start gap-2 text-sm text-primary ">
+                                  <span className="text-primary">•</span>
                                   <span>{a}</span>
                                 </li>
                               ))}
@@ -481,15 +481,15 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
 
                         {/* Priorities */}
                         {content.next_month_priorities && content.next_month_priorities.length > 0 && (
-                          <div className="p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800">
+                          <div className="p-4 rounded-lg bg-[hsl(var(--info))]/10 border border-[hsl(var(--info))]/30 ">
                             <div className="flex items-center gap-2 mb-3">
-                              <Clock className="h-5 w-5 text-indigo-600" />
-                              <span className="font-semibold text-indigo-700 dark:text-indigo-400">{t('investorUpdates.priorities')}</span>
+                              <Clock className="h-5 w-5 text-[hsl(var(--info))]" />
+                              <span className="font-semibold text-[hsl(var(--info))] ">{t('investorUpdates.priorities')}</span>
                             </div>
                             <ul className="space-y-2">
                               {content.next_month_priorities.map((p, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-indigo-800 dark:text-indigo-200">
-                                  <span className="font-bold text-indigo-500">{i + 1}.</span>
+                                <li key={i} className="flex items-start gap-2 text-sm text-[hsl(var(--info))] ">
+                                  <span className="font-bold text-[hsl(var(--info))]">{i + 1}.</span>
                                   <span>{p}</span>
                                 </li>
                               ))}

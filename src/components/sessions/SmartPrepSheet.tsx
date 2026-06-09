@@ -106,8 +106,8 @@ export function SmartPrepSheet({ open, onOpenChange, workspaceName, stage, healt
       <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
         <SheetHeader className="pb-4">
           <SheetTitle className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center">
-              <Sparkles className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/20 flex items-center justify-center">
+              <Sparkles className="h-4 w-4 text-primary " />
             </div>
             {t('sessions.aiPrepSheet', { defaultValue: 'AI Prep Sheet' })}
           </SheetTitle>
@@ -132,7 +132,7 @@ export function SmartPrepSheet({ open, onOpenChange, workspaceName, stage, healt
               className="space-y-6 py-4"
             >
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin text-violet-500" />
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 <span className="animate-pulse">{t('sessions.generatingPrepSheet', { defaultValue: 'Generating prep sheet…' })}</span>
               </div>
               {[1, 2, 3, 4].map(i => (
@@ -227,9 +227,9 @@ export function SmartPrepButton({ onClick }: { onClick: () => void }) {
       variant="outline"
       size="sm"
       onClick={onClick}
-      className="gap-2 text-xs bg-gradient-to-r from-violet-500/5 to-purple-500/5 border-violet-300/30 hover:border-violet-400/50 hover:from-violet-500/10 hover:to-purple-500/10 transition-all duration-300"
+      className="gap-2 text-xs bg-gradient-to-r from-primary/5 to-primary/5 border-primary/30 hover:border-primary/50 hover:from-primary/10 hover:to-primary/10 transition-all duration-300"
     >
-      <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
+      <Sparkles className="h-3.5 w-3.5 text-primary " />
       {t('sessions.generatePrepSheet', { defaultValue: '✨ Generate AI Prep Sheet' })}
     </Button>
   );

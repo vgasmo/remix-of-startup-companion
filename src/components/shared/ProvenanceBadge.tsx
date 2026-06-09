@@ -37,7 +37,7 @@ const VARIANT_CONFIG: Record<Variant, {
 }> = {
   'contract-truth': {
     icon: ShieldCheck,
-    cls: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-300',
+    cls: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] border-[hsl(var(--success))]/30 ',
     i18nLabelKey: 'provenance.contractTruth.label',
     i18nDescKey: 'provenance.contractTruth.desc',
     defaultLabel: 'Fonte canónica: startup_contracts',
@@ -53,7 +53,7 @@ const VARIANT_CONFIG: Record<Variant, {
   },
   'crm-phase': {
     icon: Workflow,
-    cls: 'bg-violet-500/10 text-violet-700 border-violet-500/30 dark:text-violet-300',
+    cls: 'bg-primary/10 text-primary border-primary/30 ',
     i18nLabelKey: 'provenance.crmPhase.label',
     i18nDescKey: 'provenance.crmPhase.desc',
     defaultLabel: 'Fase CRM',

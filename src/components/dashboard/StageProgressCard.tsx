@@ -31,7 +31,7 @@ interface StageProgressCardProps {
 const STAGE_ORDER: StartupStage[] = ['ideation', 'validation', 'mvp', 'growth', 'scale'];
 
 const STAGE_CONFIG: Record<StartupStage, { icon: typeof Lightbulb; color: string; label: string }> = {
-  ideation: { icon: Lightbulb, color: 'text-purple-500', label: 'Ideation' },
+  ideation: { icon: Lightbulb, color: 'text-primary', label: 'Ideation' },
   validation: { icon: Search, color: 'text-[hsl(var(--info))]', label: 'Validation' },
   mvp: { icon: Hammer, color: 'text-[hsl(var(--warning))]', label: 'MVP' },
   growth: { icon: TrendingUp, color: 'text-[hsl(var(--success))]', label: 'Growth' },

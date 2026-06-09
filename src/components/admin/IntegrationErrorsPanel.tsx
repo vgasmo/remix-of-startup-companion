@@ -25,8 +25,8 @@ const integrationTypeLabels: Record<string, string> = {
 
 const integrationTypeColors: Record<string, string> = {
   outlook: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ',
-  teams: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  webhook: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+  teams: 'bg-primary/10 text-primary ',
+  webhook: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ',
   email: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ',
 };
 

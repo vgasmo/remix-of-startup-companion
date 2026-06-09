@@ -64,7 +64,7 @@ import { SurveyResponsesViewer } from "./SurveyResponsesViewer";
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
   active: "bg-[hsl(var(--success))]/20 text-[hsl(var(--success))]",
-  closed: "bg-orange-500/20 text-orange-700 dark:text-orange-400",
+  closed: "bg-[hsl(var(--warning))]/20 text-[hsl(var(--warning))] ",
   archived: "bg-muted/20 text-muted-foreground",
 };
 

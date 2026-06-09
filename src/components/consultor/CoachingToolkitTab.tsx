@@ -224,7 +224,7 @@ const CATEGORY_KEYS: Record<string, string> = {
 
 const CATEGORIES = [
   { key: 'questions', icon: HelpCircle, color: 'text-[hsl(var(--info))]' },
-  { key: 'reframes', icon: RotateCcw, color: 'text-purple-600' },
+  { key: 'reframes', icon: RotateCcw, color: 'text-primary' },
   { key: 'exercises', icon: Target, color: 'text-[hsl(var(--success))]' },
 ];
 

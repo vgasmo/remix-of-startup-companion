@@ -21,9 +21,9 @@ interface ProgressTimelineProps {
 }
 
 const stageColors: Record<string, string> = {
-  ideation: 'bg-purple-500/10 text-purple-600 border-purple-300 dark:text-purple-400 dark:border-purple-700',
+  ideation: 'bg-primary/10 text-primary border-primary/30 ',
   validation: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] border-[hsl(var(--info))]/30 ',
-  mvp: 'bg-cyan-500/10 text-cyan-600 border-cyan-300 dark:text-cyan-400 dark:border-cyan-700',
+  mvp: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] border-[hsl(var(--info))]/30 ',
   growth: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] border-[hsl(var(--success))]/30 ',
   scale: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30 ',
 };

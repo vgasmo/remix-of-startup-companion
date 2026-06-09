@@ -69,11 +69,11 @@ function useAccelerationStructure(programId: string) {
 }
 
 const GATE_COLORS = [
-  'from-violet-500 to-purple-500',
-  'from-blue-500 to-cyan-500',
-  'from-emerald-500 to-green-500',
-  'from-amber-500 to-orange-500',
-  'from-rose-500 to-pink-500',
+  'from-primary to-primary',
+  'from-[hsl(var(--info))] to-[hsl(var(--info))]',
+  'from-[hsl(var(--success))] to-[hsl(var(--success))]',
+  'from-[hsl(var(--warning))] to-[hsl(var(--warning))]',
+  'from-destructive to-primary',
 ];
 
 export const AccelerationProgressCard = memo(function AccelerationProgressCard({

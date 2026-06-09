@@ -220,8 +220,8 @@ function PandaDocSettingsCard() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10">
-              <PenTool className="h-5 w-5 text-emerald-600" />
+            <div className="p-2 rounded-lg bg-[hsl(var(--success))]/10">
+              <PenTool className="h-5 w-5 text-[hsl(var(--success))]" />
             </div>
             <div>
               <CardTitle className="text-base">PandaDoc</CardTitle>

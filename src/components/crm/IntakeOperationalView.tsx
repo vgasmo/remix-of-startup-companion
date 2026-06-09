@@ -28,14 +28,14 @@ const GROUP_CONFIG = {
     icon: Mail,
     emptyText: 'Nenhum pedido a aguardar preenchimento do cliente.',
     emptyAction: 'Novos pedidos enviados aos clientes aparecerão aqui.',
-    color: 'text-cyan-700 dark:text-cyan-300',
+    color: 'text-[hsl(var(--info))] ',
   },
   submitted_for_review: {
     title: 'Submetidos para Revisão',
     icon: ClipboardCheck,
     emptyText: 'Nenhuma submissão pendente de revisão.',
     emptyAction: 'Quando um cliente submeter os dados, aparecerá aqui para revisão.',
-    color: 'text-teal-700 dark:text-teal-300',
+    color: 'text-[hsl(var(--success))] ',
   },
   changes_requested: {
     title: 'Correções Pedidas',
@@ -63,7 +63,7 @@ const GROUP_CONFIG = {
     icon: Shield,
     emptyText: 'Nenhum contrato assinado a aguardar ativação.',
     emptyAction: 'Após assinatura, ative o workspace e as condições operacionais.',
-    color: 'text-emerald-700 dark:text-emerald-300',
+    color: 'text-[hsl(var(--success))] ',
   },
 };
 

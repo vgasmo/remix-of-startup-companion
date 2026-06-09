@@ -18,16 +18,16 @@ export function EnrollmentModeIndicator() {
     return (
       <div className={cn(
         'flex items-start gap-2.5 p-3 rounded-xl border text-xs',
-        'border-emerald-200/60 dark:border-emerald-800/30',
-        'bg-emerald-50/50 dark:bg-emerald-950/15',
-        'text-emerald-800 dark:text-emerald-300'
+        'border-[hsl(var(--success))]/60 ',
+        'bg-[hsl(var(--success))]/50 ',
+        'text-[hsl(var(--success))] '
       )}>
-        <Globe className="h-4 w-4 mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        <Globe className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(var(--success))] " />
         <div className="space-y-1">
           <p className="font-medium">
             {t('login.openEnrollmentBanner', { defaultValue: 'Inscrições abertas' })}
           </p>
-          <p className="text-emerald-700/80 dark:text-emerald-400/70">
+          <p className="text-[hsl(var(--success))]/80 ">
             {t('login.openEnrollmentBannerDesc', { 
               defaultValue: 'Pode criar a sua conta livremente. Se a sua startup já está no ecossistema, o sistema irá associá-la automaticamente após o registo.' 
             })}

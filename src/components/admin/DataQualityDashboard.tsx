@@ -172,11 +172,11 @@ export function DataQualityDashboard() {
   const getIssueIcon = (type: DataIssue['type']) => {
     switch (type) {
       case 'missing_nif':
-        return <Building2 className="h-4 w-4 text-orange-500" />;
+        return <Building2 className="h-4 w-4 text-[hsl(var(--warning))]" />;
       case 'missing_founder':
-        return <Users className="h-4 w-4 text-red-500" />;
+        return <Users className="h-4 w-4 text-destructive" />;
       case 'missing_contact':
-        return <Phone className="h-4 w-4 text-yellow-500" />;
+        return <Phone className="h-4 w-4 text-[hsl(var(--warning))]" />;
     }
   };
 
@@ -203,8 +203,8 @@ export function DataQualityDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                <Building2 className="h-5 w-5 text-orange-500" />
+              <div className="p-2 rounded-lg bg-[hsl(var(--warning))]/10 ">
+                <Building2 className="h-5 w-5 text-[hsl(var(--warning))]" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{missingNifCount}</p>
@@ -217,8 +217,8 @@ export function DataQualityDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-                <Users className="h-5 w-5 text-red-500" />
+              <div className="p-2 rounded-lg bg-destructive/10 ">
+                <Users className="h-5 w-5 text-destructive" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{missingFounderCount}</p>
@@ -231,8 +231,8 @@ export function DataQualityDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
-                <Phone className="h-5 w-5 text-yellow-500" />
+              <div className="p-2 rounded-lg bg-[hsl(var(--warning))]/10 ">
+                <Phone className="h-5 w-5 text-[hsl(var(--warning))]" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{missingContactCount}</p>

@@ -55,7 +55,7 @@ export function LocationContractCard({ workspaceId }: LocationContractCardProps)
     active: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] border-[hsl(var(--success))]/30',
     draft: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30',
     pending_signature: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] border-[hsl(var(--info))]/30',
-    suspended: 'bg-orange-500/10 text-orange-600 border-orange-200',
+    suspended: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30',
     terminated: 'bg-destructive/10 text-destructive border-destructive/30',
     expired: 'bg-muted text-muted-foreground border-muted',
   };

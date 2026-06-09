@@ -71,7 +71,7 @@ export function NpsFeedbackDialog({ open, onOpenChange }: NpsFeedbackDialogProps
 
   const getScoreColor = (value: number) => {
     if (value <= 2) return 'border-destructive/30 bg-destructive/10';
-    if (value <= 4) return 'border-orange-400 bg-orange-50 dark:bg-orange-950/30';
+    if (value <= 4) return 'border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/10 ';
     if (value <= 6) return 'border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/10';
     if (value <= 8) return 'border-lime-400 bg-lime-50 dark:bg-lime-950/30';
     return 'border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10';

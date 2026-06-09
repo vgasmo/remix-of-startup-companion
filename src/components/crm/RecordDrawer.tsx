@@ -760,7 +760,7 @@ function IntakeActionsForDrawer({ item, user }: { item: FunnelItem; user: any })
       <div className="space-y-2">
         {/* Copy link action for in-progress intakes */}
         {CUSTOMER_EDITABLE_STATES.includes(intake.status as IntakeState) && (
-          <Card className="border-cyan-200 bg-cyan-50/50 dark:bg-cyan-900/10">
+          <Card className="border-[hsl(var(--info))]/30 bg-[hsl(var(--info))]/50 ">
             <CardContent className="p-3 flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium">{t('crm.clientFillingData', 'Cliente a preencher dados')}</p>

@@ -537,7 +537,7 @@ function PitchDeckLink({ path, t }: { path: string; t: (key: string, opts?: any)
 }
 
 const CATEGORIES = [
-  { value: 'A', label: 'A — Alto Potencial', color: 'text-emerald-600' },
+  { value: 'A', label: 'A — Alto Potencial', color: 'text-[hsl(var(--success))]' },
   { value: 'B', label: 'B — Médio Potencial', color: 'text-[hsl(var(--info))]' },
   { value: 'C', label: 'C — Baixo Potencial', color: 'text-[hsl(var(--warning))]' },
 ] as const;

@@ -152,7 +152,7 @@ export function TemplateCoachPanel({
       case 'urgent':
         return 'bg-destructive/10 text-destructive';
       case 'high':
-        return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30';
+        return 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ';
       case 'medium':
         return 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]';
       default:
@@ -357,7 +357,7 @@ export function TemplateCoachPanel({
             {feedback.next_session_agenda.length > 0 && (
               <Section
                 title={t('templates.nextSessionAgenda', 'Next Session Agenda')}
-                icon={<Calendar className="h-4 w-4 text-purple-600" />}
+                icon={<Calendar className="h-4 w-4 text-primary" />}
                 expanded={expandedSections.has('agenda')}
                 onToggle={() => toggleSection('agenda')}
                 count={feedback.next_session_agenda.length}

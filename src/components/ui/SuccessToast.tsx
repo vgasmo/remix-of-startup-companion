@@ -24,7 +24,7 @@ const variantConfig: Record<SuccessVariant, { icon: typeof CheckCircle; gradient
   },
   achievement: {
     icon: Sparkles,
-    gradient: 'from-amber-500/20 to-amber-500/5',
+    gradient: 'from-[hsl(var(--warning))]/20 to-[hsl(var(--warning))]/5',
   },
 };
 
