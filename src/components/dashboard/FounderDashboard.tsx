@@ -221,7 +221,8 @@ export const FounderDashboard = memo(function FounderDashboard({
   const handleAddAction = () => navigate(`/workspace/${workspace.id}?tab=milestones-actions-actions`);
   const handleScheduleSession = () => navigate(`/workspace/${workspace.id}?tab=agenda`);
 
-  const isFirstWeek = useIsFirstWeek(profile?.created_at, (workspace as any)?.created_at);
+
+
 
   return (
     <div className="space-y-6 max-w-5xl animate-fade-in">
