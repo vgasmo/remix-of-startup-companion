@@ -629,7 +629,7 @@ function getISOWeek(d: Date): number {
   return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
-function WeeklyGreetingSubline({ userId, workspaceId }: { userId?: string; workspaceId: string }) {
+function WeeklyGreetingSubline({ userId, workspaceId, isFirstWeek }: { userId?: string; workspaceId: string; isFirstWeek?: boolean }) {
   const { t } = useTranslation();
   const { data: actions } = useActionItems(workspaceId);
   const { data: sessions } = useUpcomingSessions();
@@ -650,6 +650,16 @@ function WeeklyGreetingSubline({ userId, workspaceId }: { userId?: string; works
   });
 
   if (!isFirstOfWeek) return null;
+
+  if (isFirstWeek) {
+    return (
+      <p className="text-sm text-muted-foreground motion-safe:animate-fade-in">
+        {t('founder.hero.firstWeek', {
+          defaultValue: 'Bem-vindo! Esta é a tua primeira semana — vai ao teu ritmo, estamos aqui para ajudar.',
+        })}
+      </p>
+    );
+  }
 
   const pending = (actions ?? []).filter((a) => a.status !== 'completed').length;
   const upcoming = (sessions ?? []).length;
