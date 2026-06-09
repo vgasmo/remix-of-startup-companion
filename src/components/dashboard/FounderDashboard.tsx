@@ -355,6 +355,7 @@ export const FounderDashboard = memo(function FounderDashboard({
                 <WeeklyGreetingSubline
                   userId={profile?.id}
                   workspaceId={workspace.id}
+                  isFirstWeek={isFirstWeek}
                 />
               </div>
             </div>
