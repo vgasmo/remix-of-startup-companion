@@ -33,11 +33,11 @@ export function PendingWorkspaceView({ workspace }: PendingWorkspaceViewProps) {
         {t('common.back')}
       </Link>
 
-      <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+      <Card className="border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/50">
         <CardHeader className="text-center pb-4">
           <div className="flex justify-center mb-4">
-            <div className="p-4 rounded-full bg-amber-100 dark:bg-amber-900/50">
-              <Clock className="h-10 w-10 text-amber-600" />
+            <div className="p-4 rounded-full bg-[hsl(var(--warning))]/10">
+              <Clock className="h-10 w-10 text-[hsl(var(--warning))]" />
             </div>
           </div>
           <CardTitle className="text-2xl flex items-center justify-center gap-2">
@@ -51,7 +51,7 @@ export function PendingWorkspaceView({ workspace }: PendingWorkspaceViewProps) {
         <CardContent className="space-y-6">
           {/* Status Badge */}
           <div className="flex justify-center">
-            <Badge variant="secondary" className="text-amber-600 bg-amber-100 dark:bg-amber-900/30 px-4 py-1">
+            <Badge variant="secondary" className="text-[hsl(var(--warning))] bg-[hsl(var(--warning))]/10 px-4 py-1">
               <Clock className="h-3.5 w-3.5 mr-1" />
               {t('founder.pending')}
             </Badge>
@@ -88,7 +88,7 @@ export function PendingWorkspaceView({ workspace }: PendingWorkspaceViewProps) {
             <h4 className="font-medium text-sm">{t('approval.whatHappensNext', 'What happens next?')}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 mt-0.5 text-[hsl(var(--success))]" />
                 {t('approval.step1', 'Our team will review your application')}
               </li>
               <li className="flex items-start gap-2">

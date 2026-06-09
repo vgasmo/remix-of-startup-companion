@@ -87,18 +87,18 @@ export function TemplateAIAnalysis({ instanceId, onApplyRecommendation }: Templa
     
     switch (analysis.recommendation) {
       case 'approve':
-        return <Badge className="bg-green-100 text-green-700"><ThumbsUp className="h-3 w-3 mr-1" /> {t('templates.recommendApprove')}</Badge>;
+        return <Badge className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"><ThumbsUp className="h-3 w-3 mr-1" /> {t('templates.recommendApprove')}</Badge>;
       case 'needs_changes':
-        return <Badge className="bg-amber-100 text-amber-700"><ThumbsDown className="h-3 w-3 mr-1" /> {t('templates.needsChanges')}</Badge>;
+        return <Badge className="bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]"><ThumbsDown className="h-3 w-3 mr-1" /> {t('templates.needsChanges')}</Badge>;
       case 'needs_discussion':
-        return <Badge className="bg-blue-100 text-blue-700"><MessageSquare className="h-3 w-3 mr-1" /> {t('templates.needsDiscussion')}</Badge>;
+        return <Badge className="bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]"><MessageSquare className="h-3 w-3 mr-1" /> {t('templates.needsDiscussion')}</Badge>;
     }
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 8) return 'text-green-600 dark:text-green-400';
-    if (score >= 6) return 'text-amber-600 dark:text-amber-400';
-    return 'text-red-600 dark:text-red-400';
+    if (score >= 8) return 'text-[hsl(var(--success))]';
+    if (score >= 6) return 'text-[hsl(var(--warning))]';
+    return 'text-destructive';
   };
 
   if (!analysis && !analyzing && !error) {
@@ -188,13 +188,13 @@ export function TemplateAIAnalysis({ instanceId, onApplyRecommendation }: Templa
             {analysis.strengths.length > 0 && (
               <div>
                 <h4 className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />
+                  <CheckCircle2 className="h-3 w-3 text-[hsl(var(--success))]" />
                   {t('templates.strengths', 'Strengths')}
                 </h4>
                 <ul className="space-y-1">
                   {analysis.strengths.map((s, i) => (
                     <li key={i} className="text-sm flex items-start gap-2">
-                      <span className="text-green-600 dark:text-green-400 mt-1">•</span>
+                      <span className="text-[hsl(var(--success))] mt-1">•</span>
                       {s}
                     </li>
                   ))}
@@ -206,13 +206,13 @@ export function TemplateAIAnalysis({ instanceId, onApplyRecommendation }: Templa
             {analysis.improvements.length > 0 && (
               <div>
                 <h4 className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                  <AlertTriangle className="h-3 w-3 text-[hsl(var(--warning))]" />
                   {t('templates.improvements', 'Suggested Improvements')}
                 </h4>
                 <ul className="space-y-1">
                   {analysis.improvements.map((imp, i) => (
                     <li key={i} className="text-sm flex items-start gap-2">
-                      <span className="text-amber-600 dark:text-amber-400 mt-1">•</span>
+                      <span className="text-[hsl(var(--warning))] mt-1">•</span>
                       {imp}
                     </li>
                   ))}
@@ -224,13 +224,13 @@ export function TemplateAIAnalysis({ instanceId, onApplyRecommendation }: Templa
             {analysis.questions.length > 0 && (
               <div>
                 <h4 className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
-                  <HelpCircle className="h-3 w-3 text-blue-600" />
+                  <HelpCircle className="h-3 w-3 text-[hsl(var(--info))]" />
                   {t('templates.questions', 'Questions to Consider')}
                 </h4>
                 <ul className="space-y-1">
                   {analysis.questions.map((q, i) => (
                     <li key={i} className="text-sm flex items-start gap-2">
-                      <span className="text-blue-600 mt-1">•</span>
+                      <span className="text-[hsl(var(--info))] mt-1">•</span>
                       {q}
                     </li>
                   ))}

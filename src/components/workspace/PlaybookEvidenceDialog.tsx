@@ -61,17 +61,17 @@ export function PlaybookEvidenceDialog({ workspaceId, playbookItemId, playbookIt
 
   const statusIcon = (status: string) => {
     switch (status) {
-      case 'approved': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'approved': return <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />;
       case 'rejected': return <XCircle className="h-4 w-4 text-destructive" />;
-      default: return <Clock className="h-4 w-4 text-amber-500" />;
+      default: return <Clock className="h-4 w-4 text-[hsl(var(--warning))]" />;
     }
   };
 
   const statusBadge = (status: string) => {
     const variants: Record<string, string> = {
-      approved: 'border-green-500 text-green-600',
+      approved: 'border-[hsl(var(--success))]/30 text-[hsl(var(--success))]',
       rejected: 'border-destructive text-destructive',
-      pending: 'border-amber-500 text-amber-600',
+      pending: 'border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))]',
     };
     return (
       <Badge variant="outline" className={`gap-1 ${variants[status] || ''}`}>
@@ -91,9 +91,9 @@ export function PlaybookEvidenceDialog({ workspaceId, playbookItemId, playbookIt
           title={t('playbooks.evidence.submit', 'Submeter evidência')}
         >
           {hasApproved ? (
-            <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+            <CheckCircle className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
           ) : hasPending ? (
-            <Clock className="h-3.5 w-3.5 text-amber-500" />
+            <Clock className="h-3.5 w-3.5 text-[hsl(var(--warning))]" />
           ) : (
             <Upload className="h-3.5 w-3.5" />
           )}
@@ -152,7 +152,7 @@ export function PlaybookEvidenceDialog({ workspaceId, playbookItemId, playbookIt
                         <Button
                           size="sm"
                           variant="outline"
-                          className="gap-1 text-green-600 border-green-500 hover:bg-green-50"
+                          className="gap-1 text-[hsl(var(--success))] border-[hsl(var(--success))]/30 hover:bg-[hsl(var(--success))]/10"
                           onClick={() => handleReview(ev.id, 'approved')}
                           disabled={reviewEvidence.isPending}
                         >

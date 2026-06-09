@@ -151,7 +151,7 @@ export function CompanyDetailsStep({
               maxLength={9}
               className={cn(
                 'pr-10',
-                nifStatus === 'valid' && 'border-green-500 focus-visible:ring-green-500',
+                nifStatus === 'valid' && 'border-[hsl(var(--success))]/30 focus-visible:ring-green-500',
                 nifStatus === 'invalid' && 'border-destructive focus-visible:ring-destructive'
               )}
             />
@@ -160,7 +160,7 @@ export function CompanyDetailsStep({
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               )}
               {nifStatus === 'valid' && (
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-[hsl(var(--success))]" />
               )}
               {nifStatus === 'invalid' && (
                 <AlertCircle className="h-4 w-4 text-destructive" />
@@ -174,7 +174,7 @@ export function CompanyDetailsStep({
             <p className="text-xs text-destructive mt-1">{t('nif.invalid')}</p>
           )}
           {nifStatus === 'valid' && (
-            <p className="text-xs text-green-600 mt-1">{t('nif.valid')}</p>
+            <p className="text-xs text-[hsl(var(--success))] mt-1">{t('nif.valid')}</p>
           )}
         </div>
 

@@ -220,8 +220,8 @@ export function HealthScoreCard({ workspaceId, programId, canManage = false }: H
                 {explanation.slice(0, 4).map((factor: HealthExplanationFactor, index: number) => (
                   <div key={index} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
-                      {factor.impact === 'positive' && <TrendingUp className="h-4 w-4 text-green-600" />}
-                      {factor.impact === 'negative' && <TrendingDown className="h-4 w-4 text-red-600" />}
+                      {factor.impact === 'positive' && <TrendingUp className="h-4 w-4 text-[hsl(var(--success))]" />}
+                      {factor.impact === 'negative' && <TrendingDown className="h-4 w-4 text-destructive" />}
                       {factor.impact === 'neutral' && <Minus className="h-4 w-4 text-muted-foreground" />}
                       <span>{factor.factor}</span>
                     </div>

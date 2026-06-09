@@ -22,10 +22,10 @@ interface ProgressTimelineProps {
 
 const stageColors: Record<string, string> = {
   ideation: 'bg-purple-500/10 text-purple-600 border-purple-300 dark:text-purple-400 dark:border-purple-700',
-  validation: 'bg-blue-500/10 text-blue-600 border-blue-300 dark:text-blue-400 dark:border-blue-700',
+  validation: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] border-[hsl(var(--info))]/30 ',
   mvp: 'bg-cyan-500/10 text-cyan-600 border-cyan-300 dark:text-cyan-400 dark:border-cyan-700',
-  growth: 'bg-green-500/10 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700',
-  scale: 'bg-amber-500/10 text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700',
+  growth: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] border-[hsl(var(--success))]/30 ',
+  scale: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30 ',
 };
 
 function useAccelerationWeeks(programId: string | undefined, enabled: boolean) {
@@ -159,12 +159,12 @@ export function ProgressTimeline({ workspaceId, className, programId, programTyp
                       {/* Timeline dot */}
                       <div className={cn(
                         "absolute left-2 w-4 h-4 rounded-full border-2 bg-background flex items-center justify-center",
-                        isPastWeek && "border-green-500",
+                        isPastWeek && "border-[hsl(var(--success))]/30",
                         isCurrentWeek && "border-primary ring-2 ring-primary/20",
                         !isPastWeek && !isCurrentWeek && "border-border",
                       )}>
                         {isPastWeek ? (
-                          <CheckCircle2 className="h-2 w-2 text-green-500" />
+                          <CheckCircle2 className="h-2 w-2 text-[hsl(var(--success))]" />
                         ) : isCurrentWeek ? (
                           <Clock className="h-2 w-2 text-primary" />
                         ) : (
@@ -237,12 +237,12 @@ export function ProgressTimeline({ workspaceId, className, programId, programTyp
                 <div key={event.id} className="relative flex items-start gap-4 pl-10">
                   <div className={cn(
                     "absolute left-2 w-4 h-4 rounded-full border-2 bg-background flex items-center justify-center",
-                    event.type === 'stage' ? "border-primary" : "border-green-500"
+                    event.type === 'stage' ? "border-primary" : "border-[hsl(var(--success))]/30"
                   )}>
                     {event.type === 'stage' ? (
                       <Rocket className="h-2 w-2 text-primary" />
                     ) : (
-                      <CheckCircle2 className="h-2 w-2 text-green-500" />
+                      <CheckCircle2 className="h-2 w-2 text-[hsl(var(--success))]" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0 pb-4">
@@ -259,7 +259,7 @@ export function ProgressTimeline({ workspaceId, className, programId, programTyp
                         </>
                       ) : (
                         <>
-                          <Flag className="h-3 w-3 text-green-500" />
+                          <Flag className="h-3 w-3 text-[hsl(var(--success))]" />
                           <span className="text-sm font-medium">{event.title}</span>
                         </>
                       )}

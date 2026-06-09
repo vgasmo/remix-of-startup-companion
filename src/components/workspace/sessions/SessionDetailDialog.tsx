@@ -444,8 +444,8 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                     {actionItems?.map(item => (
                       <div key={item.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                         <div className={`h-2 w-2 rounded-full ${
-                          item.status === 'completed' ? 'bg-green-500' :
-                          item.status === 'in_progress' ? 'bg-blue-500' : 'bg-muted-foreground'
+                          item.status === 'completed' ? 'bg-[hsl(var(--success))]' :
+                          item.status === 'in_progress' ? 'bg-[hsl(var(--info))]' : 'bg-muted-foreground'
                         }`} />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate">{item.title}</p>

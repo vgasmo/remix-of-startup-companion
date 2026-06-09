@@ -414,7 +414,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
         <Card className={cn(
           "border transition-colors duration-300",
           progressInfo.percent === 100 
-            ? "border-green-300 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20" 
+            ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/50" 
             : "border-primary/20 bg-primary/5"
         )}>
           <CardContent className="py-4">
@@ -468,7 +468,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
                   disabled={markCheckin.isPending || progressInfo.filled === 0}
                   className={cn(
                     "transition-all",
-                    progressInfo.percent === 100 && "bg-green-600 hover:bg-green-700 animate-pulse"
+                    progressInfo.percent === 100 && "bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))] animate-pulse"
                   )}
                 >
                   <CheckCircle className="h-4 w-4 mr-1.5" />
@@ -637,7 +637,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
                     key={wk.id}
                     className={cn(
                       "py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 transition-colors",
-                      isSaved && "bg-green-50/50 dark:bg-green-950/10"
+                      isSaved && "bg-[hsl(var(--success))]/50"
                     )}
                   >
                     {/* KPI name + context */}
@@ -646,7 +646,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
                         <span className={cn(
                           "h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0",
                           isFilled
-                            ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
+                            ? "bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] "
                             : "bg-muted text-muted-foreground"
                         )}>
                           {isFilled ? <Check className="h-3 w-3" /> : idx + 1}
@@ -659,7 +659,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
                             {def.unit}
                           </Badge>
                         )}
-                        {isLocked && <Lock className="h-3 w-3 text-amber-500 shrink-0" />}
+                        {isLocked && <Lock className="h-3 w-3 text-[hsl(var(--warning))] shrink-0" />}
                       </div>
                       {/* Historical context */}
                       <div className="flex items-center gap-3 mt-0.5 ml-7">
@@ -699,7 +699,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
                           <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
                         )}
                         {isSaved && !isSaving && (
-                          <Check className="h-4 w-4 text-green-600 animate-in fade-in duration-200" />
+                          <Check className="h-4 w-4 text-[hsl(var(--success))] animate-in fade-in duration-200" />
                         )}
                       </div>
                     </div>

@@ -15,9 +15,9 @@ import type { StaffTask } from '@/hooks/useStaffTasks';
 
 const PRIORITY_COLORS: Record<string, string> = {
   low: 'bg-muted text-muted-foreground',
-  medium: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  high: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  urgent: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  medium: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ',
+  high: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ',
+  urgent: 'bg-destructive/10 text-destructive ',
 };
 
 interface TaskItemProps {
@@ -63,7 +63,7 @@ export function TaskItem({ task, canManage, onComplete, onDelete, isCompleted = 
                 isOverdue
                   ? 'text-destructive font-medium'
                   : isDueToday
-                  ? 'text-amber-600 font-medium'
+                  ? 'text-[hsl(var(--warning))] font-medium'
                   : 'text-muted-foreground'
               }`}
             >

@@ -74,7 +74,7 @@ export function KpiSparkline({
   const lastPoint = points[points.length - 1];
   const firstPoint = points[0];
   const trend = lastPoint && firstPoint ? lastPoint.value - firstPoint.value : 0;
-  const trendColor = trend > 0 ? 'text-green-500' : trend < 0 ? 'text-red-500' : 'text-muted-foreground';
+  const trendColor = trend > 0 ? 'text-[hsl(var(--success))]' : trend < 0 ? 'text-destructive' : 'text-muted-foreground';
 
   const sparkline = (
     <svg

@@ -644,7 +644,7 @@ export function WorkspaceOnboardingWizard({
                   </p>
                 </div>
                 {kpisApplied && (
-                  <div className="flex items-center gap-2 text-green-600 justify-center">
+                  <div className="flex items-center gap-2 text-[hsl(var(--success))] justify-center">
                     <Check className="h-4 w-4" />
                     <span className="text-sm">{t('onboardingWizard.kpisApplied', { defaultValue: 'KPIs applied successfully' })}</span>
                   </div>
@@ -692,7 +692,7 @@ export function WorkspaceOnboardingWizard({
                   </div>
                 </ScrollArea>
                 {milestonesCreated && (
-                  <div className="flex items-center gap-2 text-green-600 justify-center">
+                  <div className="flex items-center gap-2 text-[hsl(var(--success))] justify-center">
                     <Check className="h-4 w-4" />
                     <span className="text-sm">{t('onboardingWizard.milestonesCreated', { defaultValue: 'Milestones created successfully' })}</span>
                   </div>
@@ -751,7 +751,7 @@ export function WorkspaceOnboardingWizard({
                   </div>
                 </div>
                 {meetingScheduled && (
-                  <div className="flex items-center gap-2 text-green-600 justify-center">
+                  <div className="flex items-center gap-2 text-[hsl(var(--success))] justify-center">
                     <Check className="h-4 w-4" />
                     <span className="text-sm">{t('onboardingWizard.meetingScheduled', { defaultValue: 'Meeting scheduled successfully' })}</span>
                   </div>
@@ -882,7 +882,7 @@ export function WorkspaceOnboardingWizard({
           )}
           
           {currentStep === 'complete' && (
-            <Button type="button" onClick={handleCompleteOnboarding} className="w-full sm:w-auto bg-green-600 hover:bg-green-700">
+            <Button type="button" onClick={handleCompleteOnboarding} className="w-full sm:w-auto bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]">
               {t('onboardingWizard.goToWorkspace', { defaultValue: '🎉 Ir para o Workspace' })}
             </Button>
           )}

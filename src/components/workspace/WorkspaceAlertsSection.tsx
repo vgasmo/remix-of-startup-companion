@@ -49,13 +49,13 @@ export function WorkspaceAlertsSection({ workspaceId, canManage = false }: Works
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
+            <CheckCircle className="h-5 w-5 text-[hsl(var(--success))]" />
             {t('alerts.title', 'Alerts')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-6 text-muted-foreground">
-            <CheckCircle className="h-10 w-10 mx-auto mb-2 text-green-500 opacity-50" />
+            <CheckCircle className="h-10 w-10 mx-auto mb-2 text-[hsl(var(--success))] opacity-50" />
             <p className="font-medium">{t('alerts.noActiveAlerts', 'No active alerts')}</p>
             <p className="text-sm">{t('alerts.everythingOnTrack', 'Everything is on track!')}</p>
           </div>
@@ -68,11 +68,11 @@ export function WorkspaceAlertsSection({ workspaceId, canManage = false }: Works
   const warningCount = alerts.filter(a => a.severity === 'warning').length;
 
   return (
-    <Card className={criticalCount > 0 ? 'border-red-200 dark:border-red-800' : warningCount > 0 ? 'border-amber-200 dark:border-amber-800' : ''}>
+    <Card className={criticalCount > 0 ? 'border-destructive/30' : warningCount > 0 ? 'border-[hsl(var(--warning))]/30' : ''}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className={`h-5 w-5 ${criticalCount > 0 ? 'text-red-600' : 'text-amber-600'}`} />
+            <AlertTriangle className={`h-5 w-5 ${criticalCount > 0 ? 'text-destructive' : 'text-[hsl(var(--warning))]'}`} />
             {t('alerts.title', 'Alerts')}
           </CardTitle>
           <div className="flex gap-1">
@@ -80,7 +80,7 @@ export function WorkspaceAlertsSection({ workspaceId, canManage = false }: Works
               <Badge variant="destructive">{criticalCount} {t('alerts.critical', 'critical')}</Badge>
             )}
             {warningCount > 0 && (
-              <Badge variant="outline" className="border-amber-500 text-amber-600">{warningCount} {t('alerts.warning', 'warning')}</Badge>
+              <Badge variant="outline" className="border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))]">{warningCount} {t('alerts.warning', 'warning')}</Badge>
             )}
           </div>
         </div>
@@ -97,10 +97,10 @@ export function WorkspaceAlertsSection({ workspaceId, canManage = false }: Works
                 key={alert.id}
                 className={`p-3 rounded-lg border ${
                   alert.severity === 'critical' 
-                    ? 'bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800'
+                    ? 'bg-destructive/10 border-destructive/30 '
                     : alert.severity === 'warning'
-                    ? 'bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800'
-                    : 'bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800'
+                    ? 'bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/30 '
+                    : 'bg-[hsl(var(--info))]/10 border-[hsl(var(--info))]/30 '
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -153,7 +153,7 @@ export function WorkspaceAlertsSection({ workspaceId, canManage = false }: Works
                               onClick={() => resolveAlert.mutate(alert.id)}
                               disabled={resolveAlert.isPending}
                             >
-                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>{t('alerts.markResolved', 'Mark as resolved')}</TooltipContent>

@@ -281,8 +281,8 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
                   {canWrite && <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />}
                   
                   <div className="flex-shrink-0">
-                    {item.type === 'document' && <FileText className="h-5 w-5 text-blue-500" />}
-                    {item.type === 'investor_update' && <TrendingUp className="h-5 w-5 text-green-500" />}
+                    {item.type === 'document' && <FileText className="h-5 w-5 text-[hsl(var(--info))]" />}
+                    {item.type === 'investor_update' && <TrendingUp className="h-5 w-5 text-[hsl(var(--success))]" />}
                     {item.type === 'link' && <LinkIcon className="h-5 w-5 text-purple-500" />}
                   </div>
                   
@@ -357,10 +357,10 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
                   <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('dataroom.activeLinks')} ({activeLinks.length})</h4>
                   <div className="space-y-2">
                     {activeLinks.map((link) => (
-                      <div key={link.id} className="flex items-center gap-3 p-3 rounded-lg border bg-green-500/5 border-green-500/20">
+                      <div key={link.id} className="flex items-center gap-3 p-3 rounded-lg border bg-[hsl(var(--success))]/5 border-[hsl(var(--success))]/20">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 text-sm">
-                            <Badge variant="outline" className="text-green-600 border-green-600">
+                            <Badge variant="outline" className="text-[hsl(var(--success))] border-[hsl(var(--success))]/30">
                               {t('dataroom.active')}
                             </Badge>
                             {link.allow_download && (
@@ -572,8 +572,8 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
           
           {createdLink ? (
             <div className="space-y-4">
-              <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-                <p className="text-sm font-medium text-green-600 mb-2">{t('dataroom.linkReady')}</p>
+              <div className="p-4 bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/20 rounded-lg">
+                <p className="text-sm font-medium text-[hsl(var(--success))] mb-2">{t('dataroom.linkReady')}</p>
                 <div className="flex gap-2">
                   <Input value={createdLink} readOnly className="font-mono text-xs" />
                   <Button onClick={() => copyLink(createdLink)}>

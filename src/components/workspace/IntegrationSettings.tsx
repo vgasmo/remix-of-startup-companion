@@ -89,7 +89,7 @@ export function IntegrationSettings({ workspaceId, emailAlias, canEdit }: Integr
               onClick={() => copyToClipboard(displayEmailAlias, 'email')}
             >
               {copiedEmail ? (
-                <Check className="h-4 w-4 text-green-600" />
+                <Check className="h-4 w-4 text-[hsl(var(--success))]" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}
@@ -125,7 +125,7 @@ export function IntegrationSettings({ workspaceId, emailAlias, canEdit }: Integr
               onClick={() => copyToClipboard(meetingWebhookUrl, 'webhook')}
             >
               {copiedWebhook ? (
-                <Check className="h-4 w-4 text-green-600" />
+                <Check className="h-4 w-4 text-[hsl(var(--success))]" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}

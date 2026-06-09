@@ -554,7 +554,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
                   )}
 
                   {meetingWith === 'consultor' && consultantAvailability?.warning && (
-                    <p className="text-xs text-amber-600 flex items-center gap-1">
+                    <p className="text-xs text-[hsl(var(--warning))] flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3" />
                       {consultantAvailability.warning}
                     </p>

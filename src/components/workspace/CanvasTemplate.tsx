@@ -38,6 +38,7 @@ const createSections = (t: (key: string) => string, canvasType: string): CanvasS
     color,
   });
 
+  // intentional: per-section canvas colors are a deliberate visual taxonomy (BMC, Lean, VPC, etc.) — do not tokenize.
   switch (canvasType) {
     case 'bmc':
       return [
@@ -386,13 +387,13 @@ export function CanvasTemplate({ type, data, onChange, disabled = false, reviewS
               {gridConfig.author}
             </Badge>
             {reviewStatus === 'pending_review' && (
-              <Badge className="bg-amber-100 text-amber-700">{t('templates.pendingReview')}</Badge>
+              <Badge className="bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]">{t('templates.pendingReview')}</Badge>
             )}
             {reviewStatus === 'approved' && (
-              <Badge className="bg-green-100 text-green-700"><CheckCircle className="h-3 w-3 mr-1" />{t('templates.approved')}</Badge>
+              <Badge className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]"><CheckCircle className="h-3 w-3 mr-1" />{t('templates.approved')}</Badge>
             )}
             {reviewStatus === 'needs_changes' && (
-              <Badge className="bg-red-100 text-red-700"><MessageSquare className="h-3 w-3 mr-1" />{t('templates.needsChanges')}</Badge>
+              <Badge className="bg-destructive/10 text-destructive"><MessageSquare className="h-3 w-3 mr-1" />{t('templates.needsChanges')}</Badge>
             )}
           </CardTitle>
           <div className="flex gap-2">

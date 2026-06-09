@@ -289,11 +289,11 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
 
                 // Compact status indicator
                 const getStatusIndicator = () => {
-                  if (isCompleted) return { color: 'bg-green-500', label: t('templates.approved') };
-                  if (reviewStatus === 'pending_review') return { color: 'bg-amber-500', label: t('templates.pendingReview') };
-                  if (reviewStatus === 'approved') return { color: 'bg-green-500', label: t('templates.approved') };
-                  if (reviewStatus === 'needs_changes') return { color: 'bg-red-500', label: t('templates.needsChanges') };
-                  if (isStarted) return { color: 'bg-blue-500', label: t('templates.inProgress') };
+                  if (isCompleted) return { color: 'bg-[hsl(var(--success))]', label: t('templates.approved') };
+                  if (reviewStatus === 'pending_review') return { color: 'bg-[hsl(var(--warning))]', label: t('templates.pendingReview') };
+                  if (reviewStatus === 'approved') return { color: 'bg-[hsl(var(--success))]', label: t('templates.approved') };
+                  if (reviewStatus === 'needs_changes') return { color: 'bg-destructive', label: t('templates.needsChanges') };
+                  if (isStarted) return { color: 'bg-[hsl(var(--info))]', label: t('templates.inProgress') };
                   return null;
                 };
                 const status = getStatusIndicator();
@@ -303,7 +303,7 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
                     key={template.id}
                     className={`group relative flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-sm ${
                       isCompleted 
-                        ? 'border-green-200 bg-green-50/50 dark:border-green-900/40 dark:bg-green-950/20' 
+                        ? 'border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/50 ' 
                         : 'border-border/60 hover:border-primary/30 hover:bg-muted/40'
                     }`}
                     {...clickableProps(() => handleOpenTemplate(template))}
@@ -516,7 +516,7 @@ function AutosaveBadge({ status, lastSavedAt }: { status: AutosaveStatus; lastSa
   }
   if (status === 'local_only') {
     return (
-      <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+      <div className="flex items-center gap-1.5 text-xs text-[hsl(var(--warning))]">
         <WifiOff className="h-3 w-3" />
         {t('templates.autosave.localOnly')}
       </div>
@@ -533,7 +533,7 @@ function AutosaveBadge({ status, lastSavedAt }: { status: AutosaveStatus; lastSa
   if (status === 'saved' && time) {
     return (
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <CircleCheck className="h-3 w-3 text-green-600" />
+        <CircleCheck className="h-3 w-3 text-[hsl(var(--success))]" />
         {t('templates.autosave.savedAt', { time })}
       </div>
     );
@@ -728,7 +728,7 @@ function TemplateEditorDialog({
             <div className="flex items-center gap-2 shrink-0">
               <AutosaveBadge status={autosave.status} lastSavedAt={autosave.lastSavedAt} />
               {instance?.status === 'completed' && (
-                <Badge className="bg-green-100 text-green-700">{t('templates.completed', 'Completed')}</Badge>
+                <Badge className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]">{t('templates.completed', 'Completed')}</Badge>
               )}
               <Button variant="ghost" size="sm" onClick={openHelp} className="gap-1">
                 <HelpCircle className="h-4 w-4" />
@@ -870,8 +870,8 @@ function TemplateEditorDialog({
 
             {/* Review feedback display */}
             {instance?.review_status === 'needs_changes' && instance.review_notes && (
-              <Alert className="border-amber-200 bg-amber-50">
-                <MessageSquare className="h-4 w-4 text-amber-600" />
+              <Alert className="border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/10">
+                <MessageSquare className="h-4 w-4 text-[hsl(var(--warning))]" />
                 <AlertDescription className="text-sm">
                   <strong>{t('templates.reviewerFeedback', 'Reviewer feedback')}:</strong> {instance.review_notes}
                 </AlertDescription>

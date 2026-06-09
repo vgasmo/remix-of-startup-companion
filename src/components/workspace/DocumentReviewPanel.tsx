@@ -48,8 +48,8 @@ const SCORE_DIMENSIONS = [
 
 const APPROVAL_OPTIONS = [
   { value: 'pending', labelKey: 'review.pending', defaultLabel: 'Pendente', icon: AlertTriangle, color: 'text-muted-foreground' },
-  { value: 'approved', labelKey: 'review.approved', defaultLabel: 'Aprovado', icon: CheckCircle, color: 'text-green-600' },
-  { value: 'needs_revision', labelKey: 'review.needsRevision', defaultLabel: 'Precisa Revisão', icon: AlertTriangle, color: 'text-amber-600' },
+  { value: 'approved', labelKey: 'review.approved', defaultLabel: 'Aprovado', icon: CheckCircle, color: 'text-[hsl(var(--success))]' },
+  { value: 'needs_revision', labelKey: 'review.needsRevision', defaultLabel: 'Precisa Revisão', icon: AlertTriangle, color: 'text-[hsl(var(--warning))]' },
   { value: 'rejected', labelKey: 'review.rejected', defaultLabel: 'Rejeitado', icon: XCircle, color: 'text-destructive' },
 ];
 

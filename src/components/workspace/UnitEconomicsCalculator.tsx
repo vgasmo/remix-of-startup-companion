@@ -105,9 +105,9 @@ interface ResultCardProps {
 
 function ResultCard({ label, value, status, description, previousValue }: ResultCardProps) {
   const statusColors = {
-    good: 'text-green-600 dark:text-green-400',
-    warning: 'text-yellow-600 dark:text-yellow-400',
-    bad: 'text-red-600 dark:text-red-400',
+    good: 'text-[hsl(var(--success))]',
+    warning: 'text-[hsl(var(--warning))]',
+    bad: 'text-destructive',
     neutral: 'text-foreground',
   };
 

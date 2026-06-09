@@ -62,7 +62,7 @@ function MetricCard({
   if (value === null) return null;
   
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : null;
-  const trendColor = trend === 'up' ? 'text-green-500' : trend === 'down' ? 'text-red-500' : 'text-muted-foreground';
+  const trendColor = trend === 'up' ? 'text-[hsl(var(--success))]' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground';
   
   return (
     <div className="p-3 rounded-lg border bg-card">
@@ -91,9 +91,9 @@ function MetricCard({
 function InsightCard({ insight, onCreateAction, createActionLabel }: { insight: FinancialInsight; onCreateAction?: () => void; createActionLabel?: string }) {
   const { t } = useTranslation();
   const severityConfig = {
-    critical: { bg: 'bg-red-50 dark:bg-red-950/30', border: 'border-red-200 dark:border-red-800', icon: XCircle, color: 'text-red-600' },
-    warning: { bg: 'bg-amber-50 dark:bg-amber-950/30', border: 'border-amber-200 dark:border-amber-800', icon: AlertTriangle, color: 'text-amber-600' },
-    info: { bg: 'bg-blue-50 dark:bg-blue-950/30', border: 'border-blue-200 dark:border-blue-800', icon: Lightbulb, color: 'text-blue-600' },
+    critical: { bg: 'bg-destructive/10', border: 'border-destructive/30', icon: XCircle, color: 'text-destructive' },
+    warning: { bg: 'bg-[hsl(var(--warning))]/10', border: 'border-[hsl(var(--warning))]/30', icon: AlertTriangle, color: 'text-[hsl(var(--warning))]' },
+    info: { bg: 'bg-[hsl(var(--info))]/10', border: 'border-[hsl(var(--info))]/30', icon: Lightbulb, color: 'text-[hsl(var(--info))]' },
   };
   
   const config = severityConfig[insight.severity];
@@ -389,8 +389,8 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
             {activeVersion && (
               <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                    <FileSpreadsheet className="h-5 w-5 text-green-600" />
+                  <div className="h-10 w-10 rounded-lg bg-[hsl(var(--success))]/10 flex items-center justify-center">
+                    <FileSpreadsheet className="h-5 w-5 text-[hsl(var(--success))]" />
                   </div>
                   <div>
                     <p className="font-medium text-sm">{activeVersion.document?.name || t('financialPanel.title', { defaultValue: 'Financial Model' })}</p>

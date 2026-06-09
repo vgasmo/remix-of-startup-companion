@@ -142,11 +142,11 @@ export function InvestorTemplateLibrary({ onSelectTemplate }: InvestorTemplateLi
 
   const audienceLabels: Record<string, { label: string; color: string }> = {
     angel: { label: t('investorUpdates.angel'), color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
-    seed: { label: t('investorUpdates.seed'), color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-    series_a: { label: t('investorUpdates.seriesA'), color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+    seed: { label: t('investorUpdates.seed'), color: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ' },
+    series_a: { label: t('investorUpdates.seriesA'), color: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ' },
     series_b: { label: t('investorUpdates.seriesB'), color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' },
-    vc: { label: t('investorUpdates.vc'), color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-    strategic: { label: t('investorUpdates.strategic'), color: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' },
+    vc: { label: t('investorUpdates.vc'), color: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ' },
+    strategic: { label: t('investorUpdates.strategic'), color: 'bg-destructive/10 text-destructive ' },
   };
 
   const filteredTemplates = INVESTOR_TEMPLATES.filter(t => 
@@ -358,9 +358,9 @@ export function InvestorTemplateLibrary({ onSelectTemplate }: InvestorTemplateLi
               
               {/* B4 Fix: Show banner when draft was restored */}
               {draftRestored && (
-                <Alert className="flex-shrink-0 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20">
-                  <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                  <AlertDescription className="text-amber-700 dark:text-amber-300">
+                <Alert className="flex-shrink-0 border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/10 ">
+                  <AlertCircle className="h-4 w-4 text-[hsl(var(--warning))]" />
+                  <AlertDescription className="text-[hsl(var(--warning))]">
                     {t('investorUpdates.draftRestored', 'Draft restored from previous session')}
                   </AlertDescription>
                 </Alert>

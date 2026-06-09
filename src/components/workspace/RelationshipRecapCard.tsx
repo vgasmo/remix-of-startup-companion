@@ -23,8 +23,8 @@ interface RecapData {
 
 const momentumConfig: Record<string, { label: string; color: string }> = {
   accelerating: { label: 'Acelerando', color: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' },
-  steady: { label: 'Estável', color: 'bg-blue-500/15 text-blue-700 dark:text-blue-400' },
-  stalling: { label: 'A Abrandar', color: 'bg-amber-500/15 text-amber-700 dark:text-amber-400' },
+  steady: { label: 'Estável', color: 'bg-[hsl(var(--info))]/15 text-[hsl(var(--info))]' },
+  stalling: { label: 'A Abrandar', color: 'bg-[hsl(var(--warning))]/15 text-[hsl(var(--warning))]' },
   unknown: { label: 'Sem Dados', color: 'bg-muted text-muted-foreground' },
 };
 

@@ -194,11 +194,11 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
 
   const getHealthColor = (score: number | null | undefined) => {
     if (score === null || score === undefined) return 'bg-muted';
-    if (score >= 80) return 'bg-green-500';
+    if (score >= 80) return 'bg-[hsl(var(--success))]';
     if (score >= 60) return 'bg-emerald-500';
-    if (score >= 40) return 'bg-yellow-500';
+    if (score >= 40) return 'bg-[hsl(var(--warning))]';
     if (score >= 20) return 'bg-orange-500';
-    return 'bg-red-500';
+    return 'bg-destructive';
   };
 
   if (isLoading) {
@@ -365,15 +365,15 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
                           <p className="text-xs text-muted-foreground">{t('investorUpdates.keyMetrics')}</p>
                         </div>
                         <div className="p-3 rounded-lg bg-muted/50 text-center">
-                          <p className="text-2xl font-bold text-green-600">{content.milestones_achieved?.length || 0}</p>
+                          <p className="text-2xl font-bold text-[hsl(var(--success))]">{content.milestones_achieved?.length || 0}</p>
                           <p className="text-xs text-muted-foreground">{t('investorUpdates.milestonesAchieved')}</p>
                         </div>
                         <div className="p-3 rounded-lg bg-muted/50 text-center">
-                          <p className="text-2xl font-bold text-amber-600">{content.risks?.length || 0}</p>
+                          <p className="text-2xl font-bold text-[hsl(var(--warning))]">{content.risks?.length || 0}</p>
                           <p className="text-xs text-muted-foreground">{t('investorUpdates.risks')}</p>
                         </div>
                         <div className="p-3 rounded-lg bg-muted/50 text-center">
-                          <p className="text-2xl font-bold text-blue-600">{content.asks?.length || 0}</p>
+                          <p className="text-2xl font-bold text-[hsl(var(--info))]">{content.asks?.length || 0}</p>
                           <p className="text-xs text-muted-foreground">{t('investorUpdates.asks')}</p>
                         </div>
                       </div>
@@ -382,14 +382,14 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
                       <div className="grid gap-4 md:grid-cols-2">
                         {/* Highlights */}
                         {content.highlights && content.highlights.length > 0 && (
-                          <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                          <div className="p-4 rounded-lg bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/30">
                             <div className="flex items-center gap-2 mb-3">
-                              <TrendingUp className="h-5 w-5 text-green-600" />
-                              <span className="font-semibold text-green-700 dark:text-green-400">{t('investorUpdates.highlights')}</span>
+                              <TrendingUp className="h-5 w-5 text-[hsl(var(--success))]" />
+                              <span className="font-semibold text-[hsl(var(--success))]">{t('investorUpdates.highlights')}</span>
                             </div>
                             <ul className="space-y-2">
                               {content.highlights.map((h, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-green-800 dark:text-green-200">
+                                <li key={i} className="flex items-start gap-2 text-sm text-[hsl(var(--success))]">
                                   <CheckCircle className="h-4 w-4 mt-0.5 shrink-0" />
                                   <span>{h}</span>
                                 </li>
@@ -400,15 +400,15 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
 
                         {/* Lowlights */}
                         {content.lowlights && content.lowlights.length > 0 && (
-                          <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                          <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/30">
                             <div className="flex items-center gap-2 mb-3">
-                              <TrendingDown className="h-5 w-5 text-red-600" />
-                              <span className="font-semibold text-red-700 dark:text-red-400">{t('investorUpdates.lowlights')}</span>
+                              <TrendingDown className="h-5 w-5 text-destructive" />
+                              <span className="font-semibold text-destructive">{t('investorUpdates.lowlights')}</span>
                             </div>
                             <ul className="space-y-2">
                               {content.lowlights.map((l, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-red-800 dark:text-red-200">
-                                  <span className="text-red-500">•</span>
+                                <li key={i} className="flex items-start gap-2 text-sm text-destructive">
+                                  <span className="text-destructive">•</span>
                                   <span>{l}</span>
                                 </li>
                               ))}
@@ -418,21 +418,21 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
 
                         {/* KPIs */}
                         {content.kpis && content.kpis.length > 0 && (
-                          <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                          <div className="p-4 rounded-lg bg-[hsl(var(--info))]/10 border border-[hsl(var(--info))]/30">
                             <div className="flex items-center gap-2 mb-3">
-                              <Target className="h-5 w-5 text-blue-600" />
-                              <span className="font-semibold text-blue-700 dark:text-blue-400">{t('investorUpdates.keyMetrics')}</span>
+                              <Target className="h-5 w-5 text-[hsl(var(--info))]" />
+                              <span className="font-semibold text-[hsl(var(--info))]">{t('investorUpdates.keyMetrics')}</span>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                               {content.kpis.slice(0, 6).map((kpi, i) => (
                                 <div key={i} className="p-2 rounded bg-background/50">
                                   <p className="text-xs text-muted-foreground truncate">{kpi.name}</p>
                                   <div className="flex items-baseline gap-1">
-                                    <span className="font-bold text-blue-700 dark:text-blue-300">
+                                    <span className="font-bold text-[hsl(var(--info))]">
                                       {kpi.value ?? 'N/A'}{kpi.unit || ''}
                                     </span>
                                     {kpi.delta !== null && kpi.delta !== undefined && (
-                                      <span className={`text-xs ${kpi.delta >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                      <span className={`text-xs ${kpi.delta >= 0 ? 'text-[hsl(var(--success))]' : 'text-destructive'}`}>
                                         {kpi.delta > 0 ? '+' : ''}{kpi.delta}
                                       </span>
                                     )}
@@ -445,15 +445,15 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
 
                         {/* Risks */}
                         {content.risks && content.risks.length > 0 && (
-                          <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                          <div className="p-4 rounded-lg bg-[hsl(var(--warning))]/10 border border-[hsl(var(--warning))]/30">
                             <div className="flex items-center gap-2 mb-3">
-                              <AlertTriangle className="h-5 w-5 text-amber-600" />
-                              <span className="font-semibold text-amber-700 dark:text-amber-400">{t('investorUpdates.risks')}</span>
+                              <AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))]" />
+                              <span className="font-semibold text-[hsl(var(--warning))]">{t('investorUpdates.risks')}</span>
                             </div>
                             <ul className="space-y-2">
                               {content.risks.map((r, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-amber-800 dark:text-amber-200">
-                                  <span className="text-amber-500">⚠</span>
+                                <li key={i} className="flex items-start gap-2 text-sm text-[hsl(var(--warning))]">
+                                  <span className="text-[hsl(var(--warning))]">⚠</span>
                                   <span>{r}</span>
                                 </li>
                               ))}
@@ -505,13 +505,13 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
                           {content.milestones_achieved && content.milestones_achieved.length > 0 && (
                             <div className="p-4 rounded-lg border bg-muted/30">
                               <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                                <CheckCircle className="h-4 w-4 text-green-600" />
+                                <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />
                                 {t('investorUpdates.milestonesAchieved')}
                               </h4>
                               <ul className="space-y-1">
                                 {content.milestones_achieved.map((m, i) => (
                                   <li key={i} className="text-sm flex items-center gap-2">
-                                    <span className="text-green-500">✓</span> {m}
+                                    <span className="text-[hsl(var(--success))]">✓</span> {m}
                                   </li>
                                 ))}
                               </ul>
@@ -520,7 +520,7 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
                           {content.next_milestones && content.next_milestones.length > 0 && (
                             <div className="p-4 rounded-lg border bg-muted/30">
                               <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-blue-600" />
+                                <Clock className="h-4 w-4 text-[hsl(var(--info))]" />
                                 {t('investorUpdates.upcomingMilestones')}
                               </h4>
                               <ul className="space-y-1">

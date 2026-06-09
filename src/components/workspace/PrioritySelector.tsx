@@ -27,13 +27,13 @@ const priorities: { value: WorkspacePriority; labelKey: string; descKey: string;
     value: 'star', 
     labelKey: 'priorities.star', 
     descKey: 'priorities.starDesc',
-    icon: <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+    icon: <Star className="h-4 w-4 text-[hsl(var(--warning))] fill-yellow-500" />
   },
   { 
     value: 'high', 
     labelKey: 'priorities.high', 
     descKey: 'priorities.highDesc',
-    icon: <ArrowUp className="h-4 w-4 text-blue-500" />
+    icon: <ArrowUp className="h-4 w-4 text-[hsl(var(--info))]" />
   },
   { 
     value: 'standard', 

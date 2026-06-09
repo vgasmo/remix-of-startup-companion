@@ -132,9 +132,9 @@ export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
-        return <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">{t('governance.approved', 'Approved')}</Badge>;
+        return <Badge className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ">{t('governance.approved', 'Approved')}</Badge>;
       case 'conditional':
-        return <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">{t('governance.conditional', 'Conditional')}</Badge>;
+        return <Badge className="bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ">{t('governance.conditional', 'Conditional')}</Badge>;
       case 'rejected':
         return <Badge variant="destructive">{t('governance.rejected', 'Rejected')}</Badge>;
       case 'pending':
@@ -173,14 +173,14 @@ export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }
               <div key={stage} className="flex items-center flex-1">
                 <div className={`flex-1 h-2 rounded-full ${
                   index < currentStageIndex 
-                    ? 'bg-green-500' 
+                    ? 'bg-[hsl(var(--success))]' 
                     : index === currentStageIndex 
                     ? 'bg-primary' 
                     : 'bg-muted'
                 }`} />
                 {index < STAGES.length - 1 && (
                   <ChevronRight className={`h-4 w-4 mx-1 ${
-                    index < currentStageIndex ? 'text-green-500' : 'text-muted-foreground'
+                    index < currentStageIndex ? 'text-[hsl(var(--success))]' : 'text-muted-foreground'
                   }`} />
                 )}
               </div>
@@ -218,10 +218,10 @@ export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }
 
           {/* Pending Review Status */}
           {pendingReview && (
-            <div className="p-4 rounded-lg border border-amber-200 bg-amber-50/50 dark:border-amber-800/50 dark:bg-amber-900/10 mb-4">
+            <div className="p-4 rounded-lg border border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/50 mb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-amber-600" />
+                  <Clock className="h-5 w-5 text-[hsl(var(--warning))]" />
                   <div>
                     <p className="font-medium">{t('governance.reviewPending', 'Stage gate review pending')}</p>
                     <p className="text-sm text-muted-foreground">
@@ -257,7 +257,7 @@ export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }
 
           {!nextStage && (
             <div className="text-center py-4 text-muted-foreground">
-              <CheckCircle2 className="h-8 w-8 mx-auto mb-2 text-green-500" />
+              <CheckCircle2 className="h-8 w-8 mx-auto mb-2 text-[hsl(var(--success))]" />
               <p>{t('governance.completedAllStages', 'Congratulations! You\'ve completed all stages.')}</p>
             </div>
           )}
@@ -312,7 +312,7 @@ export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }
                       Reviewed {review.reviewed_at ? format(new Date(review.reviewed_at), 'MMM d, yyyy') : 'N/A'}
                     </p>
                     {review.conditions && (
-                      <p className="text-sm mt-2 p-2 rounded bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200">
+                      <p className="text-sm mt-2 p-2 rounded bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]">
                         Conditions: {review.conditions}
                       </p>
                     )}
@@ -397,13 +397,13 @@ export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }
                 <SelectContent>
                   <SelectItem value="approved">
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />
                       {t('governance.approved', 'Approve')}
                     </div>
                   </SelectItem>
                   <SelectItem value="conditional">
                     <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-amber-500" />
+                      <AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))]" />
                       {t('governance.conditionalApproval', 'Conditional Approval')}
                     </div>
                   </SelectItem>

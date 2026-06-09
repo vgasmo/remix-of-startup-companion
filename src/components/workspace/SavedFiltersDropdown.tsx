@@ -115,7 +115,7 @@ export function SavedFiltersDropdown({ currentFilters, onApplyFilter }: SavedFil
                 onClick={() => onApplyFilter(filter.filters)}
               >
                 <span className="flex items-center gap-2 truncate">
-                  {filter.is_default && <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />}
+                  {filter.is_default && <Star className="h-3 w-3 text-[hsl(var(--warning))] fill-yellow-500" />}
                   {filter.name}
                 </span>
                 <div className="flex items-center gap-1">

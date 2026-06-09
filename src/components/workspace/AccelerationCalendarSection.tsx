@@ -191,7 +191,7 @@ export function AccelerationCalendarSection({ programId, isStaff, currentWeek }:
                     {/* Status icon */}
                     <div className="shrink-0">
                       {sessionPast ? (
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />
                       ) : isCurrentWeek ? (
                         <Clock className="h-4 w-4 text-primary animate-pulse" />
                       ) : (
