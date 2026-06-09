@@ -456,11 +456,11 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="flex flex-col gap-1 pt-1">
-                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveGate(idx, 'up')} disabled={idx === 0}>
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveGate(idx, 'up')} disabled={idx === 0} aria-label={t('common.moveUp', { defaultValue: 'Mover para cima' })}>
                       <ChevronUp className="h-4 w-4" />
                     </Button>
                     <GripVertical className="h-4 w-4 text-muted-foreground mx-auto" />
-                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveGate(idx, 'down')} disabled={idx === sortedGates.length - 1}>
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveGate(idx, 'down')} disabled={idx === sortedGates.length - 1} aria-label={t('common.moveDown', { defaultValue: 'Mover para baixo' })}>
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </div>
@@ -515,7 +515,7 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
                     </div>
                   </div>
 
-                  <Button type="button" variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => removeGate(idx)}>
+                  <Button type="button" variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => removeGate(idx)} aria-label={t('common.remove', { defaultValue: 'Remover' })}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -821,7 +821,7 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
                             </SelectContent>
                           </Select>
                         </div>
-                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeDeliverable(originalIdx, delIdx)}>
+                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeDeliverable(originalIdx, delIdx)} aria-label={t('common.remove', { defaultValue: 'Remover' })}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>

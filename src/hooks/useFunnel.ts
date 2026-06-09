@@ -281,135 +281,171 @@ export function useConvertToStartup() {
         .single();
       if (startupError) throw startupError;
 
-      // Map lead's self-reported stage onto canonical workspace stage when possible
-      const STAGE_MAP: Record<string, string> = {
-        ideation: 'ideation',
-        validation: 'validation',
-        mvp: 'mvp',
-        growth: 'growth',
-        scale: 'scale',
-      };
-      const inferredStage = STAGE_MAP[String(meta.stage || '').toLowerCase()] || stage;
-
-      // Build a context note so consultants and mentors see lead summary on the workspace
-      const noteParts: string[] = [];
-      noteParts.push('Workspace criado a partir de lead CRM.');
-      if (item.contact_name) noteParts.push(`Contacto: ${item.contact_name}${item.contact_email ? ` <${item.contact_email}>` : ''}${item.contact_phone ? ` (${item.contact_phone})` : ''}`);
-      if (item.source) noteParts.push(`Origem: ${item.source}`);
-      if (description) noteParts.push(description);
-      const healthNotes = noteParts.join('\n\n');
-
-      // Create workspace as 'pending' first (trigger blocks 'active' without members)
-      const { data: workspace, error: workspaceError } = await supabase
-        .from('workspaces')
-        .insert({
-          startup_id: startup.id,
-          program_id: programId,
-          stage: inferredStage as any,
-          status: 'pending',
-          assigned_consultor_id: item.owner_consultant_id,
-          health_notes: healthNotes,
-        })
-        .select()
-        .single();
-      if (workspaceError) throw workspaceError;
-
-      // Add the staff user as consultor member so workspace can be activated
-      await supabase.from('workspace_users').insert({
-        workspace_id: workspace.id,
-        user_id: user.id,
-        role: 'consultor',
-        active: true,
-      });
-
-      // Workspace stays as 'pending' — canonical activation happens only after
-      // contract is signed via the contract lifecycle sync flow.
-      // This prevents premature workspace activation before contract truth is established.
-      logger.info('Workspace created as pending — activation deferred to contract signing', { workspaceId: workspace.id });
-
-      // Copy pitch deck (if any) from public booking bucket into the workspace's documents
-      const pitchDeckPath = typeof meta.pitch_deck_path === 'string' ? meta.pitch_deck_path : null;
-      if (pitchDeckPath) {
+      // From this point on, any failure must compensate by deleting whatever we
+      // already created — otherwise we leave orphan startup/workspace rows behind.
+      let workspace: any = null;
+      let contract: any = null;
+      const compensate = async (err: unknown) => {
         try {
-          const { data: deckBlob, error: dlErr } = await supabase.storage
-            .from('booking-uploads')
-            .download(pitchDeckPath);
-          if (dlErr) throw dlErr;
-
-          const originalName = pitchDeckPath.split('/').pop() || 'pitch-deck';
-          const destPath = `${workspace.id}/${Date.now()}_${originalName}`;
-          const { error: upErr } = await supabase.storage
-            .from('workspace-documents')
-            .upload(destPath, deckBlob, {
-              contentType: deckBlob.type || 'application/octet-stream',
-              upsert: false,
-            });
-          if (upErr) throw upErr;
-
-          const { error: docErr } = await supabase.from('documents').insert({
-            workspace_id: workspace.id,
-            name: `Pitch Deck — ${projectName}`,
-            description: 'Importado automaticamente do formulário público de primeiro contacto.',
-            document_type: 'file',
-            file_path: destPath,
-            mime_type: deckBlob.type || 'application/octet-stream',
-            category: 'pitch_deck',
-            visibility: 'shared_with_mentor',
-            uploaded_by: user.id,
+          if (workspace?.id) {
+            await supabase.from('workspaces').delete().eq('id', workspace.id);
+          }
+          if (startup?.id) {
+            await supabase.from('startups').delete().eq('id', startup.id);
+          }
+          logger.warn('convert_to_startup_compensated', {
+            funnelItemId,
+            startupId: startup?.id,
+            workspaceId: workspace?.id,
+            error: String(err),
           });
-          if (docErr) throw docErr;
-        } catch (err) {
-          logger.warn('pitch_deck_import_failed', { error: String(err), workspaceId: workspace.id });
+        } catch (cleanupErr) {
+          logger.error('convert_to_startup_compensation_failed', {
+            funnelItemId,
+            startupId: startup?.id,
+            workspaceId: workspace?.id,
+          }, cleanupErr instanceof Error ? cleanupErr : new Error(String(cleanupErr)));
         }
-      }
+      };
 
-      // Create contract if incubation type is specified
-      let contract = null;
-      if (incubationTypeId) {
-        const { data: contractData, error: contractError } = await supabase
-          .from('startup_contracts')
+      try {
+        // Map lead's self-reported stage onto canonical workspace stage when possible
+        const STAGE_MAP: Record<string, string> = {
+          ideation: 'ideation',
+          validation: 'validation',
+          mvp: 'mvp',
+          growth: 'growth',
+          scale: 'scale',
+        };
+        const inferredStage = STAGE_MAP[String(meta.stage || '').toLowerCase()] || stage;
+
+        // Build a context note so consultants and mentors see lead summary on the workspace
+        const noteParts: string[] = [];
+        noteParts.push('Workspace criado a partir de lead CRM.');
+        if (item.contact_name) noteParts.push(`Contacto: ${item.contact_name}${item.contact_email ? ` <${item.contact_email}>` : ''}${item.contact_phone ? ` (${item.contact_phone})` : ''}`);
+        if (item.source) noteParts.push(`Origem: ${item.source}`);
+        if (description) noteParts.push(description);
+        const healthNotes = noteParts.join('\n\n');
+
+        // Create workspace as 'pending' first (trigger blocks 'active' without members)
+        const { data: workspaceData, error: workspaceError } = await supabase
+          .from('workspaces')
           .insert({
-            workspace_id: workspace.id,
-            incubation_type_id: incubationTypeId,
-            building_id: buildingId || null,
-            square_meters: squareMeters || null,
-            monthly_fee: monthlyFee || 0,
-            start_date: new Date().toISOString().split('T')[0],
-            status: 'draft',
-            funnel_item_id: funnelItemId,
-            created_by: user.id,
+            startup_id: startup.id,
+            program_id: programId,
+            stage: inferredStage as any,
+            status: 'pending',
+            assigned_consultor_id: item.owner_consultant_id,
+            health_notes: healthNotes,
           })
           .select()
           .single();
-        if (contractError) {
-          logger.error('Contract creation error', {}, contractError);
-        } else {
-          contract = contractData;
+        if (workspaceError) throw workspaceError;
+        workspace = workspaceData;
+
+        // Add the staff user as consultor member so workspace can be activated
+        const { error: memberError } = await supabase.from('workspace_users').insert({
+          workspace_id: workspace.id,
+          user_id: user.id,
+          role: 'consultor',
+          active: true,
+        });
+        if (memberError) throw memberError;
+
+        // Workspace stays as 'pending' — canonical activation happens only after
+        // contract is signed via the contract lifecycle sync flow.
+        // This prevents premature workspace activation before contract truth is established.
+        logger.info('Workspace created as pending — activation deferred to contract signing', { workspaceId: workspace.id });
+
+        // Copy pitch deck (if any) from public booking bucket into the workspace's documents.
+        // This is best-effort — a failure here should NOT roll back the whole conversion.
+        const pitchDeckPath = typeof meta.pitch_deck_path === 'string' ? meta.pitch_deck_path : null;
+        if (pitchDeckPath) {
+          try {
+            const { data: deckBlob, error: dlErr } = await supabase.storage
+              .from('booking-uploads')
+              .download(pitchDeckPath);
+            if (dlErr) throw dlErr;
+
+            const originalName = pitchDeckPath.split('/').pop() || 'pitch-deck';
+            const destPath = `${workspace.id}/${Date.now()}_${originalName}`;
+            const { error: upErr } = await supabase.storage
+              .from('workspace-documents')
+              .upload(destPath, deckBlob, {
+                contentType: deckBlob.type || 'application/octet-stream',
+                upsert: false,
+              });
+            if (upErr) throw upErr;
+
+            const { error: docErr } = await supabase.from('documents').insert({
+              workspace_id: workspace.id,
+              name: `Pitch Deck — ${projectName}`,
+              description: 'Importado automaticamente do formulário público de primeiro contacto.',
+              document_type: 'file',
+              file_path: destPath,
+              mime_type: deckBlob.type || 'application/octet-stream',
+              category: 'pitch_deck',
+              visibility: 'shared_with_mentor',
+              uploaded_by: user.id,
+            });
+            if (docErr) throw docErr;
+          } catch (err) {
+            logger.warn('pitch_deck_import_failed', { error: String(err), workspaceId: workspace.id });
+          }
         }
+
+        // Create contract if incubation type is specified
+        if (incubationTypeId) {
+          const { data: contractData, error: contractError } = await supabase
+            .from('startup_contracts')
+            .insert({
+              workspace_id: workspace.id,
+              incubation_type_id: incubationTypeId,
+              building_id: buildingId || null,
+              square_meters: squareMeters || null,
+              monthly_fee: monthlyFee || 0,
+              start_date: new Date().toISOString().split('T')[0],
+              status: 'draft',
+              funnel_item_id: funnelItemId,
+              created_by: user.id,
+            })
+            .select()
+            .single();
+          if (contractError) {
+            // Contract is optional — log and continue, do not roll back.
+            logger.error('Contract creation error', {}, contractError);
+          } else {
+            contract = contractData;
+          }
+        }
+
+        // Update funnel item
+        const { error: updateError } = await supabase
+          .from('funnel_items')
+          .update({
+            stage: stage === 'ideation' ? 'incubating' : 'accelerating',
+            type: 'startup_active',
+            linked_startup_id: startup.id,
+            linked_workspace_id: workspace.id,
+            linked_contract_id: contract?.id || null,
+            converted_at: new Date().toISOString(),
+          })
+          .eq('id', funnelItemId);
+        if (updateError) throw updateError;
+
+        // Log event
+        await supabase.from('funnel_events').insert({
+          funnel_item_id: funnelItemId,
+          event_type: 'converted_to_startup',
+          performed_by: user.id,
+          metadata: { startup_id: startup.id, workspace_id: workspace.id, contract_id: contract?.id },
+        });
+
+        return { startup, workspace, contract };
+      } catch (err) {
+        await compensate(err);
+        throw err;
       }
-
-      // Update funnel item
-      await supabase
-        .from('funnel_items')
-        .update({
-          stage: stage === 'ideation' ? 'incubating' : 'accelerating',
-          type: 'startup_active',
-          linked_startup_id: startup.id,
-          linked_workspace_id: workspace.id,
-          linked_contract_id: contract?.id || null,
-          converted_at: new Date().toISOString(),
-        })
-        .eq('id', funnelItemId);
-
-      // Log event
-      await supabase.from('funnel_events').insert({
-        funnel_item_id: funnelItemId,
-        event_type: 'converted_to_startup',
-        performed_by: user.id,
-        metadata: { startup_id: startup.id, workspace_id: workspace.id, contract_id: contract?.id },
-      });
-
-      return { startup, workspace, contract };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });

@@ -302,8 +302,14 @@ export function useManageCheckinDefinition() {
         return data;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       notify.success(t('checkins.definitionSaved'));
+      // Reader key is ['checkin-definition', workspaceId] (singular). Invalidate both
+      // for forward compatibility, but the singular key is what the UI subscribes to.
+      const wsId = data?.workspace_id;
+      if (wsId) {
+        queryClient.invalidateQueries({ queryKey: ['checkin-definition', wsId] });
+      }
       queryClient.invalidateQueries({ queryKey: ['checkin-definitions'] });
     },
     onError: (error: any) => {

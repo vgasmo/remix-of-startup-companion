@@ -98,7 +98,7 @@ export function LinkedContextPanel({
         .from('workspaces')
         .select('id, stage, status, startup:startups(id, name, sector, main_contact_email, main_contact_name), program:programs(id, name)')
         .eq('id', linkedWorkspaceId!)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -113,7 +113,7 @@ export function LinkedContextPanel({
         .from('startup_contracts')
         .select('id, contract_number, status, start_date, end_date, monthly_fee, currency, square_meters, incubation_type:incubation_types(name), building:buildings(name, code)')
         .eq('id', linkedContractId!)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -145,6 +145,27 @@ export function LinkedContextPanel({
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-8 w-full" />
           <Skeleton className="h-8 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Links present but referenced rows were deleted / RLS-hidden → degrade gracefully
+  const nothingToShow =
+    !workspace &&
+    !contract &&
+    !(workspaceContracts && workspaceContracts.length > 0);
+  if (nothingToShow) {
+    return (
+      <Card className="flex-1 border-border/60 bg-muted/30">
+        <CardContent className="p-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-1.5">
+            <Briefcase className="h-3.5 w-3.5" />
+            {t('crm.linkedContext', { defaultValue: 'Contexto Vinculado' })}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {t('crm.noLinkedContext', { defaultValue: 'Sem contexto associado.' })}
+          </p>
         </CardContent>
       </Card>
     );

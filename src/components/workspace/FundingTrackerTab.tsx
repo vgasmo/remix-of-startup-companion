@@ -132,7 +132,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
         <span className="font-medium">{t('funding.concepts', 'Conceitos:')}</span>
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center gap-1"><QuickHelp term="capTable" /> Cap Table</span>
-          <span className="inline-flex items-center gap-1"><QuickHelp term="dilution" /> Diluição</span>
+          <span className="inline-flex items-center gap-1"><QuickHelp term="dilution" /> {t('funding.dilution', { defaultValue: 'Diluição' })}</span>
           <span className="inline-flex items-center gap-1"><QuickHelp term="vesting" /> Vesting</span>
           <span className="inline-flex items-center gap-1"><QuickHelp term="preemption" /> Pre-emption</span>
         </div>

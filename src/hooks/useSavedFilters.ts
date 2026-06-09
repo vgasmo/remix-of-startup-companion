@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { WorkspaceFilters } from './useWorkspaces';
 import { Json } from '@/integrations/supabase/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface SavedFilter {
   id: string;
@@ -14,16 +15,20 @@ export interface SavedFilter {
 }
 
 export function useSavedFilters() {
+  const { user } = useAuth();
+  const userId = user?.id;
   return useQuery({
-    queryKey: ['saved-filters'],
+    // Defense-in-depth: scope by userId so a session switch can't bleed another
+    // user's cached filters into the UI before RLS rejects the next fetch.
+    queryKey: ['saved-filters', userId],
+    enabled: !!userId,
     queryFn: async (): Promise<SavedFilter[]> => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!userId) return [];
 
       const { data, error } = await supabase
         .from('saved_filters')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

@@ -7,6 +7,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { logger } from '@/lib/logger';
 
 export interface AdminDashboardStats {
   pendingApprovalsCount: number;
@@ -36,14 +37,25 @@ export function useAdminDashboardStats() {
           .from('rooms')
           .select('id', { count: 'exact', head: true }),
 
-        // Occupancy: count rooms with currently-active allocations (start <= today, end null or >= today)
-        // Source of truth = room_allocations linked to active workspaces
         supabase
           .from('room_allocations')
           .select('room_id', { count: 'exact', head: true })
           .lte('start_date', new Date().toISOString().slice(0, 10))
           .or(`end_date.is.null,end_date.gte.${new Date().toISOString().slice(0, 10)}`),
       ]);
+
+      // Surface partial failures instead of silently zeroing them out.
+      const checks: Array<[string, { error: unknown }]> = [
+        ['pendingApprovals', pendingRes],
+        ['contractRenewals', renewalsRes],
+        ['totalSpaces', spacesRes],
+        ['occupiedSpaces', activeContractsRes],
+      ];
+      for (const [name, res] of checks) {
+        if (res.error) {
+          logger.warn('admin_dashboard_stat_failed', { stat: name, error: String(res.error) });
+        }
+      }
 
       return {
         pendingApprovalsCount: pendingRes.count ?? 0,

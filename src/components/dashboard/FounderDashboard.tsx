@@ -639,15 +639,17 @@ function WeeklyGreetingSubline({ userId, workspaceId, isFirstWeek }: { userId?: 
     return `greeted_this_week_${userId ?? 'anon'}_${now.getFullYear()}_${getISOWeek(now)}`;
   }, [userId]);
 
-  const [isFirstOfWeek] = useState<boolean>(() => {
+  const [isFirstOfWeek, setIsFirstOfWeek] = useState<boolean>(false);
+  useEffect(() => {
+    // Read/write sessionStorage in an effect, not in render — avoids StrictMode double-fire.
     try {
-      if (sessionStorage.getItem(weekKey) === '1') return false;
+      if (sessionStorage.getItem(weekKey) === '1') return;
       sessionStorage.setItem(weekKey, '1');
-      return true;
+      setIsFirstOfWeek(true);
     } catch {
-      return false;
+      /* sessionStorage unavailable — silently treat as not-first-of-week */
     }
-  });
+  }, [weekKey]);
 
   if (!isFirstOfWeek) return null;
 

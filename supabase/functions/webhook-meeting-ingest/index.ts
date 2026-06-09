@@ -18,6 +18,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-webhook-secret',
 };
 
+/**
+ * Constant-time string equality — prevents timing attacks that progressively
+ * reveal the secret by measuring early-exit comparison time.
+ */
+function timingSafeEqual(a: string, b: string): boolean {
+  const enc = new TextEncoder();
+  const aBytes = enc.encode(a);
+  const bBytes = enc.encode(b);
+  const len = Math.max(aBytes.length, bBytes.length);
+  let diff = aBytes.length ^ bBytes.length;
+  for (let i = 0; i < len; i++) {
+    diff |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0);
+  }
+  return diff === 0;
+}
+
 interface MeetingIngestPayload {
   workspace_id?: string;
   workspace_external_id?: string;
@@ -122,15 +138,15 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // Verify webhook secret (use dedicated WEBHOOK_SECRET)
+    // Verify webhook secret with a constant-time comparison (timing-attack resistant).
     const webhookSecret = req.headers.get('X-Webhook-Secret');
     const expectedSecret = Deno.env.get('WEBHOOK_SECRET');
-    
-    if (!webhookSecret || webhookSecret !== expectedSecret) {
+
+    if (!webhookSecret || !expectedSecret || !timingSafeEqual(webhookSecret, expectedSecret)) {
       console.error('Invalid or missing webhook secret');
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
-        status: 401, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 

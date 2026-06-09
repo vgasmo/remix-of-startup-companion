@@ -41,12 +41,12 @@ type StorageFile = {
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground',
-  intake_requested: 'bg-blue-500/10 text-blue-700 dark:text-blue-300',
-  intake_completed: 'bg-blue-500/10 text-blue-700 dark:text-blue-300',
-  ready_to_sign: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
-  sent_for_signature: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
-  signed: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
-  active: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+  intake_requested: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
+  intake_completed: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
+  ready_to_sign: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
+  sent_for_signature: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
+  signed: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
+  active: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
   terminated: 'bg-destructive/10 text-destructive',
 };
 

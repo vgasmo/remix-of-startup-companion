@@ -21,7 +21,13 @@ export type AnalyticsEvent =
   | 'session_scheduled'
   | 'contract_sent_for_signature'
   | 'intake_submitted'
-  | 'mentor_session_logged';
+  | 'mentor_session_logged'
+  // Founder help-nudge surface
+  | 'founder_help_nudge_shown'
+  | 'founder_help_nudge_ask_ai'
+  | 'founder_help_nudge_search'
+  | 'founder_help_nudge_book_session'
+  | 'founder_help_nudge_dismissed';
 
 export interface TrackOptions {
   workspaceId?: string;

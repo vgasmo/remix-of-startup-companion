@@ -53,13 +53,20 @@ export function useCurrentPricingTable() {
   return useQuery({
     queryKey: ['current-pricing-table'],
     queryFn: async () => {
-      // Get the current version
+      // Get the current version — fresh tenants may have none yet, so degrade gracefully.
       const { data: version, error: versionError } = await supabase
         .from('pricing_table_versions')
         .select('*')
         .eq('is_current', true)
-        .single();
+        .maybeSingle();
       if (versionError) throw versionError;
+      if (!version) {
+        return {
+          version: null as PricingTableVersion | null,
+          lines: [] as PricingLineRow[],
+          services: [] as ComplementaryServiceRow[],
+        };
+      }
 
       // Get all pricing lines for this version
       const { data: lines, error: linesError } = await supabase

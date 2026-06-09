@@ -1,68 +1,42 @@
-# Cleanup plan: Signup, Backoffice & Contract Signing
+This is a very large multi-phase mission (10 phases, ~150+ file edits, 2 new tables, new feature surface for cross-role feedback loops, new observability stack). Before I dive in, I want to confirm scope and sequencing so we don't end up with a half-done phase or a broken build.
 
-Audit surfaced ~17 concrete issues across the three flows. Below is a focused, low‑risk plan that ships in three passes. No schema changes, no behavior regressions — only clarity, consistency and error‑handling improvements.
+## What I'll do
 
-## Pass 1 — Signup & onboarding entry
+I'll execute strictly in phase order, running typecheck/lint/build after each phase and fixing breakage before moving on. If I hit the practical limit of a single run, I'll **stop at a phase boundary** and report exactly which phases are complete, so the next run picks up cleanly.
 
-**Goal:** remove dead ends and stale state in the auth funnel.
+## Realistic scope per run
 
-1. `src/pages/Login.tsx`
-   - Split `email`/`password`/`fullName`/`error` into separate state per tab so switching tabs no longer carries stale values or error messages.
-   - Add a small inline hint when the consultor auto‑detection kicks in (`@startupleiria.com`) instead of silently hiding the role picker.
-2. `src/pages/PendingApproval.tsx`
-   - Poll account status every 30 s (or on tab focus) and auto‑redirect to `/` when approved.
-   - Add a secondary "Check status now" button next to "Sign out".
-3. `src/pages/AcceptInvite.tsx`
-   - Remove dead `sessionStorage` write (token is always re‑read from URL).
-   - When redirecting to login, embed the full `/accept-invite?token=…` path in `returnTo` and also pass it through Supabase `emailRedirectTo` in `AuthContext.signUp` so invite tokens survive email verification.
-4. `src/components/founder/FounderWelcomeWizard.tsx`
-   - Visually mark contextual actions as "done" after click (check icon + muted style) instead of immediately closing the wizard.
-   - Make the contextual action open in a new tab (or keep wizard open) so users can still hit "Next".
-   - Add missing EN translation keys for step labels.
+Given the volume (especially Phase 2's ~154 icon buttons, Phase 3's full token sweep, Phase 8's new feature with table + RLS + UI on dashboard/timeline/KPI flows, and Phase 9's new error table + dashboard surface), one run can realistically cover **Phases 1, 4, 5, 6, 7 fully** and **start Phase 2/3** (highest-impact files first). Phases 8–10 each need their own focused run because they involve migrations + UI + i18n keys + analytics wiring that touch many files together.
 
-## Pass 2 — Backoffice contract creation
+Proposed run breakdown:
+- **Run 1 (this one):** Phases 1, 4, 5, 6, 7 + Phase 2 top-priority files (AdminKpisManager, WizardWeeksGatesStep, admin managers, CRM drawers, workspace tabs) + Phase 3 listed files.
+- **Run 2:** Phase 8 — `workspace_engagement_events` migration, view recording, MySupportTeamCard receipts, acknowledge button, submission echo, i18n.
+- **Run 3:** Phase 9 + Phase 10 — `app_errors` migration, boundary wiring, admin surface, anomaly nudge, prep echo.
 
-**Goal:** make the create flow predictable and surface errors.
+## Frozen-file discipline
 
-1. `src/components/backoffice/contracts/ContractUploadDropzone.tsx`
-   - Add an `onCancel` callback wired to a visible "← Back" button.
-2. `src/pages/BackofficeContractsTab.tsx` (or wherever the flow state lives)
-   - Wire `onCancel` to return to `idle`.
-   - Read `isError` from `useContracts` and render an inline error card with retry.
-   - Move the bulk‑create panel behind a collapsed `<details>` / accordion so it stops dominating the page.
-3. `src/components/backoffice/contracts/ContractReviewForm.tsx`
-   - Replace hardcoded `(opcional)` with a `t()` key.
-   - When incubation type auto‑fills `monthly_fee`, show a small "Auto‑filled from {type}" badge next to the field and only overwrite if the field is empty or untouched (use `form.formState.dirtyFields`).
-   - Guarantee PT/EN parity for `contractStatus.*` keys; fall back to a human label, never raw snake_case.
-   - Replace the disabled empty `contract_number` field with a muted helper line ("Será atribuído ao guardar — INC‑YYYY‑NNN") so it doesn't look like a broken input.
+In ClaimStartup, ContractOnboarding, PublicContractSigning, PublicContractIntake, AcceptInvite, and all RLS/claim/token/auth code: **className, aria-*, t() only**. I'll verify by diffing logic lines before committing each phase.
 
-## Pass 3 — Public contract signing
+## GDPR discipline for new events
 
-**Goal:** consistent i18n, clear document requirements, no full‑page reloads.
-
-1. `src/pages/PublicContractSigning.tsx`
-   - Move all `isPt ? 'a' : 'b'` strings into `t()` keys under a new `publicContract.*` namespace (PT + EN). Drop the custom `lang` state; use `i18n` directly.
-   - Add "Optional" / "Required" badges per document upload row driven by a single config array.
-   - Replace `window.location.reload()` after digital signing with a success screen + explicit "Voltar ao início" button.
-   - Pre‑fetch the contract PDF when the user enters Step 2 (Review), not Step 3 (Signing), so the preview is ready.
-   - Add inline error display (not just toast) on signing failure.
-2. `supabase/functions/public-contract-onboarding/index.ts`
-   - Add a small dispatch map at the top (`{ action: handler }`) and return `404 Unknown action` for typos.
-   - Add length cap (e.g. 200 chars) and trim on `project_name` in `validateIntakeForm`.
-
-## Out of scope (call out, do not change)
-
-- The duplicate `PublicContractIntake.tsx` page and the two token systems (`onboarding_token` vs `intake_token_hash`) — consolidating these is a separate, larger refactor with migration implications. Will document in `mem://` and flag for a follow‑up.
-- No DB schema changes.
-- No changes to pricing/discount logic (contract immutability rules).
+`workspace_engagement_events` and `app_errors` will carry IDs + timestamps + enums only. Names/emails resolved client-side from existing members data. I'll add a comment in each migration documenting the no-PII contract.
 
 ## Technical notes
 
-- All work is UI + edge function ergonomics. No migrations.
-- All new copy goes through `react-i18next` with PT + EN keys to satisfy the bilingual parity rule.
-- React Query keys, RLS, and `invokeWithAuth` patterns are preserved.
-- Will verify by viewing the affected screens in preview after each pass.
+- Phase 8 acknowledge notifications use the existing `notifications` table + `notify.*` helpers (per memory).
+- Phase 8 debounce ("max one view per actor/workspace/day") = client-side check-then-insert against today's row, matching the existing `useWorkQueue` recomputation pattern (per memory).
+- Phase 9 error capture is fire-and-forget; never throws inside the boundary.
+- Phase 10 anomaly nudge is pure client-side over already-fetched KPI data — no new query.
+- All new strings get pt/en parity; I'll run `node scripts/i18n-check.cjs` before declaring done.
 
-## Suggested order
+## Question before I start
 
-Pass 1 → Pass 2 → Pass 3 (independent, can ship one at a time if you prefer to review between passes). If you want me to start with just one pass, tell me which; otherwise I'll proceed in order.
+Do you want me to:
+
+**(A)** Proceed exactly as proposed — Run 1 covers Phases 1, 4, 5, 6, 7 + the highest-impact slices of Phases 2 & 3, then stop and report; Runs 2 and 3 handle the differentiator (8) and observability (9/10) separately.
+
+**(B)** Compress harder — attempt all 10 phases in this single run, accepting that Phase 2 (icon-button aria-labels) will be done as a scripted sweep over the most common patterns rather than 154 hand-verified edits, and Phase 8's UI polish may be minimal (functional receipts + acknowledge, but less visual flourish).
+
+**(C)** Different split — tell me which phases you most want shipped first and I'll reorder.
+
+I'd recommend **A** for safety (zero risk of leaving a broken phase) but **B** is doable if you want everything in one go and accept the trade-off on Phase 2 thoroughness.

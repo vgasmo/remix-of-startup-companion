@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Sparkles, Flag, Trophy, Calendar, TrendingUp } from 'lucide-react';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { supabase } from '@/lib/supabaseClient';
+import { logger } from '@/lib/logger';
 
 interface FounderStoryTimelineProps {
   workspaceId: string;
@@ -58,6 +59,16 @@ export function FounderStoryTimeline({ workspaceId }: FounderStoryTimelineProps)
           .order('period_month', { ascending: false })
           .limit(10),
       ]);
+
+      // Surface partial failures so we don't render an "empty story" because one query died.
+      const checks: Array<[string, { error: unknown }]> = [
+        ['milestones', ms], ['sessions', ss], ['stage_history', st], ['kpi_values', kp],
+      ];
+      for (const [name, res] of checks) {
+        if (res?.error) {
+          logger.warn('founder_story_partial_failure', { workspaceId, source: name, error: String(res.error) });
+        }
+      }
 
       const out: StoryEvent[] = [];
       (ms.data ?? []).forEach((m: any) => out.push({

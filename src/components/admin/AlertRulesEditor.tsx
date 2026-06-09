@@ -156,8 +156,8 @@ export function AlertRulesEditor({ programId, programName }: AlertRulesEditorPro
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="info">🔵 Info</SelectItem>
-                          <SelectItem value="warning">🟠 Atenção</SelectItem>
-                          <SelectItem value="critical">🔴 Crítico</SelectItem>
+                          <SelectItem value="warning">🟠 {t('alerts.severity.warning', { defaultValue: 'Atenção' })}</SelectItem>
+                          <SelectItem value="critical">🔴 {t('alerts.severity.critical', { defaultValue: 'Crítico' })}</SelectItem>
                         </SelectContent>
                       </Select>
                     ) : (
