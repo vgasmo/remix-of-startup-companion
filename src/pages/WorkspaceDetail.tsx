@@ -41,6 +41,17 @@ import { notify } from '@/lib/notify';
 import { cn } from '@/lib/utils';
 import { getVisibleTabs, type WorkspaceTab } from '@/lib/workspaceTabs';
 import { useWorkspaceTabBadges } from '@/hooks/useWorkspaceTabBadges';
+import { useTrackEngagement, type EngagementTargetType } from '@/hooks/useEngagementEvents';
+
+// Map workspace tab IDs → engagement target types (Phase 7D/7E)
+const TAB_TO_TARGET: Record<string, EngagementTargetType> = {
+  'kpis': 'kpi',
+  'milestones-actions': 'milestone',
+  'milestones': 'milestone',
+  'actions': 'action',
+  'agenda': 'session',
+  'documents': 'document',
+};
 
 export default function WorkspaceDetail() {
   const { id } = useParams<{ id: string }>();
