@@ -39,6 +39,22 @@ const PANDADOC_STATUS_MAP: Record<string, string> = {
 }
 
 /**
+ * Constant-time string equality — prevents timing attacks that progressively
+ * reveal the secret by measuring early-exit comparison time.
+ */
+function timingSafeEqual(a: string, b: string): boolean {
+  const enc = new TextEncoder()
+  const aBytes = enc.encode(a)
+  const bBytes = enc.encode(b)
+  const len = Math.max(aBytes.length, bBytes.length)
+  let diff = aBytes.length ^ bBytes.length
+  for (let i = 0; i < len; i++) {
+    diff |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0)
+  }
+  return diff === 0
+}
+
+/**
  * Verify PandaDoc webhook authenticity — FAIL-CLOSED.
  */
 function verifyWebhookAuthenticity(body: any, req: Request): { ok: boolean; reason?: string } {
@@ -52,7 +68,10 @@ function verifyWebhookAuthenticity(body: any, req: Request): { ok: boolean; reas
   const payloadKey = body?.shared_key || null
   const headerKey = req.headers.get('x-pandadoc-signature') || req.headers.get('authorization')?.replace('Bearer ', '') || null
 
-  if (payloadKey === webhookKey || headerKey === webhookKey) {
+  if (
+    (payloadKey && timingSafeEqual(payloadKey, webhookKey)) ||
+    (headerKey && timingSafeEqual(headerKey, webhookKey))
+  ) {
     return { ok: true }
   }
 
