@@ -595,6 +595,68 @@
     box-shadow: var(--shadow-md);
   }
 
+  /* ============================================================
+     CHEVRON TICK — the signature lime active marker.
+     Replaces ad-hoc `before:` blocks across nav/tabs/lists.
+     ============================================================ */
+  .chevron-tick {
+    position: relative;
+  }
+  .chevron-tick::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 1.5rem;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.45);
+  }
+
+  /* ============================================================
+     INTERACTIVE CARD — adds a thin crimson top-accent on hover,
+     echoing the chevron motif. Pair with `.surface-raised`.
+     ============================================================ */
+  .card-brand-accent {
+    position: relative;
+    overflow: hidden;
+  }
+  .card-brand-accent::after {
+    content: '';
+    position: absolute;
+    inset: 0 auto auto 0;
+    height: 2px;
+    width: 100%;
+    background: linear-gradient(90deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--primary)) 35%,
+      hsl(var(--brand-red)) 100%);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+  .card-brand-accent:hover::after,
+  .card-brand-accent:focus-within::after {
+    transform: scaleX(1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card-brand-accent::after { transition: none; }
+  }
+
+  /* Eyebrow alias — matches the documented `.text-eyebrow` API. */
+  .text-eyebrow {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: hsl(var(--muted-foreground));
+  }
+
   /* Scrollbar */
   .scrollbar-thin {
     scrollbar-width: thin;
