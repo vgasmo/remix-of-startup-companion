@@ -496,14 +496,14 @@ export const FounderDashboard = memo(function FounderDashboard({
           )}
 
           {/* Story Timeline (Magic Moment) */}
-          <div className="animate-fade-in-up stagger-5">
+          <div className="animate-fade-in-up stagger-6">
             <WidgetErrorBoundary name="FounderStoryTimeline">
               <FounderStoryTimeline workspaceId={workspace.id} />
             </WidgetErrorBoundary>
           </div>
 
           {/* Stage Progress + Investor Readiness + Calendar */}
-          <div className="grid gap-6 md:grid-cols-2 animate-fade-in-up stagger-6">
+          <div className="grid gap-6 md:grid-cols-2 animate-fade-in-up">
 
             <div className="space-y-4">
               <StageProgressCard workspace={workspace} />
