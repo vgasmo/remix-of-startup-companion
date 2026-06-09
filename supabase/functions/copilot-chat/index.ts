@@ -400,6 +400,7 @@ Guidelines:
 - Adapt tone: strategic for admins/consultors, coaching/motivating for founders, preparatory for mentors.
 ${appHelpMap}
 ${startupLeiriaKnowledge}
+${playbookLibrary}
 ${contextBlock}`;
 
     const aiResponse = await fetch(
