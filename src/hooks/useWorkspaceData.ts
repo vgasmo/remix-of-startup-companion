@@ -77,6 +77,14 @@ export function useWorkspaceKpis(workspaceId: string | undefined) {
           .eq('period_month', previousMonth)
       ]);
 
+      // Surface partial failures (previously swallowed) without breaking the UI.
+      if (currentResult.error) {
+        logger.warn('workspace_kpis_current_failed', { workspaceId, error: String(currentResult.error) });
+      }
+      if (previousResult.error) {
+        logger.warn('workspace_kpis_previous_failed', { workspaceId, error: String(previousResult.error) });
+      }
+
       return {
         current: currentResult.data || [],
         previous: previousResult.data || [],
