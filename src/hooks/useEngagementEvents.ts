@@ -96,9 +96,10 @@ export function useLastViewByRole(
   targetType: EngagementTargetType,
   targetId: string | undefined,
 ) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['last-view', workspaceId, targetType, targetId],
-    enabled: !!workspaceId && !!targetId,
+    queryKey: ['last-view', workspaceId, targetType, targetId, user?.id],
+    enabled: !!workspaceId && !!targetId && !!user?.id,
     staleTime: 120_000,
     queryFn: async () => {
       const { data } = await (supabase as any)
@@ -108,6 +109,7 @@ export function useLastViewByRole(
         .eq('event_type', 'view')
         .eq('target_type', targetType)
         .eq('target_id', targetId)
+        .neq('actor_id', user!.id)
         .order('created_at', { ascending: false })
         .limit(5);
       return (data as Array<{ actor_id: string | null; created_at: string }>) ?? [];

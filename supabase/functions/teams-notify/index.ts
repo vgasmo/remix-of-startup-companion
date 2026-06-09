@@ -212,7 +212,15 @@ Deno.serve(async (req: Request) => {
     const expectedSecret = Deno.env.get('CRON_SECRET');
     const authHeader = req.headers.get('Authorization');
 
-    const isSystemCall = !!cronSecret && !!expectedSecret && cronSecret === expectedSecret;
+    const isSystemCall = !!cronSecret && !!expectedSecret && (() => {
+      const enc = new TextEncoder();
+      const a = enc.encode(cronSecret);
+      const b = enc.encode(expectedSecret);
+      const len = Math.max(a.length, b.length);
+      let diff = a.length ^ b.length;
+      for (let i = 0; i < len; i++) diff |= (a[i] ?? 0) ^ (b[i] ?? 0);
+      return diff === 0;
+    })();
     const isUserCall = authHeader?.startsWith('Bearer ');
 
     if (!isSystemCall && !isUserCall) {

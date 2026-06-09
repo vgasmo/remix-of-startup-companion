@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
         status = statusMap[body.event]
       }
     } else {
-      const xmlText = await req.text()
+      const xmlText = rawBody
       rawPayload = { xml: xmlText }
       const envelopeIdMatch = xmlText.match(/<EnvelopeID>([^<]+)<\/EnvelopeID>/i)
       const statusMatch = xmlText.match(/<Status>([^<]+)<\/Status>/i)
