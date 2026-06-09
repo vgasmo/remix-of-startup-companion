@@ -150,6 +150,27 @@ export function LinkedContextPanel({
     );
   }
 
+  // Links present but referenced rows were deleted / RLS-hidden → degrade gracefully
+  const nothingToShow =
+    !workspace &&
+    !contract &&
+    !(workspaceContracts && workspaceContracts.length > 0);
+  if (nothingToShow) {
+    return (
+      <Card className="flex-1 border-border/60 bg-muted/30">
+        <CardContent className="p-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-1.5">
+            <Briefcase className="h-3.5 w-3.5" />
+            {t('crm.linkedContext', { defaultValue: 'Contexto Vinculado' })}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {t('crm.noLinkedContext', { defaultValue: 'Sem contexto associado.' })}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const primaryContractId = contract?.id || workspaceContracts?.[0]?.id || null;
 
   return (
