@@ -56,6 +56,8 @@ import { MySupportTeamCard } from '@/components/founder/MySupportTeamCard';
 import { BrandSurface } from '@/components/ui/BrandSurface';
 import { WelcomeSplash } from '@/components/founder/WelcomeSplash';
 import { useIsFirstWeek } from '@/hooks/useIsFirstWeek';
+import { useKpiAnomalyNudge } from '@/hooks/useKpiAnomalyNudge';
+import { AlertTriangle } from 'lucide-react';
 // NextBestActionFounder removed from beginner view — kept available for power users via OneThingToday.
 
 interface FounderDashboardProps {
@@ -92,6 +94,7 @@ export const FounderDashboard = memo(function FounderDashboard({
   const [selectedWorkspaceIdx, setSelectedWorkspaceIdx] = useState(0);
   const workspace = workspaces[selectedWorkspaceIdx] || workspaces[0];
   const nudges = useSmartNudges(workspace?.id);
+  const { data: kpiAnomaly } = useKpiAnomalyNudge(workspace?.id);
   
   const { data: workspaceMembers } = useWorkspaceMembers(workspace?.id);
   const { data: workspaceOwner } = useWorkspaceOwner(workspace?.id);
@@ -294,6 +297,29 @@ export const FounderDashboard = memo(function FounderDashboard({
       <WidgetErrorBoundary name="PendingContract">
         <PendingContractBanner workspaceId={workspace.id} />
       </WidgetErrorBoundary>
+
+      {/* ★ KPI ANOMALY NUDGE — Proactive intelligence over already-fetched KPI data ★ */}
+      {kpiAnomaly && (
+        <Card className="border-[hsl(var(--warning))]/40 bg-[hsl(var(--warning))]/5">
+          <CardContent className="p-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))] flex-shrink-0 mt-0.5" aria-hidden="true" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold text-foreground">
+                {t('dashboard.kpiAlert', { defaultValue: 'Atenção ao KPI' })}
+              </div>
+              <p className="text-sm text-muted-foreground mt-0.5">{kpiAnomaly.message}</p>
+              <Button
+                size="sm"
+                variant="link"
+                className="px-0 h-auto mt-1 text-[hsl(var(--warning))]"
+                onClick={() => navigate(`/workspace/${workspace.id}?tab=kpis`)}
+              >
+                {t('dashboard.reviewKpi', { defaultValue: 'Rever KPI →' })}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ============================================================
           PRIMARY CALM SCREEN — clear hierarchy, V1 identity
