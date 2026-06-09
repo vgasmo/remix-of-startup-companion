@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { format, startOfMonth, subMonths } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { TrendingUp, ChevronLeft, ChevronRight, Check, Loader2, Sparkles } from 'lucide-react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -156,6 +157,10 @@ export function QuickKpiModal({ open, onOpenChange, workspaceId, programId }: Qu
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm p-0 overflow-hidden border-0 shadow-2xl rounded-2xl">
+        <VisuallyHidden>
+          <DialogTitle>{t('quickKpi.title', { defaultValue: 'Entrada Rápida de KPI' })}</DialogTitle>
+          <DialogDescription>{t('quickKpi.description', { defaultValue: 'Atualize as suas métricas chave para {{month}}', month: monthLabel })}</DialogDescription>
+        </VisuallyHidden>
         {/* Header gradient */}
         <div className="bg-gradient-to-br from-primary/15 via-primary/5 to-transparent px-6 pt-6 pb-4">
           <div className="flex items-center gap-3 mb-3">
