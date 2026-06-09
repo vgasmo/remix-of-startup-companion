@@ -86,6 +86,8 @@ export function useFounderStuckSignal({
   const userId = profile?.id;
 
   const [show, setShow] = useState(false);
+  const showRef = useRef(false);
+  useEffect(() => { showRef.current = show; }, [show]);
   const lastActivityRef = useRef<number>(Date.now());
   const meaningfulClickRef = useRef<boolean>(false);
   const mountedAtRef = useRef<number>(Date.now());
