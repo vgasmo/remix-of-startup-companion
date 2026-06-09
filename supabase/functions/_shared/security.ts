@@ -243,7 +243,7 @@ export async function requireCronOrGovernance(
   const cronSecret = req.headers.get('x-cron-secret');
   const expectedSecret = Deno.env.get('CRON_SECRET');
   
-  if (expectedSecret && cronSecret === expectedSecret) {
+  if (expectedSecret && cronSecret && timingSafeEqual(cronSecret, expectedSecret)) {
     return { valid: true };
   }
 
