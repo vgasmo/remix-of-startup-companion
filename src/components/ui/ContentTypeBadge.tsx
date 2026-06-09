@@ -11,6 +11,7 @@ interface ContentTypeBadgeProps {
   className?: string;
 }
 
+// intentional: content-type taxonomy palette — distinct hue per content type, not state semantics
 const CONFIG: Record<ContentType, { icon: React.ElementType; labelKey: string; fallback: string; color: string }> = {
   document: { icon: FileText, labelKey: 'contentType.document', fallback: 'Documento', color: 'bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 border-blue-200 dark:border-blue-800/30' },
   template: { icon: LayoutTemplate, labelKey: 'contentType.template', fallback: 'Template', color: 'bg-violet-50 text-violet-700 dark:bg-violet-950/30 dark:text-violet-400 border-violet-200 dark:border-violet-800/30' },
