@@ -227,9 +227,11 @@ export const WorkspaceTable = memo(function WorkspaceTable({
               return (
                 <TableRow
                   key={workspace.id}
-                  className={`cursor-pointer hover:bg-accent/50 transition-colors ${
-                    isSelected ? 'bg-primary/5' : ''
-                  }`}
+                  className={cn(
+                    "cursor-pointer transition-colors",
+                    "hover:bg-primary/5 hover:border-l-2 hover:border-l-primary/40",
+                    isSelected && "bg-primary/10 border-l-2 border-l-primary"
+                  )}
                   onClick={() => onRowClick(workspace.id)}
                 >
                   {selectionEnabled && (

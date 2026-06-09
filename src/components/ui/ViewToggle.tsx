@@ -18,7 +18,7 @@ export function ViewToggle({ view, onChange, className }: ViewToggleProps) {
         size="sm"
         className={cn(
           'h-8 px-3 rounded-md transition-all',
-          view === 'table' && 'bg-background shadow-sm'
+          view === 'table' && 'bg-primary/10 text-primary shadow-sm'
         )}
         onClick={() => onChange('table')}
       >
@@ -30,7 +30,7 @@ export function ViewToggle({ view, onChange, className }: ViewToggleProps) {
         size="sm"
         className={cn(
           'h-8 px-3 rounded-md transition-all',
-          view === 'card' && 'bg-background shadow-sm'
+          view === 'card' && 'bg-primary/10 text-primary shadow-sm'
         )}
         onClick={() => onChange('card')}
       >

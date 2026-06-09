@@ -25,10 +25,10 @@ export const WorkspaceCard = memo(function WorkspaceCard({ workspace, onClick, k
   const hasOverdue = workspace.overdueActionsCount > 0;
 
   return (
-    <Card 
+    <Card
       interactive
       className={cn(
-        'cursor-pointer group',
+        'surface-raised cursor-pointer group',
         hasOverdue && 'border-amber-200 dark:border-amber-800'
       )}
       onClick={onClick}
