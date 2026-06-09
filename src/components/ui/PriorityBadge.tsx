@@ -19,12 +19,12 @@ const priorityConfig: Record<WorkspacePriority, {
   star: { 
     labelKey: 'priorities.star', 
     icon: <Star className="h-3 w-3 fill-current" />,
-    className: 'bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-700' 
+    className: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30 ' 
   },
   high: { 
     labelKey: 'priorities.high', 
     icon: <ArrowUp className="h-3 w-3" />,
-    className: 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700' 
+    className: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] border-[hsl(var(--info))]/30 ' 
   },
   standard: { 
     labelKey: 'priorities.standard', 
@@ -34,7 +34,7 @@ const priorityConfig: Record<WorkspacePriority, {
   maintenance: { 
     labelKey: 'priorities.maintenance', 
     icon: <Archive className="h-3 w-3" />,
-    className: 'bg-gray-100 text-gray-500 border-gray-300 dark:bg-gray-800/50 dark:text-gray-400 dark:border-gray-600' 
+    className: 'bg-muted text-muted-foreground border-border ' 
   },
 };
 

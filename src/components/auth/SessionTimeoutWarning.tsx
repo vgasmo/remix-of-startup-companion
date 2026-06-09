@@ -128,7 +128,7 @@ export function SessionTimeoutWarning({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
+            <AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))]" />
             {t('sessionTimeout.title', 'Session Timeout Warning')}
           </AlertDialogTitle>
           <AlertDialogDescription>

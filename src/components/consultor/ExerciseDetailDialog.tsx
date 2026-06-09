@@ -28,7 +28,7 @@ export function ExerciseDetailDialog({ open, onOpenChange, exercise }: ExerciseD
           <div className="flex items-center gap-2">
             <DialogTitle className="text-xl">{exercise.title}</DialogTitle>
             {exercise.status === 'approved' && (
-              <Badge variant="secondary" className="bg-green-100 text-green-700">
+              <Badge variant="secondary" className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]">
                 <CheckCircle2 className="h-3 w-3 mr-1" />
                 Approved
               </Badge>
@@ -64,7 +64,7 @@ export function ExerciseDetailDialog({ open, onOpenChange, exercise }: ExerciseD
             {exercise.purpose && (
               <div>
                 <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                  <Lightbulb className="h-4 w-4 text-amber-500" />
+                  <Lightbulb className="h-4 w-4 text-[hsl(var(--warning))]" />
                   Purpose
                 </h3>
                 <p className="text-sm text-muted-foreground">{exercise.purpose}</p>
@@ -118,12 +118,12 @@ export function ExerciseDetailDialog({ open, onOpenChange, exercise }: ExerciseD
 
             {/* Facilitator Tips */}
             {exercise.facilitator_tips && (
-              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900">
-                <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+              <div className="p-3 rounded-lg bg-[hsl(var(--info))]/10 border border-[hsl(var(--info))]/30">
+                <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-[hsl(var(--info))]">
                   <Lightbulb className="h-4 w-4" />
                   Facilitator Tips
                 </h3>
-                <p className="text-sm text-blue-800 dark:text-blue-200">
+                <p className="text-sm text-[hsl(var(--info))]">
                   {exercise.facilitator_tips}
                 </p>
               </div>
@@ -131,12 +131,12 @@ export function ExerciseDetailDialog({ open, onOpenChange, exercise }: ExerciseD
 
             {/* Success Criteria */}
             {exercise.success_criteria && (
-              <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900">
-                <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-green-700 dark:text-green-300">
+              <div className="p-3 rounded-lg bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/30">
+                <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-[hsl(var(--success))]">
                   <Target className="h-4 w-4" />
                   Success Criteria
                 </h3>
-                <p className="text-sm text-green-800 dark:text-green-200">
+                <p className="text-sm text-[hsl(var(--success))]">
                   {exercise.success_criteria}
                 </p>
               </div>
@@ -144,12 +144,12 @@ export function ExerciseDetailDialog({ open, onOpenChange, exercise }: ExerciseD
 
             {/* Common Pitfalls */}
             {exercise.common_pitfalls && (
-              <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900">
-                <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-amber-700 dark:text-amber-300">
+              <div className="p-3 rounded-lg bg-[hsl(var(--warning))]/10 border border-[hsl(var(--warning))]/30">
+                <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-[hsl(var(--warning))]">
                   <AlertTriangle className="h-4 w-4" />
                   Common Pitfalls
                 </h3>
-                <p className="text-sm text-amber-800 dark:text-amber-200">
+                <p className="text-sm text-[hsl(var(--warning))]">
                   {exercise.common_pitfalls}
                 </p>
               </div>

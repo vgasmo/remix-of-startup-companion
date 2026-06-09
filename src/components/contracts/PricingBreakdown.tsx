@@ -36,7 +36,7 @@ export function PricingBreakdown({ pricing, compact = false }: PricingBreakdownP
           </div>
         )}
         {pricing.totalDiscountPercentage > 0 && (
-          <div className="flex items-center justify-between text-sm text-green-600 dark:text-green-400">
+          <div className="flex items-center justify-between text-sm text-[hsl(var(--success))]">
             <span className="flex items-center gap-1">
               <Percent className="h-3 w-3" />
               {t('pricing.discount')} ({pricing.totalDiscountPercentage}%)
@@ -50,7 +50,7 @@ export function PricingBreakdown({ pricing, compact = false }: PricingBreakdownP
           <span className="text-primary">{formatContractCurrency(pricing.effectiveMonthlyFee, pricing.currency)}/mês</span>
         </div>
         {pricing.isManualOverride && (
-          <Badge variant="outline" className="text-[10px] text-amber-600">
+          <Badge variant="outline" className="text-[10px] text-[hsl(var(--warning))]">
             <AlertTriangle className="h-3 w-3 mr-1" />
             {t('pricing.manualOverride')}
           </Badge>
@@ -116,7 +116,7 @@ export function PricingBreakdown({ pricing, compact = false }: PricingBreakdownP
 
           {/* Active Discounts */}
           {pricing.activeDiscounts.filter(d => d.isActive).map(discount => (
-            <div key={discount.id} className="flex items-center justify-between text-green-600 dark:text-green-400">
+            <div key={discount.id} className="flex items-center justify-between text-[hsl(var(--success))]">
               <div className="flex items-center gap-2">
                 <Percent className="h-3.5 w-3.5" />
                 <span className="text-sm">
@@ -139,7 +139,7 @@ export function PricingBreakdown({ pricing, compact = false }: PricingBreakdownP
 
           {/* Manual Override Warning */}
           {pricing.isManualOverride && (
-            <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded-lg px-3 py-1.5">
+            <div className="flex items-center gap-2 text-xs text-[hsl(var(--warning))] bg-[hsl(var(--warning))]/10 rounded-lg px-3 py-1.5">
               <AlertTriangle className="h-3.5 w-3.5" />
               {t('pricing.manualOverrideWarning')}
             </div>
@@ -152,7 +152,7 @@ export function PricingBreakdown({ pricing, compact = false }: PricingBreakdownP
               className={cn(
                 'flex items-center gap-2 text-xs rounded-lg px-3 py-1.5',
                 warning.severity === 'critical' ? 'bg-destructive/10 text-destructive' :
-                warning.severity === 'warning' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
+                warning.severity === 'warning' ? 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]' :
                 'bg-muted text-muted-foreground'
               )}
             >

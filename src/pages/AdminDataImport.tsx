@@ -1065,8 +1065,8 @@ export default function AdminDataImport() {
                         key={row.rowIndex}
                         className={cn(
                           'p-3 rounded-lg border',
-                          !row.isValid && 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800',
-                          row.isDuplicate && row.isValid && 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'
+                          !row.isValid && 'bg-destructive/10 border-destructive/30 ',
+                          row.isDuplicate && row.isValid && 'bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/30 '
                         )}
                       >
                         <div className="flex items-start justify-between gap-4">
@@ -1082,7 +1082,7 @@ export default function AdminDataImport() {
                                 </Badge>
                               )}
                               {row.isDuplicate && (
-                                <Badge variant="outline" className="text-xs bg-yellow-100 text-yellow-800">
+                                <Badge variant="outline" className="text-xs bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]">
                                   {t('dataImport.duplicate', 'Duplicate')}
                                 </Badge>
                               )}
@@ -1117,13 +1117,13 @@ export default function AdminDataImport() {
                                   </span>
                                 )}
                                 {row.owner_name && (
-                                  <span className={row.resolved_owner_id ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}>
+                                  <span className={row.resolved_owner_id ? 'text-[hsl(var(--success))]' : 'text-[hsl(var(--warning))]'}>
                                     👤 {row.owner_name}
                                     {row.resolved_owner_id ? ' ✓' : ' (não mapeado)'}
                                   </span>
                                 )}
                                 {row.deal_stage && (
-                                  <span className={row.resolved_stage ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}>
+                                  <span className={row.resolved_stage ? 'text-[hsl(var(--success))]' : 'text-[hsl(var(--warning))]'}>
                                     📊 {row.deal_stage}
                                     {row.resolved_stage ? ` → ${row.resolved_stage}` : ' (não mapeado)'}
                                   </span>
@@ -1131,12 +1131,12 @@ export default function AdminDataImport() {
                               </div>
                             )}
                             {!row.isValid && row.validationErrors.length > 0 && (
-                              <div className="text-xs text-red-600 dark:text-red-400 mt-1">
+                              <div className="text-xs text-destructive mt-1">
                                 {row.validationErrors.join(', ')}
                               </div>
                             )}
                             {row.isDuplicate && row.matchReason && (
-                              <div className="text-xs text-yellow-700 mt-1">
+                              <div className="text-xs text-[hsl(var(--warning))] mt-1">
                                 {t('dataImport.duplicateOf', 'Duplicate of')} {row.duplicateOf} ({row.matchReason})
                               </div>
                             )}
@@ -1227,7 +1227,7 @@ export default function AdminDataImport() {
                       <p className="text-xs text-muted-foreground">
                         {t('dataImport.useFileOwnerDesc', 'Mapear "Proprietário do negócio" para consultor')}
                       </p>
-                      <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-1">
+                      <p className="text-xs text-[hsl(var(--success))] font-medium mt-1">
                         {stats.withOwner} de {stats.total} linhas com owner mapeado
                       </p>
                     </div>
@@ -1243,7 +1243,7 @@ export default function AdminDataImport() {
                       <p className="text-xs text-muted-foreground">
                         {t('dataImport.useFileStageDesc', 'Mapear "Etapa do negócio" (Tier A/B/C) para stage')}
                       </p>
-                      <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-1">
+                      <p className="text-xs text-[hsl(var(--success))] font-medium mt-1">
                         {stats.withStage} de {stats.total} linhas com stage mapeado
                       </p>
                     </div>
@@ -1284,13 +1284,13 @@ export default function AdminDataImport() {
 
                 {/* Draft Contracts Toggle */}
                 {(stats.withBuilding > 0 || stats.withService > 0) && (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/30">
                     <div>
-                      <Label className="text-green-700 dark:text-green-400">{t('dataImport.createDraftContracts', 'Criar Contratos Rascunho')}</Label>
+                      <Label className="text-[hsl(var(--success))]">{t('dataImport.createDraftContracts', 'Criar Contratos Rascunho')}</Label>
                       <p className="text-xs text-muted-foreground">
                         {t('dataImport.createDraftContractsDesc', 'Criar contratos draft para leads que virem "contracted" com edifício/serviço')}
                       </p>
-                      <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-1">
+                      <p className="text-xs text-[hsl(var(--success))] font-medium mt-1">
                         {stats.withBuilding} com edifício, {stats.withService} com serviço mapeado
                       </p>
                     </div>
@@ -1339,20 +1339,20 @@ export default function AdminDataImport() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-4">
-                  <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">{dryRunResult.would_insert}</div>
+                  <div className="text-center p-4 bg-[hsl(var(--success))]/10 rounded-lg">
+                    <div className="text-2xl font-bold text-[hsl(var(--success))]">{dryRunResult.would_insert}</div>
                     <div className="text-sm text-muted-foreground">{t('dataImport.toInsert', 'To Insert')}</div>
                   </div>
-                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{dryRunResult.would_update}</div>
+                  <div className="text-center p-4 bg-[hsl(var(--info))]/10 rounded-lg">
+                    <div className="text-2xl font-bold text-[hsl(var(--info))]">{dryRunResult.would_update}</div>
                     <div className="text-sm text-muted-foreground">{t('dataImport.toUpdate', 'To Update')}</div>
                   </div>
-                  <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                    <div className="text-2xl font-bold text-red-600 dark:text-red-400">{dryRunResult.skipped_invalid}</div>
+                  <div className="text-center p-4 bg-destructive/10 rounded-lg">
+                    <div className="text-2xl font-bold text-destructive">{dryRunResult.skipped_invalid}</div>
                     <div className="text-sm text-muted-foreground">{t('dataImport.skippedInvalid', 'Invalid')}</div>
                   </div>
-                  <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                    <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{dryRunResult.skipped_duplicate}</div>
+                  <div className="text-center p-4 bg-[hsl(var(--warning))]/10 rounded-lg">
+                    <div className="text-2xl font-bold text-[hsl(var(--warning))]">{dryRunResult.skipped_duplicate}</div>
                     <div className="text-sm text-muted-foreground">{t('dataImport.skippedDuplicate', 'Duplicates')}</div>
                   </div>
                 </div>
@@ -1468,12 +1468,12 @@ export default function AdminDataImport() {
         {/* STEP 4: RESULTS */}
         {step === 4 && importResult && (
           <div className="space-y-6">
-            <Alert className="border-green-300 bg-green-50 dark:bg-green-900/20">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-800 dark:text-green-200">
+            <Alert className="border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10">
+              <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />
+              <AlertTitle className="text-[hsl(var(--success))]">
                 {t('dataImport.importComplete', 'Import Complete!')}
               </AlertTitle>
-              <AlertDescription className="text-green-700 dark:text-green-300">
+              <AlertDescription className="text-[hsl(var(--success))]">
                 {t('dataImport.importSummary', '{{inserted}} records inserted, {{updated}} updated', {
                   inserted: importResult.inserted,
                   updated: importResult.updated,
@@ -1483,27 +1483,27 @@ export default function AdminDataImport() {
             </Alert>
 
             <div className="grid gap-4 md:grid-cols-3">
-              <Card className="border-green-200 bg-green-50/50 dark:bg-green-900/10">
+              <Card className="border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/50">
                 <CardContent className="pt-6 text-center">
-                  <div className="text-3xl font-bold text-green-600">{importResult.inserted}</div>
+                  <div className="text-3xl font-bold text-[hsl(var(--success))]">{importResult.inserted}</div>
                   <div className="text-sm text-muted-foreground">{t('dataImport.recordsInserted', 'Records Inserted')}</div>
                 </CardContent>
               </Card>
-              <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-900/10">
+              <Card className="border-[hsl(var(--info))]/30 bg-[hsl(var(--info))]/50">
                 <CardContent className="pt-6 text-center">
-                  <div className="text-3xl font-bold text-blue-600">{importResult.updated}</div>
+                  <div className="text-3xl font-bold text-[hsl(var(--info))]">{importResult.updated}</div>
                   <div className="text-sm text-muted-foreground">{t('dataImport.recordsUpdated', 'Records Updated')}</div>
                 </CardContent>
               </Card>
               <Card className={cn(
                 importResult.errors.length > 0 
-                  ? 'border-red-200 bg-red-50/50 dark:bg-red-900/10' 
+                  ? 'border-destructive/30 bg-destructive/50' 
                   : 'border-border'
               )}>
                 <CardContent className="pt-6 text-center">
                   <div className={cn(
                     'text-3xl font-bold',
-                    importResult.errors.length > 0 ? 'text-red-600' : 'text-muted-foreground'
+                    importResult.errors.length > 0 ? 'text-destructive' : 'text-muted-foreground'
                   )}>
                     {importResult.errors.length}
                   </div>
@@ -1515,7 +1515,7 @@ export default function AdminDataImport() {
             {importResult.errors.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base text-red-600">
+                  <CardTitle className="text-base text-destructive">
                     <AlertTriangle className="h-4 w-4 inline mr-2" />
                     {t('dataImport.errorDetails', 'Error Details')}
                   </CardTitle>
@@ -1524,9 +1524,9 @@ export default function AdminDataImport() {
                   <ScrollArea className="h-[200px]">
                     <div className="space-y-2">
                       {importResult.errors.map((err, idx) => (
-                        <div key={idx} className="text-sm p-2 rounded bg-red-50 dark:bg-red-900/20 border border-red-200">
+                        <div key={idx} className="text-sm p-2 rounded bg-destructive/10 border border-destructive/30">
                           <span className="font-medium">Row #{err.rowIndex + 1}: {err.name}</span>
-                          <p className="text-red-600 text-xs">{err.error}</p>
+                          <p className="text-destructive text-xs">{err.error}</p>
                         </div>
                       ))}
                     </div>
@@ -1577,9 +1577,9 @@ function StatCard({
 }) {
   const colorClasses = {
     default: 'bg-muted text-muted-foreground',
-    green: 'bg-green-100 text-green-600 dark:bg-green-900/30',
-    red: 'bg-red-100 text-red-600 dark:bg-red-900/30',
-    yellow: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30',
+    green: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
+    red: 'bg-destructive/10 text-destructive',
+    yellow: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
   };
 
   return (

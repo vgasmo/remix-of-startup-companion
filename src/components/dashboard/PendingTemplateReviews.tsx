@@ -62,12 +62,12 @@ export function PendingTemplateReviews({ showEmpty = false }: PendingTemplateRev
   };
 
   return (
-    <Card className="border-amber-200 bg-amber-50/50 dark:bg-amber-900/10 dark:border-amber-800">
+    <Card className="border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/50 ">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-amber-600" />
+          <AlertCircle className="h-4 w-4 text-[hsl(var(--warning))]" />
           Templates Pending Review
-          <Badge variant="secondary" className="ml-auto bg-amber-100 text-amber-700">
+          <Badge variant="secondary" className="ml-auto bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]">
             {pendingReviews.length}
           </Badge>
         </CardTitle>
@@ -84,11 +84,11 @@ export function PendingTemplateReviews({ showEmpty = false }: PendingTemplateRev
               {...clickableProps(() => handleNavigate(review.workspace_id, templateName))}
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="p-2 rounded-md bg-amber-100 dark:bg-amber-900/30">
+                <div className="p-2 rounded-md bg-[hsl(var(--warning))]/10">
                   {isCanvas ? (
-                    <LayoutGrid className="h-4 w-4 text-amber-600" />
+                    <LayoutGrid className="h-4 w-4 text-[hsl(var(--warning))]" />
                   ) : (
-                    <FileText className="h-4 w-4 text-amber-600" />
+                    <FileText className="h-4 w-4 text-[hsl(var(--warning))]" />
                   )}
                 </div>
                 <div className="min-w-0">

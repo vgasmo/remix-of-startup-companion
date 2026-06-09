@@ -179,7 +179,7 @@ export function ContractReadinessChecklist({
         {alreadySent && (
           <div
             role="alert"
-            className="mt-3 flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-2.5 text-xs text-amber-900 dark:text-amber-200"
+            className="mt-3 flex items-start gap-2 rounded-md border border-[hsl(var(--warning))]/40 bg-[hsl(var(--warning))]/10 p-2.5 text-xs text-[hsl(var(--warning))]"
           >
             <ShieldAlert className="h-4 w-4 flex-shrink-0 mt-0.5" />
             <div className="leading-snug">

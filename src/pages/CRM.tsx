@@ -54,20 +54,20 @@ import type { FunnelItem, FunnelStage } from '@/hooks/useFunnel';
 import { logger } from '@/lib/logger';
 
 const STAGE_COLORS: Record<FunnelStage, string> = {
-  new: 'bg-slate-500',
-  first_contact_booked: 'bg-blue-500',
+  new: 'bg-muted',
+  first_contact_booked: 'bg-[hsl(var(--info))]',
   met: 'bg-indigo-500',
   qualified: 'bg-purple-500',
-  proposal_sent: 'bg-amber-500',
+  proposal_sent: 'bg-[hsl(var(--warning))]',
   negotiating: 'bg-orange-500',
   intake_requested: 'bg-cyan-500',
   intake_filling: 'bg-cyan-400',
   intake_submitted: 'bg-teal-500',
   intake_review: 'bg-teal-600',
-  intake_changes_requested: 'bg-yellow-500',
+  intake_changes_requested: 'bg-[hsl(var(--warning))]',
   approved_for_signature: 'bg-lime-500',
-  sent_for_signature: 'bg-green-400',
-  contracted: 'bg-green-500',
+  sent_for_signature: 'bg-[hsl(var(--success))]',
+  contracted: 'bg-[hsl(var(--success))]',
   incubating: 'bg-emerald-600',
   accelerating: 'bg-primary',
   rejected: 'bg-destructive',
@@ -356,7 +356,7 @@ export default function CRM() {
                 onCheckedChange={setFocusMode}
               />
               <Label htmlFor="focus-mode" className="text-sm cursor-pointer whitespace-nowrap flex items-center gap-1">
-                <Zap className={cn('h-3.5 w-3.5', focusMode && 'text-amber-500')} />
+                <Zap className={cn('h-3.5 w-3.5', focusMode && 'text-[hsl(var(--warning))]')} />
                 {t('crm.focusMode')}
               </Label>
             </div>
@@ -427,7 +427,7 @@ export default function CRM() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-amber-500" />
+                    <Zap className="h-4 w-4 text-[hsl(var(--warning))]" />
                     {t('crm.focusItems')}
                     <Badge variant="secondary" className="ml-auto">{focusItems.length}</Badge>
                   </CardTitle>
@@ -471,7 +471,7 @@ export default function CRM() {
                                   </Badge>
                                   {item.next_action_at && (
                                     <span className={cn(
-                                      new Date(item.next_action_at) < new Date() && 'text-amber-600 dark:text-amber-400 font-medium'
+                                      new Date(item.next_action_at) < new Date() && 'text-[hsl(var(--warning))] font-medium'
                                     )}>
                                       {formatRelativeTime(item.next_action_at)}
                                     </span>
@@ -513,21 +513,21 @@ export default function CRM() {
                   title={t('crm.overdue')} 
                   items={inbox?.overdue || []} 
                   icon={AlertTriangle}
-                  iconColor="text-amber-500"
+                  iconColor="text-[hsl(var(--warning))]"
                   onOpenDrawer={handleOpenDrawer}
                 />
                 <InboxGroup 
                   title={t('crm.today')} 
                   items={inbox?.today || []} 
                   icon={Clock}
-                  iconColor="text-amber-500"
+                  iconColor="text-[hsl(var(--warning))]"
                   onOpenDrawer={handleOpenDrawer}
                 />
                 <InboxGroup 
                   title={t('crm.upcoming')} 
                   items={inbox?.upcoming || []} 
                   icon={Calendar}
-                  iconColor="text-blue-500"
+                  iconColor="text-[hsl(var(--info))]"
                   onOpenDrawer={handleOpenDrawer}
                 />
                 <InboxGroup 
@@ -563,13 +563,13 @@ export default function CRM() {
                 <TaskGroup 
                   title={t('crm.today')} 
                   tasks={tasksDue?.today || []} 
-                  iconColor="text-amber-500"
+                  iconColor="text-[hsl(var(--warning))]"
                   onComplete={(id) => completeTask.mutate({ taskId: id })}
                 />
                 <TaskGroup 
                   title={t('crm.upcoming')} 
                   tasks={tasksDue?.upcoming || []} 
-                  iconColor="text-blue-500"
+                  iconColor="text-[hsl(var(--info))]"
                   onComplete={(id) => completeTask.mutate({ taskId: id })}
                 />
               </div>
@@ -739,7 +739,7 @@ function TaskGroup({
                       className={cn(
                         'text-xs shrink-0',
                         task.priority === 'high' && 'border-destructive text-destructive',
-                        task.priority === 'medium' && 'border-amber-500 text-amber-500',
+                        task.priority === 'medium' && 'border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))]',
                       )}
                     >
                       {t(`crm.${task.priority}`)}

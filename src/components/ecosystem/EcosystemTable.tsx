@@ -272,7 +272,7 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
                     {item.has_startup_portugal_status && (
                       <Badge
                         variant="outline"
-                        className="text-xs border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                        className="text-xs border-[hsl(var(--success))]/30 text-[hsl(var(--success))] "
                         title={t('ecosystem.startupPortugalBadge', { defaultValue: 'Estatuto Startup Portugal' })}
                       >
                         <ShieldCheck className="h-3 w-3 mr-1" />

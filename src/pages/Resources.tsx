@@ -51,7 +51,7 @@ function ResourceCard({ r, favs, onToggleFav, lang }: { r: ResourceItem; favs: s
             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{desc}</p>
           </div>
           <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => onToggleFav(r.id)}>
-            {isFav ? <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" /> : <StarOff className="h-3.5 w-3.5 text-muted-foreground" />}
+            {isFav ? <Star className="h-3.5 w-3.5 text-[hsl(var(--warning))] fill-amber-500" /> : <StarOff className="h-3.5 w-3.5 text-muted-foreground" />}
           </Button>
         </div>
         <div className="flex flex-wrap gap-1 mt-1">

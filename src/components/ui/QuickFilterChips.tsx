@@ -22,15 +22,15 @@ export function QuickFilterChips({ filters, onToggle, className }: QuickFilterCh
   const variantStyles = {
     default: 'bg-secondary hover:bg-secondary/80 text-secondary-foreground',
     destructive: 'bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/20',
-    warning: 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 border-amber-500/20',
-    success: 'bg-green-500/10 hover:bg-green-500/20 text-green-600 border-green-500/20',
+    warning: 'bg-[hsl(var(--warning))]/10 hover:bg-[hsl(var(--warning))]/20 text-[hsl(var(--warning))] border-[hsl(var(--warning))]/20',
+    success: 'bg-[hsl(var(--success))]/10 hover:bg-[hsl(var(--success))]/20 text-[hsl(var(--success))] border-[hsl(var(--success))]/20',
   };
 
   const activeStyles = {
     default: 'bg-primary text-primary-foreground hover:bg-primary/90',
     destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-    warning: 'bg-amber-500 text-white hover:bg-amber-600',
-    success: 'bg-green-500 text-white hover:bg-green-600',
+    warning: 'bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]',
+    success: 'bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]',
   };
 
   return (

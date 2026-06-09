@@ -129,10 +129,10 @@ const typeIcons = {
 };
 
 const typeColors = {
-  session: 'bg-blue-500/10 text-blue-600',
-  action: 'bg-green-500/10 text-green-600',
+  session: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
+  action: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
   kpi: 'bg-purple-500/10 text-purple-600',
-  milestone: 'bg-amber-500/10 text-amber-600',
+  milestone: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
   meeting: 'bg-pink-500/10 text-pink-600',
 };
 

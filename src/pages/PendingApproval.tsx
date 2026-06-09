@@ -59,8 +59,8 @@ export default function PendingApproval() {
             />
           </div>
           <div className="flex justify-center">
-            <div className="p-4 rounded-full bg-amber-100 dark:bg-amber-900/30">
-              <Clock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+            <div className="p-4 rounded-full bg-[hsl(var(--warning))]/10">
+              <Clock className="h-8 w-8 text-[hsl(var(--warning))]" />
             </div>
           </div>
           <CardTitle className="text-2xl">{t('approval.pendingTitle', 'Account Pending Approval')}</CardTitle>

@@ -172,8 +172,8 @@ const MOCK_EVENTS: EcosystemEvent[] = [
 function AnnouncementCard({ item }: { item: Announcement }) {
   const categoryConfig = {
     perk: { color: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400', icon: Gift, label: 'Parceria' },
-    news: { color: 'bg-blue-500/10 text-blue-700 dark:text-blue-400', icon: Megaphone, label: 'Novidade' },
-    update: { color: 'bg-amber-500/10 text-amber-700 dark:text-amber-400', icon: Sparkles, label: 'Atualização' },
+    news: { color: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]', icon: Megaphone, label: 'Novidade' },
+    update: { color: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]', icon: Sparkles, label: 'Atualização' },
   };
   const cfg = categoryConfig[item.category];
   const Icon = cfg.icon;
@@ -267,8 +267,8 @@ function EventRow({ item }: { item: EcosystemEvent }) {
   const eventDate = new Date(item.date);
   const typeConfig = {
     workshop: { color: 'bg-violet-500', label: 'Workshop' },
-    networking: { color: 'bg-sky-500', label: 'Networking' },
-    pitch: { color: 'bg-rose-500', label: 'Pitch Day' },
+    networking: { color: 'bg-[hsl(var(--info))]', label: 'Networking' },
+    pitch: { color: 'bg-destructive', label: 'Pitch Day' },
     meetup: { color: 'bg-emerald-500', label: 'Meetup' },
   };
   const cfg = typeConfig[item.type];

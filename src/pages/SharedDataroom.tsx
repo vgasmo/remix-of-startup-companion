@@ -147,8 +147,8 @@ export default function SharedDataroom() {
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0 p-3 rounded-lg bg-muted">
-                      {item.type === 'document' && <FileText className="h-6 w-6 text-blue-500" />}
-                      {item.type === 'investor_update' && <TrendingUp className="h-6 w-6 text-green-500" />}
+                      {item.type === 'document' && <FileText className="h-6 w-6 text-[hsl(var(--info))]" />}
+                      {item.type === 'investor_update' && <TrendingUp className="h-6 w-6 text-[hsl(var(--success))]" />}
                       {item.type === 'link' && <Link2 className="h-6 w-6 text-purple-500" />}
                     </div>
                     

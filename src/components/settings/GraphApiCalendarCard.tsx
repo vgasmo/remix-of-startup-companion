@@ -114,7 +114,7 @@ export function GraphApiCalendarCard({ workspaceId, canEdit = true }: GraphApiCa
           <Calendar className="h-5 w-5 text-[#0078D4]" />
           Microsoft Graph API
           {isEnabled && isConfigured && (
-            <Badge variant="outline" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+            <Badge variant="outline" className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ">
               <CheckCircle2 className="h-3 w-3 mr-1" />
               {t('settings.connected', 'Ligado')}
             </Badge>
@@ -160,7 +160,7 @@ export function GraphApiCalendarCard({ workspaceId, canEdit = true }: GraphApiCa
         {/* Azure AD Identifiers (NO secrets) */}
         <div className="space-y-3 pt-3 border-t">
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-amber-500" />
+            <Shield className="h-4 w-4 text-[hsl(var(--warning))]" />
             <Label className="font-medium">{t('settings.azureAdAppRegistration', 'Registo de App Azure AD')}</Label>
           </div>
           
@@ -191,9 +191,9 @@ export function GraphApiCalendarCard({ workspaceId, canEdit = true }: GraphApiCa
           </div>
 
           {/* Security notice about client secret */}
-          <Alert className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
-            <Shield className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <AlertDescription className="text-xs text-amber-700 dark:text-amber-300">
+          <Alert className="bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/30">
+            <Shield className="h-4 w-4 text-[hsl(var(--warning))]" />
+            <AlertDescription className="text-xs text-[hsl(var(--warning))]">
               <strong>Client Secret</strong> {t('settings.clientSecretNote', 'é configurado server-side como variável de ambiente (MS_GRAPH_CLIENT_SECRET) e nunca é armazenado na base de dados. Contacte o administrador para configurar.')}
             </AlertDescription>
           </Alert>
@@ -279,8 +279,8 @@ export function GraphApiCalendarCard({ workspaceId, canEdit = true }: GraphApiCa
 
         {/* What this unlocks */}
         {isEnabled && isConfigured && (
-          <div className="text-xs text-muted-foreground bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 space-y-1">
-            <p className="font-medium text-green-700 dark:text-green-400">🎉 {t('settings.integrationActive', 'Integração ativa!')}</p>
+          <div className="text-xs text-muted-foreground bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/30 rounded-lg p-3 space-y-1">
+            <p className="font-medium text-[hsl(var(--success))]">🎉 {t('settings.integrationActive', 'Integração ativa!')}</p>
             <p>{t('settings.whenScheduleSession', 'Quando agenda uma sessão, o sistema vai automaticamente:')}</p>
             <ul className="list-disc list-inside space-y-0.5 ml-2">
               <li>{t('settings.createOutlookEvent', 'Criar um evento Outlook')}</li>

@@ -54,18 +54,18 @@ export function MentorNdaStatus() {
   const isAccepted = !!ndaAcceptance;
 
   return (
-    <Card className={isAccepted ? 'border-green-200 bg-green-50/30 dark:border-green-900 dark:bg-green-950/10' : 'border-amber-200 bg-amber-50/30 dark:border-amber-900 dark:bg-amber-950/10'}>
+    <Card className={isAccepted ? 'border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/30 ' : 'border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/30 '}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             {isAccepted ? (
-              <ShieldCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <ShieldCheck className="h-5 w-5 text-[hsl(var(--success))]" />
             ) : (
-              <ShieldAlert className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              <ShieldAlert className="h-5 w-5 text-[hsl(var(--warning))]" />
             )}
             {t('mentorNda.statusTitle')}
           </CardTitle>
-          <Badge variant={isAccepted ? 'secondary' : 'outline'} className={isAccepted ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : ''}>
+          <Badge variant={isAccepted ? 'secondary' : 'outline'} className={isAccepted ? 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ' : ''}>
             {isAccepted ? t('mentorNda.accepted') : t('mentorNda.pending')}
           </Badge>
         </div>

@@ -259,7 +259,7 @@ export default function SearchPage() {
                 {t('search.showAllStatuses', { defaultValue: 'Incluir importadas, pendentes e claims' })}
               </Label>
               {showAllStatuses && (
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:text-amber-400">
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))]">
                   {t('search.allStatusesActive', { defaultValue: 'Âmbito alargado' })}
                 </Badge>
               )}

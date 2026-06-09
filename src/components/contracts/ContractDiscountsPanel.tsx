@@ -125,8 +125,8 @@ export function ContractDiscountsPanel({ contractId, monthlyFee, currency = 'EUR
                 variant="outline" 
                 className={cn(
                   'text-[10px] h-5',
-                  status === 'active' && 'bg-amber-500/15 text-amber-700 border-amber-200',
-                  status === 'future' && 'bg-blue-500/15 text-blue-700 border-blue-200',
+                  status === 'active' && 'bg-[hsl(var(--warning))]/15 text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30',
+                  status === 'future' && 'bg-[hsl(var(--info))]/15 text-[hsl(var(--info))] border-[hsl(var(--info))]/30',
                   status === 'expired' && 'bg-muted text-muted-foreground',
                 )}
               >
@@ -146,7 +146,7 @@ export function ContractDiscountsPanel({ contractId, monthlyFee, currency = 'EUR
           );
         })}
         {activeDiscount && monthlyFee && (
-          <p className="text-[10px] text-amber-600 font-medium">
+          <p className="text-[10px] text-[hsl(var(--warning))] font-medium">
             {t('discounts.effectiveFee')}: {effectiveFee?.toFixed(0)} {currency}/{t('common.month', { defaultValue: 'month' })}
           </p>
         )}
@@ -159,7 +159,7 @@ export function ContractDiscountsPanel({ contractId, monthlyFee, currency = 'EUR
       <CardHeader className="pb-2 pt-3 px-4">
         <CardTitle className="text-sm font-semibold flex items-center justify-between">
           <span className="flex items-center gap-1.5">
-            <Percent className="h-4 w-4 text-amber-600" />
+            <Percent className="h-4 w-4 text-[hsl(var(--warning))]" />
             {t('discounts.title')}
           </span>
           {isAdmin && !showAddForm && (
@@ -176,10 +176,10 @@ export function ContractDiscountsPanel({ contractId, monthlyFee, currency = 'EUR
       <CardContent className="px-4 pb-3 space-y-2">
         {/* Active discount summary */}
         {activeDiscount && monthlyFee && (
-          <div className="bg-amber-500/10 rounded-md p-2 flex items-center gap-2">
-            <AlertCircle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
+          <div className="bg-[hsl(var(--warning))]/10 rounded-md p-2 flex items-center gap-2">
+            <AlertCircle className="h-3.5 w-3.5 text-[hsl(var(--warning))] flex-shrink-0" />
             <div className="text-xs">
-              <span className="font-medium text-amber-700">
+              <span className="font-medium text-[hsl(var(--warning))]">
                 {t('discounts.activeDiscount')}: {activeDiscount.discount_percentage}%
               </span>
               <span className="text-muted-foreground ml-1">
@@ -198,8 +198,8 @@ export function ContractDiscountsPanel({ contractId, monthlyFee, currency = 'EUR
               return (
                 <div key={d.id} className={cn(
                   'flex items-center justify-between p-2 rounded-md border text-xs',
-                  status === 'active' && 'border-amber-200 bg-amber-500/5',
-                  status === 'future' && 'border-blue-200 bg-blue-500/5',
+                  status === 'active' && 'border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/5',
+                  status === 'future' && 'border-[hsl(var(--info))]/30 bg-[hsl(var(--info))]/5',
                   status === 'expired' && 'border-border bg-muted/30 opacity-60',
                 )}>
                   <div className="flex items-center gap-2 min-w-0">
@@ -207,8 +207,8 @@ export function ContractDiscountsPanel({ contractId, monthlyFee, currency = 'EUR
                       variant="outline" 
                       className={cn(
                         'text-[10px] h-5 flex-shrink-0',
-                        status === 'active' && 'bg-amber-500/15 text-amber-700',
-                        status === 'future' && 'bg-blue-500/15 text-blue-700',
+                        status === 'active' && 'bg-[hsl(var(--warning))]/15 text-[hsl(var(--warning))]',
+                        status === 'future' && 'bg-[hsl(var(--info))]/15 text-[hsl(var(--info))]',
                         status === 'expired' && 'text-muted-foreground',
                       )}
                     >

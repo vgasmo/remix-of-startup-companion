@@ -32,9 +32,9 @@ const STAGE_ORDER: StartupStage[] = ['ideation', 'validation', 'mvp', 'growth', 
 
 const STAGE_CONFIG: Record<StartupStage, { icon: typeof Lightbulb; color: string; label: string }> = {
   ideation: { icon: Lightbulb, color: 'text-purple-500', label: 'Ideation' },
-  validation: { icon: Search, color: 'text-blue-500', label: 'Validation' },
-  mvp: { icon: Hammer, color: 'text-amber-500', label: 'MVP' },
-  growth: { icon: TrendingUp, color: 'text-green-500', label: 'Growth' },
+  validation: { icon: Search, color: 'text-[hsl(var(--info))]', label: 'Validation' },
+  mvp: { icon: Hammer, color: 'text-[hsl(var(--warning))]', label: 'MVP' },
+  growth: { icon: TrendingUp, color: 'text-[hsl(var(--success))]', label: 'Growth' },
   scale: { icon: Rocket, color: 'text-primary', label: 'Scale' },
 };
 

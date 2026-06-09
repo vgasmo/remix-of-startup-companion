@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
+// intentional: A/B/C taxonomy palette — distinct hue per ecosystem category, not state semantics
 const CATEGORY_CONFIG: Record<string, { label: string; className: string }> = {
   A: {
     label: 'A',

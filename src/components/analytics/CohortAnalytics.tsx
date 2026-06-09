@@ -312,13 +312,13 @@ export function CohortAnalytics() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">{t('analytics.criticalAtRisk', 'Crítico/Em Risco')}</span>
-                      <p className="font-medium text-red-500">
+                      <p className="font-medium text-destructive">
                         {program.healthDistribution.critical + program.healthDistribution.at_risk}
                       </p>
                     </div>
                     <div>
                       <span className="text-muted-foreground">{t('analytics.healthyThriving', 'Saudável/Excelente')}</span>
-                      <p className="font-medium text-green-500">
+                      <p className="font-medium text-[hsl(var(--success))]">
                         {program.healthDistribution.healthy + program.healthDistribution.thriving}
                       </p>
                     </div>

@@ -120,8 +120,8 @@ export function SuccessCelebration({
 
           {/* Check mark */}
           <div className="mt-6 flex justify-center">
-            <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center">
-              <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <div className="h-8 w-8 rounded-full bg-[hsl(var(--success))]/10 flex items-center justify-center">
+              <CheckCircle2 className="h-5 w-5 text-[hsl(var(--success))]" />
             </div>
           </div>
 

@@ -45,7 +45,7 @@ const VARIANT_CONFIG: Record<Variant, {
   },
   'intake-state': {
     icon: FileSignature,
-    cls: 'bg-sky-500/10 text-sky-700 border-sky-500/30 dark:text-sky-300',
+    cls: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] border-[hsl(var(--info))]/30',
     i18nLabelKey: 'provenance.intakeState.label',
     i18nDescKey: 'provenance.intakeState.desc',
     defaultLabel: 'Estado intake',
@@ -61,7 +61,7 @@ const VARIANT_CONFIG: Record<Variant, {
   },
   'archive-status': {
     icon: Archive,
-    cls: 'bg-amber-500/10 text-amber-800 border-amber-500/30 dark:text-amber-300',
+    cls: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30',
     i18nLabelKey: 'provenance.archiveStatus.label',
     i18nDescKey: 'provenance.archiveStatus.desc',
     defaultLabel: 'Cópia SharePoint — não canónica',

@@ -69,12 +69,12 @@ export function KpiTrendChart({ data, targetValue, unit, direction = 'up', kpiNa
   );
 
   return (
-    <Card className={isBelowTarget ? 'border-amber-200 dark:border-amber-800' : ''}>
+    <Card className={isBelowTarget ? 'border-[hsl(var(--warning))]/30' : ''}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium truncate">{kpiName}</CardTitle>
           {trend !== 'flat' && (
-            <div className={`flex items-center gap-1 text-xs ${isGoodTrend ? 'text-green-600' : 'text-destructive'}`}>
+            <div className={`flex items-center gap-1 text-xs ${isGoodTrend ? 'text-[hsl(var(--success))]' : 'text-destructive'}`}>
               <TrendIcon className="h-3.5 w-3.5" />
               <span>{trendPercent.toFixed(0)}%</span>
             </div>
@@ -89,7 +89,7 @@ export function KpiTrendChart({ data, targetValue, unit, direction = 'up', kpiNa
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Target className="h-3 w-3" />
                 <span>Target: {formatValue(targetValue)}</span>
-                {isBelowTarget && <AlertTriangle className="h-3 w-3 text-amber-500 ml-1" />}
+                {isBelowTarget && <AlertTriangle className="h-3 w-3 text-[hsl(var(--warning))] ml-1" />}
               </div>
             )}
           </div>

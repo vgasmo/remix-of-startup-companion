@@ -20,7 +20,7 @@ export function OfflineBadge() {
       if (wasOffline.current) {
         wasOffline.current = false;
         notify.success(t('offline.backOnline', { defaultValue: 'Back online! Syncing your data...' }), {
-          icon: <Wifi className="h-4 w-4 text-green-500" />,
+          icon: <Wifi className="h-4 w-4 text-[hsl(var(--success))]" />,
           duration: 3000,
         });
       }

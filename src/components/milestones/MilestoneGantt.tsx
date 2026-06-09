@@ -18,7 +18,7 @@ interface MilestoneGanttProps {
 const STATUS_COLORS = {
   not_started: 'bg-muted',
   in_progress: 'bg-primary',
-  completed: 'bg-green-500',
+  completed: 'bg-[hsl(var(--success))]',
   delayed: 'bg-destructive',
 };
 

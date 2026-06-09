@@ -130,7 +130,7 @@ export function TeamsIntegrationCard({ workspaceId, programId, canEdit }: TeamsI
           <TeamsIcon className="h-5 w-5 text-[#6264A7]" />
           Microsoft Teams
           {isEnabled && hasWebhook && (
-            <Badge variant="outline" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+            <Badge variant="outline" className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ">
               <CheckCircle2 className="h-3 w-3 mr-1" />
               {t('settings.connected', 'Ligado')}
             </Badge>

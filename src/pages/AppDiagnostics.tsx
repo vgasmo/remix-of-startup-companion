@@ -378,7 +378,7 @@ export default function AppDiagnostics() {
                         <div className="min-w-0 flex-1">
                           <span className="text-sm font-medium">{test.name}</span>
                           {test.message && (
-                            <p className={`text-xs truncate ${test.status === 'fail' ? 'text-red-500' : 'text-muted-foreground'}`}>
+                            <p className={`text-xs truncate ${test.status === 'fail' ? 'text-destructive' : 'text-muted-foreground'}`}>
                               {test.message}
                             </p>
                           )}
