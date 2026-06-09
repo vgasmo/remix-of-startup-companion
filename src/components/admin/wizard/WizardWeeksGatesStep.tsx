@@ -821,7 +821,7 @@ export function WizardWeeksGatesStep({ gates: initialGates, weeks: initialWeeks,
                             </SelectContent>
                           </Select>
                         </div>
-                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeDeliverable(originalIdx, delIdx)}>
+                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeDeliverable(originalIdx, delIdx)} aria-label={t('common.remove', { defaultValue: 'Remover' })}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
