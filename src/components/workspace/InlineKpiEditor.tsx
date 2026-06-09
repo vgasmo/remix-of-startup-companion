@@ -147,7 +147,7 @@ export function InlineKpiEditor({ workspaceId, className }: InlineKpiEditorProps
     return (
       <Card className={className}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">KPIs do Mês</CardTitle>
+          <CardTitle className="text-sm font-medium">{t('kpis.monthTitle', { defaultValue: 'KPIs do Mês' })}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">

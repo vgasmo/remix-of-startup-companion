@@ -519,7 +519,7 @@ export function UnitEconomicsCalculator({ workspaceId }: UnitEconomicsCalculator
               <div className="p-3 rounded-lg bg-muted/50 space-y-1">
                 <div className="font-medium flex items-center gap-2">
                   <GlossaryTooltip term="ltvCacRatio" showIcon={false}>
-                    <span className="cursor-help underline decoration-dotted">Rácio LTV:CAC</span>
+                    <span className="cursor-help underline decoration-dotted">{t('unitEconomics.ltvCacRatio', { defaultValue: 'Rácio LTV:CAC' })}</span>
                   </GlossaryTooltip>
                 </div>
                 <p className="text-xs text-muted-foreground">{t('unitEconomics.ltvCacExplanation')}</p>
