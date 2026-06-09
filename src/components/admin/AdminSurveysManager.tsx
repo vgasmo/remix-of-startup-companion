@@ -63,9 +63,9 @@ import { SurveyResponsesViewer } from "./SurveyResponsesViewer";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
-  active: "bg-green-500/20 text-green-700 dark:text-green-400",
+  active: "bg-[hsl(var(--success))]/20 text-[hsl(var(--success))]",
   closed: "bg-orange-500/20 text-orange-700 dark:text-orange-400",
-  archived: "bg-gray-500/20 text-gray-700 dark:text-gray-400",
+  archived: "bg-muted/20 text-muted-foreground",
 };
 
 export function AdminSurveysManager() {
@@ -268,9 +268,9 @@ function CampaignCard({
             </div>
             <Progress value={stats.completionRate} />
             <div className="flex gap-4 text-xs text-muted-foreground">
-              <span className="text-green-600">● {stats.submitted} submitted</span>
-              <span className="text-yellow-600">● {stats.inProgress} in progress</span>
-              <span className="text-gray-400">● {stats.pending} pending</span>
+              <span className="text-[hsl(var(--success))]">● {stats.submitted} submitted</span>
+              <span className="text-[hsl(var(--warning))]">● {stats.inProgress} in progress</span>
+              <span className="text-muted-foreground">● {stats.pending} pending</span>
             </div>
           </div>
         )}

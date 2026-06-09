@@ -568,7 +568,7 @@ export function AdminWorkspacesManager() {
                             {t('admin.workspacesManager.blockedStatus')}
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-green-600 border-green-600 gap-1">
+                          <Badge variant="outline" className="text-[hsl(var(--success))] border-[hsl(var(--success))]/30 gap-1">
                             <CheckCircle className="h-3 w-3" />
                             {t('admin.workspacesManager.activeStatus')}
                           </Badge>

@@ -204,7 +204,7 @@ export function AdminUsersManager() {
                         </Link>
                         {isAdmin && <Badge variant="destructive">{t('roles.admin')}</Badge>}
                         {isSuspended && <Badge variant="outline" className="border-destructive text-destructive">{t('admin.userManagement.statusSuspended', { defaultValue: 'Suspensa' })}</Badge>}
-                        {isPending && <Badge variant="outline" className="border-amber-500 text-amber-600">{t('admin.userManagement.statusPending', { defaultValue: 'Pendente' })}</Badge>}
+                        {isPending && <Badge variant="outline" className="border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))]">{t('admin.userManagement.statusPending', { defaultValue: 'Pendente' })}</Badge>}
                       </div>
                       <div className="flex items-center justify-between">
                         <p className="text-sm text-muted-foreground">{profile.email}</p>

@@ -538,8 +538,8 @@ function PitchDeckLink({ path, t }: { path: string; t: (key: string, opts?: any)
 
 const CATEGORIES = [
   { value: 'A', label: 'A — Alto Potencial', color: 'text-emerald-600' },
-  { value: 'B', label: 'B — Médio Potencial', color: 'text-blue-600' },
-  { value: 'C', label: 'C — Baixo Potencial', color: 'text-amber-600' },
+  { value: 'B', label: 'B — Médio Potencial', color: 'text-[hsl(var(--info))]' },
+  { value: 'C', label: 'C — Baixo Potencial', color: 'text-[hsl(var(--warning))]' },
 ] as const;
 
 function StartupCategorySelector({ workspaceId }: { workspaceId: string }) {

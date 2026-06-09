@@ -145,7 +145,7 @@ export function SessionAISuggestions({ sessionNotes, workspaceId, onApplySuggest
           <TabsContent value="decisions" className="space-y-2">
             {suggestions.keyDecisions.map((decision, i) => (
               <div key={i} className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg">
-                <Check className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                <Check className="h-4 w-4 text-[hsl(var(--success))] mt-0.5 shrink-0" />
                 <span className="text-sm flex-1">{decision}</span>
                 <Button
                   variant="ghost"
@@ -154,7 +154,7 @@ export function SessionAISuggestions({ sessionNotes, workspaceId, onApplySuggest
                   onClick={() => handleCopy(decision, `decision-${i}`)}
                 >
                   {copiedItem === `decision-${i}` ? (
-                    <Check className="h-3 w-3 text-green-600" />
+                    <Check className="h-3 w-3 text-[hsl(var(--success))]" />
                   ) : (
                     <Copy className="h-3 w-3" />
                   )}
@@ -184,7 +184,7 @@ export function SessionAISuggestions({ sessionNotes, workspaceId, onApplySuggest
                   onClick={() => handleCopy(action, `action-${i}`)}
                 >
                   {copiedItem === `action-${i}` ? (
-                    <Check className="h-3 w-3 text-green-600" />
+                    <Check className="h-3 w-3 text-[hsl(var(--success))]" />
                   ) : (
                     <Copy className="h-3 w-3" />
                   )}
@@ -196,8 +196,8 @@ export function SessionAISuggestions({ sessionNotes, workspaceId, onApplySuggest
           <TabsContent value="risks" className="space-y-2">
             {suggestions.risks.length > 0 ? (
               suggestions.risks.map((risk, i) => (
-                <div key={i} className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                <div key={i} className="flex items-start gap-2 p-3 bg-[hsl(var(--warning))]/10 rounded-lg border border-[hsl(var(--warning))]/30">
+                  <AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))] mt-0.5 shrink-0" />
                   <span className="text-sm flex-1">{risk}</span>
                 </div>
               ))
@@ -212,7 +212,7 @@ export function SessionAISuggestions({ sessionNotes, workspaceId, onApplySuggest
         {suggestions.followUpQuestions.length > 0 && (
           <div className="mt-4 pt-4 border-t">
             <div className="flex items-center gap-2 mb-3">
-              <Lightbulb className="h-4 w-4 text-amber-500" />
+              <Lightbulb className="h-4 w-4 text-[hsl(var(--warning))]" />
               <span className="text-sm font-medium">{t('sessions.followUpQuestions')}</span>
             </div>
             <div className="space-y-2">

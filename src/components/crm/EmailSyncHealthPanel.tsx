@@ -30,9 +30,9 @@ export function EmailSyncHealthPanel({ allConsultants = false, compact = false }
   const status = statuses?.[0];
 
   const stateIcon = (state: string) => {
-    if (state === 'syncing') return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
+    if (state === 'syncing') return <RefreshCw className="h-4 w-4 text-[hsl(var(--info))] animate-spin" />;
     if (state === 'error') return <XCircle className="h-4 w-4 text-destructive" />;
-    if (state === 'idle' && status?.last_success_at) return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+    if (state === 'idle' && status?.last_success_at) return <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />;
     return <Clock className="h-4 w-4 text-muted-foreground" />;
   };
 
@@ -114,11 +114,11 @@ export function EmailSyncHealthPanel({ allConsultants = false, compact = false }
                   <p className="text-[10px] text-muted-foreground">{t('crm.processed', { defaultValue: 'Processados' })}</p>
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-green-600">{s.emails_logged}</p>
+                  <p className="text-lg font-semibold text-[hsl(var(--success))]">{s.emails_logged}</p>
                   <p className="text-[10px] text-muted-foreground">{t('crm.logged', { defaultValue: 'Registados' })}</p>
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-amber-500">{s.emails_unmatched}</p>
+                  <p className="text-lg font-semibold text-[hsl(var(--warning))]">{s.emails_unmatched}</p>
                   <p className="text-[10px] text-muted-foreground">{t('crm.unmatched', { defaultValue: 'Por resolver' })}</p>
                 </div>
                 <div>

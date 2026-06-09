@@ -16,9 +16,9 @@ const entityIcons: Record<string, React.ReactNode> = {
 };
 
 const actionColors: Record<string, string> = {
-  created: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  updated: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  deleted: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+  created: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ',
+  updated: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ',
+  deleted: 'bg-destructive/10 text-destructive ',
   completed: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
 };
 
@@ -95,7 +95,7 @@ export function ActivityLogViewer({ workspaceId, maxHeight = '400px' }: Activity
                       </span>
                       <Badge 
                         variant="secondary" 
-                        className={actionColors[activity.action] || 'bg-gray-100 text-gray-800'}
+                        className={actionColors[activity.action] || 'bg-muted text-foreground'}
                       >
                         {activity.action}
                       </Badge>

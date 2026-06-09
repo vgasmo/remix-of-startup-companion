@@ -253,7 +253,7 @@ export function SurveyTemplateEditor({ definitions }: SurveyTemplateEditorProps)
                                     {q.type}
                                   </Badge>
                                   {q.autoFillKey && (
-                                    <Badge className="text-xs bg-blue-500/20 text-blue-700">
+                                    <Badge className="text-xs bg-[hsl(var(--info))]/20 text-[hsl(var(--info))]">
                                       Auto
                                     </Badge>
                                   )}

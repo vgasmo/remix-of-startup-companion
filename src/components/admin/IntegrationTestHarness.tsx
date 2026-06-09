@@ -175,20 +175,20 @@ export function IntegrationTestHarness() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pass': return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-      case 'fail': return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'skip': return <AlertTriangle className="h-4 w-4 text-amber-500" />;
-      case 'pending': return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
+      case 'pass': return <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />;
+      case 'fail': return <XCircle className="h-4 w-4 text-destructive" />;
+      case 'skip': return <AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))]" />;
+      case 'pending': return <RefreshCw className="h-4 w-4 text-[hsl(var(--info))] animate-spin" />;
       default: return null;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pass': return <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">{t('tests.pass', 'Passou')}</Badge>;
+      case 'pass': return <Badge className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ">{t('tests.pass', 'Passou')}</Badge>;
       case 'fail': return <Badge variant="destructive">{t('tests.fail', 'Falhou')}</Badge>;
       case 'skip': return <Badge variant="secondary">{t('tests.skipped', 'Ignorado')}</Badge>;
-      case 'partial': return <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">{t('tests.partial', 'Parcial')}</Badge>;
+      case 'partial': return <Badge className="bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ">{t('tests.partial', 'Parcial')}</Badge>;
       default: return null;
     }
   };
@@ -219,7 +219,7 @@ export function IntegrationTestHarness() {
         {loadingLastRun ? (
           <Skeleton className="h-10 w-full" />
         ) : lastRun ? (
-          <Alert className={lastRun.overall_status === 'pass' ? 'border-green-500/50' : 'border-amber-500/50'}>
+          <Alert className={lastRun.overall_status === 'pass' ? 'border-[hsl(var(--success))]/50' : 'border-[hsl(var(--warning))]/50'}>
             <div className="flex items-center gap-2">
               {getStatusIcon(lastRun.overall_status)}
               <AlertDescription>
@@ -261,10 +261,10 @@ export function IntegrationTestHarness() {
 
         {testResults.some((r) => r.status === 'fail' && r.error) && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-red-600 dark:text-red-400">{t('common.errors', 'Erros')}</h4>
-            <ScrollArea className="h-32 rounded border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-900/20">
+            <h4 className="text-sm font-medium text-destructive">{t('common.errors', 'Erros')}</h4>
+            <ScrollArea className="h-32 rounded border border-destructive/30 bg-destructive/10 p-3 ">
               {testResults.filter((r) => r.status === 'fail' && r.error).map((r) => (
-                <div key={r.name} className="text-sm text-red-700 dark:text-red-400">
+                <div key={r.name} className="text-sm text-destructive">
                   <strong>{r.name}:</strong> {r.error}
                 </div>
               ))}

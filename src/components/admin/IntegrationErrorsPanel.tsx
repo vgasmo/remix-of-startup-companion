@@ -24,10 +24,10 @@ const integrationTypeLabels: Record<string, string> = {
 };
 
 const integrationTypeColors: Record<string, string> = {
-  outlook: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  outlook: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ',
   teams: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
   webhook: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-  email: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  email: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ',
 };
 
 interface IntegrationErrorsPanelProps {
@@ -85,7 +85,7 @@ export function IntegrationErrorsPanel({ compact = false, maxHeight = '300px' }:
       <CardContent className="pt-0 pb-3">
         {errorCount === 0 ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />
             {t('integrationErrors.allSmooth')}
           </div>
         ) : (

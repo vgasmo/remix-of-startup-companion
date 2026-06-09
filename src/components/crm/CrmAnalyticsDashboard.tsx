@@ -188,14 +188,14 @@ export function CrmAnalyticsDashboard({
           label={t('crm.analyticsDashboard.dueToday')}
           value={analytics.dueToday}
           subtext={t('crm.analyticsDashboard.dueTodayDesc')}
-          color="text-amber-600 dark:text-amber-400"
+          color="text-[hsl(var(--warning))]"
         />
         <MetricCard
           icon={CheckCircle2}
           label={t('crm.analyticsDashboard.converted30d')}
           value={analytics.contractedThisMonth}
           subtext={t('crm.analyticsDashboard.converted30dDesc')}
-          color="text-green-600 dark:text-green-400"
+          color="text-[hsl(var(--success))]"
         />
       </div>
 
@@ -265,8 +265,8 @@ export function CrmAnalyticsDashboard({
                           <ArrowRight className="h-4 w-4 text-muted-foreground" />
                           <span className={cn(
                             'text-xs font-medium',
-                            metric.conversionRate >= 50 ? 'text-green-600 dark:text-green-400' : 
-                            metric.conversionRate >= 25 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
+                            metric.conversionRate >= 50 ? 'text-[hsl(var(--success))]' : 
+                            metric.conversionRate >= 25 ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground'
                           )}>
                             {metric.conversionRate}%
                           </span>
@@ -279,7 +279,7 @@ export function CrmAnalyticsDashboard({
                       <Clock className="h-3 w-3 text-muted-foreground" />
                       <span className={cn(
                         'text-xs',
-                        isOverTargetTime ? 'text-amber-600' : 'text-muted-foreground'
+                        isOverTargetTime ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground'
                       )}>
                         {t('crm.analyticsDashboard.avgDaysInStage', { days: metric.avgDaysInStage })}
                         {isOverTargetTime && ` ${t('crm.analyticsDashboard.targetDays', { days: targetDays })}`}
@@ -303,31 +303,31 @@ export function CrmAnalyticsDashboard({
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-              <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+              <div className="w-10 h-10 rounded-full bg-destructive flex items-center justify-center">
                 <TrendingUp className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-red-700 dark:text-red-300">{analytics.hotLeads}</p>
-                <p className="text-xs text-red-600 dark:text-red-400">{t('crm.analyticsDashboard.hotLeads')}</p>
+                <p className="text-2xl font-bold text-destructive">{analytics.hotLeads}</p>
+                <p className="text-xs text-destructive">{t('crm.analyticsDashboard.hotLeads')}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-              <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-[hsl(var(--warning))]/10 border border-[hsl(var(--warning))]/30">
+              <div className="w-10 h-10 rounded-full bg-[hsl(var(--warning))] flex items-center justify-center">
                 <Activity className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">{analytics.warmLeads}</p>
-                <p className="text-xs text-amber-600 dark:text-amber-400">{t('crm.analyticsDashboard.warmLeads')}</p>
+                <p className="text-2xl font-bold text-[hsl(var(--warning))]">{analytics.warmLeads}</p>
+                <p className="text-xs text-[hsl(var(--warning))]">{t('crm.analyticsDashboard.warmLeads')}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-800">
-              <div className="w-10 h-10 rounded-full bg-slate-400 flex items-center justify-center">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted border border-border">
+              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
                 <TrendingDown className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-700 dark:text-slate-300">{analytics.coldLeads}</p>
-                <p className="text-xs text-slate-600 dark:text-slate-400">{t('crm.analyticsDashboard.coldLeads')}</p>
+                <p className="text-2xl font-bold text-muted-foreground">{analytics.coldLeads}</p>
+                <p className="text-xs text-muted-foreground">{t('crm.analyticsDashboard.coldLeads')}</p>
               </div>
             </div>
           </div>

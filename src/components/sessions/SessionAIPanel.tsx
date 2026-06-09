@@ -193,16 +193,16 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
   };
 
   const priorityColors: Record<string, string> = {
-    low: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-    medium: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    high: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    urgent: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    low: 'bg-muted text-muted-foreground ',
+    medium: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ',
+    high: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ',
+    urgent: 'bg-destructive/10 text-destructive ',
   };
 
   const severityColors: Record<string, string> = {
-    low: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    medium: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    high: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    low: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ',
+    medium: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ',
+    high: 'bg-destructive/10 text-destructive ',
   };
 
   return (
@@ -337,7 +337,7 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
                   <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-blue-500" />
+                        <FileText className="h-4 w-4 text-[hsl(var(--info))]" />
                         <CardTitle className="text-sm">{t('sessions.summary', 'Resumo')}</CardTitle>
                       </div>
                       {expandedSections.summary ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -361,7 +361,7 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
                   <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />
                         <CardTitle className="text-sm">{t('sessions.keyDecisions', 'Decisões-Chave')}</CardTitle>
                         <Badge variant="secondary" className="text-xs">{decisions.length}</Badge>
                       </div>
@@ -374,7 +374,7 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
                     <ul className="space-y-2">
                       {decisions.map((decision, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))] mt-0.5 flex-shrink-0" />
                           <span>{decision}</span>
                         </li>
                       ))}
@@ -393,7 +393,7 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
                   <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        <AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))]" />
                         <CardTitle className="text-sm">{t('sessions.risks', 'Riscos & Preocupações')}</CardTitle>
                         <Badge variant="secondary" className="text-xs">{risks.length}</Badge>
                       </div>
@@ -407,7 +407,7 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
                       {risks.map((risk, i) => (
                         <li key={i} className="flex items-start justify-between gap-2 text-sm">
                           <div className="flex items-start gap-2">
-                            <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                            <AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))] mt-0.5 flex-shrink-0" />
                             <span>{risk.risk}</span>
                           </div>
                           <Badge className={cn('text-xs', severityColors[risk.severity])}>{risk.severity}</Badge>
@@ -504,14 +504,14 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
           {/* KPI Prompts */}
           {kpiPrompts.length > 0 && (
             <Collapsible open={expandedSections.kpis} onOpenChange={() => toggleSection('kpis')}>
-              <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/30">
+              <Card className="border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/50 ">
                 <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-900/30 transition-colors pb-3">
+                  <CardHeader className="cursor-pointer hover:bg-[hsl(var(--warning))]/50 transition-colors pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Target className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                        <CardTitle className="text-sm text-amber-900 dark:text-amber-200">{t('sessions.kpisToUpdate', 'KPIs para Atualizar')}</CardTitle>
-                        <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400">{kpiPrompts.length}</Badge>
+                        <Target className="h-4 w-4 text-[hsl(var(--warning))]" />
+                        <CardTitle className="text-sm text-[hsl(var(--warning))]">{t('sessions.kpisToUpdate', 'KPIs para Atualizar')}</CardTitle>
+                        <Badge variant="outline" className="text-xs border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))] ">{kpiPrompts.length}</Badge>
                       </div>
                       {expandedSections.kpis ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </div>
@@ -522,10 +522,10 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
                     <ul className="space-y-3">
                       {kpiPrompts.map((kpi, i) => (
                         <li key={i} className="space-y-1">
-                          <div className="font-medium text-sm text-amber-900">{kpi.kpiName}</div>
-                          <p className="text-sm text-amber-700">{kpi.reason}</p>
+                          <div className="font-medium text-sm text-[hsl(var(--warning))]">{kpi.kpiName}</div>
+                          <p className="text-sm text-[hsl(var(--warning))]">{kpi.reason}</p>
                           {kpi.suggestedAction && (
-                            <p className="text-xs text-amber-600">💡 {kpi.suggestedAction}</p>
+                            <p className="text-xs text-[hsl(var(--warning))]">💡 {kpi.suggestedAction}</p>
                           )}
                         </li>
                       ))}

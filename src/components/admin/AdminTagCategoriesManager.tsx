@@ -35,10 +35,10 @@ interface Tag {
 }
 
 const COLOR_OPTIONS = [
-  { value: 'blue', label: 'Blue', class: 'bg-blue-500' },
-  { value: 'green', label: 'Green', class: 'bg-green-500' },
-  { value: 'red', label: 'Red', class: 'bg-red-500' },
-  { value: 'yellow', label: 'Yellow', class: 'bg-yellow-500' },
+  { value: 'blue', label: 'Blue', class: 'bg-[hsl(var(--info))]' },
+  { value: 'green', label: 'Green', class: 'bg-[hsl(var(--success))]' },
+  { value: 'red', label: 'Red', class: 'bg-destructive' },
+  { value: 'yellow', label: 'Yellow', class: 'bg-[hsl(var(--warning))]' },
   { value: 'purple', label: 'Purple', class: 'bg-purple-500' },
   { value: 'orange', label: 'Orange', class: 'bg-orange-500' },
   { value: 'pink', label: 'Pink', class: 'bg-pink-500' },
@@ -208,7 +208,7 @@ export function AdminTagCategoriesManager() {
   const getColorBadge = (color: string | null) => {
     if (!color) return null;
     const colorOpt = COLOR_OPTIONS.find(c => c.value === color);
-    return <span className={`inline-block h-3 w-3 rounded-full ${colorOpt?.class || 'bg-gray-400'}`} />;
+    return <span className={`inline-block h-3 w-3 rounded-full ${colorOpt?.class || 'bg-muted'}`} />;
   };
 
   const isLoading = loadingCategories || loadingTags;

@@ -114,8 +114,8 @@ function DocuSignSettingsCard() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-amber-500/10">
-              <FileSignature className="h-5 w-5 text-amber-600" />
+            <div className="p-2 rounded-lg bg-[hsl(var(--warning))]/10">
+              <FileSignature className="h-5 w-5 text-[hsl(var(--warning))]" />
             </div>
             <div>
               <CardTitle className="text-base">DocuSign</CardTitle>

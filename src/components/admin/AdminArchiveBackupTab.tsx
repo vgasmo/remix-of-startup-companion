@@ -79,7 +79,7 @@ function ContractArchiveStatus() {
   });
 
   const statusBadge = (status: string | null, attempts: number) => {
-    if (status === 'completed') return <Badge variant="default" className="bg-green-600"><CheckCircle2 className="h-3 w-3 mr-1" />{t('admin.archive.statusArchived')}</Badge>;
+    if (status === 'completed') return <Badge variant="default" className="bg-[hsl(var(--success))]"><CheckCircle2 className="h-3 w-3 mr-1" />{t('admin.archive.statusArchived')}</Badge>;
     if (status === 'uploading') return <Badge variant="secondary"><Loader2 className="h-3 w-3 mr-1 animate-spin" />{t('admin.archive.statusUploading')}</Badge>;
     if (status === 'failed') return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />{t('admin.archive.statusFailed')} ({attempts}x)</Badge>;
     return <Badge variant="outline"><Clock className="h-3 w-3 mr-1" />{t('admin.archive.statusPending')}</Badge>;
@@ -130,16 +130,16 @@ function ContractArchiveStatus() {
             <div className="text-2xl font-bold">{stats.total}</div>
             <div className="text-xs text-muted-foreground">{t('admin.archive.signedContracts')}</div>
           </div>
-          <div className="text-center p-3 rounded-lg bg-green-50 dark:bg-green-950/20">
-            <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
+          <div className="text-center p-3 rounded-lg bg-[hsl(var(--success))]/10">
+            <div className="text-2xl font-bold text-[hsl(var(--success))]">{stats.completed}</div>
             <div className="text-xs text-muted-foreground">{t('admin.archive.statusArchived')}</div>
           </div>
-          <div className="text-center p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/20">
-            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+          <div className="text-center p-3 rounded-lg bg-[hsl(var(--warning))]/10">
+            <div className="text-2xl font-bold text-[hsl(var(--warning))]">{stats.pending}</div>
             <div className="text-xs text-muted-foreground">{t('admin.archive.statusPending')}</div>
           </div>
-          <div className="text-center p-3 rounded-lg bg-red-50 dark:bg-red-950/20">
-            <div className="text-2xl font-bold text-red-600">{stats.failed}</div>
+          <div className="text-center p-3 rounded-lg bg-destructive/10">
+            <div className="text-2xl font-bold text-destructive">{stats.failed}</div>
             <div className="text-xs text-muted-foreground">{t('admin.archive.statusWithError')}</div>
           </div>
         </div>
@@ -246,7 +246,7 @@ function EcosystemSnapshotStatus() {
   });
 
   const statusBadge = (status: string) => {
-    if (status === 'completed') return <Badge variant="default" className="bg-green-600"><CheckCircle2 className="h-3 w-3 mr-1" />{t('admin.archive.snapshotCompleted')}</Badge>;
+    if (status === 'completed') return <Badge variant="default" className="bg-[hsl(var(--success))]"><CheckCircle2 className="h-3 w-3 mr-1" />{t('admin.archive.snapshotCompleted')}</Badge>;
     if (status === 'running') return <Badge variant="secondary"><Loader2 className="h-3 w-3 mr-1 animate-spin" />{t('admin.archive.snapshotRunning')}</Badge>;
     if (status === 'failed') return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />{t('admin.archive.snapshotFailed')}</Badge>;
     return <Badge variant="outline">{status}</Badge>;

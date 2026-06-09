@@ -96,7 +96,7 @@ export function SavedViewsDropdown({ viewType, currentFilters, onApplyView }: Sa
                   onClick={() => handleApply(view)}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    {view.is_default && <Star className="h-3 w-3 text-amber-500 flex-shrink-0" />}
+                    {view.is_default && <Star className="h-3 w-3 text-[hsl(var(--warning))] flex-shrink-0" />}
                     <span className="truncate">{view.name}</span>
                   </div>
                   <button

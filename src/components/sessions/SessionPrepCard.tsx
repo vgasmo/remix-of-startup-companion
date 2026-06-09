@@ -66,7 +66,7 @@ export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps
   const hasUrgentItems = overdueActions.length > 0 || overdueMilestones.length > 0;
 
   return (
-    <Card className={cn(hasUrgentItems && "border-amber-300 bg-amber-50/30 dark:bg-amber-950/10")}>
+    <Card className={cn(hasUrgentItems && "border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/30")}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -74,7 +74,7 @@ export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps
             <CardTitle className="text-base">{t('sessionPrep.title')}</CardTitle>
           </div>
           {hasUrgentItems && (
-            <Badge variant="outline" className="border-amber-500 text-amber-700 dark:text-amber-400">
+            <Badge variant="outline" className="border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))]">
               <AlertTriangle className="h-3 w-3 mr-1" />
               {t('sessionPrep.needsAttention')}
             </Badge>
@@ -120,7 +120,7 @@ export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps
           <Collapsible open={expandedSections.kpis} onOpenChange={() => toggleSection('kpis')}>
             <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded hover:bg-muted/50 transition-colors">
               <div className="flex items-center gap-2 text-sm font-medium">
-                <TrendingUp className="h-4 w-4 text-blue-500" />
+                <TrendingUp className="h-4 w-4 text-[hsl(var(--info))]" />
                 {t('sessionPrep.recentKpis')}
                 <Badge variant="secondary" className="text-xs">{data.recentKpis.length}</Badge>
               </div>
@@ -135,8 +135,8 @@ export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps
                       {kpi.trend && (
                         <span className={cn(
                           "flex items-center",
-                          kpi.trend === 'up' && "text-green-600",
-                          kpi.trend === 'down' && "text-red-600",
+                          kpi.trend === 'up' && "text-[hsl(var(--success))]",
+                          kpi.trend === 'down' && "text-destructive",
                           kpi.trend === 'stable' && "text-muted-foreground"
                         )}>
                           {kpi.trend === 'up' && <TrendingUp className="h-3 w-3" />}
@@ -181,18 +181,18 @@ export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps
                   key={action.id} 
                   className={cn(
                     "flex items-center justify-between p-2 rounded text-xs",
-                    action.isOverdue ? "bg-red-50 dark:bg-red-950/20" : "bg-muted/30"
+                    action.isOverdue ? "bg-destructive/10" : "bg-muted/30"
                   )}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    {action.isOverdue && <AlertTriangle className="h-3 w-3 text-red-500 flex-shrink-0" />}
+                    {action.isOverdue && <AlertTriangle className="h-3 w-3 text-destructive flex-shrink-0" />}
                     <span className="truncate">{action.title}</span>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {action.priority && (
                       <Badge variant="outline" className={cn("text-xs",
-                        action.priority === 'high' && "border-amber-500 text-amber-600",
-                        action.priority === 'urgent' && "border-red-500 text-red-600"
+                        action.priority === 'high' && "border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))]",
+                        action.priority === 'urgent' && "border-destructive/30 text-destructive"
                       )}>
                         {action.priority}
                       </Badge>
@@ -200,7 +200,7 @@ export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps
                     {action.due_date && (
                       <span className={cn(
                         "text-muted-foreground",
-                        action.isOverdue && "text-red-600"
+                        action.isOverdue && "text-destructive"
                       )}>
                         {format(new Date(action.due_date), 'MMM d')}
                       </span>
@@ -217,7 +217,7 @@ export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps
           <Collapsible open={expandedSections.milestones} onOpenChange={() => toggleSection('milestones')}>
             <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded hover:bg-muted/50 transition-colors">
               <div className="flex items-center gap-2 text-sm font-medium">
-                <Target className="h-4 w-4 text-green-600" />
+                <Target className="h-4 w-4 text-[hsl(var(--success))]" />
                 {t('sessionPrep.milestones')}
                 <Badge variant="secondary" className="text-xs">{data.milestones.length}</Badge>
                 {overdueMilestones.length > 0 && (
@@ -232,21 +232,21 @@ export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps
                   key={milestone.id}
                   className={cn(
                     "flex items-center justify-between p-2 rounded text-xs",
-                    milestone.isOverdue ? "bg-red-50 dark:bg-red-950/20" : "bg-muted/30"
+                    milestone.isOverdue ? "bg-destructive/10" : "bg-muted/30"
                   )}
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <div className={cn(
                       "h-2 w-2 rounded-full",
-                      milestone.status === 'in_progress' ? "bg-blue-500" :
-                      milestone.status === 'delayed' ? "bg-red-500" : "bg-gray-400"
+                      milestone.status === 'in_progress' ? "bg-[hsl(var(--info))]" :
+                      milestone.status === 'delayed' ? "bg-destructive" : "bg-muted"
                     )} />
                     <span className="truncate">{milestone.title}</span>
                   </div>
                   {milestone.target_date && (
                     <span className={cn(
                       "text-muted-foreground flex-shrink-0",
-                      milestone.isOverdue && "text-red-600"
+                      milestone.isOverdue && "text-destructive"
                     )}>
                       {format(new Date(milestone.target_date), 'MMM d')}
                     </span>

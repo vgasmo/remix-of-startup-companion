@@ -350,9 +350,9 @@ export function AdminBackoffice() {
 
   const getHealthColor = (score: number | null) => {
     if (score === null) return 'text-muted-foreground';
-    if (score >= 70) return 'text-green-600';
-    if (score >= 50) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 70) return 'text-[hsl(var(--success))]';
+    if (score >= 50) return 'text-[hsl(var(--warning))]';
+    return 'text-destructive';
   };
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -602,7 +602,7 @@ export function AdminBackoffice() {
                         <Popover>
                           <PopoverTrigger asChild>
                             <button className="flex items-center gap-1 hover:bg-muted rounded px-1 -ml-1">
-                              {item.priority_level === 'star' && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
+                              {item.priority_level === 'star' && <Star className="h-4 w-4 text-[hsl(var(--warning))] fill-yellow-500" />}
                               {item.priority_level === 'high' && <Star className="h-4 w-4 text-orange-500" />}
                               {item.priority_level === 'standard' && <span className="text-sm text-muted-foreground">—</span>}
                               {item.priority_level === 'maintenance' && <span className="text-xs text-muted-foreground">🔧</span>}
@@ -617,7 +617,7 @@ export function AdminBackoffice() {
                                 onClick={() => changePriorityMutation.mutate({ workspaceId: item.workspace_id, priority: p })}
                                 className="w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded flex items-center gap-2"
                               >
-                                {p === 'star' && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
+                                {p === 'star' && <Star className="h-4 w-4 text-[hsl(var(--warning))] fill-yellow-500" />}
                                 {p === 'high' && <Star className="h-4 w-4 text-orange-500" />}
                                 {p === 'standard' && <span className="h-4 w-4 text-center">—</span>}
                                 {p === 'maintenance' && <span className="h-4 w-4 text-center">🔧</span>}

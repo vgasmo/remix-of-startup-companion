@@ -192,7 +192,7 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
                   <div className="flex items-start gap-2">
                     <div className="mt-0.5">
                       {email.direction === 'inbound' ? (
-                        <ArrowDownLeft className="h-3.5 w-3.5 text-blue-500" />
+                        <ArrowDownLeft className="h-3.5 w-3.5 text-[hsl(var(--info))]" />
                       ) : (
                         <ArrowUpRight className="h-3.5 w-3.5 text-emerald-500" />
                       )}

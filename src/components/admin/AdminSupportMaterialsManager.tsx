@@ -217,7 +217,7 @@ export function AdminSupportMaterialsManager() {
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium text-sm line-clamp-1">{material.title}</h4>
                       {material.status !== 'approved' && (
-                        <Badge variant="outline" className="text-xs text-amber-600">{t('admin.supportMaterials.draft')}</Badge>
+                        <Badge variant="outline" className="text-xs text-[hsl(var(--warning))]">{t('admin.supportMaterials.draft')}</Badge>
                       )}
                     </div>
                     {material.description && (
@@ -246,7 +246,7 @@ export function AdminSupportMaterialsManager() {
                       title={material.status === 'approved' ? t('admin.supportMaterials.hideFromConsultants') : t('admin.supportMaterials.showToConsultants')}
                     >
                       {material.status === 'approved' ? (
-                        <Eye className="h-3.5 w-3.5 text-green-600" />
+                        <Eye className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
                       ) : (
                         <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
                       )}
@@ -330,7 +330,7 @@ export function AdminSupportMaterialsManager() {
                   <SelectContent>
                     <SelectItem value="approved">
                       <span className="flex items-center gap-2">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                        <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
                         {t('admin.supportMaterials.approvedVisible')}
                       </span>
                     </SelectItem>

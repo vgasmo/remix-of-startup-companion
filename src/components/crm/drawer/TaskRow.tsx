@@ -202,7 +202,7 @@ export function TaskRow({
         onClick={isCompleted ? onReopen : isCanceled ? onReopen : handleCompleteClick}
       >
         {isCompleted ? (
-          <CircleCheck className="h-4 w-4 text-green-500" />
+          <CircleCheck className="h-4 w-4 text-[hsl(var(--success))]" />
         ) : isCanceled ? (
           <Ban className="h-4 w-4 text-muted-foreground" />
         ) : (
@@ -219,7 +219,7 @@ export function TaskRow({
         {task.due_at && (
           <p className={cn(
             'text-xs',
-            isOverdue ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
+            isOverdue ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground'
           )}>
             {formatRelativeTime(task.due_at)}
           </p>
@@ -230,8 +230,8 @@ export function TaskRow({
           variant="outline"
           className={cn(
             'text-xs shrink-0',
-            task.priority === 'high' && 'border-amber-500 text-amber-600',
-            task.priority === 'medium' && 'border-amber-400/60 text-amber-500',
+            task.priority === 'high' && 'border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))]',
+            task.priority === 'medium' && 'border-[hsl(var(--warning))]/60 text-[hsl(var(--warning))]',
           )}
         >
           {t(`crm.${task.priority}`)}

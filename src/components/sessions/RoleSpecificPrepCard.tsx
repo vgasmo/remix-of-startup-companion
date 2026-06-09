@@ -79,9 +79,9 @@ export function RoleSpecificPrepCard({ sessionId, workspaceId }: RoleSpecificPre
               <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
                 <div className={cn(
                   "text-2xl font-bold",
-                  healthData.health_score === 'critical' && "text-red-600",
-                  healthData.health_score === 'at_risk' && "text-amber-600",
-                  (healthData.health_score === 'healthy' || healthData.health_score === 'thriving') && "text-green-600"
+                  healthData.health_score === 'critical' && "text-destructive",
+                  healthData.health_score === 'at_risk' && "text-[hsl(var(--warning))]",
+                  (healthData.health_score === 'healthy' || healthData.health_score === 'thriving') && "text-[hsl(var(--success))]"
                 )}>
                   {healthData.health_score_numeric ?? '—'}%
                 </div>
@@ -97,13 +97,13 @@ export function RoleSpecificPrepCard({ sessionId, workspaceId }: RoleSpecificPre
           {/* Active Alerts / Risks */}
           {alerts && alerts.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-sm font-medium flex items-center gap-2 text-amber-600">
+              <h4 className="text-sm font-medium flex items-center gap-2 text-[hsl(var(--warning))]">
                 <AlertTriangle className="h-4 w-4" />
                 {t('sessionPrep.activeAlerts', 'Active Alerts')} ({alerts.length})
               </h4>
               <div className="space-y-1.5">
                 {alerts.slice(0, 3).map((alert, idx) => (
-                  <div key={idx} className="p-2 rounded bg-amber-50 dark:bg-amber-950/20 text-xs">
+                  <div key={idx} className="p-2 rounded bg-[hsl(var(--warning))]/10 text-xs">
                     <span className="font-medium">{alert.rule_type}</span>
                     {alert.reason && <span className="text-muted-foreground ml-1">- {alert.reason}</span>}
                   </div>
@@ -143,24 +143,24 @@ export function RoleSpecificPrepCard({ sessionId, workspaceId }: RoleSpecificPre
           {/* Recommended Focus Areas */}
           <div className="space-y-2">
             <h4 className="text-sm font-medium flex items-center gap-2">
-              <Lightbulb className="h-4 w-4 text-amber-500" />
+              <Lightbulb className="h-4 w-4 text-[hsl(var(--warning))]" />
               {t('sessionPrep.recommendedFocus', 'Recommended Focus')}
             </h4>
             <ul className="space-y-1 text-xs">
               {prepData.pendingActions.filter(a => a.isOverdue).length > 0 && (
-                <li className="flex items-center gap-2 text-red-600">
+                <li className="flex items-center gap-2 text-destructive">
                   <CheckCircle2 className="h-3 w-3" />
                   {t('sessionPrep.reviewOverdueActions', { defaultValue: 'Rever {{count}} ações em atraso', count: prepData.pendingActions.filter(a => a.isOverdue).length })}
                 </li>
               )}
               {prepData.milestones.filter(m => m.isOverdue).length > 0 && (
-                <li className="flex items-center gap-2 text-amber-600">
+                <li className="flex items-center gap-2 text-[hsl(var(--warning))]">
                   <Target className="h-3 w-3" />
                   {t('sessionPrep.discussDelayedMilestones', { defaultValue: 'Discutir {{count}} milestones em atraso', count: prepData.milestones.filter(m => m.isOverdue).length })}
                 </li>
               )}
               {healthData && (healthData.health_score_numeric ?? 100) < 60 && (
-                <li className="flex items-center gap-2 text-amber-600">
+                <li className="flex items-center gap-2 text-[hsl(var(--warning))]">
                   <Activity className="h-3 w-3" />
                   {t('sessionPrep.addressHealthScore', { defaultValue: 'Abordar preocupações de saúde ({{score}}%)', score: healthData.health_score_numeric })}
                 </li>
@@ -261,7 +261,7 @@ export function RoleSpecificPrepCard({ sessionId, workspaceId }: RoleSpecificPre
               {prepData.pendingActions.slice(0, 4).map((action) => (
                 <div key={action.id} className={cn(
                   "flex items-center justify-between p-2 rounded text-xs",
-                  action.isOverdue ? "bg-red-50 dark:bg-red-950/20" : "bg-muted/30"
+                  action.isOverdue ? "bg-destructive/10" : "bg-muted/30"
                 )}>
                   <span className="truncate">{action.title}</span>
                   {action.isOverdue && (
@@ -287,7 +287,7 @@ export function RoleSpecificPrepCard({ sessionId, workspaceId }: RoleSpecificPre
                   {milestone.target_date && (
                     <span className={cn(
                       "text-muted-foreground",
-                      milestone.isOverdue && "text-red-600"
+                      milestone.isOverdue && "text-destructive"
                     )}>
                       {format(new Date(milestone.target_date), 'MMM d')}
                     </span>

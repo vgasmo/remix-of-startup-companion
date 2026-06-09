@@ -93,15 +93,15 @@ export const ExportAnalyticsModal = forwardRef<HTMLDivElement, ExportAnalyticsMo
                 whileHover={{ scale: 1.01 }}
                 className={cn(
                   'flex items-center gap-3 p-3 rounded-xl border transition-all duration-200',
-                  isCompleted ? 'border-green-300/50 bg-green-50/30 dark:bg-green-950/10' : 'border-border hover:border-primary/30 hover:bg-muted/30',
+                  isCompleted ? 'border-[hsl(var(--success))]/50 bg-[hsl(var(--success))]/30' : 'border-border hover:border-primary/30 hover:bg-muted/30',
                 )}
               >
                 <div className={cn(
                   'h-10 w-10 rounded-lg flex items-center justify-center shrink-0',
-                  isCompleted ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted/50',
+                  isCompleted ? 'bg-[hsl(var(--success))]/10' : 'bg-muted/50',
                 )}>
                   {isCompleted ? (
-                    <Check className="h-4 w-4 text-green-600" />
+                    <Check className="h-4 w-4 text-[hsl(var(--success))]" />
                   ) : (
                     <Icon className="h-4 w-4 text-muted-foreground" />
                   )}

@@ -46,10 +46,10 @@ const EMPTY_FORM: FormState = {
 };
 
 const CATEGORY_CONFIG: Record<AnnouncementCategory, { icon: typeof Mail; labelKey: string; color: string }> = {
-  mail: { icon: Mail, labelKey: 'admin.announcements.categoryMail', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  package: { icon: Package, labelKey: 'admin.announcements.categoryPackage', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  general: { icon: Bell, labelKey: 'admin.announcements.categoryGeneral', color: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200' },
-  urgent: { icon: AlertTriangle, labelKey: 'admin.announcements.categoryUrgent', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
+  mail: { icon: Mail, labelKey: 'admin.announcements.categoryMail', color: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ' },
+  package: { icon: Package, labelKey: 'admin.announcements.categoryPackage', color: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ' },
+  general: { icon: Bell, labelKey: 'admin.announcements.categoryGeneral', color: 'bg-muted text-foreground ' },
+  urgent: { icon: AlertTriangle, labelKey: 'admin.announcements.categoryUrgent', color: 'bg-destructive/10 text-destructive ' },
 };
 
 export function AdminAnnouncementsManager() {
@@ -409,7 +409,7 @@ export function AdminAnnouncementsManager() {
                     </TableCell>
                     <TableCell>
                       {ann.is_read ? (
-                        <Badge variant="outline" className="text-green-600 dark:text-green-400 border-green-600 dark:border-green-400">
+                        <Badge variant="outline" className="text-[hsl(var(--success))] border-[hsl(var(--success))]/30">
                           <CheckCircle className="h-3 w-3 mr-1" />
                           {t('admin.announcements.read')}
                         </Badge>

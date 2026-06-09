@@ -548,7 +548,7 @@ function ProgramHealthModelCard({
             <div>
               <h4 className="text-sm font-medium mb-2">{t('admin.healthModel.thresholds')}</h4>
               <div className="grid grid-cols-5 gap-2 text-center text-xs">
-                <div className="p-2 rounded bg-green-100 dark:bg-green-900/30">
+                <div className="p-2 rounded bg-[hsl(var(--success))]/10">
                   <div className="font-medium">🌟 {t('admin.healthModel.thriving')}</div>
                   <div>≥ {thresholds.thriving}</div>
                 </div>
@@ -556,15 +556,15 @@ function ProgramHealthModelCard({
                   <div className="font-medium">✅ {t('admin.healthModel.healthy')}</div>
                   <div>≥ {thresholds.healthy}</div>
                 </div>
-                <div className="p-2 rounded bg-blue-100 dark:bg-blue-900/30">
+                <div className="p-2 rounded bg-[hsl(var(--info))]/10">
                   <div className="font-medium">➡️ {t('admin.healthModel.stable')}</div>
                   <div>≥ {thresholds.stable}</div>
                 </div>
-                <div className="p-2 rounded bg-amber-100 dark:bg-amber-900/30">
+                <div className="p-2 rounded bg-[hsl(var(--warning))]/10">
                   <div className="font-medium">⚠️ {t('admin.healthModel.atRisk')}</div>
                   <div>≥ {thresholds.at_risk}</div>
                 </div>
-                <div className="p-2 rounded bg-red-100 dark:bg-red-900/30">
+                <div className="p-2 rounded bg-destructive/10">
                   <div className="font-medium">🚨 {t('admin.healthModel.critical')}</div>
                   <div>&lt; {thresholds.at_risk}</div>
                 </div>

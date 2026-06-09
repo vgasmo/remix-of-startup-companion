@@ -187,11 +187,11 @@ export function SmartPrepSheet({ open, onOpenChange, workspaceName, stage, healt
                     <div className="flex items-center gap-2">
                       <div className={cn(
                         'h-7 w-7 rounded-lg flex items-center justify-center',
-                        section.id === 'risks' ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-primary/10'
+                        section.id === 'risks' ? 'bg-[hsl(var(--warning))]/10' : 'bg-primary/10'
                       )}>
                         <Icon className={cn(
                           'h-3.5 w-3.5',
-                          section.id === 'risks' ? 'text-amber-600 dark:text-amber-400' : 'text-primary'
+                          section.id === 'risks' ? 'text-[hsl(var(--warning))]' : 'text-primary'
                         )} />
                       </div>
                       <h4 className="text-sm font-semibold">{section.title}</h4>
