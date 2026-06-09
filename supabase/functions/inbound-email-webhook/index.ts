@@ -91,15 +91,16 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // Verify webhook secret (use dedicated WEBHOOK_SECRET)
+    // Verify webhook secret with a constant-time comparison so timing attacks
+    // can't progressively guess the secret. Fail closed on missing config or input.
     const webhookSecret = req.headers.get('X-Webhook-Secret');
     const expectedSecret = Deno.env.get('WEBHOOK_SECRET');
-    
-    if (!webhookSecret || webhookSecret !== expectedSecret) {
+
+    if (!webhookSecret || !expectedSecret || !timingSafeEqual(webhookSecret, expectedSecret)) {
       console.error('Invalid or missing webhook secret');
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
-        status: 401, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
