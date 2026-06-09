@@ -435,6 +435,7 @@ export function ContractLifecycleHub() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between gap-2">
+              {/* intentional: lifecycle category palette — distinct hue per pipeline stage, not state semantics */}
               {[
                 { label: t('lifecycle.pipelineNew'), count: pipeline.new, color: 'bg-slate-500' },
                 { label: t('lifecycle.pipelineMeetings'), count: pipeline.meeting, color: 'bg-blue-500' },
