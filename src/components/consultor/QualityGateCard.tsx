@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Shield, CheckCircle2, AlertTriangle, XCircle, RefreshCw, ChevronDown, ChevronUp, Lightbulb } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -25,21 +25,55 @@ export function QualityGateCard({ entityType, entityId, entityData, workspaceId,
   const computeMutation = useComputeQualityScore();
   const isStrict = qualityMode === 'strict';
 
-  useEffect(() => {
-    if (!result && !isLoading && entityId) { computeMutation.mutate({ entityType, entityId, entityData }); }
-  }, [entityId, result, isLoading]);
+  // Keep onScoreComputed in a ref so changing identity doesn't re-trigger effects.
+  const onScoreComputedRef = useRef(onScoreComputed);
+  useEffect(() => { onScoreComputedRef.current = onScoreComputed; }, [onScoreComputed]);
 
+  // Auto-compute once when there's no cached result and we're idle.
   useEffect(() => {
-    if (result && onScoreComputed) { const isBlocking = isStrict && result.score < 70; onScoreComputed(result.score, isBlocking); }
-  }, [result, isStrict, onScoreComputed]);
+    if (!result && !isLoading && entityId && !computeMutation.isPending && !computeMutation.isError) {
+      computeMutation.mutate({ entityType, entityId, entityData });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entityId, result, isLoading, computeMutation.isPending, computeMutation.isError]);
 
-  const handleRecompute = () => { computeMutation.mutate({ entityType, entityId, entityData }); };
+  // Fire score-computed only when the score itself changes.
+  const lastReportedScoreRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (result && lastReportedScoreRef.current !== result.score) {
+      lastReportedScoreRef.current = result.score;
+      const isBlocking = isStrict && result.score < 70;
+      onScoreComputedRef.current?.(result.score, isBlocking);
+    }
+  }, [result, isStrict]);
+
+  const handleRecompute = () => { computeMutation.reset(); computeMutation.mutate({ entityType, entityId, entityData }); };
 
   const getScoreColor = (score: number) => { if (score >= 80) return 'text-[hsl(var(--success))]'; if (score >= 60) return 'text-[hsl(var(--warning))]'; return 'text-destructive'; };
   const getScoreLabel = (score: number) => { if (score >= 80) return t('quality.good', 'Bom'); if (score >= 60) return t('quality.needsWork', 'Precisa de trabalho'); return t('quality.incomplete', 'Incompleto'); };
   const getScoreIcon = (score: number) => { if (score >= 80) return CheckCircle2; if (score >= 60) return AlertTriangle; return XCircle; };
 
-  if (isLoading || !result) {
+  // Error branch — never spin forever.
+  if (!result && computeMutation.isError) {
+    return (
+      <Card className="bg-muted/30 border-warning/30">
+        <CardContent className="p-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))] shrink-0" />
+            <span className="text-sm text-muted-foreground truncate">
+              {t('quality.computeError', { defaultValue: 'Não foi possível calcular a qualidade' })}
+            </span>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleRecompute} disabled={computeMutation.isPending}>
+            <RefreshCw className={cn('h-3.5 w-3.5 mr-1', computeMutation.isPending && 'animate-spin')} />
+            {t('common.retry', { defaultValue: 'Tentar novamente' })}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isLoading || computeMutation.isPending || !result) {
     return (
       <Card className="bg-muted/30">
         <CardContent className="p-4 flex items-center justify-center">
