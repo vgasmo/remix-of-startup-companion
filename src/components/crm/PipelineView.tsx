@@ -37,6 +37,7 @@ import { notify } from "@/lib/notify";
 import type { CrmInboxItem } from '@/hooks/useCrmInbox';
 import type { FunnelStage } from '@/hooks/useFunnel';
 
+// intentional: pipeline stage palette — distinct hue per CRM funnel stage, not state semantics
 // Simplified stage visual config
 const SIMPLE_STAGE_CONFIG: Record<SimplePipelineStage, { color: string; bgColor: string }> = {
   lead: { color: 'text-slate-700 dark:text-slate-300', bgColor: 'bg-slate-100 dark:bg-slate-800' },
