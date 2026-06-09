@@ -2354,7 +2354,21 @@
     "viewAll": "View all",
     "workspace": "Workspace",
     "years": "years",
-    "yes": "Yes"
+    "yes": "Yes",
+    "_iconArchive": "Archive",
+    "_iconHide": "Hide",
+    "_iconHelp": "Help",
+    "_iconOpenCalendar": "Open calendar",
+    "_iconOpenChat": "Open chat",
+    "_iconOpenLinkedin": "Open LinkedIn",
+    "_iconOpenNotifications": "Open notifications",
+    "_iconOpenVideo": "Open video",
+    "_iconPause": "Pause",
+    "_iconSend": "Send",
+    "_iconToggleFavorite": "Toggle favorite",
+    "_iconToggleSidebar": "Toggle sidebar",
+    "_iconToggleTheme": "Toggle theme",
+    "_iconHistory": "History"
   },
   "communication": {
     "communicationLogged": "Communication logged",
