@@ -168,6 +168,7 @@ export function DataQualityDashboard() {
     }
   };
 
+  // intentional: data-issue category palette — distinct hue per issue type (orange/red/yellow paired with category cards below)
   const getIssueIcon = (type: DataIssue['type']) => {
     switch (type) {
       case 'missing_nif':
