@@ -160,7 +160,7 @@ export function WorkspaceCalendarCard({ workspaceId, canEdit = true }: Workspace
           <Calendar className="h-5 w-5 text-[#0078D4]" />
           {t('settings.outlookCalendarSync')}
           {isEnabled && globalEnabled && hasEffectiveEmail && (
-            <Badge variant="outline" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+            <Badge variant="outline" className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ">
               <CheckCircle2 className="h-3 w-3 mr-1" />
               {t('common.active')}
             </Badge>
@@ -181,8 +181,8 @@ export function WorkspaceCalendarCard({ workspaceId, canEdit = true }: Workspace
         )}
 
         {globalEnabled && !assignedConsultantEmail && !useCustomEmail && (
-          <Alert variant="default" className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
-            <AlertTriangle className="h-4 w-4 text-amber-500" />
+          <Alert variant="default" className="border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/10">
+            <AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))]" />
             <AlertDescription>
               {t('settings.noConsultantWarning')}
             </AlertDescription>
@@ -270,8 +270,8 @@ export function WorkspaceCalendarCard({ workspaceId, canEdit = true }: Workspace
             </div>
 
             {isEnabled && hasEffectiveEmail && (
-              <div className="text-xs bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-                <p className="font-medium text-green-700 dark:text-green-400">✓ Calendar sync active</p>
+              <div className="text-xs bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/30 rounded-lg p-3">
+                <p className="font-medium text-[hsl(var(--success))]">✓ Calendar sync active</p>
                 <p className="text-muted-foreground">Events → {effectiveEmail}</p>
               </div>
             )}

@@ -368,9 +368,9 @@ export default function CrmDiagnostics() {
 
   const getStatusIcon = (status: TestStatus) => {
     switch (status) {
-      case 'pass': return <CheckCircle className="h-5 w-5 text-green-500" />;
+      case 'pass': return <CheckCircle className="h-5 w-5 text-[hsl(var(--success))]" />;
       case 'fail': return <XCircle className="h-5 w-5 text-destructive" />;
-      case 'warn': return <AlertTriangle className="h-5 w-5 text-amber-500" />;
+      case 'warn': return <AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))]" />;
       case 'running': return <Loader2 className="h-5 w-5 animate-spin text-primary" />;
       default: return <div className="h-5 w-5 rounded-full border-2 border-muted" />;
     }

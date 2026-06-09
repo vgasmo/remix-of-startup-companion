@@ -57,8 +57,8 @@ export default function ConsultorTools() {
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
-                <div className="h-10 w-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <Shield className="h-5 w-5 text-green-600" />
+                <div className="h-10 w-10 rounded-lg bg-[hsl(var(--success))]/10 flex items-center justify-center">
+                  <Shield className="h-5 w-5 text-[hsl(var(--success))]" />
                 </div>
                 <div>
                   <CardTitle className="text-base">{t('consultorTools.qualityGates.title', 'Quality Gates')}</CardTitle>

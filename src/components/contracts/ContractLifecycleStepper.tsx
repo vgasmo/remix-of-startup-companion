@@ -334,7 +334,7 @@ export function ContractLifecycleStepper({
           terminalStatus === 'terminated' || terminalStatus === 'rejected' || terminalStatus === 'cancelled'
             ? 'bg-destructive/10 text-destructive'
             : terminalStatus === 'suspended'
-              ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
+              ? 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]'
               : 'bg-muted text-muted-foreground',
         )}>
           <XCircle className="h-3.5 w-3.5 shrink-0" />

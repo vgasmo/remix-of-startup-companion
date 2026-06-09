@@ -35,7 +35,7 @@ export function QualityGateCard({ entityType, entityId, entityData, workspaceId,
 
   const handleRecompute = () => { computeMutation.mutate({ entityType, entityId, entityData }); };
 
-  const getScoreColor = (score: number) => { if (score >= 80) return 'text-green-600'; if (score >= 60) return 'text-amber-600'; return 'text-red-600'; };
+  const getScoreColor = (score: number) => { if (score >= 80) return 'text-[hsl(var(--success))]'; if (score >= 60) return 'text-[hsl(var(--warning))]'; return 'text-destructive'; };
   const getScoreLabel = (score: number) => { if (score >= 80) return t('quality.good', 'Bom'); if (score >= 60) return t('quality.needsWork', 'Precisa de trabalho'); return t('quality.incomplete', 'Incompleto'); };
   const getScoreIcon = (score: number) => { if (score >= 80) return CheckCircle2; if (score >= 60) return AlertTriangle; return XCircle; };
 
@@ -54,7 +54,7 @@ export function QualityGateCard({ entityType, entityId, entityData, workspaceId,
   const isBlocking = isStrict && result.score < 70;
 
   return (
-    <Card className={cn('transition-colors', isBlocking && 'border-red-300 bg-red-50/50 dark:bg-red-950/20')}>
+    <Card className={cn('transition-colors', isBlocking && 'border-destructive/30 bg-destructive/50')}>
       <Collapsible open={expanded} onOpenChange={setExpanded}>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
@@ -76,7 +76,7 @@ export function QualityGateCard({ entityType, entityId, entityData, workspaceId,
               </CollapsibleTrigger>
             </div>
           </div>
-          <Progress value={result.score} className={cn('h-1.5', result.score >= 80 && '[&>div]:bg-green-500', result.score >= 60 && result.score < 80 && '[&>div]:bg-amber-500', result.score < 60 && '[&>div]:bg-red-500')} />
+          <Progress value={result.score} className={cn('h-1.5', result.score >= 80 && '[&>div]:bg-[hsl(var(--success))]', result.score >= 60 && result.score < 80 && '[&>div]:bg-[hsl(var(--warning))]', result.score < 60 && '[&>div]:bg-destructive')} />
         </CardHeader>
 
         <CollapsibleContent>
@@ -86,11 +86,11 @@ export function QualityGateCard({ entityType, entityId, entityData, workspaceId,
                 <p className="text-xs font-medium text-muted-foreground mb-2">{t('quality.missing', 'Em falta:')}</p>
                 <div className="space-y-1.5">
                   {result.missing_items.map((item) => (
-                    <div key={item.key} className="flex items-start gap-2 p-2 rounded bg-red-50 dark:bg-red-950/30 text-sm">
-                      <XCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+                    <div key={item.key} className="flex items-start gap-2 p-2 rounded bg-destructive/10 text-sm">
+                      <XCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
                       <div>
-                        <p className="font-medium text-red-700 dark:text-red-300">{item.label}</p>
-                        <p className="text-xs text-red-600/80 dark:text-red-400/80">{item.hint}</p>
+                        <p className="font-medium text-destructive">{item.label}</p>
+                        <p className="text-xs text-destructive/80">{item.hint}</p>
                       </div>
                     </div>
                   ))}
@@ -102,7 +102,7 @@ export function QualityGateCard({ entityType, entityId, entityData, workspaceId,
                 <p className="text-xs font-medium text-muted-foreground mb-2">{t('quality.completed', 'Concluído:')}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {result.passed_items.map((item) => (
-                    <Badge key={item.key} variant="secondary" className="bg-green-100 text-green-700">
+                    <Badge key={item.key} variant="secondary" className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]">
                       <CheckCircle2 className="h-3 w-3 mr-1" />{item.label}
                     </Badge>
                   ))}
@@ -110,21 +110,21 @@ export function QualityGateCard({ entityType, entityId, entityData, workspaceId,
               </div>
             )}
             {result.coach_hints.length > 0 && (
-              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900">
+              <div className="p-3 rounded-lg bg-[hsl(var(--info))]/10 border border-[hsl(var(--info))]/30">
                 <div className="flex items-center gap-2 mb-2">
-                  <Lightbulb className="h-4 w-4 text-blue-600" />
-                  <p className="text-xs font-medium text-blue-700 dark:text-blue-300">{t('quality.coachTips', 'Dicas de Coach')}</p>
+                  <Lightbulb className="h-4 w-4 text-[hsl(var(--info))]" />
+                  <p className="text-xs font-medium text-[hsl(var(--info))]">{t('quality.coachTips', 'Dicas de Coach')}</p>
                 </div>
                 <ul className="space-y-1">
                   {result.coach_hints.map((hint, i) => (
-                    <li key={i} className="text-xs text-blue-800 dark:text-blue-200">{hint}</li>
+                    <li key={i} className="text-xs text-[hsl(var(--info))]">{hint}</li>
                   ))}
                 </ul>
               </div>
             )}
             {isBlocking && (
-              <div className="p-3 rounded-lg bg-red-100 dark:bg-red-900/30 border border-red-300">
-                <p className="text-sm text-red-700 dark:text-red-300 font-medium">
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+                <p className="text-sm text-destructive font-medium">
                   ⚠️ {t('quality.blockingWarning', { entityType, defaultValue: `Este ${entityType} não pode ser marcado como pronto até a pontuação atingir 70+` })}
                 </p>
               </div>

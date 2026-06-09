@@ -79,7 +79,7 @@ function InfoRow({ label, value, missing }: { label: string; value?: string | nu
       {value ? (
         <span className="font-medium text-right max-w-[60%] truncate">{value}</span>
       ) : (
-        <span className="text-xs text-amber-600 italic flex items-center gap-1">
+        <span className="text-xs text-[hsl(var(--warning))] italic flex items-center gap-1">
           <HelpCircle className="h-3 w-3" />{missing || 'Desconhecido'}
         </span>
       )}
@@ -273,11 +273,11 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
                 {/* What's Unknown */}
                 {unknowns.length > 0 && (
                   <Section icon={HelpCircle} title="O que falta saber">
-                    <Card className="rounded-lg border-amber-200 dark:border-amber-800 bg-amber-50/30 dark:bg-amber-950/10">
+                    <Card className="rounded-lg border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/30">
                       <CardContent className="pt-3 pb-2">
                         <ul className="space-y-1">
                           {unknowns.map((u, i) => (
-                            <li key={i} className="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-1.5">
+                            <li key={i} className="text-xs text-[hsl(var(--warning))] flex items-start gap-1.5">
                               <HelpCircle className="h-3 w-3 mt-0.5 shrink-0" />
                               {u}
                             </li>
@@ -327,11 +327,11 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
                 {/* Risks — computed heuristic */}
                 {risks.length > 0 && (
                   <Section icon={AlertTriangle} title="Pontos de atenção (estimativa)">
-                    <Card className="rounded-lg border-red-200 dark:border-red-900 bg-red-50/30 dark:bg-red-950/10">
+                    <Card className="rounded-lg border-destructive/30 bg-destructive/30">
                       <CardContent className="pt-3 pb-2">
                         <ul className="space-y-1.5">
                           {risks.map((r, i) => (
-                            <li key={i} className="text-xs text-red-700 dark:text-red-300 flex items-start gap-1.5">
+                            <li key={i} className="text-xs text-destructive flex items-start gap-1.5">
                               <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
                               {r}
                             </li>

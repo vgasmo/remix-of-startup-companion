@@ -223,9 +223,9 @@ const CATEGORY_KEYS: Record<string, string> = {
 };
 
 const CATEGORIES = [
-  { key: 'questions', icon: HelpCircle, color: 'text-blue-600' },
+  { key: 'questions', icon: HelpCircle, color: 'text-[hsl(var(--info))]' },
   { key: 'reframes', icon: RotateCcw, color: 'text-purple-600' },
-  { key: 'exercises', icon: Target, color: 'text-green-600' },
+  { key: 'exercises', icon: Target, color: 'text-[hsl(var(--success))]' },
 ];
 
 export function CoachingToolkitTab() {
@@ -376,8 +376,8 @@ export function CoachingToolkitTab() {
 
                           {/* Caution */}
                           {technique.caution && (
-                            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                              <p className="text-sm flex items-start gap-2 text-amber-800 dark:text-amber-200">
+                            <div className="p-3 rounded-lg bg-[hsl(var(--warning))]/10 border border-[hsl(var(--warning))]/30">
+                              <p className="text-sm flex items-start gap-2 text-[hsl(var(--warning))]">
                                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                                 {technique.caution}
                               </p>

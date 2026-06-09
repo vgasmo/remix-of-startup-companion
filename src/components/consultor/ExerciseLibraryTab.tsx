@@ -209,7 +209,7 @@ function ExerciseCard({
             <div className="flex items-center gap-2 mb-1">
               <CardTitle className="text-base truncate">{exercise.title}</CardTitle>
               {exercise.status === 'approved' ? (
-                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                <Badge variant="secondary" className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]">
                   <CheckCircle2 className="h-3 w-3 mr-1" />
                   {t('common.approved', 'Approved')}
                 </Badge>

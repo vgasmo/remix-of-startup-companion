@@ -307,7 +307,7 @@ export function EnhancedFounderMentorRequest() {
                 <div key={req.id} className="flex items-start justify-between p-4 rounded-lg border bg-card">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300">
+                      <Badge variant="outline" className="bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30 ">
                         <Clock className="h-3 w-3 mr-1" />
                         {t('mentorsPage.awaitingMatch', 'Awaiting Match')}
                       </Badge>
@@ -363,7 +363,7 @@ export function EnhancedFounderMentorRequest() {
                     <div className="flex items-center gap-2 mb-2">
                       <Badge 
                         variant={req.status === 'fulfilled' ? 'default' : 'secondary'}
-                        className={req.status === 'fulfilled' ? 'bg-green-600' : ''}
+                        className={req.status === 'fulfilled' ? 'bg-[hsl(var(--success))]' : ''}
                       >
                         {req.status === 'fulfilled' ? t('mentorsPage.fulfilled') : t('mentorsPage.cancelled')}
                       </Badge>

@@ -190,9 +190,9 @@ export default function SharedWorkspace() {
                   <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                     <div className="flex items-center gap-3">
                       {milestone.status === 'completed' ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        <CheckCircle2 className="h-5 w-5 text-[hsl(var(--success))]" />
                       ) : milestone.status === 'delayed' ? (
-                        <AlertTriangle className="h-5 w-5 text-amber-500" />
+                        <AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))]" />
                       ) : (
                         <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
                       )}
@@ -226,7 +226,7 @@ export default function SharedWorkspace() {
               <div className="prose prose-sm dark:prose-invert max-w-none">
                 {updates[0].content_json?.highlights && (
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-green-600 dark:text-green-400 mb-2">{t('shared.highlights', 'Destaques')}</h4>
+                    <h4 className="text-sm font-medium text-[hsl(var(--success))] mb-2">{t('shared.highlights', 'Destaques')}</h4>
                     <ul className="space-y-1">
                       {updates[0].content_json.highlights.map((h: string, i: number) => (
                         <li key={i} className="text-sm">{h}</li>
@@ -236,7 +236,7 @@ export default function SharedWorkspace() {
                 )}
                 {updates[0].content_json?.priorities && (
                   <div>
-                    <h4 className="text-sm font-medium text-blue-600 mb-2">{t('shared.nextPriorities', 'Próximas Prioridades')}</h4>
+                    <h4 className="text-sm font-medium text-[hsl(var(--info))] mb-2">{t('shared.nextPriorities', 'Próximas Prioridades')}</h4>
                     <ul className="space-y-1">
                       {updates[0].content_json.priorities.map((p: string, i: number) => (
                         <li key={i} className="text-sm">{p}</li>

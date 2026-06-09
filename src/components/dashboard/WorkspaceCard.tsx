@@ -29,7 +29,7 @@ export const WorkspaceCard = memo(function WorkspaceCard({ workspace, onClick, k
       interactive
       className={cn(
         'surface-raised cursor-pointer group',
-        hasOverdue && 'border-amber-200 dark:border-amber-800'
+        hasOverdue && 'border-[hsl(var(--warning))]/30'
       )}
       onClick={onClick}
     >

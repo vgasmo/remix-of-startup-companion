@@ -85,8 +85,8 @@ export const ForgotPasswordDialog = forwardRef<HTMLDivElement, ForgotPasswordDia
 
           {success ? (
             <div className="py-6 text-center space-y-4">
-              <div className="mx-auto w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+              <div className="mx-auto w-12 h-12 rounded-full bg-[hsl(var(--success))]/10 flex items-center justify-center">
+                <CheckCircle className="h-6 w-6 text-[hsl(var(--success))]" />
               </div>
               <div>
                 <p className="font-medium text-foreground">{t('auth.resetEmailSent')}</p>

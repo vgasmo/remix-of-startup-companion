@@ -24,14 +24,14 @@ interface ContractIntelligenceCardProps {
 }
 
 const RISK_COLORS: Record<string, string> = {
-  low: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  medium: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  high: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  low: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ',
+  medium: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ',
+  high: 'bg-destructive/10 text-destructive ',
 };
 
 const SEVERITY_ICONS: Record<string, React.ReactNode> = {
   low: <Info className="h-3.5 w-3.5 text-muted-foreground" />,
-  medium: <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />,
+  medium: <AlertTriangle className="h-3.5 w-3.5 text-[hsl(var(--warning))]" />,
   high: <AlertTriangle className="h-3.5 w-3.5 text-destructive" />,
 };
 

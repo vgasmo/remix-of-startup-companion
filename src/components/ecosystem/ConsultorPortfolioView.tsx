@@ -58,9 +58,9 @@ export function ConsultorPortfolioView({ items }: ConsultorPortfolioViewProps) {
   const getHealthColor = (score: string | null) => {
     if (!score) return 'bg-muted text-muted-foreground';
     const n = parseInt(score);
-    if (n >= 70) return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
-    if (n >= 40) return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
-    return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+    if (n >= 70) return 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ';
+    if (n >= 40) return 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ';
+    return 'bg-destructive/10 text-destructive ';
   };
 
   return (

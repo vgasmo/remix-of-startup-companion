@@ -38,13 +38,13 @@ export function ContextualTooltip({
 }: ContextualTooltipProps) {
   const getTrendIcon = (change?: number) => {
     if (!change) return <Minus className="h-3 w-3 text-muted-foreground" />;
-    if (change > 0) return <TrendingUp className="h-3 w-3 text-green-500" />;
-    return <TrendingDown className="h-3 w-3 text-red-500" />;
+    if (change > 0) return <TrendingUp className="h-3 w-3 text-[hsl(var(--success))]" />;
+    return <TrendingDown className="h-3 w-3 text-destructive" />;
   };
 
   const getTrendColor = (change?: number) => {
     if (!change) return 'text-muted-foreground';
-    return change > 0 ? 'text-green-500' : 'text-red-500';
+    return change > 0 ? 'text-[hsl(var(--success))]' : 'text-destructive';
   };
 
   return (

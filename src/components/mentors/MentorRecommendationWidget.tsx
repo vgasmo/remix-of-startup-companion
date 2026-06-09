@@ -134,8 +134,8 @@ export function MentorRecommendationWidget({
   };
 
   const getScoreBadge = (score: number) => {
-    if (score >= 0.8) return { label: t('mentors.excellentMatch', 'Excellent Match'), variant: 'default' as const, className: 'bg-green-600' };
-    if (score >= 0.5) return { label: t('mentors.goodMatch', 'Good Match'), variant: 'default' as const, className: 'bg-blue-600' };
+    if (score >= 0.8) return { label: t('mentors.excellentMatch', 'Excellent Match'), variant: 'default' as const, className: 'bg-[hsl(var(--success))]' };
+    if (score >= 0.5) return { label: t('mentors.goodMatch', 'Good Match'), variant: 'default' as const, className: 'bg-[hsl(var(--info))]' };
     return { label: t('mentors.partialMatch', 'Partial Match'), variant: 'secondary' as const, className: '' };
   };
 
@@ -210,7 +210,7 @@ export function MentorRecommendationWidget({
                   </AvatarFallback>
                 </Avatar>
                 {idx === 0 && (
-                  <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-yellow-500 flex items-center justify-center">
+                  <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[hsl(var(--warning))] flex items-center justify-center">
                     <Star className="h-2.5 w-2.5 text-white fill-white" />
                   </div>
                 )}

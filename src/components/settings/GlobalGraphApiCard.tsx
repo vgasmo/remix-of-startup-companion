@@ -137,7 +137,7 @@ export function GlobalGraphApiCard() {
           <Globe className="h-5 w-5 text-primary" />
           {t('settings.globalGraphApi')}
           {isEnabled && (
-            <Badge variant="outline" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+            <Badge variant="outline" className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ">
               <CheckCircle2 className="h-3 w-3 mr-1" />
               {t('settings.active')}
             </Badge>
@@ -181,7 +181,7 @@ export function GlobalGraphApiCard() {
         {/* Azure AD Credentials */}
         <div className="space-y-3 pt-3 border-t">
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-amber-500" />
+            <Shield className="h-4 w-4 text-[hsl(var(--warning))]" />
             <Label className="font-medium">{t('settings.azureAdAppRegistration')}</Label>
           </div>
           
@@ -209,9 +209,9 @@ export function GlobalGraphApiCard() {
             />
           </div>
 
-          <Alert className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
-            <Shield className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <AlertDescription className="text-xs text-amber-700 dark:text-amber-300">
+          <Alert className="bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/30">
+            <Shield className="h-4 w-4 text-[hsl(var(--warning))]" />
+            <AlertDescription className="text-xs text-[hsl(var(--warning))]">
               <strong>Client Secret</strong> {t('settings.clientSecretNote')}
             </AlertDescription>
           </Alert>
@@ -304,13 +304,13 @@ export function GlobalGraphApiCard() {
         {/* Teams Application Access Policy Guide */}
         <Collapsible open={showPolicyGuide} onOpenChange={setShowPolicyGuide}>
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="gap-1 text-xs p-0 h-auto text-amber-600 dark:text-amber-400">
+            <Button variant="ghost" size="sm" className="gap-1 text-xs p-0 h-auto text-[hsl(var(--warning))]">
               <ChevronDown className={`h-3 w-3 transition-transform ${showPolicyGuide ? 'rotate-180' : ''}`} />
               {t('settings.teamsAccessPolicy')}
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-3">
-            <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 p-4 space-y-3 text-sm">
+            <div className="rounded-lg border border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/10 p-4 space-y-3 text-sm">
               <p className="text-muted-foreground text-xs">
                 By default, Microsoft blocks apps from accessing meeting transcripts. You must create an Application Access Policy to allow this app to access consultant meetings.
               </p>
@@ -349,8 +349,8 @@ export function GlobalGraphApiCard() {
         </div>
 
         {isEnabled && (
-          <div className="text-xs text-muted-foreground bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-            <p className="font-medium text-green-700 dark:text-green-400">🎉 {t('settings.globalIntegrationActive')}</p>
+          <div className="text-xs text-muted-foreground bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/30 rounded-lg p-3">
+            <p className="font-medium text-[hsl(var(--success))]">🎉 {t('settings.globalIntegrationActive')}</p>
             <p>{t('settings.globalIntegrationDesc')}</p>
           </div>
         )}

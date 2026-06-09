@@ -162,7 +162,7 @@ export class ErrorBoundary extends Component<Props, State> {
                     onClick={this.handleCopyErrorId}
                   >
                     {this.state.copied ? (
-                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
                     ) : (
                       <Copy className="h-3.5 w-3.5 text-muted-foreground" />
                     )}

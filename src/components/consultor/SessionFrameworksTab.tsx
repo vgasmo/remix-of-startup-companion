@@ -63,8 +63,8 @@ const FRAMEWORKS: SessionFramework[] = [
     },
     duration: '45-60 min',
     icon: Compass,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+    color: 'text-[hsl(var(--info))]',
+    bgColor: 'bg-[hsl(var(--info))]/10',
     bestFor: {
       en: ['First meeting with founder', 'New workspace onboarding', 'Quarterly review'],
       pt: ['Primeira reunião com o founder', 'Onboarding de novo workspace', 'Revisão trimestral'],
@@ -271,8 +271,8 @@ const FRAMEWORKS: SessionFramework[] = [
     },
     duration: '30 min',
     icon: Scale,
-    color: 'text-green-600',
-    bgColor: 'bg-green-50 dark:bg-green-900/20',
+    color: 'text-[hsl(var(--success))]',
+    bgColor: 'bg-[hsl(var(--success))]/10',
     bestFor: {
       en: ['Weekly standup', 'Sprint review', 'Milestone tracking'],
       pt: ['Standup semanal', 'Revisão de sprint', 'Acompanhamento de milestones'],
@@ -365,8 +365,8 @@ const FRAMEWORKS: SessionFramework[] = [
     },
     duration: '60-90 min',
     icon: Rocket,
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+    color: 'text-[hsl(var(--warning))]',
+    bgColor: 'bg-[hsl(var(--warning))]/10',
     bestFor: {
       en: ['Fundraising prep', 'Demo day', 'Key sales meetings'],
       pt: ['Preparação de fundraising', 'Demo day', 'Reuniões comerciais chave'],
@@ -744,30 +744,30 @@ export function SessionFrameworksTab() {
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
-                      <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                        <p className="text-xs font-medium text-green-700 dark:text-green-300 mb-2 flex items-center gap-1">
+                      <div className="p-4 rounded-lg bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/30">
+                        <p className="text-xs font-medium text-[hsl(var(--success))] mb-2 flex items-center gap-1">
                           <TrendingUp className="h-3 w-3" />
                           {t('consultorTools.expectedOutcomes')}
                         </p>
                         <ul className="space-y-1">
                           {outcomes.map((o, i) => (
                             <li key={i} className="text-sm flex items-center gap-2">
-                              <CheckCircle2 className="h-3 w-3 text-green-600" />
+                              <CheckCircle2 className="h-3 w-3 text-[hsl(var(--success))]" />
                               {o}
                             </li>
                           ))}
                         </ul>
                       </div>
 
-                      <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                        <p className="text-xs font-medium text-amber-700 dark:text-amber-300 mb-2 flex items-center gap-1">
+                      <div className="p-4 rounded-lg bg-[hsl(var(--warning))]/10 border border-[hsl(var(--warning))]/30">
+                        <p className="text-xs font-medium text-[hsl(var(--warning))] mb-2 flex items-center gap-1">
                           <Lightbulb className="h-3 w-3" />
                           {t('consultorTools.proTips')}
                         </p>
                         <ul className="space-y-1">
                           {tips.map((tip, i) => (
                             <li key={i} className="text-sm flex items-start gap-2">
-                              <AlertTriangle className="h-3 w-3 text-amber-600 shrink-0 mt-0.5" />
+                              <AlertTriangle className="h-3 w-3 text-[hsl(var(--warning))] shrink-0 mt-0.5" />
                               {tip}
                             </li>
                           ))}

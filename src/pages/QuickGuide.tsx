@@ -108,7 +108,7 @@ const ROLE_GUIDES: RoleGuide[] = [
     titleDefault: 'Portfolio OS',
     taglineKey: 'guide.consultor.tagline',
     taglineDefault: 'For Consultants',
-    color: 'text-blue-600',
+    color: 'text-[hsl(var(--info))]',
     icon: Briefcase,
     missionKey: 'guide.consultor.mission',
     missionDefault: 'Manage your startup portfolio. Identify risks, prioritize attention, maximize impact.',
@@ -188,7 +188,7 @@ const ROLE_GUIDES: RoleGuide[] = [
     titleDefault: 'Ops & Compliance',
     taglineKey: 'guide.admin.tagline',
     taglineDefault: 'For Administrators',
-    color: 'text-amber-600 dark:text-amber-400',
+    color: 'text-[hsl(var(--warning))]',
     icon: Shield,
     missionKey: 'guide.admin.mission',
     missionDefault: 'Ensure ecosystem operations. Manage users, programs, and system configuration.',
@@ -311,7 +311,7 @@ export default function QuickGuide() {
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-3">
-                    <div className={cn("p-2 rounded-lg", guide.color.replace('text-', 'bg-').replace('600', '100').replace(' dark:text-amber-400', ''))}>
+                    <div className={cn("p-2 rounded-lg", guide.color.replace('text-', 'bg-').replace('600', '100').replace('', ''))}>
                       <guide.icon className={cn("h-6 w-6", guide.color)} />
                     </div>
                     <div>

@@ -40,16 +40,16 @@ export function EnrollmentModeIndicator() {
   return (
     <div className={cn(
       'flex items-start gap-2.5 p-3 rounded-xl border text-xs',
-      'border-amber-200/60 dark:border-amber-800/30',
-      'bg-amber-50/60 dark:bg-amber-950/15',
-      'text-amber-800 dark:text-amber-300'
+      'border-[hsl(var(--warning))]/60',
+      'bg-[hsl(var(--warning))]/60',
+      'text-[hsl(var(--warning))]'
     )}>
-      <Shield className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+      <Shield className="h-4 w-4 mt-0.5 shrink-0 text-[hsl(var(--warning))]" />
       <div className="space-y-1">
         <p className="font-medium">
           {t('login.inviteOnlyBanner', { defaultValue: 'Plataforma por convite' })}
         </p>
-        <p className="text-amber-700/80 dark:text-amber-400/70">
+        <p className="text-[hsl(var(--warning))]/80">
           {t('login.inviteOnlyBannerDesc', { 
             defaultValue: 'O registo está atualmente limitado a convites. Se a sua startup já faz parte do ecossistema, pode fazer login normalmente. Para novos registos, contacte a equipa Startup Leiria.' 
           })}

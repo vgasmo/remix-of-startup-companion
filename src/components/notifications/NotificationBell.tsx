@@ -48,26 +48,26 @@ const NOTIFICATION_ICONS: Record<string, typeof Bell> = {
 
 // Type-specific colors for better visual hierarchy
 const NOTIFICATION_COLORS: Record<string, string> = {
-  task_due: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  task_due: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
   task_overdue: 'bg-destructive/10 text-destructive',
-  next_action_due: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+  next_action_due: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
   next_action_overdue: 'bg-destructive/10 text-destructive',
   recap_ready: 'bg-primary/10 text-primary',
-  email_sync_done: 'bg-green-500/10 text-green-600 dark:text-green-400',
+  email_sync_done: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
   overdue_escalated: 'bg-destructive/10 text-destructive',
   system: 'bg-muted text-muted-foreground',
   // Automation types
-  discount_expiring: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  discount_expiring: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
   contract_anniversary: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
   founder_inactive: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
   contract_expiring: 'bg-destructive/10 text-destructive',
-  checkin_overdue: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  checkin_overdue: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
   kpi_stale: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
-  crm_lead_stale: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+  crm_lead_stale: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
   milestone_overdue: 'bg-destructive/10 text-destructive',
   pending_approval: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
-  intake_stale: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  session_no_notes: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+  intake_stale: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
+  session_no_notes: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
   workspace_no_consultant: 'bg-destructive/10 text-destructive',
 };
 

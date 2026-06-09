@@ -130,7 +130,7 @@ export function TopRisksPanel({ workspaces, onDrillDown }: TopRisksPanelProps) {
             className="h-8"
           >
             {copied ? (
-              <Check className="h-4 w-4 text-green-500" />
+              <Check className="h-4 w-4 text-[hsl(var(--success))]" />
             ) : (
               <Copy className="h-4 w-4" />
             )}
