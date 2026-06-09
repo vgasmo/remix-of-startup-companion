@@ -3328,7 +3328,9 @@
     "insights": "Insights",
     "itemsNeedAttention": "{{count}} item precisa de atenção",
     "itemsNeedAttention_plural": "{{count}} itens precisam de atenção",
+    "kpiAlert": "Atenção ao KPI",
     "last7Days": "Últimos 7 dias",
+    "reviewKpi": "Rever KPI →",
     "meetingsThisWeek": "Reuniões Esta Semana",
     "meetingsToday": "Reuniões Hoje",
     "myStartup": "A Minha Startup",
@@ -3867,6 +3869,13 @@
     "uploadFirst": "Carregue o primeiro documento",
     "welcomeDesc": "A sua jornada startup começa aqui.",
     "welcomeTitle": "Bem-vindo ao Startup Leiria"
+  },
+  "engagement": {
+    "lastViewed": "Visto {{when}}",
+    "viewsCount": "{{count}} visualização",
+    "viewsCount_plural": "{{count}} visualizações",
+    "founderCompletedActions": "O founder completou {{count}} ação desde a sua última visita.",
+    "founderCompletedActions_plural": "O founder completou {{count}} ações desde a sua última visita."
   },
   "enrollment": {
     "claimExplainer": "O fluxo de claim é independente do modo de registo: após login, founders verificam se a sua startup já está no sistema.",
