@@ -39,7 +39,7 @@ export function EmailReviewQueue({ onAttach }: EmailReviewQueueProps) {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 text-amber-500" />
+          <AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))]" />
           {t('crm.emailReviewQueue', { defaultValue: 'Emails para Revisão' })}
           {emails && emails.length > 0 && (
             <Badge variant="secondary" className="text-xs">{emails.length}</Badge>
@@ -63,7 +63,7 @@ export function EmailReviewQueue({ onAttach }: EmailReviewQueueProps) {
                     <div className="flex items-start gap-2">
                       <div className="mt-0.5">
                         {email.direction === 'inbound' ? (
-                          <ArrowDownLeft className="h-3.5 w-3.5 text-blue-500" />
+                          <ArrowDownLeft className="h-3.5 w-3.5 text-[hsl(var(--info))]" />
                         ) : (
                           <ArrowUpRight className="h-3.5 w-3.5 text-emerald-500" />
                         )}

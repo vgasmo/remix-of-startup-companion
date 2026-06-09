@@ -74,6 +74,7 @@ export function EnrollmentControlCenter() {
     <Card className="rounded-2xl border-border/60">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
+          {/* intentional: paired emerald/amber open-vs-closed category palette (emerald is out of token map) */}
           <div className={cn(
             'h-9 w-9 rounded-xl flex items-center justify-center',
             isOpenRegistration ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
@@ -151,7 +152,7 @@ export function EnrollmentControlCenter() {
               onClick={() => navigate('/admin?tab=approvals')}
               className="flex items-center gap-2 p-2.5 rounded-lg border border-border/40 bg-background hover:bg-muted/40 transition-colors text-left"
             >
-              <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+              <Clock className="h-3.5 w-3.5 text-[hsl(var(--warning))] shrink-0" />
               <div className="min-w-0">
                 <p className="text-lg font-semibold leading-tight">{claimStats?.pendingProfiles ?? stats?.pendingApprovalsCount ?? '—'}</p>
                 <p className="text-[10px] text-muted-foreground truncate">{t('enrollment.pendingApprovals', { defaultValue: 'Aprovações pendentes' })}</p>
@@ -171,7 +172,7 @@ export function EnrollmentControlCenter() {
               onClick={() => navigate('/admin?tab=workspaces')}
               className="flex items-center gap-2 p-2.5 rounded-lg border border-border/40 bg-background hover:bg-muted/40 transition-colors text-left"
             >
-              <UserPlus className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+              <UserPlus className="h-3.5 w-3.5 text-[hsl(var(--info))] shrink-0" />
               <div className="min-w-0">
                 <p className="text-lg font-semibold leading-tight">{claimStats?.unclaimedWorkspaces ?? '—'}</p>
                 <p className="text-[10px] text-muted-foreground truncate">{t('enrollment.unclaimed', { defaultValue: 'Importadas não reclamadas' })}</p>

@@ -225,7 +225,7 @@ export function SessionArtifactsPanel({
             {generatedArtifacts.decisions?.length > 0 && (
               <div className="space-y-2">
                 <h4 className="font-medium text-sm flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))]" />
                   {t('sessions.decisionsLabel')}
                 </h4>
                 <ul className="text-sm space-y-1">
@@ -239,7 +239,7 @@ export function SessionArtifactsPanel({
             {generatedArtifacts.risks?.length > 0 && (
               <div className="space-y-2">
                 <h4 className="font-medium text-sm flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  <AlertCircle className="h-4 w-4 text-[hsl(var(--warning))]" />
                   {t('sessions.risksAndConcerns')}
                 </h4>
                 <ul className="text-sm space-y-1">
@@ -253,7 +253,7 @@ export function SessionArtifactsPanel({
             {actionsCreated.length > 0 && (
               <div className="space-y-2">
                 <h4 className="font-medium text-sm flex items-center gap-2">
-                  <ListTodo className="h-4 w-4 text-blue-500" />
+                  <ListTodo className="h-4 w-4 text-[hsl(var(--info))]" />
                   {t('sessions.actionsCreated')} ({actionsCreated.length})
                 </h4>
                 <ul className="text-sm space-y-1">

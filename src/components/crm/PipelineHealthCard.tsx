@@ -106,9 +106,9 @@ export function PipelineHealthCard({ items }: PipelineHealthProps) {
   }, stageMetrics[0]);
 
   const getHealthColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 dark:text-green-400';
-    if (score >= 60) return 'text-amber-600 dark:text-amber-400';
-    return 'text-red-600 dark:text-red-400';
+    if (score >= 80) return 'text-[hsl(var(--success))]';
+    if (score >= 60) return 'text-[hsl(var(--warning))]';
+    return 'text-destructive';
   };
 
   return (
@@ -136,11 +136,11 @@ export function PipelineHealthCard({ items }: PipelineHealthProps) {
             <p className="text-xs text-muted-foreground">{t('crm.pipelineHealth.activeLeads', 'Active Leads')}</p>
           </div>
           <div className="text-center p-3 rounded-lg bg-muted/50">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{recentConversions}</div>
+            <div className="text-2xl font-bold text-[hsl(var(--success))]">{recentConversions}</div>
             <p className="text-xs text-muted-foreground">{t('crm.pipelineHealth.last30Days', 'Converted (30d)')}</p>
           </div>
           <div className="text-center p-3 rounded-lg bg-muted/50">
-            <div className={cn('text-2xl font-bold', totalStale > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400')}>
+            <div className={cn('text-2xl font-bold', totalStale > 0 ? 'text-[hsl(var(--warning))]' : 'text-[hsl(var(--success))]')}>
               {totalStale}
             </div>
             <p className="text-xs text-muted-foreground">{t('crm.pipelineHealth.staleLeads', 'Stale Leads')}</p>
@@ -171,7 +171,7 @@ export function PipelineHealthCard({ items }: PipelineHealthProps) {
                   </div>
                 )}
                 {metric.staleCount > 0 && (
-                  <Badge variant="outline" className="text-xs text-amber-600 border-amber-500">
+                  <Badge variant="outline" className="text-xs text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30">
                     <AlertTriangle className="h-3 w-3 mr-1" />
                     {metric.staleCount}
                   </Badge>
@@ -184,13 +184,13 @@ export function PipelineHealthCard({ items }: PipelineHealthProps) {
         {/* Insights */}
         <div className="space-y-3">
           {bottleneck && bottleneck.staleCount > 0 && (
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-              <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-[hsl(var(--warning))]/10 border border-[hsl(var(--warning))]/30">
+              <AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))] shrink-0" />
               <div>
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                <p className="text-sm font-medium text-[hsl(var(--warning))]">
                   {t('crm.pipelineHealth.bottleneckTitle', 'Bottleneck Detected')}
                 </p>
-                <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                <p className="text-xs text-[hsl(var(--warning))] mt-1">
                   {t('crm.pipelineHealth.bottleneckDesc', 
                     '{{stage}} has {{count}} stale leads averaging {{days}} days. Consider re-engaging or disqualifying.',
                     { stage: bottleneck.label, count: bottleneck.staleCount, days: bottleneck.avgDaysInStage }
@@ -201,13 +201,13 @@ export function PipelineHealthCard({ items }: PipelineHealthProps) {
           )}
 
           {recentConversions > 0 && (
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-              <CheckCircle className="h-5 w-5 text-green-600 shrink-0" />
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/30">
+              <CheckCircle className="h-5 w-5 text-[hsl(var(--success))] shrink-0" />
               <div>
-                <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                <p className="text-sm font-medium text-[hsl(var(--success))]">
                   {t('crm.pipelineHealth.velocityTitle', 'Good Velocity')}
                 </p>
-                <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                <p className="text-xs text-[hsl(var(--success))] mt-1">
                   {t('crm.pipelineHealth.velocityDesc', 
                     '{{count}} leads converted to contracted/incubating in the last 30 days.',
                     { count: recentConversions }

@@ -48,8 +48,8 @@ interface CollaborativeNotesEditorProps {
 }
 
 const PRESENCE_COLORS = [
-  'bg-blue-500',
-  'bg-green-500',
+  'bg-[hsl(var(--info))]',
+  'bg-[hsl(var(--success))]',
   'bg-purple-500',
   'bg-orange-500',
   'bg-pink-500',
@@ -254,7 +254,7 @@ export function CollaborativeNotesEditor({
                       </AvatarFallback>
                     </Avatar>
                     {presence.isTyping && (
-                      <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                      <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-[hsl(var(--success))] animate-pulse" />
                     )}
                   </button>
                 </PopoverTrigger>

@@ -29,8 +29,8 @@ import {
 } from "@/hooks/useSurveys";
 
 const STATUS_ICONS = {
-  submitted: <CheckCircle className="h-4 w-4 text-green-500" />,
-  in_progress: <Clock className="h-4 w-4 text-yellow-500" />,
+  submitted: <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />,
+  in_progress: <Clock className="h-4 w-4 text-[hsl(var(--warning))]" />,
   pending: <AlertCircle className="h-4 w-4 text-muted-foreground" />,
 };
 
@@ -84,11 +84,11 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
       <div className="flex justify-between items-center">
         <div className="flex gap-4 text-sm">
           <span className="flex items-center gap-1">
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />
             {instances.filter((i) => i.status === "submitted").length} submitted
           </span>
           <span className="flex items-center gap-1">
-            <Clock className="h-4 w-4 text-yellow-500" />
+            <Clock className="h-4 w-4 text-[hsl(var(--warning))]" />
             {instances.filter((i) => i.status === "in_progress").length} in progress
           </span>
           <span className="flex items-center gap-1">

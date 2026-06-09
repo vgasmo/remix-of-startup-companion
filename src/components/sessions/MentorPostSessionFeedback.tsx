@@ -160,7 +160,7 @@ export function MentorPostSessionFeedback({
                   type="button"
                   onClick={() => setRating(value)}
                   className={`p-1 transition-colors ${
-                    value <= rating ? 'text-amber-400' : 'text-muted-foreground/30'
+                    value <= rating ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground/30'
                   }`}
                 >
                   <Star className={`h-6 w-6 ${value <= rating ? 'fill-current' : ''}`} />
@@ -172,7 +172,7 @@ export function MentorPostSessionFeedback({
           {/* What was clarified */}
           <div className="space-y-2">
             <Label htmlFor="clarified" className="flex items-center gap-2 text-sm">
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />
               {t('mentorFeedback.whatClarified')}
             </Label>
             <Textarea
@@ -188,7 +188,7 @@ export function MentorPostSessionFeedback({
           {/* What's blocked */}
           <div className="space-y-2">
             <Label htmlFor="blocked" className="flex items-center gap-2 text-sm">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertCircle className="h-4 w-4 text-[hsl(var(--warning))]" />
               {t('mentorFeedback.whatBlocked')}
             </Label>
             <Textarea

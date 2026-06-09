@@ -319,8 +319,8 @@ export function AdminEcosystemManager() {
                       <TableCell>
                         {item.health_score !== null ? (
                           <span className={`text-sm font-medium ${
-                            healthScoreNum(item.health_score) >= 70 ? 'text-green-600 dark:text-green-400' :
-                            healthScoreNum(item.health_score) >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
+                            healthScoreNum(item.health_score) >= 70 ? 'text-[hsl(var(--success))]' :
+                            healthScoreNum(item.health_score) >= 50 ? 'text-[hsl(var(--warning))]' : 'text-destructive'
                           }`}>
                             {typeof item.health_score === 'number' ? item.health_score : '—'}
                           </span>

@@ -75,7 +75,7 @@ export function SessionFeedbackCard({ sessionId, sessionTitle }: SessionFeedback
             <div className="flex items-center gap-2 mb-4">
               <div className="flex">
                 {[1, 2, 3, 4, 5].map(star => (
-                  <Star key={star} className={`h-5 w-5 ${star <= parseFloat(avgRating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
+                  <Star key={star} className={`h-5 w-5 ${star <= parseFloat(avgRating) ? 'fill-yellow-400 text-[hsl(var(--warning))]' : 'text-muted-foreground'}`} />
                 ))}
               </div>
               <span className="font-medium">{avgRating}</span>
@@ -94,7 +94,7 @@ export function SessionFeedbackCard({ sessionId, sessionTitle }: SessionFeedback
                   <span className="text-sm font-medium">{f.user?.full_name || 'Anonymous'}</span>
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map(star => (
-                      <Star key={star} className={`h-3 w-3 ${star <= f.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
+                      <Star key={star} className={`h-3 w-3 ${star <= f.rating ? 'fill-yellow-400 text-[hsl(var(--warning))]' : 'text-muted-foreground'}`} />
                     ))}
                   </div>
                 </div>
@@ -130,8 +130,8 @@ export function SessionFeedbackCard({ sessionId, sessionTitle }: SessionFeedback
                   >
                     <Star className={`h-8 w-8 transition-colors ${
                       star <= (hoveredStar || rating) 
-                        ? 'fill-yellow-400 text-yellow-400' 
-                        : 'text-muted-foreground hover:text-yellow-300'
+                        ? 'fill-yellow-400 text-[hsl(var(--warning))]' 
+                        : 'text-muted-foreground hover:text-[hsl(var(--warning))]'
                     }`} />
                   </button>
                 ))}

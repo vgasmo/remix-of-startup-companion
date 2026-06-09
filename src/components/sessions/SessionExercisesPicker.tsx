@@ -89,7 +89,7 @@ export function SessionExercisesPicker({ sessionId, canEdit }: SessionExercisesP
             <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Lightbulb className="h-4 w-4 text-amber-500" />
+                  <Lightbulb className="h-4 w-4 text-[hsl(var(--warning))]" />
                   <CardTitle className="text-sm font-medium">
                     Exercises
                   </CardTitle>

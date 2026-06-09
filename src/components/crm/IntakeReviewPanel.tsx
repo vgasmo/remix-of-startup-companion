@@ -114,13 +114,13 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
     intake_requested: 'bg-cyan-100 text-cyan-800',
     intake_in_progress: 'bg-cyan-50 text-cyan-700',
     intake_submitted: 'bg-teal-100 text-teal-800',
-    review_pending: 'bg-amber-100 text-amber-800',
-    changes_requested: 'bg-yellow-100 text-yellow-800',
+    review_pending: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
+    changes_requested: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
     approved_for_signature: 'bg-lime-100 text-lime-800',
-    signature_sent: 'bg-green-100 text-green-800',
-    signed: 'bg-green-200 text-green-900',
+    signature_sent: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
+    signed: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
     activated: 'bg-emerald-200 text-emerald-900',
-    cancelled: 'bg-red-100 text-red-800',
+    cancelled: 'bg-destructive/10 text-destructive',
   };
 
   const missingDocs = intake.missing_documents || [];
@@ -159,14 +159,14 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
 
         {/* Missing Documents Warning */}
         {missingDocs.length > 0 && (
-          <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-900/20 p-3">
-            <p className="text-xs font-semibold text-amber-800 dark:text-amber-200 flex items-center gap-1.5 mb-1">
+          <div className="rounded-md border border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/10 p-3">
+            <p className="text-xs font-semibold text-[hsl(var(--warning))] flex items-center gap-1.5 mb-1">
               <AlertTriangle className="h-3.5 w-3.5" />
               Documentos em Falta ({missingDocs.length})
             </p>
             <div className="flex flex-wrap gap-1">
               {missingDocs.map(doc => (
-                <Badge key={doc} variant="outline" className="text-[10px] border-amber-300">
+                <Badge key={doc} variant="outline" className="text-[10px] border-[hsl(var(--warning))]/30">
                   {doc.replace(/_/g, ' ')}
                 </Badge>
               ))}
@@ -176,9 +176,9 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
 
         {/* Changes Requested Notes */}
         {intake.changes_requested_notes && intake.status === 'changes_requested' && (
-          <div className="rounded-md border border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 p-3">
-            <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-200 mb-1">{t('intake.changesRequested', 'Correções Pedidas')}</p>
-            <p className="text-xs text-yellow-700 dark:text-yellow-300">{intake.changes_requested_notes}</p>
+          <div className="rounded-md border border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/10 p-3">
+            <p className="text-xs font-semibold text-[hsl(var(--warning))] mb-1">{t('intake.changesRequested', 'Correções Pedidas')}</p>
+            <p className="text-xs text-[hsl(var(--warning))]">{intake.changes_requested_notes}</p>
           </div>
         )}
 
@@ -220,7 +220,7 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
                   {showNotes === 'approve' && (
                     <Button
                       size="sm"
-                      className="gap-1.5 bg-green-600 hover:bg-green-700"
+                      className="gap-1.5 bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]"
                       onClick={() => handleTransition('approved_for_signature')}
                       disabled={transition.isPending}
                     >
@@ -232,7 +232,7 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="gap-1.5 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
+                      className="gap-1.5 border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning))]/10"
                       onClick={() => handleTransition('changes_requested')}
                       disabled={transition.isPending || !actionNotes.trim()}
                     >
@@ -261,7 +261,7 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
               <div className="flex flex-wrap gap-2">
                 <Button
                   size="sm"
-                  className="gap-1.5 bg-green-600 hover:bg-green-700"
+                  className="gap-1.5 bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]"
                   onClick={() => setShowNotes('approve')}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5" />
@@ -270,7 +270,7 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="gap-1.5 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
+                  className="gap-1.5 border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning))]/10"
                   onClick={() => setShowNotes('changes')}
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
@@ -340,12 +340,12 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
 
         {/* Signature sent info */}
         {isSignatureSent && (
-          <div className="rounded-md border border-green-200 bg-green-50 dark:bg-green-900/20 p-3">
-            <p className="text-xs font-semibold text-green-800 dark:text-green-200 flex items-center gap-1.5">
+          <div className="rounded-md border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 p-3">
+            <p className="text-xs font-semibold text-[hsl(var(--success))] flex items-center gap-1.5">
               <Send className="h-3.5 w-3.5" />
               Contrato Enviado para Assinatura
             </p>
-            <p className="text-[10px] text-green-700 dark:text-green-300 mt-1">
+            <p className="text-[10px] text-[hsl(var(--success))] mt-1">
               A aguardar assinatura do cliente. Verifique o estado no provider de assinatura.
             </p>
           </div>

@@ -387,7 +387,7 @@ export function ContractLifecycleHub() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{stats.expiringIn30}</div>
+              <div className="text-2xl font-bold text-[hsl(var(--warning))]">{stats.expiringIn30}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 {t('lifecycle.expiringIn90', { count: stats.expiringIn90 })}
               </p>
@@ -401,7 +401,7 @@ export function ContractLifecycleHub() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.leadsReadyForContract}</div>
+              <div className="text-2xl font-bold text-[hsl(var(--info))]">{stats.leadsReadyForContract}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 {t('lifecycle.leadsInContracted')}
               </p>
@@ -435,6 +435,7 @@ export function ContractLifecycleHub() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between gap-2">
+              {/* intentional: lifecycle category palette — distinct hue per pipeline stage, not state semantics */}
               {[
                 { label: t('lifecycle.pipelineNew'), count: pipeline.new, color: 'bg-slate-500' },
                 { label: t('lifecycle.pipelineMeetings'), count: pipeline.meeting, color: 'bg-blue-500' },
@@ -495,7 +496,7 @@ export function ContractLifecycleHub() {
                   <ScrollArea className="h-[200px]">
                     {alerts.filter(a => a.type === 'renewal_due').length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground py-8">
-                        <CheckCircle2 className="h-8 w-8 mb-2 text-green-500" />
+                        <CheckCircle2 className="h-8 w-8 mb-2 text-[hsl(var(--success))]" />
                         <p className="text-sm">{t('lifecycle.noUpcomingRenewals')}</p>
                       </div>
                     ) : (
@@ -509,8 +510,8 @@ export function ContractLifecycleHub() {
                             <div className="flex items-center gap-2">
                               <div className={cn(
                                 'w-2 h-2 rounded-full',
-                                alert.severity === 'critical' ? 'bg-red-500' :
-                                alert.severity === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
+                                alert.severity === 'critical' ? 'bg-destructive' :
+                                alert.severity === 'warning' ? 'bg-[hsl(var(--warning))]' : 'bg-[hsl(var(--info))]'
                               )} />
                               <span className="text-sm font-medium">{alert.entityName}</span>
                             </div>
@@ -537,7 +538,7 @@ export function ContractLifecycleHub() {
                   <ScrollArea className="h-[200px]">
                     {alerts.filter(a => a.type === 'anniversary').length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground py-8">
-                        <CheckCircle2 className="h-8 w-8 mb-2 text-green-500" />
+                        <CheckCircle2 className="h-8 w-8 mb-2 text-[hsl(var(--success))]" />
                         <p className="text-sm">{t('lifecycle.noAnniversaries')}</p>
                       </div>
                     ) : (
@@ -551,8 +552,8 @@ export function ContractLifecycleHub() {
                             <div className="flex items-center gap-2">
                               <div className={cn(
                                 'w-2 h-2 rounded-full',
-                                alert.severity === 'critical' ? 'bg-red-500' :
-                                alert.severity === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
+                                alert.severity === 'critical' ? 'bg-destructive' :
+                                alert.severity === 'warning' ? 'bg-[hsl(var(--warning))]' : 'bg-[hsl(var(--info))]'
                               )} />
                               <div>
                                 <span className="text-sm font-medium">{alert.entityName}</span>
@@ -643,7 +644,7 @@ export function ContractLifecycleHub() {
               <CardContent>
                 {alerts.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <CheckCircle2 className="h-12 w-12 text-green-500 mb-4" />
+                    <CheckCircle2 className="h-12 w-12 text-[hsl(var(--success))] mb-4" />
                     <h3 className="text-lg font-medium">{t('lifecycle.noAlerts')}</h3>
                     <p className="text-muted-foreground">{t('lifecycle.noAlertsDesc')}</p>
                   </div>
@@ -655,16 +656,16 @@ export function ContractLifecycleHub() {
                           key={alert.id}
                           className={cn(
                             'flex items-center justify-between p-3 rounded-lg border transition-colors hover:bg-muted/50',
-                            alert.severity === 'critical' && 'border-red-200 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20',
-                            alert.severity === 'warning' && 'border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20'
+                            alert.severity === 'critical' && 'border-destructive/30 bg-destructive/50 ',
+                            alert.severity === 'warning' && 'border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/50 '
                           )}
                         >
                           <div className="flex items-center gap-3">
                             <div className={cn(
                               'p-2 rounded-full',
-                              alert.severity === 'critical' ? 'bg-red-100 text-red-600 dark:bg-red-900/50' :
-                              alert.severity === 'warning' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/50' :
-                              'bg-blue-100 text-blue-600 dark:bg-blue-900/50'
+                              alert.severity === 'critical' ? 'bg-destructive/10 text-destructive' :
+                              alert.severity === 'warning' ? 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]' :
+                              'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]'
                             )}>
                               {alert.type === 'renewal_due' ? <Calendar className="h-4 w-4" /> :
                                alert.type === 'anniversary' ? <Clock className="h-4 w-4" /> :
@@ -709,7 +710,7 @@ export function ContractLifecycleHub() {
               <CardContent>
                 {contractedLeadsWithoutContract.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <CheckCircle2 className="h-12 w-12 text-green-500 mb-4" />
+                    <CheckCircle2 className="h-12 w-12 text-[hsl(var(--success))] mb-4" />
                     <h3 className="text-lg font-medium">{t('lifecycle.allConverted')}</h3>
                     <p className="text-muted-foreground">{t('lifecycle.allConvertedDesc')}</p>
                   </div>
@@ -721,7 +722,7 @@ export function ContractLifecycleHub() {
                         className="flex items-center justify-between p-4 rounded-lg border bg-muted/30"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-full bg-green-100 text-green-600 dark:bg-green-900/50">
+                          <div className="p-2 rounded-full bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]">
                             <Building2 className="h-4 w-4" />
                           </div>
                           <div>

@@ -25,10 +25,10 @@ const HEALTH_LEVELS = ['thriving', 'healthy', 'stable', 'at_risk', 'critical'] a
 
 const healthColors: Record<string, string> = {
   thriving: 'bg-emerald-500/80 hover:bg-emerald-500',
-  healthy: 'bg-green-400/70 hover:bg-green-400',
-  stable: 'bg-amber-400/60 hover:bg-amber-400',
+  healthy: 'bg-[hsl(var(--success))]/70 hover:bg-[hsl(var(--success))]',
+  stable: 'bg-[hsl(var(--warning))]/60 hover:bg-[hsl(var(--warning))]',
   at_risk: 'bg-orange-500/70 hover:bg-orange-500',
-  critical: 'bg-red-500/80 hover:bg-red-500',
+  critical: 'bg-destructive/80 hover:bg-destructive',
 };
 
 const healthLabels: Record<string, string> = {

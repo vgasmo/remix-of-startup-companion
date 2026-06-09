@@ -273,9 +273,9 @@ export function BookingLinksManager() {
                   <TableCell>
                     {link.active ? (
                       link.expires_at && new Date(link.expires_at) < new Date() ? (
-                        <Badge variant="outline" className="text-yellow-600 dark:text-yellow-400">{t('common.expired', 'Expirado')}</Badge>
+                        <Badge variant="outline" className="text-[hsl(var(--warning))]">{t('common.expired', 'Expirado')}</Badge>
                       ) : (
-                        <Badge variant="outline" className="text-green-600 dark:text-green-400">{t('common.active', 'Ativo')}</Badge>
+                        <Badge variant="outline" className="text-[hsl(var(--success))]">{t('common.active', 'Ativo')}</Badge>
                       )
                     ) : (
                       <Badge variant="outline" className="text-muted-foreground">{t('common.inactive', 'Inativo')}</Badge>

@@ -98,7 +98,7 @@ export function AlertRulesEditor({ programId, programName }: AlertRulesEditorPro
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-amber-600" />
+          <AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))]" />
           Regras de Alerta
           {programName && <Badge variant="outline">{programName}</Badge>}
         </CardTitle>

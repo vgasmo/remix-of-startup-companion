@@ -25,7 +25,7 @@ interface LinkedContextPanelProps {
 const CONTRACT_STATUS_COLORS: Record<string, string> = {
   active: 'bg-emerald-500/15 text-emerald-700 border-emerald-200',
   draft: 'bg-muted text-muted-foreground',
-  pending_signature: 'bg-amber-500/15 text-amber-700 border-amber-200',
+  pending_signature: 'bg-[hsl(var(--warning))]/15 text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30',
   suspended: 'bg-destructive/15 text-destructive',
   terminated: 'bg-destructive/15 text-destructive',
   expired: 'bg-muted text-muted-foreground',

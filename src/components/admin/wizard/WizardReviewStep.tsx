@@ -83,10 +83,10 @@ export function WizardReviewStep({
           </AlertDescription>
         </Alert>
       ) : (
-        <Alert className="border-green-500 bg-green-50 dark:bg-green-950/20">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertTitle className="text-green-600">{t('admin.wizard.readyToPublish', 'Pronto para Publicar')}</AlertTitle>
-          <AlertDescription className="text-green-700 dark:text-green-400">
+        <Alert className="border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10">
+          <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />
+          <AlertTitle className="text-[hsl(var(--success))]">{t('admin.wizard.readyToPublish', 'Pronto para Publicar')}</AlertTitle>
+          <AlertDescription className="text-[hsl(var(--success))]">
             {t('admin.wizard.allValidationsPassed', 'Todas as validações passaram. A configuração do programa está pronta para ser publicada.')}
           </AlertDescription>
         </Alert>
@@ -151,7 +151,7 @@ export function WizardReviewStep({
               <p className="text-2xl font-bold">{totalKpis}</p>
               <p className="text-xs text-muted-foreground">{t('admin.wizard.totalAcrossStages', 'Total em todas as etapas')}</p>
               <div className="flex items-center gap-1 mt-2">
-                <Star className="h-3 w-3 text-yellow-500" />
+                <Star className="h-3 w-3 text-[hsl(var(--warning))]" />
                 <span className="text-xs">
                   {coreKpis?.length || 0} {t('admin.wizard.coreKpis', 'KPIs principais')}
                 </span>
@@ -201,7 +201,7 @@ export function WizardReviewStep({
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
                 {healthModel?.is_enabled ? (
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />
                 ) : (
                   <XCircle className="h-4 w-4 text-muted-foreground" />
                 )}
@@ -232,7 +232,7 @@ export function WizardReviewStep({
             <div className="flex flex-wrap gap-2">
               {coreKpis?.map((kpi, idx) => (
                 <Badge key={idx} variant="outline" className="gap-1">
-                  <Star className="h-3 w-3 text-yellow-500" />
+                  <Star className="h-3 w-3 text-[hsl(var(--warning))]" />
                   {kpi.name}
                 </Badge>
               ))}

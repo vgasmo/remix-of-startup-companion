@@ -396,12 +396,12 @@ export function AdminExternalMentorsManager() {
                           </a>
                         )}
                         {mentor.ndaAccepted ? (
-                          <Badge variant="outline" className="gap-1 text-green-600 border-green-600">
+                          <Badge variant="outline" className="gap-1 text-[hsl(var(--success))] border-[hsl(var(--success))]/30">
                             <ShieldCheck className="h-3 w-3" />
                             {t('admin.mentors.ndaAccepted')}
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="gap-1 text-amber-600 border-amber-600">
+                          <Badge variant="outline" className="gap-1 text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30">
                             <Shield className="h-3 w-3" />
                             {t('admin.mentors.ndaPending')}
                           </Badge>

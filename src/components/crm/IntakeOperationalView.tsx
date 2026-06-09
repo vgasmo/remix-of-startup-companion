@@ -42,7 +42,7 @@ const GROUP_CONFIG = {
     icon: RotateCcw,
     emptyText: 'Nenhum intake a aguardar correções.',
     emptyAction: 'Intakes devolvidos ao cliente para correção aparecerão aqui.',
-    color: 'text-yellow-700 dark:text-yellow-300',
+    color: 'text-[hsl(var(--warning))]',
   },
   ready_for_signature: {
     title: 'Aprovados p/ Assinatura',
@@ -56,7 +56,7 @@ const GROUP_CONFIG = {
     icon: Send,
     emptyText: 'Nenhum contrato a aguardar assinatura.',
     emptyAction: 'Contratos enviados ao cliente para assinatura aparecerão aqui.',
-    color: 'text-green-700 dark:text-green-300',
+    color: 'text-[hsl(var(--success))]',
   },
   signed_pending_activation: {
     title: 'Assinados — Pendentes de Ativação',
@@ -96,14 +96,14 @@ export function IntakeOperationalView({ onSelectIntake }: IntakeOperationalViewP
     <div className="space-y-4">
       {/* Overdue alert */}
       {overdueIntakes.length > 0 && (
-        <Card className="border-amber-300 bg-amber-50 dark:bg-amber-900/20">
+        <Card className="border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/10">
           <CardContent className="p-3 flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+            <AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))] shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+              <p className="text-sm font-semibold text-[hsl(var(--warning))]">
                 {overdueIntakes.length} pedido(s) sem resposta há mais de 10 dias
               </p>
-              <p className="text-xs text-amber-700 dark:text-amber-300">
+              <p className="text-xs text-[hsl(var(--warning))]">
                 Considere reenviar o email ou contactar diretamente o cliente.
               </p>
             </div>
@@ -190,7 +190,7 @@ function IntakeCard({ intake, isOverdue, onClick }: { intake: ContractIntake; is
             {formatRelativeTime(intake.updated_at)}
           </span>
           {isOverdue && (
-            <Badge variant="outline" className="text-[9px] h-4 border-amber-400 text-amber-600">
+            <Badge variant="outline" className="text-[9px] h-4 border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))]">
               <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
               Overdue
             </Badge>

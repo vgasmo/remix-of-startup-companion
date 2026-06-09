@@ -279,7 +279,7 @@ export function FacilitatorMode({ session, onClose, onCreateAction }: Facilitato
             <CardContent className="p-6 h-full flex flex-col">
               <div className="flex items-center gap-2 mb-4">
                 {currentItem?.type === 'exercise' ? (
-                  <Lightbulb className="h-5 w-5 text-amber-500" />
+                  <Lightbulb className="h-5 w-5 text-[hsl(var(--warning))]" />
                 ) : (
                   <Target className="h-5 w-5 text-primary" />
                 )}
@@ -292,14 +292,14 @@ export function FacilitatorMode({ session, onClose, onCreateAction }: Facilitato
 
               {/* Exercise facilitator tips */}
               {currentItem?.type === 'exercise' && currentItem.exercise?.facilitator_tips && (
-                <div className="mt-auto p-4 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200">
+                <div className="mt-auto p-4 rounded-lg bg-[hsl(var(--info))]/10 border border-[hsl(var(--info))]/30">
                   <div className="flex items-center gap-2 mb-2">
-                    <Lightbulb className="h-4 w-4 text-blue-600" />
-                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                    <Lightbulb className="h-4 w-4 text-[hsl(var(--info))]" />
+                    <p className="text-sm font-medium text-[hsl(var(--info))]">
                       Facilitator Tips
                     </p>
                   </div>
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <p className="text-sm text-[hsl(var(--info))]">
                     {currentItem.exercise.facilitator_tips}
                   </p>
                 </div>

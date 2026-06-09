@@ -149,7 +149,7 @@ export function FollowupAutopilotCard({
   }
 
   return (
-    <Card className={isFollowupSent ? 'border-green-200 bg-green-50/30 dark:border-green-900 dark:bg-green-950/10' : ''}>
+    <Card className={isFollowupSent ? 'border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/30 ' : ''}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
@@ -158,7 +158,7 @@ export function FollowupAutopilotCard({
           </CardTitle>
           {isFollowupSent && (
             <Badge variant="secondary" className="gap-1">
-              <CheckCircle className="h-3 w-3 text-green-600" />
+              <CheckCircle className="h-3 w-3 text-[hsl(var(--success))]" />
               {t('followup.sent')}
             </Badge>
           )}

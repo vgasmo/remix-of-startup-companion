@@ -72,11 +72,11 @@ export function SessionSyncStatus({
   const getStatusIcon = () => {
     switch (syncStatus) {
       case 'synced':
-        return <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />;
+        return <Check className="h-3.5 w-3.5 text-[hsl(var(--success))]" />;
       case 'error':
         return <AlertCircle className="h-3.5 w-3.5 text-destructive" />;
       case 'pending':
-        return <Clock className="h-3.5 w-3.5 text-amber-500" />;
+        return <Clock className="h-3.5 w-3.5 text-[hsl(var(--warning))]" />;
       default:
         return <Calendar className="h-3.5 w-3.5 text-muted-foreground" />;
     }
@@ -117,8 +117,8 @@ export function SessionSyncStatus({
             variant={getStatusVariant()}
             className={cn(
               "text-xs gap-1 cursor-help",
-              syncStatus === 'synced' && "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-              syncStatus === 'pending' && "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+              syncStatus === 'synced' && "bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ",
+              syncStatus === 'pending' && "bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] "
             )}
           >
             {getStatusIcon()}
@@ -158,7 +158,7 @@ export function SessionSyncStatus({
                 window.open(teamsMeetingUrl, '_blank');
               }}
             >
-              <Video className="h-4 w-4 text-blue-600" />
+              <Video className="h-4 w-4 text-[hsl(var(--info))]" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>

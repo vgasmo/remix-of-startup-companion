@@ -21,10 +21,10 @@ interface SessionTranscriptsViewerProps {
 
 const SOURCE_CONFIG: Record<string, { label: string; icon: typeof FileText; color: string }> = {
   manual: { label: 'Manual', icon: FileText, color: 'bg-muted text-muted-foreground' },
-  voice: { label: 'Voice', icon: Mic, color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  meeting_ingest: { label: 'Meeting', icon: Video, color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-  zoom: { label: 'Zoom', icon: Video, color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  google_meet: { label: 'Google Meet', icon: Video, color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+  voice: { label: 'Voice', icon: Mic, color: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ' },
+  meeting_ingest: { label: 'Meeting', icon: Video, color: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ' },
+  zoom: { label: 'Zoom', icon: Video, color: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ' },
+  google_meet: { label: 'Google Meet', icon: Video, color: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ' },
 };
 
 export function SessionTranscriptsViewer({ sessionId, showEmpty = true }: SessionTranscriptsViewerProps) {

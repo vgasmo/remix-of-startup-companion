@@ -142,24 +142,24 @@ export function LeadScoreCard({ item, compact = false }: LeadScoreProps) {
       case 'hot':
         return {
           icon: Flame,
-          color: 'text-red-500',
-          bgColor: 'bg-red-100 dark:bg-red-900/30',
+          color: 'text-destructive',
+          bgColor: 'bg-destructive/10',
           label: t('crm.leadScore.hot', 'Hot Lead'),
           description: t('crm.leadScore.hotDesc', 'High engagement, ready to progress')
         };
       case 'warm':
         return {
           icon: ThermometerSun,
-          color: 'text-amber-500',
-          bgColor: 'bg-amber-100 dark:bg-amber-900/30',
+          color: 'text-[hsl(var(--warning))]',
+          bgColor: 'bg-[hsl(var(--warning))]/10',
           label: t('crm.leadScore.warm', 'Warm Lead'),
           description: t('crm.leadScore.warmDesc', 'Good potential, needs nurturing')
         };
       default:
         return {
           icon: Snowflake,
-          color: 'text-blue-500',
-          bgColor: 'bg-blue-100 dark:bg-blue-900/30',
+          color: 'text-[hsl(var(--info))]',
+          bgColor: 'bg-[hsl(var(--info))]/10',
           label: t('crm.leadScore.cold', 'Cold Lead'),
           description: t('crm.leadScore.coldDesc', 'Needs re-engagement or qualification')
         };

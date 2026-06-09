@@ -37,6 +37,7 @@ import { notify } from "@/lib/notify";
 import type { CrmInboxItem } from '@/hooks/useCrmInbox';
 import type { FunnelStage } from '@/hooks/useFunnel';
 
+// intentional: pipeline stage palette — distinct hue per CRM funnel stage, not state semantics
 // Simplified stage visual config
 const SIMPLE_STAGE_CONFIG: Record<SimplePipelineStage, { color: string; bgColor: string }> = {
   lead: { color: 'text-slate-700 dark:text-slate-300', bgColor: 'bg-slate-100 dark:bg-slate-800' },
@@ -414,9 +415,9 @@ function DraggableCard({ item, onOpenDrawer, isSelected, onToggleSelect }: Dragg
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               <div className={cn(
                 'flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full',
-                temperature === 'hot' && 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-                temperature === 'warm' && 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-                temperature === 'cold' && 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                temperature === 'hot' && 'bg-destructive/10 text-destructive ',
+                temperature === 'warm' && 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ',
+                temperature === 'cold' && 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ',
               )}>
                 {temperature === 'hot' && <Flame className="h-3 w-3" />}
                 {temperature === 'warm' && <ThermometerSun className="h-3 w-3" />}
@@ -439,7 +440,7 @@ function DraggableCard({ item, onOpenDrawer, isSelected, onToggleSelect }: Dragg
               {item.next_action_at && (
                 <span className={cn(
                   'text-[10px] flex items-center gap-1',
-                  isOverdue ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-muted-foreground'
+                  isOverdue ? 'text-[hsl(var(--warning))] font-medium' : 'text-muted-foreground'
                 )}>
                   {isOverdue && <AlertTriangle className="h-3 w-3" />}
                   {formatRelativeTime(item.next_action_at)}

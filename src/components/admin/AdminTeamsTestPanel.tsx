@@ -151,7 +151,7 @@ export function AdminTeamsTestPanel() {
           <TeamsIcon className="h-5 w-5 text-[#6264A7]" />
           {t('admin.teams.testTitle', 'Teams Notification Test')}
           {hasGlobalConfig && (
-            <Badge variant="outline" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+            <Badge variant="outline" className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ">
               <CheckCircle2 className="h-3 w-3 mr-1" />
               {t('admin.teams.globalConfigured', 'Global Configurado')}
             </Badge>
@@ -173,9 +173,9 @@ export function AdminTeamsTestPanel() {
             </AlertDescription>
           </Alert>
         ) : (
-          <Alert className="border-green-500/50 bg-green-50/50 dark:bg-green-900/10">
-            <Globe className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-700 dark:text-green-400">
+          <Alert className="border-[hsl(var(--success))]/50 bg-[hsl(var(--success))]/50">
+            <Globe className="h-4 w-4 text-[hsl(var(--success))]" />
+            <AlertDescription className="text-[hsl(var(--success))]">
               {t('admin.teams.globalActive', 'As definições globais do Teams estão ativas. Workspaces sem definições específicas usarão estas.')}
             </AlertDescription>
           </Alert>
@@ -226,11 +226,11 @@ export function AdminTeamsTestPanel() {
           <div className="rounded-lg border p-4 space-y-2">
             <div className="flex items-center gap-2">
               {lastResult.sent ? (
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <CheckCircle2 className="h-5 w-5 text-[hsl(var(--success))]" />
               ) : lastResult.error ? (
-                <AlertTriangle className="h-5 w-5 text-red-500" />
+                <AlertTriangle className="h-5 w-5 text-destructive" />
               ) : (
-                <Info className="h-5 w-5 text-amber-500" />
+                <Info className="h-5 w-5 text-[hsl(var(--warning))]" />
               )}
               <span className="font-medium">
                 {lastResult.sent ? t('admin.teams.messageSent', 'Mensagem Enviada') : lastResult.error ? t('common.error', 'Erro') : t('admin.teams.notSent', 'Não Enviada')}
@@ -256,7 +256,7 @@ export function AdminTeamsTestPanel() {
                 <div><span className="text-muted-foreground">{t('admin.teams.reason', 'Razão')}:</span> {lastResult.reason}</div>
               )}
               {lastResult.error && (
-                <div className="text-red-600"><span>{t('common.error', 'Erro')}:</span> {lastResult.error}</div>
+                <div className="text-destructive"><span>{t('common.error', 'Erro')}:</span> {lastResult.error}</div>
               )}
             </div>
           </div>

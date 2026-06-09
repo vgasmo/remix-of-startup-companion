@@ -168,6 +168,7 @@ export function DataQualityDashboard() {
     }
   };
 
+  // intentional: data-issue category palette — distinct hue per issue type (orange/red/yellow paired with category cards below)
   const getIssueIcon = (type: DataIssue['type']) => {
     switch (type) {
       case 'missing_nif':
@@ -302,7 +303,7 @@ export function DataQualityDashboard() {
             </div>
           ) : issues?.length === 0 ? (
             <div className="text-center py-8">
-              <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
+              <CheckCircle2 className="h-12 w-12 text-[hsl(var(--success))] mx-auto mb-4" />
               <p className="text-lg font-medium">{t('dataQuality.noIssues')}</p>
               <p className="text-sm text-muted-foreground">{t('dataQuality.allDataComplete')}</p>
             </div>

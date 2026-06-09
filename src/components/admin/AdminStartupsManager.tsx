@@ -518,7 +518,7 @@ export function AdminStartupsManager() {
                         
                         {formData.startup_portugal_document_path ? (
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-green-600 dark:text-green-400 border-green-600 dark:border-green-400">
+                            <Badge variant="outline" className="text-[hsl(var(--success))] border-[hsl(var(--success))]/30">
                               <CheckCircle className="h-3 w-3 mr-1" />
                               {t('admin.startupsManager.documentAttached')}
                             </Badge>
@@ -687,7 +687,7 @@ export function AdminStartupsManager() {
                         )}
                         {startup.has_startup_portugal_status && (
                           <Badge variant="outline" className="text-xs">
-                            <CheckCircle className="h-3 w-3 mr-1 text-green-600 dark:text-green-400" />
+                            <CheckCircle className="h-3 w-3 mr-1 text-[hsl(var(--success))]" />
                             {t('admin.startupsManager.startupPortugal')}
                           </Badge>
                         )}
@@ -723,7 +723,7 @@ export function AdminStartupsManager() {
                         <div className="flex items-center gap-2">
                           <Badge
                             variant="outline"
-                            className="text-xs border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                            className="text-xs border-[hsl(var(--success))]/30 text-[hsl(var(--success))] "
                           >
                             <CheckCircle className="h-3 w-3 mr-1" />
                             {t('admin.startupsManager.certified', { defaultValue: 'Certificada' })}
