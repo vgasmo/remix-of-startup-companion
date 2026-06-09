@@ -231,7 +231,7 @@ export function GlobalSearchInput() {
           {aiMode ? (
             <div className="p-3 space-y-3">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Bot className="h-3.5 w-3.5 text-violet-500" />
+                <Bot className="h-3.5 w-3.5 text-primary" />
                 <span className="font-medium">{t('copilot.title', { defaultValue: 'Copilot do Ecossistema' })}</span>
                 {copilot.isThinking && <Loader2 className="h-3 w-3 animate-spin ml-auto" />}
               </div>
@@ -284,7 +284,7 @@ export function GlobalSearchInput() {
               <div>{t('search.noResultsFor', { query })}</div>
               {query.trim().length >= 3 && (
                 <Button size="sm" variant="outline" onClick={handleAskAI} className="gap-2">
-                  <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
                   {t('search.askAI', { defaultValue: 'Perguntar à IA' })}
                 </Button>
               )}
@@ -353,7 +353,7 @@ export function GlobalSearchInput() {
             <div className="flex items-center gap-1">
               {query.trim().length >= 3 && (
                 <Button size="sm" variant="ghost" onClick={handleAskAI} className="gap-1 h-7">
-                  <Sparkles className="h-3 w-3 text-violet-500" />
+                  <Sparkles className="h-3 w-3 text-primary" />
                   <span className="text-xs">{t('search.askAI', { defaultValue: 'Perguntar à IA' })}</span>
                 </Button>
               )}

@@ -179,11 +179,11 @@ export function NextBestAction({ workspaceId, programId, stage, canWrite }: Next
 
   if (nextActions.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-[hsl(var(--success))]/30 bg-gradient-to-r from-green-50/80 via-emerald-50/50 to-transparent dark:from-green-950/30 dark:via-emerald-950/20">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-green-400/10 to-transparent rounded-bl-full" />
+      <Card className="relative overflow-hidden border-[hsl(var(--success))]/30 bg-gradient-to-r from-[hsl(var(--success))]/80 via-[hsl(var(--success))]/50 to-transparent ">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[hsl(var(--success))]/10 to-transparent rounded-bl-full" />
         <CardContent className="py-6 relative">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-[hsl(var(--success))]/10 flex items-center justify-center ring-1 ring-green-500/20">
+            <div className="h-12 w-12 rounded-xl bg-[hsl(var(--success))]/10 flex items-center justify-center ring-1 ring-[hsl(var(--success))]/20">
               <CheckCircle2 className="h-6 w-6 text-[hsl(var(--success))]" />
             </div>
             <div className="flex-1">

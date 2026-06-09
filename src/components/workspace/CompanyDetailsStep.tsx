@@ -151,7 +151,7 @@ export function CompanyDetailsStep({
               maxLength={9}
               className={cn(
                 'pr-10',
-                nifStatus === 'valid' && 'border-[hsl(var(--success))]/30 focus-visible:ring-green-500',
+                nifStatus === 'valid' && 'border-[hsl(var(--success))]/30 focus-visible:ring-[hsl(var(--success))]/30',
                 nifStatus === 'invalid' && 'border-destructive focus-visible:ring-destructive'
               )}
             />

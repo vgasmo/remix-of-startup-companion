@@ -24,10 +24,10 @@ const STAGES = ['idea', 'mvp', 'validation', 'scaling', 'growth'] as const;
 const HEALTH_LEVELS = ['thriving', 'healthy', 'stable', 'at_risk', 'critical'] as const;
 
 const healthColors: Record<string, string> = {
-  thriving: 'bg-emerald-500/80 hover:bg-emerald-500',
+  thriving: 'bg-[hsl(var(--success))]/80 hover:bg-[hsl(var(--success))]/10',
   healthy: 'bg-[hsl(var(--success))]/70 hover:bg-[hsl(var(--success))]',
   stable: 'bg-[hsl(var(--warning))]/60 hover:bg-[hsl(var(--warning))]',
-  at_risk: 'bg-orange-500/70 hover:bg-orange-500',
+  at_risk: 'bg-[hsl(var(--warning))]/70 hover:bg-[hsl(var(--warning))]/10',
   critical: 'bg-destructive/80 hover:bg-destructive',
 };
 

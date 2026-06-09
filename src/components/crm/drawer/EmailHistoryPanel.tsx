@@ -194,7 +194,7 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
                       {email.direction === 'inbound' ? (
                         <ArrowDownLeft className="h-3.5 w-3.5 text-[hsl(var(--info))]" />
                       ) : (
-                        <ArrowUpRight className="h-3.5 w-3.5 text-emerald-500" />
+                        <ArrowUpRight className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

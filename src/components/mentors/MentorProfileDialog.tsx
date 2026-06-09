@@ -48,7 +48,7 @@ export function MentorProfileDialog({ mentor, open, onOpenChange, isAssigned }: 
           <div>
             <h3 className="text-lg font-semibold">{mentor.full_name || t('mentorsPage.unnamedMentor')}</h3>
             {isAssigned && (
-              <Badge variant="outline" className="mt-1 gap-1 border-emerald-500/50 text-xs text-emerald-600 dark:text-emerald-400">
+              <Badge variant="outline" className="mt-1 gap-1 border-[hsl(var(--success))]/50 text-xs text-[hsl(var(--success))] ">
                 {t('mentorsPage.assigned', 'Atribuído')}
               </Badge>
             )}

@@ -56,19 +56,19 @@ import { logger } from '@/lib/logger';
 const STAGE_COLORS: Record<FunnelStage, string> = {
   new: 'bg-muted',
   first_contact_booked: 'bg-[hsl(var(--info))]',
-  met: 'bg-indigo-500',
-  qualified: 'bg-purple-500',
+  met: 'bg-[hsl(var(--info))]/10',
+  qualified: 'bg-primary/10',
   proposal_sent: 'bg-[hsl(var(--warning))]',
-  negotiating: 'bg-orange-500',
-  intake_requested: 'bg-cyan-500',
-  intake_filling: 'bg-cyan-400',
-  intake_submitted: 'bg-teal-500',
-  intake_review: 'bg-teal-600',
+  negotiating: 'bg-[hsl(var(--warning))]/10',
+  intake_requested: 'bg-[hsl(var(--info))]/10',
+  intake_filling: 'bg-[hsl(var(--info))]/10',
+  intake_submitted: 'bg-[hsl(var(--success))]/10',
+  intake_review: 'bg-[hsl(var(--success))]/10',
   intake_changes_requested: 'bg-[hsl(var(--warning))]',
   approved_for_signature: 'bg-lime-500',
   sent_for_signature: 'bg-[hsl(var(--success))]',
   contracted: 'bg-[hsl(var(--success))]',
-  incubating: 'bg-emerald-600',
+  incubating: 'bg-[hsl(var(--success))]/10',
   accelerating: 'bg-primary',
   rejected: 'bg-destructive',
   archived: 'bg-muted-foreground',
@@ -477,7 +477,7 @@ export default function CRM() {
                                     </span>
                                   )}
                                   {!item.next_action_at && item.last_activity_at && (
-                                    <span className="text-orange-500">
+                                    <span className="text-[hsl(var(--warning))]">
                                       {t('crm.lastActivity')}: {formatRelativeTime(item.last_activity_at)}
                                     </span>
                                   )}
@@ -541,7 +541,7 @@ export default function CRM() {
                   title={t('crm.stale')} 
                   items={inbox?.stale || []} 
                   icon={Ghost}
-                  iconColor="text-orange-500"
+                  iconColor="text-[hsl(var(--warning))]"
                   onOpenDrawer={handleOpenDrawer}
                 />
               </div>

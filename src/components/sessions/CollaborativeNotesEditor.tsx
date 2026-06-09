@@ -50,10 +50,10 @@ interface CollaborativeNotesEditorProps {
 const PRESENCE_COLORS = [
   'bg-[hsl(var(--info))]',
   'bg-[hsl(var(--success))]',
-  'bg-purple-500',
-  'bg-orange-500',
-  'bg-pink-500',
-  'bg-cyan-500',
+  'bg-primary/10',
+  'bg-[hsl(var(--warning))]/10',
+  'bg-primary/10',
+  'bg-[hsl(var(--info))]/10',
 ];
 
 export function CollaborativeNotesEditor({

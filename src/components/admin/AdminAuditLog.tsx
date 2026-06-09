@@ -19,7 +19,7 @@ const ACTION_COLORS: Record<string, string> = {
   created: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ',
   updated: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ',
   deleted: 'bg-destructive/10 text-destructive ',
-  approved: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  approved: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ',
   rejected: 'bg-destructive/10 text-destructive ',
   completed: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ',
   default: 'bg-muted text-muted-foreground',

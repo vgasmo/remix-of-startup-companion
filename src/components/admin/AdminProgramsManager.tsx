@@ -498,7 +498,7 @@ export function AdminProgramsManager() {
                           </Badge>
                         )}
                         {getProgramDraft(program.id) && (
-                          <Badge variant="outline" className="text-orange-600 border-orange-300">
+                          <Badge variant="outline" className="text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30">
                             {t('adminPrograms.draft')}
                           </Badge>
                         )}

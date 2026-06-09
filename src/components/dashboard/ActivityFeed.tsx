@@ -131,9 +131,9 @@ const typeIcons = {
 const typeColors = {
   session: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
   action: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
-  kpi: 'bg-purple-500/10 text-purple-600',
+  kpi: 'bg-primary/10 text-primary',
   milestone: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
-  meeting: 'bg-pink-500/10 text-pink-600',
+  meeting: 'bg-primary/10 text-primary',
 };
 
 export function ActivityFeed() {

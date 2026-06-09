@@ -224,11 +224,11 @@ export function CommandPalette() {
         {copilotMode ? (
           <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
             <div className="flex items-center gap-2">
-              <Bot className="h-4 w-4 text-violet-500" />
-              <span className="text-xs font-semibold text-violet-600 dark:text-violet-400">
+              <Bot className="h-4 w-4 text-primary" />
+              <span className="text-xs font-semibold text-primary ">
                 {t('commandPalette.copilotTitle', 'Ecosystem Copilot')}
               </span>
-              {copilot.isThinking && <Loader2 className="h-3.5 w-3.5 animate-spin text-violet-500 ml-auto" />}
+              {copilot.isThinking && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary ml-auto" />}
             </div>
 
             {copilot.messages.length === 0 && !copilot.isThinking && (
@@ -327,7 +327,7 @@ export function CommandPalette() {
                 }}
                 className="gap-3"
               >
-                <Sparkles className="h-4 w-4 text-violet-500" />
+                <Sparkles className="h-4 w-4 text-primary" />
                 <div className="flex-1 min-w-0">
                   <span className="text-sm block truncate">
                     {query.trim()

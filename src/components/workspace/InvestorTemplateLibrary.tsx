@@ -141,10 +141,10 @@ export function InvestorTemplateLibrary({ onSelectTemplate }: InvestorTemplateLi
   }, [selectedTemplate, getDraftKey]);
 
   const audienceLabels: Record<string, { label: string; color: string }> = {
-    angel: { label: t('investorUpdates.angel'), color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
+    angel: { label: t('investorUpdates.angel'), color: 'bg-primary/10 text-primary ' },
     seed: { label: t('investorUpdates.seed'), color: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ' },
     series_a: { label: t('investorUpdates.seriesA'), color: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ' },
-    series_b: { label: t('investorUpdates.seriesB'), color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' },
+    series_b: { label: t('investorUpdates.seriesB'), color: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ' },
     vc: { label: t('investorUpdates.vc'), color: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ' },
     strategic: { label: t('investorUpdates.strategic'), color: 'bg-destructive/10 text-destructive ' },
   };

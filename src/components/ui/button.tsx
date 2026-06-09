@@ -17,7 +17,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         // Premium variants for CTAs
         premium: "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5",
-        success: "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:-translate-y-0.5",
+        success: "bg-gradient-to-r from-[hsl(var(--success))] to-[hsl(var(--success))] text-white shadow-lg shadow-[hsl(var(--success))]/25 hover:shadow-xl hover:shadow-[hsl(var(--success))]/30 hover:-translate-y-0.5",
         accent: "bg-accent text-accent-foreground shadow-sm hover:bg-accent/90 hover:shadow-md hover:shadow-accent/20",
         brand: "bg-brand-red text-brand-red-foreground shadow-sm hover:bg-brand-red/90 hover:shadow-md hover:shadow-brand-red/25 shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.2)]",
       },

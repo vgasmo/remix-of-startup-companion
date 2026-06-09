@@ -111,15 +111,15 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
   };
 
   const statusColor: Record<string, string> = {
-    intake_requested: 'bg-cyan-100 text-cyan-800',
-    intake_in_progress: 'bg-cyan-50 text-cyan-700',
-    intake_submitted: 'bg-teal-100 text-teal-800',
+    intake_requested: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
+    intake_in_progress: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
+    intake_submitted: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
     review_pending: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
     changes_requested: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
     approved_for_signature: 'bg-lime-100 text-lime-800',
     signature_sent: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
     signed: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
-    activated: 'bg-emerald-200 text-emerald-900',
+    activated: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
     cancelled: 'bg-destructive/10 text-destructive',
   };
 
@@ -353,12 +353,12 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
 
         {/* Signed info */}
         {isSigned && (
-          <div className="rounded-md border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 p-3">
-            <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-200 flex items-center gap-1.5">
+          <div className="rounded-md border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 p-3">
+            <p className="text-xs font-semibold text-[hsl(var(--success))] flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5" />
               Contrato Assinado
             </p>
-            <p className="text-[10px] text-emerald-700 dark:text-emerald-300 mt-1">
+            <p className="text-[10px] text-[hsl(var(--success))] mt-1">
               Pendente de ativação do workspace e condições operacionais.
             </p>
           </div>

@@ -68,7 +68,7 @@ export function MobileQuickActions({
         }
         setIsOpen(false);
       },
-      color: 'bg-purple-500 hover:bg-purple-600',
+      color: 'bg-primary/10 hover:bg-primary/10',
     },
     {
       id: 'document',

@@ -723,7 +723,7 @@ export default function Mentors() {
                                   </div>
                                 )}
                                 {isAlreadyAssigned && (
-                                  <Badge variant="outline" className="mt-2 gap-1 border-emerald-500/50 text-[10px] text-emerald-600 dark:text-emerald-400">
+                                  <Badge variant="outline" className="mt-2 gap-1 border-[hsl(var(--success))]/50 text-[10px] text-[hsl(var(--success))] ">
                                     <Check className="h-3 w-3" />
                                     {t('mentorsPage.assigned')}
                                   </Badge>
@@ -899,7 +899,7 @@ export default function Mentors() {
                                   <Linkedin className="h-5 w-5" />
                                 </a>
                               )}
-                              <Badge variant="secondary" className="text-emerald-600 dark:text-emerald-400">
+                              <Badge variant="secondary" className="text-[hsl(var(--success))] ">
                                 <Check className="h-3 w-3 mr-1" />
                                 {t('mentorsPage.connected')}
                               </Badge>

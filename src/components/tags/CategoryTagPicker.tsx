@@ -135,9 +135,9 @@ export function CategoryTagPicker({
       blue: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ',
       green: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ',
       yellow: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ',
-      purple: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-      orange: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-      pink: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400',
+      purple: 'bg-primary/10 text-primary ',
+      orange: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ',
+      pink: 'bg-primary/10 text-primary ',
     };
     return colors[color] || 'bg-muted text-muted-foreground';
   };

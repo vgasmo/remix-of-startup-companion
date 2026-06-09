@@ -40,12 +40,12 @@ import type { FunnelStage } from '@/hooks/useFunnel';
 // intentional: pipeline stage palette — distinct hue per CRM funnel stage, not state semantics
 // Simplified stage visual config
 const SIMPLE_STAGE_CONFIG: Record<SimplePipelineStage, { color: string; bgColor: string }> = {
-  lead: { color: 'text-slate-700 dark:text-slate-300', bgColor: 'bg-slate-100 dark:bg-slate-800' },
-  qualified: { color: 'text-purple-700 dark:text-purple-300', bgColor: 'bg-purple-50 dark:bg-purple-900/30' },
-  proposal_negotiation: { color: 'text-amber-700 dark:text-amber-300', bgColor: 'bg-amber-50 dark:bg-amber-900/30' },
-  contracting_in_progress: { color: 'text-cyan-700 dark:text-cyan-300', bgColor: 'bg-cyan-50 dark:bg-cyan-900/30' },
+  lead: { color: 'text-foreground ', bgColor: 'bg-muted ' },
+  qualified: { color: 'text-primary ', bgColor: 'bg-primary/10 ' },
+  proposal_negotiation: { color: 'text-[hsl(var(--warning))] ', bgColor: 'bg-[hsl(var(--warning))]/10 ' },
+  contracting_in_progress: { color: 'text-[hsl(var(--info))] ', bgColor: 'bg-[hsl(var(--info))]/10 ' },
   signature_in_progress: { color: 'text-lime-700 dark:text-lime-300', bgColor: 'bg-lime-50 dark:bg-lime-900/30' },
-  contracted: { color: 'text-green-700 dark:text-green-300', bgColor: 'bg-green-50 dark:bg-green-900/30' },
+  contracted: { color: 'text-[hsl(var(--success))] ', bgColor: 'bg-[hsl(var(--success))]/10 ' },
   archived_or_lost: { color: 'text-muted-foreground', bgColor: 'bg-muted' },
 };
 

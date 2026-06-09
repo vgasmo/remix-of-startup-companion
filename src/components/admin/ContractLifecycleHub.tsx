@@ -437,11 +437,11 @@ export function ContractLifecycleHub() {
             <div className="flex items-center justify-between gap-2">
               {/* intentional: lifecycle category palette — distinct hue per pipeline stage, not state semantics */}
               {[
-                { label: t('lifecycle.pipelineNew'), count: pipeline.new, color: 'bg-slate-500' },
-                { label: t('lifecycle.pipelineMeetings'), count: pipeline.meeting, color: 'bg-blue-500' },
-                { label: t('lifecycle.pipelineQualified'), count: pipeline.qualified, color: 'bg-purple-500' },
-                { label: t('lifecycle.pipelineContracted'), count: pipeline.contracted, color: 'bg-green-500' },
-                { label: t('lifecycle.pipelineActive'), count: pipeline.active, color: 'bg-emerald-600' },
+                { label: t('lifecycle.pipelineNew'), count: pipeline.new, color: 'bg-muted-foreground' },
+                { label: t('lifecycle.pipelineMeetings'), count: pipeline.meeting, color: 'bg-[hsl(var(--info))]/10' },
+                { label: t('lifecycle.pipelineQualified'), count: pipeline.qualified, color: 'bg-primary/10' },
+                { label: t('lifecycle.pipelineContracted'), count: pipeline.contracted, color: 'bg-[hsl(var(--success))]/10' },
+                { label: t('lifecycle.pipelineActive'), count: pipeline.active, color: 'bg-[hsl(var(--success))]/10' },
               ].map((stage, i, arr) => (
                 <div key={stage.label} className="flex items-center flex-1">
                   <div className="flex-1 text-center">

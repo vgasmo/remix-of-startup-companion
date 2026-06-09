@@ -19,7 +19,7 @@ const actionColors: Record<string, string> = {
   created: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ',
   updated: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))] ',
   deleted: 'bg-destructive/10 text-destructive ',
-  completed: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  completed: 'bg-primary/10 text-primary ',
 };
 
 interface ActivityLogViewerProps {

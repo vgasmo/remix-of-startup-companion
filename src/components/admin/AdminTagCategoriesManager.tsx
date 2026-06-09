@@ -39,9 +39,9 @@ const COLOR_OPTIONS = [
   { value: 'green', label: 'Green', class: 'bg-[hsl(var(--success))]' },
   { value: 'red', label: 'Red', class: 'bg-destructive' },
   { value: 'yellow', label: 'Yellow', class: 'bg-[hsl(var(--warning))]' },
-  { value: 'purple', label: 'Purple', class: 'bg-purple-500' },
-  { value: 'orange', label: 'Orange', class: 'bg-orange-500' },
-  { value: 'pink', label: 'Pink', class: 'bg-pink-500' },
+  { value: 'purple', label: 'Purple', class: 'bg-primary/10' },
+  { value: 'orange', label: 'Orange', class: 'bg-[hsl(var(--warning))]/10' },
+  { value: 'pink', label: 'Pink', class: 'bg-primary/10' },
 ];
 
 export function AdminTagCategoriesManager() {

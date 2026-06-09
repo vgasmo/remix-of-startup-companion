@@ -213,7 +213,7 @@ export function AdminUsersManager() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-emerald-600 hover:text-emerald-700"
+                              className="text-[hsl(var(--success))] hover:text-[hsl(var(--success))]"
                               onClick={() => handleApproveUser(profile.id)}
                             >
                               <CheckCircle className="h-3.5 w-3.5 mr-1" />

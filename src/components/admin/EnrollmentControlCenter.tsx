@@ -77,12 +77,12 @@ export function EnrollmentControlCenter() {
           {/* intentional: paired emerald/amber open-vs-closed category palette (emerald is out of token map) */}
           <div className={cn(
             'h-9 w-9 rounded-xl flex items-center justify-center',
-            isOpenRegistration ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
+            isOpenRegistration ? 'bg-[hsl(var(--success))]/10 ' : 'bg-[hsl(var(--warning))]/10 '
           )}>
             {isOpenRegistration ? (
-              <Globe className="h-4 w-4 text-emerald-600" />
+              <Globe className="h-4 w-4 text-[hsl(var(--success))]" />
             ) : (
-              <Lock className="h-4 w-4 text-amber-600" />
+              <Lock className="h-4 w-4 text-[hsl(var(--warning))]" />
             )}
           </div>
           <div>
@@ -100,8 +100,8 @@ export function EnrollmentControlCenter() {
         <div className={cn(
           'flex items-center justify-between p-3 rounded-xl border',
           isOpenRegistration 
-            ? 'border-emerald-200 dark:border-emerald-800/30 bg-emerald-50/50 dark:bg-emerald-950/10' 
-            : 'border-amber-200 dark:border-amber-800/30 bg-amber-50/50 dark:bg-amber-950/10'
+            ? 'border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/50 ' 
+            : 'border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/50 '
         )}>
           <div className="flex items-center gap-3">
             <Badge variant={isOpenRegistration ? 'default' : 'secondary'} className="text-xs">
@@ -179,7 +179,7 @@ export function EnrollmentControlCenter() {
               </div>
             </button>
             <div className="flex items-center gap-2 p-2.5 rounded-lg border border-border/40 bg-background">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+              <ShieldCheck className="h-3.5 w-3.5 text-[hsl(var(--success))] shrink-0" />
               <div className="min-w-0">
                 <p className="text-lg font-semibold leading-tight">
                   {isOpenRegistration
