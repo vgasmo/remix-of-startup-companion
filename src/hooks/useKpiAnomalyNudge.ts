@@ -57,13 +57,7 @@ export function useKpiAnomalyNudge(workspaceId: string | undefined) {
       }
 
       for (const { name, values } of byKpi.values()) {
-        if (values.length < 2) {
-          return {
-            kpiName: name,
-            trend: 'missing',
-            message: `${name} não tem registos recentes suficientes. Considere atualizar.`,
-          };
-        }
+        if (values.length < 2) continue;
 
         if (values.length >= 3 && values.slice(0, 3).every((v) => v === values[0])) {
           return {
