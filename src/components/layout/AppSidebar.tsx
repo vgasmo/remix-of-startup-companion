@@ -259,7 +259,7 @@ export function AppSidebar() {
                   // Parent is only "active" when exact match without ?tab (no query params)
                   // When a child is active, parent is just "expanded" (open) but not highlighted
                   isActive && !location.search
-                    ? "bg-sidebar-accent/60 text-sidebar-foreground before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-0.5 before:rounded-r before:bg-sidebar-primary"
+                    ? "bg-sidebar-accent/60 text-sidebar-foreground before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-6 before:w-[3px] before:rounded-r-sm before:bg-sidebar-primary before:shadow-[0_0_10px_hsl(var(--sidebar-primary)/0.55)]"
                     : hasActiveChild
                       ? "text-sidebar-foreground hover:bg-sidebar-accent/40"
                       : "text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground",
