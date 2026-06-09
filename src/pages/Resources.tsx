@@ -26,6 +26,7 @@ import { FAQ_ITEMS } from '@/lib/faqCatalog';
 
 // ── Helpers ──
 function ResourceCard({ r, favs, onToggleFav, lang }: { r: ResourceItem; favs: string[]; onToggleFav: (id: string) => void; lang: string }) {
+  const { t } = useTranslation();
   const isFav = favs.includes(r.id);
   const title = lang === 'pt' ? r.title_pt : r.title_en;
   const desc = lang === 'pt' ? r.desc_pt : r.desc_en;
