@@ -139,7 +139,7 @@ export function useFounderStuckSignal({
     events.forEach(e => window.addEventListener(e, onActivity, { passive: true }));
 
     const interval = window.setInterval(() => {
-      if (show) return;
+      if (showRef.current) return;
       const now = Date.now();
       const sinceMount = now - mountedAtRef.current;
       const sinceActivity = now - lastActivityRef.current;
@@ -153,7 +153,8 @@ export function useFounderStuckSignal({
       events.forEach(e => window.removeEventListener(e, onActivity));
       window.clearInterval(interval);
     };
-  }, [eligible, inactivityMs, initialGraceMs, show]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eligible, inactivityMs, initialGraceMs]);
 
   const dismiss = () => {
     setShow(false);
