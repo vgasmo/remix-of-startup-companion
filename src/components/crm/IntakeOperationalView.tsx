@@ -49,7 +49,7 @@ const GROUP_CONFIG = {
     icon: CheckCircle2,
     emptyText: 'Nenhum intake aprovado a aguardar envio para assinatura.',
     emptyAction: 'Após aprovação, envie o contrato para assinatura digital.',
-    color: 'text-lime-700 dark:text-lime-300',
+    color: 'text-primary',
   },
   sent_for_signature: {
     title: 'Enviados p/ Assinatura',
