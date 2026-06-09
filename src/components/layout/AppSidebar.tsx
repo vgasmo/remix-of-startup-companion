@@ -288,7 +288,7 @@ export function AppSidebar() {
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-150 relative",
                       childActive
-                        ? "bg-sidebar-accent/60 text-sidebar-foreground font-medium before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-4 before:w-0.5 before:rounded-r before:bg-sidebar-primary"
+                        ? "bg-sidebar-accent/60 text-sidebar-foreground font-medium before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-[3px] before:rounded-r-sm before:bg-sidebar-primary before:shadow-[0_0_8px_hsl(var(--sidebar-primary)/0.5)]"
                         : "text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground",
                     )}
                   >
