@@ -255,7 +255,7 @@ export function CalendarFeedCard({ workspaceId }: CalendarFeedCardProps) {
                 onClick={copyToClipboard}
                 disabled={!feedUrl}
                 title={t('calendarFeed.copyUrl', { defaultValue: 'Copiar URL' })}
-              >
+               aria-label={t('common.confirm')}>
                 {copied ? (
                   <Check className="h-4 w-4 text-success" />
                 ) : (

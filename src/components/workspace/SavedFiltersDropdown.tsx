@@ -125,7 +125,7 @@ export function SavedFiltersDropdown({ currentFilters, onApplyFilter }: SavedFil
                       size="icon"
                       className="h-6 w-6"
                       onClick={(e) => handleSetDefault(filter.id, e)}
-                    >
+                     aria-label="Toggle favorite">
                       <Star className="h-3 w-3" />
                     </Button>
                   )}
@@ -134,7 +134,7 @@ export function SavedFiltersDropdown({ currentFilters, onApplyFilter }: SavedFil
                     size="icon"
                     className="h-6 w-6 text-destructive hover:text-destructive"
                     onClick={(e) => handleDelete(filter.id, e)}
-                  >
+                   aria-label="Delete">
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>

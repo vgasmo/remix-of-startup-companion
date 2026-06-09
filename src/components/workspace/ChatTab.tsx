@@ -372,7 +372,7 @@ export function ChatTab({ workspaceId }: ChatTabProps) {
             onClick={handleSend}
             disabled={!newMessage.trim() || sendMutation.isPending}
             className="flex-none"
-          >
+           aria-label={t('common._iconSend')}>
             <Send className="h-4 w-4" />
           </Button>
         </div>

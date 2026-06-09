@@ -488,7 +488,7 @@ export default function Mentors() {
                   </div>
                   <div className="flex gap-1 shrink-0">
                     {assignedConsultant.linkedin_url && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild aria-label={t('common._iconOpenLinkedin')}>
                         <a href={sanitizeUrl(assignedConsultant.linkedin_url)!} target="_blank" rel="noopener noreferrer" title="LinkedIn">
                           <Linkedin className="h-3.5 w-3.5" />
                         </a>
@@ -573,7 +573,7 @@ export default function Mentors() {
                           </div>
                           <div className="flex gap-1 shrink-0">
                             {mentor.profile?.linkedin_url && (
-                              <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" asChild aria-label={t('common._iconOpenLinkedin')}>
                                 <a href={sanitizeUrl(mentor.profile.linkedin_url)!} target="_blank" rel="noopener noreferrer" title="LinkedIn">
                                   <Linkedin className="h-3.5 w-3.5" />
                                 </a>
@@ -585,7 +585,7 @@ export default function Mentors() {
                               className="h-8 w-8"
                               onClick={() => openMailTo(mentor.profile?.email, mentor.profile?.full_name || t('mentorsPage.mentor', { defaultValue: 'Mentor' }))}
                               title={t('mentorsPage.contactMentor', 'Contact mentor')}
-                            >
+                             aria-label={t('common.email')}>
                               <Mail className="h-3.5 w-3.5" />
                             </Button>
                             <Button

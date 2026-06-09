@@ -202,7 +202,7 @@ export function MentorAvailabilitySettings() {
                               value={slot.start_time}
                               onValueChange={(v) => updateSlot(slot.id, 'start_time', v)}
                             >
-                              <SelectTrigger className="h-7 w-[72px] border-0 bg-transparent p-0 text-sm font-medium shadow-none focus:ring-0">
+                              <SelectTrigger aria-label={t('mentors.startTime', { defaultValue: 'Hora de início' })} className="h-7 w-[72px] border-0 bg-transparent p-0 text-sm font-medium shadow-none focus:ring-0">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -216,7 +216,7 @@ export function MentorAvailabilitySettings() {
                               value={slot.end_time}
                               onValueChange={(v) => updateSlot(slot.id, 'end_time', v)}
                             >
-                              <SelectTrigger className="h-7 w-[72px] border-0 bg-transparent p-0 text-sm font-medium shadow-none focus:ring-0">
+                              <SelectTrigger aria-label={t('mentors.endTime', { defaultValue: 'Hora de fim' })} className="h-7 w-[72px] border-0 bg-transparent p-0 text-sm font-medium shadow-none focus:ring-0">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -231,7 +231,7 @@ export function MentorAvailabilitySettings() {
                             size="icon"
                             className="h-6 w-6 text-muted-foreground hover:text-destructive"
                             onClick={() => removeSlot(slot.id)}
-                          >
+                           aria-label={t('common.delete')}>
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>

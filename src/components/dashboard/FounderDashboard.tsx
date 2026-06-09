@@ -638,7 +638,7 @@ function QuickGuideBanner() {
             variant="ghost"
             onClick={handleDismiss}
             className="h-7 w-7 shrink-0 text-muted-foreground"
-          >
+           aria-label={t('common.close')}>
             <X className="h-3.5 w-3.5" />
           </Button>
         </div>

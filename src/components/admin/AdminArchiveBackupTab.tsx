@@ -175,7 +175,7 @@ function ContractArchiveStatus() {
                 <TableCell>
                   <div className="flex items-center gap-1">
                     {contract.archive_location_url && (
-                      <Button variant="ghost" size="icon" asChild>
+                      <Button variant="ghost" size="icon" asChild aria-label={t('common.open')}>
                         <a href={contract.archive_location_url} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-4 w-4" />
                         </a>
@@ -188,7 +188,7 @@ function ContractArchiveStatus() {
                         onClick={() => retryMutation.mutate(contract.id)}
                         disabled={retryMutation.isPending}
                         title={contract.archive_status === 'failed' ? t('admin.archive.retry') : t('admin.archive.archiveNow')}
-                      >
+                       aria-label={t('common.loading')}>
                         {retryMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                       </Button>
                     )}

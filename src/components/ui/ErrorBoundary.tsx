@@ -160,7 +160,7 @@ export class ErrorBoundary extends Component<Props, State> {
                     size="icon"
                     className="h-6 w-6"
                     onClick={this.handleCopyErrorId}
-                  >
+                   aria-label="Confirm">
                     {this.state.copied ? (
                       <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
                     ) : (

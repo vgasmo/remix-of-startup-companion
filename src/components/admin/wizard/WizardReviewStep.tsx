@@ -62,7 +62,7 @@ export function WizardReviewStep({
           onNavigateToStep?.(step);
         }}
         title={t('common.edit', 'Editar')}
-      >
+       aria-label={t('common.edit')}>
         <Pencil className="h-3 w-3" />
       </Button>
     ) : null

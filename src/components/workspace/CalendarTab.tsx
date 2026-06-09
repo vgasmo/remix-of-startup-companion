@@ -372,7 +372,7 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
                 size="icon"
                 className="h-8 w-8"
                 onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              >
+               aria-label={t('common.previous')}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button
@@ -388,7 +388,7 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
                 size="icon"
                 className="h-8 w-8"
                 onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              >
+               aria-label={t('common.next')}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -546,7 +546,7 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
                                     setQuickInviteEmails(defaultInviteEmails());
                                   }
                                 }}
-                              >
+                               aria-label={t('common.email')}>
                                 <Mail className="h-3 w-3" />
                               </Button>
                               <Button
@@ -554,7 +554,7 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
                                 size="icon"
                                 className="h-6 w-6"
                                 onClick={() => openEditDialog(session)}
-                              >
+                               aria-label={t('common.edit')}>
                                 <Edit2 className="h-3 w-3" />
                               </Button>
                               <Button
@@ -562,7 +562,7 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
                                 size="icon"
                                 className="h-6 w-6 text-destructive hover:text-destructive"
                                 onClick={() => setDeleteConfirmId(session.id)}
-                              >
+                               aria-label={t('common.delete')}>
                                 <Trash2 className="h-3 w-3" />
                               </Button>
                             </div>

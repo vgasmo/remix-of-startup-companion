@@ -93,7 +93,7 @@ export function NotificationBell() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative" aria-label={t('common._iconOpenNotifications')}>
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge 
@@ -169,7 +169,7 @@ export function NotificationBell() {
                             e.stopPropagation();
                             deleteNotification.mutate(notification.id);
                           }}
-                        >
+                         aria-label={t('common.delete')}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>

@@ -289,7 +289,7 @@ export function BookingLinksManager() {
                           size="icon"
                           onClick={() => deactivateLink.mutate(link.id)}
                           title={t('admin.deactivate', 'Desativar')}
-                        >
+                         aria-label={t('common.delete')}>
                           <Trash2 className="h-4 w-4 text-muted-foreground" />
                         </Button>
                       )}
@@ -304,7 +304,7 @@ export function BookingLinksManager() {
                             onConfirm: () => deleteLink.mutate(link.id),
                           })}
                           title={t('common.delete', 'Apagar')}
-                        >
+                         aria-label={t('common.delete')}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       )}

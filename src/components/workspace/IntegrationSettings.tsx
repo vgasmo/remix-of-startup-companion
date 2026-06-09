@@ -87,7 +87,7 @@ export function IntegrationSettings({ workspaceId, emailAlias, canEdit }: Integr
               variant="outline"
               size="icon"
               onClick={() => copyToClipboard(displayEmailAlias, 'email')}
-            >
+             aria-label={t('common.confirm')}>
               {copiedEmail ? (
                 <Check className="h-4 w-4 text-[hsl(var(--success))]" />
               ) : (
@@ -123,7 +123,7 @@ export function IntegrationSettings({ workspaceId, emailAlias, canEdit }: Integr
               variant="outline"
               size="icon"
               onClick={() => copyToClipboard(meetingWebhookUrl, 'webhook')}
-            >
+             aria-label={t('common.confirm')}>
               {copiedWebhook ? (
                 <Check className="h-4 w-4 text-[hsl(var(--success))]" />
               ) : (

@@ -653,7 +653,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
                                         className="h-8 w-8"
                                         onClick={() => setReviewDoc({ id: doc.id, name: doc.name })}
                                         title={t('review.viewReview', { defaultValue: 'Avaliar entregável' })}
-                                      >
+                                       aria-label={t('common._iconOpenChat')}>
                                         <MessageSquare className="h-4 w-4" />
                                       </Button>
                                     </>
@@ -668,7 +668,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
                                     className="h-8 w-8"
                                     onClick={() => handleDownload(doc)}
                                     title={doc.external_url ? t('documents.openLink') : t('common.download', { defaultValue: 'Download' })}
-                                  >
+                                   aria-label={t('common.open')}>
                                     {doc.external_url ? (
                                       <ExternalLink className="h-4 w-4" />
                                     ) : (
@@ -682,7 +682,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
                                       onClick={() => handleDelete(doc)}
                                       disabled={deleteMutation.isPending}
                                       className="text-destructive hover:text-destructive h-8 w-8"
-                                    >
+                                     aria-label={t('common.delete')}>
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
                                   )}

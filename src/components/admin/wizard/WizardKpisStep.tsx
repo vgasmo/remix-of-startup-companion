@@ -257,7 +257,7 @@ export function WizardKpisStep({ stages, kpis, coreKpis, onUpdate }: WizardKpisS
                             );
                           }}
                           disabled={idx === 0}
-                        >
+                         aria-label={t('common.collapse')}>
                           <ChevronUp className="h-3 w-3" />
                         </Button>
                         <Button
@@ -275,7 +275,7 @@ export function WizardKpisStep({ stages, kpis, coreKpis, onUpdate }: WizardKpisS
                             );
                           }}
                           disabled={idx === stageData.kpis.length - 1}
-                        >
+                         aria-label={t('common.expand')}>
                           <ChevronDown className="h-3 w-3" />
                         </Button>
                       </div>
@@ -331,7 +331,7 @@ export function WizardKpisStep({ stages, kpis, coreKpis, onUpdate }: WizardKpisS
                             size="icon"
                             className="h-8 w-8 text-destructive"
                             onClick={() => handleRemoveKpi(stageKey, idx)}
-                          >
+                           aria-label={t('common.delete')}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>

@@ -319,7 +319,7 @@ export function UnitEconomicsCalculator({ workspaceId }: UnitEconomicsCalculator
         {/* Month Selector */}
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={goToPreviousMonth}>
+            <Button variant="outline" size="icon" onClick={goToPreviousMonth} aria-label={t('common.previous')}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <div className="text-center min-w-[120px]">
@@ -333,7 +333,7 @@ export function UnitEconomicsCalculator({ workspaceId }: UnitEconomicsCalculator
               size="icon" 
               onClick={goToNextMonth}
               disabled={isCurrentMonth}
-            >
+             aria-label={t('common.next')}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

@@ -199,7 +199,7 @@ export function EnhancedFounderMentorRequest() {
               <div className="space-y-2">
                 <Label>{t('mentorsPage.selectStartup')}</Label>
                 <Select value={selectedWorkspace} onValueChange={setSelectedWorkspace}>
-                  <SelectTrigger>
+                  <SelectTrigger aria-label={t('mentorsPage.selectStartup')}>
                     <SelectValue placeholder={t('mentorsPage.selectStartupPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -274,6 +274,7 @@ export function EnhancedFounderMentorRequest() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
+                aria-label={t('mentorsPage.describeNeed')}
               />
             </div>
 

@@ -228,7 +228,7 @@ export function FacilitatorMode({ session, onClose, onCreateAction }: Facilitato
             <Plus className="h-4 w-4 mr-1" />
             Quick Action
           </Button>
-          <Button variant="ghost" size="icon" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClose(); }}>
+          <Button variant="ghost" size="icon" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClose(); }} aria-label={t('common.close')}>
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -240,7 +240,7 @@ export function FacilitatorMode({ session, onClose, onCreateAction }: Facilitato
         <div className="flex-1 p-6 flex flex-col">
           {/* Timer */}
             <div className="flex items-center justify-center gap-4 mb-6">
-              <Button type="button" variant="outline" size="icon" onClick={handleReset}>
+              <Button type="button" variant="outline" size="icon" onClick={handleReset} aria-label={t('common.retry')}>
                 <RotateCcw className="h-4 w-4" />
               </Button>
               <div
@@ -256,7 +256,7 @@ export function FacilitatorMode({ session, onClose, onCreateAction }: Facilitato
                 variant={isRunning ? 'secondary' : 'default'}
                 size="icon"
                 onClick={handleTogglePlay}
-              >
+               aria-label={t('common._iconPause')}>
                 {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>
             </div>

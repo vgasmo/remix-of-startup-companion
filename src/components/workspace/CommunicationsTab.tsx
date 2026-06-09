@@ -106,7 +106,7 @@ export function CommunicationsTab({ workspaceId }: CommunicationsTabProps) {
               <div className="flex-1 p-3 bg-muted rounded-lg font-mono text-sm">
                 {emailAlias.alias}@yourdomain.com
               </div>
-              <Button variant="outline" size="icon" onClick={handleCopyAlias}>
+              <Button variant="outline" size="icon" onClick={handleCopyAlias} aria-label={t('common.copy')}>
                 <Copy className="h-4 w-4" />
               </Button>
             </div>

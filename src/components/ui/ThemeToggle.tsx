@@ -21,7 +21,7 @@ export function ThemeToggle({ className }: { className?: string }) {
           variant="ghost" 
           size="icon" 
           className={cn("relative overflow-hidden", className)}
-        >
+         aria-label={t('common._iconToggleTheme')}>
           <Sun className={cn(
             "h-4 w-4 transition-all duration-300",
             resolvedTheme === 'dark' ? "rotate-90 scale-0" : "rotate-0 scale-100"

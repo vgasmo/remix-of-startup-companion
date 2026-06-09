@@ -484,7 +484,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={handlePrevMonth}>
+            <Button variant="outline" size="icon" onClick={handlePrevMonth} aria-label={t('common.previous')}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <div className="min-w-[140px] text-center">
@@ -498,7 +498,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
               size="icon" 
               onClick={handleNextMonth}
               disabled={isCurrentMonth}
-            >
+             aria-label={t('common.next')}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

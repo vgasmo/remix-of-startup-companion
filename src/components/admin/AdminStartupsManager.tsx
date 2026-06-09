@@ -748,7 +748,7 @@ export function AdminStartupsManager() {
                     <TableCell>
                       <TooltipProvider>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(startup)}>
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(startup)} aria-label={t('common.edit')}>
                             <Pencil className="h-4 w-4" />
                           </Button>
                           {startup.main_contact_email && workspace?.id && (
@@ -759,7 +759,7 @@ export function AdminStartupsManager() {
                                   size="icon" 
                                   onClick={() => handleSendInvite(startup)}
                                   disabled={sendingInviteFor === startup.id}
-                                >
+                                 aria-label={t('common.loading')}>
                                   {sendingInviteFor === startup.id ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />
                                   ) : (
@@ -781,7 +781,7 @@ export function AdminStartupsManager() {
                                     size="icon"
                                     onClick={() => restoreMutation.mutate(startup.id)}
                                     disabled={restoreMutation.isPending}
-                                  >
+                                   aria-label={t('common.restore')}>
                                     <ArchiveRestore className="h-4 w-4 text-primary" />
                                   </Button>
                                 </TooltipTrigger>
@@ -799,7 +799,7 @@ export function AdminStartupsManager() {
                                       confirmLabel: t('admin.startupsManager.deleteForever'),
                                       onConfirm: () => deleteMutation.mutate(startup.id),
                                     })}
-                                  >
+                                   aria-label={t('common.delete')}>
                                     <Trash2 className="h-4 w-4 text-destructive" />
                                   </Button>
                                 </TooltipTrigger>
@@ -814,7 +814,7 @@ export function AdminStartupsManager() {
                                   size="icon"
                                   onClick={() => archiveMutation.mutate(startup.id)}
                                   disabled={archiveMutation.isPending}
-                                >
+                                 aria-label={t('common._iconArchive')}>
                                   <Archive className="h-4 w-4 text-destructive" />
                                 </Button>
                               </TooltipTrigger>

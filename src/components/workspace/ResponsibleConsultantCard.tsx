@@ -50,14 +50,14 @@ function ContactPersonRow({
       </div>
       <div className="flex gap-1 shrink-0">
         {profile?.linkedin_url && (
-          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+          <Button variant="ghost" size="icon" className="h-8 w-8" asChild aria-label={t('common._iconOpenLinkedin')}>
             <a href={sanitizeUrl(profile.linkedin_url)!} target="_blank" rel="noopener noreferrer">
               <Linkedin className="h-3.5 w-3.5" />
             </a>
           </Button>
         )}
         {profile?.email && (
-          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+          <Button variant="ghost" size="icon" className="h-8 w-8" asChild aria-label={t('common.email')}>
             <a href={`mailto:${profile.email}`}>
               <Mail className="h-3.5 w-3.5" />
             </a>

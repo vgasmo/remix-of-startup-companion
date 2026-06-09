@@ -113,7 +113,7 @@ export function WizardStagesStep({ data, onUpdate }: WizardStagesStepProps) {
                   className="h-6 w-6"
                   onClick={() => moveStage(stage.stage_key, 'up')}
                   disabled={idx === 0}
-                >
+                 aria-label="Collapse">
                   <ChevronUp className="h-4 w-4" />
                 </Button>
                 <GripVertical className="h-4 w-4 text-muted-foreground mx-auto" />
@@ -124,7 +124,7 @@ export function WizardStagesStep({ data, onUpdate }: WizardStagesStepProps) {
                   className="h-6 w-6"
                   onClick={() => moveStage(stage.stage_key, 'down')}
                   disabled={idx === sortedStages.length - 1}
-                >
+                 aria-label="Expand">
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </div>

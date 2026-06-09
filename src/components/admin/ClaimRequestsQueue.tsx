@@ -138,7 +138,7 @@ export function ClaimRequestsQueue() {
               value={selectedWorkspaces[claim.id] || ''}
               onValueChange={(val) => setSelectedWorkspaces(prev => ({ ...prev, [claim.id]: val }))}
             >
-              <SelectTrigger className="w-[180px] h-8 text-xs">
+              <SelectTrigger aria-label={t('claimStartup.selectStartup', { defaultValue: 'Selecionar startup...' })} className="w-[180px] h-8 text-xs">
                 <SelectValue placeholder={t('claimStartup.selectStartup', { defaultValue: 'Selecionar startup...' })} />
               </SelectTrigger>
               <SelectContent>
