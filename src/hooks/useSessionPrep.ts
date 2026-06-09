@@ -67,12 +67,13 @@ export function useSessionPrep(sessionId: string | undefined, workspaceId: strin
         workspaceTagsResult,
         sessionTagsResult,
       ] = await Promise.all([
-        // Current session
+        // Current session — use maybeSingle so a deleted/RLS-blocked session
+        // doesn't reject the whole prep panel; null-guarded below.
         supabase
           .from('sessions')
           .select('id, title, scheduled_at, notes, agenda, ai_summary, ai_decisions')
           .eq('id', sessionId)
-          .single(),
+          .maybeSingle(),
         
         // Previous 2 sessions
         supabase

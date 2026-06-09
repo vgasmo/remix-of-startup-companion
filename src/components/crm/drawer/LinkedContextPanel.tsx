@@ -98,7 +98,7 @@ export function LinkedContextPanel({
         .from('workspaces')
         .select('id, stage, status, startup:startups(id, name, sector, main_contact_email, main_contact_name), program:programs(id, name)')
         .eq('id', linkedWorkspaceId!)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -113,7 +113,7 @@ export function LinkedContextPanel({
         .from('startup_contracts')
         .select('id, contract_number, status, start_date, end_date, monthly_fee, currency, square_meters, incubation_type:incubation_types(name), building:buildings(name, code)')
         .eq('id', linkedContractId!)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
