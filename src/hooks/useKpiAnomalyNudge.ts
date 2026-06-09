@@ -43,7 +43,7 @@ export function useKpiAnomalyNudge(workspaceId: string | undefined) {
       if (error || !data || data.length === 0) return null;
 
       // Group most-recent-first values by KPI definition.
-      const byKpi = new Map<string, { name: string; values: number[] }>();
+      const byKpi = new Map<string, { name: string; values: number[]; latestPeriod: string | null }>();
       for (const row of data as unknown as KpiValueRow[]) {
         const defId = row.kpi_definition_id;
         if (!defId) continue;
@@ -51,13 +51,25 @@ export function useKpiAnomalyNudge(workspaceId: string | undefined) {
         if (!name) continue;
         const value = typeof row.value === 'number' ? row.value : Number(row.value);
         if (!Number.isFinite(value)) continue;
-        const bucket = byKpi.get(defId) ?? { name, values: [] };
+        const bucket = byKpi.get(defId) ?? { name, values: [], latestPeriod: null };
         bucket.values.push(value);
+        if (!bucket.latestPeriod && row.period_month) bucket.latestPeriod = row.period_month;
         byKpi.set(defId, bucket);
       }
 
-      for (const { name, values } of byKpi.values()) {
+      const twoMonthsAgo = new Date();
+      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+
+      for (const { name, values, latestPeriod } of byKpi.values()) {
         if (values.length < 2) continue;
+
+        if (latestPeriod && new Date(latestPeriod) < twoMonthsAgo) {
+          return {
+            kpiName: name,
+            trend: 'missing',
+            message: `${name} sem registos há mais de 2 meses. Considere atualizar.`,
+          };
+        }
 
         if (values.length >= 3 && values.slice(0, 3).every((v) => v === values[0])) {
           return {
