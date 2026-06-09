@@ -109,6 +109,15 @@ export default function WorkspaceDetail() {
     setSearchParams({ tab: value }, { replace: false });
   }, [setSearchParams]);
 
+  // Phase 7D/7E: fire a view event when the user lands on a trackable tab.
+  const trackEngagement = useTrackEngagement(id);
+  useEffect(() => {
+    const targetType = TAB_TO_TARGET[activeTab];
+    if (!id || !targetType) return;
+    trackEngagement.mutate({ eventType: 'view', targetType, metadata: { tab: activeTab } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, activeTab]);
+
   // Keyboard navigation for tabs (WAI-ARIA)
   const handleTabKeyDown = useCallback((e: KeyboardEvent<HTMLButtonElement>, tabs: WorkspaceTab[]) => {
     const currentIndex = tabs.findIndex(t => t.id === activeTab);
