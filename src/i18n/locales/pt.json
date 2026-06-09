@@ -7871,6 +7871,7 @@
     "nameRequired": "Nome é obrigatório",
     "noMembers": "Nenhum co-fundador encontrado",
     "noMembersDesc": "Ainda não foram adicionados co-fundadores",
+    "noMembersTitle": "Ainda sem membros de equipa",
     "phone": "Telefone",
     "removeMemberConfirm": "Remover este co-fundador da equipa?",
     "removeMemberTitle": "Remover co-fundador?",

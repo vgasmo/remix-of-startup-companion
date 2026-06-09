@@ -14,6 +14,7 @@ import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { notify } from "@/lib/notify";
 import { Users, Plus, Pencil, Trash2, Crown, Linkedin, Mail, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 interface TeamTabProps {
   startupId: string;
@@ -161,10 +162,12 @@ export function TeamTab({ startupId, canEdit = false }: TeamTabProps) {
         </CardHeader>
         <CardContent>
           {!members?.length ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>{t('team.noMembersDesc')}</p>
-            </div>
+            <EmptyState
+              icon={Users}
+              title={t('team.noMembersTitle', { defaultValue: 'Sem membros de equipa ainda' })}
+              description={t('team.noMembersDesc')}
+              action={canEdit ? { label: t('team.addMember'), icon: Plus, onClick: openAddDialog } : undefined}
+            />
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {members.map(member => (
