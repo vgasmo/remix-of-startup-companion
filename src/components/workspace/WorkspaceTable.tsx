@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import {
   Tooltip,
   TooltipContent,
@@ -137,7 +138,8 @@ export const WorkspaceTable = memo(function WorkspaceTable({
           return (
             <Card
               key={workspace.id}
-              className="cursor-pointer hover:shadow-md transition-shadow"
+              interactive
+              className="cursor-pointer"
               onClick={() => onRowClick(workspace.id)}
             >
               <CardContent className="p-4 space-y-3">
@@ -227,9 +229,11 @@ export const WorkspaceTable = memo(function WorkspaceTable({
               return (
                 <TableRow
                   key={workspace.id}
-                  className={`cursor-pointer hover:bg-accent/50 transition-colors ${
-                    isSelected ? 'bg-primary/5' : ''
-                  }`}
+                  className={cn(
+                    "cursor-pointer transition-colors",
+                    "hover:bg-primary/5",
+                    isSelected && "bg-primary/10"
+                  )}
                   onClick={() => onRowClick(workspace.id)}
                 >
                   {selectionEnabled && (

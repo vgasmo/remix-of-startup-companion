@@ -218,8 +218,9 @@ export function WorkspaceTabGroups({
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "w-full justify-start h-8 px-3 text-sm",
-                    currentTab === tab.id && "bg-primary/10 text-primary"
+                    "w-full justify-start h-8 px-3 text-sm transition-colors",
+                    "focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-0",
+                    currentTab === tab.id && "chevron-tick bg-primary/10 text-primary"
                   )}
                   onClick={() => onTabChange(tab.id)}
                 >

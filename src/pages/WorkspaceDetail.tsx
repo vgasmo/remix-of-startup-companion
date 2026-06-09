@@ -233,10 +233,10 @@ export default function WorkspaceDetail() {
               onKeyDown={(e) => handleTabKeyDown(e, primaryTabs)}
               className={cn(
                 "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1",
                 "disabled:pointer-events-none disabled:opacity-50",
                 activeTab === tab.id
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-primary/10 text-primary shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-background/50"
               )}
             >
@@ -256,9 +256,9 @@ export default function WorkspaceDetail() {
                 <button
                   className={cn(
                     "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2.5 py-1.5 text-xs sm:text-sm font-medium gap-1 transition-all",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1",
                     isOverflowTabActive
-                      ? "bg-background text-foreground shadow-sm"
+                      ? "bg-primary/10 text-primary shadow-sm"
                       : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                   )}
                 >
