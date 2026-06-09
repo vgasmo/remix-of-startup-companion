@@ -1,3 +1,4 @@
+// intentional: decorative wizard illustration palette — per-step accent hues, not state semantics
 import { ReactNode } from 'react';
 import {
   Sparkles,
