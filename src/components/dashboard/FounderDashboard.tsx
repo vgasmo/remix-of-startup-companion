@@ -166,6 +166,9 @@ export const FounderDashboard = memo(function FounderDashboard({
     }
   }, [workspace, hasKpis, maturity]);
 
+  // Hook must be called unconditionally — keep above any early return (Rules of Hooks).
+  const isFirstWeek = useIsFirstWeek(profile?.created_at, (workspace as any)?.created_at);
+
   if (isLoading) {
     return (
       <div className="space-y-6 max-w-5xl">
