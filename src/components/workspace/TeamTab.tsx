@@ -14,6 +14,7 @@ import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { notify } from "@/lib/notify";
 import { Users, Plus, Pencil, Trash2, Crown, Linkedin, Mail, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 interface TeamTabProps {
   startupId: string;
