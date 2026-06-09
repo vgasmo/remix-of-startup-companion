@@ -16,6 +16,21 @@ export const ErrorCode = {
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
 
+/**
+ * Constant-time string comparison to prevent timing attacks on shared secrets.
+ */
+function timingSafeEqual(a: string, b: string): boolean {
+  const enc = new TextEncoder();
+  const aBytes = enc.encode(a);
+  const bBytes = enc.encode(b);
+  const len = Math.max(aBytes.length, bBytes.length);
+  let diff = aBytes.length ^ bBytes.length;
+  for (let i = 0; i < len; i++) {
+    diff |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0);
+  }
+  return diff === 0;
+}
+
 export interface SecurityError {
   error: string;
   code: string;
