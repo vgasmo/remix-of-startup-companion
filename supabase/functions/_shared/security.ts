@@ -190,7 +190,7 @@ export async function requireCronOrStaff(
   const expectedSecret = Deno.env.get('CRON_SECRET');
   
   // Check cron secret first
-  if (expectedSecret && cronSecret === expectedSecret) {
+  if (expectedSecret && cronSecret && timingSafeEqual(cronSecret, expectedSecret)) {
     return { valid: true };
   }
 
