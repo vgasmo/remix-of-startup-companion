@@ -332,7 +332,7 @@ export function PendingMentorRequestsPanel() {
                   {t('mentorsPage.selectMentor')}
                 </label>
                 <Select value={selectedMentorId} onValueChange={setSelectedMentorId}>
-                  <SelectTrigger>
+                  <SelectTrigger aria-label={t('mentorsPage.selectMentor')}>
                     <SelectValue placeholder={t('mentorsPage.selectMentorPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>

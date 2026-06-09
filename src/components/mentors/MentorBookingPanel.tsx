@@ -173,7 +173,7 @@ export function MentorBookingPanel({
                 <div className="space-y-2">
                   <Label>{t('mentors.selectTimeSlot')}</Label>
                   <Select value={selectedSlot} onValueChange={setSelectedSlot}>
-                    <SelectTrigger>
+                    <SelectTrigger aria-label={t('mentors.selectTimeSlot')}>
                       <SelectValue placeholder={t('mentors.chooseTimeSlot')} />
                     </SelectTrigger>
                     <SelectContent>
@@ -194,6 +194,7 @@ export function MentorBookingPanel({
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={t('mentors.whatToDiscuss')}
                   rows={3}
+                  aria-label={t('mentors.messageOptional')}
                 />
               </div>
 

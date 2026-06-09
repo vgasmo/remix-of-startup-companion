@@ -409,6 +409,7 @@ export function GlobalEcosystemCopilot() {
                 }
                 className="flex-1 h-9 text-sm rounded-xl bg-muted/40 border-border/40"
                 disabled={isThinking || !isAvailable}
+                aria-label={t('copilot.askInputLabel', { defaultValue: 'Pergunte ao copiloto' })}
               />
               <Button
                 type="submit"
