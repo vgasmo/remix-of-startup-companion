@@ -291,10 +291,10 @@ function PandaDocSettingsCard() {
               <AlertDescription className="text-[10px] space-y-1">
                 <p><strong>{t('integrations.setupInstructions', 'Para configurar:')}</strong></p>
                 <ol className="list-decimal list-inside space-y-0.5">
-                  <li>Aceda ao <a href="https://app.pandadoc.com/a/#/settings/integrations/api" target="_blank" rel="noopener noreferrer" className="underline inline-flex items-center gap-0.5">PandaDoc Dashboard <ExternalLink className="h-2.5 w-2.5" /></a></li>
-                  <li>Copie a API Key e adicione como secret <code className="text-[9px] bg-muted px-1 rounded">PANDADOC_API_KEY</code></li>
-                  <li>Configure o Webhook URL acima no PandaDoc</li>
-                  <li>Active a integração com o switch acima</li>
+                  <li>{t('integrations.pandadoc.step1', { defaultValue: 'Aceda ao' })} <a href="https://app.pandadoc.com/a/#/settings/integrations/api" target="_blank" rel="noopener noreferrer" className="underline inline-flex items-center gap-0.5">PandaDoc Dashboard <ExternalLink className="h-2.5 w-2.5" /></a></li>
+                  <li>{t('integrations.pandadoc.step2', { defaultValue: 'Copie a API Key e adicione como secret' })} <code className="text-[9px] bg-muted px-1 rounded">PANDADOC_API_KEY</code></li>
+                  <li>{t('integrations.pandadoc.step3', { defaultValue: 'Configure o Webhook URL acima no PandaDoc' })}</li>
+                  <li>{t('integrations.pandadoc.step4', { defaultValue: 'Ative a integração com o switch acima' })}</li>
                 </ol>
               </AlertDescription>
             </Alert>
