@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { notify } from "@/lib/notify";
 import { supabaseClient } from '@/lib/supabaseClient';
+import { CopilotPlaybookActions } from './CopilotPlaybookActions';
 
 interface Message {
   id: string;
