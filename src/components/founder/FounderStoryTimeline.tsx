@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Sparkles, Flag, Trophy, Calendar, TrendingUp } from 'lucide-react';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { supabase } from '@/lib/supabaseClient';
+import { logger } from '@/lib/logger';
 
 interface FounderStoryTimelineProps {
   workspaceId: string;
