@@ -38,6 +38,7 @@ const createSections = (t: (key: string) => string, canvasType: string): CanvasS
     color,
   });
 
+  // intentional: per-section canvas colors are a deliberate visual taxonomy (BMC, Lean, VPC, etc.) — do not tokenize.
   switch (canvasType) {
     case 'bmc':
       return [
