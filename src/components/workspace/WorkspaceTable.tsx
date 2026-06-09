@@ -138,7 +138,8 @@ export const WorkspaceTable = memo(function WorkspaceTable({
           return (
             <Card
               key={workspace.id}
-              className="cursor-pointer hover:shadow-md transition-shadow"
+              interactive
+              className="cursor-pointer"
               onClick={() => onRowClick(workspace.id)}
             >
               <CardContent className="p-4 space-y-3">
