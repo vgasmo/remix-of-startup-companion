@@ -49,9 +49,10 @@ export function useWorkspaceHealth(workspaceId: string) {
         .from('workspaces')
         .select('id, health_score, health_score_calculated, health_score_numeric, health_score_override, health_score_updated_at, health_score_explanation, health_score_components')
         .eq('id', workspaceId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) return null;
       return {
         ...data,
         health_score_explanation: Array.isArray(data.health_score_explanation) 

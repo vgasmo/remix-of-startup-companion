@@ -554,7 +554,7 @@ function StartupCategorySelector({ workspaceId }: { workspaceId: string }) {
       .from('workspaces')
       .select('startup_category')
       .eq('id', workspaceId)
-      .single()
+      .maybeSingle()
       .then(({ data }) => {
         setCurrentCategory(data?.startup_category || null);
         setLoading(false);

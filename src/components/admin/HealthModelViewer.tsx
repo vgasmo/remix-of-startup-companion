@@ -130,7 +130,7 @@ export function HealthModelViewer() {
         .from('program_health_model')
         .select('id')
         .eq('program_id', programId)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         const { error } = await supabase

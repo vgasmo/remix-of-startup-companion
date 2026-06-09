@@ -34,8 +34,10 @@ function usePrepData(workspaceId: string) {
   return useQuery({
     queryKey: ['first-contact-prep', workspaceId],
     queryFn: async () => {
-      const [wsRes, docsRes, kpiRes, membersRes, actionsRes, milestonesRes, sessionsRes] = await Promise.all([
-        supabase.from('workspaces').select('id, status, stage, health_score, created_at, program_id, startup_id, programs(name), startups_safe(name, description, main_contact_email, website, nif)').eq('id', workspaceId).single(),
+      // Promise.allSettled: a deleted/RLS-blocked record degrades one section
+      // instead of crashing the whole prep panel.
+      const settled = await Promise.allSettled([
+        supabase.from('workspaces').select('id, status, stage, health_score, created_at, program_id, startup_id, programs(name), startups_safe(name, description, main_contact_email, website, nif)').eq('id', workspaceId).maybeSingle(),
         supabase.from('documents').select('id, name, category, document_type').eq('workspace_id', workspaceId),
         supabase.from('kpi_values').select('id, kpi_definition_id, value, period_month, kpi_definitions(name, unit)').eq('workspace_id', workspaceId).order('period_month', { ascending: false }).limit(10),
         supabase.from('workspace_users').select('user_id, role, profiles_safe(full_name, email)').eq('workspace_id', workspaceId).eq('active', true),
@@ -44,16 +46,26 @@ function usePrepData(workspaceId: string) {
         supabase.from('sessions').select('id, title, scheduled_at').eq('workspace_id', workspaceId).order('scheduled_at', { ascending: false }).limit(3),
       ]);
 
+      const pick = <T,>(idx: number, fallback: T): T => {
+        const r = settled[idx];
+        if (r.status === 'fulfilled' && (r.value as any)?.data != null) {
+          return (r.value as any).data as T;
+        }
+        return fallback;
+      };
+
+      const wsData = pick<any>(0, null);
+
       return {
-        workspace: wsRes.data,
-        startup: (wsRes.data as any)?.startups,
-        program: (wsRes.data as any)?.programs,
-        documents: docsRes.data || [],
-        kpis: kpiRes.data || [],
-        members: membersRes.data || [],
-        actions: actionsRes.data || [],
-        milestones: milestonesRes.data || [],
-        sessions: sessionsRes.data || [],
+        workspace: wsData,
+        startup: (wsData as any)?.startups_safe ?? (wsData as any)?.startups,
+        program: (wsData as any)?.programs,
+        documents: pick<any[]>(1, []),
+        kpis: pick<any[]>(2, []),
+        members: pick<any[]>(3, []),
+        actions: pick<any[]>(4, []),
+        milestones: pick<any[]>(5, []),
+        sessions: pick<any[]>(6, []),
       };
     },
     enabled: !!workspaceId,

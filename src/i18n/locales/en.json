@@ -2257,6 +2257,8 @@
     "moreActions": "More actions",
     "moreDetails": "More",
     "morePages": "More pages",
+    "moveDown": "Move down",
+    "moveUp": "Move up",
     "name": "Name",
     "needAttention": "need attention",
     "needsUpdate": "Needs update",
@@ -3326,7 +3328,9 @@
     "insights": "Insights",
     "itemsNeedAttention": "{{count}} item needs attention",
     "itemsNeedAttention_plural": "{{count}} items need attention",
+    "kpiAlert": "KPI Alert",
     "last7Days": "Last 7 days",
+    "reviewKpi": "Review KPI →",
     "meetingsThisWeek": "Meetings This Week",
     "meetingsToday": "Meetings Today",
     "myStartup": "My Startup",
@@ -3865,6 +3869,13 @@
     "uploadFirst": "Carregue o primeiro documento",
     "welcomeDesc": "Your startup journey starts here.",
     "welcomeTitle": "Welcome to Startup Leiria"
+  },
+  "engagement": {
+    "lastViewed": "Seen {{when}}",
+    "viewsCount": "{{count}} views",
+    "viewsCount_plural": "{{count}} views",
+    "founderCompletedActions": "The founder completed {{count}} actions since your last visit.",
+    "founderCompletedActions_plural": "The founder completed {{count}} actions since your last visit."
   },
   "enrollment": {
     "claimExplainer": "O fluxo de claim é independente do modo de registo: após login, founders verificam se a sua startup já está no sistema.",

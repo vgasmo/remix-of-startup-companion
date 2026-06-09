@@ -78,7 +78,7 @@ export function BookingLinksManager() {
         .from('profiles')
         .select('email')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       const expiresAt = expiresInDays 
         ? new Date(Date.now() + parseInt(expiresInDays) * 24 * 60 * 60 * 1000).toISOString()
