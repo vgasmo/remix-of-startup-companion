@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { notify } from "@/lib/notify";
 import { supabaseClient } from '@/lib/supabaseClient';
+import { CopilotPlaybookActions } from './CopilotPlaybookActions';
 
 interface Message {
   id: string;
@@ -333,15 +334,20 @@ export function GlobalEcosystemCopilot() {
                       </AvatarFallback>
                     </Avatar>
                   )}
-                  <div
-                    className={cn(
-                      'max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap',
-                      msg.role === 'user'
-                        ? 'bg-primary text-primary-foreground rounded-br-md'
-                        : 'bg-muted/60 text-foreground rounded-bl-md'
+                  <div className="flex flex-col items-start max-w-[80%]">
+                    <div
+                      className={cn(
+                        'rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap',
+                        msg.role === 'user'
+                          ? 'bg-primary text-primary-foreground rounded-br-md'
+                          : 'bg-muted/60 text-foreground rounded-bl-md'
+                      )}
+                    >
+                      {msg.content}
+                    </div>
+                    {msg.role === 'assistant' && msg.content.trim() && (
+                      <CopilotPlaybookActions messageText={msg.content} />
                     )}
-                  >
-                    {msg.content}
                   </div>
                 </div>
               ))}

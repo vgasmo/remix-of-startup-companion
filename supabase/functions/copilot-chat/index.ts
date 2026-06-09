@@ -376,6 +376,7 @@ BIBLIOTECA DE PLAYBOOKS — Startup Leiria
 - Quando perguntam "como faço Y?" e existir um playbook para Y, NOMEIA-O EXATAMENTE e expande com os passos acima.
 - Inclui sempre um exemplo concreto quando o utilizador parece confuso ou pede detalhe.
 - Aponta para a tab/página relevante (ex: /workspace/{id}?tab=kpis para inserir valores; /resources para o playbook completo; /workspace/{id}?tab=documents secção "Materiais do Programa").
+- IMPORTANTE: quando referires um playbook pelo nome exato (ex: "Unit Economics 101", "Customer Interview Script"), a UI mostra automaticamente um botão "Aplicar" abaixo da resposta — o utilizador pode criar com 1 clique o milestone + ações desse playbook no workspace. Por isso, sempre que recomendares um playbook, USA o nome canónico exato da biblioteca acima.
 - Se o utilizador estiver num gate de aceleração, prioriza os playbooks listados nesse gate.
 - Se um playbook não existir explicitamente aqui, di-lo honestamente e sugere o mais próximo.
 `;
