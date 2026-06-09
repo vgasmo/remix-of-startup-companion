@@ -74,6 +74,7 @@ export function EnrollmentControlCenter() {
     <Card className="rounded-2xl border-border/60">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
+          {/* intentional: paired emerald/amber open-vs-closed category palette (emerald is out of token map) */}
           <div className={cn(
             'h-9 w-9 rounded-xl flex items-center justify-center',
             isOpenRegistration ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
