@@ -134,7 +134,7 @@ export function RecordDrawerHeader({ item, onStageChange, isUpdating }: RecordDr
                 size="icon"
                 className="h-6 w-6 shrink-0"
                 onClick={() => setIsEditing(true)}
-              >
+               aria-label={t('common.edit')}>
                 <Pencil className="h-3 w-3" />
               </Button>
               <Badge className={cn('h-5 text-[10px] shrink-0', statusConfig.bgColor, statusConfig.color)}>

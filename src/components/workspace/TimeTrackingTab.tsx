@@ -143,7 +143,7 @@ export function TimeTrackingTab({ workspaceId }: TimeTrackingTabProps) {
                     </div>
                     {entry.description && <p className="text-sm text-muted-foreground">{entry.description}</p>}
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(entry.id)} className="text-destructive">
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(entry.id)} className="text-destructive" aria-label={t('common.delete')}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

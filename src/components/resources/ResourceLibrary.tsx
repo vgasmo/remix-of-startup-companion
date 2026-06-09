@@ -145,14 +145,14 @@ export function ResourceLibrary({ programId }: ResourceLibraryProps) {
                       </div>
                       <div className="flex gap-1">
                         {resource.url && (
-                          <Button variant="ghost" size="icon" asChild>
+                          <Button variant="ghost" size="icon" asChild aria-label={t('common.open')}>
                             <a href={resource.url} target="_blank" rel="noopener noreferrer">
                               <ExternalLink className="h-4 w-4" />
                             </a>
                           </Button>
                         )}
                         {canManage && (
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(resource.id, resource.title)} className="text-destructive">
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(resource.id, resource.title)} className="text-destructive" aria-label={t('common.delete')}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         )}

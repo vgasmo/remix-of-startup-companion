@@ -157,7 +157,7 @@ export function SessionSyncStatus({
                 e.stopPropagation();
                 window.open(teamsMeetingUrl, '_blank');
               }}
-            >
+             aria-label={t('common._iconOpenVideo')}>
               <Video className="h-4 w-4 text-[hsl(var(--info))]" />
             </Button>
           </TooltipTrigger>
@@ -177,7 +177,7 @@ export function SessionSyncStatus({
               className="h-7 w-7"
               onClick={handleResync}
               disabled={isSyncing}
-            >
+             aria-label={t('common.refresh')}>
               <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
             </Button>
           </TooltipTrigger>

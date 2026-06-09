@@ -273,7 +273,7 @@ export function AppSidebar() {
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent/40 shrink-0"
-                >
+                 aria-label={t('common.expand')}>
                   <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", startupExpanded && "rotate-180")} />
                 </Button>
               </CollapsibleTrigger>
@@ -368,7 +368,7 @@ export function AppSidebar() {
           size="icon"
           onClick={() => setCollapsed(!collapsed)}
           className="absolute -right-3 top-20 h-6 w-6 rounded-full border border-sidebar-border bg-sidebar-background text-sidebar-foreground hover:bg-sidebar-accent shadow-md z-50"
-        >
+         aria-label={t('common.next')}>
           {collapsed ? (
             <ChevronRight className="h-3 w-3" />
           ) : (
@@ -460,7 +460,7 @@ export function AppSidebar() {
                   size="icon"
                   onClick={() => setMessagingOpen(true)}
                   className="h-10 w-10 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
-                >
+                 aria-label={t('common._iconOpenChat')}>
                   <MessageCircle className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>
@@ -508,7 +508,7 @@ export function AppSidebar() {
                   size="icon"
                   className="h-8 w-8 text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent shrink-0"
                   onClick={() => signOut()}
-                >
+                 aria-label={t('common.logout')}>
                   <LogOut className="h-4 w-4" />
                 </Button>
               </>
@@ -522,7 +522,7 @@ export function AppSidebar() {
                   size="icon"
                   className="w-full mt-2 h-8 text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent"
                   onClick={() => signOut()}
-                >
+                 aria-label={t('common.logout')}>
                   <LogOut className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>

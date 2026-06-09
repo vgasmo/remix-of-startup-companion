@@ -165,7 +165,7 @@ export function FounderWelcomePanel({
             size="icon"
             className="absolute top-3 right-3 h-8 w-8 text-muted-foreground hover:text-foreground z-10"
             onClick={dismissWelcome}
-          >
+           aria-label={t('common.close')}>
             <X className="h-4 w-4" />
           </Button>
           <CardContent className="relative p-6 md:p-8">
@@ -211,7 +211,7 @@ export function FounderWelcomePanel({
             size="icon"
             className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-foreground"
             onClick={dismissChecklist}
-          >
+           aria-label={t('common.close')}>
             <X className="h-3.5 w-3.5" />
           </Button>
           <CardContent className="p-4">

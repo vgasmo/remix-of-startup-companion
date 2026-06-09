@@ -391,7 +391,7 @@ export function PlaybooksTab({ workspaceId, currentStage, programId, canWrite }:
                           onClick={() => dismiss.mutate({ workspaceId, playbookId: playbook.id })}
                           disabled={dismiss.isPending || !canWrite}
                           title={t('playbooks.dismiss')}
-                        >
+                         aria-label={t('common.close')}>
                           <X className="h-4 w-4" />
                         </Button>
                       </div>

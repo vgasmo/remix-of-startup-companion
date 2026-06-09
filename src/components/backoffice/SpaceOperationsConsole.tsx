@@ -495,7 +495,7 @@ export function SpaceOperationsConsole() {
                     <TableCell><StatusBadge status={rec.contract_status} type="contract" /></TableCell>
                     <TableCell><WarningBadges warnings={rec.warnings} /></TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" className="h-7 w-7">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t('common.view')}>
                         <Eye className="h-3.5 w-3.5" />
                       </Button>
                     </TableCell>
@@ -601,7 +601,7 @@ export function SpaceOperationsConsole() {
                               navigator.clipboard.writeText(selectedRecord.startup_contact_email!);
                               notify.success(t('common.emailCopied', 'Email copiado'));
                             }}
-                          >
+                           aria-label={t('common.copy')}>
                             <Copy className="h-3 w-3" />
                           </Button>
                         </div>

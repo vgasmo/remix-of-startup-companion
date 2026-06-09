@@ -292,7 +292,7 @@ export function WizardPlaybooksStep({ stages, playbooks, onUpdate }: WizardPlayb
                                   size="icon"
                                   className="h-7 w-7"
                                   onClick={() => handleRemoveItem(stage.stage_key, idx)}
-                                >
+                                 aria-label={t('common.delete')}>
                                   <Trash2 className="h-3 w-3 text-destructive" />
                                 </Button>
                               </div>
@@ -370,7 +370,7 @@ export function WizardPlaybooksStep({ stages, playbooks, onUpdate }: WizardPlayb
                                   size="icon"
                                   className="h-7 w-7"
                                   onClick={() => handleRemoveItem(stage.stage_key, idx)}
-                                >
+                                 aria-label={t('common.delete')}>
                                   <Trash2 className="h-3 w-3 text-destructive" />
                                 </Button>
                               </div>

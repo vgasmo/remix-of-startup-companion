@@ -74,7 +74,7 @@ export function QuickActionsFab({
           isOpen && "rotate-45"
         )}
         onClick={() => setIsOpen(!isOpen)}
-      >
+       aria-label={t('common.add')}>
         <Plus className="h-5 w-5" />
       </Button>
     </div>

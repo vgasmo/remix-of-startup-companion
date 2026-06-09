@@ -110,7 +110,7 @@ export function MobileQuickActions({
                   action.color
                 )}
                 onClick={action.onClick}
-              >
+               aria-label={t('common.moreActions')}>
                 {action.icon}
               </Button>
             </div>

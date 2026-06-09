@@ -238,7 +238,7 @@ export default function Documents() {
                                   </div>
                                 </div>
                               </div>
-                              <Button variant="ghost" size="icon" onClick={() => handleOpen(doc)} className="shrink-0">
+                              <Button variant="ghost" size="icon" onClick={() => handleOpen(doc)} className="shrink-0" aria-label={t('common.open')}>
                                 {doc.external_url ? <ExternalLink className="h-4 w-4" /> : <Download className="h-4 w-4" />}
                               </Button>
                             </div>

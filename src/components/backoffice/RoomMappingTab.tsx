@@ -106,7 +106,7 @@ function FloorMapCard({
               className="h-8 w-8 text-primary hover:text-primary/80"
               onClick={onViewInteractive}
               title={t('admin.backoffice.viewInteractive')}
-            >
+             aria-label={t('common.view')}>
               <Eye className="h-4 w-4" />
             </Button>
             <Button
@@ -114,7 +114,7 @@ function FloorMapCard({
               size="icon"
               className="h-8 w-8 text-destructive"
               onClick={onDelete}
-            >
+             aria-label={t('common.delete')}>
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>

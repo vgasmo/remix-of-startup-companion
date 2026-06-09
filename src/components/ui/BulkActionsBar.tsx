@@ -123,7 +123,7 @@ export function BulkActionsBar<T>({
         size="icon" 
         className="h-8 w-8"
         onClick={onDeselectAll}
-      >
+       aria-label="Close">
         <X className="h-4 w-4" />
       </Button>
     </div>

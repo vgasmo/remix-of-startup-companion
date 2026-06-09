@@ -257,7 +257,7 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
               className="h-8 w-8"
               onClick={handleRecompute}
               disabled={isRecomputing}
-            >
+             aria-label={t('common.loading')}>
               {isRecomputing ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (

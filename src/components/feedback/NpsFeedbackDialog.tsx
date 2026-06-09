@@ -106,7 +106,7 @@ export function NpsFeedbackDialog({ open, onOpenChange }: NpsFeedbackDialogProps
               <Heart className="h-5 w-5 text-primary" />
               {t('nps.title', 'How are we doing?')}
             </DialogTitle>
-            <Button variant="ghost" size="icon" onClick={handleDismiss} className="h-8 w-8">
+            <Button variant="ghost" size="icon" onClick={handleDismiss} className="h-8 w-8" aria-label={t('common.close')}>
               <X className="h-4 w-4" />
             </Button>
           </div>

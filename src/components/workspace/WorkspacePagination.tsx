@@ -62,7 +62,7 @@ export const WorkspacePagination = memo(function WorkspacePagination({
           className="h-8 w-8"
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
-        >
+         aria-label="First">
           <ChevronsLeft className="h-4 w-4" />
         </Button>
         <Button
@@ -71,7 +71,7 @@ export const WorkspacePagination = memo(function WorkspacePagination({
           className="h-8 w-8"
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-        >
+         aria-label="Previous">
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <div className="flex items-center gap-1 mx-2">
@@ -93,7 +93,7 @@ export const WorkspacePagination = memo(function WorkspacePagination({
                 size="icon"
                 className="h-8 w-8"
                 onClick={() => onPageChange(pageNum)}
-              >
+               aria-label="Action">
                 {pageNum}
               </Button>
             );
@@ -105,7 +105,7 @@ export const WorkspacePagination = memo(function WorkspacePagination({
           className="h-8 w-8"
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
-        >
+         aria-label="Next">
           <ChevronRight className="h-4 w-4" />
         </Button>
         <Button
@@ -114,7 +114,7 @@ export const WorkspacePagination = memo(function WorkspacePagination({
           className="h-8 w-8"
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
-        >
+         aria-label="Last">
           <ChevronsRight className="h-4 w-4" />
         </Button>
       </div>
