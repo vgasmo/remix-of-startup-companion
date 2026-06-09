@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sparkles, Flag, Trophy, Calendar, TrendingUp } from 'lucide-react';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { supabase } from '@/lib/supabaseClient';
 
 interface FounderStoryTimelineProps {
@@ -88,14 +89,11 @@ export function FounderStoryTimeline({ workspaceId }: FounderStoryTimelineProps)
 
   if (!events || events.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-10 text-center">
-          <Sparkles className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
-          <p className="text-sm text-muted-foreground">
-            {t('story.empty', 'A tua história começa quando completares o primeiro marco, sessão ou KPI.')}
-          </p>
-        </CardContent>
-      </Card>
+      <EmptyState
+        illustration="rocket"
+        title={t('story.title', 'A tua história')}
+        description={t('story.empty', 'A tua história começa quando completares o primeiro marco, sessão ou KPI.')}
+      />
     );
   }
 

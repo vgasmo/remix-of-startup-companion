@@ -166,6 +166,9 @@ export const FounderDashboard = memo(function FounderDashboard({
     }
   }, [workspace, hasKpis, maturity]);
 
+  // Hook must be called unconditionally — keep above any early return (Rules of Hooks).
+  const isFirstWeek = useIsFirstWeek(profile?.created_at, (workspace as any)?.created_at);
+
   if (isLoading) {
     return (
       <div className="space-y-6 max-w-5xl">
@@ -218,7 +221,8 @@ export const FounderDashboard = memo(function FounderDashboard({
   const handleAddAction = () => navigate(`/workspace/${workspace.id}?tab=milestones-actions-actions`);
   const handleScheduleSession = () => navigate(`/workspace/${workspace.id}?tab=agenda`);
 
-  const isFirstWeek = useIsFirstWeek(profile?.created_at, (workspace as any)?.created_at);
+
+
 
   return (
     <div className="space-y-6 max-w-5xl animate-fade-in">
@@ -351,6 +355,7 @@ export const FounderDashboard = memo(function FounderDashboard({
                 <WeeklyGreetingSubline
                   userId={profile?.id}
                   workspaceId={workspace.id}
+                  isFirstWeek={isFirstWeek}
                 />
               </div>
             </div>
@@ -491,14 +496,14 @@ export const FounderDashboard = memo(function FounderDashboard({
           )}
 
           {/* Story Timeline (Magic Moment) */}
-          <div className="animate-fade-in-up stagger-5">
+          <div className="animate-fade-in-up stagger-6">
             <WidgetErrorBoundary name="FounderStoryTimeline">
               <FounderStoryTimeline workspaceId={workspace.id} />
             </WidgetErrorBoundary>
           </div>
 
           {/* Stage Progress + Investor Readiness + Calendar */}
-          <div className="grid gap-6 md:grid-cols-2 animate-fade-in-up stagger-6">
+          <div className="grid gap-6 md:grid-cols-2 animate-fade-in-up">
 
             <div className="space-y-4">
               <StageProgressCard workspace={workspace} />
@@ -624,7 +629,7 @@ function getISOWeek(d: Date): number {
   return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
-function WeeklyGreetingSubline({ userId, workspaceId }: { userId?: string; workspaceId: string }) {
+function WeeklyGreetingSubline({ userId, workspaceId, isFirstWeek }: { userId?: string; workspaceId: string; isFirstWeek?: boolean }) {
   const { t } = useTranslation();
   const { data: actions } = useActionItems(workspaceId);
   const { data: sessions } = useUpcomingSessions();
@@ -645,6 +650,16 @@ function WeeklyGreetingSubline({ userId, workspaceId }: { userId?: string; works
   });
 
   if (!isFirstOfWeek) return null;
+
+  if (isFirstWeek) {
+    return (
+      <p className="text-sm text-muted-foreground motion-safe:animate-fade-in">
+        {t('founder.hero.firstWeek', {
+          defaultValue: 'Bem-vindo! Esta é a tua primeira semana — vai ao teu ritmo, estamos aqui para ajudar.',
+        })}
+      </p>
+    );
+  }
 
   const pending = (actions ?? []).filter((a) => a.status !== 'completed').length;
   const upcoming = (sessions ?? []).length;
