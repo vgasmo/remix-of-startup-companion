@@ -466,9 +466,18 @@ export function useGlobalSearch(filters: SearchFilters) {
         })());
       }
 
-      // Execute all searches in parallel
-      const allResults = await Promise.all(searchPromises);
-      const results = allResults.flat();
+      // Execute all searches in parallel — use allSettled so one failing source
+      // doesn't blank the whole result list; log rejected promises for diagnosis.
+      const settled = await Promise.allSettled(searchPromises);
+      const results: SearchResult[] = [];
+      settled.forEach((r, idx) => {
+        if (r.status === 'fulfilled') {
+          results.push(...r.value);
+        } else {
+          // Avoid pulling in `logger` here (file is heavy) — use console for parity with surrounding hooks.
+          console.warn('[global-search] partial source failure', { sourceIndex: idx, reason: String(r.reason) });
+        }
+      });
 
       // Sort by updated_at descending
       results.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
