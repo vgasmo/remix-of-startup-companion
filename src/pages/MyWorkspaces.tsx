@@ -38,11 +38,13 @@ import { WorkspaceEmptyState } from '@/components/workspace/WorkspaceEmptyState'
 import { OnboardingTour } from '@/components/ui/OnboardingTour';
 import { SavedFiltersDropdown } from '@/components/workspace/SavedFiltersDropdown';
 import { useWorkspaces, usePrograms, useMyPendingWorkspaces, WorkspaceWithDetails, SortOption, WorkspaceFilters as WorkspaceFiltersType } from '@/hooks/useWorkspaces';
+import { useWorkspacesPaged } from '@/hooks/useWorkspacesPaged';
 import { useRealtimeWorkspaces } from '@/hooks/useRealtimeWorkspaces';
 import { useSavedFilters } from '@/hooks/useSavedFilters';
 import { StartupStage, HealthScore, WorkspacePriority } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFounderOnboardingState } from '@/hooks/useFounderOnboardingState';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const PAGE_SIZE = 15;
 
