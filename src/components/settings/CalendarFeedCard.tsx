@@ -46,26 +46,19 @@ export function CalendarFeedCard({ workspaceId }: CalendarFeedCardProps) {
         return;
       }
       
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('calendar_feed_token, calendar_token_expires_at')
-        .eq('id', user.id)
-        .maybeSingle();
-      
-      if (!error && data?.calendar_feed_token) {
-        // Token exists but is hashed - user needs to regenerate to get a usable URL
-        // Check if we have the original token in sessionStorage (for same-session use)
+      const { data, error } = await supabase.rpc('get_my_calendar_token_status');
+      const row = Array.isArray(data) ? data[0] : data;
+
+      if (!error && row?.has_token) {
         const cachedToken = sessionStorage.getItem(`calendar_token_${user.id}`);
-        
         if (cachedToken) {
           setCalendarToken(cachedToken);
         } else {
-          // Token is hashed, user needs to regenerate
           setNeedsRegeneration(true);
         }
-        
-        if (data.calendar_token_expires_at) {
-          const expiresAt = new Date(data.calendar_token_expires_at);
+
+        if (row.expires_at) {
+          const expiresAt = new Date(row.expires_at);
           setTokenExpiresAt(expiresAt);
           if (expiresAt < new Date()) {
             setNeedsRegeneration(true);
@@ -110,14 +103,11 @@ export function CalendarFeedCard({ workspaceId }: CalendarFeedCardProps) {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 90);
       
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          calendar_feed_token: tokenHash,
-          calendar_token_expires_at: expiresAt.toISOString()
-        })
-        .eq('id', user.id);
-      
+      const { error } = await supabase.rpc('set_my_calendar_token', {
+        _token_hash: tokenHash,
+        _expires_at: expiresAt.toISOString(),
+      });
+
       if (error) throw error;
       
       // Store the original token in sessionStorage for same-session URL generation
