@@ -38,6 +38,7 @@ import { toTitleCase } from '@/lib/textUtils';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTrackEngagement } from '@/hooks/useEngagementEvents';
 
 type ActionStatus = Database['public']['Enums']['action_status'];
 type MilestoneStatus = Database['public']['Enums']['milestone_status'];
