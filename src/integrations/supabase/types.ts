@@ -9081,6 +9081,13 @@ export type Database = {
           p75: number
         }[]
       }
+      get_my_calendar_token_status: {
+        Args: never
+        Returns: {
+          expires_at: string
+          has_token: boolean
+        }[]
+      }
       get_next_intake_consultant: {
         Args: { p_route_id: string }
         Returns: string
@@ -9193,6 +9200,10 @@ export type Database = {
           total_count: number
           updated_at: string
         }[]
+      }
+      set_my_calendar_token: {
+        Args: { _expires_at: string; _token_hash: string }
+        Returns: undefined
       }
       sha256_token: { Args: { token: string }; Returns: string }
       shares_workspace_with: {
