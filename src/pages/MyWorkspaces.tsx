@@ -38,11 +38,13 @@ import { WorkspaceEmptyState } from '@/components/workspace/WorkspaceEmptyState'
 import { OnboardingTour } from '@/components/ui/OnboardingTour';
 import { SavedFiltersDropdown } from '@/components/workspace/SavedFiltersDropdown';
 import { useWorkspaces, usePrograms, useMyPendingWorkspaces, WorkspaceWithDetails, SortOption, WorkspaceFilters as WorkspaceFiltersType } from '@/hooks/useWorkspaces';
+import { useWorkspacesPaged } from '@/hooks/useWorkspacesPaged';
 import { useRealtimeWorkspaces } from '@/hooks/useRealtimeWorkspaces';
 import { useSavedFilters } from '@/hooks/useSavedFilters';
 import { StartupStage, HealthScore, WorkspacePriority } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFounderOnboardingState } from '@/hooks/useFounderOnboardingState';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const PAGE_SIZE = 15;
 
@@ -174,35 +176,53 @@ export default function MyWorkspaces() {
     ];
   }, [dashboardStats, quickFilters, t]);
 
-  // Apply quick filters to workspaces
+  // Apply quick filters to workspaces (client-side, only used when chip/missing/overdue filters active)
   const filteredWorkspaces = useMemo(() => {
     if (!workspaces) return [];
     let filtered = [...workspaces];
-
-    // Health chips (critical/at_risk) are OR (union) — selecting both shows either
     const healthQuickFilters = [quickFilters.critical && 'critical', quickFilters.at_risk && 'at_risk'].filter(Boolean) as string[];
     if (healthQuickFilters.length > 0) {
       filtered = filtered.filter(w => healthQuickFilters.includes(w.health_score_override || w.health_score || 'stable'));
     }
-
-    // Overdue and meetings_today are AND — combine with health
     if (quickFilters.overdue) {
       filtered = filtered.filter(w => w.overdueActionsCount > 0);
     }
     if (quickFilters.meetings_today) {
       filtered = filtered.filter(w => w.nextMeetingDate && isToday(new Date(w.nextMeetingDate)));
     }
-
     return filtered;
   }, [workspaces, quickFilters]);
 
-  // Pagination
-  const totalItems = filteredWorkspaces.length;
-  const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+  // ── Server-side pagination path ────────────────────────────────────────────
+  // Use the server-paginated RPC for the heavy list render unless the user
+  // engaged client-only filters (quick chips, missingKpi, overdueActions),
+  // which require the in-memory dataset to compute correctly.
+  const hasClientOnlyFilters =
+    missingKpi || overdueActions || Object.values(quickFilters).some(Boolean);
+  const useServer = showListView && !hasClientOnlyFilters;
+  const debouncedSearch = useDebounce(search, 300);
+  const { data: pagedData, isLoading: pagedLoading } = useWorkspacesPaged({
+    search: debouncedSearch,
+    programId: programFilter,
+    stage: stageFilter,
+    health: healthFilter,
+    priority: priorityFilter,
+    sortBy,
+    statuses: workspaceStatuses,
+    assignedOnly: showAssignedOnly,
+    page: currentPage,
+    pageSize: PAGE_SIZE,
+    enabled: useServer,
+  });
+
+  // Pagination — server path uses RPC total; client path slices in memory
+  const totalItems = useServer ? (pagedData?.totalCount ?? 0) : filteredWorkspaces.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
   const paginatedWorkspaces = useMemo(() => {
+    if (useServer) return pagedData?.rows ?? [];
     const start = (currentPage - 1) * PAGE_SIZE;
     return filteredWorkspaces.slice(start, start + PAGE_SIZE);
-  }, [filteredWorkspaces, currentPage]);
+  }, [useServer, pagedData, filteredWorkspaces, currentPage]);
 
   // Callbacks
   const handleFilterChange = useCallback(() => setCurrentPage(1), []);
@@ -441,7 +461,7 @@ export default function MyWorkspaces() {
           </div>
 
           {/* Content */}
-          {isLoading ? (
+          {(isLoading || (useServer && pagedLoading)) ? (
             <Card>
               <CardContent className="p-6">
                 <div className="space-y-4">
@@ -458,7 +478,7 @@ export default function MyWorkspaces() {
                 <p className="text-destructive">{t('myWorkspaces.loadError')}</p>
               </CardContent>
             </Card>
-          ) : filteredWorkspaces.length === 0 ? (
+          ) : (useServer ? paginatedWorkspaces.length === 0 : filteredWorkspaces.length === 0) ? (
             <WorkspaceEmptyState
               hasFilters={search !== '' || activeFiltersCount > 0 || activeQuickFiltersCount > 0}
               onClearFilters={clearFilters}
