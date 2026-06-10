@@ -103,14 +103,11 @@ export function CalendarFeedCard({ workspaceId }: CalendarFeedCardProps) {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 90);
       
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          calendar_feed_token: tokenHash,
-          calendar_token_expires_at: expiresAt.toISOString()
-        })
-        .eq('id', user.id);
-      
+      const { error } = await supabase.rpc('set_my_calendar_token', {
+        _token_hash: tokenHash,
+        _expires_at: expiresAt.toISOString(),
+      });
+
       if (error) throw error;
       
       // Store the original token in sessionStorage for same-session URL generation
