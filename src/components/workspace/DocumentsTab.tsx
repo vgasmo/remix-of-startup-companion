@@ -49,6 +49,7 @@ import {
 import { useTemplateInstances, useTemplates } from '@/hooks/useTemplates';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
+import { useTrackEngagement } from '@/hooks/useEngagementEvents';
 import { useTranslation } from 'react-i18next';
 import { FinancialModelPanel } from './FinancialModelPanel';
 import { TemplatesTab } from './TemplatesTab';
