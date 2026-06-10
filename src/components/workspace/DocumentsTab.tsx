@@ -49,6 +49,7 @@ import {
 import { useTemplateInstances, useTemplates } from '@/hooks/useTemplates';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
+import { useTrackEngagement } from '@/hooks/useEngagementEvents';
 import { useTranslation } from 'react-i18next';
 import { FinancialModelPanel } from './FinancialModelPanel';
 import { TemplatesTab } from './TemplatesTab';
@@ -275,7 +276,16 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
     setDescription('');
   };
 
+  const trackEngagement = useTrackEngagement(workspaceId);
   const handleDownload = async (doc: Document) => {
+    // Track document open (best-effort, never blocks).
+    trackEngagement.mutate({
+      eventType: 'view',
+      targetType: 'document',
+      targetId: doc.id,
+      metadata: { kind: doc.external_url ? 'link' : 'file' },
+    });
+
     if (doc.external_url) {
       setPendingExternalUrl(doc.external_url);
       setExternalLinkConfirmOpen(true);

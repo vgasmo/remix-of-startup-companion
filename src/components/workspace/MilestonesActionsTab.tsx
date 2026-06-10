@@ -38,6 +38,7 @@ import { toTitleCase } from '@/lib/textUtils';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTrackEngagement } from '@/hooks/useEngagementEvents';
 
 type ActionStatus = Database['public']['Enums']['action_status'];
 type MilestoneStatus = Database['public']['Enums']['milestone_status'];
@@ -134,10 +135,17 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
     }
   }, [milestones]);
 
+  const trackEngagement = useTrackEngagement(workspaceId);
   const toggleMilestoneExpanded = (id: string) => {
     setExpandedMilestones(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+        // Fire-and-forget: track that this user opened the milestone card.
+        trackEngagement.mutate({ eventType: 'view', targetType: 'milestone', targetId: id });
+      }
       return next;
     });
   };
