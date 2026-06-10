@@ -9161,6 +9161,39 @@ export type Database = {
         Args: { p_claim_id: string; p_reason?: string }
         Returns: undefined
       }
+      search_workspaces_paged: {
+        Args: {
+          _assigned_to?: string
+          _health?: Database["public"]["Enums"]["health_score"]
+          _limit?: number
+          _offset?: number
+          _priority?: Database["public"]["Enums"]["workspace_priority"]
+          _program_id?: string
+          _search?: string
+          _sort_by?: string
+          _stage?: Database["public"]["Enums"]["startup_stage"]
+          _statuses?: string[]
+        }
+        Returns: {
+          created_at: string
+          current_week: number
+          health_score: Database["public"]["Enums"]["health_score"]
+          health_score_override: Database["public"]["Enums"]["health_score"]
+          id: string
+          priority_level: Database["public"]["Enums"]["workspace_priority"]
+          program_id: string
+          program_name: string
+          program_type: string
+          stage: Database["public"]["Enums"]["startup_stage"]
+          startup_description: string
+          startup_id: string
+          startup_logo_url: string
+          startup_name: string
+          status: string
+          total_count: number
+          updated_at: string
+        }[]
+      }
       sha256_token: { Args: { token: string }; Returns: string }
       shares_workspace_with: {
         Args: { _target_user_id: string }
