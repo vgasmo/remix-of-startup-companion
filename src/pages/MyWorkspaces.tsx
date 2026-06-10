@@ -461,7 +461,7 @@ export default function MyWorkspaces() {
           </div>
 
           {/* Content */}
-          {isLoading ? (
+          {(isLoading || (useServer && pagedLoading)) ? (
             <Card>
               <CardContent className="p-6">
                 <div className="space-y-4">
@@ -478,7 +478,7 @@ export default function MyWorkspaces() {
                 <p className="text-destructive">{t('myWorkspaces.loadError')}</p>
               </CardContent>
             </Card>
-          ) : filteredWorkspaces.length === 0 ? (
+          ) : (useServer ? paginatedWorkspaces.length === 0 : filteredWorkspaces.length === 0) ? (
             <WorkspaceEmptyState
               hasFilters={search !== '' || activeFiltersCount > 0 || activeQuickFiltersCount > 0}
               onClearFilters={clearFilters}
