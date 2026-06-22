@@ -185,7 +185,7 @@ function ContractArchiveStatus() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => retryMutation.mutate(contract.id)}
+                        onClick={() = aria-label={t('common.refresh')}> retryMutation.mutate(contract.id)}
                         disabled={retryMutation.isPending}
                         title={contract.archive_status === 'failed' ? t('admin.archive.retry') : t('admin.archive.archiveNow')}
                        aria-label={t('common.loading')}>

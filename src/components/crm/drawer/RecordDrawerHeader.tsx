@@ -133,7 +133,7 @@ export function RecordDrawerHeader({ item, onStageChange, isUpdating }: RecordDr
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6 shrink-0"
-                onClick={() => setIsEditing(true)}
+                onClick={() = aria-label={t('common.edit')}> setIsEditing(true)}
                aria-label={t('common.edit')}>
                 <Pencil className="h-3 w-3" />
               </Button>

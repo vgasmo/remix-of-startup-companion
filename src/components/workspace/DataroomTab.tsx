@@ -329,10 +329,10 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
                   
                   {canWrite && (
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => handleToggleVisibility(item)} title={t('dataroom.toggleVisibility')} aria-label={t('common._iconHide')}>
+                      <Button variant="ghost" size="icon" onClick={() = aria-label={t('common.hide')}> handleToggleVisibility(item)} title={t('dataroom.toggleVisibility')} aria-label={t('common._iconHide')}>
                         {item.visibility === 'investors' ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(item.id)} className="text-destructive" aria-label={t('common.delete')}>
+                      <Button variant="ghost" size="icon" onClick={() = aria-label={t('common.delete')}> handleDeleteItem(item.id)} className="text-destructive" aria-label={t('common.delete')}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

@@ -146,7 +146,7 @@ export const ActionItemCard = memo(function ActionItemCard({
             <span className={`text-sm font-medium leading-tight break-words ${item.status === 'completed' ? 'line-through text-muted-foreground' : ''}`}>{item.title}</span>
           </div>
           {canWrite && (item.source_deliverable_key === null || isStaff) && (
-            <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 shrink-0" onClick={() => onDelete(item)} aria-label={t('common.delete')}>
+            <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 shrink-0" onClick={() = aria-label={t('common.delete')}> onDelete(item)} aria-label={t('common.delete')}>
               <Trash2 className="h-3 w-3 text-muted-foreground" />
             </Button>
           )}
@@ -226,7 +226,7 @@ export const ActionItemCard = memo(function ActionItemCard({
                 {d.completed_at ? (
                   <Check className="h-3 w-3 text-[hsl(var(--success))] shrink-0" />
                 ) : isStaff && onCompleteDeliverable ? (
-                  <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 opacity-0 group-hover/del:opacity-100" onClick={() => onCompleteDeliverable(d.id, item.id)} aria-label={t('common.confirm')}>
+                  <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 opacity-0 group-hover/del:opacity-100" onClick={() = aria-label={t('common.confirm')}> onCompleteDeliverable(d.id, item.id)} aria-label={t('common.confirm')}>
                     <Check className="h-3 w-3 text-[hsl(var(--success))]" />
                   </Button>
                 ) : null}

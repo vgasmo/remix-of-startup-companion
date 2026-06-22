@@ -48,7 +48,7 @@ export function TopBar() {
         variant="ghost"
         size="icon"
         className="sm:hidden h-10 w-10 text-muted-foreground"
-        onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))}
+        onClick={() = aria-label={t('common.search')}> document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))}
         aria-label={t('common.search', { defaultValue: 'Search' })}
       >
         <Search className="h-5 w-5" />

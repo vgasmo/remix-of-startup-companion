@@ -229,7 +229,7 @@ export function InlineKpiEditor({ workspaceId, className }: InlineKpiEditorProps
                   size="icon"
                   className="h-8 w-8"
                   disabled={saving[kpi.kpi_definition_id]}
-                  onClick={() => handleSave(kpi.kpi_definition_id)}
+                  onClick={() = aria-label={t('common.save')}> handleSave(kpi.kpi_definition_id)}
                  aria-label="Loading">
                   {saving[kpi.kpi_definition_id] ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

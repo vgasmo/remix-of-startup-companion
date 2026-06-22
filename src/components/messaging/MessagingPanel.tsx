@@ -66,7 +66,7 @@ export const MessagingPanel = React.forwardRef<HTMLDivElement, MessagingPanelPro
           <>
             <SheetHeader className="border-b p-4">
               <div className="flex items-center gap-3">
-                <Button variant="ghost" size="icon" onClick={() => setSelectedConversation(null)} aria-label={t('common.back')}>
+                <Button variant="ghost" size="icon" onClick={() = aria-label={t('common.previous')}> setSelectedConversation(null)} aria-label={t('common.back')}>
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <SheetTitle className="text-lg">{getConversationTitle(selectedConversation)}</SheetTitle>
