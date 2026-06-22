@@ -8957,5 +8957,53 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
+  },
+  "intakeOps": {
+    "overdueTitle": "{{count}} pedido(s) sem resposta há mais de 10 dias",
+    "overdueDesc": "Considere reenviar o email ou contactar diretamente o cliente.",
+    "noName": "Sem nome",
+    "overdue": "Atrasado",
+    "missingDocs": "{{count}} doc(s) em falta",
+    "remindersCount": "{{count}}x lembrado",
+    "groups": {
+      "awaiting_fill": {
+        "title": "A Aguardar Preenchimento",
+        "empty": "Nenhum pedido a aguardar preenchimento do cliente.",
+        "action": "Novos pedidos enviados aos clientes aparecerão aqui."
+      },
+      "submitted_for_review": {
+        "title": "Submetidos para Revisão",
+        "empty": "Nenhuma submissão pendente de revisão.",
+        "action": "Quando um cliente submeter os dados, aparecerá aqui para revisão."
+      },
+      "changes_requested": {
+        "title": "Correções Pedidas",
+        "empty": "Nenhum intake a aguardar correções.",
+        "action": "Intakes devolvidos ao cliente para correção aparecerão aqui."
+      },
+      "ready_for_signature": {
+        "title": "Aprovados p/ Assinatura",
+        "empty": "Nenhum intake aprovado a aguardar envio para assinatura.",
+        "action": "Após aprovação, envie o contrato para assinatura digital."
+      },
+      "sent_for_signature": {
+        "title": "Enviados p/ Assinatura",
+        "empty": "Nenhum contrato a aguardar assinatura.",
+        "action": "Contratos enviados ao cliente para assinatura aparecerão aqui."
+      },
+      "signed_pending_activation": {
+        "title": "Assinados — Pendentes de Ativação",
+        "empty": "Nenhum contrato assinado a aguardar ativação.",
+        "action": "Após assinatura, ative o workspace e as condições operacionais."
+      }
+    }
+  },
+  "resourceGuide": {
+    "notFoundTitle": "Guia não encontrado",
+    "notFoundDesc": "Este conteúdo ainda não está disponível.",
+    "backToResources": "Voltar aos Recursos",
+    "resources": "Recursos",
+    "read": "de leitura",
+    "tips": "💡 Dicas"
   }
 }

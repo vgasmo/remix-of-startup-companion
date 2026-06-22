@@ -8957,5 +8957,53 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
+  },
+  "intakeOps": {
+    "overdueTitle": "{{count}} request(s) without response for more than 10 days",
+    "overdueDesc": "Consider resending the email or contacting the client directly.",
+    "noName": "No name",
+    "overdue": "Overdue",
+    "missingDocs": "{{count}} doc(s) missing",
+    "remindersCount": "{{count}}x reminded",
+    "groups": {
+      "awaiting_fill": {
+        "title": "Awaiting Fill",
+        "empty": "No requests awaiting client fill.",
+        "action": "New requests sent to clients will appear here."
+      },
+      "submitted_for_review": {
+        "title": "Submitted for Review",
+        "empty": "No submissions pending review.",
+        "action": "When a client submits, it will appear here for review."
+      },
+      "changes_requested": {
+        "title": "Changes Requested",
+        "empty": "No intakes awaiting changes.",
+        "action": "Intakes returned to the client for changes will appear here."
+      },
+      "ready_for_signature": {
+        "title": "Approved for Signature",
+        "empty": "No approved intakes awaiting send for signature.",
+        "action": "After approval, send the contract for digital signature."
+      },
+      "sent_for_signature": {
+        "title": "Sent for Signature",
+        "empty": "No contracts awaiting signature.",
+        "action": "Contracts sent to client for signature will appear here."
+      },
+      "signed_pending_activation": {
+        "title": "Signed — Pending Activation",
+        "empty": "No signed contracts awaiting activation.",
+        "action": "After signature, activate the workspace and operational conditions."
+      }
+    }
+  },
+  "resourceGuide": {
+    "notFoundTitle": "Guide not found",
+    "notFoundDesc": "This content is not yet available.",
+    "backToResources": "Back to Resources",
+    "resources": "Resources",
+    "read": "read",
+    "tips": "💡 Tips"
   }
 }
