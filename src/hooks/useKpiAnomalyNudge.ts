@@ -11,6 +11,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { useTranslation } from 'react-i18next';
 
 export type KpiAnomalyTrend = 'declining' | 'stale' | 'missing';
 
@@ -19,6 +20,7 @@ export interface KpiAnomaly {
   trend: KpiAnomalyTrend;
   message: string;
 }
+
 
 interface KpiValueRow {
   kpi_definition_id: string | null;
