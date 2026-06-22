@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { notify } from "@/lib/notify";
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { Clock, Plus, Trash2, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -25,6 +27,7 @@ export function TimeTrackingTab({ workspaceId }: TimeTrackingTabProps) {
   const { data: summary } = useTimeEntrySummary();
   const createEntry = useCreateTimeEntry();
   const deleteEntry = useDeleteTimeEntry();
+  const { confirm, dialogProps } = useConfirmDialog();
   
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -66,14 +69,21 @@ export function TimeTrackingTab({ workspaceId }: TimeTrackingTabProps) {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(t('time.deleteConfirm'))) return;
-    try {
-      await deleteEntry.mutateAsync(id);
-      notify.success(t('time.timeDeleted'));
-    } catch (error: any) {
-      notify.error(error.message || t('time.failedToDelete'));
-    }
+  const handleDelete = (id: string) => {
+    confirm({
+      title: t('time.deleteTitle'),
+      description: t('time.deleteConfirm'),
+      variant: 'destructive',
+      confirmLabel: t('common.delete'),
+      onConfirm: async () => {
+        try {
+          await deleteEntry.mutateAsync(id);
+          notify.success(t('time.timeDeleted'));
+        } catch (error: any) {
+          notify.error(t('time.failedToDelete'));
+        }
+      },
+    });
   };
 
   const totalForWorkspace = entries?.reduce((sum, e) => sum + Number(e.hours), 0) || 0;
@@ -191,6 +201,7 @@ export function TimeTrackingTab({ workspaceId }: TimeTrackingTabProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ConfirmDialog {...dialogProps} />
     </>
   );
 }
