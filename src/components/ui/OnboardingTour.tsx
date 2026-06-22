@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { useFounderOnboardingState } from '@/hooks/useFounderOnboardingState';
+import { useHasSeenWelcomeWizard } from '@/hooks/useHasSeenWelcomeWizard';
 
 const TOUR_KEY = 'sl-tour-completed';
 
@@ -52,6 +53,7 @@ export function OnboardingTour({ run, onComplete }: OnboardingTourProps) {
   const { user, roles, isStaff, isAuthReady } = useAuth();
   const { theme } = useTheme();
   const founderState = useFounderOnboardingState();
+  const hasSeenWizard = useHasSeenWelcomeWizard();
   const [runTour, setRunTour] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
 
@@ -110,6 +112,16 @@ export function OnboardingTour({ run, onComplete }: OnboardingTourProps) {
       return;
     }
 
+    // P5A: Defer until the FounderWelcomeWizard has been dismissed — avoid
+    // stacking a spotlight tour behind/over the welcome modal.
+    if (hasSeenWizard !== true) {
+      setRunTour(false);
+      setStepIndex(0);
+      return;
+    }
+
+
+
 
     // Only run tour for logged-in users who haven't completed it
     if (user && run === undefined) {
@@ -131,7 +143,7 @@ export function OnboardingTour({ run, onComplete }: OnboardingTourProps) {
       setStepIndex(0);
       setRunTour(run);
     }
-  }, [user, run, isAuthReady, isStaff, roles, founderState.status]);
+  }, [user, run, isAuthReady, isStaff, roles, founderState.status, hasSeenWizard]);
 
   const handleTourCallback = (data: CallBackProps) => {
     const { status, action, type, index } = data;
