@@ -195,18 +195,8 @@ serve(async (req) => {
     const baseUrl = Deno.env.get("PUBLIC_APP_URL") || "https://fb.startupleiria.com";
     const inviteUrl = `${baseUrl}/accept-invite?token=${rawToken}`;
     
-    // Build booking URL if requested
-    let bookingSection = '';
-    if (payload.includeBookingLink && payload.bookingToken) {
-      const bookingUrl = `${baseUrl}/book/${payload.bookingToken}`;
-      bookingSection = `
-        <div style="margin-top: 24px; padding: 16px; background: #f0f9ff; border-radius: 8px;">
-          <p style="color: #0369a1; margin: 0 0 8px 0; font-weight: 500;">📅 Book Your First Session</p>
-          <p style="color: #666; margin: 0 0 12px 0; font-size: 14px;">Schedule your first meeting with your consultant to get started.</p>
-          <a href="${escapeHtml(bookingUrl)}" style="display: inline-block; background: #0ea5e9; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500;">Book a Session</a>
-        </div>
-      `;
-    }
+    // (Booking section is constructed below in a locale-aware block.)
+
     
     // Get sender profile
     const { data: senderProfile } = await supabaseService
