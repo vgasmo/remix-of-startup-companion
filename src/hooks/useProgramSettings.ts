@@ -32,7 +32,7 @@ export function useProgramSettings(programId: string | undefined) {
         .from('programs')
         .select('settings_json')
         .eq('id', programId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to fetch program settings', {}, error);
