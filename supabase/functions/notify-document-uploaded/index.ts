@@ -1,6 +1,25 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { documentUploadedKey } from '../_shared/notificationEventKey.ts';
+import { resolveLocalesByUserIds, type Locale } from '../_shared/i18n.ts';
+
+const STRINGS = {
+  pt: {
+    title: (n: string) => `Novo documento: ${n}`,
+    submittedLink: (s: string) => `${s} partilhou um link`,
+    submittedDoc: (s: string) => `${s} submeteu um documento`,
+    categorySuffix: (c: string) => ` (${c})`,
+    period: '.',
+  },
+  en: {
+    title: (n: string) => `New document: ${n}`,
+    submittedLink: (s: string) => `${s} shared a link`,
+    submittedDoc: (s: string) => `${s} submitted a document`,
+    categorySuffix: (c: string) => ` (${c})`,
+    period: '.',
+  },
+} as const;
+
 
 interface Body {
   document_id: string;
@@ -61,27 +80,36 @@ Deno.serve(async (req) => {
       .eq('active', true)
       .in('role', ['consultor', 'mentor_externo']);
 
-    const rows = (reviewers || [])
-      .filter((r) => r.user_id && r.user_id !== doc.uploaded_by)
-      .map((r) => ({
-        user_id: r.user_id,
+    const reviewerIds = (reviewers || [])
+      .map((r) => r.user_id as string)
+      .filter((id) => id && id !== doc.uploaded_by);
+
+    const localeMap = await resolveLocalesByUserIds(admin, reviewerIds);
+
+    const rows = reviewerIds.map((userId) => {
+      const locale: Locale = localeMap.get(userId) ?? 'pt';
+      const s = STRINGS[locale];
+      const verb = doc.document_type === 'link' ? s.submittedLink(startupName) : s.submittedDoc(startupName);
+      return {
+        user_id: userId,
         type: 'document_uploaded',
-        title: `Novo documento: ${doc.name}`,
-        message: `${startupName} ${doc.document_type === 'link' ? 'partilhou um link' : 'submeteu um documento'}${doc.category ? ` (${doc.category})` : ''}.`,
-        // Deep-link: open the workspace Documents tab and highlight this doc.
+        title: s.title(doc.name),
+        message: `${verb}${doc.category ? s.categorySuffix(doc.category) : ''}${s.period}`,
         link: `/workspace/${doc.workspace_id}?tab=documents&document=${doc.id}`,
         entity_type: 'document',
         entity_id: doc.id,
-        // Idempotency key: same (user, event) will never insert twice on retries.
-        event_key: documentUploadedKey(doc.id, r.user_id as string),
+        event_key: documentUploadedKey(doc.id, userId),
         metadata: {
           workspace_id: doc.workspace_id,
           document_name: doc.name,
           startup_name: startupName,
           category: doc.category,
           document_type: doc.document_type,
+          locale,
         },
-      }));
+      };
+    });
+
 
     if (rows.length) {
       const { error: insErr } = await admin

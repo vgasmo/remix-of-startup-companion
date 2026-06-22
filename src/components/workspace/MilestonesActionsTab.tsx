@@ -39,6 +39,8 @@ import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTrackEngagement } from '@/hooks/useEngagementEvents';
+import { ViewReceipt } from '@/components/ui/ViewReceipt';
+
 
 type ActionStatus = Database['public']['Enums']['action_status'];
 type MilestoneStatus = Database['public']['Enums']['milestone_status'];
@@ -218,9 +220,15 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
   // Action handlers
   const handleStatusChange = useCallback(async (item: ActionItem, newStatus: ActionStatus) => {
     if (!canWrite) return;
-    try { await updateAction.mutateAsync({ id: item.id, status: newStatus }); }
-    catch { notify.error(t('actions.failedToUpdate')); }
-  }, [canWrite, updateAction, t]);
+    try {
+      await updateAction.mutateAsync({ id: item.id, status: newStatus });
+      // Fire-and-forget: track completion as an engagement event for cross-role visibility.
+      if (newStatus === 'completed' && item.status !== 'completed') {
+        trackEngagement.mutate({ eventType: 'complete', targetType: 'action', targetId: item.id });
+      }
+    } catch { notify.error(t('actions.failedToUpdate')); }
+  }, [canWrite, updateAction, t, trackEngagement]);
+
 
   const handleDueDateChange = useCallback(async (item: ActionItem, date: Date | undefined) => {
     if (!canWrite) return;
@@ -519,7 +527,9 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
                                 {format(parseISO(milestone.target_date), 'dd MMM')}
                               </Badge>
                             )}
+                            <ViewReceipt workspaceId={workspaceId} targetType="milestone" targetId={milestone.id} />
                           </div>
+
                           {milestoneActions.length > 0 && (
                             <div className="flex items-center gap-2 mt-1">
                               <Progress value={progress} className="h-1.5 flex-1 max-w-[200px]" />
