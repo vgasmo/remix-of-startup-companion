@@ -285,43 +285,90 @@ serve(async (req) => {
     const safeOrganizerName = escapeHtml(payload.organizerName);
     const safeAgenda = payload.agenda ? escapeHtml(payload.agenda) : '';
 
+    // Resolve recipient locales in batch (default PT)
+    const { data: recipientProfiles } = await supabaseService
+      .from('profiles')
+      .select('email, preferred_language')
+      .in('email', payload.recipientEmails.map(e => e.toLowerCase()));
+    const localeByEmail = new Map<string, 'pt' | 'en'>(
+      (recipientProfiles ?? []).map((p: any) => [String(p.email).toLowerCase(), (p.preferred_language as 'pt' | 'en') ?? 'pt'])
+    );
+
+    const stringsByLocale = {
+      pt: {
+        subject: (t: string, n: string) => `Sessão agendada: ${t} - ${n}`,
+        heading: '📅 Sessão Agendada',
+        intro: 'Foi convidado para uma sessão de mentoria.',
+        startup: 'Startup',
+        date: 'Data',
+        time: 'Hora',
+        duration: 'Duração',
+        minutes: 'minutos',
+        agenda: 'Agenda',
+        icsNote: 'Está anexado um convite de calendário (.ics). Adicione-o ao seu calendário para receber lembretes.',
+        organizedBy: 'Organizado por',
+      },
+      en: {
+        subject: (t: string, n: string) => `Session Scheduled: ${t} - ${n}`,
+        heading: '📅 Session Scheduled',
+        intro: "You've been invited to a mentoring session.",
+        startup: 'Startup',
+        date: 'Date',
+        time: 'Time',
+        duration: 'Duration',
+        minutes: 'minutes',
+        agenda: 'Agenda',
+        icsNote: 'A calendar invite (.ics file) is attached. Add it to your calendar to receive reminders.',
+        organizedBy: 'Organized by',
+      },
+    };
+
     // Send email to each recipient with rate limiting (Resend allows 2 req/sec on free plan)
     const results: Array<{ email: string; success: boolean; result?: unknown; error?: string }> = [];
-    
+
     for (let i = 0; i < payload.recipientEmails.length; i++) {
       const email = payload.recipientEmails[i];
-      
+      const locale = localeByEmail.get(email.toLowerCase()) ?? 'pt';
+      const s = stringsByLocale[locale];
+      const dateLocaleTag = locale === 'pt' ? 'pt-PT' : 'en-US';
+      const formattedDateLoc = scheduledDate.toLocaleDateString(dateLocaleTag, {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      });
+      const formattedTimeLoc = scheduledDate.toLocaleTimeString(dateLocaleTag, {
+        hour: '2-digit', minute: '2-digit',
+      });
+
       // Add delay between emails to avoid rate limiting (600ms between each)
       if (i > 0) {
         await new Promise(resolve => setTimeout(resolve, 600));
       }
-      
+
       try {
         const result = await resend.emails.send({
           from: "Startup Leiria <noreply@startupleiria.com>",
           to: [email],
-          subject: `Session Scheduled: ${safeTitle} - ${safeStartupName}`,
+          subject: s.subject(safeTitle, safeStartupName),
           html: `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h1 style="color: #1a1a1a; font-size: 24px; margin-bottom: 8px;">📅 Session Scheduled</h1>
-              <p style="color: #666; margin-bottom: 24px;">You've been invited to a mentoring session.</p>
-              
+              <h1 style="color: #1a1a1a; font-size: 24px; margin-bottom: 8px;">${s.heading}</h1>
+              <p style="color: #666; margin-bottom: 24px;">${s.intro}</p>
+
               <div style="background: #f8f9fa; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
                 <h2 style="color: #1a1a1a; font-size: 20px; margin: 0 0 16px 0;">${safeTitle}</h2>
-                <p style="color: #666; margin: 0 0 8px 0;"><strong>Startup:</strong> ${safeStartupName}</p>
-                <p style="color: #666; margin: 0 0 8px 0;"><strong>Date:</strong> ${escapeHtml(formattedDate)}</p>
-                <p style="color: #666; margin: 0 0 8px 0;"><strong>Time:</strong> ${escapeHtml(formattedTime)}</p>
-                <p style="color: #666; margin: 0 0 8px 0;"><strong>Duration:</strong> ${payload.duration || 60} minutes</p>
-                ${safeAgenda ? `<p style="color: #666; margin: 16px 0 0 0;"><strong>Agenda:</strong><br/>${safeAgenda.replace(/\n/g, '<br/>')}</p>` : ''}
+                <p style="color: #666; margin: 0 0 8px 0;"><strong>${s.startup}:</strong> ${safeStartupName}</p>
+                <p style="color: #666; margin: 0 0 8px 0;"><strong>${s.date}:</strong> ${escapeHtml(formattedDateLoc)}</p>
+                <p style="color: #666; margin: 0 0 8px 0;"><strong>${s.time}:</strong> ${escapeHtml(formattedTimeLoc)}</p>
+                <p style="color: #666; margin: 0 0 8px 0;"><strong>${s.duration}:</strong> ${payload.duration || 60} ${s.minutes}</p>
+                ${safeAgenda ? `<p style="color: #666; margin: 16px 0 0 0;"><strong>${s.agenda}:</strong><br/>${safeAgenda.replace(/\n/g, '<br/>')}</p>` : ''}
               </div>
-              
+
               <p style="color: #666; font-size: 14px;">
-                A calendar invite (.ics file) is attached. Add it to your calendar to receive reminders.
+                ${s.icsNote}
               </p>
-              
+
               <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
               <p style="color: #999; font-size: 12px;">
-                Organized by ${safeOrganizerName}
+                ${s.organizedBy} ${safeOrganizerName}
               </p>
             </div>
           `,
@@ -340,6 +387,7 @@ serve(async (req) => {
         results.push({ email, success: false, error: errorMessage });
       }
     }
+
 
     const successCount = results.filter(r => r.success).length;
 

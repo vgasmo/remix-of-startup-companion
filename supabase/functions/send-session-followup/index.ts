@@ -135,6 +135,15 @@ serve(async (req) => {
       });
     }
 
+    // Resolve recipient locales in batch
+    const { data: recipientProfiles } = await supabaseAdmin
+      .from("profiles")
+      .select("email, preferred_language")
+      .in("email", recipients.map(e => e.toLowerCase()));
+    const localeByEmail = new Map<string, 'pt' | 'en'>(
+      (recipientProfiles ?? []).map((p: any) => [String(p.email).toLowerCase(), (p.preferred_language as 'pt' | 'en') ?? 'pt'])
+    );
+
     // Get sender info
     const { data: senderProfile } = await supabaseAdmin
       .from("profiles")
@@ -143,12 +152,6 @@ serve(async (req) => {
       .single();
 
     const startupName = (session.workspace as any)?.startup?.name || "Startup";
-    const sessionDate = new Date(session.scheduled_at).toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
 
     // Build email content with HTML escaping
     const decisions = session.ai_decisions as string[] || [];
@@ -158,34 +161,64 @@ serve(async (req) => {
     // Escape all dynamic content
     const safeSessionTitle = escapeHtml(session.title || "");
     const safeStartupName = escapeHtml(startupName);
-    const safeSessionDate = escapeHtml(sessionDate);
     const safeSummary = session.ai_summary ? escapeHtml(session.ai_summary) : "";
     const safeSenderName = escapeHtml(senderProfile?.full_name || "Startup Leiria");
 
-    let emailHtml = `
+    const stringsByLocale = {
+      pt: {
+        followupTitle: (t: string) => `Seguimento da sessão: ${t}`,
+        summary: '📋 Resumo',
+        decisions: '✅ Decisões-chave',
+        actions: '📌 Itens de ação',
+        kpis: '📊 KPIs a actualizar',
+        sentBy: 'Enviado por',
+        viaPlatform: 'via Plataforma Startup Leiria',
+        subject: (t: string, n: string) => `Seguimento: ${t} - ${n}`,
+        dateLocale: 'pt-PT',
+      },
+      en: {
+        followupTitle: (t: string) => `Session Follow-up: ${t}`,
+        summary: '📋 Summary',
+        decisions: '✅ Key Decisions',
+        actions: '📌 Action Items',
+        kpis: '📊 KPIs to Update',
+        sentBy: 'Sent by',
+        viaPlatform: 'via Startup Leiria Platform',
+        subject: (t: string, n: string) => `Follow-up: ${t} - ${n}`,
+        dateLocale: 'en-US',
+      },
+    };
+
+    const buildHtml = (locale: 'pt' | 'en'): string => {
+      const s = stringsByLocale[locale];
+      const sessionDateLoc = new Date(session.scheduled_at).toLocaleDateString(s.dateLocale, {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      });
+      const safeSessionDateLoc = escapeHtml(sessionDateLoc);
+      return `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1 style="color: #1a1a1a; font-size: 24px; margin-bottom: 8px;">Session Follow-up: ${safeSessionTitle}</h1>
-        <p style="color: #666; font-size: 14px; margin-bottom: 24px;">${safeStartupName} • ${safeSessionDate}</p>
-        
+        <h1 style="color: #1a1a1a; font-size: 24px; margin-bottom: 8px;">${s.followupTitle(safeSessionTitle)}</h1>
+        <p style="color: #666; font-size: 14px; margin-bottom: 24px;">${safeStartupName} • ${safeSessionDateLoc}</p>
+
         ${safeSummary ? `
           <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-            <h2 style="color: #1a1a1a; font-size: 16px; margin: 0 0 12px 0;">📋 Summary</h2>
+            <h2 style="color: #1a1a1a; font-size: 16px; margin: 0 0 12px 0;">${s.summary}</h2>
             <p style="color: #333; font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${safeSummary}</p>
           </div>
         ` : ""}
-        
+
         ${decisions.length > 0 ? `
           <div style="margin-bottom: 24px;">
-            <h2 style="color: #1a1a1a; font-size: 16px; margin: 0 0 12px 0;">✅ Key Decisions</h2>
+            <h2 style="color: #1a1a1a; font-size: 16px; margin: 0 0 12px 0;">${s.decisions}</h2>
             <ul style="margin: 0; padding-left: 20px;">
               ${decisions.map(d => `<li style="color: #333; font-size: 14px; margin-bottom: 8px;">${escapeHtml(String(d))}</li>`).join("")}
             </ul>
           </div>
         ` : ""}
-        
+
         ${includeActions && actionSuggestions.length > 0 ? `
           <div style="margin-bottom: 24px;">
-            <h2 style="color: #1a1a1a; font-size: 16px; margin: 0 0 12px 0;">📌 Action Items</h2>
+            <h2 style="color: #1a1a1a; font-size: 16px; margin: 0 0 12px 0;">${s.actions}</h2>
             <table style="width: 100%; border-collapse: collapse;">
               ${actionSuggestions.map(action => {
                 const safeTitle = escapeHtml(String(action.title || ""));
@@ -205,10 +238,10 @@ serve(async (req) => {
             </table>
           </div>
         ` : ""}
-        
+
         ${includeKpis && kpiPrompts.length > 0 ? `
           <div style="background: #fffbeb; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-            <h2 style="color: #92400e; font-size: 16px; margin: 0 0 12px 0;">📊 KPIs to Update</h2>
+            <h2 style="color: #92400e; font-size: 16px; margin: 0 0 12px 0;">${s.kpis}</h2>
             ${kpiPrompts.map(kpi => {
               const safeKpiName = escapeHtml(String(kpi.kpiName || ""));
               const safeReason = escapeHtml(String(kpi.reason || ""));
@@ -220,56 +253,60 @@ serve(async (req) => {
             `}).join("")}
           </div>
         ` : ""}
-        
+
         <div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #eee;">
           <p style="color: #999; font-size: 12px; margin: 0;">
-            Sent by ${safeSenderName} via Startup Leiria Platform
+            ${s.sentBy} ${safeSenderName} ${s.viaPlatform}
           </p>
         </div>
       </div>
-    `;
+      `;
+    };
 
     const resend = new Resend(resendApiKey);
-    const subject = `Follow-up: ${safeSessionTitle} - ${safeStartupName}`;
 
-    // Send emails with delay to avoid rate limits
+    // Send emails per-recipient with locale-specific subject + body
     const results: { email: string; success: boolean; error?: string }[] = [];
-    
+    let firstSubject = '';
+    let firstHtml = '';
+
     for (const email of recipients) {
+      const locale = localeByEmail.get(email.toLowerCase()) ?? 'pt';
+      const subject = stringsByLocale[locale].subject(safeSessionTitle, safeStartupName);
+      const html = buildHtml(locale);
+      if (!firstSubject) { firstSubject = subject; firstHtml = html; }
       try {
-        const { data, error } = await resend.emails.send({
+        const { error } = await resend.emails.send({
           from: "Startup Leiria <noreply@startupleiria.com>",
           to: [email],
           subject,
-          html: emailHtml,
+          html,
         });
-
         if (error) {
           results.push({ email, success: false, error: error.message });
         } else {
           results.push({ email, success: true });
         }
-
-        // 600ms delay between emails (rate limit protection)
         await new Promise(resolve => setTimeout(resolve, 600));
       } catch (e: unknown) {
         results.push({ email, success: false, error: e instanceof Error ? e.message : "Unknown error" });
       }
     }
 
-    // Log email send
+    // Log email send (use first recipient's locale for the stored copy)
     const successCount = results.filter(r => r.success).length;
     await supabaseAdmin.from("email_log").insert({
       session_id: sessionId,
       workspace_id: session.workspace_id,
       email_type: "session_followup",
       recipients: recipients,
-      subject,
-      body: emailHtml,
+      subject: firstSubject,
+      body: firstHtml,
       status: successCount === recipients.length ? "sent" : successCount > 0 ? "partial" : "failed",
       sent_at: new Date().toISOString(),
       created_by: user.id,
     });
+
 
     // Log activity
     await supabaseAdmin.from("activity_log").insert({
