@@ -154,13 +154,22 @@ serve(async (req) => {
     const topImproved = sortedByDelta.slice(0, 10).filter(([, t]) => t.delta > 0);
     const topDeclined = sortedByDelta.slice(-10).filter(([, t]) => t.delta < 0).reverse();
 
+    // Resolve user's preferred language
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('preferred_language')
+      .eq('id', user.id)
+      .maybeSingle();
+    const locale: Locale = normalizeLocale(userProfile?.preferred_language);
+    const dateLocale = locale === 'pt' ? 'pt-PT' : 'en-US';
+
     // Generate HTML report (can be converted to PDF client-side or via external service)
     const htmlReport = `
 <!DOCTYPE html>
-<html>
+<html lang="${locale}">
 <head>
   <meta charset="UTF-8">
-  <title>Cohort Health Report - ${program.name}</title>
+  <title>${tr(locale, 'title')} - ${program.name}</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 40px; }
     h1 { color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
@@ -184,41 +193,41 @@ serve(async (req) => {
   </style>
 </head>
 <body>
-  <h1>📊 Cohort Health Report</h1>
+  <h1>${tr(locale, 'title')}</h1>
   <div class="meta">
-    <strong>Program:</strong> ${program.name}<br>
-    <strong>Period:</strong> ${startDate.toLocaleDateString('pt-PT')} - ${endDate.toLocaleDateString('pt-PT')}<br>
-    <strong>Generated:</strong> ${now.toLocaleString('pt-PT')}
+    <strong>${tr(locale, 'program')}:</strong> ${program.name}<br>
+    <strong>${tr(locale, 'period')}:</strong> ${startDate.toLocaleDateString(dateLocale)} - ${endDate.toLocaleDateString(dateLocale)}<br>
+    <strong>${tr(locale, 'generated')}:</strong> ${now.toLocaleString(dateLocale)}
   </div>
 
-  <h2>Current Distribution</h2>
+  <h2>${tr(locale, 'currentDist')}</h2>
   <div class="distribution">
     <div class="dist-item dist-thriving">
       <div class="dist-count">${distribution.thriving}</div>
-      <div class="dist-label">Thriving</div>
+      <div class="dist-label">${tr(locale, 'thriving')}</div>
     </div>
     <div class="dist-item dist-healthy">
       <div class="dist-count">${distribution.healthy}</div>
-      <div class="dist-label">Healthy</div>
+      <div class="dist-label">${tr(locale, 'healthy')}</div>
     </div>
     <div class="dist-item dist-stable">
       <div class="dist-count">${distribution.stable}</div>
-      <div class="dist-label">Stable</div>
+      <div class="dist-label">${tr(locale, 'stable')}</div>
     </div>
     <div class="dist-item dist-at_risk">
       <div class="dist-count">${distribution.at_risk}</div>
-      <div class="dist-label">At Risk</div>
+      <div class="dist-label">${tr(locale, 'atRisk')}</div>
     </div>
     <div class="dist-item dist-critical">
       <div class="dist-count">${distribution.critical}</div>
-      <div class="dist-label">Critical</div>
+      <div class="dist-label">${tr(locale, 'critical')}</div>
     </div>
   </div>
 
-  <h2>📈 Most Improved</h2>
+  <h2>${tr(locale, 'mostImproved')}</h2>
   <table>
     <thead>
-      <tr><th>Startup</th><th>Start Score</th><th>End Score</th><th>Change</th></tr>
+      <tr><th>${tr(locale, 'startup')}</th><th>${tr(locale, 'startScore')}</th><th>${tr(locale, 'endScore')}</th><th>${tr(locale, 'change')}</th></tr>
     </thead>
     <tbody>
       ${topImproved.map(([id, trend]) => {
@@ -230,14 +239,14 @@ serve(async (req) => {
           <td class="positive">+${trend.delta}</td>
         </tr>`;
       }).join('')}
-      ${topImproved.length === 0 ? '<tr><td colspan="4" style="text-align: center; color: #9ca3af;">No improvements recorded</td></tr>' : ''}
+      ${topImproved.length === 0 ? `<tr><td colspan="4" style="text-align: center; color: #9ca3af;">${tr(locale, 'noImprovements')}</td></tr>` : ''}
     </tbody>
   </table>
 
-  <h2>📉 Most Declined</h2>
+  <h2>${tr(locale, 'mostDeclined')}</h2>
   <table>
     <thead>
-      <tr><th>Startup</th><th>Start Score</th><th>End Score</th><th>Change</th></tr>
+      <tr><th>${tr(locale, 'startup')}</th><th>${tr(locale, 'startScore')}</th><th>${tr(locale, 'endScore')}</th><th>${tr(locale, 'change')}</th></tr>
     </thead>
     <tbody>
       ${topDeclined.map(([id, trend]) => {
@@ -249,14 +258,14 @@ serve(async (req) => {
           <td class="negative">${trend.delta}</td>
         </tr>`;
       }).join('')}
-      ${topDeclined.length === 0 ? '<tr><td colspan="4" style="text-align: center; color: #9ca3af;">No declines recorded</td></tr>' : ''}
+      ${topDeclined.length === 0 ? `<tr><td colspan="4" style="text-align: center; color: #9ca3af;">${tr(locale, 'noDeclines')}</td></tr>` : ''}
     </tbody>
   </table>
 
-  <h2>All Workspaces</h2>
+  <h2>${tr(locale, 'allWorkspaces')}</h2>
   <table>
     <thead>
-      <tr><th>Startup</th><th>Current Score</th><th>Status</th><th>Actions</th><th>Sessions</th><th>KPIs</th><th>Check-ins</th></tr>
+      <tr><th>${tr(locale, 'startup')}</th><th>${tr(locale, 'currentScore')}</th><th>${tr(locale, 'status')}</th><th>${tr(locale, 'actions')}</th><th>${tr(locale, 'sessions')}</th><th>${tr(locale, 'kpis')}</th><th>${tr(locale, 'checkins')}</th></tr>
     </thead>
     <tbody>
       ${(workspaces || []).map(ws => {
@@ -275,7 +284,7 @@ serve(async (req) => {
   </table>
 
   <div class="footer">
-    Generated by Startup Leiria Platform
+    ${tr(locale, 'footer')}
   </div>
 </body>
 </html>
