@@ -210,18 +210,22 @@ Deno.serve(async (req) => {
 
         // Also check startup-level automatic discounts
         const startup = (contract.workspace as any)?.startup
+        const primaryContactId = (contract.workspace as any)?.primary_contact_user_id
+        const locale: Locale = (primaryContactId && localeByUserId.get(primaryContactId)) || 'pt'
+        const dateLocale = locale === 'pt' ? 'pt-PT' : 'en-US'
+
         let autoDiscount = 0
         let autoDiscountReason = ''
         if (startup?.has_startup_portugal_status) {
           autoDiscount = 5
-          autoDiscountReason = 'Estatuto Startup Portugal'
+          autoDiscountReason = pickLang(locale, INV_STRINGS.startupPortugalStatus)
         }
         // Note: associate status would give 10% but requires checking a flag we don't store yet
         // The non-cumulative rule picks the highest
         const effectiveDiscount = Math.max(contractDiscount, contract.discount_percentage || 0, autoDiscount)
         const discountReason = effectiveDiscount === autoDiscount && autoDiscount > 0
           ? autoDiscountReason
-          : discounts?.find(d => d.discount_percentage === effectiveDiscount)?.reason || 'Desconto contratual'
+          : discounts?.find(d => d.discount_percentage === effectiveDiscount)?.reason || pickLang(locale, INV_STRINGS.contractDiscount)
 
         const subtotal = Math.round(baseFee * (1 - effectiveDiscount / 100) * 100) / 100
         const taxAmount = Math.round(subtotal * VAT_RATE * 100) / 100
@@ -229,7 +233,7 @@ Deno.serve(async (req) => {
 
         // 3. Build line items
         const lineItems: any[] = [{
-          description: `Mensalidade de incubação — ${new Date(year, month - 1).toLocaleString('pt-PT', { month: 'long', year: 'numeric' })}`,
+          description: `${pickLang(locale, INV_STRINGS.monthlyFee)} — ${new Date(year, month - 1).toLocaleString(dateLocale, { month: 'long', year: 'numeric' })}`,
           quantity: 1,
           unit_price: baseFee,
           discount_percentage: effectiveDiscount,
