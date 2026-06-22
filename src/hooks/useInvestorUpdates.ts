@@ -71,6 +71,7 @@ export function useGenerateInvestorUpdate() {
     },
     onSuccess: (_, { workspaceId }) => {
       queryClient.invalidateQueries({ queryKey: ['investor-updates', workspaceId] });
+      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -101,6 +102,7 @@ export function useUpdateInvestorUpdate() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['investor-updates', data.workspace_id] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -182,6 +184,7 @@ export function useCreateShareLink() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['investor-share-links', data.workspace_id] });
       queryClient.invalidateQueries({ queryKey: ['dataroom-links'] });
+      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -204,6 +207,7 @@ export function useRevokeShareLink() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['investor-share-links', data.workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['dataroom-links'] });
+      notify.success(i18n.t('common.deleted'));
     },
   });
 }
