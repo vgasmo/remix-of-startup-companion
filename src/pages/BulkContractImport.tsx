@@ -30,6 +30,8 @@ import {
 import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 type WizardStep = 'upload' | 'review' | 'done';
 
@@ -76,6 +78,7 @@ export default function BulkContractImport() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
+  const { confirm, dialogProps } = useConfirmDialog();
   const [step, setStep] = useState<WizardStep>('upload');
   const [batchId, setBatchId] = useState<string | null>(null);
   const [programId, setProgramId] = useState<string>('');
@@ -259,7 +262,7 @@ export default function BulkContractImport() {
   };
 
   // ============ STEP 3: COMMIT ============
-  const commitBatch = async () => {
+  const commitBatch = () => {
     if (!batchId) return;
     const selectedReady = rows.filter(r =>
       r.selected && (r.status === 'will_create' || r.status === 'will_update')
@@ -268,27 +271,32 @@ export default function BulkContractImport() {
       notify.error(t('bulkImport.errors.nothingToCommit', 'No rows ready to commit'));
       return;
     }
-    if (!confirm(t('bulkImport.confirmCommit', `Import ${selectedReady.length} contracts? This will create/update startups, workspaces, and contracts.`))) {
-      return;
-    }
-    setCommitting(true);
-    try {
-      const { data, error } = await invokeWithAuth<{ committed: number; failed: number; errors: Array<{ row_id: string; error: string }> }>(
-        'bulk-import-commit',
-        { body: { batch_id: batchId } }
-      );
-      if (error) throw error;
-      notify.success(
-        t('bulkImport.commitSuccess', `Imported ${data?.committed ?? 0} contracts (${data?.failed ?? 0} failed)`)
-      );
-      await refreshRows(batchId);
-      setStep('done');
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Unknown error';
-      notify.error(`${t('bulkImport.errors.commitFailed', 'Commit failed')}: ${msg}`);
-    } finally {
-      setCommitting(false);
-    }
+    confirm({
+      title: t('bulkImport.confirmCommitTitle'),
+      description: t('bulkImport.confirmCommit', { count: selectedReady.length }),
+      variant: 'warning',
+      confirmLabel: t('common.confirm'),
+      onConfirm: async () => {
+        setCommitting(true);
+        try {
+          const { data, error } = await invokeWithAuth<{ committed: number; failed: number; errors: Array<{ row_id: string; error: string }> }>(
+            'bulk-import-commit',
+            { body: { batch_id: batchId } }
+          );
+          if (error) throw error;
+          notify.success(
+            t('bulkImport.commitSuccess', `Imported ${data?.committed ?? 0} contracts (${data?.failed ?? 0} failed)`)
+          );
+          await refreshRows(batchId);
+          setStep('done');
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : 'Unknown error';
+          notify.error(`${t('bulkImport.errors.commitFailed', 'Commit failed')}: ${msg}`);
+        } finally {
+          setCommitting(false);
+        }
+      },
+    });
   };
 
   // ============ ERROR EXPORT ============
