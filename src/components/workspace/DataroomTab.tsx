@@ -12,6 +12,8 @@ import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { notify } from "@/lib/notify";
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { 
   FolderLock, Plus, Link2, Copy, Trash2, 
   Eye, EyeOff, FileText, TrendingUp, LinkIcon, GripVertical,
