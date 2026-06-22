@@ -366,7 +366,16 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
                       {item.item_type === 'workspace' ? (
                         <DropdownMenuItem 
                           className="text-destructive focus:text-destructive"
-                          onClick={(e) => { e.stopPropagation(); handleArchiveWorkspace(item); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            confirm({
+                              title: t('ecosystem.confirmArchiveTitle'),
+                              description: t('ecosystem.confirmArchiveDesc', { name: item.name }),
+                              variant: 'warning',
+                              confirmLabel: t('common.archive'),
+                              onConfirm: () => handleArchiveWorkspace(item),
+                            });
+                          }}
                         >
                           <Archive className="h-4 w-4 mr-2" />
                           {t('ecosystem.archiveWorkspace', { defaultValue: 'Arquivar Workspace' })}
@@ -416,6 +425,7 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ConfirmDialog {...dialogProps} />
     </>
   );
 }
