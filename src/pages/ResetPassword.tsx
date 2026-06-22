@@ -127,7 +127,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-8">
+    <div className="flex min-h-dvh items-center justify-center bg-background p-8">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img 

@@ -80,7 +80,7 @@ export default function SharedDataroom() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-dvh bg-background p-6">
         <div className="max-w-4xl mx-auto space-y-6">
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-64 w-full" />
@@ -91,7 +91,7 @@ export default function SharedDataroom() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="min-h-dvh bg-background flex items-center justify-center p-6">
         <Card className="max-w-md w-full">
           <CardContent className="pt-6 text-center">
             <AlertTriangle className="h-16 w-16 mx-auto text-destructive mb-4" />
@@ -112,7 +112,7 @@ export default function SharedDataroom() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {/* Header */}
       <header className="border-b bg-card">
         <div className="max-w-4xl mx-auto px-6 py-6">

@@ -461,7 +461,7 @@ export default function PublicContractSigning() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-dvh bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
           <p className="text-muted-foreground text-sm">
@@ -475,7 +475,7 @@ export default function PublicContractSigning() {
   // Error / expired state
   if (fetchError || !contract) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardContent className="py-12 text-center space-y-4">
             <AlertTriangle className="h-12 w-12 mx-auto text-destructive/60" />
@@ -498,7 +498,7 @@ export default function PublicContractSigning() {
   const stepLabels = getStepLabels(sigProvider);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+    <div className="min-h-dvh bg-gradient-to-b from-background to-muted/30">
       {/* Public header with language toggle */}
       <div className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">

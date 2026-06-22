@@ -159,7 +159,7 @@ export default function Login() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-dvh items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           <p className="text-muted-foreground animate-pulse" aria-live="polite">{t('common.loading')}</p>
@@ -169,7 +169,7 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen relative">
+    <div className="flex min-h-dvh relative">
       {/* Language and Theme Selectors */}
       <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
         <LanguageSelector />

@@ -113,7 +113,7 @@ export default function AcceptInvite() {
   };
   
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-background p-4">
+    <div className="relative min-h-dvh flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-background p-4">
       <div className="absolute top-4 left-4">
         <BackToHomeLink />
       </div>

@@ -206,7 +206,7 @@ export default function PublicBooking() {
 
   if (step === 'loading' || tokenLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 space-y-4">
             <Skeleton className="h-8 w-3/4 mx-auto" />
@@ -220,7 +220,7 @@ export default function PublicBooking() {
 
   if (step === 'error') {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center space-y-4">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
@@ -236,7 +236,7 @@ export default function PublicBooking() {
 
   if (step === 'success') {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center space-y-4">
             <CheckCircle className="h-12 w-12 text-primary mx-auto" />
@@ -270,7 +270,7 @@ export default function PublicBooking() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
+    <div className="min-h-dvh bg-background py-8 px-4">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Back link */}
         <div className="flex items-center justify-between">

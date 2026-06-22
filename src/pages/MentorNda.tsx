@@ -120,7 +120,7 @@ export default function MentorNda() {
   // Loading state
   if (authLoading || checkingNda) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="min-h-dvh bg-background flex items-center justify-center p-6">
         <Skeleton className="h-96 w-full max-w-2xl" />
       </div>
     );
@@ -137,7 +137,7 @@ export default function MentorNda() {
   }
   
   return (
-    <div className="relative min-h-screen bg-background flex items-center justify-center p-6">
+    <div className="relative min-h-dvh bg-background flex items-center justify-center p-6">
       <div className="absolute top-4 left-4">
         <BackToHomeLink />
       </div>
