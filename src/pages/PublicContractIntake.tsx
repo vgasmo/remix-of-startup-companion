@@ -221,7 +221,7 @@ export default function PublicContractIntake() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-dvh flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -231,7 +231,7 @@ export default function PublicContractIntake() {
     // Never expose technical error messages to public users
     const isExpired = (fetchError as any)?.message?.includes('expired');
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-dvh flex items-center justify-center bg-background p-4">
         <Card className="max-w-md w-full">
           <CardContent className="p-6 text-center space-y-3">
             <AlertTriangle className="h-10 w-10 mx-auto text-destructive" />
@@ -260,7 +260,7 @@ export default function PublicContractIntake() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-dvh flex items-center justify-center bg-background p-4">
         <Card className="max-w-md w-full">
           <CardContent className="p-6 text-center space-y-3">
             <CheckCircle2 className="h-12 w-12 mx-auto text-primary" />
@@ -277,7 +277,7 @@ export default function PublicContractIntake() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {/* Language switcher */}
       <div className="fixed top-4 right-4 z-50">
         <Button variant="outline" size="sm" onClick={toggleLang} className="gap-1.5">

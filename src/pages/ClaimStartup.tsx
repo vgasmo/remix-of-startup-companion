@@ -112,7 +112,7 @@ export default function ClaimStartup() {
   }, [user, navigate, t, queryClient]);
 
   return (
-    <main data-testid="claim-startup-page" className="relative flex min-h-screen items-center justify-center bg-background p-6">
+    <main data-testid="claim-startup-page" className="relative flex min-h-dvh items-center justify-center bg-background p-6">
       <div className="absolute top-4 left-4">
         <BackToHomeLink />
       </div>

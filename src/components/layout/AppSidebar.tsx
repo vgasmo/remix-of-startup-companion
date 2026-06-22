@@ -339,7 +339,7 @@ export function AppSidebar() {
   return (
     <aside 
       className={cn(
-        "fixed left-0 top-0 z-40 h-screen gradient-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out",
+        "fixed left-0 top-0 z-40 h-dvh gradient-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out",
         collapsed ? "w-[72px]" : "w-64"
       )}
     >

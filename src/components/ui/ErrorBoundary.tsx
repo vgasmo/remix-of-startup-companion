@@ -131,7 +131,7 @@ export class ErrorBoundary extends Component<Props, State> {
       const safeMessage = getSafeErrorMessage(this.state.error, isDev);
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30 p-4">
+        <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-background to-muted/30 p-4">
           <Card className="max-w-md w-full shadow-xl border-destructive/20">
             <CardHeader className="text-center pb-2">
               <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center animate-pulse">

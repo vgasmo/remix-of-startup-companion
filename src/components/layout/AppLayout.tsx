@@ -51,7 +51,7 @@ export const AppLayout = forwardRef<HTMLDivElement, AppLayoutProps>(function App
   }, []);
 
   return (
-    <div ref={ref} className="min-h-screen bg-background">
+    <div ref={ref} className="min-h-dvh bg-background">
       {/* Sidebar - hidden on mobile, shown on lg+ */}
       <div className="hidden lg:block">
         <AppSidebar />

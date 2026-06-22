@@ -24,7 +24,7 @@ export function AccessDenied({
   const displayBackLabel = backLabel || t('accessDenied.backToWorkspaces');
   
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-dvh items-center justify-center bg-background p-4">
       <Card className="bg-muted/50 border-destructive/20 max-w-md w-full">
         <CardContent className="flex flex-col items-center justify-center py-16 text-center">
           <div className="rounded-full bg-destructive/10 p-4 mb-6">
