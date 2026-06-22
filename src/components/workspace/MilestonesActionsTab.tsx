@@ -527,7 +527,9 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
                                 {format(parseISO(milestone.target_date), 'dd MMM')}
                               </Badge>
                             )}
+                            <ViewReceipt workspaceId={workspaceId} targetType="milestone" targetId={milestone.id} />
                           </div>
+
                           {milestoneActions.length > 0 && (
                             <div className="flex items-center gap-2 mt-1">
                               <Progress value={progress} className="h-1.5 flex-1 max-w-[200px]" />
