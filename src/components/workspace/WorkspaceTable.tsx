@@ -119,10 +119,10 @@ export const WorkspaceTable = memo(function WorkspaceTable({
         <span className="text-sm text-muted-foreground px-2">
           {page + 1} / {totalPages}
         </span>
-        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page aria-label={t('common.next')}>= totalPages - 1} onClick={() => setPage(p => p + 1)} aria-label={t('common.nextPage', { defaultValue: 'Next page' })}>
+        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page>= totalPages - 1} onClick={() => setPage(p => p + 1)} aria-label={t('common.nextPage', { defaultValue: 'Next page' })}>
           <ChevronRight className="h-4 w-4" />
         </Button>
-        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page aria-label={t('common.lastPage')}>= totalPages - 1} onClick={() => setPage(totalPages - 1)} aria-label={t('common.lastPage', { defaultValue: 'Last page' })}>
+        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page>= totalPages - 1} onClick={() => setPage(totalPages - 1)} aria-label={t('common.lastPage', { defaultValue: 'Last page' })}>
           <ChevronsRight className="h-4 w-4" />
         </Button>
       </div>
