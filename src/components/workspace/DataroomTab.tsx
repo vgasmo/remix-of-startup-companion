@@ -45,6 +45,7 @@ interface DataroomTabProps {
 
 export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, isMentor = false }: DataroomTabProps) {
   const { t } = useTranslation();
+  const { confirm, dialogProps } = useConfirmDialog();
   const { data: dataroom, isLoading: loadingDataroom } = useDataroom(workspaceId);
   const { data: items, isLoading: loadingItems } = useDataroomItems(dataroom?.id);
   const { data: shareLinks } = useDataroomShareLinks(dataroom?.id);
@@ -159,24 +160,38 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
     }
   };
   
-  const handleRevokeLink = async (linkId: string) => {
-    if (!confirm(t('dataroom.confirmRevoke'))) return;
-    try {
-      await revokeShareLink.mutateAsync(linkId);
-      notify.success(t('dataroom.linkRevoked'));
-    } catch (error: any) {
-      notify.error(error.message || t('dataroom.failedToRevoke'));
-    }
+  const handleRevokeLink = (linkId: string) => {
+    confirm({
+      title: t('dataroom.revokeTitle'),
+      description: t('dataroom.confirmRevoke'),
+      variant: 'destructive',
+      confirmLabel: t('common.confirm'),
+      onConfirm: async () => {
+        try {
+          await revokeShareLink.mutateAsync(linkId);
+          notify.success(t('dataroom.linkRevoked'));
+        } catch (error: any) {
+          notify.error(t('dataroom.failedToRevoke'));
+        }
+      },
+    });
   };
   
-  const handleDeleteItem = async (id: string) => {
-    if (!confirm(t('dataroom.confirmDelete'))) return;
-    try {
-      await deleteItem.mutateAsync(id);
-      notify.success(t('dataroom.itemDeleted'));
-    } catch (error: any) {
-      notify.error(error.message || t('dataroom.failedToDelete'));
-    }
+  const handleDeleteItem = (id: string) => {
+    confirm({
+      title: t('dataroom.deleteTitle'),
+      description: t('dataroom.confirmDelete'),
+      variant: 'destructive',
+      confirmLabel: t('common.delete'),
+      onConfirm: async () => {
+        try {
+          await deleteItem.mutateAsync(id);
+          notify.success(t('dataroom.itemDeleted'));
+        } catch (error: any) {
+          notify.error(t('dataroom.failedToDelete'));
+        }
+      },
+    });
   };
   
   const handleToggleVisibility = async (item: any) => {
@@ -630,6 +645,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ConfirmDialog {...dialogProps} />
     </div>
   );
 }
