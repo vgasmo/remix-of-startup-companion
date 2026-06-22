@@ -1219,16 +1219,10 @@ export default function PublicContractSigning() {
                   <h3 className="text-lg font-semibold">
                     {t('publicContractSigning.awaitingSignatures')}
                   </h3>
-                  <p
-                    className="text-sm text-muted-foreground mt-1"
-                    dangerouslySetInnerHTML={{
-                      __html: t('publicContractSigning.checkYourEmailAt', {
-                        email: `<strong>${formData.legal_representative_email}</strong>`,
-                        defaultValue: 'Verifique o email {{email}}.',
-                        interpolation: { escapeValue: false },
-                      }),
-                    }}
-                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t('publicContractSigning.checkYourEmailAtPrefix', { defaultValue: 'Verifique o email' })}{' '}
+                    <strong>{formData.legal_representative_email}</strong>.
+                  </p>
                   <Badge variant="outline" className="text-xs">
                     {t('publicContractSigning.pending')}
                   </Badge>
