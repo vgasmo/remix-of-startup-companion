@@ -204,8 +204,13 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+    font-variant-ligatures: common-ligatures;
   }
+
+  /* Tables get tabular numerals by default for crisp alignment. */
+  table { font-variant-numeric: tabular-nums; }
+
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
@@ -224,10 +229,17 @@
 }
 
 @layer utilities {
+  /* Tabular numerals — for metrics, IDs, percentages, currency */
+  .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum", "ss01"; }
+  /* Hairline divider — replaces ad-hoc border-t */
+  .hairline { border-top: 1px solid hsl(var(--border) / 0.7); }
+  .hairline-y { border-block: 1px solid hsl(var(--border) / 0.7); }
+
   /* Gradients */
   .gradient-primary {
     background: var(--gradient-primary);
   }
+
 
   .gradient-accent {
     background: var(--gradient-accent);
