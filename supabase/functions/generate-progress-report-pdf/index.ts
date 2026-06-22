@@ -179,22 +179,31 @@ serve(async (req) => {
     // Calculate health score
     const effectiveHealth = workspace.health_score_override || workspace.health_score;
 
+    // Resolve user's preferred language
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('preferred_language')
+      .eq('id', user.id)
+      .maybeSingle();
+    const locale: Locale = normalizeLocale(userProfile?.preferred_language);
+    const dateLocale = locale === 'pt' ? 'pt-PT' : 'en-US';
+
     // Format date
-    const reportDate = new Date().toLocaleDateString('en-US', {
+    const reportDate = new Date().toLocaleDateString(dateLocale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     });
-    const reportMonth = targetMonth.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+    const reportMonth = targetMonth.toLocaleDateString(dateLocale, { year: 'numeric', month: 'long' });
 
     // Generate HTML report
     const html = `
 <!DOCTYPE html>
-<html lang="en">
+<html lang="${locale}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Progress Report - ${startup?.name || 'Startup'}</title>
+  <title>${s(locale, 'title')} - ${startup?.name || 'Startup'}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; background: #fff; padding: 40px; max-width: 800px; margin: 0 auto; }
@@ -238,38 +247,38 @@ serve(async (req) => {
 </head>
 <body>
   <div class="header">
-    <h1>${startup?.name || 'Startup Progress Report'}</h1>
+    <h1>${startup?.name || s(locale, 'title')}</h1>
     <p class="subtitle">${program?.name || ''}</p>
-    <p class="date">Report for ${reportMonth} • Generated ${reportDate}</p>
+    <p class="date">${s(locale, 'reportFor')} ${reportMonth} • ${s(locale, 'generated')} ${reportDate}</p>
   </div>
 
   <div class="grid">
     <div class="stat-card">
-      <div class="stat-label">Stage</div>
+      <div class="stat-label">${s(locale, 'stage')}</div>
       <div class="stat-value" style="font-size: 16px; text-transform: capitalize;">${workspace.stage}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Health</div>
+      <div class="stat-label">${s(locale, 'health')}</div>
       <div class="stat-value" style="font-size: 16px; text-transform: capitalize;">${effectiveHealth || 'N/A'}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Milestones</div>
+      <div class="stat-label">${s(locale, 'milestones')}</div>
       <div class="stat-value">${completedMilestones.length}/${milestones.length}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Actions</div>
+      <div class="stat-label">${s(locale, 'actions')}</div>
       <div class="stat-value">${completedActions.length}/${actions.length}</div>
     </div>
   </div>
 
   ${aiSummary ? `
   <div class="summary-box">
-    <div class="summary-title">✨ AI Summary</div>
+    <div class="summary-title">✨ ${s(locale, 'aiSummary')}</div>
     <p class="summary-text">${aiSummary}</p>
   </div>
   ` : ''}
 
-  <h2>📊 Key Metrics</h2>
+  <h2>📊 ${s(locale, 'keyMetrics')}</h2>
   ${kpis.length > 0 ? `
   <div class="kpi-grid">
     ${kpis.slice(0, 6).map((kpi: any) => `
@@ -279,14 +288,14 @@ serve(async (req) => {
         ${kpi.value?.toLocaleString() ?? '—'}${kpi.unit ? ` <span style="font-size: 12px; color: #999;">${kpi.unit}</span>` : ''}
         ${kpi.trend === 'up' ? '<span class="trend-up"> ↑</span>' : kpi.trend === 'down' ? '<span class="trend-down"> ↓</span>' : ''}
       </div>
-      ${kpi.target ? `<div class="kpi-meta">Target: ${kpi.target.toLocaleString()}</div>` : ''}
-      ${kpi.previousValue !== undefined ? `<div class="kpi-meta">Previous: ${kpi.previousValue.toLocaleString()}</div>` : ''}
+      ${kpi.target ? `<div class="kpi-meta">${s(locale, 'target')}: ${kpi.target.toLocaleString()}</div>` : ''}
+      ${kpi.previousValue !== undefined ? `<div class="kpi-meta">${s(locale, 'previous')}: ${kpi.previousValue.toLocaleString()}</div>` : ''}
     </div>
     `).join('')}
   </div>
-  ` : '<p style="color: #999;">No KPIs recorded this period</p>'}
+  ` : `<p style="color: #999;">${s(locale, 'noKpis')}</p>`}
 
-  <h2>🎯 Milestones</h2>
+  <h2>🎯 ${s(locale, 'milestones')}</h2>
   ${milestones.length > 0 ? `
   <div>
     ${milestones.slice(0, 8).map((m: any) => `
@@ -301,39 +310,39 @@ serve(async (req) => {
     </div>
     `).join('')}
   </div>
-  ` : '<p style="color: #999;">No milestones defined</p>'}
+  ` : `<p style="color: #999;">${s(locale, 'noMilestones')}</p>`}
 
-  <h2>✅ Actions Summary</h2>
+  <h2>✅ ${s(locale, 'actionsSummary')}</h2>
   <div class="grid" style="grid-template-columns: repeat(3, 1fr);">
     <div class="stat-card">
       <div class="stat-value" style="color: #22c55e;">${completedActions.length}</div>
-      <div class="stat-label">Completed</div>
+      <div class="stat-label">${s(locale, 'completed')}</div>
     </div>
     <div class="stat-card">
       <div class="stat-value" style="color: #3b82f6;">${pendingActions.length - overdueActions.length}</div>
-      <div class="stat-label">In Progress</div>
+      <div class="stat-label">${s(locale, 'inProgress')}</div>
     </div>
     <div class="stat-card">
       <div class="stat-value" style="color: #ef4444;">${overdueActions.length}</div>
-      <div class="stat-label">Overdue</div>
+      <div class="stat-label">${s(locale, 'overdue')}</div>
     </div>
   </div>
 
-  <h2>📅 Sessions This Month</h2>
+  <h2>📅 ${s(locale, 'sessionsThisMonth')}</h2>
   ${sessions.length > 0 ? `
   <div>
-    ${sessions.slice(0, 5).map((s: any) => `
+    ${sessions.slice(0, 5).map((sess: any) => `
     <div class="session-item">
-      <div class="session-title">${s.title}</div>
-      <div class="session-date">${new Date(s.scheduled_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-      ${s.notes ? `<div class="session-notes">${s.notes.slice(0, 200)}${s.notes.length > 200 ? '...' : ''}</div>` : ''}
+      <div class="session-title">${sess.title}</div>
+      <div class="session-date">${new Date(sess.scheduled_at).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+      ${sess.notes ? `<div class="session-notes">${sess.notes.slice(0, 200)}${sess.notes.length > 200 ? '...' : ''}</div>` : ''}
     </div>
     `).join('')}
   </div>
-  ` : '<p style="color: #999;">No sessions this month</p>'}
+  ` : `<p style="color: #999;">${s(locale, 'noSessions')}</p>`}
 
   <div class="footer">
-    <p>Generated by Startup Leiria • ${reportDate}</p>
+    <p>${s(locale, 'footer')} • ${reportDate}</p>
   </div>
 </body>
 </html>
