@@ -7793,7 +7793,7 @@
     "analytics": "Análises",
     "autoFillKey": "Campo de Preenchimento Automático",
     "autoFilled": "Preenchido automaticamente",
-    "campaignClosed": "Campanha fechada",
+    "campaignClosed": "Campanha encerrada",
     "campaignDescription": "Descrição",
     "campaignLaunched": "Campanha lançada!",
     "campaignName": "Nome da Campanha",
@@ -7841,7 +7841,7 @@
     "templateCreated": "Modelo de questionário criado",
     "templateDescription": "Descrição",
     "templateName": "Nome do Template",
-    "templateUpdated": "Template atualizado",
+    "templateUpdated": "Modelo de questionário atualizado",
     "templates": "Templates",
     "title": "Inquéritos",
     "typeMultiselect": "Seleção Múltipla",
@@ -7855,7 +7855,9 @@
     "campaignCreated": "Campanha de questionário criada",
     "campaignCreateFailed": "Falha ao criar campanha",
     "campaignLaunchFailed": "Falha ao lançar campanha",
-    "saveFailed": "Falha ao guardar questionário"
+    "saveFailed": "Falha ao guardar questionário",
+    "templateUpdateFailed": "Falha ao atualizar modelo",
+    "campaignCloseFailed": "Falha ao encerrar campanha"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",

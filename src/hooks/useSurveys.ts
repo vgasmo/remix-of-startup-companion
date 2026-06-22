@@ -152,10 +152,10 @@ export function useUpdateSurveyDefinition() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["survey-definitions"] });
-      notify.success("Survey template updated");
+      notify.success(t('surveys.templateUpdated'));
     },
     onError: (error) => {
-      notify.error("Failed to update survey template");
+      notify.error(t('surveys.templateUpdateFailed'));
       logger.error('operation_error', {}, error);
     },
   });
@@ -305,10 +305,10 @@ export function useCloseCampaign() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
-      notify.success("Campaign closed");
+      notify.success(t('surveys.campaignClosed'));
     },
     onError: (error) => {
-      notify.error("Failed to close campaign");
+      notify.error(t('surveys.campaignCloseFailed'));
       logger.error('operation_error', {}, error);
     },
   });

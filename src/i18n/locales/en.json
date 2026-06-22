@@ -7841,7 +7841,7 @@
     "templateCreated": "Survey template created",
     "templateDescription": "Description",
     "templateName": "Template Name",
-    "templateUpdated": "Template updated",
+    "templateUpdated": "Survey template updated",
     "templates": "Templates",
     "title": "Surveys",
     "typeMultiselect": "Multiple Select",
@@ -7855,7 +7855,9 @@
     "campaignCreated": "Survey campaign created",
     "campaignCreateFailed": "Failed to create campaign",
     "campaignLaunchFailed": "Failed to launch campaign",
-    "saveFailed": "Failed to save survey"
+    "saveFailed": "Failed to save survey",
+    "templateUpdateFailed": "Failed to update survey template",
+    "campaignCloseFailed": "Failed to close campaign"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",
