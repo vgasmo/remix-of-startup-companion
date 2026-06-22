@@ -1,6 +1,25 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { documentUploadedKey } from '../_shared/notificationEventKey.ts';
+import { resolveLocalesByUserIds, type Locale } from '../_shared/i18n.ts';
+
+const STRINGS = {
+  pt: {
+    title: (n: string) => `Novo documento: ${n}`,
+    submittedLink: (s: string) => `${s} partilhou um link`,
+    submittedDoc: (s: string) => `${s} submeteu um documento`,
+    categorySuffix: (c: string) => ` (${c})`,
+    period: '.',
+  },
+  en: {
+    title: (n: string) => `New document: ${n}`,
+    submittedLink: (s: string) => `${s} shared a link`,
+    submittedDoc: (s: string) => `${s} submitted a document`,
+    categorySuffix: (c: string) => ` (${c})`,
+    period: '.',
+  },
+} as const;
+
 
 interface Body {
   document_id: string;
