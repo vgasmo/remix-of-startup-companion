@@ -89,6 +89,7 @@ export function useCreateReview() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['document-reviews', data.document_id] });
+      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -121,6 +122,7 @@ export function useUpdateReview() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['document-reviews', variables.documentId] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
