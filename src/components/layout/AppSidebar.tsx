@@ -507,8 +507,9 @@ export function AppSidebar() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent shrink-0"
-                  onClick={() = aria-label="Sign out"> signOut()}
+                  onClick={() => signOut()}
                  aria-label={t('common.logout')}>
+
                   <LogOut className="h-4 w-4" />
                 </Button>
               </>
