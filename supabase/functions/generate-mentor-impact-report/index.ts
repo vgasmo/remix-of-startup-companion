@@ -99,10 +99,19 @@ serve(async (req) => {
       .map((w: any) => (w.startups?.name) || w.id)
       .filter(Boolean);
 
-    const reportDate = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' });
+    // Resolve mentor's preferred language
+    const { data: mentorProfile } = await supabase
+      .from('profiles')
+      .select('preferred_language')
+      .eq('id', mentorId)
+      .maybeSingle();
+    const locale: Locale = normalizeLocale(mentorProfile?.preferred_language);
+    const dateLocale = locale === 'pt' ? 'pt-PT' : 'en-US';
+
+    const reportDate = new Date().toLocaleDateString(dateLocale, { day: '2-digit', month: 'long', year: 'numeric' });
 
     const html = `<!DOCTYPE html>
-<html lang="pt"><head><meta charset="utf-8"><title>Impacto do Mentor — ${profile?.full_name || ''}</title>
+<html lang="${locale}"><head><meta charset="utf-8"><title>${tm(locale, 'titleTab')} — ${profile?.full_name || ''}</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a1a; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
   .header { text-align: center; padding: 32px 0; border-bottom: 2px solid #6366f1; margin-bottom: 32px; }
@@ -121,26 +130,26 @@ serve(async (req) => {
   .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 12px; text-align: center; }
 </style></head><body>
   <div class="header">
-    <h1>Impacto Vitalício</h1>
-    <p class="subtitle">${profile?.full_name || 'Mentor'} · Startup Leiria</p>
+    <h1>${tm(locale, 'title')}</h1>
+    <p class="subtitle">${profile?.full_name || tm(locale, 'mentor')} · Startup Leiria</p>
   </div>
 
   <div class="stat-grid">
-    <div class="stat"><div class="stat-value">${totalHours}</div><div class="stat-label">Horas de Mentoria</div></div>
-    <div class="stat"><div class="stat-value">${completedSessions.length}</div><div class="stat-label">Sessões</div></div>
-    <div class="stat"><div class="stat-value">${startupList.length}</div><div class="stat-label">Startups Apoiadas</div></div>
+    <div class="stat"><div class="stat-value">${totalHours}</div><div class="stat-label">${tm(locale, 'hoursLabel')}</div></div>
+    <div class="stat"><div class="stat-value">${completedSessions.length}</div><div class="stat-label">${tm(locale, 'sessionsLabel')}</div></div>
+    <div class="stat"><div class="stat-value">${startupList.length}</div><div class="stat-label">${tm(locale, 'startupsLabel')}</div></div>
   </div>
 
-  <h2>Startups que apoiaste</h2>
+  <h2>${tm(locale, 'startupsTitle')}</h2>
   <div class="startup-list">
-    ${startupList.length ? startupList.map((n: string) => `<span class="chip">${n}</span>`).join('') : '<p style="color:#9ca3af">Sem startups ainda.</p>'}
+    ${startupList.length ? startupList.map((n: string) => `<span class="chip">${n}</span>`).join('') : `<p style="color:#9ca3af">${tm(locale, 'noStartups')}</p>`}
   </div>
 
-  <h2>Avaliação média</h2>
-  <p style="font-size: 24px; color: #f59e0b; margin: 0;">${avgRating != null ? `★ ${avgRating.toFixed(1)} / 5` : '—'} <span style="font-size:14px;color:#6b7280;">(${ratings.length} avaliações)</span></p>
+  <h2>${tm(locale, 'avgRating')}</h2>
+  <p style="font-size: 24px; color: #f59e0b; margin: 0;">${avgRating != null ? `★ ${avgRating.toFixed(1)} / 5` : '—'} <span style="font-size:14px;color:#6b7280;">(${ratings.length} ${tm(locale, 'ratings')})</span></p>
 
   ${publicTestimonials.length ? `
-  <h2>Testemunhos públicos</h2>
+  <h2>${tm(locale, 'testimonials')}</h2>
   ${publicTestimonials.map((f: any) => `
     <div class="testimonial">
       <p class="testimonial-text">"${(f.feedback || '').replace(/</g, '&lt;')}"</p>
@@ -149,7 +158,7 @@ serve(async (req) => {
   `).join('')}
   ` : ''}
 
-  <div class="footer">Gerado por Startup Leiria · ${reportDate}</div>
+  <div class="footer">${tm(locale, 'footer')} · ${reportDate}</div>
 </body></html>`;
 
     return corsJsonResponse({
