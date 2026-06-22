@@ -7833,12 +7833,12 @@
     "selectTemplate": "Select Template",
     "startDate": "Start Date",
     "submit": "Submit Survey",
-    "submitted": "Submitted",
+    "submitted": "Survey submitted successfully!",
     "surveyNotFound": "Survey not found",
     "surveySubmitted": "Survey submitted successfully!",
     "surveysCreated": "{{count}} surveys created",
     "targetProgram": "Target Program",
-    "templateCreated": "Template created",
+    "templateCreated": "Survey template created",
     "templateDescription": "Description",
     "templateName": "Template Name",
     "templateUpdated": "Template updated",
@@ -7850,7 +7850,12 @@
     "typeSelect": "Single Select",
     "typeText": "Text",
     "typeTextarea": "Long Text",
-    "viewResponses": "View Responses"
+    "viewResponses": "View Responses",
+    "templateCreateFailed": "Failed to create survey template",
+    "campaignCreated": "Survey campaign created",
+    "campaignCreateFailed": "Failed to create campaign",
+    "campaignLaunchFailed": "Failed to launch campaign",
+    "saveFailed": "Failed to save survey"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",

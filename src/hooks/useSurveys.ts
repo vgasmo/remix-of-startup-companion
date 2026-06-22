@@ -116,10 +116,10 @@ export function useCreateSurveyDefinition() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["survey-definitions"] });
-      notify.success("Survey template created");
+      notify.success(t('surveys.templateCreated'));
     },
     onError: (error) => {
-      notify.error("Failed to create survey template");
+      notify.error(t('surveys.templateCreateFailed'));
       logger.error('operation_error', {}, error);
     },
   });
@@ -204,10 +204,10 @@ export function useCreateSurveyCampaign() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
-      notify.success("Survey campaign created");
+      notify.success(t('surveys.campaignCreated'));
     },
     onError: (error) => {
-      notify.error("Failed to create campaign");
+      notify.error(t('surveys.campaignCreateFailed'));
       logger.error('operation_error', {}, error);
     },
   });
@@ -285,7 +285,7 @@ export function useLaunchCampaign() {
       notify.success(t('surveys.campaignLaunched', { instancesCreated: data.instancesCreated }));
     },
     onError: (error) => {
-      notify.error("Failed to launch campaign");
+      notify.error(t('surveys.campaignLaunchFailed'));
       logger.error('operation_error', {}, error);
     },
   });
@@ -476,13 +476,13 @@ export function useSaveSurveyResponses() {
       queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
 
       if (variables.submit) {
-        notify.success("Survey submitted successfully!");
+        notify.success(t('surveys.submitted'));
       } else {
-        notify.success("Progress saved");
+        notify.success(t('surveys.progressSaved'));
       }
     },
     onError: (error) => {
-      notify.error("Failed to save survey");
+      notify.error(t('surveys.saveFailed'));
       logger.error('operation_error', {}, error);
     },
   });

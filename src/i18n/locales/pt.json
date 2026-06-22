@@ -7833,12 +7833,12 @@
     "selectTemplate": "Selecionar Template",
     "startDate": "Data de Início",
     "submit": "Submeter Inquérito",
-    "submitted": "Submetido",
+    "submitted": "Questionário submetido com sucesso!",
     "surveyNotFound": "Inquérito não encontrado",
     "surveySubmitted": "Inquérito submetido com sucesso!",
     "surveysCreated": "{{count}} inquéritos criados",
     "targetProgram": "Programa Alvo",
-    "templateCreated": "Template criado",
+    "templateCreated": "Modelo de questionário criado",
     "templateDescription": "Descrição",
     "templateName": "Nome do Template",
     "templateUpdated": "Template atualizado",
@@ -7850,7 +7850,12 @@
     "typeSelect": "Seleção Única",
     "typeText": "Texto",
     "typeTextarea": "Texto Longo",
-    "viewResponses": "Ver Respostas"
+    "viewResponses": "Ver Respostas",
+    "templateCreateFailed": "Falha ao criar modelo de questionário",
+    "campaignCreated": "Campanha de questionário criada",
+    "campaignCreateFailed": "Falha ao criar campanha",
+    "campaignLaunchFailed": "Falha ao lançar campanha",
+    "saveFailed": "Falha ao guardar questionário"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",
