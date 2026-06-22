@@ -57,7 +57,7 @@ import { BrandSurface } from '@/components/ui/BrandSurface';
 import { WelcomeSplash } from '@/components/founder/WelcomeSplash';
 import { useIsFirstWeek } from '@/hooks/useIsFirstWeek';
 import { useKpiAnomalyNudge } from '@/hooks/useKpiAnomalyNudge';
-import { AlertTriangle, X } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 // NextBestActionFounder removed from beginner view — kept available for power users via OneThingToday.
 
 interface FounderDashboardProps {
