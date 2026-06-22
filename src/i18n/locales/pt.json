@@ -1145,6 +1145,7 @@
     "rejectApplication": "Rejeitar Candidatura",
     "rejectConfirm": "Tem a certeza que quer rejeitar esta candidatura? O founder terá de submeter nova candidatura.",
     "relatórioGeradoComSucesso": "Relatório gerado com sucesso",
+    "removeMentorTitle": "Remover acesso de mentor?",
     "reports": "Relatórios",
     "reportsDesc": "Relatórios e métricas",
     "roleAdded": "Role adicionada",
@@ -1484,6 +1485,8 @@
       "consultorAssigned": "Consultor atribuído",
       "consultorRemoved": "Consultor removido",
       "create": "Criar Workspace",
+      "deleteConfirm": "Isto irá eliminar permanentemente o workspace \"{{name}}\" e todos os seus dados. Esta ação não pode ser revertida.",
+      "deleteTitle": "Eliminar workspace?",
       "deleted": "Workspace eliminado",
       "health": "Saúde",
       "noWorkspaces": "Nenhum workspace criado",
@@ -1499,11 +1502,8 @@
       "status": "Estado",
       "title": "Workspaces",
       "unblock": "Desbloquear",
-      "unblocked": "Workspace desbloqueado",
-      "deleteTitle": "Eliminar workspace?",
-      "deleteConfirm": "Isto irá eliminar permanentemente o workspace \"{{name}}\" e todos os seus dados. Esta ação não pode ser revertida."
-    },
-    "removeMentorTitle": "Remover acesso de mentor?"
+      "unblocked": "Workspace desbloqueado"
+    }
   },
   "adminContracts": {
     "allStatuses": "Todos os estados",
@@ -1953,6 +1953,7 @@
     "commitSuccess": "Importados {{committed}} contratos ({{failed}} falhados)",
     "committing": "A importar...",
     "confirmCommit": "Importar {{count}} contratos? Vai criar/atualizar startups, workspaces e contratos.",
+    "confirmCommitTitle": "Confirmar importação?",
     "done": {
       "backAdmin": "Voltar ao Backoffice",
       "desc": "Os contratos foram importados. Reveja eventuais erros abaixo.",
@@ -2025,8 +2026,7 @@
       "start": "Carregar e extrair com IA",
       "title": "Carregar PDFs de contratos assinados",
       "uploading": "A carregar {{done}} / {{total}}..."
-    },
-    "confirmCommitTitle": "Confirmar importação?"
+    }
   },
   "calendar": {
     "bookSession": "Agendar Sessão",
@@ -2066,6 +2066,7 @@
     "outlook4": "Nomear \"Sessões Startup Leiria\" e clicar Importar",
     "regenerate": "Regenerar token",
     "regenerateConfirm": "Regenerar o token irá invalidar as subscrições atuais. Continuar?",
+    "regenerateTitle": "Regenerar token do calendário?",
     "regenerateToken": "Regenerar Token",
     "regenerationRequired": "Regeneração necessária",
     "secureAccess": "Acesso Seguro ao Calendário",
@@ -2074,8 +2075,7 @@
     "tokenExpired": "O seu token expirou. Gere um novo para continuar a sincronizar.",
     "tokenGenerated": "Token de calendário gerado com sucesso (válido por 90 dias)",
     "tokenNeedsRegeneration": "Por razões de segurança, o token precisa de ser regenerado. As subscrições de calendário terão de ser atualizadas com o novo URL.",
-    "urlCopied": "URL do calendário copiado",
-    "regenerateTitle": "Regenerar token do calendário?"
+    "urlCopied": "URL do calendário copiado"
   },
   "chat": {
     "empty": "Sem mensagens ainda. Inicie a conversa!",
@@ -2175,6 +2175,20 @@
     "workspaces": "Workspaces"
   },
   "common": {
+    "_iconArchive": "Arquivar",
+    "_iconHelp": "Ajuda",
+    "_iconHide": "Ocultar",
+    "_iconHistory": "Histórico",
+    "_iconOpenCalendar": "Abrir calendário",
+    "_iconOpenChat": "Abrir chat",
+    "_iconOpenLinkedin": "Abrir LinkedIn",
+    "_iconOpenNotifications": "Abrir notificações",
+    "_iconOpenVideo": "Abrir vídeo",
+    "_iconPause": "Pausar",
+    "_iconSend": "Enviar",
+    "_iconToggleFavorite": "Alternar favorito",
+    "_iconToggleSidebar": "Alternar barra lateral",
+    "_iconToggleTheme": "Alternar tema",
     "accessDenied": "Acesso Negado",
     "actions": "Ações",
     "active": "Ativo",
@@ -2185,6 +2199,8 @@
     "allPrograms": "Todos os Programas",
     "allStages": "Todos os Estágios",
     "approved": "Aprovado",
+    "archive": "Arquivar",
+    "areYouSure": "Tem a certeza?",
     "atTime": "às",
     "back": "Voltar",
     "backToHome": "Voltar ao Início",
@@ -2292,6 +2308,19 @@
     "pending": "Pendente",
     "perMonth": "/mês",
     "phone": "Phone",
+    "placeholders": {
+      "addComment": "Adicionar um comentário...",
+      "addTags": "Adicionar etiquetas...",
+      "additionalDetails": "Detalhes adicionais...",
+      "allTime": "Todo o período",
+      "exerciseNotes": "Notas específicas para este exercício...",
+      "pasteTranscript": "Cole a transcrição do Teams, Zoom ou qualquer ferramenta de gravação...\n\nTambém pode colar notas ou um resumo da reunião.",
+      "searchExercises": "Procurar exercícios...",
+      "searchOrCreateTag": "Procurar ou criar etiqueta...",
+      "searchSitewide": "Procurar sessões, ações, notas, documentos...",
+      "selectOption": "Selecionar uma opção",
+      "shareFeedback": "Partilhe a sua opinião sobre esta sessão..."
+    },
     "pleaseWait": "Please wait{{ remainingSeconds }}s before trying again.",
     "preview": "Pré-visualização",
     "previous": "Anterior",
@@ -2360,36 +2389,7 @@
     "viewAll": "Ver todas",
     "workspace": "Workspace",
     "years": "anos",
-    "yes": "Sim",
-    "_iconArchive": "Arquivar",
-    "_iconHide": "Ocultar",
-    "_iconHelp": "Ajuda",
-    "_iconOpenCalendar": "Abrir calendário",
-    "_iconOpenChat": "Abrir chat",
-    "_iconOpenLinkedin": "Abrir LinkedIn",
-    "_iconOpenNotifications": "Abrir notificações",
-    "_iconOpenVideo": "Abrir vídeo",
-    "_iconPause": "Pausar",
-    "_iconSend": "Enviar",
-    "_iconToggleFavorite": "Alternar favorito",
-    "_iconToggleSidebar": "Alternar barra lateral",
-    "_iconToggleTheme": "Alternar tema",
-    "_iconHistory": "Histórico",
-    "placeholders": {
-      "addTags": "Adicionar etiquetas...",
-      "searchOrCreateTag": "Procurar ou criar etiqueta...",
-      "addComment": "Adicionar um comentário...",
-      "searchSitewide": "Procurar sessões, ações, notas, documentos...",
-      "allTime": "Todo o período",
-      "shareFeedback": "Partilhe a sua opinião sobre esta sessão...",
-      "pasteTranscript": "Cole a transcrição do Teams, Zoom ou qualquer ferramenta de gravação...\n\nTambém pode colar notas ou um resumo da reunião.",
-      "searchExercises": "Procurar exercícios...",
-      "exerciseNotes": "Notas específicas para este exercício...",
-      "additionalDetails": "Detalhes adicionais...",
-      "selectOption": "Selecionar uma opção"
-    },
-    "archive": "Arquivar",
-    "areYouSure": "Tem a certeza?"
+    "yes": "Sim"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -2914,10 +2914,20 @@
     "descriptionHint": "Minimum 20 characters. Describe what your Startup does.",
     "descriptionLabel": "Descrição",
     "descriptionPlaceholder": "O que faz a sua startup?",
+    "discardDraft": "Descartar rascunho",
+    "draftRestored": "Foi restaurado um rascunho anterior.",
     "duplicateName": "Já existe uma startup com este nome.",
+    "errors": {
+      "descriptionMin": "A descrição deve ter pelo menos 20 caracteres",
+      "invalidEmail": "Introduza um endereço de email válido",
+      "invalidWebsite": "Introduza um URL válido",
+      "nameMin": "O nome deve ter pelo menos 2 caracteres",
+      "programRequired": "Selecione um programa"
+    },
     "failedToCreate": "Falha ao criar startup. Por favor, tente novamente.",
     "mainContact": "Main Contact",
     "mustBeLoggedIn": "Tem de ter sessão iniciada para criar uma startup",
+    "nifLabel": "NIF",
     "permissionError": "Não tem permissão para criar uma startup. Por favor, contacte o suporte.",
     "programLabel": "Programa",
     "selectProgram": "Selecionar programa",
@@ -3365,7 +3375,6 @@
     "itemsNeedAttention_plural": "{{count}} itens precisam de atenção",
     "kpiAlert": "Atenção ao KPI",
     "last7Days": "Últimos 7 dias",
-    "reviewKpi": "Rever KPI →",
     "meetingsThisWeek": "Reuniões Esta Semana",
     "meetingsToday": "Reuniões Hoje",
     "myStartup": "A Minha Startup",
@@ -3379,6 +3388,7 @@
     "pendingActions": "Ações Pendentes",
     "portfolio": "Visão do Portfólio",
     "recentActivity": "Atividade Recente",
+    "reviewKpi": "Rever KPI →",
     "scheduledForToday": "agendadas para hoje",
     "switchToFocus": "Mostrar apenas prioridades",
     "switchToFull": "Mostrar todas as secções",
@@ -3512,6 +3522,7 @@
     "created": "Criado",
     "day": "dia",
     "days": "dias",
+    "deleteTitle": "Remover item?",
     "description": "Documentos e atualizações para investidores",
     "download": "Descarregar",
     "emptyPublic": "Sem conteúdo disponível",
@@ -3548,6 +3559,7 @@
     "poweredBy": "Powered by Startup Leiria",
     "public": "Investidores",
     "revoke": "Revogar",
+    "revokeTitle": "Revogar link?",
     "revoked": "Revogado",
     "selectUpdate": "Selecionar Atualização",
     "selectUpdatePlaceholder": "Escolha uma atualização...",
@@ -3562,9 +3574,7 @@
     "updateMonth": "Mês",
     "views": "visualizações",
     "visibilityUpdated": "Visibilidade atualizada",
-    "visibleToInvestors": "Visível para investidores",
-    "deleteTitle": "Remover item?",
-    "revokeTitle": "Revogar link?"
+    "visibleToInvestors": "Visível para investidores"
   },
   "dataroomChecklist": {
     "description": "Checklist de documentos essenciais para o Data Room",
@@ -3787,6 +3797,8 @@
     "assignConsultant": "Atribuir...",
     "byConsultantTab": "Por Consultor",
     "communityTab": "Comunidade",
+    "confirmArchiveDesc": "Arquivar \"{{name}}\"? O workspace ficará oculto das listas ativas mas pode ser restaurado mais tarde.",
+    "confirmArchiveTitle": "Arquivar workspace?",
     "confirmDeleteDesc": "Confirmar Eliminar Desc",
     "confirmDeleteTitle": "Eliminar Lead?",
     "consultantAssigned": "Consultor atribuído com sucesso",
@@ -3820,9 +3832,7 @@
     "unassigned": "Sem consultor atribuído",
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
-    "workspaces": "workspaces",
-    "confirmArchiveTitle": "Arquivar workspace?",
-    "confirmArchiveDesc": "Arquivar \"{{name}}\"? O workspace ficará oculto das listas ativas mas pode ser restaurado mais tarde."
+    "workspaces": "workspaces"
   },
   "ecosystemHub": {
     "navLabel": "Hub de Gestão",
@@ -3910,11 +3920,11 @@
     "welcomeTitle": "Bem-vindo ao Startup Leiria"
   },
   "engagement": {
+    "founderCompletedActions": "O founder completou {{count}} ação desde a sua última visita.",
+    "founderCompletedActions_plural": "O founder completou {{count}} ações desde a sua última visita.",
     "lastViewed": "Visto {{when}}",
     "viewsCount": "{{count}} visualização",
-    "viewsCount_plural": "{{count}} visualizações",
-    "founderCompletedActions": "O founder completou {{count}} ação desde a sua última visita.",
-    "founderCompletedActions_plural": "O founder completou {{count}} ações desde a sua última visita."
+    "viewsCount_plural": "{{count}} visualizações"
   },
   "enrollment": {
     "claimExplainer": "O fluxo de claim é independente do modo de registo: após login, founders verificam se a sua startup já está no sistema.",
@@ -4738,6 +4748,46 @@
     "signatureProvider": "Provider de Assinatura",
     "submittedData": "Dados Submetidos"
   },
+  "intakeOps": {
+    "groups": {
+      "awaiting_fill": {
+        "action": "Novos pedidos enviados aos clientes aparecerão aqui.",
+        "empty": "Nenhum pedido a aguardar preenchimento do cliente.",
+        "title": "A Aguardar Preenchimento"
+      },
+      "changes_requested": {
+        "action": "Intakes devolvidos ao cliente para correção aparecerão aqui.",
+        "empty": "Nenhum intake a aguardar correções.",
+        "title": "Correções Pedidas"
+      },
+      "ready_for_signature": {
+        "action": "Após aprovação, envie o contrato para assinatura digital.",
+        "empty": "Nenhum intake aprovado a aguardar envio para assinatura.",
+        "title": "Aprovados p/ Assinatura"
+      },
+      "sent_for_signature": {
+        "action": "Contratos enviados ao cliente para assinatura aparecerão aqui.",
+        "empty": "Nenhum contrato a aguardar assinatura.",
+        "title": "Enviados p/ Assinatura"
+      },
+      "signed_pending_activation": {
+        "action": "Após assinatura, ative o workspace e as condições operacionais.",
+        "empty": "Nenhum contrato assinado a aguardar ativação.",
+        "title": "Assinados — Pendentes de Ativação"
+      },
+      "submitted_for_review": {
+        "action": "Quando um cliente submeter os dados, aparecerá aqui para revisão.",
+        "empty": "Nenhuma submissão pendente de revisão.",
+        "title": "Submetidos para Revisão"
+      }
+    },
+    "missingDocs": "{{count}} doc(s) em falta",
+    "noName": "Sem nome",
+    "overdue": "Atrasado",
+    "overdueDesc": "Considere reenviar o email ou contactar diretamente o cliente.",
+    "overdueTitle": "{{count}} pedido(s) sem resposta há mais de 10 dias",
+    "remindersCount": "{{count}}x lembrado"
+  },
   "integrationErrors": {
     "allSmooth": "Todas as integrações a funcionar corretamente",
     "markResolved": "Marcar como resolvido",
@@ -4967,12 +5017,12 @@
     "addKpi": "Adicionar KPI",
     "addKpis": "Adicionar KPIs",
     "addedDefaults": "Adicionados {{count}} KPIs padrão para a fase {{stage}}",
-    "anomalyDeclining": "{{name}} desceu mais de 20% face ao período anterior.",
-    "anomalyMissing": "{{name}} sem registos há mais de 2 meses. Considere atualizar.",
-    "anomalyStale": "{{name}} está estagnado há 3 períodos.",
     "allDefaultsConfigured": "Todos os KPIs padrão já estão configurados",
     "allFilled": "✓ Todos os KPIs preenchidos! Pode concluir o check-in.",
     "allKpisAdded": "Todos os KPIs já adicionados",
+    "anomalyDeclining": "{{name}} desceu mais de 20% face ao período anterior.",
+    "anomalyMissing": "{{name}} sem registos há mais de 2 meses. Considere atualizar.",
+    "anomalyStale": "{{name}} está estagnado há 3 períodos.",
     "applyDefaults": "Aplicar Padrões da Fase {{stage}}",
     "askAdminToSetup": "Peça a um admin para configurar KPIs para acompanhamento.",
     "autosaveHint": "Os valores são guardados automaticamente enquanto preenche.",
@@ -6779,6 +6829,14 @@
     "trigger": "Pedir Playbook",
     "urgencyLabel": "Quando precisa disto?"
   },
+  "resourceGuide": {
+    "backToResources": "Voltar aos Recursos",
+    "notFoundDesc": "Este conteúdo ainda não está disponível.",
+    "notFoundTitle": "Guia não encontrado",
+    "read": "de leitura",
+    "resources": "Recursos",
+    "tips": "💡 Dicas"
+  },
   "resources": {
     "actions": {
       "openGlossary": "Abrir Glossário & FAQ",
@@ -7402,6 +7460,7 @@
   },
   "settingsPage": {
     "areasOfExpertise": "Áreas de Especialização",
+    "avatarUploadFailed": "Falha ao carregar avatar",
     "avatarUploaded": "Avatar carregado! Clique em Guardar para aplicar as alterações.",
     "bioExperience": "Bio / Experiência",
     "bioHint": "Visível para outros membros do ecossistema",
@@ -7425,6 +7484,7 @@
     "emailConfirmationSent": "Email de confirmação enviado para o seu novo endereço. Por favor verifique a sua caixa de entrada.",
     "emailDigest": "Resumo por Email",
     "emailReadOnly": "Para alterar o seu email, use o separador Email",
+    "emailUpdateFailed": "Falha ao atualizar email",
     "enterNewPassword": "Introduza nova palavra-passe",
     "expertiseHint": "Adicione tags das suas áreas de especialização para ajudar fundadores a encontrá-lo",
     "expertiseLabel": "Áreas de Especialidade",
@@ -7445,6 +7505,7 @@
     "notifications": "Notificações",
     "password": "Palavra-passe",
     "passwordRecommendation": "Recomendamos usar uma palavra-passe forte e única",
+    "passwordUpdateFailed": "Falha ao atualizar password",
     "passwordUpdated": "Palavra-passe atualizada com sucesso",
     "passwordsDoNotMatch": "As palavras-passe não coincidem",
     "phone": "Telefone",
@@ -7455,6 +7516,7 @@
     "profileInfo": "Informação do Perfil",
     "profileInfoDesc": "Atualize a sua informação pessoal e avatar",
     "profilePhoto": "Foto de Perfil",
+    "profileUpdateFailed": "Falha ao atualizar perfil",
     "profileUpdated": "Perfil atualizado com sucesso",
     "saturday": "Sábado",
     "saveChanges": "Guardar Alterações",
@@ -7469,11 +7531,7 @@
     "updating": "A atualizar...",
     "uploadImageFile": "Por favor carregue um ficheiro de imagem",
     "uploadPhoto": "Carregar Foto",
-    "wednesday": "Quarta-feira",
-    "avatarUploadFailed": "Falha ao carregar avatar",
-    "profileUpdateFailed": "Falha ao atualizar perfil",
-    "emailUpdateFailed": "Falha ao atualizar email",
-    "passwordUpdateFailed": "Falha ao atualizar password"
+    "wednesday": "Quarta-feira"
   },
   "shared": {
     "accessDenied": "Acesso Negado",
@@ -7794,8 +7852,12 @@
     "analytics": "Análises",
     "autoFillKey": "Campo de Preenchimento Automático",
     "autoFilled": "Preenchido automaticamente",
+    "campaignCloseFailed": "Falha ao encerrar campanha",
     "campaignClosed": "Campanha encerrada",
+    "campaignCreateFailed": "Falha ao criar campanha",
+    "campaignCreated": "Campanha de questionário criada",
     "campaignDescription": "Descrição",
+    "campaignLaunchFailed": "Falha ao lançar campanha",
     "campaignLaunched": "Campanha lançada!",
     "campaignName": "Nome da Campanha",
     "campaigns": "Campanhas",
@@ -7829,6 +7891,7 @@
     "reminderDays": "Dias de Lembrete",
     "responseRate": "Taxa de Resposta",
     "saveDraft": "Guardar Rascunho",
+    "saveFailed": "Falha ao guardar questionário",
     "saveTemplate": "Guardar Template",
     "section": "Secção",
     "selectTemplate": "Selecionar Template",
@@ -7839,9 +7902,11 @@
     "surveySubmitted": "Inquérito submetido com sucesso!",
     "surveysCreated": "{{count}} inquéritos criados",
     "targetProgram": "Programa Alvo",
+    "templateCreateFailed": "Falha ao criar modelo de questionário",
     "templateCreated": "Modelo de questionário criado",
     "templateDescription": "Descrição",
     "templateName": "Nome do Template",
+    "templateUpdateFailed": "Falha ao atualizar modelo",
     "templateUpdated": "Modelo de questionário atualizado",
     "templates": "Templates",
     "title": "Inquéritos",
@@ -7851,14 +7916,7 @@
     "typeSelect": "Seleção Única",
     "typeText": "Texto",
     "typeTextarea": "Texto Longo",
-    "viewResponses": "Ver Respostas",
-    "templateCreateFailed": "Falha ao criar modelo de questionário",
-    "campaignCreated": "Campanha de questionário criada",
-    "campaignCreateFailed": "Falha ao criar campanha",
-    "campaignLaunchFailed": "Falha ao lançar campanha",
-    "saveFailed": "Falha ao guardar questionário",
-    "templateUpdateFailed": "Falha ao atualizar modelo",
-    "campaignCloseFailed": "Falha ao encerrar campanha"
+    "viewResponses": "Ver Respostas"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",
@@ -8461,6 +8519,7 @@
     "category": "Categoria",
     "date": "Data",
     "deleteConfirm": "Eliminar este registo de tempo?",
+    "deleteTitle": "Eliminar registo de tempo?",
     "failedToDelete": "Falha ao eliminar",
     "failedToLog": "Falha ao registar tempo",
     "hours": "Horas",
@@ -8480,8 +8539,7 @@
     "totalHours": "Total de Horas",
     "trackTimeSpent": "Acompanhar tempo gasto nesta startup",
     "validHoursRequired": "Por favor insira horas válidas",
-    "whatDidYouWorkOn": "Em que trabalhou?",
-    "deleteTitle": "Eliminar registo de tempo?"
+    "whatDidYouWorkOn": "Em que trabalhou?"
   },
   "topBar": {
     "accountSettings": "Definições da Conta",
@@ -8958,53 +9016,5 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
-  },
-  "intakeOps": {
-    "overdueTitle": "{{count}} pedido(s) sem resposta há mais de 10 dias",
-    "overdueDesc": "Considere reenviar o email ou contactar diretamente o cliente.",
-    "noName": "Sem nome",
-    "overdue": "Atrasado",
-    "missingDocs": "{{count}} doc(s) em falta",
-    "remindersCount": "{{count}}x lembrado",
-    "groups": {
-      "awaiting_fill": {
-        "title": "A Aguardar Preenchimento",
-        "empty": "Nenhum pedido a aguardar preenchimento do cliente.",
-        "action": "Novos pedidos enviados aos clientes aparecerão aqui."
-      },
-      "submitted_for_review": {
-        "title": "Submetidos para Revisão",
-        "empty": "Nenhuma submissão pendente de revisão.",
-        "action": "Quando um cliente submeter os dados, aparecerá aqui para revisão."
-      },
-      "changes_requested": {
-        "title": "Correções Pedidas",
-        "empty": "Nenhum intake a aguardar correções.",
-        "action": "Intakes devolvidos ao cliente para correção aparecerão aqui."
-      },
-      "ready_for_signature": {
-        "title": "Aprovados p/ Assinatura",
-        "empty": "Nenhum intake aprovado a aguardar envio para assinatura.",
-        "action": "Após aprovação, envie o contrato para assinatura digital."
-      },
-      "sent_for_signature": {
-        "title": "Enviados p/ Assinatura",
-        "empty": "Nenhum contrato a aguardar assinatura.",
-        "action": "Contratos enviados ao cliente para assinatura aparecerão aqui."
-      },
-      "signed_pending_activation": {
-        "title": "Assinados — Pendentes de Ativação",
-        "empty": "Nenhum contrato assinado a aguardar ativação.",
-        "action": "Após assinatura, ative o workspace e as condições operacionais."
-      }
-    }
-  },
-  "resourceGuide": {
-    "notFoundTitle": "Guia não encontrado",
-    "notFoundDesc": "Este conteúdo ainda não está disponível.",
-    "backToResources": "Voltar aos Recursos",
-    "resources": "Recursos",
-    "read": "de leitura",
-    "tips": "💡 Dicas"
   }
 }
