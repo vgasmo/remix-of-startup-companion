@@ -77,6 +77,7 @@ export function useCreateFundingRound() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['funding-rounds', variables.startup_id] });
+      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -93,6 +94,7 @@ export function useUpdateFundingRound() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['funding-rounds'] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -128,6 +130,7 @@ export function useCreateInvestor() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['investors', variables.startup_id] });
+      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -144,6 +147,7 @@ export function useUpdateInvestor() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['investors'] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -160,6 +164,7 @@ export function useDeleteInvestor() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['investors'] });
+      notify.success(i18n.t('common.deleted'));
     },
   });
 }
@@ -195,6 +200,7 @@ export function useCreateCapTableEntry() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['cap-table', variables.startup_id] });
+      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -211,6 +217,7 @@ export function useUpdateCapTableEntry() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cap-table'] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -227,6 +234,7 @@ export function useDeleteCapTableEntry() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cap-table'] });
+      notify.success(i18n.t('common.deleted'));
     },
   });
 }

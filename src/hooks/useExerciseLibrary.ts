@@ -117,6 +117,7 @@ export function useCreateExercise() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercise-library'] });
+      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -151,6 +152,7 @@ export function useUpdateExercise() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['exercise-library'] });
+      notify.success(i18n.t('common.updated'));
       queryClient.invalidateQueries({ queryKey: ['exercise', variables.id] });
     },
   });
@@ -169,6 +171,7 @@ export function useDeleteExercise() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercise-library'] });
+      notify.success(i18n.t('common.deleted'));
     },
   });
 }

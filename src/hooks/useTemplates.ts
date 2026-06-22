@@ -107,6 +107,7 @@ export function useCreateTemplate() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['templates'] });
+      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -141,6 +142,7 @@ export function useUpdateTemplate() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['templates'] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -160,6 +162,7 @@ export function useDeleteTemplate() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['templates'] });
+      notify.success(i18n.t('common.deleted'));
     },
   });
 }

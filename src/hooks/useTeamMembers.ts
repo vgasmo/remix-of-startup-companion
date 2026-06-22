@@ -52,6 +52,7 @@ export function useCreateTeamMember() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['team-members', variables.startup_id] });
+      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -68,6 +69,7 @@ export function useUpdateTeamMember() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-members'] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -84,6 +86,7 @@ export function useDeleteTeamMember() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-members'] });
+      notify.success(i18n.t('common.deleted'));
     },
   });
 }

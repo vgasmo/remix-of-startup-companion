@@ -73,6 +73,7 @@ export function useCreateResource() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resources'] });
+      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -89,6 +90,7 @@ export function useUpdateResource() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resources'] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -105,6 +107,7 @@ export function useDeleteResource() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resources'] });
+      notify.success(i18n.t('common.deleted'));
     },
   });
 }
