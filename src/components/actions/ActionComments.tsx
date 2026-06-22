@@ -193,7 +193,7 @@ export function ActionComments({ actionId, canWrite }: ActionCommentsProps) {
             <Textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Add a comment..."
+              placeholder={t("common.placeholders.addComment")}
               className="min-h-[60px] text-xs resize-none"
             />
             <Button 

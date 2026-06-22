@@ -2368,7 +2368,20 @@
     "_iconToggleFavorite": "Toggle favorite",
     "_iconToggleSidebar": "Toggle sidebar",
     "_iconToggleTheme": "Toggle theme",
-    "_iconHistory": "History"
+    "_iconHistory": "History",
+    "placeholders": {
+      "addTags": "Add tags...",
+      "searchOrCreateTag": "Search or create tag...",
+      "addComment": "Add a comment...",
+      "searchSitewide": "Search sessions, actions, notes, documents...",
+      "allTime": "All time",
+      "shareFeedback": "Share your thoughts about this session...",
+      "pasteTranscript": "Paste transcript from Teams, Zoom, or any meeting recording tool...\n\nYou can also paste meeting notes or a summary.",
+      "searchExercises": "Search exercises...",
+      "exerciseNotes": "Any specific notes for this exercise...",
+      "additionalDetails": "Additional details...",
+      "selectOption": "Select an option"
+    }
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -4945,7 +4958,6 @@
     "anomalyDeclining": "{{name}} dropped more than 20% versus the previous period.",
     "anomalyMissing": "{{name}} has no records for over 2 months. Consider updating it.",
     "anomalyStale": "{{name}} has been flat for 3 periods.",
-
     "allDefaultsConfigured": "All default KPIs are already configured",
     "allFilled": "✓ Todos os KPIs preenchidos! Pode concluir o check-in.",
     "allKpisAdded": "All KPIs already added",

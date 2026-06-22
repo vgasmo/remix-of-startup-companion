@@ -136,7 +136,7 @@ export default function SearchPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search sessions, actions, notes, documents..."
+              placeholder={t("common.placeholders.searchSitewide")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="pl-10"
@@ -218,7 +218,7 @@ export default function SearchPage() {
             }))}
           >
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="All time" />
+              <SelectValue placeholder={t("common.placeholders.allTime")} />
             </SelectTrigger>
             <SelectContent>
               {DATE_RANGES.map(({ value, label }) => (

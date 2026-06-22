@@ -368,7 +368,7 @@ function QuestionField({
           disabled={disabled}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select an option" />
+            <SelectValue placeholder={t("common.placeholders.selectOption")} />
           </SelectTrigger>
           <SelectContent>
             {question.options?.map((option) => (
