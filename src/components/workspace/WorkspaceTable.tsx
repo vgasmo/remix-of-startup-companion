@@ -203,22 +203,22 @@ export const WorkspaceTable = memo(function WorkspaceTable({
       </div>
 
       {/* ── Desktop: standard table ── */}
-      <div className="overflow-x-auto -mx-4 sm:mx-0 hidden md:block">
+      <div className="overflow-x-auto -mx-4 sm:mx-0 hidden md:block rounded-xl border border-border/70 bg-card">
         <Table className="min-w-[800px]">
           <TableHeader>
-            <TableRow className="hover:bg-transparent">
+            <TableRow className="hover:bg-transparent border-border/70 bg-muted/30">
               {selectionEnabled && (
-                <TableHead className="w-[40px]">
+                <TableHead className="w-[40px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
                   <span className="sr-only">{t('common.select', { defaultValue: 'Select' })}</span>
                 </TableHead>
               )}
-              <TableHead className="w-[180px] sm:w-[200px]">{t('workspaceTable.startup', { defaultValue: 'Startup' })}</TableHead>
-              <TableHead className="hidden sm:table-cell">{t('workspace.program', { defaultValue: 'Program' })}</TableHead>
-              <TableHead>{t('workspaceTable.priority', { defaultValue: 'Priority' })}</TableHead>
-              <TableHead>{t('workspace.healthScore', { defaultValue: 'Health' })}</TableHead>
-              <TableHead className="text-center">{t('workspaceTable.overdue', { defaultValue: 'Overdue' })}</TableHead>
-              <TableHead className="hidden md:table-cell">{t('workspaceTable.nextMeeting', { defaultValue: 'Next Meeting' })}</TableHead>
-              <TableHead className="hidden lg:table-cell w-[200px]">{t('workspaceTable.lastSession', { defaultValue: 'Last Session' })}</TableHead>
+              <TableHead className="w-[180px] sm:w-[200px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.startup', { defaultValue: 'Startup' })}</TableHead>
+              <TableHead className="hidden sm:table-cell h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.program', { defaultValue: 'Program' })}</TableHead>
+              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.priority', { defaultValue: 'Priority' })}</TableHead>
+              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.healthScore', { defaultValue: 'Health' })}</TableHead>
+              <TableHead className="text-center h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.overdue', { defaultValue: 'Overdue' })}</TableHead>
+              <TableHead className="hidden md:table-cell h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.nextMeeting', { defaultValue: 'Next Meeting' })}</TableHead>
+              <TableHead className="hidden lg:table-cell w-[200px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.lastSession', { defaultValue: 'Last Session' })}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -230,12 +230,13 @@ export const WorkspaceTable = memo(function WorkspaceTable({
                 <TableRow
                   key={workspace.id}
                   className={cn(
-                    "cursor-pointer transition-colors",
-                    "hover:bg-primary/5",
-                    isSelected && "bg-primary/10"
+                    "cursor-pointer transition-colors border-border/60",
+                    "hover:bg-muted/40",
+                    isSelected && "bg-primary/[0.06] relative before:absolute before:inset-y-0 before:left-0 before:w-[2px] before:bg-primary"
                   )}
                   onClick={() => onRowClick(workspace.id)}
                 >
+
                   {selectionEnabled && (
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <Checkbox
