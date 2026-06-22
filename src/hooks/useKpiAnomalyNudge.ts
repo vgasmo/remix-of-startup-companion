@@ -69,7 +69,7 @@ export function useKpiAnomalyNudge(workspaceId: string | undefined) {
           return {
             kpiName: name,
             trend: 'missing',
-            message: t('kpi.anomalyMissing', { name, defaultValue: '{{name}} sem registos há mais de 2 meses. Considere atualizar.' }),
+            message: t('kpis.anomalyMissing', { name, defaultValue: '{{name}} sem registos há mais de 2 meses. Considere atualizar.' }),
           };
         }
 
@@ -77,7 +77,7 @@ export function useKpiAnomalyNudge(workspaceId: string | undefined) {
           return {
             kpiName: name,
             trend: 'stale',
-            message: t('kpi.anomalyStale', { name, defaultValue: '{{name}} está estagnado há 3 períodos.' }),
+            message: t('kpis.anomalyStale', { name, defaultValue: '{{name}} está estagnado há 3 períodos.' }),
           };
         }
 
@@ -86,7 +86,7 @@ export function useKpiAnomalyNudge(workspaceId: string | undefined) {
           return {
             kpiName: name,
             trend: 'declining',
-            message: t('kpi.anomalyDeclining', { name, defaultValue: '{{name}} desceu mais de 20% face ao período anterior.' }),
+            message: t('kpis.anomalyDeclining', { name, defaultValue: '{{name}} desceu mais de 20% face ao período anterior.' }),
           };
         }
       }
