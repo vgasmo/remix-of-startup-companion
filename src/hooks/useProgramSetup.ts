@@ -183,10 +183,12 @@ export function useProgramSetupDraft(draftId: string | undefined) {
         .from('program_setup_drafts')
         .select('*')
         .eq('id', draftId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) return null;
       return data as unknown as ProgramSetupDraft;
+
     },
     enabled: !!draftId,
   });
