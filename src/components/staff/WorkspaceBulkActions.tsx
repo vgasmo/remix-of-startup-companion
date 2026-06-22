@@ -250,7 +250,7 @@ export function WorkspaceBulkActionsBar({
             <div>
               <Label>{t('bulkActions.descriptionOptional', 'Description (optional)')}</Label>
               <Input
-                placeholder="Additional details..."
+                placeholder={t("common.placeholders.additionalDetails")}
                 value={taskDescription}
                 onChange={(e) => setTaskDescription(e.target.value)}
               />

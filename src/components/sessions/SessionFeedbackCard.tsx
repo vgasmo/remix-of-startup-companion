@@ -142,7 +142,7 @@ export function SessionFeedbackCard({ sessionId, sessionTitle }: SessionFeedback
               <Textarea
                 value={feedback}
                 onChange={e => setFeedback(e.target.value)}
-                placeholder="Share your thoughts about this session..."
+                placeholder={t("common.placeholders.shareFeedback")}
                 rows={4}
               />
             </div>

@@ -244,7 +244,7 @@ function AddExerciseDialog({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search exercises..."
+              placeholder={t("common.placeholders.searchExercises")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
@@ -301,7 +301,7 @@ function AddExerciseDialog({
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Any specific notes for this exercise..."
+                placeholder={t("common.placeholders.exerciseNotes")}
                 rows={2}
                 className="mt-1"
               />
