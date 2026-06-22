@@ -443,7 +443,7 @@ export default function BulkContractImport() {
                             ({(f.size / 1024).toFixed(0)} KB)
                           </span>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={()=> removeFile(i)} aria-label={t('common.delete')}>
+                        <Button variant="ghost" size="icon" onClick={()= aria-label="Delete"> removeFile(i)} aria-label={t('common.delete')}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
@@ -587,7 +587,7 @@ export default function BulkContractImport() {
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-1">
-                                <Button variant="ghost" size="icon" onClick={()=> openPdfPreview(row)} aria-label={t('common.view')}>
+                                <Button variant="ghost" size="icon" onClick={()= aria-label="View"> openPdfPreview(row)} aria-label={t('common.view')}>
                                   <Eye className="h-4 w-4" />
                                 </Button>
                                 <Button variant="ghost" size="sm" onClick={() => setEditingRow(row)}>

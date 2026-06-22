@@ -208,10 +208,10 @@ export function TeamTab({ startupId, canEdit = false }: TeamTabProps) {
                   </div>
                   {canEdit && (
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={()=> openEditDialog(member)} aria-label={t('common.edit', { defaultValue: 'Editar' })}>
+                      <Button variant="ghost" size="icon" onClick={()= aria-label="Edit"> openEditDialog(member)} aria-label={t('common.edit', { defaultValue: 'Editar' })}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={()=> handleDelete(member.id, member.full_name)} className="text-destructive" aria-label={t('common.delete', { defaultValue: 'Eliminar' })}>
+                      <Button variant="ghost" size="icon" onClick={()= aria-label="Delete"> handleDelete(member.id, member.full_name)} className="text-destructive" aria-label={t('common.delete', { defaultValue: 'Eliminar' })}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

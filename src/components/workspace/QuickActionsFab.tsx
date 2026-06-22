@@ -73,7 +73,7 @@ export function QuickActionsFab({
           "h-14 w-14 rounded-full shadow-lg transition-transform",
           isOpen && "rotate-45"
         )}
-        onClick={()=> setIsOpen(!isOpen)}
+        onClick={()= aria-label="Add"> setIsOpen(!isOpen)}
        aria-label={t('common.add')}>
         <Plus className="h-5 w-5" />
       </Button>

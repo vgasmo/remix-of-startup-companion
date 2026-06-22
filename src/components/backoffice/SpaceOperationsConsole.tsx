@@ -596,7 +596,7 @@ export function SpaceOperationsConsole() {
                             variant="ghost"
                             size="icon"
                             className="h-5 w-5 ml-1"
-                            onClick={(e)=> {
+                            onClick={(e)= aria-label="Copy"> {
                               e.stopPropagation();
                               navigator.clipboard.writeText(selectedRecord.startup_contact_email!);
                               notify.success(t('common.emailCopied', 'Email copiado'));

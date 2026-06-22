@@ -208,10 +208,10 @@ export function AdminKpisManager() {
                             </div>
                           </div>
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={()=> handleEdit(kpi)} aria-label={t('common.edit', { defaultValue: 'Editar' })}>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={()= aria-label="Edit"> handleEdit(kpi)} aria-label={t('common.edit', { defaultValue: 'Editar' })}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={()=> setDeleteTarget(kpi)} aria-label={t('common.delete', { defaultValue: 'Eliminar' })}>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={()= aria-label="Delete"> setDeleteTarget(kpi)} aria-label={t('common.delete', { defaultValue: 'Eliminar' })}>
                               <Trash2 className="h-3.5 w-3.5 text-destructive" />
                             </Button>
                           </div>

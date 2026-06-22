@@ -51,7 +51,7 @@ function ResourceCard({ r, favs, onToggleFav, lang }: { r: ResourceItem; favs: s
             )}
             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{desc}</p>
           </div>
-          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={()=> onToggleFav(r.id)} aria-label={t('common._iconToggleFavorite')}>
+          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={()= aria-label="Favorite"> onToggleFav(r.id)} aria-label={t('common._iconToggleFavorite')}>
             {isFav ? <Star className="h-3.5 w-3.5 text-[hsl(var(--warning))] fill-amber-500" /> : <StarOff className="h-3.5 w-3.5 text-muted-foreground" />}
           </Button>
         </div>

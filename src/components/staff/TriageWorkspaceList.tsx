@@ -265,7 +265,7 @@ export function TriageWorkspaceList({
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7"
-                    onClick={()=> navigate(`/workspace/${workspace.id}`)}
+                    onClick={()= aria-label="Open link"> navigate(`/workspace/${workspace.id}`)}
                    aria-label={t('common.open')}>
                     <ExternalLink className="h-3.5 w-3.5" />
                   </Button>
@@ -275,7 +275,7 @@ export function TriageWorkspaceList({
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7"
-                      onClick={()=> onScheduleSession(workspace.id)}
+                      onClick={()= aria-label="Calendar"> onScheduleSession(workspace.id)}
                      aria-label={t('common._iconOpenCalendar')}>
                       <Calendar className="h-3.5 w-3.5" />
                     </Button>

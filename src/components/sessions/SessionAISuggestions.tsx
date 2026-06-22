@@ -151,7 +151,7 @@ export function SessionAISuggestions({ sessionNotes, workspaceId, onApplySuggest
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
-                  onClick={()=> handleCopy(decision, `decision-${i}`)}
+                  onClick={()= aria-label="Confirm"> handleCopy(decision, `decision-${i}`)}
                  aria-label={t('common.confirm')}>
                   {copiedItem === `decision-${i}` ? (
                     <Check className="h-3 w-3 text-[hsl(var(--success))]" />
@@ -181,7 +181,7 @@ export function SessionAISuggestions({ sessionNotes, workspaceId, onApplySuggest
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
-                  onClick={()=> handleCopy(action, `action-${i}`)}
+                  onClick={()= aria-label="Confirm"> handleCopy(action, `action-${i}`)}
                  aria-label={t('common.confirm')}>
                   {copiedItem === `action-${i}` ? (
                     <Check className="h-3 w-3 text-[hsl(var(--success))]" />

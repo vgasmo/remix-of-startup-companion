@@ -77,7 +77,7 @@ export function IntegrationErrorsPanel({ compact = false, maxHeight = '300px' }:
               <Badge variant="destructive" className="ml-2 text-xs">{errorCount}</Badge>
             )}
           </CardTitle>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={()=> refetch()} aria-label={t('common.refresh')}>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={()= aria-label="Refresh"> refetch()} aria-label={t('common.refresh')}>
             <RefreshCw className="h-3.5 w-3.5" />
           </Button>
         </div>

@@ -57,7 +57,7 @@ export function WizardReviewStep({
         variant="ghost"
         size="icon"
         className="h-6 w-6 ml-auto opacity-60 hover:opacity-100"
-        onClick={(event)=> {
+        onClick={(event)= aria-label="Edit"> {
           event.stopPropagation();
           onNavigateToStep?.(step);
         }}

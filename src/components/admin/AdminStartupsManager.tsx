@@ -748,7 +748,7 @@ export function AdminStartupsManager() {
                     <TableCell>
                       <TooltipProvider>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={()=> openEdit(startup)} aria-label={t('common.edit')}>
+                          <Button variant="ghost" size="icon" onClick={()= aria-label="Edit"> openEdit(startup)} aria-label={t('common.edit')}>
                             <Pencil className="h-4 w-4" />
                           </Button>
                           {startup.main_contact_email && workspace?.id && (

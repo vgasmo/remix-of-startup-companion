@@ -366,7 +366,7 @@ export function AppSidebar() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={()=> setCollapsed(!collapsed)}
+          onClick={()= aria-label="Next"> setCollapsed(!collapsed)}
           className="absolute -right-3 top-20 h-6 w-6 rounded-full border border-sidebar-border bg-sidebar-background text-sidebar-foreground hover:bg-sidebar-accent shadow-md z-50"
          aria-label={t('common.next')}>
           {collapsed ? (
@@ -507,7 +507,7 @@ export function AppSidebar() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent shrink-0"
-                  onClick={() => signOut()}
+                  onClick={() = aria-label="Sign out"> signOut()}
                  aria-label={t('common.logout')}>
                   <LogOut className="h-4 w-4" />
                 </Button>

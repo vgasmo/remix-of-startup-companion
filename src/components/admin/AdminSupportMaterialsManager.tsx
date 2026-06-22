@@ -242,7 +242,7 @@ export function AdminSupportMaterialsManager() {
                       variant="ghost" 
                       size="icon" 
                       className="h-7 w-7" 
-                      onClick={()=> toggleStatus(material)}
+                      onClick={()= aria-label="View"> toggleStatus(material)}
                       title={material.status === 'approved' ? t('admin.supportMaterials.hideFromConsultants') : t('admin.supportMaterials.showToConsultants')}
                      aria-label={t('common.view')}>
                       {material.status === 'approved' ? (
@@ -251,10 +251,10 @@ export function AdminSupportMaterialsManager() {
                         <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
                       )}
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={()=> handleEdit(material)} aria-label={t('common.edit')}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={()= aria-label="Edit"> handleEdit(material)} aria-label={t('common.edit')}>
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={()=> setDeleteTarget(material)} aria-label={t('common.delete')}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={()= aria-label="Delete"> setDeleteTarget(material)} aria-label={t('common.delete')}>
                       <Trash2 className="h-3.5 w-3.5 text-destructive" />
                     </Button>
                   </div>
