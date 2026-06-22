@@ -23,49 +23,13 @@ interface IntakeOperationalViewProps {
 }
 
 const GROUP_CONFIG = {
-  awaiting_fill: {
-    title: 'A Aguardar Preenchimento',
-    icon: Mail,
-    emptyText: 'Nenhum pedido a aguardar preenchimento do cliente.',
-    emptyAction: 'Novos pedidos enviados aos clientes aparecerão aqui.',
-    color: 'text-[hsl(var(--info))] ',
-  },
-  submitted_for_review: {
-    title: 'Submetidos para Revisão',
-    icon: ClipboardCheck,
-    emptyText: 'Nenhuma submissão pendente de revisão.',
-    emptyAction: 'Quando um cliente submeter os dados, aparecerá aqui para revisão.',
-    color: 'text-[hsl(var(--success))] ',
-  },
-  changes_requested: {
-    title: 'Correções Pedidas',
-    icon: RotateCcw,
-    emptyText: 'Nenhum intake a aguardar correções.',
-    emptyAction: 'Intakes devolvidos ao cliente para correção aparecerão aqui.',
-    color: 'text-[hsl(var(--warning))]',
-  },
-  ready_for_signature: {
-    title: 'Aprovados p/ Assinatura',
-    icon: CheckCircle2,
-    emptyText: 'Nenhum intake aprovado a aguardar envio para assinatura.',
-    emptyAction: 'Após aprovação, envie o contrato para assinatura digital.',
-    color: 'text-primary',
-  },
-  sent_for_signature: {
-    title: 'Enviados p/ Assinatura',
-    icon: Send,
-    emptyText: 'Nenhum contrato a aguardar assinatura.',
-    emptyAction: 'Contratos enviados ao cliente para assinatura aparecerão aqui.',
-    color: 'text-[hsl(var(--success))]',
-  },
-  signed_pending_activation: {
-    title: 'Assinados — Pendentes de Ativação',
-    icon: Shield,
-    emptyText: 'Nenhum contrato assinado a aguardar ativação.',
-    emptyAction: 'Após assinatura, ative o workspace e as condições operacionais.',
-    color: 'text-[hsl(var(--success))] ',
-  },
-};
+  awaiting_fill: { key: 'awaiting_fill', icon: Mail, color: 'text-[hsl(var(--info))] ' },
+  submitted_for_review: { key: 'submitted_for_review', icon: ClipboardCheck, color: 'text-[hsl(var(--success))] ' },
+  changes_requested: { key: 'changes_requested', icon: RotateCcw, color: 'text-[hsl(var(--warning))]' },
+  ready_for_signature: { key: 'ready_for_signature', icon: CheckCircle2, color: 'text-primary' },
+  sent_for_signature: { key: 'sent_for_signature', icon: Send, color: 'text-[hsl(var(--success))]' },
+  signed_pending_activation: { key: 'signed_pending_activation', icon: Shield, color: 'text-[hsl(var(--success))] ' },
+} as const;
 
 export function IntakeOperationalView({ onSelectIntake }: IntakeOperationalViewProps) {
   const { data: allIntakes, isLoading } = useContractIntakes();
