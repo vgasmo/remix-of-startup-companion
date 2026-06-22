@@ -127,13 +127,13 @@ export function TagPicker({
               )}
             >
               <Plus className={size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
-              <span className="ml-1">{selectedTags.length === 0 ? placeholder : 'Add'}</span>
+              <span className="ml-1">{selectedTags.length === 0 ? effectivePlaceholder : t('common.add')}</span>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-64 p-0" align="start">
             <Command>
               <CommandInput
-                placeholder="Search or create tag..."
+                placeholder={t('common.placeholders.searchOrCreateTag')}
                 value={searchValue}
                 onValueChange={setSearchValue}
               />
