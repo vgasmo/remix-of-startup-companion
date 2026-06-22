@@ -2368,7 +2368,20 @@
     "_iconToggleFavorite": "Alternar favorito",
     "_iconToggleSidebar": "Alternar barra lateral",
     "_iconToggleTheme": "Alternar tema",
-    "_iconHistory": "Histórico"
+    "_iconHistory": "Histórico",
+    "placeholders": {
+      "addTags": "Adicionar etiquetas...",
+      "searchOrCreateTag": "Procurar ou criar etiqueta...",
+      "addComment": "Adicionar um comentário...",
+      "searchSitewide": "Procurar sessões, ações, notas, documentos...",
+      "allTime": "Todo o período",
+      "shareFeedback": "Partilhe a sua opinião sobre esta sessão...",
+      "pasteTranscript": "Cole a transcrição do Teams, Zoom ou qualquer ferramenta de gravação...\n\nTambém pode colar notas ou um resumo da reunião.",
+      "searchExercises": "Procurar exercícios...",
+      "exerciseNotes": "Notas específicas para este exercício...",
+      "additionalDetails": "Detalhes adicionais...",
+      "selectOption": "Selecionar uma opção"
+    }
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -4945,7 +4958,6 @@
     "anomalyDeclining": "{{name}} desceu mais de 20% face ao período anterior.",
     "anomalyMissing": "{{name}} sem registos há mais de 2 meses. Considere atualizar.",
     "anomalyStale": "{{name}} está estagnado há 3 períodos.",
-
     "allDefaultsConfigured": "Todos os KPIs padrão já estão configurados",
     "allFilled": "✓ Todos os KPIs preenchidos! Pode concluir o check-in.",
     "allKpisAdded": "Todos os KPIs já adicionados",
