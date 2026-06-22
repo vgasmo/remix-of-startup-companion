@@ -18,6 +18,8 @@ import { StageBadge } from '@/components/ui/StageBadge';
 import { HealthBadge } from '@/components/ui/HealthBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { StartupStage, HealthScore } from '@/types/database';
 
 const STAGES: StartupStage[] = ['ideation', 'validation', 'mvp', 'growth', 'scale'];
@@ -25,6 +27,7 @@ const STAGES: StartupStage[] = ['ideation', 'validation', 'mvp', 'growth', 'scal
 export function AdminWorkspacesManager() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { confirm, dialogProps } = useConfirmDialog();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
   const [workspaceToBlock, setWorkspaceToBlock] = useState<{ id: string; name: string } | null>(null);
@@ -600,7 +603,18 @@ export function AdminWorkspacesManager() {
                               {t('admin.workspacesManager.block')}
                             </Button>
                           )}
-                          <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(ws.id)} aria-label={t('common.delete')}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => confirm({
+                              title: t('admin.workspacesManager.deleteTitle'),
+                              description: t('admin.workspacesManager.deleteConfirm', { name: startupName }),
+                              variant: 'destructive',
+                              confirmLabel: t('common.delete'),
+                              onConfirm: () => deleteMutation.mutate(ws.id),
+                            })}
+                            aria-label={t('common.delete')}
+                          >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
@@ -652,6 +666,7 @@ export function AdminWorkspacesManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ConfirmDialog {...dialogProps} />
     </Card>
   );
 }

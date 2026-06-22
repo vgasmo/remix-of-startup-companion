@@ -1499,8 +1499,11 @@
       "status": "Status",
       "title": "Workspaces",
       "unblock": "Unblock",
-      "unblocked": "Workspace unblocked"
-    }
+      "unblocked": "Workspace unblocked",
+      "deleteTitle": "Delete workspace?",
+      "deleteConfirm": "This will permanently delete the workspace \"{{name}}\" and all its data. This action cannot be undone."
+    },
+    "removeMentorTitle": "Remove mentor access?"
   },
   "adminContracts": {
     "allStatuses": "All statuses",
@@ -2022,7 +2025,8 @@
       "start": "Upload & extract with AI",
       "title": "Upload signed contract PDFs",
       "uploading": "Uploading {{done}} / {{total}}..."
-    }
+    },
+    "confirmCommitTitle": "Commit import?"
   },
   "calendar": {
     "bookSession": "Book Session",
@@ -2070,7 +2074,8 @@
     "tokenExpired": "Your calendar token has expired. Please generate a new one to continue using calendar sync.",
     "tokenGenerated": "Calendar token generated successfully (valid for 90 days)",
     "tokenNeedsRegeneration": "For security reasons, your calendar token needs to be regenerated. Your calendar subscriptions will need to be updated with the new URL.",
-    "urlCopied": "Calendar URL copied"
+    "urlCopied": "Calendar URL copied",
+    "regenerateTitle": "Regenerate calendar token?"
   },
   "chat": {
     "empty": "No messages yet. Start the conversation!",
@@ -2381,7 +2386,9 @@
       "exerciseNotes": "Any specific notes for this exercise...",
       "additionalDetails": "Additional details...",
       "selectOption": "Select an option"
-    }
+    },
+    "archive": "Archive",
+    "areYouSure": "Are you sure?"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -3554,7 +3561,9 @@
     "updateMonth": "Month",
     "views": "views",
     "visibilityUpdated": "Visibility updated",
-    "visibleToInvestors": "Visible to investors"
+    "visibleToInvestors": "Visible to investors",
+    "deleteTitle": "Remove item?",
+    "revokeTitle": "Revoke link?"
   },
   "dataroomChecklist": {
     "description": "Essential documents checklist for the Data Room",
@@ -3810,7 +3819,9 @@
     "unassigned": "No consultant assigned",
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
-    "workspaces": "workspaces"
+    "workspaces": "workspaces",
+    "confirmArchiveTitle": "Archive workspace?",
+    "confirmArchiveDesc": "Archive \"{{name}}\"? The workspace will be hidden from active lists but can be restored later."
   },
   "ecosystemHub": {
     "navLabel": "Management Hub",
@@ -7457,7 +7468,11 @@
     "updating": "Updating...",
     "uploadImageFile": "Please upload an image file",
     "uploadPhoto": "Upload Photo",
-    "wednesday": "Wednesday"
+    "wednesday": "Wednesday",
+    "avatarUploadFailed": "Failed to upload avatar",
+    "profileUpdateFailed": "Failed to update profile",
+    "emailUpdateFailed": "Failed to update email",
+    "passwordUpdateFailed": "Failed to update password"
   },
   "shared": {
     "accessDenied": "Access Denied",
@@ -7818,15 +7833,15 @@
     "selectTemplate": "Select Template",
     "startDate": "Start Date",
     "submit": "Submit Survey",
-    "submitted": "Submitted",
+    "submitted": "Survey submitted successfully!",
     "surveyNotFound": "Survey not found",
     "surveySubmitted": "Survey submitted successfully!",
     "surveysCreated": "{{count}} surveys created",
     "targetProgram": "Target Program",
-    "templateCreated": "Template created",
+    "templateCreated": "Survey template created",
     "templateDescription": "Description",
     "templateName": "Template Name",
-    "templateUpdated": "Template updated",
+    "templateUpdated": "Survey template updated",
     "templates": "Templates",
     "title": "Surveys",
     "typeMultiselect": "Multiple Select",
@@ -7835,7 +7850,14 @@
     "typeSelect": "Single Select",
     "typeText": "Text",
     "typeTextarea": "Long Text",
-    "viewResponses": "View Responses"
+    "viewResponses": "View Responses",
+    "templateCreateFailed": "Failed to create survey template",
+    "campaignCreated": "Survey campaign created",
+    "campaignCreateFailed": "Failed to create campaign",
+    "campaignLaunchFailed": "Failed to launch campaign",
+    "saveFailed": "Failed to save survey",
+    "templateUpdateFailed": "Failed to update survey template",
+    "campaignCloseFailed": "Failed to close campaign"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",
@@ -8457,7 +8479,8 @@
     "totalHours": "Total Hours",
     "trackTimeSpent": "Track time spent on this startup",
     "validHoursRequired": "Please enter valid hours",
-    "whatDidYouWorkOn": "What did you work on?"
+    "whatDidYouWorkOn": "What did you work on?",
+    "deleteTitle": "Delete time entry?"
   },
   "topBar": {
     "accountSettings": "Account Settings",
@@ -8934,5 +8957,53 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
+  },
+  "intakeOps": {
+    "overdueTitle": "{{count}} request(s) without response for more than 10 days",
+    "overdueDesc": "Consider resending the email or contacting the client directly.",
+    "noName": "No name",
+    "overdue": "Overdue",
+    "missingDocs": "{{count}} doc(s) missing",
+    "remindersCount": "{{count}}x reminded",
+    "groups": {
+      "awaiting_fill": {
+        "title": "Awaiting Fill",
+        "empty": "No requests awaiting client fill.",
+        "action": "New requests sent to clients will appear here."
+      },
+      "submitted_for_review": {
+        "title": "Submitted for Review",
+        "empty": "No submissions pending review.",
+        "action": "When a client submits, it will appear here for review."
+      },
+      "changes_requested": {
+        "title": "Changes Requested",
+        "empty": "No intakes awaiting changes.",
+        "action": "Intakes returned to the client for changes will appear here."
+      },
+      "ready_for_signature": {
+        "title": "Approved for Signature",
+        "empty": "No approved intakes awaiting send for signature.",
+        "action": "After approval, send the contract for digital signature."
+      },
+      "sent_for_signature": {
+        "title": "Sent for Signature",
+        "empty": "No contracts awaiting signature.",
+        "action": "Contracts sent to client for signature will appear here."
+      },
+      "signed_pending_activation": {
+        "title": "Signed — Pending Activation",
+        "empty": "No signed contracts awaiting activation.",
+        "action": "After signature, activate the workspace and operational conditions."
+      }
+    }
+  },
+  "resourceGuide": {
+    "notFoundTitle": "Guide not found",
+    "notFoundDesc": "This content is not yet available.",
+    "backToResources": "Back to Resources",
+    "resources": "Resources",
+    "read": "read",
+    "tips": "💡 Tips"
   }
 }

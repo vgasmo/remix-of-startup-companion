@@ -31,6 +31,7 @@ import { QuickKpiModal } from '@/components/workspace/QuickKpiModal';
 // AiPulseCard intentionally not rendered in the calm founder view.
 import { WorkspaceWithDetails, PendingWorkspace } from '@/hooks/useWorkspaces';
 import { useWorkspaceMembers } from '@/hooks/useWorkspaceMembers';
+import { useDocuments } from '@/hooks/useDocuments';
 import { HealthScore } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProgressStreak } from '@/hooks/useProgressStreak';
@@ -111,7 +112,8 @@ export const FounderDashboard = memo(function FounderDashboard({
   const hasProfile = Boolean(profile?.full_name);
   const hasStartup = Boolean(workspace);
   const hasKpis = Boolean(workspace?.hasCurrentMonthKpi);
-  const hasDocuments = Boolean(workspace?.lastSession);
+  const { data: docs } = useDocuments(workspace?.id);
+  const hasDocuments = (docs?.length ?? 0) > 0;
 
   // Founder maturity drives progressive disclosure.
   const { maturity, isBeginner, showAdvancedByDefault } = useFounderMaturity(workspace);

@@ -22,6 +22,8 @@ import { pt } from 'date-fns/locale';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { AccessDenied } from '@/components/ui/AccessDenied';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 const CURRENT_NDA_VERSION = 'PT-NDA-2026-01';
 
@@ -29,6 +31,8 @@ export default function AdminDatarooms() {
   const { t } = useTranslation();
   const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
+  const { confirm, dialogProps } = useConfirmDialog();
+
   
   const [addMentorOpen, setAddMentorOpen] = useState(false);
   const [mentorEmail, setMentorEmail] = useState('');
@@ -324,11 +328,13 @@ export default function AdminDatarooms() {
                             variant="ghost" 
                             size="sm" 
                             className="text-destructive"
-                            onClick={() => {
-                              if (confirm(t('admin.confirmRemoveMentor'))) {
-                                removeMentor.mutate(mentor.id);
-                              }
-                            }}
+                            onClick={() => confirm({
+                              title: t('admin.removeMentorTitle'),
+                              description: t('admin.confirmRemoveMentor'),
+                              variant: 'destructive',
+                              confirmLabel: t('common.remove'),
+                              onConfirm: () => removeMentor.mutate(mentor.id),
+                            })}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -375,6 +381,7 @@ export default function AdminDatarooms() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ConfirmDialog {...dialogProps} />
     </AppLayout>
   );
 }

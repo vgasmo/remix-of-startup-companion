@@ -65,9 +65,6 @@ export function useUpdateWorkflowRule() {
       queryClient.invalidateQueries({ queryKey: ['workflow-rules'] });
       notify.success(t('workflow.ruleUpdated'));
     },
-    onError: (error: Error) => {
-      notify.error(error.message);
-    },
   });
 }
 

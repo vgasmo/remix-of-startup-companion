@@ -1499,8 +1499,11 @@
       "status": "Estado",
       "title": "Workspaces",
       "unblock": "Desbloquear",
-      "unblocked": "Workspace desbloqueado"
-    }
+      "unblocked": "Workspace desbloqueado",
+      "deleteTitle": "Eliminar workspace?",
+      "deleteConfirm": "Isto irá eliminar permanentemente o workspace \"{{name}}\" e todos os seus dados. Esta ação não pode ser revertida."
+    },
+    "removeMentorTitle": "Remover acesso de mentor?"
   },
   "adminContracts": {
     "allStatuses": "Todos os estados",
@@ -2022,7 +2025,8 @@
       "start": "Carregar e extrair com IA",
       "title": "Carregar PDFs de contratos assinados",
       "uploading": "A carregar {{done}} / {{total}}..."
-    }
+    },
+    "confirmCommitTitle": "Confirmar importação?"
   },
   "calendar": {
     "bookSession": "Agendar Sessão",
@@ -2070,7 +2074,8 @@
     "tokenExpired": "O seu token expirou. Gere um novo para continuar a sincronizar.",
     "tokenGenerated": "Token de calendário gerado com sucesso (válido por 90 dias)",
     "tokenNeedsRegeneration": "Por razões de segurança, o token precisa de ser regenerado. As subscrições de calendário terão de ser atualizadas com o novo URL.",
-    "urlCopied": "URL do calendário copiado"
+    "urlCopied": "URL do calendário copiado",
+    "regenerateTitle": "Regenerar token do calendário?"
   },
   "chat": {
     "empty": "Sem mensagens ainda. Inicie a conversa!",
@@ -2381,7 +2386,9 @@
       "exerciseNotes": "Notas específicas para este exercício...",
       "additionalDetails": "Detalhes adicionais...",
       "selectOption": "Selecionar uma opção"
-    }
+    },
+    "archive": "Arquivar",
+    "areYouSure": "Tem a certeza?"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -3554,7 +3561,9 @@
     "updateMonth": "Mês",
     "views": "visualizações",
     "visibilityUpdated": "Visibilidade atualizada",
-    "visibleToInvestors": "Visível para investidores"
+    "visibleToInvestors": "Visível para investidores",
+    "deleteTitle": "Remover item?",
+    "revokeTitle": "Revogar link?"
   },
   "dataroomChecklist": {
     "description": "Checklist de documentos essenciais para o Data Room",
@@ -3810,7 +3819,9 @@
     "unassigned": "Sem consultor atribuído",
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
-    "workspaces": "workspaces"
+    "workspaces": "workspaces",
+    "confirmArchiveTitle": "Arquivar workspace?",
+    "confirmArchiveDesc": "Arquivar \"{{name}}\"? O workspace ficará oculto das listas ativas mas pode ser restaurado mais tarde."
   },
   "ecosystemHub": {
     "navLabel": "Hub de Gestão",
@@ -7457,7 +7468,11 @@
     "updating": "A atualizar...",
     "uploadImageFile": "Por favor carregue um ficheiro de imagem",
     "uploadPhoto": "Carregar Foto",
-    "wednesday": "Quarta-feira"
+    "wednesday": "Quarta-feira",
+    "avatarUploadFailed": "Falha ao carregar avatar",
+    "profileUpdateFailed": "Falha ao atualizar perfil",
+    "emailUpdateFailed": "Falha ao atualizar email",
+    "passwordUpdateFailed": "Falha ao atualizar password"
   },
   "shared": {
     "accessDenied": "Acesso Negado",
@@ -7778,7 +7793,7 @@
     "analytics": "Análises",
     "autoFillKey": "Campo de Preenchimento Automático",
     "autoFilled": "Preenchido automaticamente",
-    "campaignClosed": "Campanha fechada",
+    "campaignClosed": "Campanha encerrada",
     "campaignDescription": "Descrição",
     "campaignLaunched": "Campanha lançada!",
     "campaignName": "Nome da Campanha",
@@ -7818,15 +7833,15 @@
     "selectTemplate": "Selecionar Template",
     "startDate": "Data de Início",
     "submit": "Submeter Inquérito",
-    "submitted": "Submetido",
+    "submitted": "Questionário submetido com sucesso!",
     "surveyNotFound": "Inquérito não encontrado",
     "surveySubmitted": "Inquérito submetido com sucesso!",
     "surveysCreated": "{{count}} inquéritos criados",
     "targetProgram": "Programa Alvo",
-    "templateCreated": "Template criado",
+    "templateCreated": "Modelo de questionário criado",
     "templateDescription": "Descrição",
     "templateName": "Nome do Template",
-    "templateUpdated": "Template atualizado",
+    "templateUpdated": "Modelo de questionário atualizado",
     "templates": "Templates",
     "title": "Inquéritos",
     "typeMultiselect": "Seleção Múltipla",
@@ -7835,7 +7850,14 @@
     "typeSelect": "Seleção Única",
     "typeText": "Texto",
     "typeTextarea": "Texto Longo",
-    "viewResponses": "Ver Respostas"
+    "viewResponses": "Ver Respostas",
+    "templateCreateFailed": "Falha ao criar modelo de questionário",
+    "campaignCreated": "Campanha de questionário criada",
+    "campaignCreateFailed": "Falha ao criar campanha",
+    "campaignLaunchFailed": "Falha ao lançar campanha",
+    "saveFailed": "Falha ao guardar questionário",
+    "templateUpdateFailed": "Falha ao atualizar modelo",
+    "campaignCloseFailed": "Falha ao encerrar campanha"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",
@@ -8457,7 +8479,8 @@
     "totalHours": "Total de Horas",
     "trackTimeSpent": "Acompanhar tempo gasto nesta startup",
     "validHoursRequired": "Por favor insira horas válidas",
-    "whatDidYouWorkOn": "Em que trabalhou?"
+    "whatDidYouWorkOn": "Em que trabalhou?",
+    "deleteTitle": "Eliminar registo de tempo?"
   },
   "topBar": {
     "accountSettings": "Definições da Conta",
@@ -8934,5 +8957,53 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
+  },
+  "intakeOps": {
+    "overdueTitle": "{{count}} pedido(s) sem resposta há mais de 10 dias",
+    "overdueDesc": "Considere reenviar o email ou contactar diretamente o cliente.",
+    "noName": "Sem nome",
+    "overdue": "Atrasado",
+    "missingDocs": "{{count}} doc(s) em falta",
+    "remindersCount": "{{count}}x lembrado",
+    "groups": {
+      "awaiting_fill": {
+        "title": "A Aguardar Preenchimento",
+        "empty": "Nenhum pedido a aguardar preenchimento do cliente.",
+        "action": "Novos pedidos enviados aos clientes aparecerão aqui."
+      },
+      "submitted_for_review": {
+        "title": "Submetidos para Revisão",
+        "empty": "Nenhuma submissão pendente de revisão.",
+        "action": "Quando um cliente submeter os dados, aparecerá aqui para revisão."
+      },
+      "changes_requested": {
+        "title": "Correções Pedidas",
+        "empty": "Nenhum intake a aguardar correções.",
+        "action": "Intakes devolvidos ao cliente para correção aparecerão aqui."
+      },
+      "ready_for_signature": {
+        "title": "Aprovados p/ Assinatura",
+        "empty": "Nenhum intake aprovado a aguardar envio para assinatura.",
+        "action": "Após aprovação, envie o contrato para assinatura digital."
+      },
+      "sent_for_signature": {
+        "title": "Enviados p/ Assinatura",
+        "empty": "Nenhum contrato a aguardar assinatura.",
+        "action": "Contratos enviados ao cliente para assinatura aparecerão aqui."
+      },
+      "signed_pending_activation": {
+        "title": "Assinados — Pendentes de Ativação",
+        "empty": "Nenhum contrato assinado a aguardar ativação.",
+        "action": "Após assinatura, ative o workspace e as condições operacionais."
+      }
+    }
+  },
+  "resourceGuide": {
+    "notFoundTitle": "Guia não encontrado",
+    "notFoundDesc": "Este conteúdo ainda não está disponível.",
+    "backToResources": "Voltar aos Recursos",
+    "resources": "Recursos",
+    "read": "de leitura",
+    "tips": "💡 Dicas"
   }
 }

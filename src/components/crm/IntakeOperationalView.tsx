@@ -23,51 +23,16 @@ interface IntakeOperationalViewProps {
 }
 
 const GROUP_CONFIG = {
-  awaiting_fill: {
-    title: 'A Aguardar Preenchimento',
-    icon: Mail,
-    emptyText: 'Nenhum pedido a aguardar preenchimento do cliente.',
-    emptyAction: 'Novos pedidos enviados aos clientes aparecerão aqui.',
-    color: 'text-[hsl(var(--info))] ',
-  },
-  submitted_for_review: {
-    title: 'Submetidos para Revisão',
-    icon: ClipboardCheck,
-    emptyText: 'Nenhuma submissão pendente de revisão.',
-    emptyAction: 'Quando um cliente submeter os dados, aparecerá aqui para revisão.',
-    color: 'text-[hsl(var(--success))] ',
-  },
-  changes_requested: {
-    title: 'Correções Pedidas',
-    icon: RotateCcw,
-    emptyText: 'Nenhum intake a aguardar correções.',
-    emptyAction: 'Intakes devolvidos ao cliente para correção aparecerão aqui.',
-    color: 'text-[hsl(var(--warning))]',
-  },
-  ready_for_signature: {
-    title: 'Aprovados p/ Assinatura',
-    icon: CheckCircle2,
-    emptyText: 'Nenhum intake aprovado a aguardar envio para assinatura.',
-    emptyAction: 'Após aprovação, envie o contrato para assinatura digital.',
-    color: 'text-primary',
-  },
-  sent_for_signature: {
-    title: 'Enviados p/ Assinatura',
-    icon: Send,
-    emptyText: 'Nenhum contrato a aguardar assinatura.',
-    emptyAction: 'Contratos enviados ao cliente para assinatura aparecerão aqui.',
-    color: 'text-[hsl(var(--success))]',
-  },
-  signed_pending_activation: {
-    title: 'Assinados — Pendentes de Ativação',
-    icon: Shield,
-    emptyText: 'Nenhum contrato assinado a aguardar ativação.',
-    emptyAction: 'Após assinatura, ative o workspace e as condições operacionais.',
-    color: 'text-[hsl(var(--success))] ',
-  },
-};
+  awaiting_fill: { key: 'awaiting_fill', icon: Mail, color: 'text-[hsl(var(--info))] ' },
+  submitted_for_review: { key: 'submitted_for_review', icon: ClipboardCheck, color: 'text-[hsl(var(--success))] ' },
+  changes_requested: { key: 'changes_requested', icon: RotateCcw, color: 'text-[hsl(var(--warning))]' },
+  ready_for_signature: { key: 'ready_for_signature', icon: CheckCircle2, color: 'text-primary' },
+  sent_for_signature: { key: 'sent_for_signature', icon: Send, color: 'text-[hsl(var(--success))]' },
+  signed_pending_activation: { key: 'signed_pending_activation', icon: Shield, color: 'text-[hsl(var(--success))] ' },
+} as const;
 
 export function IntakeOperationalView({ onSelectIntake }: IntakeOperationalViewProps) {
+  const { t } = useTranslation();
   const { data: allIntakes, isLoading } = useContractIntakes();
 
   if (isLoading) {
@@ -101,10 +66,10 @@ export function IntakeOperationalView({ onSelectIntake }: IntakeOperationalViewP
             <AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))] shrink-0" />
             <div>
               <p className="text-sm font-semibold text-[hsl(var(--warning))]">
-                {overdueIntakes.length} pedido(s) sem resposta há mais de 10 dias
+                {t('intakeOps.overdueTitle', { count: overdueIntakes.length })}
               </p>
               <p className="text-xs text-[hsl(var(--warning))]">
-                Considere reenviar o email ou contactar diretamente o cliente.
+                {t('intakeOps.overdueDesc')}
               </p>
             </div>
           </CardContent>
@@ -123,7 +88,7 @@ export function IntakeOperationalView({ onSelectIntake }: IntakeOperationalViewP
                 <CardTitle className={cn('text-sm font-semibold flex items-center justify-between', config.color)}>
                   <span className="flex items-center gap-2">
                     <Icon className="h-4 w-4" />
-                    {config.title}
+                    {t(`intakeOps.groups.${config.key}.title`)}
                   </span>
                   <Badge variant="secondary" className="text-xs">{intakes.length}</Badge>
                 </CardTitle>
@@ -133,8 +98,8 @@ export function IntakeOperationalView({ onSelectIntake }: IntakeOperationalViewP
                   {intakes.length === 0 ? (
                     <div className="p-4 text-center space-y-1">
                       <Inbox className="h-6 w-6 mx-auto text-muted-foreground/40" />
-                      <p className="text-xs text-muted-foreground">{config.emptyText}</p>
-                      <p className="text-[10px] text-muted-foreground/70">{config.emptyAction}</p>
+                      <p className="text-xs text-muted-foreground">{t(`intakeOps.groups.${config.key}.empty`)}</p>
+                      <p className="text-[10px] text-muted-foreground/70">{t(`intakeOps.groups.${config.key}.action`)}</p>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -159,6 +124,7 @@ export function IntakeOperationalView({ onSelectIntake }: IntakeOperationalViewP
 }
 
 function IntakeCard({ intake, isOverdue, onClick }: { intake: ContractIntake; isOverdue: boolean; onClick: () => void }) {
+  const { t } = useTranslation();
   const missingCount = intake.missing_documents?.length || 0;
 
   return (
@@ -173,7 +139,7 @@ function IntakeCard({ intake, isOverdue, onClick }: { intake: ContractIntake; is
         <div className="flex items-start justify-between">
           <div className="min-w-0">
             <p className="text-sm font-medium truncate">
-              {intake.organization_name || 'Sem nome'}
+              {intake.organization_name || t('intakeOps.noName')}
             </p>
             {intake.legal_representative_email && (
               <p className="text-[10px] text-muted-foreground truncate">
@@ -192,17 +158,17 @@ function IntakeCard({ intake, isOverdue, onClick }: { intake: ContractIntake; is
           {isOverdue && (
             <Badge variant="outline" className="text-[9px] h-4 border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))]">
               <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
-              Overdue
+              {t('intakeOps.overdue')}
             </Badge>
           )}
           {missingCount > 0 && (
             <Badge variant="outline" className="text-[9px] h-4">
-              {missingCount} doc(s) em falta
+              {t('intakeOps.missingDocs', { count: missingCount })}
             </Badge>
           )}
           {intake.reminder_count > 0 && (
             <Badge variant="outline" className="text-[9px] h-4">
-              {intake.reminder_count}x lembrado
+              {t('intakeOps.remindersCount', { count: intake.reminder_count })}
             </Badge>
           )}
         </div>

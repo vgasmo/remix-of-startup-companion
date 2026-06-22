@@ -11,7 +11,7 @@ import { GUIDE_CONTENT, type GuideContent } from '@/lib/guideContent';
 
 export default function ResourceGuide() {
   const { id } = useParams<{ id: string }>();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const lang = i18n.language === 'pt' ? 'pt' : 'en';
 
   const resource = RESOURCES_CATALOG.find(r => r.id === id);
@@ -19,17 +19,17 @@ export default function ResourceGuide() {
 
   if (!resource || !guide) {
     return (
-      <AppLayout title={lang === 'pt' ? 'Guia não encontrado' : 'Guide not found'}>
+      <AppLayout title={t('resourceGuide.notFoundTitle')}>
         <div className="max-w-3xl mx-auto py-12 text-center">
           <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h2 className="text-xl font-semibold mb-2">
-            {lang === 'pt' ? 'Guia não encontrado' : 'Guide not found'}
+            {t('resourceGuide.notFoundTitle')}
           </h2>
           <p className="text-muted-foreground mb-6">
-            {lang === 'pt' ? 'Este conteúdo ainda não está disponível.' : 'This content is not yet available.'}
+            {t('resourceGuide.notFoundDesc')}
           </p>
           <Button asChild variant="outline">
-            <Link to="/resources"><ArrowLeft className="h-4 w-4 mr-2" /> {lang === 'pt' ? 'Voltar aos Recursos' : 'Back to Resources'}</Link>
+            <Link to="/resources"><ArrowLeft className="h-4 w-4 mr-2" /> {t('resourceGuide.backToResources')}</Link>
           </Button>
         </div>
       </AppLayout>
@@ -45,7 +45,7 @@ export default function ResourceGuide() {
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Back */}
         <Button asChild variant="ghost" size="sm" className="gap-1.5 -ml-2">
-          <Link to="/resources"><ArrowLeft className="h-3.5 w-3.5" /> {lang === 'pt' ? 'Recursos' : 'Resources'}</Link>
+          <Link to="/resources"><ArrowLeft className="h-3.5 w-3.5" /> {t('resourceGuide.resources')}</Link>
         </Button>
 
         {/* Header */}
@@ -63,7 +63,7 @@ export default function ResourceGuide() {
           {guide.reading_minutes && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-3">
               <Clock className="h-3.5 w-3.5" />
-              {guide.reading_minutes} min {lang === 'pt' ? 'de leitura' : 'read'}
+              {guide.reading_minutes} min {t('resourceGuide.read')}
             </div>
           )}
         </div>
@@ -81,7 +81,7 @@ export default function ResourceGuide() {
                 </div>
                 {section.tips && section.tips.length > 0 && (
                   <div className="mt-3 bg-muted/50 rounded-lg p-3 space-y-1.5">
-                    <p className="text-xs font-semibold text-primary">{lang === 'pt' ? '💡 Dicas' : '💡 Tips'}</p>
+                    <p className="text-xs font-semibold text-primary">{t('resourceGuide.tips')}</p>
                     <ul className="text-xs text-muted-foreground space-y-1 list-disc pl-4">
                       {section.tips.map((tip, j) => <li key={j}>{tip}</li>)}
                     </ul>

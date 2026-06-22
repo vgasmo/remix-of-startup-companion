@@ -21,6 +21,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { HealthBadge } from '@/components/ui/HealthBadge';
 import { StageBadge } from '@/components/ui/StageBadge';
 import { CategoryBadge } from '@/components/ui/CategoryBadge';
@@ -46,6 +48,7 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { confirm, dialogProps } = useConfirmDialog();
   const [confirmDelete, setConfirmDelete] = useState<EcosystemItem | null>(null);
 
   const [page, setPage] = useState(0);
@@ -363,7 +366,16 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
                       {item.item_type === 'workspace' ? (
                         <DropdownMenuItem 
                           className="text-destructive focus:text-destructive"
-                          onClick={(e) => { e.stopPropagation(); handleArchiveWorkspace(item); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            confirm({
+                              title: t('ecosystem.confirmArchiveTitle'),
+                              description: t('ecosystem.confirmArchiveDesc', { name: item.name }),
+                              variant: 'warning',
+                              confirmLabel: t('common.archive'),
+                              onConfirm: () => handleArchiveWorkspace(item),
+                            });
+                          }}
                         >
                           <Archive className="h-4 w-4 mr-2" />
                           {t('ecosystem.archiveWorkspace', { defaultValue: 'Arquivar Workspace' })}
@@ -413,6 +425,7 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ConfirmDialog {...dialogProps} />
     </>
   );
 }

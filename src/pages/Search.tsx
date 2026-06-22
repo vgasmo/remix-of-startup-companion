@@ -17,6 +17,7 @@ import { useWorkspaces, ALL_WORKSPACE_STATUSES } from '@/hooks/useWorkspaces';
 import { useAuth } from '@/contexts/AuthContext';
 import { Switch } from '@/components/ui/switch';
 import { notify } from "@/lib/notify";
+import { ContentSkeleton } from '@/components/ui/ContentSkeleton';
 
 const RESULT_TYPES = [
   { key: 'session', label: 'Sessions', icon: Calendar },
@@ -301,9 +302,7 @@ export default function SearchPage() {
 
         {/* Results */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
+          <ContentSkeleton type="list" count={6} />
         ) : !debouncedQuery ? (
           <div className="text-center py-12 text-muted-foreground">
             {t('search.startTyping', 'Comece a digitar para pesquisar sessões, ações, notas, documentos e mensagens.')}

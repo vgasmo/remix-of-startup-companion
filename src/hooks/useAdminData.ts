@@ -32,7 +32,6 @@ export function useCreateProgram() {
       queryClient.invalidateQueries({ queryKey: ['programs'] });
       notify.success(t('admin.programCreated'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -51,7 +50,6 @@ export function useUpdateProgram() {
       queryClient.invalidateQueries({ queryKey: ['intake-routing'] });
       notify.success(t('admin.programUpdated'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -69,7 +67,6 @@ export function useDeleteProgram() {
       queryClient.invalidateQueries({ queryKey: ['intake-routing'] });
       notify.success(t('admin.programDeleted'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -103,7 +100,6 @@ export function useCreateStage() {
       queryClient.invalidateQueries({ queryKey: ['admin-stages', vars.program_id] });
       notify.success(t('admin.stageCreated'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -119,7 +115,6 @@ export function useUpdateStage() {
       queryClient.invalidateQueries({ queryKey: ['admin-stages', vars.program_id] });
       notify.success(t('admin.stageUpdated'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -134,7 +129,6 @@ export function useDeleteStage() {
       queryClient.invalidateQueries({ queryKey: ['admin-stages', vars.program_id] });
       notify.success(t('admin.stageDeleted'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -184,7 +178,6 @@ export function useAddUserRole() {
       queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
       notify.success(t('admin.roleAdded'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -199,7 +192,6 @@ export function useRemoveUserRole() {
       queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
       notify.success(t('admin.roleRemoved'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -245,7 +237,6 @@ export function useAddWorkspaceUser() {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       notify.success(t('admin.userAssigned'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -261,7 +252,6 @@ export function useUpdateWorkspaceUser() {
       queryClient.invalidateQueries({ queryKey: ['admin-workspace-users'] });
       notify.success(t('admin.assignmentUpdated'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -276,7 +266,6 @@ export function useRemoveWorkspaceUser() {
       queryClient.invalidateQueries({ queryKey: ['admin-workspace-users'] });
       notify.success(t('admin.userRemoved'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -326,7 +315,6 @@ export function useCreateKpiDefinition() {
       queryClient.invalidateQueries({ queryKey: ['admin-kpi-definitions'] });
       notify.success(t('admin.kpiCreated'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -342,7 +330,6 @@ export function useUpdateKpiDefinition() {
       queryClient.invalidateQueries({ queryKey: ['admin-kpi-definitions'] });
       notify.success(t('admin.kpiUpdated'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -357,7 +344,6 @@ export function useDeleteKpiDefinition() {
       queryClient.invalidateQueries({ queryKey: ['admin-kpi-definitions'] });
       notify.success(t('admin.kpiDeleted'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }
 
@@ -391,6 +377,5 @@ export function useUpsertWorkspaceKpi() {
       queryClient.invalidateQueries({ queryKey: ['admin-workspace-kpis'] });
       notify.success(t('admin.workspaceKpiUpdated'));
     },
-    onError: (e) => notify.error(t('common.operationFailed', { error: e.message })),
   });
 }

@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ContentSkeleton } from '@/components/ui/ContentSkeleton';
 import { 
   AlertTriangle, 
   Calendar, 
@@ -421,7 +422,7 @@ export default function CRM() {
 
           <TabsContent value="inbox" className="space-y-4">
             {loadingInbox ? (
-              <div className="text-center py-8 text-muted-foreground">{t('common.loading')}</div>
+              <ContentSkeleton type="list" count={6} />
             ) : focusMode ? (
               // Focus Mode View - single list of urgent items
               <Card>
@@ -551,7 +552,7 @@ export default function CRM() {
 
           <TabsContent value="tasks" className="space-y-4">
             {loadingTasks ? (
-              <div className="text-center py-8 text-muted-foreground">{t('common.loading')}</div>
+              <ContentSkeleton type="list" count={6} />
             ) : (
               <div className="grid md:grid-cols-3 gap-4">
                 <TaskGroup 

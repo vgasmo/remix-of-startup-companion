@@ -236,9 +236,6 @@ export function useCreateProgramDraft() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['program-setup-drafts'] });
     },
-    onError: (error: Error) => {
-      notify.error(error.message);
-    },
   });
 }
 
@@ -294,9 +291,6 @@ export function useDiscardProgramDraft() {
       queryClient.invalidateQueries({ queryKey: ['program-setup-drafts'] });
       notify.success(t('programs.draftDiscarded'));
     },
-    onError: (error: Error) => {
-      notify.error(error.message);
-    },
   });
 }
 
@@ -318,9 +312,6 @@ export function usePublishProgramDraft() {
       queryClient.invalidateQueries({ queryKey: ['program-setup-drafts'] });
       queryClient.invalidateQueries({ queryKey: ['programs'] });
       notify.success(t('programs.programPublishedSuccessfully'));
-    },
-    onError: (error: Error) => {
-      notify.error(error.message);
     },
   });
 }

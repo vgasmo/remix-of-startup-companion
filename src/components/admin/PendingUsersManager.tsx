@@ -100,7 +100,6 @@ export function PendingUsersManager() {
       queryClient.invalidateQueries({ queryKey: ['pending-users'] });
       notify.success(t('admin.userApproved', 'User approved successfully'));
     },
-    onError: (error) => notify.error(`Error: ${error.message}`),
   });
 
   const suspendMutation = useMutation({
@@ -116,7 +115,6 @@ export function PendingUsersManager() {
       notify.success(t('admin.userSuspended', 'User suspended'));
       setRejectUserId(null);
     },
-    onError: (error) => notify.error(`Error: ${error.message}`),
   });
 
   if (isLoading) {
