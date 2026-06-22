@@ -69,7 +69,7 @@ export function AdminTemplatesManager() {
 
   const handleAssetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!canUploadAssets) {
-      notify.error(t('adminTemplates.uploadPermissionDenied', { defaultValue: 'You do not have permission to upload assets' }));
+      notify.error(t('adminTemplates.uploadPermissionDenied', { defaultValue: 'Não tem permissão para carregar ficheiros' }));
       return;
     }
     
@@ -81,7 +81,7 @@ export function AdminTemplatesManager() {
     const isXlsx = fileName.endsWith('.xlsx');
     
     if (!isXlsm && !isXlsx) {
-      notify.error(t('adminTemplates.uploadExcelOnly', { defaultValue: 'Please upload an Excel file (.xlsm or .xlsx)' }));
+      notify.error(t('adminTemplates.uploadExcelOnly', { defaultValue: 'Carregue um ficheiro Excel (.xlsm ou .xlsx)' }));
       return;
     }
 
@@ -108,7 +108,7 @@ export function AdminTemplatesManager() {
 
       const publicUrl = getTemplatePublicUrl();
       setAssetUrl(publicUrl);
-      notify.success(t('adminTemplates.uploadSuccess', { defaultValue: 'Template uploaded successfully' }));
+      notify.success(t('adminTemplates.uploadSuccess', { defaultValue: 'Modelo carregado com sucesso' }));
     } catch (error: any) {
       logger.error('Upload error', {}, error);
       notify.error(t('adminTemplates.uploadFailed', { defaultValue: 'Falha ao carregar o modelo' }));
@@ -122,9 +122,9 @@ export function AdminTemplatesManager() {
     const url = getTemplatePublicUrl();
     try {
       await navigator.clipboard.writeText(url);
-      notify.success(t('adminTemplates.copiedToClipboard', { defaultValue: 'Copied to clipboard' }));
+      notify.success(t('adminTemplates.copiedToClipboard', { defaultValue: 'Copiado para a área de transferência' }));
     } catch {
-      notify.error(t('adminTemplates.copyFailed', { defaultValue: 'Failed to copy' }));
+      notify.error(t('adminTemplates.copyFailed', { defaultValue: 'Falha ao copiar' }));
     }
   };
 
@@ -145,7 +145,7 @@ export function AdminTemplatesManager() {
 
   const handleSave = async () => {
     if (!formData.name.trim()) {
-      notify.error(t('adminTemplates.nameRequired', { defaultValue: 'Name is required' }));
+      notify.error(t('adminTemplates.nameRequired', { defaultValue: 'O nome é obrigatório' }));
       return;
     }
 
@@ -155,7 +155,7 @@ export function AdminTemplatesManager() {
         schema = JSON.parse(formData.schema_json);
       }
     } catch {
-      notify.error(t('adminTemplates.invalidJson', { defaultValue: 'Invalid JSON in schema' }));
+      notify.error(t('adminTemplates.invalidJson', { defaultValue: 'JSON inválido no esquema' }));
       return;
     }
 
@@ -168,7 +168,7 @@ export function AdminTemplatesManager() {
           category: formData.category || null,
           schema_json: schema,
         });
-        notify.success(t('adminTemplates.templateUpdated', { defaultValue: 'Template updated' }));
+        notify.success(t('adminTemplates.templateUpdated', { defaultValue: 'Modelo atualizado' }));
       } else {
         await createTemplate.mutateAsync({
           name: formData.name,
@@ -177,12 +177,12 @@ export function AdminTemplatesManager() {
           schema_json: schema,
           is_global: true,
         });
-        notify.success(t('adminTemplates.templateCreated', { defaultValue: 'Template created' }));
+        notify.success(t('adminTemplates.templateCreated', { defaultValue: 'Modelo criado' }));
       }
       setEditingTemplate(null);
       setIsCreating(false);
     } catch {
-      notify.error(t('adminTemplates.templatesFailed', { defaultValue: 'Failed to save template' }));
+      notify.error(t('adminTemplates.templatesFailed', { defaultValue: 'Falha ao guardar o modelo' }));
     }
   };
 
@@ -190,10 +190,10 @@ export function AdminTemplatesManager() {
     if (!deleteTarget) return;
     try {
       await deleteTemplate.mutateAsync(deleteTarget.id);
-      notify.success(t('adminTemplates.templateDeleted', { defaultValue: 'Template deleted' }));
+      notify.success(t('adminTemplates.templateDeleted', { defaultValue: 'Modelo eliminado' }));
       setDeleteTarget(null);
     } catch {
-      notify.error(t('adminTemplates.deleteFailed', { defaultValue: 'Failed to delete template' }));
+      notify.error(t('adminTemplates.deleteFailed', { defaultValue: 'Falha ao eliminar o modelo' }));
     }
   };
 
@@ -213,9 +213,9 @@ export function AdminTemplatesManager() {
         }
       }
       await refetch();
-      notify.success(t('adminTemplates.seedSuccess', { defaultValue: 'Initial templates created' }));
+      notify.success(t('adminTemplates.seedSuccess', { defaultValue: 'Modelos iniciais criados' }));
     } catch {
-      notify.error(t('adminTemplates.seedFailed', { defaultValue: 'Failed to seed templates' }));
+      notify.error(t('adminTemplates.seedFailed', { defaultValue: 'Falha ao criar modelos iniciais' }));
     }
   };
 
@@ -245,15 +245,15 @@ export function AdminTemplatesManager() {
           <CardHeader className="pb-3">
              <CardTitle className="text-base flex items-center gap-2">
               <FileSpreadsheet className="h-4 w-4" />
-              {t('adminTemplates.programAssets', { defaultValue: 'Program Assets' })}
+              {t('adminTemplates.programAssets', { defaultValue: 'Recursos do Programa' })}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-start justify-between gap-4 p-4 rounded-lg border bg-muted/30">
               <div className="flex-1">
-                <h4 className="font-medium text-sm">{t('adminTemplates.financialModelTemplate', { defaultValue: 'Financial Model Template' })}</h4>
+                <h4 className="font-medium text-sm">{t('adminTemplates.financialModelTemplate', { defaultValue: 'Modelo Financeiro' })}</h4>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {t('adminTemplates.financialModelDesc', { defaultValue: 'The canonical .xlsm template available for all startups to download' })}
+                  {t('adminTemplates.financialModelDesc', { defaultValue: 'O modelo .xlsm canónico disponível para todas as startups descarregarem' })}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -275,7 +275,7 @@ export function AdminTemplatesManager() {
                   ) : (
                     <Upload className="h-4 w-4 mr-1" />
                   )}
-                  {isUploadingAsset ? t('common.uploading', { defaultValue: 'Uploading...' }) : t('adminTemplates.uploadTemplate', { defaultValue: 'Upload Template' })}
+                  {isUploadingAsset ? t('common.uploading', { defaultValue: 'A carregar...' }) : t('adminTemplates.uploadTemplate', { defaultValue: 'Carregar Modelo' })}
                 </Button>
                 <Button
                   size="sm"
@@ -283,13 +283,13 @@ export function AdminTemplatesManager() {
                   onClick={handleCopyAssetUrl}
                 >
                   <Copy className="h-4 w-4 mr-1" />
-                  {t('adminTemplates.copyUrl', { defaultValue: 'Copy URL' })}
+                  {t('adminTemplates.copyUrl', { defaultValue: 'Copiar URL' })}
                 </Button>
               </div>
             </div>
             {assetUrl && (
               <p className="text-xs text-muted-foreground">
-                {t('adminTemplates.lastUploadedNote', { defaultValue: 'Last uploaded template URL copied. Startups can download from Workspace > Financial Model.' })}
+                {t('adminTemplates.lastUploadedNote', { defaultValue: 'URL do último modelo carregado copiado. As startups podem descarregar em Workspace > Modelo Financeiro.' })}
               </p>
             )}
           </CardContent>
@@ -300,18 +300,18 @@ export function AdminTemplatesManager() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">{t('adminTemplates.templatesLibrary', { defaultValue: 'Templates Library' })}</h2>
-          <p className="text-sm text-muted-foreground">{t('adminTemplates.templatesLibraryDesc', { defaultValue: 'Manage templates available to all workspaces' })}</p>
+          <h2 className="text-lg font-semibold">{t('adminTemplates.templatesLibrary', { defaultValue: 'Biblioteca de Modelos' })}</h2>
+          <p className="text-sm text-muted-foreground">{t('adminTemplates.templatesLibraryDesc', { defaultValue: 'Gerir modelos disponíveis para todos os workspaces' })}</p>
         </div>
         <div className="flex items-center gap-2">
           {(!templates || templates.length === 0) && (
             <Button variant="outline" onClick={handleSeedTemplates}>
-              {t('adminTemplates.seedInitial', { defaultValue: 'Seed Initial Templates' })}
+              {t('adminTemplates.seedInitial', { defaultValue: 'Criar Modelos Iniciais' })}
             </Button>
           )}
           <Button onClick={handleCreate}>
             <Plus className="h-4 w-4 mr-1" />
-            {t('adminTemplates.newTemplate', { defaultValue: 'New Template' })}
+            {t('adminTemplates.newTemplate', { defaultValue: 'Novo Modelo' })}
           </Button>
         </div>
       </div>
@@ -320,7 +320,7 @@ export function AdminTemplatesManager() {
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            {t('adminTemplates.noTemplatesYet', { defaultValue: 'No templates yet. Click "Seed Initial Templates" to add starter templates.' })}
+            {t('adminTemplates.noTemplatesYet', { defaultValue: 'Ainda sem modelos. Clique em "Criar Modelos Iniciais" para adicionar modelos iniciais.' })}
           </CardContent>
         </Card>
       ) : (
@@ -345,7 +345,7 @@ export function AdminTemplatesManager() {
                           )}
                           {template.schema_json?.sections?.length ? (
                             <span className="text-xs text-muted-foreground">
-                              {t('adminTemplates.sections', { defaultValue: '{{count}} sections', count: template.schema_json.sections.length })}
+                              {t('adminTemplates.sections', { defaultValue: '{{count}} secções', count: template.schema_json.sections.length })}
                             </span>
                           ) : null}
                         </div>
@@ -376,54 +376,54 @@ export function AdminTemplatesManager() {
       }}>
         <DialogContent className="max-w-2xl max-h-[90vh] !flex !flex-col overflow-hidden">
           <DialogHeader>
-            <DialogTitle>{editingTemplate ? t('adminTemplates.editTemplate', { defaultValue: 'Edit Template' }) : t('adminTemplates.newTemplate', { defaultValue: 'New Template' })}</DialogTitle>
+            <DialogTitle>{editingTemplate ? t('adminTemplates.editTemplate', { defaultValue: 'Editar Modelo' }) : t('adminTemplates.newTemplate', { defaultValue: 'Novo Modelo' })}</DialogTitle>
           </DialogHeader>
           
           <Tabs defaultValue="basic" className="flex-1">
             <TabsList>
-              <TabsTrigger value="basic">{t('adminTemplates.basicInfo', { defaultValue: 'Basic Info' })}</TabsTrigger>
+              <TabsTrigger value="basic">{t('adminTemplates.basicInfo', { defaultValue: 'Informação Básica' })}</TabsTrigger>
               <TabsTrigger value="schema">
                 <Code className="h-3.5 w-3.5 mr-1" />
-                {t('adminTemplates.schemaJson', { defaultValue: 'Schema (JSON)' })}
+                {t('adminTemplates.schemaJson', { defaultValue: 'Esquema (JSON)' })}
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="basic" className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="name">{t('common.name', { defaultValue: 'Name' })} *</Label>
+                <Label htmlFor="name">{t('common.name', { defaultValue: 'Nome' })} *</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={e => setFormData(f => ({ ...f, name: e.target.value }))}
-                  placeholder={t('adminTemplates.namePlaceholder', { defaultValue: 'e.g., Lean Canvas' })}
+                  placeholder={t('adminTemplates.namePlaceholder', { defaultValue: 'ex.: Lean Canvas' })}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">{t('common.description', { defaultValue: 'Description' })}</Label>
+                <Label htmlFor="description">{t('common.description', { defaultValue: 'Descrição' })}</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={e => setFormData(f => ({ ...f, description: e.target.value }))}
-                  placeholder={t('adminTemplates.descriptionPlaceholder', { defaultValue: 'Brief description of this template' })}
+                  placeholder={t('adminTemplates.descriptionPlaceholder', { defaultValue: 'Breve descrição deste modelo' })}
                   rows={2}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="category">{t('common.category', { defaultValue: 'Category' })}</Label>
+                <Label htmlFor="category">{t('common.category', { defaultValue: 'Categoria' })}</Label>
                 <Input
                   id="category"
                   value={formData.category}
                   onChange={e => setFormData(f => ({ ...f, category: e.target.value }))}
-                  placeholder={t('adminTemplates.categoryPlaceholder', { defaultValue: 'e.g., Strategy, Finance, Growth' })}
+                  placeholder={t('adminTemplates.categoryPlaceholder', { defaultValue: 'ex.: Estratégia, Finanças, Crescimento' })}
                 />
               </div>
             </TabsContent>
             
             <TabsContent value="schema" className="py-4">
               <div className="space-y-2">
-                <Label>{t('adminTemplates.schemaJson', { defaultValue: 'Schema JSON' })}</Label>
+                <Label>{t('adminTemplates.schemaJson', { defaultValue: 'Esquema JSON' })}</Label>
                 <p className="text-xs text-muted-foreground">
-                  {t('adminTemplates.schemaDescription', { defaultValue: 'Define sections and fields. Field types: text, textarea, number, checkbox, checklist' })}
+                  {t('adminTemplates.schemaDescription', { defaultValue: 'Defina secções e campos. Tipos de campo: texto, área de texto, número, checkbox, checklist' })}
                 </p>
                 <Textarea
                   value={formData.schema_json}
@@ -440,10 +440,10 @@ export function AdminTemplatesManager() {
               setIsCreating(false);
               setEditingTemplate(null);
             }}>
-              {t('common.cancel', { defaultValue: 'Cancel' })}
+              {t('common.cancel', { defaultValue: 'Cancelar' })}
             </Button>
             <Button onClick={handleSave} disabled={createTemplate.isPending || updateTemplate.isPending}>
-              {editingTemplate ? t('common.update', { defaultValue: 'Update' }) : t('common.create', { defaultValue: 'Create' })}
+              {editingTemplate ? t('common.update', { defaultValue: 'Atualizar' }) : t('common.create', { defaultValue: 'Criar' })}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -453,15 +453,15 @@ export function AdminTemplatesManager() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('adminTemplates.deleteTitle', { defaultValue: 'Delete Template' })}</AlertDialogTitle>
+            <AlertDialogTitle>{t('adminTemplates.deleteTitle', { defaultValue: 'Eliminar Modelo' })}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('adminTemplates.deleteDescription', { defaultValue: 'Are you sure you want to delete "{{name}}"? This will also delete all workspace instances of this template.', name: deleteTarget?.name })}
+              {t('adminTemplates.deleteDescription', { defaultValue: 'Tem a certeza de que pretende eliminar "{{name}}"? Isto também eliminará todas as instâncias deste modelo nos workspaces.', name: deleteTarget?.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel', { defaultValue: 'Cancel' })}</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel', { defaultValue: 'Cancelar' })}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              {t('common.delete', { defaultValue: 'Delete' })}
+              {t('common.delete', { defaultValue: 'Eliminar' })}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

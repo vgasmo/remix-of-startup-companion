@@ -142,11 +142,11 @@ export function SmartImportDialog({
     setError(null);
     if (!f) { setFile(null); return; }
     if (!f.name.toLowerCase().endsWith(".pdf") && f.type !== "application/pdf") {
-      setError(t("smartImport.errors.notPdf", { defaultValue: "Only PDF files are accepted." }));
+      setError(t("smartImport.errors.notPdf", { defaultValue: "Apenas ficheiros PDF são aceites." }));
       return;
     }
     if (f.size > MAX_PDF_BYTES) {
-      setError(t("smartImport.errors.tooLarge", { defaultValue: "PDF must be under 15 MB." }));
+      setError(t("smartImport.errors.tooLarge", { defaultValue: "O PDF deve ter menos de 15 MB." }));
       return;
     }
     setFile(f);
@@ -165,7 +165,7 @@ export function SmartImportDialog({
       });
       if (invokeErr || !data?.extraction) {
         throw new Error(invokeErr?.message || t("smartImport.errors.extractFailed", {
-          defaultValue: "Could not extract data from this PDF.",
+          defaultValue: "Não foi possível extrair dados deste PDF.",
         }));
       }
       const ex = data.extraction;
@@ -205,14 +205,14 @@ export function SmartImportDialog({
         // every new workspace goes through review before activation.
         if (!isStaff) {
           throw new Error(t("smartImport.errors.staffOnlyCreate", {
-            defaultValue: "Only staff can create a workspace from Smart Import. Please use the claim/onboarding flow.",
+            defaultValue: "Apenas a equipa pode criar um workspace via Smart Import. Use o fluxo de reivindicação/onboarding.",
           }));
         }
         if (!programId) throw new Error(t("smartImport.errors.programRequired", {
-          defaultValue: "Please select a program.",
+          defaultValue: "Selecione um programa.",
         }));
         if (!editStartup.name?.trim()) throw new Error(t("smartImport.errors.nameRequired", {
-          defaultValue: "Startup name is required.",
+          defaultValue: "O nome da startup é obrigatório.",
         }));
 
         const startupPayload: any = { name: editStartup.name.trim() };
@@ -360,7 +360,7 @@ export function SmartImportDialog({
         }
       }
 
-      notify.success(t("smartImport.success", { defaultValue: "Smart import complete." }));
+      notify.success(t("smartImport.success", { defaultValue: "Smart Import concluído." }));
       qc.invalidateQueries({ queryKey: ["workspaces"] });
       qc.invalidateQueries({ queryKey: ["team-members", targetStartupId] });
       qc.invalidateQueries({ queryKey: ["funding-rounds", targetStartupId] });
@@ -378,17 +378,17 @@ export function SmartImportDialog({
   };
 
   const startupFieldLabels: Record<string, string> = useMemo(() => ({
-    name: t("smartImport.fields.name", { defaultValue: "Name" }),
-    description: t("smartImport.fields.description", { defaultValue: "Description" }),
+    name: t("smartImport.fields.name", { defaultValue: "Nome" }),
+    description: t("smartImport.fields.description", { defaultValue: "Descrição" }),
     website: t("smartImport.fields.website", { defaultValue: "Website" }),
-    sector: t("smartImport.fields.sector", { defaultValue: "Sector" }),
-    founded_date: t("smartImport.fields.foundedDate", { defaultValue: "Founded date" }),
-    stage: t("smartImport.fields.stage", { defaultValue: "Stage" }),
-    address: t("smartImport.fields.address", { defaultValue: "Address" }),
+    sector: t("smartImport.fields.sector", { defaultValue: "Setor" }),
+    founded_date: t("smartImport.fields.foundedDate", { defaultValue: "Data de fundação" }),
+    stage: t("smartImport.fields.stage", { defaultValue: "Estágio" }),
+    address: t("smartImport.fields.address", { defaultValue: "Morada" }),
     nif: t("smartImport.fields.nif", { defaultValue: "NIF" }),
-    main_contact_name: t("smartImport.fields.contactName", { defaultValue: "Main contact name" }),
-    main_contact_email: t("smartImport.fields.contactEmail", { defaultValue: "Main contact email" }),
-    main_contact_phone: t("smartImport.fields.contactPhone", { defaultValue: "Main contact phone" }),
+    main_contact_name: t("smartImport.fields.contactName", { defaultValue: "Nome do contacto principal" }),
+    main_contact_email: t("smartImport.fields.contactEmail", { defaultValue: "Email do contacto principal" }),
+    main_contact_phone: t("smartImport.fields.contactPhone", { defaultValue: "Telefone do contacto principal" }),
   }), [t]);
 
   const startupKeys = extraction
@@ -401,15 +401,15 @@ export function SmartImportDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            {t("smartImport.title", { defaultValue: "Smart Import from PDF" })}
+            {t("smartImport.title", { defaultValue: "Smart Import a partir de PDF" })}
           </DialogTitle>
           <DialogDescription>
             {mode === "create"
               ? t("smartImport.description.create", {
-                  defaultValue: "Upload a pitch deck or business plan and we'll extract the data into a draft. Staff review is required before the workspace is activated.",
+                  defaultValue: "Carregue um pitch deck ou plano de negócios e extraímos os dados para um rascunho. É necessária revisão da equipa antes da ativação do workspace.",
                 })
               : t("smartImport.description.fill", {
-                  defaultValue: "Upload a pitch deck or business plan and we'll fill in the workspace fields. Every field is editable — review before applying.",
+                  defaultValue: "Carregue um pitch deck ou plano de negócios e preenchemos os campos do workspace. Todos os campos são editáveis — reveja antes de aplicar.",
                 })}
           </DialogDescription>
         </DialogHeader>
@@ -424,10 +424,10 @@ export function SmartImportDialog({
               <Upload className="h-10 w-10 text-muted-foreground" />
               <div className="text-center">
                 <p className="font-medium">
-                  {file ? file.name : t("smartImport.uploadCta", { defaultValue: "Click to upload a PDF" })}
+                  {file ? file.name : t("smartImport.uploadCta", { defaultValue: "Clique para carregar um PDF" })}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {t("smartImport.uploadHint", { defaultValue: "Pitch deck or business plan · text-based PDF · max 15 MB" })}
+                  {t("smartImport.uploadHint", { defaultValue: "Pitch deck ou plano de negócios · PDF baseado em texto · máx. 15 MB" })}
                 </p>
               </div>
               <Input
@@ -452,9 +452,9 @@ export function SmartImportDialog({
           <div className="flex flex-col items-center justify-center py-16 gap-4 flex-1">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
             <div className="text-center">
-              <p className="font-medium">{t("smartImport.extracting", { defaultValue: "Reading your document…" })}</p>
+              <p className="font-medium">{t("smartImport.extracting", { defaultValue: "A ler o seu documento…" })}</p>
               <p className="text-sm text-muted-foreground mt-1">
-                {t("smartImport.extractingHint", { defaultValue: "This usually takes 10–30 seconds." })}
+                {t("smartImport.extractingHint", { defaultValue: "Normalmente demora 10–30 segundos." })}
               </p>
             </div>
           </div>
@@ -467,7 +467,7 @@ export function SmartImportDialog({
               {meta && (
                 <p className="text-xs text-muted-foreground">
                   {t("smartImport.parsed", {
-                    defaultValue: "Parsed {{pages}} page(s). Review the extracted data, edit anything, then choose what to apply.",
+                    defaultValue: "{{pages}} página(s) processadas. Reveja os dados extraídos, edite o necessário e escolha o que aplicar.",
                     pages: meta.page_count,
                   })}
                 </p>
@@ -476,9 +476,9 @@ export function SmartImportDialog({
               {mode === "create" && (
                 <div className="grid grid-cols-2 gap-3 p-4 rounded-lg border border-border bg-muted/30">
                   <div className="space-y-1">
-                    <Label>{t("smartImport.program", { defaultValue: "Program" })} *</Label>
+                    <Label>{t("smartImport.program", { defaultValue: "Programa" })} *</Label>
                     <Select value={programId} onValueChange={setProgramId}>
-                      <SelectTrigger><SelectValue placeholder={t("common.select", { defaultValue: "Select" })} /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t("common.select", { defaultValue: "Selecionar" })} /></SelectTrigger>
                       <SelectContent>
                         {(programs || []).map(p => (
                           <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
@@ -487,7 +487,7 @@ export function SmartImportDialog({
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <Label>{t("smartImport.fields.stage", { defaultValue: "Stage" })}</Label>
+                    <Label>{t("smartImport.fields.stage", { defaultValue: "Estágio" })}</Label>
                     <Select value={stage} onValueChange={(v) => setStage(v as Stage)}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -503,7 +503,7 @@ export function SmartImportDialog({
                 <section>
                   <h3 className="font-semibold mb-2 flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    {t("smartImport.sections.startup", { defaultValue: "Startup profile" })}
+                    {t("smartImport.sections.startup", { defaultValue: "Perfil da Startup" })}
                   </h3>
                   <div className="space-y-2">
                     {startupKeys.map(k => (
@@ -548,7 +548,7 @@ export function SmartImportDialog({
               {(extraction.team_members || []).length > 0 && (
                 <section>
                   <h3 className="font-semibold mb-2">
-                    {t("smartImport.sections.team", { defaultValue: "Team members" })}
+                    {t("smartImport.sections.team", { defaultValue: "Membros da equipa" })}
                     <span className="ml-2 text-xs text-muted-foreground">({extraction.team_members!.length})</span>
                   </h3>
                   <div className="space-y-1">
@@ -580,7 +580,7 @@ export function SmartImportDialog({
               {(extraction.funding_rounds || []).length > 0 && (
                 <section>
                   <h3 className="font-semibold mb-2">
-                    {t("smartImport.sections.funding", { defaultValue: "Funding" })}
+                    {t("smartImport.sections.funding", { defaultValue: "Financiamento" })}
                     <span className="ml-2 text-xs text-muted-foreground">({extraction.funding_rounds!.length})</span>
                   </h3>
                   <div className="space-y-1">
@@ -656,7 +656,7 @@ export function SmartImportDialog({
         {step === "applying" && (
           <div className="flex flex-col items-center justify-center py-16 gap-4 flex-1">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <p className="font-medium">{t("smartImport.applying", { defaultValue: "Applying to your workspace…" })}</p>
+            <p className="font-medium">{t("smartImport.applying", { defaultValue: "A aplicar ao seu workspace…" })}</p>
           </div>
         )}
 
@@ -664,11 +664,11 @@ export function SmartImportDialog({
           {step === "upload" && (
             <>
               <Button variant="outline" onClick={() => handleClose(false)}>
-                {t("common.cancel", { defaultValue: "Cancel" })}
+                {t("common.cancel", { defaultValue: "Cancelar" })}
               </Button>
               <Button onClick={runExtraction} disabled={!file}>
                 <Sparkles className="h-4 w-4 mr-2" />
-                {t("smartImport.analyse", { defaultValue: "Analyse with AI" })}
+                {t("smartImport.analyse", { defaultValue: "Analisar com IA" })}
               </Button>
             </>
           )}
@@ -676,15 +676,15 @@ export function SmartImportDialog({
             <>
               <Button variant="ghost" onClick={reset} className="mr-auto">
                 <RotateCcw className="h-4 w-4 mr-2" />
-                {t("smartImport.startOver", { defaultValue: "Upload another" })}
+                {t("smartImport.startOver", { defaultValue: "Carregar outro" })}
               </Button>
               <Button variant="outline" onClick={() => handleClose(false)}>
                 <X className="h-4 w-4 mr-2" />
-                {t("common.cancel", { defaultValue: "Cancel" })}
+                {t("common.cancel", { defaultValue: "Cancelar" })}
               </Button>
               <Button onClick={applyImport}>
                 <Check className="h-4 w-4 mr-2" />
-                {t("smartImport.applySelected", { defaultValue: "Apply selected" })}
+                {t("smartImport.applySelected", { defaultValue: "Aplicar selecionados" })}
               </Button>
             </>
           )}
