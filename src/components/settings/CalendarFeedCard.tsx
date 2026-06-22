@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { notify } from "@/lib/notify";
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { AppConfig } from '@/lib/appConfig';
@@ -31,6 +33,7 @@ export function CalendarFeedCard({ workspaceId }: CalendarFeedCardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [copied, setCopied] = useState(false);
+  const { confirm, dialogProps } = useConfirmDialog();
   const [showInstructions, setShowInstructions] = useState(false);
   const [calendarToken, setCalendarToken] = useState<string | null>(null);
   const [tokenExpiresAt, setTokenExpiresAt] = useState<Date | null>(null);
@@ -126,12 +129,15 @@ export function CalendarFeedCard({ workspaceId }: CalendarFeedCardProps) {
     }
   };
 
-  const regenerateToken = async () => {
+  const regenerateToken = () => {
     if (!user?.id) return;
-    if (!confirm(t('calendarFeed.regenerateConfirm', { defaultValue: 'Regenerar o token irá invalidar as subscrições atuais. Continuar?' }))) {
-      return;
-    }
-    await generateToken();
+    confirm({
+      title: t('calendarFeed.regenerateTitle'),
+      description: t('calendarFeed.regenerateConfirm'),
+      variant: 'warning',
+      confirmLabel: t('common.confirm'),
+      onConfirm: () => generateToken(),
+    });
   };
 
   const copyToClipboard = async () => {
@@ -345,6 +351,7 @@ export function CalendarFeedCard({ workspaceId }: CalendarFeedCardProps) {
           </Collapsible>
         )}
       </CardContent>
+      <ConfirmDialog {...dialogProps} />
     </Card>
   );
 }
