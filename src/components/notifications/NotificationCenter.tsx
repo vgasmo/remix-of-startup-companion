@@ -20,6 +20,10 @@ import {
 } from '@/hooks/useNotifications';
 import { formatRelativeTime } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
+import { deferredDelete } from '@/lib/deferredDelete';
+import type { Notification } from '@/hooks/useNotifications';
 
 const notificationTypeIcons: Record<string, string> = {
   template_review: '📋',
@@ -95,6 +99,8 @@ export function NotificationCenter() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: notifications, isLoading } = useNotifications();
   const markRead = useMarkNotificationRead();
@@ -132,7 +138,14 @@ export function NotificationCenter() {
 
   const handleDelete = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    deleteNotification.mutate(id);
+    deferredDelete<Notification>({
+      queryClient,
+      queryKey: ['notifications', user?.id ?? null],
+      itemId: id,
+      deletedLabel: t('notifications.deleted', { defaultValue: t('common.deleted') }),
+      undoLabel: t('common.undo'),
+      mutate: (nid) => deleteNotification.mutateAsync(nid),
+    });
   };
 
   const bucketLabel: Record<Bucket, string> = {
