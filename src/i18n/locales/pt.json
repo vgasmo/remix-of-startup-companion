@@ -6685,7 +6685,33 @@
     "invalidLinkTitle": "Link inválido ou expirado",
     "loadingContract": "A carregar contrato...",
     "optional": "Opcional",
-    "required": "Obrigatório"
+    "required": "Obrigatório",
+    "docs": {
+      "certidao_comercial": {
+        "label": "Certidão Permanente / Código de Acesso",
+        "desc": "Certidão permanente da empresa ou código de acesso ao registo comercial"
+      },
+      "id_representante": {
+        "label": "Documento de Identificação do Representante Legal",
+        "desc": "Cartão de cidadão, BI ou passaporte do representante legal"
+      },
+      "comprovativo_morada": {
+        "label": "Comprovativo de Morada",
+        "desc": "Comprovativo de morada da empresa ou representante legal"
+      },
+      "comprovativo_iban": {
+        "label": "Comprovativo de IBAN",
+        "desc": "Comprovativo do IBAN da conta bancária da empresa"
+      },
+      "pitch_deck": {
+        "label": "Pitch Deck / Apresentação da Startup",
+        "desc": "Apresentação do projeto (PDF ou PPT)"
+      },
+      "docs_associacoes": {
+        "label": "Documentos de Associações",
+        "desc": "Documentos de associações relevantes para o projeto"
+      }
+    }
   },
   "quality": {
     "blockingWarning": "Este {{entityType}} não pode ser marcado como pronto até a pontuação atingir 70+",
@@ -9032,5 +9058,9 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
+  },
+  "publicContractSigning": {
+    "reviewBeforeSendingViaProvider": "Reveja os documentos antes de enviar para assinatura via {{provider}}.",
+    "checkYourEmailAtPrefix": "Verifique o email"
   }
 }

@@ -6685,7 +6685,33 @@
     "invalidLinkTitle": "Invalid or expired link",
     "loadingContract": "Loading contract...",
     "optional": "Optional",
-    "required": "Required"
+    "required": "Required",
+    "docs": {
+      "certidao_comercial": {
+        "label": "Commercial Registry Certificate / Access Code",
+        "desc": "Permanent certificate or commercial registry access code"
+      },
+      "id_representante": {
+        "label": "Legal Representative ID Document",
+        "desc": "Citizen card, ID card or passport of the legal representative"
+      },
+      "comprovativo_morada": {
+        "label": "Proof of Address",
+        "desc": "Proof of address of the company or legal representative"
+      },
+      "comprovativo_iban": {
+        "label": "IBAN Proof",
+        "desc": "Proof of company bank account IBAN"
+      },
+      "pitch_deck": {
+        "label": "Pitch Deck / Startup Presentation",
+        "desc": "Project presentation (PDF or PPT)"
+      },
+      "docs_associacoes": {
+        "label": "Association Documents",
+        "desc": "Documents from relevant associations for the project"
+      }
+    }
   },
   "quality": {
     "blockingWarning": "This {{entityType}} cannot be marked as ready until the score reaches 70+",
@@ -9032,5 +9058,9 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
+  },
+  "publicContractSigning": {
+    "reviewBeforeSendingViaProvider": "Review the documents before sending for signature via {{provider}}.",
+    "checkYourEmailAtPrefix": "Check your email at"
   }
 }

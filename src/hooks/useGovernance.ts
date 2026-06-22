@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { notify } from '@/lib/notify';
+import i18n from '@/i18n';
 
 export interface SessionWorkflowState {
   session_id: string;
@@ -63,6 +65,7 @@ export function useUpdateSessionWorkflow() {
     },
     onSuccess: (_, { sessionId }) => {
       queryClient.invalidateQueries({ queryKey: ['session-workflow', sessionId] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -133,6 +136,7 @@ export function useRequestStageGateReview() {
     onSuccess: (_, { workspaceId }) => {
       queryClient.invalidateQueries({ queryKey: ['stage-gate-reviews', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['work-queue'] });
+      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -215,6 +219,7 @@ export function useApproveStageGateReview() {
       queryClient.invalidateQueries({ queryKey: ['stage-gate-reviews', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['work-queue'] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }

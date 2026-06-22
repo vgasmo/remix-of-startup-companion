@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { notify } from '@/lib/notify';
+import i18n from '@/i18n';
 
 export interface DataroomItem {
   id: string;
@@ -155,6 +157,7 @@ export function useCreateDataroomItem() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['dataroom-items', data.dataroom_id] });
+      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -173,6 +176,7 @@ export function useUpdateDataroomItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dataroom-items'] });
+      notify.success(i18n.t('common.deleted'));
     },
   });
 }
@@ -191,6 +195,7 @@ export function useDeleteDataroomItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dataroom-items'] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -215,6 +220,7 @@ export function useCreateShareLink() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dataroom-links'] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -235,6 +241,7 @@ export function useRevokeShareLink() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dataroom-links'] });
+      notify.success(i18n.t('common.created'));
     },
   });
 }

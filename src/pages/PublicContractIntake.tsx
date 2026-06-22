@@ -66,7 +66,7 @@ export default function PublicContractIntake() {
   const [lang, setLang] = useState<'pt' | 'en'>(() =>
     i18n.language?.startsWith('pt') ? 'pt' : 'en'
   );
-  const isPt = lang === 'pt';
+  
 
   const [formData, setFormData] = useState<IntakeFormData>({
     organization_name: '', project_name: '', company_nif: '', certidao_permanente_code: '',
@@ -532,7 +532,7 @@ export default function PublicContractIntake() {
                   return (
                     <div key={doc.key} className="flex items-center justify-between gap-3 p-2 rounded border border-border/50 bg-muted/30">
                       <div className="flex flex-col min-w-0">
-                        <span className="text-sm truncate">{isPt ? doc.labelPt : doc.labelEn}</span>
+                        <span className="text-sm truncate">{t(`publicContract.docs.${doc.key}.label`, { defaultValue: doc.labelPt })}</span>
                         {uploaded?.file_name && (
                           <span className="text-[11px] text-muted-foreground truncate">
                             {uploaded.file_name}
