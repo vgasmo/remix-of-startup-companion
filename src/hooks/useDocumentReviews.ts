@@ -1,7 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { notify } from '@/lib/notify';
-import i18n from '@/i18n';
 
 export interface DocumentReview {
   id: string;
@@ -89,7 +87,6 @@ export function useCreateReview() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['document-reviews', data.document_id] });
-      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -122,7 +119,6 @@ export function useUpdateReview() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['document-reviews', variables.documentId] });
-      notify.success(i18n.t('common.updated'));
     },
   });
 }

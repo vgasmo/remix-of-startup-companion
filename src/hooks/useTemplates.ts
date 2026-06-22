@@ -2,8 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import type { Json } from '@/integrations/supabase/types';
 import { logger } from '@/lib/logger';
-import { notify } from '@/lib/notify';
-import i18n from '@/i18n';
 
 export interface TemplateField {
   id: string;
@@ -107,7 +105,6 @@ export function useCreateTemplate() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['templates'] });
-      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -142,7 +139,6 @@ export function useUpdateTemplate() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['templates'] });
-      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -162,7 +158,6 @@ export function useDeleteTemplate() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['templates'] });
-      notify.success(i18n.t('common.deleted'));
     },
   });
 }

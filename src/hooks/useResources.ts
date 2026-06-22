@@ -1,7 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { notify } from '@/lib/notify';
-import i18n from '@/i18n';
 
 export interface Resource {
   id: string;
@@ -73,7 +71,6 @@ export function useCreateResource() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resources'] });
-      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -90,7 +87,6 @@ export function useUpdateResource() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resources'] });
-      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -107,7 +103,6 @@ export function useDeleteResource() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resources'] });
-      notify.success(i18n.t('common.deleted'));
     },
   });
 }

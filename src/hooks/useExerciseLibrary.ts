@@ -1,8 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
-import { notify } from '@/lib/notify';
-import i18n from '@/i18n';
 
 export interface Exercise {
   id: string;
@@ -117,7 +115,6 @@ export function useCreateExercise() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercise-library'] });
-      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -152,7 +149,6 @@ export function useUpdateExercise() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['exercise-library'] });
-      notify.success(i18n.t('common.updated'));
       queryClient.invalidateQueries({ queryKey: ['exercise', variables.id] });
     },
   });
@@ -171,7 +167,6 @@ export function useDeleteExercise() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercise-library'] });
-      notify.success(i18n.t('common.deleted'));
     },
   });
 }
