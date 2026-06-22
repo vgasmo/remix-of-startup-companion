@@ -11,8 +11,8 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        "rounded-xl border bg-card text-card-foreground shadow-card transition-all duration-200",
-        interactive && "card-brand-accent interactive-card cursor-pointer hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-card-hover",
+        "rounded-xl border border-border/70 bg-card text-card-foreground transition-all duration-200",
+        interactive && "card-brand-accent interactive-card cursor-pointer hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-card-hover",
         glass && "glass-card backdrop-blur-sm",
         className
       )}
@@ -21,6 +21,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
   )
 );
 Card.displayName = "Card";
+
 
 const CardHeader = React.forwardRef<
   HTMLDivElement,

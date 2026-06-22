@@ -241,28 +241,29 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
       </div>
 
       {/* ── Desktop: standard table ── */}
-      <div className="border rounded-lg overflow-hidden hidden md:block">
+      <div className="border border-border/70 rounded-xl overflow-hidden hidden md:block bg-card">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="w-[250px]">{t('ecosystem.name', { defaultValue: 'Name' })}</TableHead>
-              <TableHead className="w-[80px]">{t('ecosystem.type', { defaultValue: 'Type' })}</TableHead>
-              <TableHead>{t('workspace.program', { defaultValue: 'Program' })}</TableHead>
-              <TableHead>{t('workspace.stage', { defaultValue: 'Stage' })}</TableHead>
-              <TableHead>{t('workspace.category', { defaultValue: 'Cat.' })}</TableHead>
-              <TableHead>{t('workspace.healthScore', { defaultValue: 'Health' })}</TableHead>
-              <TableHead>{t('ecosystem.owner', { defaultValue: 'Owner' })}</TableHead>
-              <TableHead>{t('ecosystem.lastActivity', { defaultValue: 'Last Activity' })}</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
+            <TableRow className="hover:bg-transparent border-border/70 bg-muted/30">
+              <TableHead className="w-[250px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.name', { defaultValue: 'Name' })}</TableHead>
+              <TableHead className="w-[80px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.type', { defaultValue: 'Type' })}</TableHead>
+              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.program', { defaultValue: 'Program' })}</TableHead>
+              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.stage', { defaultValue: 'Stage' })}</TableHead>
+              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.category', { defaultValue: 'Cat.' })}</TableHead>
+              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.healthScore', { defaultValue: 'Health' })}</TableHead>
+              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.owner', { defaultValue: 'Owner' })}</TableHead>
+              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.lastActivity', { defaultValue: 'Last Activity' })}</TableHead>
+              <TableHead className="w-[50px] h-9"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedItems.map(item => (
               <TableRow 
                 key={item.id} 
-                className="cursor-pointer hover:bg-muted/50"
+                className="cursor-pointer hover:bg-muted/40 border-border/60 transition-colors"
                 onClick={() => onOpenItem(item)}
               >
+
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     <button
