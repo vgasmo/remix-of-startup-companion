@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { notify } from '@/lib/notify';
+import i18n from '@/i18n';
 
 export interface FundingRound {
   id: string;
@@ -91,6 +93,7 @@ export function useUpdateFundingRound() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['funding-rounds'] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -142,6 +145,7 @@ export function useUpdateInvestor() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['investors'] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -158,6 +162,7 @@ export function useDeleteInvestor() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['investors'] });
+      notify.success(i18n.t('common.deleted'));
     },
   });
 }
@@ -209,6 +214,7 @@ export function useUpdateCapTableEntry() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cap-table'] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -225,6 +231,7 @@ export function useDeleteCapTableEntry() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cap-table'] });
+      notify.success(i18n.t('common.deleted'));
     },
   });
 }
