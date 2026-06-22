@@ -72,7 +72,7 @@ serve(async (req) => {
         .select(`
           user_id,
           role,
-          profiles!inner(id, email, full_name),
+          profiles!inner(id, email, full_name, preferred_language),
           notification_preferences(
             milestone_reminders_enabled,
             milestone_reminder_days,
@@ -87,6 +87,7 @@ serve(async (req) => {
         console.error("Error fetching workspace users:", usersError);
         continue;
       }
+
 
       for (const user of workspaceUsers || []) {
         const prefs = user.notification_preferences?.[0];
