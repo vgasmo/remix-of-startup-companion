@@ -325,7 +325,8 @@ async function loadProgramConfig(programId: string): Promise<ProgramSetupDraft['
     .from('programs')
     .select('*')
     .eq('id', programId)
-    .single();
+    .maybeSingle();
+
 
   const programType = (program?.program_type as ProgramType) || 'incubation';
   const isAcceleration = programType === 'acceleration';
