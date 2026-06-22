@@ -4942,6 +4942,10 @@
     "addKpi": "Adicionar KPI",
     "addKpis": "Adicionar KPIs",
     "addedDefaults": "Adicionados {{count}} KPIs padrão para a fase {{stage}}",
+    "anomalyDeclining": "{{name}} desceu mais de 20% face ao período anterior.",
+    "anomalyMissing": "{{name}} sem registos há mais de 2 meses. Considere atualizar.",
+    "anomalyStale": "{{name}} está estagnado há 3 períodos.",
+
     "allDefaultsConfigured": "Todos os KPIs padrão já estão configurados",
     "allFilled": "✓ Todos os KPIs preenchidos! Pode concluir o check-in.",
     "allKpisAdded": "Todos os KPIs já adicionados",
