@@ -100,8 +100,9 @@ export default function ContractOnboarding() {
           building:buildings(name, code, address)
         `)
         .eq('id', contractId!)
-        .single();
+        .maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('Contract not found');
       return data;
     },
   });
