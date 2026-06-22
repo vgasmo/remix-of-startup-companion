@@ -6,10 +6,13 @@ const FUNCTION_NAME = 'send-email-digest';
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SITE_URL = Deno.env.get("SITE_URL") || "https://startupleiria.com";
 
+type Locale = 'pt' | 'en';
+
 interface DigestData {
   userId: string;
   email: string;
   fullName: string;
+  locale: Locale;
   overdueActions: number;
   criticalHealth: number;
   atRiskHealth: number;
@@ -17,14 +20,40 @@ interface DigestData {
   pendingKpis: number;
 }
 
-// HTML escape function to prevent XSS
+const STRINGS = {
+  pt: {
+    subject: (n: number) => `Resumo Semanal: ${n} itens precisam da sua atenção`,
+    title: 'Resumo Semanal',
+    brand: 'Startup Leiria',
+    greeting: (name: string) => `Olá ${name},`,
+    intro: 'Aqui está o seu resumo semanal de itens que precisam da sua atenção:',
+    overdue: (n: number) => `⚠️ <strong>${n}</strong> ações em atraso`,
+    critical: (n: number) => `🔴 <strong>${n}</strong> startup(s) em estado crítico`,
+    atRisk: (n: number) => `🟠 <strong>${n}</strong> startup(s) em risco`,
+    sessions: (n: number) => `📅 <strong>${n}</strong> sessões esta semana`,
+    cta: 'Abrir Dashboard',
+    footer: 'Está a receber este email porque tem os resumos por email ativos.',
+    managePrefs: 'Gerir preferências',
+  },
+  en: {
+    subject: (n: number) => `Weekly Digest: ${n} items need attention`,
+    title: 'Weekly Digest',
+    brand: 'Startup Leiria',
+    greeting: (name: string) => `Hi ${name},`,
+    intro: "Here's your weekly summary of items that need your attention:",
+    overdue: (n: number) => `⚠️ <strong>${n}</strong> overdue action items`,
+    critical: (n: number) => `🔴 <strong>${n}</strong> startup(s) in critical health`,
+    atRisk: (n: number) => `🟠 <strong>${n}</strong> startup(s) at risk`,
+    sessions: (n: number) => `📅 <strong>${n}</strong> upcoming sessions this week`,
+    cta: 'View Dashboard',
+    footer: "You're receiving this because you have email digests enabled.",
+    managePrefs: 'Manage preferences',
+  },
+} as const;
+
 function escapeHtml(text: string): string {
   const htmlEntities: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   };
   return text.replace(/[&<>"']/g, (char) => htmlEntities[char] || char);
 }
@@ -33,12 +62,9 @@ Deno.serve(async (req) => {
   const requestId = generateRequestId();
   const log = createLogger(FUNCTION_NAME, requestId);
 
-  if (req.method === "OPTIONS") {
-    return handleCorsOptions(req);
-  }
+  if (req.method === "OPTIONS") return handleCorsOptions(req);
 
   try {
-    // SECURITY: Require cron secret for system-initiated calls
     const authResult = requireCronSecret(req);
     if ('error' in authResult) {
       log.warn('Unauthorized access attempt');
@@ -51,58 +77,37 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get users who have email digest enabled
     const { data: preferences, error: prefError } = await supabase
       .from("notification_preferences")
-      .select(`
-        user_id,
-        digest_frequency,
-        digest_day,
-        last_digest_sent_at
-      `)
+      .select(`user_id, digest_frequency, digest_day, last_digest_sent_at`)
       .eq("email_digest_enabled", true);
 
-    if (prefError) {
-      log.error('Error fetching preferences', prefError);
-      throw prefError;
-    }
-
-    log.info('Found users with digest enabled', { count: preferences?.length || 0 });
+    if (prefError) throw prefError;
 
     const now = new Date();
     const dayOfWeek = now.getDay();
     const emailsSent: string[] = [];
 
     for (const pref of preferences || []) {
-      // Check if it's time to send
-      const shouldSend = pref.digest_frequency === "daily" || 
+      const shouldSend = pref.digest_frequency === "daily" ||
         (pref.digest_frequency === "weekly" && dayOfWeek === (pref.digest_day || 1));
+      if (!shouldSend) continue;
 
-      if (!shouldSend) {
-        continue;
-      }
-
-      // Check if already sent today
       if (pref.last_digest_sent_at) {
         const lastSent = new Date(pref.last_digest_sent_at);
         const hoursSinceLastSent = (now.getTime() - lastSent.getTime()) / (1000 * 60 * 60);
-        if (hoursSinceLastSent < 20) {
-          continue;
-        }
+        if (hoursSinceLastSent < 20) continue;
       }
 
-      // Get user profile
       const { data: profile } = await supabase
         .from("profiles")
-        .select("email, full_name")
+        .select("email, full_name, preferred_language")
         .eq("id", pref.user_id)
         .single();
 
-      if (!profile?.email) {
-        continue;
-      }
+      if (!profile?.email) continue;
+      const locale: Locale = (profile.preferred_language as Locale) ?? 'pt';
 
-      // Get user's workspaces
       const { data: workspaceUsers } = await supabase
         .from("workspace_users")
         .select("workspace_id")
@@ -110,12 +115,8 @@ Deno.serve(async (req) => {
         .eq("active", true);
 
       const workspaceIds = workspaceUsers?.map(wu => wu.workspace_id) || [];
+      if (workspaceIds.length === 0) continue;
 
-      if (workspaceIds.length === 0) {
-        continue;
-      }
-
-      // Get overdue actions count
       const { count: overdueCount } = await supabase
         .from("action_items")
         .select("*", { count: "exact", head: true })
@@ -123,21 +124,18 @@ Deno.serve(async (req) => {
         .in("status", ["pending", "in_progress"])
         .lt("due_date", now.toISOString().split("T")[0]);
 
-      // Get critical health workspaces
       const { count: criticalCount } = await supabase
         .from("workspaces")
         .select("*", { count: "exact", head: true })
         .in("id", workspaceIds)
         .eq("health_score", "critical");
 
-      // Get at-risk health workspaces
       const { count: atRiskCount } = await supabase
         .from("workspaces")
         .select("*", { count: "exact", head: true })
         .in("id", workspaceIds)
         .eq("health_score", "at_risk");
 
-      // Get upcoming sessions in next 7 days
       const nextWeek = new Date(now);
       nextWeek.setDate(nextWeek.getDate() + 7);
       const { count: sessionsCount } = await supabase
@@ -150,7 +148,8 @@ Deno.serve(async (req) => {
       const digestData: DigestData = {
         userId: pref.user_id,
         email: profile.email,
-        fullName: profile.full_name || "User",
+        fullName: profile.full_name || (locale === 'pt' ? 'Utilizador' : 'User'),
+        locale,
         overdueActions: overdueCount || 0,
         criticalHealth: criticalCount || 0,
         atRiskHealth: atRiskCount || 0,
@@ -158,19 +157,13 @@ Deno.serve(async (req) => {
         pendingKpis: 0,
       };
 
-      // Only send if there's something to report
-      const hasContent = digestData.overdueActions > 0 || 
-        digestData.criticalHealth > 0 || 
-        digestData.atRiskHealth > 0;
+      const hasContent = digestData.overdueActions > 0 ||
+        digestData.criticalHealth > 0 || digestData.atRiskHealth > 0;
+      if (!hasContent) continue;
 
-      if (!hasContent) {
-        continue;
-      }
-
-      // Build email content
       const emailHtml = buildDigestEmail(digestData);
+      const s = STRINGS[locale];
 
-      // Send email via Resend API
       try {
         const emailResponse = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -181,21 +174,19 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             from: "Startup Leiria <noreply@startupleiria.com>",
             to: [digestData.email],
-            subject: `Weekly Digest: ${digestData.overdueActions} items need attention`,
+            subject: s.subject(digestData.overdueActions),
             html: emailHtml,
           }),
         });
 
         if (!emailResponse.ok) {
-          const errorText = await emailResponse.text();
-          throw new Error(`Resend API error: ${errorText}`);
+          throw new Error(`Resend API error: ${await emailResponse.text()}`);
         }
 
         const result = await emailResponse.json();
-        log.info('Email sent', { email: digestData.email, emailId: result.id });
+        log.info('Email sent', { email: digestData.email, emailId: result.id, locale });
         emailsSent.push(digestData.email);
 
-        // Update last_digest_sent_at
         await supabase
           .from("notification_preferences")
           .update({ last_digest_sent_at: now.toISOString() })
@@ -206,12 +197,7 @@ Deno.serve(async (req) => {
     }
 
     log.info('Digest job complete', { emailsSent: emailsSent.length });
-
-    return corsJsonResponse({ 
-      success: true, 
-      emailsSent: emailsSent.length,
-      recipients: emailsSent 
-    }, req);
+    return corsJsonResponse({ success: true, emailsSent: emailsSent.length, recipients: emailsSent }, req);
 
   } catch (error) {
     log.error('Fatal error', error);
@@ -221,57 +207,45 @@ Deno.serve(async (req) => {
 });
 
 function buildDigestEmail(data: DigestData): string {
+  const s = STRINGS[data.locale];
   const items: string[] = [];
 
-  if (data.overdueActions > 0) {
-    items.push(`<li>⚠️ <strong>${data.overdueActions}</strong> overdue action items</li>`);
-  }
-  if (data.criticalHealth > 0) {
-    items.push(`<li>🔴 <strong>${data.criticalHealth}</strong> startup(s) in critical health</li>`);
-  }
-  if (data.atRiskHealth > 0) {
-    items.push(`<li>🟠 <strong>${data.atRiskHealth}</strong> startup(s) at risk</li>`);
-  }
-  if (data.upcomingSessions > 0) {
-    items.push(`<li>📅 <strong>${data.upcomingSessions}</strong> upcoming sessions this week</li>`);
-  }
+  if (data.overdueActions > 0) items.push(`<li>${s.overdue(data.overdueActions)}</li>`);
+  if (data.criticalHealth > 0) items.push(`<li>${s.critical(data.criticalHealth)}</li>`);
+  if (data.atRiskHealth > 0) items.push(`<li>${s.atRisk(data.atRiskHealth)}</li>`);
+  if (data.upcomingSessions > 0) items.push(`<li>${s.sessions(data.upcomingSessions)}</li>`);
 
   const safeFullName = escapeHtml(data.fullName);
+  const htmlLang = data.locale === 'pt' ? 'pt-PT' : 'en';
 
   return `
     <!DOCTYPE html>
-    <html>
+    <html lang="${htmlLang}">
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #c8e53d 0%, #c03c3c 100%); padding: 30px; border-radius: 12px 12px 0 0;">
-        <h1 style="color: white; margin: 0; font-size: 24px;">Weekly Digest</h1>
-        <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">Startup Leiria</p>
+        <h1 style="color: white; margin: 0; font-size: 24px;">${s.title}</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">${s.brand}</p>
       </div>
-      
       <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 12px 12px;">
-        <p style="margin-top: 0;">Hi ${safeFullName},</p>
-        
-        <p>Here's your weekly summary of items that need your attention:</p>
-        
+        <p style="margin-top: 0;">${s.greeting(safeFullName)}</p>
+        <p>${s.intro}</p>
         <ul style="background: white; padding: 20px 20px 20px 40px; border-radius: 8px; border-left: 4px solid #c03c3c;">
           ${items.join("\n          ")}
         </ul>
-        
         <div style="text-align: center; margin-top: 30px;">
-          <a href="${SITE_URL}/my-workspaces" 
+          <a href="${SITE_URL}/my-workspaces"
              style="display: inline-block; background: #c03c3c; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">
-            View Dashboard
+            ${s.cta}
           </a>
         </div>
-        
         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-        
         <p style="color: #666; font-size: 12px; text-align: center; margin-bottom: 0;">
-          You're receiving this because you have email digests enabled.<br>
-          <a href="${SITE_URL}/settings" style="color: #c03c3c;">Manage preferences</a>
+          ${s.footer}<br>
+          <a href="${SITE_URL}/settings" style="color: #c03c3c;">${s.managePrefs}</a>
         </p>
       </div>
     </body>
