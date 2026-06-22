@@ -287,7 +287,7 @@ export function BookingLinksManager() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => deactivateLink.mutate(link.id)}
+                          onClick={()=> deactivateLink.mutate(link.id)}
                           title={t('admin.deactivate', 'Desativar')}
                          aria-label={t('common.delete')}>
                           <Trash2 className="h-4 w-4 text-muted-foreground" />
@@ -297,7 +297,7 @@ export function BookingLinksManager() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => confirm({
+                          onClick={()=> confirm({
                             title: t('common.delete', 'Apagar'),
                             description: t('admin.confirmDeleteLink', 'Tem a certeza que quer apagar este link?'),
                             variant: 'destructive',

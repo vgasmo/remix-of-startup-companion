@@ -246,7 +246,7 @@ export function WizardKpisStep({ stages, kpis, coreKpis, onUpdate }: WizardKpisS
                           variant="ghost"
                           size="icon"
                           className="h-5 w-5"
-                          onClick={() => {
+                          onClick={()=> {
                             if (idx === 0) return;
                             const newKpis = [...stageData.kpis];
                             [newKpis[idx], newKpis[idx - 1]] = [newKpis[idx - 1], newKpis[idx]];
@@ -264,7 +264,7 @@ export function WizardKpisStep({ stages, kpis, coreKpis, onUpdate }: WizardKpisS
                           variant="ghost"
                           size="icon"
                           className="h-5 w-5"
-                          onClick={() => {
+                          onClick={()=> {
                             if (idx === stageData.kpis.length - 1) return;
                             const newKpis = [...stageData.kpis];
                             [newKpis[idx], newKpis[idx + 1]] = [newKpis[idx + 1], newKpis[idx]];
@@ -330,7 +330,7 @@ export function WizardKpisStep({ stages, kpis, coreKpis, onUpdate }: WizardKpisS
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-destructive"
-                            onClick={() => handleRemoveKpi(stageKey, idx)}
+                            onClick={()=> handleRemoveKpi(stageKey, idx)}
                            aria-label={t('common.delete')}>
                             <Trash2 className="h-4 w-4" />
                           </Button>

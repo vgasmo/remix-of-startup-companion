@@ -132,114 +132,191 @@ export const PortfolioPerformanceTable = memo(function PortfolioPerformanceTable
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        {/* Header row */}
-        <div className="grid grid-cols-[1fr_100px_80px_90px_80px_80px] gap-2 px-2 pb-2 border-b border-border/40">
-          <SortButton label={t('consultor.portfolioTable.startup', { defaultValue: 'Startup' })} field="name" />
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            {t('consultor.portfolioTable.stage', { defaultValue: 'Etapa' })}
-          </span>
-          <SortButton label={t('consultor.portfolioTable.health', { defaultValue: 'Saúde' })} field="health" />
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            {t('consultor.portfolioTable.trend', { defaultValue: 'Trend' })}
-          </span>
-          <SortButton label={t('consultor.portfolioTable.lastTouch', { defaultValue: 'Último' })} field="lastInteraction" />
-          <SortButton label={t('consultor.portfolioTable.strength', { defaultValue: 'Força' })} field="strength" />
+        {/* Desktop / tablet: dense grid */}
+        <div className="hidden md:block">
+          {/* Header row */}
+          <div className="grid grid-cols-[1fr_100px_80px_90px_80px_80px] gap-2 px-2 pb-2 border-b border-border/40">
+            <SortButton label={t('consultor.portfolioTable.startup', { defaultValue: 'Startup' })} field="name" />
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              {t('consultor.portfolioTable.stage', { defaultValue: 'Etapa' })}
+            </span>
+            <SortButton label={t('consultor.portfolioTable.health', { defaultValue: 'Saúde' })} field="health" />
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              {t('consultor.portfolioTable.trend', { defaultValue: 'Trend' })}
+            </span>
+            <SortButton label={t('consultor.portfolioTable.lastTouch', { defaultValue: 'Último' })} field="lastInteraction" />
+            <SortButton label={t('consultor.portfolioTable.strength', { defaultValue: 'Força' })} field="strength" />
+          </div>
+
+          {/* Data rows */}
+          <div className="divide-y divide-border/30 max-h-[480px] overflow-y-auto">
+            {sortedWorkspaces.map(ws => {
+              const health = (ws.health_score_override || ws.health_score || 'stable') as HealthScore;
+              const strength = getInteractionStrength(ws);
+              const cfg = strengthConfig[strength.level];
+              const sparkData = getSparklineData(ws);
+
+              return (
+                <div
+                  key={ws.id}
+                  className="grid grid-cols-[1fr_100px_80px_90px_80px_80px] gap-2 items-center py-2 px-2 hover:bg-muted/40 cursor-pointer transition-colors group"
+                  {...clickableProps(() => navigate(`/workspace/${ws.id}`))}
+                >
+                  {/* Startup Name */}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Avatar className="h-7 w-7 shrink-0 rounded-md">
+                      <AvatarImage src={ws.startup?.logo_url || undefined} />
+                      <AvatarFallback className="rounded-md bg-primary/10 text-primary text-[10px] font-semibold">
+                        {ws.startup?.name?.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium truncate group-hover:text-primary group-hover:underline transition-colors">{ws.startup?.name}</span>
+                  </div>
+
+                  {/* Stage */}
+                  <Badge variant="outline" className="text-[10px] w-fit">
+                    {ws.stage}
+                  </Badge>
+
+                  {/* Health */}
+                  <HealthBadge score={health} size="sm" />
+
+                  {/* Sparkline */}
+                  <Sparkline data={sparkData} width={70} height={18} />
+
+                  {/* Last Interaction */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-xs text-muted-foreground">
+                        {ws.lastSession?.scheduled_at
+                          ? format(parseISO(ws.lastSession.scheduled_at), 'dd MMM', { locale: pt })
+                          : '—'}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {strength.days < 999
+                        ? t('consultor.portfolioTable.daysAgo', { defaultValue: 'Há {{days}} dias', days: strength.days })
+                        : t('consultor.portfolioTable.noInteraction', { defaultValue: 'Sem interações' })}
+                    </TooltipContent>
+                  </Tooltip>
+
+                  {/* Interaction Strength */}
+                  <div className="flex items-center gap-1">
+                    <Badge className={`text-[10px] px-1.5 py-0 ${cfg.bg} ${cfg.text} border-0`}>
+                      {cfg.label}
+                    </Badge>
+                    {/* Quick actions on hover */}
+                    <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            aria-label={t('consultor.portfolioTable.logSession', { defaultValue: 'Agendar sessão' })}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (onLogSession) onLogSession(ws.id);
+                              else navigate(`/workspace/${ws.id}?tab=agenda`);
+                            }}
+                          >
+                            <Calendar className="h-3 w-3" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{t('consultor.portfolioTable.logSession', { defaultValue: 'Agendar sessão' })}</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            aria-label={t('consultor.portfolioTable.addNote', { defaultValue: 'Adicionar nota' })}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (onAddNote) onAddNote(ws.id);
+                              else navigate(`/workspace/${ws.id}?tab=notes`);
+                            }}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{t('consultor.portfolioTable.addNote', { defaultValue: 'Adicionar nota' })}</TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Data rows */}
-        <div className="divide-y divide-border/30 max-h-[480px] overflow-y-auto">
+        {/* Mobile: card list */}
+        <div className="md:hidden divide-y divide-border/30 max-h-[520px] overflow-y-auto -mx-2">
           {sortedWorkspaces.map(ws => {
             const health = (ws.health_score_override || ws.health_score || 'stable') as HealthScore;
             const strength = getInteractionStrength(ws);
             const cfg = strengthConfig[strength.level];
             const sparkData = getSparklineData(ws);
-
             return (
               <div
                 key={ws.id}
-                className="grid grid-cols-[1fr_100px_80px_90px_80px_80px] gap-2 items-center py-2 px-2 hover:bg-muted/40 cursor-pointer transition-colors group"
+                className="p-3 hover:bg-muted/40 active:bg-muted/60 cursor-pointer transition-colors"
                 {...clickableProps(() => navigate(`/workspace/${ws.id}`))}
               >
-                {/* Startup Name */}
-                <div className="flex items-center gap-2 min-w-0">
-                  <Avatar className="h-7 w-7 shrink-0 rounded-md">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-9 w-9 shrink-0 rounded-md">
                     <AvatarImage src={ws.startup?.logo_url || undefined} />
-                    <AvatarFallback className="rounded-md bg-primary/10 text-primary text-[10px] font-semibold">
+                    <AvatarFallback className="rounded-md bg-primary/10 text-primary text-xs font-semibold">
                       {ws.startup?.name?.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium truncate group-hover:text-primary group-hover:underline transition-colors">{ws.startup?.name}</span>
-                </div>
-
-                {/* Stage */}
-                <Badge variant="outline" className="text-[10px] w-fit">
-                  {ws.stage}
-                </Badge>
-
-                {/* Health */}
-                <HealthBadge score={health} size="sm" />
-
-                {/* Sparkline */}
-                <Sparkline data={sparkData} width={70} height={18} />
-
-                {/* Last Interaction */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="text-xs text-muted-foreground">
-                      {ws.lastSession?.scheduled_at
-                        ? format(parseISO(ws.lastSession.scheduled_at), 'dd MMM', { locale: pt })
-                        : '—'}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {strength.days < 999
-                      ? t('consultor.portfolioTable.daysAgo', { defaultValue: 'Há {{days}} dias', days: strength.days })
-                      : t('consultor.portfolioTable.noInteraction', { defaultValue: 'Sem interações' })}
-                  </TooltipContent>
-                </Tooltip>
-
-                {/* Interaction Strength */}
-                <div className="flex items-center gap-1">
-                  <Badge className={`text-[10px] px-1.5 py-0 ${cfg.bg} ${cfg.text} border-0`}>
-                    {cfg.label}
-                  </Badge>
-                  {/* Quick actions on hover */}
-                  <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (onLogSession) onLogSession(ws.id);
-                            else navigate(`/workspace/${ws.id}?tab=agenda`);
-                          }}
-                        >
-                          <Calendar className="h-3 w-3" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>{t('consultor.portfolioTable.logSession', { defaultValue: 'Agendar sessão' })}</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (onAddNote) onAddNote(ws.id);
-                            else navigate(`/workspace/${ws.id}?tab=notes`);
-                          }}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>{t('consultor.portfolioTable.addNote', { defaultValue: 'Adicionar nota' })}</TooltipContent>
-                    </Tooltip>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-sm font-medium truncate">{ws.startup?.name}</span>
+                      <Badge variant="outline" className="text-[10px] shrink-0">{ws.stage}</Badge>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <HealthBadge score={health} size="sm" />
+                      <Badge className={`text-[10px] px-1.5 py-0 ${cfg.bg} ${cfg.text} border-0`}>
+                        {cfg.label}
+                      </Badge>
+                      <span className="text-[11px] text-muted-foreground ml-auto">
+                        {ws.lastSession?.scheduled_at
+                          ? format(parseISO(ws.lastSession.scheduled_at), 'dd MMM', { locale: pt })
+                          : '—'}
+                      </span>
+                    </div>
                   </div>
+                  <Sparkline data={sparkData} width={48} height={16} />
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-8 gap-1.5"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onLogSession) onLogSession(ws.id);
+                      else navigate(`/workspace/${ws.id}?tab=agenda`);
+                    }}
+                  >
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span className="text-xs">{t('consultor.portfolioTable.logSession', { defaultValue: 'Agendar sessão' })}</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-8 gap-1.5"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onAddNote) onAddNote(ws.id);
+                      else navigate(`/workspace/${ws.id}?tab=notes`);
+                    }}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span className="text-xs">{t('consultor.portfolioTable.addNote', { defaultValue: 'Adicionar nota' })}</span>
+                  </Button>
                 </div>
               </div>
             );

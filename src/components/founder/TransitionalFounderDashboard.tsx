@@ -39,10 +39,10 @@ interface TransitionalFounderDashboardProps {
 }
 
 const CHECKLIST_ITEMS = [
-  { key: 'await_validation', icon: Clock, defaultLabel: 'Aguardar validação da equipa' },
-  { key: 'prepare_docs', icon: FileText, defaultLabel: 'Preparar documentação da startup' },
-  { key: 'confirm_contacts', icon: User, defaultLabel: 'Confirmar dados de contacto' },
-  { key: 'explore_resources', icon: FolderOpen, defaultLabel: 'Explorar recursos disponíveis' },
+  { key: 'await_validation', icon: Clock, defaultLabel: 'Aguardar validação da equipa', href: null as string | null },
+  { key: 'prepare_docs', icon: FileText, defaultLabel: 'Preparar documentação da startup', href: '/documents' as string | null },
+  { key: 'confirm_contacts', icon: User, defaultLabel: 'Confirmar dados de contacto', href: '/settings' as string | null },
+  { key: 'explore_resources', icon: FolderOpen, defaultLabel: 'Explorar recursos disponíveis', href: '/resources' as string | null },
 ] as const;
 
 function getContractLabel(status: string | null | undefined, t: (k: string, o?: any) => string): { label: string; variant: 'default' | 'secondary' | 'outline' } {
@@ -173,19 +173,34 @@ export function TransitionalFounderDashboard({
         </CardHeader>
         <CardContent>
           <div className="space-y-1">
-            {CHECKLIST_ITEMS.map((item) => (
-              <div
-                key={item.key}
-                className="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-muted/50 transition-colors"
-              >
-                <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                  <item.icon className="h-4 w-4 text-muted-foreground" />
+            {CHECKLIST_ITEMS.map((item) => {
+              const label = t(`founder.transitional.checklist.${item.key}`, { defaultValue: item.defaultLabel });
+              const className = 'flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-muted/50 transition-colors w-full text-left';
+              const content = (
+                <>
+                  <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                    <item.icon className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <span className="text-sm flex-1">{label}</span>
+                  {item.href && <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />}
+                </>
+              );
+              return item.href ? (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => navigate(item.href!)}
+                  className={className}
+                  aria-label={label}
+                >
+                  {content}
+                </button>
+              ) : (
+                <div key={item.key} className={className.replace('hover:bg-muted/50 ', '')}>
+                  {content}
                 </div>
-                <span className="text-sm">
-                  {t(`founder.transitional.checklist.${item.key}`, { defaultValue: item.defaultLabel })}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

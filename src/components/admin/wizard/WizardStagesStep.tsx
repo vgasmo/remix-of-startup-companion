@@ -111,7 +111,7 @@ export function WizardStagesStep({ data, onUpdate }: WizardStagesStepProps) {
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
-                  onClick={() => moveStage(stage.stage_key, 'up')}
+                  onClick={()=> moveStage(stage.stage_key, 'up')}
                   disabled={idx === 0}
                  aria-label="Collapse">
                   <ChevronUp className="h-4 w-4" />
@@ -122,7 +122,7 @@ export function WizardStagesStep({ data, onUpdate }: WizardStagesStepProps) {
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
-                  onClick={() => moveStage(stage.stage_key, 'down')}
+                  onClick={()=> moveStage(stage.stage_key, 'down')}
                   disabled={idx === sortedStages.length - 1}
                  aria-label="Expand">
                   <ChevronDown className="h-4 w-4" />

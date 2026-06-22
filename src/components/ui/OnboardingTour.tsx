@@ -3,6 +3,7 @@ import Joyride, { Step, CallBackProps, STATUS, ACTIONS, EVENTS } from 'react-joy
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
+import { useFounderOnboardingState } from '@/hooks/useFounderOnboardingState';
 
 const TOUR_KEY = 'sl-tour-completed';
 
@@ -50,6 +51,7 @@ export function OnboardingTour({ run, onComplete }: OnboardingTourProps) {
   const { t } = useTranslation();
   const { user, roles, isStaff, isAuthReady } = useAuth();
   const { theme } = useTheme();
+  const founderState = useFounderOnboardingState();
   const [runTour, setRunTour] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
 
@@ -93,6 +95,22 @@ export function OnboardingTour({ run, onComplete }: OnboardingTourProps) {
       return;
     }
 
+    // P5A: Coordinate with the onboarding system. If the founder still needs to
+    // complete the workspace onboarding wizard (or is loading / pending), defer
+    // the tour so we never spotlight UI behind a modal/empty state.
+    if (
+      founderState.status === 'loading' ||
+      founderState.status === 'needs_onboarding' ||
+      founderState.status === 'has_pending_workspace' ||
+      founderState.status === 'has_pending_claim' ||
+      founderState.status === 'needs_claim_verification'
+    ) {
+      setRunTour(false);
+      setStepIndex(0);
+      return;
+    }
+
+
     // Only run tour for logged-in users who haven't completed it
     if (user && run === undefined) {
       const hasCompletedTour = localStorage.getItem(`${TOUR_KEY}-${user.id}`);
@@ -113,7 +131,7 @@ export function OnboardingTour({ run, onComplete }: OnboardingTourProps) {
       setStepIndex(0);
       setRunTour(run);
     }
-  }, [user, run, isAuthReady, isStaff, roles]);
+  }, [user, run, isAuthReady, isStaff, roles, founderState.status]);
 
   const handleTourCallback = (data: CallBackProps) => {
     const { status, action, type, index } = data;

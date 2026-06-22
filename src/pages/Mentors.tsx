@@ -583,7 +583,7 @@ export default function Mentors() {
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8"
-                              onClick={() => openMailTo(mentor.profile?.email, mentor.profile?.full_name || t('mentorsPage.mentor', { defaultValue: 'Mentor' }))}
+                              onClick={()=> openMailTo(mentor.profile?.email, mentor.profile?.full_name || t('mentorsPage.mentor', { defaultValue: 'Mentor' }))}
                               title={t('mentorsPage.contactMentor', 'Contact mentor')}
                              aria-label={t('common.email')}>
                               <Mail className="h-3.5 w-3.5" />

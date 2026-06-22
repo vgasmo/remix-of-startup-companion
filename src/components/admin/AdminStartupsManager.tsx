@@ -748,7 +748,7 @@ export function AdminStartupsManager() {
                     <TableCell>
                       <TooltipProvider>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(startup)} aria-label={t('common.edit')}>
+                          <Button variant="ghost" size="icon" onClick={()=> openEdit(startup)} aria-label={t('common.edit')}>
                             <Pencil className="h-4 w-4" />
                           </Button>
                           {startup.main_contact_email && workspace?.id && (
@@ -757,7 +757,7 @@ export function AdminStartupsManager() {
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
-                                  onClick={() => handleSendInvite(startup)}
+                                  onClick={()=> handleSendInvite(startup)}
                                   disabled={sendingInviteFor === startup.id}
                                  aria-label={t('common.loading')}>
                                   {sendingInviteFor === startup.id ? (
@@ -792,7 +792,7 @@ export function AdminStartupsManager() {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => confirm({
+                                    onClick={()=> confirm({
                                       title: t('admin.startupsManager.deleteForever'),
                                       description: t('admin.startupsManager.deleteForeverConfirm', { name: startup.name }),
                                       variant: 'destructive',

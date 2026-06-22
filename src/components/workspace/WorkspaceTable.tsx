@@ -110,19 +110,19 @@ export const WorkspaceTable = memo(function WorkspaceTable({
         <span className="text-sm text-muted-foreground mr-2">
           {t('common.showingResults', { from, to, total: workspaces.length, defaultValue: `Showing ${from}-${to} of ${workspaces.length}` })}
         </span>
-        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={() => setPage(0)} aria-label={t('common.first', { defaultValue: 'First' })}>
+        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={()=> setPage(0)} aria-label={t('common.first', { defaultValue: 'First' })}>
           <ChevronsLeft className="h-4 w-4" />
         </Button>
-        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={() => setPage(p => p - 1)} aria-label={t('common.previousPage', { defaultValue: 'Previous page' })}>
+        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={()=> setPage(p => p - 1)} aria-label={t('common.previousPage', { defaultValue: 'Previous page' })}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <span className="text-sm text-muted-foreground px-2">
           {page + 1} / {totalPages}
         </span>
-        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} aria-label={t('common.nextPage', { defaultValue: 'Next page' })}>
+        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page>= totalPages - 1} onClick={() => setPage(p => p + 1)} aria-label={t('common.nextPage', { defaultValue: 'Next page' })}>
           <ChevronRight className="h-4 w-4" />
         </Button>
-        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages - 1} onClick={() => setPage(totalPages - 1)} aria-label={t('common.lastPage', { defaultValue: 'Last page' })}>
+        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page>= totalPages - 1} onClick={() => setPage(totalPages - 1)} aria-label={t('common.lastPage', { defaultValue: 'Last page' })}>
           <ChevronsRight className="h-4 w-4" />
         </Button>
       </div>
@@ -172,7 +172,7 @@ export const WorkspaceTable = memo(function WorkspaceTable({
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 shrink-0"
-                    onClick={(e) => { e.stopPropagation(); onRowClick(workspace.id); }}
+                    onClick={(e)=> { e.stopPropagation(); onRowClick(workspace.id); }}
                     aria-label={t('workspaceTable.openWorkspace', { defaultValue: 'Open workspace' })}
                   >
                     <ExternalLink className="h-4 w-4" />
@@ -264,7 +264,7 @@ export const WorkspaceTable = memo(function WorkspaceTable({
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 shrink-0"
-                            onClick={(e) => {
+                            onClick={(e)=> {
                               e.stopPropagation();
                               onRowClick(workspace.id);
                             }}

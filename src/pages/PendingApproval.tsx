@@ -22,7 +22,7 @@ export default function PendingApproval() {
         .from('profiles')
         .select('account_status')
         .eq('id', profile.id)
-        .single();
+        .maybeSingle();
       if (data?.account_status && data.account_status !== 'pending') {
         navigate('/');
       }

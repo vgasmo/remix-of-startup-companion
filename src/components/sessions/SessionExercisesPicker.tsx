@@ -148,7 +148,7 @@ export function SessionExercisesPicker({ sessionId, canEdit }: SessionExercisesP
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7 shrink-0"
-                          onClick={() => handleRemove(se.id)}
+                          onClick={()=> handleRemove(se.id)}
                          aria-label={t('common.close')}>
                           <X className="h-4 w-4" />
                         </Button>
