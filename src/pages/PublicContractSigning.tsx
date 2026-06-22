@@ -229,7 +229,7 @@ export default function PublicContractSigning() {
         ...prev,
         [docKey]: { name: file.name, path: data.path, size: file.size },
       }));
-      notify.success(isPt ? 'Documento carregado' : 'Document uploaded');
+      notify.success(t('publicContractSigning.documentUploaded'));
     } catch (err: any) {
       notify.error(err?.message || t('publicContract.errors.uploadFailed'));
     } finally {
@@ -263,7 +263,7 @@ export default function PublicContractSigning() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      notify.success(isPt ? 'Contrato assinado com sucesso!' : 'Contract signed successfully!');
+      notify.success(t('publicContractSigning.contractSignedSuccessfully'));
       setSignSuccess(true);
     } catch (e: any) {
       const msg = e?.message || t('publicContract.errors.signingFailed');
@@ -410,7 +410,7 @@ export default function PublicContractSigning() {
     },
     onSuccess: () => {
       setCurrentStep('review_contract');
-      notify.success(isPt ? 'Dados guardados com sucesso' : 'Data saved successfully');
+      notify.success(t('publicContractSigning.dataSavedSuccessfully'));
     },
     onError: () => notify.error(t('publicContract.errors.saveDataFailed')),
   });
@@ -434,9 +434,9 @@ export default function PublicContractSigning() {
       setCurrentStep('signing');
       const sigProv: SignatureProvider = contract?.signature_provider || 'manual';
       if (sigProv === 'manual') {
-        notify.success(isPt ? 'Contrato submetido para assinatura manual!' : 'Contract submitted for manual signature!');
+        notify.success(t('publicContractSigning.contractSubmittedForManualSignature'));
       } else {
-        notify.success(isPt ? `Contrato enviado para assinatura via ${providerLabel(sigProv, 'pt')}!` : `Contract sent for signature via ${providerLabel(sigProv, 'en')}!`);
+        notify.success(t('publicContractSigning.contractSentViaProvider', { provider: providerLabel(sigProv, lang) }));
       }
     },
     onError: (err: any) => {
@@ -517,7 +517,7 @@ export default function PublicContractSigning() {
               {lang === 'pt' ? 'EN' : 'PT'}
             </Button>
             <Badge variant="outline" className="text-xs">
-              {isPt ? 'Onboarding Contratual' : 'Contract Onboarding'}
+              {t('publicContractSigning.contractOnboarding')}
             </Badge>
           </div>
         </div>
@@ -527,10 +527,10 @@ export default function PublicContractSigning() {
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            {isPt ? 'Contrato de Incubação' : 'Incubation Contract'}
+            {t('publicContractSigning.incubationContract')}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {startupName} — {contract.contract_number || (isPt ? 'Novo Contrato' : 'New Contract')}
+            {startupName} — {contract.contract_number || (t('publicContractSigning.newContract'))}
           </p>
         </div>
 
@@ -565,10 +565,10 @@ export default function PublicContractSigning() {
                   <RotateCcw className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                   <div className="flex-1 text-xs">
                     <p className="font-semibold">
-                      {isPt ? 'Encontrámos dados não guardados' : 'Unsaved data found'}
+                      {t('publicContractSigning.unsavedDataFound')}
                     </p>
                     <p className="text-muted-foreground mt-0.5">
-                      {isPt ? 'Quer restaurar o rascunho?' : 'Restore your draft?'}
+                      {t('publicContractSigning.restoreYourDraft')}
                     </p>
                   </div>
                   <div className="flex gap-1.5 shrink-0">
@@ -582,7 +582,7 @@ export default function PublicContractSigning() {
                         autosave.dismissRestoredBanner();
                       }}
                     >
-                      {isPt ? 'Restaurar' : 'Restore'}
+                      {t('publicContractSigning.restore')}
                     </Button>
                     <Button
                       size="sm"
@@ -603,12 +603,10 @@ export default function PublicContractSigning() {
                   <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
                   <div className="flex-1 text-xs">
                     <p className="font-semibold">
-                      {isPt ? 'Versão mais recente no servidor' : 'Newer version on the server'}
+                      {t('publicContractSigning.newerVersionOnTheServer')}
                     </p>
                     <p className="text-muted-foreground mt-0.5">
-                      {isPt
-                        ? 'Foram guardadas alterações neste contrato depois do seu rascunho local. Recomendamos usar a versão do servidor.'
-                        : 'This contract was updated on the server after your local draft. We recommend keeping the server version.'}
+                      {t('publicContractSigning.thisContractWasUpdatedOnTheServer')}
                     </p>
                   </div>
                   <div className="flex gap-1.5 shrink-0">
@@ -618,7 +616,7 @@ export default function PublicContractSigning() {
                       className="h-7 text-xs"
                       onClick={() => autosave.acceptServerVersion()}
                     >
-                      {isPt ? 'Usar servidor' : 'Use server'}
+                      {t('publicContractSigning.useServer')}
                     </Button>
                     <Button
                       size="sm"
@@ -630,7 +628,7 @@ export default function PublicContractSigning() {
                         autosave.acceptServerVersion();
                       }}
                     >
-                      {isPt ? 'Restaurar local' : 'Restore local'}
+                      {t('publicContractSigning.restoreLocal')}
                     </Button>
                   </div>
                 </CardContent>
@@ -638,36 +636,34 @@ export default function PublicContractSigning() {
             )}
             {/* Save-status pill */}
             <div className="text-[11px] text-muted-foreground text-right" aria-live="polite">
-              {autosave.status === 'saving' && (isPt ? 'A guardar…' : 'Saving…')}
-              {autosave.status === 'saved' && (isPt ? 'Guardado' : 'Saved')}
-              {autosave.status === 'local_only' && (isPt ? 'Guardado neste dispositivo' : 'Saved on this device')}
-              {autosave.status === 'error' && (isPt ? 'Erro ao guardar' : 'Save error')}
+              {autosave.status === 'saving' && (t('publicContractSigning.saving'))}
+              {autosave.status === 'saved' && (t('publicContractSigning.saved'))}
+              {autosave.status === 'local_only' && (t('publicContractSigning.savedOnThisDevice'))}
+              {autosave.status === 'error' && (t('publicContractSigning.saveError'))}
             </div>
             {/* Company & Legal Rep Data */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-primary" />
-                  {isPt ? 'Dados da Empresa e Representante Legal' : 'Company & Legal Representative Data'}
+                  {t('publicContractSigning.companyLegalRepresentativeData')}
                 </CardTitle>
                 <CardDescription>
-                  {isPt
-                    ? 'Estes dados serão utilizados para a geração automática do contrato de incubação.'
-                    : 'This data will be used to automatically generate the incubation contract.'}
+                  {t('publicContractSigning.thisDataWillBeUsedToAutomatically')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label>{isPt ? 'Nome do Representante Legal / Gerente(s) / Promotor *' : 'Legal Representative / Manager(s) / Promoter *'}</Label>
+                    <Label>{t('publicContractSigning.legalRepresentativeManagerSPromoter')}</Label>
                     <Input
                       value={formData.legal_representative_name}
                       onChange={e => setFormData(prev => ({ ...prev, legal_representative_name: e.target.value }))}
-                      placeholder={isPt ? 'Nome completo' : 'Full name'}
+                      placeholder={t('publicContractSigning.fullName')}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{isPt ? 'Email do Representante *' : 'Representative Email *'}</Label>
+                    <Label>{t('publicContractSigning.representativeEmail')}</Label>
                     <Input
                       type="email"
                       value={formData.legal_representative_email}
@@ -676,7 +672,7 @@ export default function PublicContractSigning() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{isPt ? 'Telefone' : 'Phone'}</Label>
+                    <Label>{t('publicContractSigning.phone')}</Label>
                     <Input
                       type="tel"
                       value={formData.legal_representative_phone}
@@ -685,11 +681,11 @@ export default function PublicContractSigning() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{isPt ? 'Nome do Projeto (se diferente)' : 'Project Name (if different)'}</Label>
+                    <Label>{t('publicContractSigning.projectNameIfDifferent')}</Label>
                     <Input
                       value={formData.project_name}
                       onChange={e => setFormData(prev => ({ ...prev, project_name: e.target.value }))}
-                      placeholder={isPt ? 'Nome comercial do projeto' : 'Commercial project name'}
+                      placeholder={t('publicContractSigning.commercialProjectName')}
                     />
                   </div>
                 </div>
@@ -698,7 +694,7 @@ export default function PublicContractSigning() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label>{isPt ? 'NIF (Empresa ou Pessoa) *' : 'Tax ID (Company or Personal) *'}</Label>
+                    <Label>{t('publicContractSigning.taxIdCompanyOrPersonal')}</Label>
                     <Input
                       value={formData.company_nif}
                       onChange={e => setFormData(prev => ({ ...prev, company_nif: e.target.value }))}
@@ -707,15 +703,15 @@ export default function PublicContractSigning() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{isPt ? 'Morada Fiscal *' : 'Registered Address *'}</Label>
+                    <Label>{t('publicContractSigning.registeredAddress')}</Label>
                     <Input
                       value={formData.company_address}
                       onChange={e => setFormData(prev => ({ ...prev, company_address: e.target.value }))}
-                      placeholder={isPt ? 'Rua, número, andar' : 'Street, number, floor'}
+                      placeholder={t('publicContractSigning.streetNumberFloor')}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{isPt ? 'Cidade *' : 'City *'}</Label>
+                    <Label>{t('publicContractSigning.city')}</Label>
                     <Input
                       value={formData.company_city}
                       onChange={e => setFormData(prev => ({ ...prev, company_city: e.target.value }))}
@@ -723,7 +719,7 @@ export default function PublicContractSigning() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{isPt ? 'Código Postal *' : 'Postal Code *'}</Label>
+                    <Label>{t('publicContractSigning.postalCode')}</Label>
                     <Input
                       value={formData.company_postal_code}
                       onChange={e => setFormData(prev => ({ ...prev, company_postal_code: e.target.value }))}
@@ -736,28 +732,28 @@ export default function PublicContractSigning() {
                 <Separator />
                 <div className="bg-muted/40 rounded-lg p-4 space-y-2">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {isPt ? 'Resumo do Contrato' : 'Contract Summary'}
+                    {t('publicContractSigning.contractSummary')}
                   </p>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
-                      <span className="text-muted-foreground">{isPt ? 'Tipo:' : 'Type:'}</span>{' '}
+                      <span className="text-muted-foreground">{t('publicContractSigning.type')}</span>{' '}
                       {contract.incubation_type?.name || '—'}
                     </div>
                     <div>
-                      <span className="text-muted-foreground">{isPt ? 'Edifício:' : 'Building:'}</span>{' '}
+                      <span className="text-muted-foreground">{t('publicContractSigning.building')}</span>{' '}
                       {contract.building?.name || '—'}
                     </div>
                     <div>
-                      <span className="text-muted-foreground">{isPt ? 'Mensalidade:' : 'Monthly Fee:'}</span>{' '}
+                      <span className="text-muted-foreground">{t('publicContractSigning.monthlyFee')}</span>{' '}
                       {contract.monthly_fee}€/{contract.currency || 'EUR'}
                     </div>
                     <div>
-                      <span className="text-muted-foreground">{isPt ? 'Início:' : 'Start:'}</span>{' '}
-                      {new Date(contract.start_date).toLocaleDateString(isPt ? 'pt-PT' : 'en-GB')}
+                      <span className="text-muted-foreground">{t('publicContractSigning.start')}</span>{' '}
+                      {new Date(contract.start_date).toLocaleDateString(t('publicContractSigning.enGb'))}
                     </div>
                     {contract.square_meters && (
                       <div>
-                        <span className="text-muted-foreground">{isPt ? 'Área:' : 'Area:'}</span>{' '}
+                        <span className="text-muted-foreground">{t('publicContractSigning.area')}</span>{' '}
                         {contract.square_meters} m²
                       </div>
                     )}
@@ -771,12 +767,10 @@ export default function PublicContractSigning() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileUp className="h-5 w-5 text-primary" />
-                  {isPt ? 'Documentos' : 'Documents'}
+                  {t('publicContractSigning.documents')}
                 </CardTitle>
                 <CardDescription>
-                  {isPt
-                    ? 'Carregue os seguintes documentos para completar o processo de onboarding. Todos os documentos são opcionais nesta fase.'
-                    : 'Upload the following documents to complete the onboarding process. All documents are optional at this stage.'}
+                  {t('publicContractSigning.uploadTheFollowingDocumentsTo')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -825,7 +819,7 @@ export default function PublicContractSigning() {
                               onClick={() => removeDoc(doc.key)}
                             >
                               <X className="h-3.5 w-3.5" />
-                              {isPt ? 'Remover' : 'Remove'}
+                              {t('publicContractSigning.remove')}
                             </Button>
                           ) : (
                             <>
@@ -852,7 +846,7 @@ export default function PublicContractSigning() {
                                 ) : (
                                   <Upload className="h-3.5 w-3.5" />
                                 )}
-                                {isPt ? 'Carregar' : 'Upload'}
+                                {t('publicContractSigning.upload')}
                               </Button>
                             </>
                           )}
@@ -873,7 +867,7 @@ export default function PublicContractSigning() {
                 className="gap-2"
               >
                 {saveCompanyData.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {isPt ? 'Continuar' : 'Continue'} <ArrowRight className="h-4 w-4" />
+                {t('publicContractSigning.continue')} <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -885,13 +879,11 @@ export default function PublicContractSigning() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-primary" />
-                {isPt ? 'Rever Contrato e Regulamento' : 'Review Contract & Regulation'}
+                {t('publicContractSigning.reviewContractRegulation')}
               </CardTitle>
               <CardDescription>
                 {sigProvider === 'manual'
-                  ? (isPt
-                    ? 'Reveja os documentos antes de submeter para assinatura manual.'
-                    : 'Review the documents before submitting for manual signature.')
+                  ? (t('publicContractSigning.reviewTheDocumentsBeforeSubmitting'))
                   : (isPt
                     ? `Reveja os documentos antes de enviar para assinatura via ${providerLabel(sigProvider, 'pt')}.`
                     : `Review the documents before sending for signature via ${providerLabel(sigProvider, 'en')}.`)}
@@ -904,15 +896,13 @@ export default function PublicContractSigning() {
                   <FileText className="h-5 w-5 text-primary" />
                   <div>
                     <p className="text-sm font-medium">
-                      {isPt ? 'Minuta de Contrato de Incubação' : 'Incubation Contract Template'}
+                      {t('publicContractSigning.incubationContractTemplate')}
                     </p>
-                    <p className="text-xs text-muted-foreground">{isPt ? 'Minuta Oficial' : 'Official Template'} — 2026</p>
+                    <p className="text-xs text-muted-foreground">{t('publicContractSigning.officialTemplate')} — 2026</p>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  {isPt
-                    ? 'O contrato será gerado automaticamente com os seus dados e enviado para assinatura digital. O documento segue a minuta oficial da Startup Leiria.'
-                    : 'The contract will be automatically generated with your data and sent for digital signature. The document follows the official template from Startup Leiria.'}
+                  {t('publicContractSigning.theContractWillBeAutomatically')}
                 </p>
                 <div className="flex items-start gap-2">
                   <Checkbox
@@ -921,9 +911,7 @@ export default function PublicContractSigning() {
                     onCheckedChange={(v) => setContractAccepted(v === true)}
                   />
                   <label htmlFor="accept-contract" className="text-xs leading-tight cursor-pointer">
-                    {isPt
-                      ? 'Li e aceito os termos do Contrato de Incubação, incluindo as condições de prestação de serviços, obrigações e direitos das partes.'
-                      : 'I have read and accept the Incubation Contract terms, including service conditions, obligations and rights of both parties.'}
+                    {t('publicContractSigning.iHaveReadAndAcceptTheIncubation')}
                   </label>
                 </div>
               </div>
@@ -934,15 +922,13 @@ export default function PublicContractSigning() {
                   <Shield className="h-5 w-5 text-amber-600" />
                   <div>
                     <p className="text-sm font-medium">
-                      {isPt ? 'Regulamento Startup Leiria' : 'Startup Leiria Regulation'}
+                      {t('publicContractSigning.startupLeiriaRegulation')}
                     </p>
                     <p className="text-xs text-muted-foreground">V11 — Anexo I — 2026</p>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  {isPt
-                    ? 'O regulamento define as normas de funcionamento, direitos e deveres dos incubados, incluindo utilização de espaços, serviços complementares e condições de permanência.'
-                    : 'The regulation defines the operating rules, rights and duties of incubatees, including use of spaces, complementary services and conditions of stay.'}
+                  {t('publicContractSigning.theRegulationDefinesTheOperating')}
                 </p>
                 <div className="flex items-start gap-2">
                   <Checkbox
@@ -951,9 +937,7 @@ export default function PublicContractSigning() {
                     onCheckedChange={(v) => setRegulationAccepted(v === true)}
                   />
                   <label htmlFor="accept-regulation" className="text-xs leading-tight cursor-pointer">
-                    {isPt
-                      ? 'Li e aceito o Regulamento da Startup Leiria (Anexo I), comprometendo-me a cumprir as normas e procedimentos nele estabelecidos.'
-                      : 'I have read and accept the Startup Leiria Regulation (Annex I), committing to comply with its norms and procedures.'}
+                    {t('publicContractSigning.iHaveReadAndAcceptTheStartup')}
                   </label>
                 </div>
               </div>
@@ -961,11 +945,11 @@ export default function PublicContractSigning() {
               {/* Company data summary */}
               <div className="bg-muted/40 rounded-lg p-4 space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {isPt ? 'Dados Confirmados' : 'Confirmed Data'}
+                  {t('publicContractSigning.confirmedData')}
                 </p>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span className="text-muted-foreground">{isPt ? 'Representante:' : 'Representative:'}</span>{' '}
+                    <span className="text-muted-foreground">{t('publicContractSigning.representative')}</span>{' '}
                     {formData.legal_representative_name}
                   </div>
                   <div>
@@ -977,14 +961,14 @@ export default function PublicContractSigning() {
                     {formData.company_nif}
                   </div>
                   <div>
-                    <span className="text-muted-foreground">{isPt ? 'Morada:' : 'Address:'}</span>{' '}
+                    <span className="text-muted-foreground">{t('publicContractSigning.address')}</span>{' '}
                     {formData.company_address}, {formData.company_city}
                   </div>
                 </div>
                 {/* Uploaded docs summary */}
                 <Separator className="my-2" />
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {isPt ? 'Documentos Carregados' : 'Uploaded Documents'}
+                  {t('publicContractSigning.uploadedDocuments')}
                 </p>
                 <div className="space-y-1">
                   {ONBOARDING_DOCS.map(doc => {
@@ -1010,7 +994,7 @@ export default function PublicContractSigning() {
 
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => setCurrentStep('company_data')} className="gap-1.5">
-                  <ArrowLeft className="h-4 w-4" /> {isPt ? 'Voltar' : 'Back'}
+                  <ArrowLeft className="h-4 w-4" /> {t('publicContractSigning.back')}
                 </Button>
                 <Button
                   onClick={() => submitForSigning.mutate()}
@@ -1019,8 +1003,8 @@ export default function PublicContractSigning() {
                 >
                   {submitForSigning.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <PenTool className="h-4 w-4" />}
                   {sigProvider === 'manual'
-                    ? (isPt ? 'Submeter Contrato' : 'Submit Contract')
-                    : (isPt ? `Enviar via ${providerLabel(sigProvider, 'pt')}` : `Send via ${providerLabel(sigProvider, 'en')}`)}
+                    ? (t('publicContractSigning.submitContract'))
+                    : t('publicContractSigning.sendViaProvider', { provider: providerLabel(sigProvider, lang) })}
                 </Button>
               </div>
             </CardContent>
@@ -1046,12 +1030,10 @@ export default function PublicContractSigning() {
                 <div className="text-center py-8 space-y-3">
                   <CheckCircle2 className="h-16 w-16 mx-auto text-primary" />
                   <h3 className="text-lg font-semibold text-primary">
-                    {isPt ? 'Contrato Assinado!' : 'Contract Signed!'}
+                    {t('publicContractSigning.contractSigned')}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    {isPt
-                      ? 'O contrato foi assinado com sucesso. Receberá um email com os acessos à plataforma.'
-                      : 'The contract has been signed successfully. You will receive an email with platform access.'}
+                    {t('publicContractSigning.theContractHasBeenSigned')}
                   </p>
                 </div>
 
@@ -1061,22 +1043,20 @@ export default function PublicContractSigning() {
                   {/* Secção 1: Visualizar contrato */}
                   <div className="rounded-lg border p-4 bg-muted/30">
                     <h4 className="font-medium text-sm mb-2">
-                      {isPt ? '📄 Contrato para Assinatura' : '📄 Contract for Signature'}
+                      {t('publicContractSigning.contractForSignature')}
                     </h4>
                     <p className="text-xs text-muted-foreground mb-3">
-                      {isPt 
-                        ? 'Reveja o contrato antes de assinar. Ao assinar, aceita todos os termos.'
-                        : 'Review the contract before signing. By signing, you accept all terms.'}
+                      {t('publicContractSigning.reviewTheContractBeforeSigningBy')}
                     </p>
                     <Button variant="outline" size="sm" className="gap-2" onClick={handleDownloadPdf} disabled={pdfLoading}>
                       <FileText className="h-3.5 w-3.5" />
                       {pdfLoading
-                        ? (isPt ? 'A preparar PDF…' : 'Preparing PDF…')
-                        : (isPt ? 'Descarregar PDF do Contrato' : 'Download Contract PDF')}
+                        ? (t('publicContractSigning.preparingPdf'))
+                        : (t('publicContractSigning.downloadContractPdf'))}
                     </Button>
                     {pdfError && (
                       <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive flex items-center justify-between gap-3">
-                        <span>{isPt ? 'Não foi possível carregar a pré-visualização do PDF.' : 'Could not load the PDF preview.'}</span>
+                        <span>{t('publicContractSigning.couldNotLoadThePdfPreview')}</span>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -1086,7 +1066,7 @@ export default function PublicContractSigning() {
                             void fetchPdf();
                           }}
                         >
-                          {isPt ? 'Tentar novamente' : 'Try again'}
+                          {t('publicContractSigning.tryAgain')}
                         </Button>
                       </div>
                     )}
@@ -1094,7 +1074,7 @@ export default function PublicContractSigning() {
                       <div className="mt-3 rounded-md overflow-hidden border bg-background">
                         <iframe
                           src={pdfUrl}
-                          title={isPt ? 'Pré-visualização do contrato' : 'Contract preview'}
+                          title={t('publicContractSigning.contractPreview')}
                           className="w-full h-[420px]"
                           onError={() => setPdfError(true)}
                         />
@@ -1105,11 +1085,11 @@ export default function PublicContractSigning() {
                   {/* Secção 2: Dados do signatário */}
                   <div className="rounded-lg border p-4 space-y-3">
                     <h4 className="font-medium text-sm">
-                      {isPt ? '👤 Dados do Signatário' : '👤 Signer Details'}
+                      {t('publicContractSigning.signerDetails')}
                     </h4>
                     <div className="grid gap-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">{isPt ? 'Nome:' : 'Name:'}</span>
+                        <span className="text-muted-foreground">{t('publicContractSigning.name')}</span>
                         <span className="font-medium">{formData.legal_representative_name}</span>
                       </div>
                       <div className="flex justify-between">
@@ -1126,12 +1106,12 @@ export default function PublicContractSigning() {
                   {/* Secção 3: Assinatura */}
                   <div className="rounded-lg border p-4 space-y-4">
                     <h4 className="font-medium text-sm">
-                      {isPt ? '✍️ Assinatura' : '✍️ Signature'}
+                      {t('publicContractSigning.signature')}
                     </h4>
                     
                     <div>
                       <Label className="text-xs">
-                        {isPt ? 'Escreva o seu nome completo como assinatura' : 'Type your full name as signature'}
+                        {t('publicContractSigning.typeYourFullNameAsSignature')}
                       </Label>
                       <Input 
                         value={typedSignature}
@@ -1154,9 +1134,7 @@ export default function PublicContractSigning() {
                           onCheckedChange={(c) => setAcceptedTerms(c === true)}
                         />
                         <label htmlFor="accept-terms" className="text-xs leading-relaxed">
-                          {isPt 
-                            ? 'Li e aceito os termos do contrato de incubação e o regulamento interno da Startup Leiria.'
-                            : 'I have read and accept the terms of the incubation contract and the internal regulations of Startup Leiria.'}
+                          {t('publicContractSigning.iHaveReadAndAcceptTheTermsOfThe')}
                         </label>
                       </div>
                       <div className="flex items-start gap-2">
@@ -1166,9 +1144,7 @@ export default function PublicContractSigning() {
                           onCheckedChange={(c) => setAcceptedDigital(c === true)}
                         />
                         <label htmlFor="accept-digital" className="text-xs leading-relaxed">
-                          {isPt 
-                            ? 'Aceito que esta assinatura eletrónica simples tem o mesmo valor legal que uma assinatura manuscrita, nos termos do Regulamento eIDAS (UE 910/2014).'
-                            : 'I accept that this simple electronic signature has the same legal value as a handwritten signature under the eIDAS Regulation (EU 910/2014).'}
+                          {t('publicContractSigning.iAcceptThatThisSimpleElectronic')}
                         </label>
                       </div>
                     </div>
@@ -1186,14 +1162,12 @@ export default function PublicContractSigning() {
                       onClick={handleDigitalSign}
                     >
                       {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <PenTool className="h-4 w-4" />}
-                      {isPt ? 'Assinar Contrato Digitalmente' : 'Sign Contract Digitally'}
+                      {t('publicContractSigning.signContractDigitally')}
                     </Button>
 
                     
                     <p className="text-[10px] text-muted-foreground text-center">
-                      {isPt 
-                        ? 'A sua assinatura, IP, data/hora e user agent serão registados como prova legal.'
-                        : 'Your signature, IP, date/time, and user agent will be recorded as legal proof.'}
+                      {t('publicContractSigning.yourSignatureIpDateTimeAndUser')}
                     </p>
                   </div>
                 </div>
@@ -1205,16 +1179,14 @@ export default function PublicContractSigning() {
                     <Mail className="h-10 w-10 text-muted-foreground" />
                   </div>
                   <h3 className="text-lg font-semibold">
-                    {isPt ? 'Assinatura via PandaDoc' : 'Signature via PandaDoc'}
+                    {t('publicContractSigning.signatureViaPandadoc')}
                   </h3>
                   <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                    {isPt 
-                      ? 'Irá receber um email do PandaDoc para assinar digitalmente o contrato. Verifique a sua caixa de entrada (e spam) em '
-                      : 'You will receive an email from PandaDoc to digitally sign the contract. Check your inbox (and spam) at '}
+                    {t('publicContractSigning.youWillReceiveAnEmailFromPandadoc')}
                     <strong>{formData.legal_representative_email}</strong>
                   </p>
                   <Badge variant="outline" className="text-xs">
-                    {isPt ? 'Aguarda email do PandaDoc' : 'Awaiting PandaDoc email'}
+                    {t('publicContractSigning.awaitingPandadocEmail')}
                   </Badge>
                 </div>
 
@@ -1225,15 +1197,13 @@ export default function PublicContractSigning() {
                     <FileText className="h-10 w-10 text-muted-foreground" />
                   </div>
                   <h3 className="text-lg font-semibold">
-                    {isPt ? 'Assinatura Manual em Processamento' : 'Manual Signature in Progress'}
+                    {t('publicContractSigning.manualSignatureInProgress')}
                   </h3>
                   <p className="text-sm text-muted-foreground mt-2">
-                    {isPt
-                      ? 'O seu contrato foi submetido para assinatura manual. A equipa da Startup Leiria irá contactá-lo para agendar a assinatura presencial.'
-                      : 'Your contract has been submitted for manual signature. The Startup Leiria team will contact you to schedule the in-person signing.'}
+                    {t('publicContractSigning.yourContractHasBeenSubmittedFor')}
                   </p>
                   <Badge variant="outline" className="text-xs">
-                    {isPt ? 'Aguarda contacto da equipa' : 'Awaiting team contact'}
+                    {t('publicContractSigning.awaitingTeamContact')}
                   </Badge>
                 </div>
 
@@ -1246,7 +1216,7 @@ export default function PublicContractSigning() {
                     <PenTool className="absolute inset-0 m-auto h-8 w-8 text-foreground" />
                   </div>
                   <h3 className="text-lg font-semibold">
-                    {isPt ? 'Aguardando Assinaturas' : 'Awaiting Signatures'}
+                    {t('publicContractSigning.awaitingSignatures')}
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     {isPt
@@ -1254,7 +1224,7 @@ export default function PublicContractSigning() {
                       : <>Check your email at <strong>{formData.legal_representative_email}</strong>.</>}
                   </p>
                   <Badge variant="outline" className="text-xs">
-                    {isPt ? 'Pendente' : 'Pending'}
+                    {t('publicContractSigning.pending')}
                   </Badge>
                 </div>
               )}
@@ -1266,7 +1236,7 @@ export default function PublicContractSigning() {
         <div className="text-center text-xs text-muted-foreground py-4">
           <p>
             © {new Date().getFullYear()} Startup Leiria —{' '}
-            {isPt ? 'Associação para o Empreendedorismo e Inovação' : 'Association for Entrepreneurship and Innovation'}
+            {t('publicContractSigning.associationForEntrepreneurshipAnd')}
           </p>
         </div>
       </div>

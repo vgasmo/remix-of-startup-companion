@@ -83,13 +83,13 @@ export default function PublicContractIntake() {
   const handleUploadDoc = async (docKey: string, file: File) => {
     const MAX_BYTES = 10 * 1024 * 1024;
     if (file.size > MAX_BYTES) {
-      notify.error(isPt ? 'Ficheiro demasiado grande (máx. 10MB)' : 'File too large (max 10MB)');
+      notify.error(t('publicContractIntake.fileTooLargeMax10mb'));
       return;
     }
     const ext = (file.name.split('.').pop() || 'pdf').toLowerCase();
     const allowed = ['pdf', 'jpg', 'jpeg', 'png'];
     if (!allowed.includes(ext)) {
-      notify.error(isPt ? 'Formato não suportado (PDF, JPG, PNG)' : 'Unsupported format (PDF, JPG, PNG)');
+      notify.error(t('publicContractIntake.unsupportedFormatPdfJpgPng'));
       return;
     }
     setUploadingDocKey(docKey);
@@ -116,7 +116,7 @@ export default function PublicContractIntake() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      notify.success(isPt ? 'Documento enviado' : 'Document uploaded');
+      notify.success(t('publicContractIntake.documentUploaded'));
       await queryClient.invalidateQueries({ queryKey: ['public-intake', token] });
     } catch (err: any) {
       notify.error(err?.message || t('publicContract.errors.uploadFailed'));
@@ -206,7 +206,7 @@ export default function PublicContractIntake() {
     onSuccess: () => {
       autosave.clearDraft();
       void track('intake_submitted', { properties: { token: token?.slice(0, 6) ?? null } });
-      notify.success(isPt ? 'Dados submetidos com sucesso!' : 'Data submitted successfully!');
+      notify.success(t('publicContractIntake.dataSubmittedSuccessfully'));
     },
     onError: (err: any) => {
       notify.error(err?.message || 'Erro ao submeter');
@@ -237,20 +237,16 @@ export default function PublicContractIntake() {
             <AlertTriangle className="h-10 w-10 mx-auto text-destructive" />
             <p className="text-lg font-semibold">
               {isExpired
-                ? (isPt ? 'Link Expirado' : 'Link Expired')
-                : (isPt ? 'Link Inválido' : 'Invalid Link')}
+                ? (t('publicContractIntake.linkExpired'))
+                : (t('publicContractIntake.invalidLink'))}
             </p>
             <p className="text-sm text-muted-foreground">
               {isExpired
-                ? (isPt
-                  ? 'Este link expirou. Contacte a equipa da Startup Leiria para obter um novo link.'
-                  : 'This link has expired. Contact the Startup Leiria team for a new link.')
-                : (isPt
-                  ? 'Este link não é válido ou já foi utilizado. Contacte a equipa da Startup Leiria para assistência.'
-                  : 'This link is not valid or has already been used. Contact the Startup Leiria team for assistance.')}
+                ? (t('publicContractIntake.thisLinkHasExpiredContactThe'))
+                : (t('publicContractIntake.thisLinkIsNotValidOrHasAlready'))}
             </p>
             <p className="text-xs text-muted-foreground/70">
-              {isPt ? 'Email: info@startupleiria.com' : 'Email: info@startupleiria.com'}
+              {t('publicContractIntake.emailInfoStartupleiriaCom')}
             </p>
           </CardContent>
         </Card>
@@ -264,11 +260,9 @@ export default function PublicContractIntake() {
         <Card className="max-w-md w-full">
           <CardContent className="p-6 text-center space-y-3">
             <CheckCircle2 className="h-12 w-12 mx-auto text-primary" />
-            <p className="text-lg font-semibold">{isPt ? 'Dados Submetidos!' : 'Data Submitted!'}</p>
+            <p className="text-lg font-semibold">{t('publicContractIntake.dataSubmitted')}</p>
             <p className="text-sm text-muted-foreground">
-              {isPt
-                ? 'Os seus dados foram recebidos e serão validados pela nossa equipa. Será contactado quando o contrato estiver pronto para assinatura.'
-                : 'Your data has been received and will be reviewed by our team. You will be contacted when the contract is ready for signing.'}
+              {t('publicContractIntake.yourDataHasBeenReceivedAndWillBe')}
             </p>
           </CardContent>
         </Card>
@@ -291,12 +285,10 @@ export default function PublicContractIntake() {
         <div className="text-center space-y-2">
           <Building2 className="h-10 w-10 mx-auto text-primary" />
           <h1 className="text-2xl font-bold">
-            {isPt ? 'Formulário de Contratação' : 'Contracting Form'}
+            {t('publicContractIntake.contractingForm')}
           </h1>
           <p className="text-muted-foreground text-sm">
-            {isPt
-              ? 'Preencha os dados da sua empresa para iniciar o processo de contratação. Todos os documentos são opcionais nesta fase.'
-              : 'Fill in your company data to start the contracting process. All documents are optional at this stage.'}
+            {t('publicContractIntake.fillInYourCompanyDataToStartThe')}
           </p>
           {intake.organization_name && (
             <Badge variant="outline" className="mt-2">{intake.organization_name}</Badge>
@@ -309,7 +301,7 @@ export default function PublicContractIntake() {
             <CardContent className="p-4 space-y-1">
               <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
-                {isPt ? 'Correções Solicitadas' : 'Changes Requested'}
+                {t('publicContractIntake.changesRequested')}
               </p>
               <p className="text-sm text-amber-700 dark:text-amber-300">{intake.changes_requested_notes}</p>
             </CardContent>
@@ -321,9 +313,7 @@ export default function PublicContractIntake() {
           <CardContent className="p-3 flex items-start gap-2">
             <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
             <p className="text-xs text-muted-foreground">
-              {isPt
-                ? 'Esta fase é apenas de recolha de dados. O contrato será preparado pela equipa após a validação dos dados e enviado separadamente para assinatura.'
-                : 'This is a data collection step only. The contract will be prepared by our team after data validation and sent separately for signing.'}
+              {t('publicContractIntake.thisIsADataCollectionStepOnlyThe')}
             </p>
           </CardContent>
         </Card>
@@ -335,12 +325,10 @@ export default function PublicContractIntake() {
               <RotateCcw className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               <div className="flex-1 text-xs">
                 <p className="font-semibold">
-                  {isPt ? 'Encontrámos dados não guardados' : 'Unsaved data found'}
+                  {t('publicContractIntake.unsavedDataFound')}
                 </p>
                 <p className="text-muted-foreground mt-0.5">
-                  {isPt
-                    ? 'Quer restaurar o rascunho ou começar de novo?'
-                    : 'Restore your draft or start fresh?'}
+                  {t('publicContractIntake.restoreYourDraftOrStartFresh')}
                 </p>
               </div>
               <div className="flex gap-1.5 shrink-0">
@@ -356,7 +344,7 @@ export default function PublicContractIntake() {
                     autosave.dismissRestoredBanner();
                   }}
                 >
-                  {isPt ? 'Restaurar' : 'Restore'}
+                  {t('publicContractIntake.restore')}
                 </Button>
                 <Button
                   size="sm"
@@ -374,39 +362,39 @@ export default function PublicContractIntake() {
         {/* Form */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">{isPt ? 'Dados da Empresa' : 'Company Data'}</CardTitle>
+            <CardTitle className="text-lg">{t('publicContractIntake.companyData')}</CardTitle>
             <span className="text-[11px] text-muted-foreground" aria-live="polite">
-              {autosave.status === 'saving' && (isPt ? 'A guardar…' : 'Saving…')}
-              {autosave.status === 'saved' && (isPt ? 'Guardado' : 'Saved')}
-              {autosave.status === 'local_only' && (isPt ? 'Guardado neste dispositivo' : 'Saved on this device')}
-              {autosave.status === 'error' && (isPt ? 'Erro ao guardar' : 'Save error')}
+              {autosave.status === 'saving' && (t('publicContractIntake.saving'))}
+              {autosave.status === 'saved' && (t('publicContractIntake.saved'))}
+              {autosave.status === 'local_only' && (t('publicContractIntake.savedOnThisDevice'))}
+              {autosave.status === 'error' && (t('publicContractIntake.saveError'))}
               {autosave.status === 'idle' && ''}
             </span>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>{isPt ? 'Nome da Organização' : 'Organization Name'} *</Label>
+                <Label>{t('publicContractIntake.organizationName')} *</Label>
                 <Input value={formData.organization_name} onChange={e => setFormData(p => ({ ...p, organization_name: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label>{isPt ? 'Nome do Projeto (se diferente)' : 'Project Name (if different)'}</Label>
-                <Input value={formData.project_name} onChange={e => setFormData(p => ({ ...p, project_name: e.target.value }))} placeholder={isPt ? 'Nome comercial do projeto' : 'Commercial project name'} />
+                <Label>{t('publicContractIntake.projectNameIfDifferent')}</Label>
+                <Input value={formData.project_name} onChange={e => setFormData(p => ({ ...p, project_name: e.target.value }))} placeholder={t('publicContractIntake.commercialProjectName')} />
               </div>
               <div className="space-y-1.5">
-                <Label>{isPt ? 'NIF (Empresa ou Pessoa)' : 'Tax ID (Company or Personal)'} *</Label>
+                <Label>{t('publicContractIntake.taxIdCompanyOrPersonal')} *</Label>
                 <Input value={formData.company_nif} onChange={e => setFormData(p => ({ ...p, company_nif: e.target.value }))} />
               </div>
               <div className="md:col-span-2 space-y-1.5">
-                <Label>{isPt ? 'Morada' : 'Address'} *</Label>
+                <Label>{t('publicContractIntake.address')} *</Label>
                 <Input value={formData.company_address} onChange={e => setFormData(p => ({ ...p, company_address: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label>{isPt ? 'Cidade' : 'City'} *</Label>
+                <Label>{t('publicContractIntake.city')} *</Label>
                 <Input value={formData.company_city} onChange={e => setFormData(p => ({ ...p, company_city: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label>{isPt ? 'Código Postal' : 'Postal Code'} *</Label>
+                <Label>{t('publicContractIntake.postalCode')} *</Label>
                 <Input value={formData.company_postal_code} onChange={e => setFormData(p => ({ ...p, company_postal_code: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
@@ -422,16 +410,16 @@ export default function PublicContractIntake() {
             <Separator />
 
             <div className="space-y-1.5">
-              <Label>{isPt ? 'Código da Certidão Permanente' : 'Permanent Certificate Code'}</Label>
-              <Input value={formData.certidao_permanente_code} onChange={e => setFormData(p => ({ ...p, certidao_permanente_code: e.target.value }))} placeholder={isPt ? 'Código de acesso online' : 'Online access code'} />
+              <Label>{t('publicContractIntake.permanentCertificateCode')}</Label>
+              <Input value={formData.certidao_permanente_code} onChange={e => setFormData(p => ({ ...p, certidao_permanente_code: e.target.value }))} placeholder={t('publicContractIntake.onlineAccessCode')} />
             </div>
 
             <Separator />
 
-            <p className="text-sm font-semibold">{isPt ? 'Representante Legal / Gerente(s) / Promotor' : 'Legal Representative / Manager(s) / Promoter'}</p>
+            <p className="text-sm font-semibold">{t('publicContractIntake.legalRepresentativeManagerSPromoter')}</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>{isPt ? 'Nome Completo' : 'Full Name'} *</Label>
+                <Label>{t('publicContractIntake.fullName')} *</Label>
                 <Input value={formData.legal_representative_name} onChange={e => setFormData(p => ({ ...p, legal_representative_name: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
@@ -439,11 +427,11 @@ export default function PublicContractIntake() {
                 <Input type="email" value={formData.legal_representative_email} onChange={e => setFormData(p => ({ ...p, legal_representative_email: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label>{isPt ? 'Telefone' : 'Phone'} *</Label>
+                <Label>{t('publicContractIntake.phone')} *</Label>
                 <Input type="tel" value={formData.legal_representative_phone} onChange={e => setFormData(p => ({ ...p, legal_representative_phone: e.target.value }))} placeholder="+351 900 000 000" />
               </div>
               <div className="space-y-1.5">
-                <Label>{isPt ? 'Email de Faturação' : 'Billing Email'}</Label>
+                <Label>{t('publicContractIntake.billingEmail')}</Label>
                 <Input type="email" value={formData.billing_email} onChange={e => setFormData(p => ({ ...p, billing_email: e.target.value }))} />
               </div>
             </div>
@@ -453,7 +441,7 @@ export default function PublicContractIntake() {
               <div key={idx} className="border border-border/50 rounded-lg p-3 space-y-3 bg-muted/20">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold text-muted-foreground">
-                    {isPt ? `Representante/Gerente adicional ${idx + 2}` : `Additional Representative/Manager ${idx + 2}`}
+                    {t('publicContractIntake.additionalRepresentativeN', { n: idx + 2 })}
                   </p>
                   <Button
                     type="button"
@@ -465,7 +453,7 @@ export default function PublicContractIntake() {
                       additional_representatives: p.additional_representatives.filter((_, i) => i !== idx),
                     }))}
                   >
-                    {isPt ? 'Remover' : 'Remove'}
+                    {t('publicContractIntake.remove')}
                   </Button>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -476,7 +464,7 @@ export default function PublicContractIntake() {
                       updated[idx] = { ...updated[idx], name: e.target.value };
                       setFormData(p => ({ ...p, additional_representatives: updated }));
                     }}
-                    placeholder={isPt ? 'Nome completo' : 'Full name'}
+                    placeholder={t('publicContractIntake.fullName2')}
                   />
                   <Input
                     type="email"
@@ -496,7 +484,7 @@ export default function PublicContractIntake() {
                       updated[idx] = { ...updated[idx], phone: e.target.value };
                       setFormData(p => ({ ...p, additional_representatives: updated }));
                     }}
-                    placeholder={isPt ? 'Telefone' : 'Phone'}
+                    placeholder={t('publicContractIntake.phone2')}
                   />
                 </div>
               </div>
@@ -511,17 +499,17 @@ export default function PublicContractIntake() {
                 additional_representatives: [...p.additional_representatives, { name: '', email: '', phone: '' }],
               }))}
             >
-              + {isPt ? 'Adicionar Representante/Gerente' : 'Add Representative/Manager'}
+              + {t('publicContractIntake.addRepresentativeManager')}
             </Button>
 
             <Separator />
 
             <div className="space-y-1.5">
-              <Label>{isPt ? 'Descrição do Projeto' : 'Project Description'}</Label>
+              <Label>{t('publicContractIntake.projectDescription')}</Label>
               <Textarea
                 value={formData.startup_description}
                 onChange={e => setFormData(p => ({ ...p, startup_description: e.target.value }))}
-                placeholder={isPt ? 'Breve descrição da startup e do projeto...' : 'Brief description of your startup and project...'}
+                placeholder={t('publicContractIntake.briefDescriptionOfYourStartupAnd')}
                 rows={3}
               />
             </div>
@@ -532,12 +520,10 @@ export default function PublicContractIntake() {
             <div className="space-y-2">
               <p className="text-sm font-semibold flex items-center gap-2">
                 <Upload className="h-4 w-4" />
-                {isPt ? 'Documentos (Opcionais)' : 'Documents (Optional)'}
+                {t('publicContractIntake.documentsOptional')}
               </p>
               <p className="text-xs text-muted-foreground">
-                {isPt
-                  ? 'Os documentos podem ser enviados mais tarde. A submissão não é bloqueada pela falta de documentos.'
-                  : 'Documents can be sent later. Submission is not blocked by missing documents.'}
+                {t('publicContractIntake.documentsCanBeSentLaterSubmission')}
               </p>
               <div className="grid gap-2">
                 {OPTIONAL_DOCS.map(doc => {
@@ -557,7 +543,7 @@ export default function PublicContractIntake() {
                         {uploaded ? (
                           <Badge variant="outline" className="text-[10px] bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-300">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
-                            {isPt ? 'Enviado' : 'Uploaded'}
+                            {t('publicContractIntake.uploaded')}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-[10px]">
@@ -580,7 +566,7 @@ export default function PublicContractIntake() {
                           ) : (
                             <Upload className="h-3.5 w-3.5" />
                           )}
-                          {uploaded ? (isPt ? 'Substituir' : 'Replace') : (isPt ? 'Carregar' : 'Upload')}
+                          {uploaded ? (t('publicContractIntake.replace')) : (t('publicContractIntake.upload'))}
                         </Button>
                         <input
                           id={`upload-${doc.key}`}
@@ -623,7 +609,7 @@ export default function PublicContractIntake() {
             ) : (
               <CheckCircle2 className="h-4 w-4" />
             )}
-            {isPt ? 'Submeter Dados' : 'Submit Data'}
+            {t('publicContractIntake.submitData')}
           </Button>
         </div>
 
@@ -631,7 +617,7 @@ export default function PublicContractIntake() {
         <div className="text-center pb-8">
           <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
             <Shield className="h-3 w-3" />
-            {isPt ? 'Os seus dados são tratados de forma segura e confidencial.' : 'Your data is handled securely and confidentially.'}
+            {t('publicContractIntake.yourDataIsHandledSecurelyAnd')}
           </div>
         </div>
       </div>

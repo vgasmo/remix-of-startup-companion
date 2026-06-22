@@ -1145,6 +1145,7 @@
     "rejectApplication": "Reject Application",
     "rejectConfirm": "Are you sure you want to reject this startup application? The founder will need to submit a new application.",
     "relatórioGeradoComSucesso": "Relatório gerado successfully",
+    "removeMentorTitle": "Remove mentor access?",
     "reports": "Reports",
     "reportsDesc": "Reports",
     "roleAdded": "Role added",
@@ -1484,6 +1485,8 @@
       "consultorAssigned": "Consultant assigned",
       "consultorRemoved": "Consultant removed",
       "create": "Create Workspace",
+      "deleteConfirm": "This will permanently delete the workspace \"{{name}}\" and all its data. This action cannot be undone.",
+      "deleteTitle": "Delete workspace?",
       "deleted": "Workspace deleted",
       "health": "Health",
       "noWorkspaces": "No workspaces created yet",
@@ -1499,11 +1502,8 @@
       "status": "Status",
       "title": "Workspaces",
       "unblock": "Unblock",
-      "unblocked": "Workspace unblocked",
-      "deleteTitle": "Delete workspace?",
-      "deleteConfirm": "This will permanently delete the workspace \"{{name}}\" and all its data. This action cannot be undone."
-    },
-    "removeMentorTitle": "Remove mentor access?"
+      "unblocked": "Workspace unblocked"
+    }
   },
   "adminContracts": {
     "allStatuses": "All statuses",
@@ -1953,6 +1953,7 @@
     "commitSuccess": "Imported {{committed}} contracts ({{failed}} failed)",
     "committing": "Committing...",
     "confirmCommit": "Import {{count}} contracts? This will create/update startups, workspaces, and contracts.",
+    "confirmCommitTitle": "Commit import?",
     "done": {
       "backAdmin": "Back to Backoffice",
       "desc": "Your contracts have been imported. Review any errors below.",
@@ -2025,8 +2026,7 @@
       "start": "Upload & extract with AI",
       "title": "Upload signed contract PDFs",
       "uploading": "Uploading {{done}} / {{total}}..."
-    },
-    "confirmCommitTitle": "Commit import?"
+    }
   },
   "calendar": {
     "bookSession": "Book Session",
@@ -2066,6 +2066,7 @@
     "outlook4": "Name it \"Startup Leiria Sessions\" and click Import",
     "regenerate": "Regenerate token",
     "regenerateConfirm": "Regenerating the token will invalidate current subscriptions. Continue?",
+    "regenerateTitle": "Regenerate calendar token?",
     "regenerateToken": "Regenerate Calendar Token",
     "regenerationRequired": "Token Regeneration Required",
     "secureAccess": "Secure Calendar Access",
@@ -2074,8 +2075,7 @@
     "tokenExpired": "Your calendar token has expired. Please generate a new one to continue using calendar sync.",
     "tokenGenerated": "Calendar token generated successfully (valid for 90 days)",
     "tokenNeedsRegeneration": "For security reasons, your calendar token needs to be regenerated. Your calendar subscriptions will need to be updated with the new URL.",
-    "urlCopied": "Calendar URL copied",
-    "regenerateTitle": "Regenerate calendar token?"
+    "urlCopied": "Calendar URL copied"
   },
   "chat": {
     "empty": "No messages yet. Start the conversation!",
@@ -2175,6 +2175,20 @@
     "workspaces": "Workspaces"
   },
   "common": {
+    "_iconArchive": "Archive",
+    "_iconHelp": "Help",
+    "_iconHide": "Hide",
+    "_iconHistory": "History",
+    "_iconOpenCalendar": "Open calendar",
+    "_iconOpenChat": "Open chat",
+    "_iconOpenLinkedin": "Open LinkedIn",
+    "_iconOpenNotifications": "Open notifications",
+    "_iconOpenVideo": "Open video",
+    "_iconPause": "Pause",
+    "_iconSend": "Send",
+    "_iconToggleFavorite": "Toggle favorite",
+    "_iconToggleSidebar": "Toggle sidebar",
+    "_iconToggleTheme": "Toggle theme",
     "accessDenied": "Access Denied",
     "actions": "Actions",
     "active": "Active",
@@ -2185,6 +2199,8 @@
     "allPrograms": "All Programs",
     "allStages": "All Stages",
     "approved": "Approved",
+    "archive": "Archive",
+    "areYouSure": "Are you sure?",
     "atTime": "at",
     "back": "Back",
     "backToHome": "Back to Home",
@@ -2292,6 +2308,19 @@
     "pending": "Pendente",
     "perMonth": "/mo",
     "phone": "Phone",
+    "placeholders": {
+      "addComment": "Add a comment...",
+      "addTags": "Add tags...",
+      "additionalDetails": "Additional details...",
+      "allTime": "All time",
+      "exerciseNotes": "Any specific notes for this exercise...",
+      "pasteTranscript": "Paste transcript from Teams, Zoom, or any meeting recording tool...\n\nYou can also paste meeting notes or a summary.",
+      "searchExercises": "Search exercises...",
+      "searchOrCreateTag": "Search or create tag...",
+      "searchSitewide": "Search sessions, actions, notes, documents...",
+      "selectOption": "Select an option",
+      "shareFeedback": "Share your thoughts about this session..."
+    },
     "pleaseWait": "Please wait{{ remainingSeconds }}s before trying again.",
     "preview": "Preview",
     "previous": "Previous",
@@ -2360,36 +2389,7 @@
     "viewAll": "View all",
     "workspace": "Workspace",
     "years": "years",
-    "yes": "Yes",
-    "_iconArchive": "Archive",
-    "_iconHide": "Hide",
-    "_iconHelp": "Help",
-    "_iconOpenCalendar": "Open calendar",
-    "_iconOpenChat": "Open chat",
-    "_iconOpenLinkedin": "Open LinkedIn",
-    "_iconOpenNotifications": "Open notifications",
-    "_iconOpenVideo": "Open video",
-    "_iconPause": "Pause",
-    "_iconSend": "Send",
-    "_iconToggleFavorite": "Toggle favorite",
-    "_iconToggleSidebar": "Toggle sidebar",
-    "_iconToggleTheme": "Toggle theme",
-    "_iconHistory": "History",
-    "placeholders": {
-      "addTags": "Add tags...",
-      "searchOrCreateTag": "Search or create tag...",
-      "addComment": "Add a comment...",
-      "searchSitewide": "Search sessions, actions, notes, documents...",
-      "allTime": "All time",
-      "shareFeedback": "Share your thoughts about this session...",
-      "pasteTranscript": "Paste transcript from Teams, Zoom, or any meeting recording tool...\n\nYou can also paste meeting notes or a summary.",
-      "searchExercises": "Search exercises...",
-      "exerciseNotes": "Any specific notes for this exercise...",
-      "additionalDetails": "Additional details...",
-      "selectOption": "Select an option"
-    },
-    "archive": "Archive",
-    "areYouSure": "Are you sure?"
+    "yes": "Yes"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -2914,10 +2914,20 @@
     "descriptionHint": "Minimum 20 characters. Describe what your startup does.",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "What does your startup do?",
+    "discardDraft": "Discard draft",
+    "draftRestored": "A previous draft was restored.",
     "duplicateName": "A startup with this name already exists.",
+    "errors": {
+      "descriptionMin": "Description must be at least 20 characters",
+      "invalidEmail": "Please enter a valid email address",
+      "invalidWebsite": "Please enter a valid URL",
+      "nameMin": "Name must be at least 2 characters",
+      "programRequired": "Please select a program"
+    },
     "failedToCreate": "Failed to create startup. Please try again.",
     "mainContact": "Main Contact",
     "mustBeLoggedIn": "You must be logged in to create a startup",
+    "nifLabel": "NIF (Tax ID)",
     "permissionError": "You do not have permission to create a startup. Please contact support.",
     "programLabel": "Program",
     "selectProgram": "Select program",
@@ -3365,7 +3375,6 @@
     "itemsNeedAttention_plural": "{{count}} items need attention",
     "kpiAlert": "KPI Alert",
     "last7Days": "Last 7 days",
-    "reviewKpi": "Review KPI →",
     "meetingsThisWeek": "Meetings This Week",
     "meetingsToday": "Meetings Today",
     "myStartup": "My Startup",
@@ -3379,6 +3388,7 @@
     "pendingActions": "Pending Actions",
     "portfolio": "Portfolio Overview",
     "recentActivity": "Recent Activity",
+    "reviewKpi": "Review KPI →",
     "scheduledForToday": "scheduled for today",
     "switchToFocus": "Show only priorities",
     "switchToFull": "Show all sections",
@@ -3512,6 +3522,7 @@
     "created": "Created",
     "day": "day",
     "days": "days",
+    "deleteTitle": "Remove item?",
     "description": "Documents and reports for investors",
     "download": "Download",
     "emptyPublic": "No content available",
@@ -3548,6 +3559,7 @@
     "poweredBy": "Powered by Startup Leiria",
     "public": "Investors",
     "revoke": "Revoke",
+    "revokeTitle": "Revoke link?",
     "revoked": "Revoked",
     "selectUpdate": "Select Update",
     "selectUpdatePlaceholder": "Select an investor update",
@@ -3562,9 +3574,7 @@
     "updateMonth": "Month",
     "views": "views",
     "visibilityUpdated": "Visibility updated",
-    "visibleToInvestors": "Visible to investors",
-    "deleteTitle": "Remove item?",
-    "revokeTitle": "Revoke link?"
+    "visibleToInvestors": "Visible to investors"
   },
   "dataroomChecklist": {
     "description": "Essential documents checklist for the Data Room",
@@ -3787,6 +3797,8 @@
     "assignConsultant": "Atribuir...",
     "byConsultantTab": "Por Consultor",
     "communityTab": "Comunidade",
+    "confirmArchiveDesc": "Archive \"{{name}}\"? The workspace will be hidden from active lists but can be restored later.",
+    "confirmArchiveTitle": "Archive workspace?",
     "confirmDeleteDesc": "Confirm Delete Desc",
     "confirmDeleteTitle": "Eliminar Lead?",
     "consultantAssigned": "Consultant successfully assigned",
@@ -3820,9 +3832,7 @@
     "unassigned": "No consultant assigned",
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
-    "workspaces": "workspaces",
-    "confirmArchiveTitle": "Archive workspace?",
-    "confirmArchiveDesc": "Archive \"{{name}}\"? The workspace will be hidden from active lists but can be restored later."
+    "workspaces": "workspaces"
   },
   "ecosystemHub": {
     "navLabel": "Management Hub",
@@ -3910,11 +3920,11 @@
     "welcomeTitle": "Welcome to Startup Leiria"
   },
   "engagement": {
+    "founderCompletedActions": "The founder completed {{count}} actions since your last visit.",
+    "founderCompletedActions_plural": "The founder completed {{count}} actions since your last visit.",
     "lastViewed": "Seen {{when}}",
     "viewsCount": "{{count}} views",
-    "viewsCount_plural": "{{count}} views",
-    "founderCompletedActions": "The founder completed {{count}} actions since your last visit.",
-    "founderCompletedActions_plural": "The founder completed {{count}} actions since your last visit."
+    "viewsCount_plural": "{{count}} views"
   },
   "enrollment": {
     "claimExplainer": "The claim flow is independent of the registration method: after logging in, founders check if their startup is already in the system.",
@@ -4738,6 +4748,46 @@
     "signatureProvider": "Signature Provider",
     "submittedData": "Submitted Data"
   },
+  "intakeOps": {
+    "groups": {
+      "awaiting_fill": {
+        "action": "New requests sent to clients will appear here.",
+        "empty": "No requests awaiting client fill.",
+        "title": "Awaiting Fill"
+      },
+      "changes_requested": {
+        "action": "Intakes returned to the client for changes will appear here.",
+        "empty": "No intakes awaiting changes.",
+        "title": "Changes Requested"
+      },
+      "ready_for_signature": {
+        "action": "After approval, send the contract for digital signature.",
+        "empty": "No approved intakes awaiting send for signature.",
+        "title": "Approved for Signature"
+      },
+      "sent_for_signature": {
+        "action": "Contracts sent to client for signature will appear here.",
+        "empty": "No contracts awaiting signature.",
+        "title": "Sent for Signature"
+      },
+      "signed_pending_activation": {
+        "action": "After signature, activate the workspace and operational conditions.",
+        "empty": "No signed contracts awaiting activation.",
+        "title": "Signed — Pending Activation"
+      },
+      "submitted_for_review": {
+        "action": "When a client submits, it will appear here for review.",
+        "empty": "No submissions pending review.",
+        "title": "Submitted for Review"
+      }
+    },
+    "missingDocs": "{{count}} doc(s) missing",
+    "noName": "No name",
+    "overdue": "Overdue",
+    "overdueDesc": "Consider resending the email or contacting the client directly.",
+    "overdueTitle": "{{count}} request(s) without response for more than 10 days",
+    "remindersCount": "{{count}}x reminded"
+  },
   "integrationErrors": {
     "allSmooth": "All integrations running smoothly",
     "markResolved": "Mark as resolved",
@@ -4967,12 +5017,12 @@
     "addKpi": "Add KPI",
     "addKpis": "Add KPIs",
     "addedDefaults": "Added {{count}} default KPIs for {{stage}} stage",
-    "anomalyDeclining": "{{name}} dropped more than 20% versus the previous period.",
-    "anomalyMissing": "{{name}} has no records for over 2 months. Consider updating it.",
-    "anomalyStale": "{{name}} has been flat for 3 periods.",
     "allDefaultsConfigured": "All default KPIs are already configured",
     "allFilled": "✓ All KPIs filled! You can complete the check-in.",
     "allKpisAdded": "All KPIs already added",
+    "anomalyDeclining": "{{name}} dropped more than 20% versus the previous period.",
+    "anomalyMissing": "{{name}} has no records for over 2 months. Consider updating it.",
+    "anomalyStale": "{{name}} has been flat for 3 periods.",
     "applyDefaults": "Apply {{stage}} Stage Defaults",
     "askAdminToSetup": "Ask an admin to set up KPIs for tracking.",
     "autosaveHint": "Values are automatically saved as you fill them in.",
@@ -6779,6 +6829,14 @@
     "trigger": "Request Playbook",
     "urgencyLabel": "When do you need this?"
   },
+  "resourceGuide": {
+    "backToResources": "Back to Resources",
+    "notFoundDesc": "This content is not yet available.",
+    "notFoundTitle": "Guide not found",
+    "read": "read",
+    "resources": "Resources",
+    "tips": "💡 Tips"
+  },
   "resources": {
     "actions": {
       "openGlossary": "Open Glossary & FAQ",
@@ -7402,6 +7460,7 @@
   },
   "settingsPage": {
     "areasOfExpertise": "Areas of Expertise",
+    "avatarUploadFailed": "Failed to upload avatar",
     "avatarUploaded": "Avatar uploaded! Click Save to apply changes.",
     "bioExperience": "Bio / Experience",
     "bioHint": "Visible to other ecosystem members",
@@ -7425,6 +7484,7 @@
     "emailConfirmationSent": "Confirmation email sent to your new address. Please check your inbox.",
     "emailDigest": "Email Digest",
     "emailReadOnly": "To change your email, use the Email tab",
+    "emailUpdateFailed": "Failed to update email",
     "enterNewPassword": "Enter new password",
     "expertiseHint": "Add tags for your areas of expertise to help founders find you",
     "expertiseLabel": "Areas of Expertise",
@@ -7445,6 +7505,7 @@
     "notifications": "Notifications",
     "password": "Password",
     "passwordRecommendation": "We recommend using a strong, unique password",
+    "passwordUpdateFailed": "Failed to update password",
     "passwordUpdated": "Password updated successfully",
     "passwordsDoNotMatch": "Passwords do not match",
     "phone": "Phone",
@@ -7455,6 +7516,7 @@
     "profileInfo": "Profile Information",
     "profileInfoDesc": "Update your personal information and avatar",
     "profilePhoto": "Profile Photo",
+    "profileUpdateFailed": "Failed to update profile",
     "profileUpdated": "Profile updated successfully",
     "saturday": "Saturday",
     "saveChanges": "Save Changes",
@@ -7469,11 +7531,7 @@
     "updating": "Updating...",
     "uploadImageFile": "Please upload an image file",
     "uploadPhoto": "Upload Photo",
-    "wednesday": "Wednesday",
-    "avatarUploadFailed": "Failed to upload avatar",
-    "profileUpdateFailed": "Failed to update profile",
-    "emailUpdateFailed": "Failed to update email",
-    "passwordUpdateFailed": "Failed to update password"
+    "wednesday": "Wednesday"
   },
   "shared": {
     "accessDenied": "Access Denied",
@@ -7794,8 +7852,12 @@
     "analytics": "Analytics",
     "autoFillKey": "Auto-fill Field",
     "autoFilled": "Auto-filled",
+    "campaignCloseFailed": "Failed to close campaign",
     "campaignClosed": "Campaign closed",
+    "campaignCreateFailed": "Failed to create campaign",
+    "campaignCreated": "Survey campaign created",
     "campaignDescription": "Description",
+    "campaignLaunchFailed": "Failed to launch campaign",
     "campaignLaunched": "Campaign launched!",
     "campaignName": "Campaign Name",
     "campaigns": "Campaigns",
@@ -7829,6 +7891,7 @@
     "reminderDays": "Reminder Days",
     "responseRate": "Response Rate",
     "saveDraft": "Save Draft",
+    "saveFailed": "Failed to save survey",
     "saveTemplate": "Save Template",
     "section": "Section",
     "selectTemplate": "Select Template",
@@ -7839,9 +7902,11 @@
     "surveySubmitted": "Survey submitted successfully!",
     "surveysCreated": "{{count}} surveys created",
     "targetProgram": "Target Program",
+    "templateCreateFailed": "Failed to create survey template",
     "templateCreated": "Survey template created",
     "templateDescription": "Description",
     "templateName": "Template Name",
+    "templateUpdateFailed": "Failed to update survey template",
     "templateUpdated": "Survey template updated",
     "templates": "Templates",
     "title": "Surveys",
@@ -7851,14 +7916,7 @@
     "typeSelect": "Single Select",
     "typeText": "Text",
     "typeTextarea": "Long Text",
-    "viewResponses": "View Responses",
-    "templateCreateFailed": "Failed to create survey template",
-    "campaignCreated": "Survey campaign created",
-    "campaignCreateFailed": "Failed to create campaign",
-    "campaignLaunchFailed": "Failed to launch campaign",
-    "saveFailed": "Failed to save survey",
-    "templateUpdateFailed": "Failed to update survey template",
-    "campaignCloseFailed": "Failed to close campaign"
+    "viewResponses": "View Responses"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",
@@ -8461,6 +8519,7 @@
     "category": "Category",
     "date": "Date",
     "deleteConfirm": "Delete this time entry?",
+    "deleteTitle": "Delete time entry?",
     "failedToDelete": "Failed to delete",
     "failedToLog": "Failed to log time",
     "hours": "Hours",
@@ -8480,8 +8539,7 @@
     "totalHours": "Total Hours",
     "trackTimeSpent": "Track time spent on this startup",
     "validHoursRequired": "Please enter valid hours",
-    "whatDidYouWorkOn": "What did you work on?",
-    "deleteTitle": "Delete time entry?"
+    "whatDidYouWorkOn": "What did you work on?"
   },
   "topBar": {
     "accountSettings": "Account Settings",
@@ -8958,53 +9016,5 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
-  },
-  "intakeOps": {
-    "overdueTitle": "{{count}} request(s) without response for more than 10 days",
-    "overdueDesc": "Consider resending the email or contacting the client directly.",
-    "noName": "No name",
-    "overdue": "Overdue",
-    "missingDocs": "{{count}} doc(s) missing",
-    "remindersCount": "{{count}}x reminded",
-    "groups": {
-      "awaiting_fill": {
-        "title": "Awaiting Fill",
-        "empty": "No requests awaiting client fill.",
-        "action": "New requests sent to clients will appear here."
-      },
-      "submitted_for_review": {
-        "title": "Submitted for Review",
-        "empty": "No submissions pending review.",
-        "action": "When a client submits, it will appear here for review."
-      },
-      "changes_requested": {
-        "title": "Changes Requested",
-        "empty": "No intakes awaiting changes.",
-        "action": "Intakes returned to the client for changes will appear here."
-      },
-      "ready_for_signature": {
-        "title": "Approved for Signature",
-        "empty": "No approved intakes awaiting send for signature.",
-        "action": "After approval, send the contract for digital signature."
-      },
-      "sent_for_signature": {
-        "title": "Sent for Signature",
-        "empty": "No contracts awaiting signature.",
-        "action": "Contracts sent to client for signature will appear here."
-      },
-      "signed_pending_activation": {
-        "title": "Signed — Pending Activation",
-        "empty": "No signed contracts awaiting activation.",
-        "action": "After signature, activate the workspace and operational conditions."
-      }
-    }
-  },
-  "resourceGuide": {
-    "notFoundTitle": "Guide not found",
-    "notFoundDesc": "This content is not yet available.",
-    "backToResources": "Back to Resources",
-    "resources": "Resources",
-    "read": "read",
-    "tips": "💡 Tips"
   }
 }
