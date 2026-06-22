@@ -683,3 +683,60 @@ function WeeklyGreetingSubline({ userId, workspaceId, isFirstWeek }: { userId?: 
     </p>
   );
 }
+
+/**
+ * KpiAnomalyNudge — Dismissible per-month nudge.
+ * Dismissal persists in localStorage scoped to workspace + YYYY-MM so the same
+ * anomaly comes back next month if still relevant.
+ */
+function KpiAnomalyNudge({
+  anomaly,
+  workspaceId,
+  onReview,
+}: {
+  anomaly: { kpiName: string; trend: string; message: string } | null | undefined;
+  workspaceId: string;
+  onReview: () => void;
+}) {
+  const { t } = useTranslation();
+  const monthKey = `kpi-anomaly-dismissed-${workspaceId}-${new Date().getFullYear()}-${new Date().getMonth()}`;
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem(monthKey) === 'true');
+
+  if (!anomaly || dismissed) return null;
+
+  const handleDismiss = () => {
+    localStorage.setItem(monthKey, 'true');
+    setDismissed(true);
+  };
+
+  return (
+    <Card className="border-[hsl(var(--warning))]/40 bg-[hsl(var(--warning))]/5">
+      <CardContent className="p-4 flex items-start gap-3">
+        <AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))] flex-shrink-0 mt-0.5" aria-hidden="true" />
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-semibold text-foreground">
+            {t('dashboard.kpiAlert', { defaultValue: 'Atenção ao KPI' })}
+          </div>
+          <p className="text-sm text-muted-foreground mt-0.5">{anomaly.message}</p>
+          <Button
+            size="sm"
+            variant="link"
+            className="px-0 h-auto mt-1 text-[hsl(var(--warning))]"
+            onClick={onReview}
+          >
+            {t('dashboard.reviewKpi', { defaultValue: 'Rever KPI →' })}
+          </Button>
+        </div>
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={handleDismiss}
+          className="h-7 w-7 shrink-0 text-muted-foreground"
+          aria-label={t('common.dismiss', { defaultValue: 'Dispensar' })}
+        >
+          <X className="h-3.5 w-3.5" />
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
