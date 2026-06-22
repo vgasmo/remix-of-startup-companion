@@ -197,7 +197,7 @@ export default function CRM() {
             .from('funnel_items')
             .select('*, owner:profiles!funnel_items_owner_consultant_id_fkey(id, full_name), program:programs(id, name)')
             .eq('id', openId)
-            .single();
+            .maybeSingle();
           
           if (error || !data) {
             logger.error('Failed to load funnel item', {}, error);
