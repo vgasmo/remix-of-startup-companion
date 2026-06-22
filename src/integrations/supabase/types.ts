@@ -4324,6 +4324,7 @@ export type Database = {
           id: string
           linkedin_url: string | null
           phone: string | null
+          preferred_language: string
           updated_at: string
         }
         Insert: {
@@ -4340,6 +4341,7 @@ export type Database = {
           id: string
           linkedin_url?: string | null
           phone?: string | null
+          preferred_language?: string
           updated_at?: string
         }
         Update: {
@@ -4356,6 +4358,7 @@ export type Database = {
           id?: string
           linkedin_url?: string | null
           phone?: string | null
+          preferred_language?: string
           updated_at?: string
         }
         Relationships: []
