@@ -1,42 +1,81 @@
-This is a very large multi-phase mission (10 phases, ~150+ file edits, 2 new tables, new feature surface for cross-role feedback loops, new observability stack). Before I dive in, I want to confirm scope and sequencing so we don't end up with a half-done phase or a broken build.
+# Plan: P3A + P3B + P3C + P4B
 
-## What I'll do
+Four parallel cleanup/refactor items. All touch UI/i18n only — no schema or RLS changes.
 
-I'll execute strictly in phase order, running typecheck/lint/build after each phase and fixing breakage before moving on. If I hit the practical limit of a single run, I'll **stop at a phase boundary** and report exactly which phases are complete, so the next run picks up cleanly.
+## P3A — Public contract flow ternaries → `t()` (~123 occurrences)
 
-## Realistic scope per run
+Files: `src/pages/PublicContractSigning.tsx` (79), `src/pages/PublicContractIntake.tsx` (44)
 
-Given the volume (especially Phase 2's ~154 icon buttons, Phase 3's full token sweep, Phase 8's new feature with table + RLS + UI on dashboard/timeline/KPI flows, and Phase 9's new error table + dashboard surface), one run can realistically cover **Phases 1, 4, 5, 6, 7 fully** and **start Phase 2/3** (highest-impact files first). Phases 8–10 each need their own focused run because they involve migrations + UI + i18n keys + analytics wiring that touch many files together.
+Pattern today:
+```tsx
+{lang === 'pt' ? 'Bem-vindo' : 'Welcome'}
+```
 
-Proposed run breakdown:
-- **Run 1 (this one):** Phases 1, 4, 5, 6, 7 + Phase 2 top-priority files (AdminKpisManager, WizardWeeksGatesStep, admin managers, CRM drawers, workspace tabs) + Phase 3 listed files.
-- **Run 2:** Phase 8 — `workspace_engagement_events` migration, view recording, MySupportTeamCard receipts, acknowledge button, submission echo, i18n.
-- **Run 3:** Phase 9 + Phase 10 — `app_errors` migration, boundary wiring, admin surface, anomaly nudge, prep echo.
+Approach:
+1. Both files already compute `lang` from `i18n.language`. Keep — `useTranslation()` and `t()` already imported in many places, otherwise add.
+2. Write a Python pass that:
+   - Captures every ` ? 'PT' : 'EN' ` literal pair (including JSX-attribute and template-string forms),
+   - Generates a stable key (`publicContractSigning.<slug>` / `publicContractIntake.<slug>`) from the EN string,
+   - Replaces the ternary in source with `{t('publicContractSigning.<key>')}` (or string form for attributes),
+   - Emits a JSON patch added to both `en.json` and `pt.json` (EN ← English literal, PT ← Portuguese literal),
+   - Skips inline `lang === 'pt'` branches that select *non-string* content (those stay).
+3. For the `OPTIONAL_DOCS` array (and similar `labelPt/labelEn` shaped data), keep the array shape but render via `lang === 'pt' ? labelPt : labelEn` — these are intentional and stay (only the dozens of free-floating ternaries get migrated).
+4. Re-run the i18n parity script.
 
-## Frozen-file discipline
+## P3B — `IntegrationsSetup` CONTENT object migration
 
-In ClaimStartup, ContractOnboarding, PublicContractSigning, PublicContractIntake, AcceptInvite, and all RLS/claim/token/auth code: **className, aria-*, t() only**. I'll verify by diffing logic lines before committing each phase.
+File: `src/pages/IntegrationsSetup.tsx` (695 lines)
 
-## GDPR discipline for new events
+There is a large `CONTENT = { pt: {...}, en: {...} }` object that the page consumes via `CONTENT[lang]`. Migrate it to the i18n catalogs.
 
-`workspace_engagement_events` and `app_errors` will carry IDs + timestamps + enums only. Names/emails resolved client-side from existing members data. I'll add a comment in each migration documenting the no-PII contract.
+Approach:
+1. View the `CONTENT` object's shape. Flatten each leaf into `integrationsSetup.<path>` keys, preserving nested structure (sections/steps/labels).
+2. Add the flat keys to both `en.json` and `pt.json`.
+3. Replace every `CONTENT[lang].foo.bar` with `t('integrationsSetup.foo.bar')`. Arrays (e.g. step lists) become `t('integrationsSetup.steps', { returnObjects: true })`.
+4. Delete the CONTENT object and the `lang` derivation if unused after migration.
 
-## Technical notes
+## P3C — `defaultValue` English fallbacks → PT (85 sites)
 
-- Phase 8 acknowledge notifications use the existing `notifications` table + `notify.*` helpers (per memory).
-- Phase 8 debounce ("max one view per actor/workspace/day") = client-side check-then-insert against today's row, matching the existing `useWorkQueue` recomputation pattern (per memory).
-- Phase 9 error capture is fire-and-forget; never throws inside the boundary.
-- Phase 10 anomaly nudge is pure client-side over already-fetched KPI data — no new query.
-- All new strings get pt/en parity; I'll run `node scripts/i18n-check.cjs` before declaring done.
+Files: `src/components/founder/SmartImportDialog.tsx` (39), `src/components/admin/AdminTemplatesManager.tsx` (46)
 
-## Question before I start
+Today these read:
+```tsx
+t('foo.bar', { defaultValue: 'English text' })
+```
 
-Do you want me to:
+Per Bilingual Trust rule: the `defaultValue` shouldn't be English (that's what `en.json` is for); it should mirror the Portuguese key, so PT users get correct PT even before i18n catalog hydration (and EN users still get correct EN from `en.json`).
 
-**(A)** Proceed exactly as proposed — Run 1 covers Phases 1, 4, 5, 6, 7 + the highest-impact slices of Phases 2 & 3, then stop and report; Runs 2 and 3 handle the differentiator (8) and observability (9/10) separately.
+Approach:
+1. For each `defaultValue: '...'` site in those two files, look up the existing key in `pt.json`:
+   - If the PT translation exists → replace `defaultValue` with the PT string (or drop `defaultValue` entirely since PT is in catalog).
+   - If missing → add the EN string to `en.json` under that key, add a freshly translated PT string to `pt.json` under that key, and drop the `defaultValue` from the call site.
+2. Keep typed signatures identical (no behavior change beyond text).
+3. Run i18n parity check.
 
-**(B)** Compress harder — attempt all 10 phases in this single run, accepting that Phase 2 (icon-button aria-labels) will be done as a scripted sweep over the most common patterns rather than 154 hand-verified edits, and Phase 8's UI polish may be minimal (functional receipts + acknowledge, but less visual flourish).
+## P4B — `CreateStartupDialog` rewrite
 
-**(C)** Different split — tell me which phases you most want shipped first and I'll reorder.
+File: `src/components/founder/CreateStartupDialog.tsx` (303 lines)
 
-I'd recommend **A** for safety (zero risk of leaving a broken phase) but **B** is doable if you want everything in one go and accept the trade-off on Phase 2 thoroughness.
+Migrate to react-hook-form + zod + draft autosave, matching the rest of the codebase.
+
+Approach:
+1. Define `createStartupSchema` with zod: required `name` (min 2), optional `industry`, `stage` enum, `description` (max 500), `website` (url or empty), etc. — keep same fields the dialog has today.
+2. Use `useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema), defaultValues })`.
+3. Render fields via shadcn `<Form>` + `<FormField>` + `<FormMessage>`; replace ad-hoc `useState` + manual validation.
+4. Draft autosave: persist `form.watch()` to `sessionStorage` under key `createStartupDialog:draft:<userId>` on debounced change; hydrate `defaultValues` from storage on mount; clear on successful submit or explicit "discard draft" action.
+5. Wire `onSubmit` to the existing `useCreateStartup` mutation; preserve current success/error toasts and post-create navigation.
+6. Keep dialog UX (Cancel, Submit, loading states) and i18n keys unchanged externally.
+7. Add a small unit test covering schema validation if a test file already exists nearby; otherwise skip.
+
+## Validation (all phases)
+
+- `bun` build is checked by harness automatically; verify with a single targeted parity script run.
+- Spot-check the i18n parity test (`src/test/i18n-parity.test.ts`) to ensure no missing keys.
+- No RLS/security/SQL changes required.
+
+## Out of scope
+
+- No copy rewrites (translations preserve current wording).
+- No changes to PublicContractSigning **logic** — only string extraction.
+- No changes to `OPTIONAL_DOCS`-style data arrays.
+- No new dependencies (RHF/zod/zodResolver are already in the project).
