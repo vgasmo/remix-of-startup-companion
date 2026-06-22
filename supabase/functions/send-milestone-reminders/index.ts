@@ -114,29 +114,67 @@ serve(async (req) => {
 
         const startupName = (milestone.workspaces as any)?.startups?.name || "Your Startup";
         const profile = user.profiles as any;
+        const locale: 'pt' | 'en' = (profile.preferred_language as 'pt' | 'en') ?? 'pt';
+        const dateStr = targetDate.toLocaleDateString(locale === 'pt' ? 'pt-PT' : 'en-GB');
+        const dayWord = locale === 'pt'
+          ? (daysUntilDue === 1 ? 'dia' : 'dias')
+          : (daysUntilDue === 1 ? 'day' : 'days');
+
+        const s = {
+          pt: {
+            heading: '⏰ Lembrete de Milestone',
+            greeting: (n: string) => `Olá ${n},`,
+            body: (d: number, w: string) => `Este é um lembrete de que o seguinte milestone vence em <strong>${d} ${w}</strong>:`,
+            startup: 'Startup',
+            dueDate: 'Data limite',
+            cta: 'Ver Milestone',
+            footer: 'Pode gerir as suas preferências de notificação nas Definições.',
+            subject: (d: number, w: string, t: string) => `⏰ Milestone vence em ${d} ${w}: ${t}`,
+            slackHeader: 'Lembrete de Milestone',
+            slackDue: 'Vence',
+            slackRemaining: (d: number, w: string) => `${d} ${w} restantes`,
+            notifTitle: (d: number, w: string) => `Milestone vence em ${d} ${w}`,
+            notifMessage: (t: string, n: string, dt: string) => `"${t}" para ${n} vence em ${dt}`,
+          },
+          en: {
+            heading: '⏰ Milestone Reminder',
+            greeting: (n: string) => `Hi ${n},`,
+            body: (d: number, w: string) => `This is a reminder that the following milestone is due in <strong>${d} ${w}</strong>:`,
+            startup: 'Startup',
+            dueDate: 'Due Date',
+            cta: 'View Milestone',
+            footer: 'You can manage your notification preferences in Settings.',
+            subject: (d: number, w: string, t: string) => `⏰ Milestone due in ${d} ${w}: ${t}`,
+            slackHeader: 'Milestone Reminder',
+            slackDue: 'Due',
+            slackRemaining: (d: number, w: string) => `${d} ${w} remaining`,
+            notifTitle: (d: number, w: string) => `Milestone due in ${d} ${w}`,
+            notifMessage: (t: string, n: string, dt: string) => `"${t}" for ${n} is due on ${dt}`,
+          },
+        }[locale];
 
         // Send email reminder
         try {
           const emailHtml = `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #333;">⏰ Milestone Reminder</h2>
-              <p>Hi ${profile.full_name || "there"},</p>
-              <p>This is a reminder that the following milestone is due in <strong>${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}</strong>:</p>
+              <h2 style="color: #333;">${s.heading}</h2>
+              <p>${s.greeting(profile.full_name || (locale === 'pt' ? 'utilizador' : 'there'))}</p>
+              <p>${s.body(daysUntilDue, dayWord)}</p>
               <div style="background: #f5f5f5; padding: 16px; border-radius: 8px; margin: 16px 0;">
                 <h3 style="margin: 0 0 8px 0; color: #333;">${milestone.title}</h3>
                 <p style="margin: 0; color: #666;">
-                  <strong>Startup:</strong> ${startupName}<br/>
-                  <strong>Due Date:</strong> ${targetDate.toLocaleDateString()}
+                  <strong>${s.startup}:</strong> ${startupName}<br/>
+                  <strong>${s.dueDate}:</strong> ${dateStr}
                 </p>
               </div>
               <p>
-                <a href="${Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/workspace/${milestone.workspace_id}?tab=milestones" 
+                <a href="${Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/workspace/${milestone.workspace_id}?tab=milestones"
                    style="background: #6366f1; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block;">
-                  View Milestone
+                  ${s.cta}
                 </a>
               </p>
               <p style="color: #888; font-size: 14px; margin-top: 24px;">
-                You can manage your notification preferences in Settings.
+                ${s.footer}
               </p>
             </div>
           `;
@@ -144,7 +182,7 @@ serve(async (req) => {
           await resend.emails.send({
             from: "Startup Leiria <noreply@startupleiria.com>",
             to: profile.email,
-            subject: `⏰ Milestone due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}: ${milestone.title}`,
+            subject: s.subject(daysUntilDue, dayWord, milestone.title),
             html: emailHtml,
           });
 
@@ -161,13 +199,13 @@ serve(async (req) => {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                text: `⏰ Milestone Reminder: "${milestone.title}" is due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`,
+                text: `${s.slackHeader}: "${milestone.title}" — ${s.slackRemaining(daysUntilDue, dayWord)}`,
                 blocks: [
                   {
                     type: "section",
                     text: {
                       type: "mrkdwn",
-                      text: `⏰ *Milestone Reminder*\n\n*${milestone.title}*\n📍 ${startupName}\n📅 Due: ${targetDate.toLocaleDateString()}\n⏳ ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''} remaining`,
+                      text: `⏰ *${s.slackHeader}*\n\n*${milestone.title}*\n📍 ${startupName}\n📅 ${s.slackDue}: ${dateStr}\n⏳ ${s.slackRemaining(daysUntilDue, dayWord)}`,
                     },
                   },
                 ],
@@ -185,8 +223,8 @@ serve(async (req) => {
           await supabase.from("notifications").insert({
             user_id: user.user_id,
             type: "milestone_reminder",
-            title: `Milestone due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`,
-            message: `"${milestone.title}" for ${startupName} is due on ${targetDate.toLocaleDateString()}`,
+            title: s.notifTitle(daysUntilDue, dayWord),
+            message: s.notifMessage(milestone.title, startupName, dateStr),
             link: `/workspace/${milestone.workspace_id}?tab=milestones`,
             metadata: { milestone_id: milestone.id, days_until_due: daysUntilDue },
           });
@@ -202,6 +240,7 @@ serve(async (req) => {
           reminder_type: "combined",
           days_before: daysUntilDue,
         });
+
       }
     }
 
