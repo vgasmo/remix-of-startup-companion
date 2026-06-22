@@ -289,7 +289,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{investor.email || '-'}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() = aria-label={t('common.delete')}> deleteInvestor.mutate(investor.id)} aria-label={t('common.delete')}>
+                      <Button variant="ghost" size="icon" onClick={()=> deleteInvestor.mutate(investor.id)} aria-label={t('common.delete')}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -332,7 +332,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
                       <TableCell>{entry.shares.toLocaleString()}</TableCell>
                       <TableCell>{totalShares > 0 ? ((entry.shares / totalShares) * 100).toFixed(1) : 0}%</TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() = aria-label={t('common.delete')}> deleteCapEntry.mutate(entry.id)} aria-label={t('common.delete')}>
+                        <Button variant="ghost" size="icon" onClick={()=> deleteCapEntry.mutate(entry.id)} aria-label={t('common.delete')}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>

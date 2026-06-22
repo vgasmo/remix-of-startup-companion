@@ -352,7 +352,7 @@ function MilestoneListItem({
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 shrink-0"
-                  onClick={() = aria-label={t('common.delete')}> onDelete(milestone)}
+                  onClick={()=> onDelete(milestone)}
                  aria-label={t('common.delete')}>
                   <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>

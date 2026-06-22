@@ -388,7 +388,7 @@ export function PlaybooksTab({ workspaceId, currentStage, programId, canWrite }:
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() = aria-label={t('common.close')}> dismiss.mutate({ workspaceId, playbookId: playbook.id })}
+                          onClick={()=> dismiss.mutate({ workspaceId, playbookId: playbook.id })}
                           disabled={dismiss.isPending || !canWrite}
                           title={t('playbooks.dismiss')}
                          aria-label={t('common.close')}>

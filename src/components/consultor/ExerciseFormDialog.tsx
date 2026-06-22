@@ -165,7 +165,7 @@ export function ExerciseFormDialog({ open, onOpenChange, exercise }: ExerciseFor
                   <div key={index} className="flex gap-2">
                     <Input value={material} onChange={(e) => updateMaterial(index, e.target.value)} placeholder={t('exercises.materialPlaceholder', 'ex: Quadro branco, post-its')} />
                     {materialsNeeded.length > 1 && (
-                      <Button variant="ghost" size="icon" onClick={() = aria-label={t('common.delete')}> removeMaterial(index)} aria-label={t('common.delete')}><Trash2 className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={()=> removeMaterial(index)} aria-label={t('common.delete')}><Trash2 className="h-4 w-4" /></Button>
                     )}
                   </div>
                 ))}

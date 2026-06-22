@@ -109,10 +109,10 @@ function StagesManager({ programId }: { programId: string }) {
               <span className="text-xs text-muted-foreground w-6">{stage.position}</span>
               <span className="flex-1 text-sm">{stage.name}</span>
               <div className="opacity-0 group-hover:opacity-100 flex gap-1">
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() = aria-label={t('common.edit')}> handleEdit(stage)} aria-label={t('common.edit')}>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=> handleEdit(stage)} aria-label={t('common.edit')}>
                   <Pencil className="h-3 w-3" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() = aria-label={t('common.delete')}> setDeleteTarget(stage)} aria-label={t('common.delete')}>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=> setDeleteTarget(stage)} aria-label={t('common.delete')}>
                   <Trash2 className="h-3 w-3 text-destructive" />
                 </Button>
               </div>
@@ -539,10 +539,10 @@ export function AdminProgramsManager() {
                         {getProgramDraft(program.id) ? t('adminPrograms.continueSetup') : t('adminPrograms.setup')}
                       </Button>
                       <Switch checked={program.is_active} onCheckedChange={() => handleToggleActive(program)} />
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() = aria-label={t('common.edit')}> handleEdit(program)} aria-label={t('common.edit')}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={()=> handleEdit(program)} aria-label={t('common.edit')}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() = aria-label={t('common.delete')}> setDeleteTarget(program)} aria-label={t('common.delete')}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={()=> setDeleteTarget(program)} aria-label={t('common.delete')}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>

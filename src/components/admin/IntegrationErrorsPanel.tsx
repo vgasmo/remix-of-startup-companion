@@ -77,7 +77,7 @@ export function IntegrationErrorsPanel({ compact = false, maxHeight = '300px' }:
               <Badge variant="destructive" className="ml-2 text-xs">{errorCount}</Badge>
             )}
           </CardTitle>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() = aria-label={t('common.refresh')}> refetch()} aria-label={t('common.refresh')}>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={()=> refetch()} aria-label={t('common.refresh')}>
             <RefreshCw className="h-3.5 w-3.5" />
           </Button>
         </div>
@@ -126,7 +126,7 @@ export function IntegrationErrorsPanel({ compact = false, maxHeight = '300px' }:
                         variant="ghost"
                         size="icon"
                         className="shrink-0"
-                        onClick={() = aria-label={t('common.close')}> handleResolve(error.id)}
+                        onClick={()=> handleResolve(error.id)}
                         disabled={resolveMutation.isPending}
                        aria-label={t('common.close')}>
                         <X className="h-4 w-4" />

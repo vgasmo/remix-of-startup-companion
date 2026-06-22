@@ -228,7 +228,7 @@ export function FacilitatorMode({ session, onClose, onCreateAction }: Facilitato
             <Plus className="h-4 w-4 mr-1" />
             Quick Action
           </Button>
-          <Button variant="ghost" size="icon" onClick={(e) = aria-label={t('common.close')}> { e.preventDefault(); e.stopPropagation(); onClose(); }} aria-label={t('common.close')}>
+          <Button variant="ghost" size="icon" onClick={(e)=> { e.preventDefault(); e.stopPropagation(); onClose(); }} aria-label={t('common.close')}>
             <X className="h-5 w-5" />
           </Button>
         </div>

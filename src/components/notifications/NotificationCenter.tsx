@@ -194,7 +194,7 @@ export function NotificationCenter() {
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 flex-shrink-0 opacity-0 group-hover:opacity-100 hover:opacity-100"
-                    onClick={(e) = aria-label={t('common.delete')}> handleDelete(e, notification.id)}
+                    onClick={(e)=> handleDelete(e, notification.id)}
                     aria-label={t('common.delete')}
                   >
                     <Trash2 className="h-3 w-3" aria-hidden="true" />

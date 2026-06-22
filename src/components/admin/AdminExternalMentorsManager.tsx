@@ -475,7 +475,7 @@ export function AdminExternalMentorsManager() {
                       variant="ghost"
                       size="icon"
                       className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() = aria-label={t('common.delete')}> setRemoveTarget(mentor)}
+                      onClick={()=> setRemoveTarget(mentor)}
                      aria-label={t('common.delete')}>
                       <Trash2 className="h-4 w-4" />
                     </Button>

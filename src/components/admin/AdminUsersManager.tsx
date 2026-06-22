@@ -319,7 +319,7 @@ export function AdminUsersManager() {
                                   variant="ghost" 
                                   size="icon" 
                                   className="h-6 w-6"
-                                  onClick={() = aria-label={t('common.delete')}> setDeleteWsUserTarget(wu.id)}
+                                  onClick={()=> setDeleteWsUserTarget(wu.id)}
                                  aria-label={t('common.delete')}>
                                   <Trash2 className="h-3 w-3 text-destructive" />
                                 </Button>
