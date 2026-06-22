@@ -58,11 +58,13 @@
     --info: 200 65% 50%;
     --info-foreground: 0 0% 100%;
 
-    --border: 60 8% 88%;
-    --input: 60 8% 88%;
+    --border: 60 6% 84%;
+    --input: 60 6% 84%;
     --ring: 67 72% 41%;
 
     --radius: 0.5rem;
+
+
 
     /* Sidebar — dark professional with high contrast */
     --sidebar-background: 60 4% 10%;
@@ -75,19 +77,20 @@
     --sidebar-ring: 67 70% 48%;
     --sidebar-muted: 0 0% 88%;
 
-    /* Health score colors */
-    --health-critical: 357 75% 48%;
-    --health-at-risk: 38 80% 50%;
-    --health-stable: 200 55% 50%;
-    --health-healthy: 67 60% 40%;
-    --health-thriving: 67 72% 35%;
+    /* Health score colors — slightly desaturated so badges read calm */
+    --health-critical: 357 65% 50%;
+    --health-at-risk: 38 72% 50%;
+    --health-stable: 200 48% 52%;
+    --health-healthy: 67 55% 42%;
+    --health-thriving: 67 65% 36%;
 
     /* Stage colors */
-    --stage-ideation: 280 40% 55%;
-    --stage-validation: 200 55% 50%;
-    --stage-mvp: 180 45% 45%;
-    --stage-growth: 67 60% 40%;
-    --stage-scale: 45 70% 48%;
+    --stage-ideation: 280 32% 56%;
+    --stage-validation: 200 48% 52%;
+    --stage-mvp: 180 38% 46%;
+    --stage-growth: 67 55% 42%;
+    --stage-scale: 45 62% 50%;
+
 
     /* Chart colors — lead with brand lime + brand red */
     --chart-1: 67 72% 41%;
@@ -104,18 +107,19 @@
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(60 10% 98%) 100%);
     --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.92) 0%, hsl(0 0% 100% / 0.75) 100%);
 
-    /* Shadows */
-    --shadow-xs: 0 1px 2px 0 hsl(60 10% 0% / 0.03);
-    --shadow-sm: 0 1px 3px 0 hsl(60 10% 0% / 0.04), 0 1px 2px -1px hsl(60 10% 0% / 0.03);
-    --shadow-md: 0 4px 6px -1px hsl(60 10% 0% / 0.06), 0 2px 4px -2px hsl(60 10% 0% / 0.04);
-    --shadow-lg: 0 10px 15px -3px hsl(60 10% 0% / 0.07), 0 4px 6px -4px hsl(60 10% 0% / 0.04);
-    --shadow-xl: 0 20px 25px -5px hsl(60 10% 0% / 0.08), 0 8px 10px -6px hsl(60 10% 0% / 0.04);
-    --shadow-card: 0 1px 3px 0 hsl(60 10% 0% / 0.04), 0 1px 2px -1px hsl(60 10% 0% / 0.03);
-    --shadow-card-hover: 0 6px 16px -4px hsl(60 10% 0% / 0.08), 0 3px 6px -2px hsl(60 10% 0% / 0.04);
-    --shadow-glow: 0 0 16px hsl(67 72% 41% / 0.18);
-    --shadow-glow-accent: 0 0 16px hsl(357 75% 48% / 0.22);
-    --shadow-inset: inset 0 1px 3px 0 hsl(60 10% 0% / 0.04);
+    /* Shadows — Linear-style: hairline-first, subtle ambient */
+    --shadow-xs: 0 1px 2px 0 hsl(60 10% 0% / 0.04);
+    --shadow-sm: 0 1px 2px 0 hsl(60 10% 0% / 0.04);
+    --shadow-md: 0 2px 4px -1px hsl(60 10% 0% / 0.05), 0 1px 2px -1px hsl(60 10% 0% / 0.04);
+    --shadow-lg: 0 6px 14px -4px hsl(60 10% 0% / 0.07), 0 2px 4px -2px hsl(60 10% 0% / 0.04);
+    --shadow-xl: 0 12px 24px -6px hsl(60 10% 0% / 0.08), 0 4px 8px -4px hsl(60 10% 0% / 0.04);
+    --shadow-card: 0 0 0 1px hsl(60 6% 84% / 0.6);
+    --shadow-card-hover: 0 4px 12px -4px hsl(60 10% 0% / 0.08), 0 1px 3px -1px hsl(60 10% 0% / 0.05);
+    --shadow-glow: 0 0 14px hsl(67 72% 41% / 0.14);
+    --shadow-glow-accent: 0 0 14px hsl(357 75% 48% / 0.18);
+    --shadow-inset: inset 0 1px 2px 0 hsl(60 10% 0% / 0.03);
   }
+
 
   .dark {
     --background: 60 6% 7%;
@@ -156,9 +160,10 @@
     --info: 200 60% 55%;
     --info-foreground: 0 0% 100%;
 
-    --border: 60 6% 20%;
-    --input: 60 6% 20%;
+    --border: 60 6% 22%;
+    --input: 60 6% 22%;
     --ring: 67 65% 50%;
+
 
     --sidebar-background: 60 6% 5%;
     --sidebar-foreground: 60 5% 88%;
@@ -179,8 +184,9 @@
     --gradient-card: linear-gradient(145deg, hsl(60 6% 12%) 0%, hsl(60 6% 10%) 100%);
     --gradient-glass: linear-gradient(135deg, hsl(60 6% 14% / 0.9) 0%, hsl(60 6% 11% / 0.7) 100%);
     --gradient-brand: linear-gradient(135deg, hsl(67 65% 50%) 0%, hsl(357 70% 55%) 100%);
-    --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.25), 0 1px 2px -1px hsl(0 0% 0% / 0.3);
-    --shadow-card-hover: 0 8px 20px -4px hsl(0 0% 0% / 0.4), 0 4px 8px -2px hsl(0 0% 0% / 0.25);
+    --shadow-card: 0 0 0 1px hsl(60 6% 22% / 0.7);
+    --shadow-card-hover: 0 6px 14px -4px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.25);
+
   }
 }
 
