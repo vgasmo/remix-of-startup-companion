@@ -21,6 +21,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { HealthBadge } from '@/components/ui/HealthBadge';
 import { StageBadge } from '@/components/ui/StageBadge';
 import { CategoryBadge } from '@/components/ui/CategoryBadge';
@@ -46,6 +48,7 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { confirm, dialogProps } = useConfirmDialog();
   const [confirmDelete, setConfirmDelete] = useState<EcosystemItem | null>(null);
 
   const [page, setPage] = useState(0);
