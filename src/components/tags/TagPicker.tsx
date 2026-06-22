@@ -24,11 +24,12 @@ export function TagPicker({
   onAddTag,
   onRemoveTag,
   disabled = false,
-  placeholder = 'Add tags...',
+  placeholder,
   className,
   size = 'md',
 }: TagPickerProps) {
   const { t } = useTranslation();
+  const effectivePlaceholder = placeholder ?? t('common.placeholders.addTags');
   const { data: allTags, isLoading: loadingTags } = useTags();
   const createTag = useCreateTag();
   const [open, setOpen] = useState(false);
