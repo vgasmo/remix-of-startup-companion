@@ -761,6 +761,7 @@ export default function BulkContractImport() {
           </DialogContent>
         </Dialog>
       </div>
+      <ConfirmDialog {...dialogProps} />
     </AppLayout>
   );
 }
