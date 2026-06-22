@@ -84,9 +84,6 @@ export function useCreateEmailAlias() {
       queryClient.invalidateQueries({ queryKey: ['email-alias', workspaceId] });
       notify.success(t('communication.emailAliasCreated'));
     },
-    onError: (error: Error) => {
-      notify.error(error.message);
-    },
   });
 }
 
@@ -114,9 +111,6 @@ export function useAddCommunication() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['communication-log', variables.workspace_id] });
       notify.success(t('communication.communicationLogged'));
-    },
-    onError: (error: Error) => {
-      notify.error(error.message);
     },
   });
 }
