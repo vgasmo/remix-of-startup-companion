@@ -105,7 +105,7 @@ export default function Settings() {
       notify.success(t('settingsPage.avatarUploaded'));
     } catch (error: any) {
       logger.error('Error uploading avatar', {}, error);
-      notify.error(error.message || 'Failed to upload avatar');
+      notify.error(t('settingsPage.avatarUploadFailed'));
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -161,7 +161,7 @@ export default function Settings() {
       notify.success(t('settingsPage.profileUpdated'));
     } catch (error: any) {
       logger.error('Error updating profile', {}, error);
-      notify.error(error.message || 'Failed to update profile');
+      notify.error(t('settingsPage.profileUpdateFailed'));
     } finally {
       setIsUpdatingProfile(false);
     }
@@ -185,7 +185,7 @@ export default function Settings() {
       setNewEmail('');
     } catch (error: any) {
       logger.error('Error updating email', {}, error);
-      notify.error(error.message || 'Failed to update email');
+      notify.error(t('settingsPage.emailUpdateFailed'));
     } finally {
       setIsUpdatingEmail(false);
     }
@@ -217,7 +217,7 @@ export default function Settings() {
       setConfirmPassword('');
     } catch (error: any) {
       logger.error('Error updating password', {}, error);
-      notify.error(error.message || 'Failed to update password');
+      notify.error(t('settingsPage.passwordUpdateFailed'));
     } finally {
       setIsUpdatingPassword(false);
     }

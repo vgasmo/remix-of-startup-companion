@@ -7468,7 +7468,11 @@
     "updating": "Updating...",
     "uploadImageFile": "Please upload an image file",
     "uploadPhoto": "Upload Photo",
-    "wednesday": "Wednesday"
+    "wednesday": "Wednesday",
+    "avatarUploadFailed": "Failed to upload avatar",
+    "profileUpdateFailed": "Failed to update profile",
+    "emailUpdateFailed": "Failed to update email",
+    "passwordUpdateFailed": "Failed to update password"
   },
   "shared": {
     "accessDenied": "Access Denied",

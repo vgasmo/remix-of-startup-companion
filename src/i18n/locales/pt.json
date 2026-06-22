@@ -7468,7 +7468,11 @@
     "updating": "A atualizar...",
     "uploadImageFile": "Por favor carregue um ficheiro de imagem",
     "uploadPhoto": "Carregar Foto",
-    "wednesday": "Quarta-feira"
+    "wednesday": "Quarta-feira",
+    "avatarUploadFailed": "Falha ao carregar avatar",
+    "profileUpdateFailed": "Falha ao atualizar perfil",
+    "emailUpdateFailed": "Falha ao atualizar email",
+    "passwordUpdateFailed": "Falha ao atualizar password"
   },
   "shared": {
     "accessDenied": "Acesso Negado",
