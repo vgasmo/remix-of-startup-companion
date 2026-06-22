@@ -884,9 +884,10 @@ export default function PublicContractSigning() {
               <CardDescription>
                 {sigProvider === 'manual'
                   ? (t('publicContractSigning.reviewTheDocumentsBeforeSubmitting'))
-                  : (isPt
-                    ? `Reveja os documentos antes de enviar para assinatura via ${providerLabel(sigProvider, 'pt')}.`
-                    : `Review the documents before sending for signature via ${providerLabel(sigProvider, 'en')}.`)}
+                  : t('publicContractSigning.reviewBeforeSendingViaProvider', {
+                      provider: providerLabel(sigProvider, lang),
+                      defaultValue: 'Reveja os documentos antes de enviar para assinatura via {{provider}}.',
+                    })}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -1218,11 +1219,16 @@ export default function PublicContractSigning() {
                   <h3 className="text-lg font-semibold">
                     {t('publicContractSigning.awaitingSignatures')}
                   </h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {isPt
-                      ? <>Verifique o email <strong>{formData.legal_representative_email}</strong>.</>
-                      : <>Check your email at <strong>{formData.legal_representative_email}</strong>.</>}
-                  </p>
+                  <p
+                    className="text-sm text-muted-foreground mt-1"
+                    dangerouslySetInnerHTML={{
+                      __html: t('publicContractSigning.checkYourEmailAt', {
+                        email: `<strong>${formData.legal_representative_email}</strong>`,
+                        defaultValue: 'Verifique o email {{email}}.',
+                        interpolation: { escapeValue: false },
+                      }),
+                    }}
+                  />
                   <Badge variant="outline" className="text-xs">
                     {t('publicContractSigning.pending')}
                   </Badge>
