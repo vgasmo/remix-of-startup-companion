@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { notify } from '@/lib/notify';
+import i18n from '@/i18n';
 
 export interface InvestorUpdate {
   id: string;
@@ -99,6 +101,7 @@ export function useUpdateInvestorUpdate() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['investor-updates', data.workspace_id] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }

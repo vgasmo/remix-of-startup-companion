@@ -15,8 +15,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useSessions, useDeleteSession } from '@/hooks/useSessions';
+import { useSessions, useDeleteSession, type Session } from '@/hooks/useSessions';
 import { useExportSessions, exportSessionsToCsv } from '@/hooks/useExportData';
+import { useQueryClient } from '@tanstack/react-query';
+import { deferredDelete } from '@/lib/deferredDelete';
 import { notify } from "@/lib/notify";
 import { useAuth } from '@/contexts/AuthContext';
 import { FacilitatorMode } from '@/components/sessions/FacilitatorMode';
@@ -43,6 +45,7 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
 
   const { data: sessions, isLoading } = useSessions(workspaceId);
   const deleteMutation = useDeleteSession(workspaceId);
+  const queryClient = useQueryClient();
   const { refetch: fetchExportData } = useExportSessions(workspaceId);
 
   const handleExport = async () => {
@@ -60,16 +63,19 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
     session.agenda?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!sessionToDelete) return;
-    try {
-      await deleteMutation.mutateAsync(sessionToDelete);
-      notify.success(t('sessions.sessionDeleted'));
-      setShowDeleteAlert(false);
-      setSessionToDelete(null);
-    } catch (error) {
-      notify.error(t('common.error'));
-    }
+    const id = sessionToDelete;
+    setShowDeleteAlert(false);
+    setSessionToDelete(null);
+    deferredDelete<Session>({
+      queryClient,
+      queryKey: ['sessions', workspaceId],
+      itemId: id,
+      deletedLabel: t('sessions.sessionDeleted'),
+      undoLabel: t('common.undo'),
+      mutate: (sid) => deleteMutation.mutateAsync(sid),
+    });
   };
 
   return (

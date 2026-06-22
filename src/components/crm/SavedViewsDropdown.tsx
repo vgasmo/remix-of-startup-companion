@@ -22,6 +22,8 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useCrmSavedViews, useSaveCrmView, useDeleteCrmView, CrmSavedView } from '@/hooks/useCrmSavedViews';
+import { useQueryClient } from '@tanstack/react-query';
+import { deferredDelete } from '@/lib/deferredDelete';
 import { notify } from "@/lib/notify";
 
 interface SavedViewsDropdownProps {
@@ -35,6 +37,7 @@ export function SavedViewsDropdown({ viewType, currentFilters, onApplyView }: Sa
   const { data: views } = useCrmSavedViews(viewType);
   const saveView = useSaveCrmView();
   const deleteView = useDeleteCrmView();
+  const queryClient = useQueryClient();
   const [saveDialog, setSaveDialog] = useState(false);
   const [viewName, setViewName] = useState('');
   const [isDefault, setIsDefault] = useState(false);
@@ -57,13 +60,15 @@ export function SavedViewsDropdown({ viewType, currentFilters, onApplyView }: Sa
     }
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteView.mutateAsync(id);
-      notify.success(t('savedViews.deleted'));
-    } catch {
-      notify.error(t('savedViews.deleteFailed'));
-    }
+  const handleDelete = (id: string) => {
+    deferredDelete<CrmSavedView>({
+      queryClient,
+      queryKey: ['crm-saved-views', viewType],
+      itemId: id,
+      deletedLabel: t('savedViews.deleted'),
+      undoLabel: t('common.undo'),
+      mutate: (vid) => deleteView.mutateAsync(vid),
+    });
   };
 
   const handleApply = (view: CrmSavedView) => {
