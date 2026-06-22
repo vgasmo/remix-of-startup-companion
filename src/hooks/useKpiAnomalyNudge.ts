@@ -30,8 +30,9 @@ interface KpiValueRow {
 }
 
 export function useKpiAnomalyNudge(workspaceId: string | undefined) {
+  const { t, i18n } = useTranslation();
   return useQuery<KpiAnomaly | null>({
-    queryKey: ['kpi-anomaly', workspaceId],
+    queryKey: ['kpi-anomaly', workspaceId, i18n.language],
     enabled: !!workspaceId,
     staleTime: 300_000,
     queryFn: async () => {
@@ -44,7 +45,6 @@ export function useKpiAnomalyNudge(workspaceId: string | undefined) {
 
       if (error || !data || data.length === 0) return null;
 
-      // Group most-recent-first values by KPI definition.
       const byKpi = new Map<string, { name: string; values: number[]; latestPeriod: string | null }>();
       for (const row of data as unknown as KpiValueRow[]) {
         const defId = row.kpi_definition_id;
@@ -69,7 +69,7 @@ export function useKpiAnomalyNudge(workspaceId: string | undefined) {
           return {
             kpiName: name,
             trend: 'missing',
-            message: `${name} sem registos há mais de 2 meses. Considere atualizar.`,
+            message: t('kpi.anomalyMissing', { name, defaultValue: '{{name}} sem registos há mais de 2 meses. Considere atualizar.' }),
           };
         }
 
@@ -77,7 +77,7 @@ export function useKpiAnomalyNudge(workspaceId: string | undefined) {
           return {
             kpiName: name,
             trend: 'stale',
-            message: `${name} está estagnado há 3 períodos.`,
+            message: t('kpi.anomalyStale', { name, defaultValue: '{{name}} está estagnado há 3 períodos.' }),
           };
         }
 
@@ -86,7 +86,7 @@ export function useKpiAnomalyNudge(workspaceId: string | undefined) {
           return {
             kpiName: name,
             trend: 'declining',
-            message: `${name} desceu mais de 20% face ao período anterior.`,
+            message: t('kpi.anomalyDeclining', { name, defaultValue: '{{name}} desceu mais de 20% face ao período anterior.' }),
           };
         }
       }
@@ -95,3 +95,4 @@ export function useKpiAnomalyNudge(workspaceId: string | undefined) {
     },
   });
 }
+
