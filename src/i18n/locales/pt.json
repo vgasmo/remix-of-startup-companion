@@ -1499,8 +1499,11 @@
       "status": "Estado",
       "title": "Workspaces",
       "unblock": "Desbloquear",
-      "unblocked": "Workspace desbloqueado"
-    }
+      "unblocked": "Workspace desbloqueado",
+      "deleteTitle": "Eliminar workspace?",
+      "deleteConfirm": "Isto irá eliminar permanentemente o workspace \"{{name}}\" e todos os seus dados. Esta ação não pode ser revertida."
+    },
+    "removeMentorTitle": "Remover acesso de mentor?"
   },
   "adminContracts": {
     "allStatuses": "Todos os estados",
@@ -2022,7 +2025,8 @@
       "start": "Carregar e extrair com IA",
       "title": "Carregar PDFs de contratos assinados",
       "uploading": "A carregar {{done}} / {{total}}..."
-    }
+    },
+    "confirmCommitTitle": "Confirmar importação?"
   },
   "calendar": {
     "bookSession": "Agendar Sessão",
@@ -2070,7 +2074,8 @@
     "tokenExpired": "O seu token expirou. Gere um novo para continuar a sincronizar.",
     "tokenGenerated": "Token de calendário gerado com sucesso (válido por 90 dias)",
     "tokenNeedsRegeneration": "Por razões de segurança, o token precisa de ser regenerado. As subscrições de calendário terão de ser atualizadas com o novo URL.",
-    "urlCopied": "URL do calendário copiado"
+    "urlCopied": "URL do calendário copiado",
+    "regenerateTitle": "Regenerar token do calendário?"
   },
   "chat": {
     "empty": "Sem mensagens ainda. Inicie a conversa!",
@@ -2381,7 +2386,9 @@
       "exerciseNotes": "Notas específicas para este exercício...",
       "additionalDetails": "Detalhes adicionais...",
       "selectOption": "Selecionar uma opção"
-    }
+    },
+    "archive": "Arquivar",
+    "areYouSure": "Tem a certeza?"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -3554,7 +3561,9 @@
     "updateMonth": "Mês",
     "views": "visualizações",
     "visibilityUpdated": "Visibilidade atualizada",
-    "visibleToInvestors": "Visível para investidores"
+    "visibleToInvestors": "Visível para investidores",
+    "deleteTitle": "Remover item?",
+    "revokeTitle": "Revogar link?"
   },
   "dataroomChecklist": {
     "description": "Checklist de documentos essenciais para o Data Room",
@@ -3810,7 +3819,9 @@
     "unassigned": "Sem consultor atribuído",
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
-    "workspaces": "workspaces"
+    "workspaces": "workspaces",
+    "confirmArchiveTitle": "Arquivar workspace?",
+    "confirmArchiveDesc": "Arquivar \"{{name}}\"? O workspace ficará oculto das listas ativas mas pode ser restaurado mais tarde."
   },
   "ecosystemHub": {
     "navLabel": "Hub de Gestão",
@@ -8457,7 +8468,8 @@
     "totalHours": "Total de Horas",
     "trackTimeSpent": "Acompanhar tempo gasto nesta startup",
     "validHoursRequired": "Por favor insira horas válidas",
-    "whatDidYouWorkOn": "Em que trabalhou?"
+    "whatDidYouWorkOn": "Em que trabalhou?",
+    "deleteTitle": "Eliminar registo de tempo?"
   },
   "topBar": {
     "accountSettings": "Definições da Conta",

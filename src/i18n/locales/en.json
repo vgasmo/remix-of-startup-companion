@@ -1499,8 +1499,11 @@
       "status": "Status",
       "title": "Workspaces",
       "unblock": "Unblock",
-      "unblocked": "Workspace unblocked"
-    }
+      "unblocked": "Workspace unblocked",
+      "deleteTitle": "Delete workspace?",
+      "deleteConfirm": "This will permanently delete the workspace \"{{name}}\" and all its data. This action cannot be undone."
+    },
+    "removeMentorTitle": "Remove mentor access?"
   },
   "adminContracts": {
     "allStatuses": "All statuses",
@@ -2022,7 +2025,8 @@
       "start": "Upload & extract with AI",
       "title": "Upload signed contract PDFs",
       "uploading": "Uploading {{done}} / {{total}}..."
-    }
+    },
+    "confirmCommitTitle": "Commit import?"
   },
   "calendar": {
     "bookSession": "Book Session",
@@ -2070,7 +2074,8 @@
     "tokenExpired": "Your calendar token has expired. Please generate a new one to continue using calendar sync.",
     "tokenGenerated": "Calendar token generated successfully (valid for 90 days)",
     "tokenNeedsRegeneration": "For security reasons, your calendar token needs to be regenerated. Your calendar subscriptions will need to be updated with the new URL.",
-    "urlCopied": "Calendar URL copied"
+    "urlCopied": "Calendar URL copied",
+    "regenerateTitle": "Regenerate calendar token?"
   },
   "chat": {
     "empty": "No messages yet. Start the conversation!",
@@ -2381,7 +2386,9 @@
       "exerciseNotes": "Any specific notes for this exercise...",
       "additionalDetails": "Additional details...",
       "selectOption": "Select an option"
-    }
+    },
+    "archive": "Archive",
+    "areYouSure": "Are you sure?"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -3554,7 +3561,9 @@
     "updateMonth": "Month",
     "views": "views",
     "visibilityUpdated": "Visibility updated",
-    "visibleToInvestors": "Visible to investors"
+    "visibleToInvestors": "Visible to investors",
+    "deleteTitle": "Remove item?",
+    "revokeTitle": "Revoke link?"
   },
   "dataroomChecklist": {
     "description": "Essential documents checklist for the Data Room",
@@ -3810,7 +3819,9 @@
     "unassigned": "No consultant assigned",
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
-    "workspaces": "workspaces"
+    "workspaces": "workspaces",
+    "confirmArchiveTitle": "Archive workspace?",
+    "confirmArchiveDesc": "Archive \"{{name}}\"? The workspace will be hidden from active lists but can be restored later."
   },
   "ecosystemHub": {
     "navLabel": "Management Hub",
@@ -8457,7 +8468,8 @@
     "totalHours": "Total Hours",
     "trackTimeSpent": "Track time spent on this startup",
     "validHoursRequired": "Please enter valid hours",
-    "whatDidYouWorkOn": "What did you work on?"
+    "whatDidYouWorkOn": "What did you work on?",
+    "deleteTitle": "Delete time entry?"
   },
   "topBar": {
     "accountSettings": "Account Settings",
