@@ -102,11 +102,28 @@ Deno.serve(async (req) => {
         billing_day, payment_terms_days, discount_percentage,
         start_date, end_date, status, incubation_type_id,
         square_meters,
-        workspace:workspaces(id, startup:startups(name, has_startup_portugal_status))
+        workspace:workspaces(id, primary_contact_user_id, startup:startups(name, has_startup_portugal_status))
       `)
       .eq('status', 'active')
 
     if (contractsError) throw contractsError
+
+    // Resolve locale for all contract primary contacts in one batch
+    const primaryContactIds = Array.from(new Set(
+      (contracts || [])
+        .map((c: any) => (c.workspace as any)?.primary_contact_user_id)
+        .filter(Boolean)
+    ))
+    const localeByUserId = new Map<string, Locale>()
+    if (primaryContactIds.length) {
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('id, preferred_language')
+        .in('id', primaryContactIds)
+      for (const p of (profs || [])) {
+        localeByUserId.set(p.id, normalizeLocale((p as any).preferred_language))
+      }
+    }
 
     const results: Array<{ contractId: string; invoiceNumber: string; total: number; status: string }> = []
     const errors: Array<{ contractId: string; error: string }> = []
