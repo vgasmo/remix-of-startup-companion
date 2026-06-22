@@ -39,6 +39,8 @@ import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTrackEngagement } from '@/hooks/useEngagementEvents';
+import { ViewReceipt } from '@/components/ui/ViewReceipt';
+
 
 type ActionStatus = Database['public']['Enums']['action_status'];
 type MilestoneStatus = Database['public']['Enums']['milestone_status'];
