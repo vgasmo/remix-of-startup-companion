@@ -9,6 +9,7 @@
  * Called by cron (day 1 at 07:00) or manually from backoffice.
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { normalizeLocale, pickLang, type Locale } from '../_shared/i18n.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,6 +17,12 @@ const corsHeaders = {
 }
 
 const VAT_RATE = 0.23
+
+const INV_STRINGS = {
+  monthlyFee: { pt: 'Mensalidade de incubação', en: 'Incubation monthly fee' },
+  contractDiscount: { pt: 'Desconto contratual', en: 'Contractual discount' },
+  startupPortugalStatus: { pt: 'Estatuto Startup Portugal', en: 'Startup Portugal status' },
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
