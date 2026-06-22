@@ -111,7 +111,7 @@ export function AdminTemplatesManager() {
       notify.success(t('adminTemplates.uploadSuccess', { defaultValue: 'Template uploaded successfully' }));
     } catch (error: any) {
       logger.error('Upload error', {}, error);
-      notify.error(error.message || t('adminTemplates.uploadFailed', { defaultValue: 'Failed to upload template' }));
+      notify.error(t('adminTemplates.uploadFailed', { defaultValue: 'Falha ao carregar o modelo' }));
     } finally {
       setIsUploadingAsset(false);
       if (assetFileInputRef.current) assetFileInputRef.current.value = '';
