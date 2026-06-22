@@ -66,7 +66,7 @@ export default function PublicContractIntake() {
   const [lang, setLang] = useState<'pt' | 'en'>(() =>
     i18n.language?.startsWith('pt') ? 'pt' : 'en'
   );
-  const isPt = lang === 'pt';
+  
 
   const [formData, setFormData] = useState<IntakeFormData>({
     organization_name: '', project_name: '', company_nif: '', certidao_permanente_code: '',

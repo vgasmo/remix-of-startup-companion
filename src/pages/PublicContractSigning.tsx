@@ -125,7 +125,7 @@ export default function PublicContractSigning() {
   const [lang, setLang] = useState<'pt' | 'en'>(() =>
     i18n.language?.startsWith('pt') ? 'pt' : 'en'
   );
-  const isPt = lang === 'pt';
+  
 
   const [currentStep, setCurrentStep] = useState<WizardStep>('company_data');
   const [regulationAccepted, setRegulationAccepted] = useState(false);
