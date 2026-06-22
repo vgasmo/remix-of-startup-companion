@@ -183,10 +183,12 @@ export function useProgramSetupDraft(draftId: string | undefined) {
         .from('program_setup_drafts')
         .select('*')
         .eq('id', draftId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) return null;
       return data as unknown as ProgramSetupDraft;
+
     },
     enabled: !!draftId,
   });
@@ -323,7 +325,8 @@ async function loadProgramConfig(programId: string): Promise<ProgramSetupDraft['
     .from('programs')
     .select('*')
     .eq('id', programId)
-    .single();
+    .maybeSingle();
+
 
   const programType = (program?.program_type as ProgramType) || 'incubation';
   const isAcceleration = programType === 'acceleration';

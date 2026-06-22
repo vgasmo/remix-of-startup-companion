@@ -351,10 +351,10 @@ export function AdminTemplatesManager() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={()=> handleEdit(template)} aria-label={t('common.edit')}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(template)} aria-label={t('common.edit')}>
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={()=> setDeleteTarget(template)} aria-label={t('common.delete')}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDeleteTarget(template)} aria-label={t('common.delete')}>
                           <Trash2 className="h-3.5 w-3.5 text-destructive" />
                         </Button>
                       </div>

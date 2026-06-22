@@ -102,7 +102,7 @@ export function NotesSection({ workspaceId, canManage }: NotesSectionProps) {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(note.created_at), { addSuffix: true })}</span>
-                          {canManage && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=> handleDelete(note.id)} aria-label={t('common.delete')}><Trash2 className="h-3 w-3" /></Button>}
+                          {canManage && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleDelete(note.id)} aria-label={t('common.delete')}><Trash2 className="h-3 w-3" /></Button>}
                         </div>
                       </div>
                       <p className="text-sm whitespace-pre-wrap">{note.content}</p>

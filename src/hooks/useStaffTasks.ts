@@ -104,7 +104,8 @@ export function useMyStaffTasks() {
         .from('profiles_safe')
         .select('id, full_name, email, avatar_url')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
+
       
       return data.map(task => ({
         ...task,

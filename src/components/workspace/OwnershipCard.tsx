@@ -166,7 +166,7 @@ export function OwnershipCard({ workspaceId, compact = false }: OwnershipCardPro
                 )}
               </div>
               {canEdit && (
-                <Button variant="ghost" size="icon" onClick={()=> setIsEditingOwner(true)} aria-label={t('common.edit')}>
+                <Button variant="ghost" size="icon" onClick={() => setIsEditingOwner(true)} aria-label={t('common.edit')}>
                   <Edit2 className="h-4 w-4" />
                 </Button>
               )}
@@ -233,7 +233,7 @@ export function OwnershipCard({ workspaceId, compact = false }: OwnershipCardPro
                     : t('ownership.notSet')}
                 </p>
                 {canEdit && (
-                  <Button variant="ghost" size="icon" onClick={()=> setIsEditingFollowup(true)} aria-label={t('common.edit')}>
+                  <Button variant="ghost" size="icon" onClick={() => setIsEditingFollowup(true)} aria-label={t('common.edit')}>
                     <Edit2 className="h-4 w-4" />
                   </Button>
                 )}

@@ -399,9 +399,11 @@ export function useSurveyInstance(instanceId: string | null) {
           workspace:workspaces(id, startup_id, startups(name))
         `)
         .eq("id", instanceId)
-        .single();
+        .maybeSingle();
 
       if (instanceError) throw instanceError;
+      if (!instance) return null;
+
 
       const { data: responses, error: responsesError } = await supabase
         .from("survey_responses")
