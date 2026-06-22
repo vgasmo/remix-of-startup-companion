@@ -18,6 +18,7 @@ import { Progress } from '@/components/ui/progress';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { cn } from '@/lib/utils';
 import { triggerSuccessConfetti } from '@/lib/confetti';
+import { useHasSeenWelcomeWizard } from '@/hooks/useHasSeenWelcomeWizard';
 
 
 interface FounderWelcomePanelProps {
@@ -61,12 +62,13 @@ export function FounderWelcomePanel({
 }: FounderWelcomePanelProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const hasSeenWizard = useHasSeenWelcomeWizard();
   const checklistKey = scopedKey(CHECKLIST_DISMISSED_KEY, userId);
   const welcomeKey = scopedKey(WELCOME_DISMISSED_KEY, userId);
-  const [welcomeDismissed, setWelcomeDismissed] = useState(() => 
+  const [welcomeDismissed, setWelcomeDismissed] = useState(() =>
     localStorage.getItem(welcomeKey) === 'true'
   );
-  const [checklistDismissed, setChecklistDismissed] = useState(() => 
+  const [checklistDismissed, setChecklistDismissed] = useState(() =>
     localStorage.getItem(checklistKey) === 'true'
   );
 
@@ -148,6 +150,12 @@ export function FounderWelcomePanel({
       }
     }
   }, [allCompleted, checklistDismissed, isCollapsing, userId]);
+
+  // P5A: Suppress until the FounderWelcomeWizard has been dismissed —
+  // ensures only one onboarding surface is visible at a time for new founders.
+  if (hasSeenWizard !== true) {
+    return null;
+  }
 
   // Don't show if everything is dismissed or complete
   if (welcomeDismissed && (checklistDismissed || allCompleted)) {
