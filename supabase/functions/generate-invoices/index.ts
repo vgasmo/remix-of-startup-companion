@@ -9,6 +9,7 @@
  * Called by cron (day 1 at 07:00) or manually from backoffice.
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { normalizeLocale, pickLang, type Locale } from '../_shared/i18n.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,6 +17,12 @@ const corsHeaders = {
 }
 
 const VAT_RATE = 0.23
+
+const INV_STRINGS = {
+  monthlyFee: { pt: 'Mensalidade de incubação', en: 'Incubation monthly fee' },
+  contractDiscount: { pt: 'Desconto contratual', en: 'Contractual discount' },
+  startupPortugalStatus: { pt: 'Estatuto Startup Portugal', en: 'Startup Portugal status' },
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -95,11 +102,28 @@ Deno.serve(async (req) => {
         billing_day, payment_terms_days, discount_percentage,
         start_date, end_date, status, incubation_type_id,
         square_meters,
-        workspace:workspaces(id, startup:startups(name, has_startup_portugal_status))
+        workspace:workspaces(id, primary_contact_user_id, startup:startups(name, has_startup_portugal_status))
       `)
       .eq('status', 'active')
 
     if (contractsError) throw contractsError
+
+    // Resolve locale for all contract primary contacts in one batch
+    const primaryContactIds = Array.from(new Set(
+      (contracts || [])
+        .map((c: any) => (c.workspace as any)?.primary_contact_user_id)
+        .filter(Boolean)
+    ))
+    const localeByUserId = new Map<string, Locale>()
+    if (primaryContactIds.length) {
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('id, preferred_language')
+        .in('id', primaryContactIds)
+      for (const p of (profs || [])) {
+        localeByUserId.set(p.id, normalizeLocale((p as any).preferred_language))
+      }
+    }
 
     const results: Array<{ contractId: string; invoiceNumber: string; total: number; status: string }> = []
     const errors: Array<{ contractId: string; error: string }> = []
@@ -186,18 +210,22 @@ Deno.serve(async (req) => {
 
         // Also check startup-level automatic discounts
         const startup = (contract.workspace as any)?.startup
+        const primaryContactId = (contract.workspace as any)?.primary_contact_user_id
+        const locale: Locale = (primaryContactId && localeByUserId.get(primaryContactId)) || 'pt'
+        const dateLocale = locale === 'pt' ? 'pt-PT' : 'en-US'
+
         let autoDiscount = 0
         let autoDiscountReason = ''
         if (startup?.has_startup_portugal_status) {
           autoDiscount = 5
-          autoDiscountReason = 'Estatuto Startup Portugal'
+          autoDiscountReason = pickLang(locale, INV_STRINGS.startupPortugalStatus)
         }
         // Note: associate status would give 10% but requires checking a flag we don't store yet
         // The non-cumulative rule picks the highest
         const effectiveDiscount = Math.max(contractDiscount, contract.discount_percentage || 0, autoDiscount)
         const discountReason = effectiveDiscount === autoDiscount && autoDiscount > 0
           ? autoDiscountReason
-          : discounts?.find(d => d.discount_percentage === effectiveDiscount)?.reason || 'Desconto contratual'
+          : discounts?.find(d => d.discount_percentage === effectiveDiscount)?.reason || pickLang(locale, INV_STRINGS.contractDiscount)
 
         const subtotal = Math.round(baseFee * (1 - effectiveDiscount / 100) * 100) / 100
         const taxAmount = Math.round(subtotal * VAT_RATE * 100) / 100
@@ -205,7 +233,7 @@ Deno.serve(async (req) => {
 
         // 3. Build line items
         const lineItems: any[] = [{
-          description: `Mensalidade de incubação — ${new Date(year, month - 1).toLocaleString('pt-PT', { month: 'long', year: 'numeric' })}`,
+          description: `${pickLang(locale, INV_STRINGS.monthlyFee)} — ${new Date(year, month - 1).toLocaleString(dateLocale, { month: 'long', year: 'numeric' })}`,
           quantity: 1,
           unit_price: baseFee,
           discount_percentage: effectiveDiscount,
