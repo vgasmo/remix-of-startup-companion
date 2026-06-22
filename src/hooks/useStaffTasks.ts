@@ -184,6 +184,7 @@ export function useCreateStaffTask() {
       queryClient.invalidateQueries({ queryKey: ['staff-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['my-staff-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['workspace-staff-tasks'] });
+      notify.success(i18n.t('common.created'));
     },
   });
 }
@@ -207,6 +208,7 @@ export function useUpdateStaffTask() {
       queryClient.invalidateQueries({ queryKey: ['staff-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['my-staff-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['workspace-staff-tasks'] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -233,6 +235,7 @@ export function useCompleteStaffTask() {
       queryClient.invalidateQueries({ queryKey: ['staff-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['my-staff-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['workspace-staff-tasks'] });
+      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -253,6 +256,7 @@ export function useDeleteStaffTask() {
       queryClient.invalidateQueries({ queryKey: ['staff-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['my-staff-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['workspace-staff-tasks'] });
+      notify.success(i18n.t('common.deleted'));
     },
   });
 }
