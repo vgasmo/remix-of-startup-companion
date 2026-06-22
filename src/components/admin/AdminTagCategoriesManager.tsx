@@ -271,10 +271,10 @@ export function AdminTagCategoriesManager() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={()= aria-label="Edit"> openCategoryDialog(cat)} aria-label={t('common.edit')}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openCategoryDialog(cat)} aria-label={t('common.edit')}>
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={()= aria-label="Delete"> openDeleteDialog('category', cat.id, cat.name)} aria-label={t('common.delete')}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => openDeleteDialog('category', cat.id, cat.name)} aria-label={t('common.delete')}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
@@ -341,10 +341,10 @@ export function AdminTagCategoriesManager() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={()= aria-label="Edit"> openTagDialog(tag)} aria-label={t('common.edit')}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openTagDialog(tag)} aria-label={t('common.edit')}>
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={()= aria-label="Delete"> openDeleteDialog('tag', tag.id, tag.name)} aria-label={t('common.delete')}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => openDeleteDialog('tag', tag.id, tag.name)} aria-label={t('common.delete')}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>

@@ -676,7 +676,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8"
-                                    onClick={()= aria-label="Open link"> handleDownload(doc)}
+                                    onClick={() => handleDownload(doc)}
                                     title={doc.external_url ? t('documents.openLink') : t('common.download', { defaultValue: 'Download' })}
                                    aria-label={t('common.open')}>
                                     {doc.external_url ? (
@@ -689,7 +689,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      onClick={()= aria-label="Delete"> handleDelete(doc)}
+                                      onClick={() => handleDelete(doc)}
                                       disabled={deleteMutation.isPending}
                                       className="text-destructive hover:text-destructive h-8 w-8"
                                      aria-label={t('common.delete')}>

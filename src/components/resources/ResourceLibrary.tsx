@@ -152,7 +152,7 @@ export function ResourceLibrary({ programId }: ResourceLibraryProps) {
                           </Button>
                         )}
                         {canManage && (
-                          <Button variant="ghost" size="icon" onClick={()= aria-label="Delete"> handleDelete(resource.id, resource.title)} className="text-destructive" aria-label={t('common.delete')}>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(resource.id, resource.title)} className="text-destructive" aria-label={t('common.delete')}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         )}

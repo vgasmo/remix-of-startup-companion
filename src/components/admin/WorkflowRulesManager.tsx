@@ -143,7 +143,7 @@ export function WorkflowRulesManager({ programId }: WorkflowRulesManagerProps) {
                       <Button 
                         variant="ghost" 
                         size="icon"
-                        onClick={()= aria-label="Settings"> openEditDialog(rule)}
+                        onClick={() => openEditDialog(rule)}
                        aria-label={t('common.settings')}>
                         <Settings className="h-4 w-4" />
                       </Button>

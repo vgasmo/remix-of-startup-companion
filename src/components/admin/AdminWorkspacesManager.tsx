@@ -606,7 +606,7 @@ export function AdminWorkspacesManager() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={()= aria-label="Delete"> confirm({
+                            onClick={() => confirm({
                               title: t('admin.workspacesManager.deleteTitle'),
                               description: t('admin.workspacesManager.deleteConfirm', { name: startupName }),
                               variant: 'destructive',
