@@ -428,8 +428,9 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
       )}
 
       {activeSubTab === 'tools' && (
-        <div role="tabpanel" id="doc-panel-tools" aria-labelledby="doc-tab-tools">
+        <div role="tabpanel" id="doc-panel-tools" aria-labelledby="doc-tab-tools" className="space-y-6">
           <TemplatesTab workspaceId={workspaceId} canWrite={canWrite} isFounder={isFounder} />
+          <TemplateRequestsPanel workspaceId={workspaceId} />
         </div>
       )}
 
