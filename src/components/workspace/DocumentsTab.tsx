@@ -53,6 +53,7 @@ import { useTrackEngagement } from '@/hooks/useEngagementEvents';
 import { useTranslation } from 'react-i18next';
 import { FinancialModelPanel } from './FinancialModelPanel';
 import { TemplatesTab } from './TemplatesTab';
+import { TemplateRequestsPanel } from './TemplateRequestsPanel';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
 import { DataroomTab } from './DataroomTab';
 import { useSearchParams } from 'react-router-dom';
@@ -428,8 +429,9 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
       )}
 
       {activeSubTab === 'tools' && (
-        <div role="tabpanel" id="doc-panel-tools" aria-labelledby="doc-tab-tools">
+        <div role="tabpanel" id="doc-panel-tools" aria-labelledby="doc-tab-tools" className="space-y-6">
           <TemplatesTab workspaceId={workspaceId} canWrite={canWrite} isFounder={isFounder} />
+          <TemplateRequestsPanel workspaceId={workspaceId} />
         </div>
       )}
 

@@ -7227,6 +7227,78 @@ export type Database = {
         }
         Relationships: []
       }
+      template_requests: {
+        Row: {
+          admin_note: string | null
+          attachment_url: string | null
+          context_label: string | null
+          context_ref: string | null
+          context_type: string
+          created_at: string
+          description: string | null
+          fulfilled_template_id: string | null
+          id: string
+          requested_by: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          title: string
+          updated_at: string
+          workspace_id: string | null
+        }
+        Insert: {
+          admin_note?: string | null
+          attachment_url?: string | null
+          context_label?: string | null
+          context_ref?: string | null
+          context_type?: string
+          created_at?: string
+          description?: string | null
+          fulfilled_template_id?: string | null
+          id?: string
+          requested_by: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Update: {
+          admin_note?: string | null
+          attachment_url?: string | null
+          context_label?: string | null
+          context_ref?: string | null
+          context_type?: string
+          created_at?: string
+          description?: string | null
+          fulfilled_template_id?: string | null
+          id?: string
+          requested_by?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "template_requests_fulfilled_template_id_fkey"
+            columns: ["fulfilled_template_id"]
+            isOneToOne: false
+            referencedRelation: "templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "template_requests_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       templates: {
         Row: {
           category: string | null
