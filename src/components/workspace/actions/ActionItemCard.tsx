@@ -15,6 +15,7 @@ import type { ActionItem } from '@/hooks/useActionItems';
 import type { ActionDeliverable } from '@/hooks/useActionDeliverables';
 import type { Database } from '@/integrations/supabase/types';
 import { notify } from "@/lib/notify";
+import { RequestTemplateDialog } from '@/components/workspace/RequestTemplateDialog';
 
 type ActionStatus = Database['public']['Enums']['action_status'];
 
@@ -61,6 +62,7 @@ export const ActionItemCard = memo(function ActionItemCard({
   const priorityConfig = PRIORITY_CONFIG[item.priority || 'medium'] || PRIORITY_CONFIG.medium;
 
   const [addDeliverableOpen, setAddDeliverableOpen] = useState(false);
+  const [requestTemplateOpen, setRequestTemplateOpen] = useState(false);
   const [newDeliverable, setNewDeliverable] = useState({ document_id: '' });
 
   const totalDeliverables = deliverables.length;
@@ -272,6 +274,20 @@ export const ActionItemCard = memo(function ActionItemCard({
                   ? t('actions.deliverableDocExistingHint', 'Se o documento já estiver concluído, será ligado a esta ação e aberto na base de documentos.')
                   : t('actions.deliverableDocHint', 'Ao escolher, será redirecionado para o separador de Documentos para preencher e submeter o material da plataforma.')}
             </p>
+            <div className="flex items-start gap-2 p-2 rounded-md border border-dashed bg-muted/30">
+              <p className="text-xs text-muted-foreground flex-1">
+                {t('templateRequests.notFoundHint', { defaultValue: 'Não encontra um template adequado?' })}
+              </p>
+              <Button
+                type="button"
+                variant="link"
+                size="sm"
+                className="h-auto p-0 text-xs"
+                onClick={() => { setAddDeliverableOpen(false); setRequestTemplateOpen(true); }}
+              >
+                {t('templateRequests.requestOne', { defaultValue: 'Solicitar template' })}
+              </Button>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => setAddDeliverableOpen(false)}>{t('common.cancel')}</Button>
@@ -279,6 +295,16 @@ export const ActionItemCard = memo(function ActionItemCard({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <RequestTemplateDialog
+        open={requestTemplateOpen}
+        onOpenChange={setRequestTemplateOpen}
+        workspaceId={workspaceId}
+        contextType="action_item"
+        contextRef={item.id}
+        contextLabel={item.title}
+        defaultTitle={item.title}
+      />
     </>
   );
 });
