@@ -34,11 +34,12 @@ export function useAutoMaterializeDeliverables(
         logger.error('materialize_deliverables_check_failed', { workspaceId, error: error.message });
         return true; // Assume materialized on error to avoid infinite retry
       }
-      // Always re-run the RPC: it is idempotent and will only insert what is missing.
-      // Returning false here triggers the mutation, which is safe because the RPC
-      // checks for existing milestones/actions/deliverables before inserting.
+      // Once any source-linked milestones exist for this workspace, treat as
+      // materialized and skip the RPC. The RPC is now backed by unique partial
+      // indexes on (workspace_id, source_gate_id) and (workspace_id, source_deliverable_key),
+      // so concurrent runs can no longer produce duplicate gates / actions.
       logger.debug('materialize_deliverables_check_result', { workspaceId, count });
-      return false;
+      return (count ?? 0) > 0;
     },
   });
 
