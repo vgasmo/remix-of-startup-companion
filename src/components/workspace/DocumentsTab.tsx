@@ -53,6 +53,7 @@ import { useTrackEngagement } from '@/hooks/useEngagementEvents';
 import { useTranslation } from 'react-i18next';
 import { FinancialModelPanel } from './FinancialModelPanel';
 import { TemplatesTab } from './TemplatesTab';
+import { TemplateRequestsPanel } from './TemplateRequestsPanel';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
 import { DataroomTab } from './DataroomTab';
 import { useSearchParams } from 'react-router-dom';
