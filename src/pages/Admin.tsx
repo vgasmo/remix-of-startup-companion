@@ -18,6 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AdminTemplatesManager } from '@/components/admin/AdminTemplatesManager';
+import { AdminTemplateRequestsManager } from '@/components/admin/AdminTemplateRequestsManager';
 import { AdminUsersManager } from '@/components/admin/AdminUsersManager';
 import { AdminKpisManager } from '@/components/admin/AdminKpisManager';
 import { AdminBackoffice } from '@/components/admin/AdminBackoffice';
@@ -42,7 +43,7 @@ const ADMIN_ONLY_TABS = new Set(['users', 'data-quality', 'system-health']);
 const TAB_GROUPS_BASE: Record<string, string[]> = {
   operations: ['approvals', 'enrollment', 'backoffice', 'announcements'],
   // CRM is accessed directly via /crm (no inline tab)
-  programs: ['programs-setup', 'kpis', 'templates', 'support-materials', 'surveys'],
+  programs: ['programs-setup', 'kpis', 'templates', 'template-requests', 'support-materials', 'surveys'],
   reports: ['analytics', 'health', 'compliance', 'data-quality', 'system-health'],
   users: ['users', 'mentors'],
 };
@@ -129,6 +130,7 @@ export default function Admin() {
       'programs-setup': t('admin.programsSetup'),
       kpis: t('admin.kpis'),
       templates: t('admin.templates'),
+      'template-requests': t('templateRequests.adminTitle', { defaultValue: 'Pedidos de Template' }),
       'support-materials': t('admin.supportMaterials.title'),
       surveys: t('admin.surveys.title'),
       analytics: t('admin.analytics'),
@@ -241,6 +243,10 @@ export default function Admin() {
 
         <TabsContent value="templates">
           <AdminTemplatesManager />
+        </TabsContent>
+
+        <TabsContent value="template-requests">
+          <AdminTemplateRequestsManager />
         </TabsContent>
 
         <TabsContent value="support-materials">
