@@ -148,7 +148,7 @@ export function WizardStagesStep({ data, onUpdate }: WizardStagesStepProps) {
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="space-y-1">
-                    <Label className="text-xs">Display Name</Label>
+                    <Label className="text-xs">Nome a apresentar</Label>
                     <Input
                       value={stage.name}
                       onChange={(e) => handleFieldChange(stage.stage_key, 'name', e.target.value)}
