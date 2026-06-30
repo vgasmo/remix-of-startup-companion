@@ -90,12 +90,13 @@ export function useConversations() {
 
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-      // Get last message for each conversation
+      // Get last message for each conversation (cap to recent window to avoid full-table fetch)
       const { data: lastMessages } = await supabase
         .from('messages')
         .select('id, conversation_id, sender_id, content, created_at')
         .in('conversation_id', conversationIds)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       const lastMessageMap = new Map<string, Message>();
       lastMessages?.forEach(m => {
@@ -106,13 +107,14 @@ export function useConversations() {
 
       // Count unread messages — batched approach instead of N+1 per-conversation loop
       const unreadCounts = new Map<string, number>();
-      // Get all messages across conversations that could be unread
+      // Get all messages across conversations that could be unread (recent window only)
       const { data: allUnreadMessages } = await supabase
         .from('messages')
         .select('conversation_id, created_at')
         .in('conversation_id', conversationIds)
         .neq('sender_id', userId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(500);
 
       if (allUnreadMessages) {
         for (const msg of allUnreadMessages) {
@@ -218,6 +220,15 @@ export function useSendMessage() {
         .from('conversations')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', conversationId);
+
+      // Fire-and-forget email alert to other participants
+      try {
+        void supabase.functions.invoke('send-message-email-alert', {
+          body: { messageId: data.id },
+        });
+      } catch {
+        // ignore — best-effort
+      }
 
       return data;
     },

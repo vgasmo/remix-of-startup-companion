@@ -93,6 +93,9 @@ export function AppSidebar() {
 
   // Get first workspace ID for founder navigation
   const firstWorkspaceId = workspaces.length > 0 ? workspaces[0].id : null;
+  // Prefer the workspace currently being viewed so deep-links follow context
+  const routeMatch = location.pathname.match(/^\/workspace\/([^/?#]+)/);
+  const activeWorkspaceId = routeMatch?.[1] ?? firstWorkspaceId;
 
   // ============================================
   // ROLE-SPECIFIC NAVIGATION ITEMS
@@ -105,15 +108,15 @@ export function AppSidebar() {
 
   const founderNavigation: NavItem[] = [
     { name: t('nav.founder.home', { defaultValue: 'Início' }), href: '/my-workspaces', icon: Home, exact: true },
-    ...(firstWorkspaceId ? [
-      { 
-        name: t('nav.founder.myStartup', { defaultValue: 'A Minha Startup' }), 
-        href: `/workspace/${firstWorkspaceId}`, 
+    ...(activeWorkspaceId ? [
+      {
+        name: t('nav.founder.myStartup', { defaultValue: 'A Minha Startup' }),
+        href: `/workspace/${activeWorkspaceId}`,
         icon: Building2,
       },
-      { 
-        name: t('nav.founder.documents', { defaultValue: 'Documentos' }), 
-        href: `/workspace/${firstWorkspaceId}?tab=documents`, 
+      {
+        name: t('nav.founder.documents', { defaultValue: 'Documentos' }),
+        href: `/workspace/${activeWorkspaceId}?tab=documents`,
         icon: FolderOpen,
       },
     ] : []),

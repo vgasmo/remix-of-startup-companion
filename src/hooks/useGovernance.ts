@@ -49,15 +49,43 @@ export function useUpdateSessionWorkflow() {
 
   return useMutation({
     mutationFn: async ({ sessionId, updates }: { sessionId: string; updates: Partial<SessionWorkflowState> }) => {
-      // Check if all steps are done
-      const allDone = updates.decisions_done && updates.actions_done;
-      const completedAt = allDone ? new Date().toISOString() : null;
+      // Read current persisted row so partial toggles are merged correctly
+      const { data: current } = await supabase
+        .from('session_workflow_state')
+        .select('*')
+        .eq('session_id', sessionId)
+        .maybeSingle();
+
+      const merged = {
+        decisions_done: false,
+        actions_done: false,
+        followup_sent: false,
+        next_session_planned: false,
+        risks_done: false,
+        ...(current ?? {}),
+        ...updates,
+      } as SessionWorkflowState;
+
+      const allDone =
+        merged.decisions_done &&
+        merged.actions_done &&
+        merged.followup_sent &&
+        merged.next_session_planned &&
+        merged.risks_done;
+
+      const completedAt = allDone
+        ? (current?.completed_at ?? new Date().toISOString())
+        : null;
 
       const { error } = await supabase
         .from('session_workflow_state')
         .upsert({
           session_id: sessionId,
-          ...updates,
+          decisions_done: merged.decisions_done,
+          actions_done: merged.actions_done,
+          followup_sent: merged.followup_sent,
+          next_session_planned: merged.next_session_planned,
+          risks_done: merged.risks_done,
           completed_at: completedAt,
         }, { onConflict: 'session_id' });
 

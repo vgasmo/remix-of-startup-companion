@@ -408,7 +408,7 @@ async function loadProgramConfig(programId: string): Promise<ProgramSetupDraft['
     .from('program_health_model')
     .select('*')
     .eq('program_id', programId)
-    .single();
+    .maybeSingle();
 
   // Load gates and weeks for acceleration programs
   let draftGates: DraftGate[] = [];

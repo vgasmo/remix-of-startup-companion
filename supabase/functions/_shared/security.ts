@@ -134,7 +134,7 @@ export function requireCronSecret(
     };
   }
 
-  if (!cronSecret || cronSecret !== expectedSecret) {
+  if (!cronSecret || !timingSafeEqual(cronSecret, expectedSecret)) {
     return {
       error: errorResponse(req, 'Invalid or missing cron secret', ErrorCode.UNAUTHORIZED, 401)
     };
@@ -163,7 +163,7 @@ export function requireWebhookSecret(
     };
   }
 
-  if (!webhookSecret || webhookSecret !== expectedSecret) {
+  if (!webhookSecret || !timingSafeEqual(webhookSecret, expectedSecret)) {
     return {
       error: errorResponse(req, 'Invalid or missing webhook secret', ErrorCode.UNAUTHORIZED, 401)
     };

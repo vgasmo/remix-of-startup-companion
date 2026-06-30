@@ -106,7 +106,7 @@ export function ChatTab({ workspaceId }: ChatTabProps) {
       return data as Message[];
     },
     enabled: !!conversation?.id,
-    refetchInterval: 5000, // Fallback polling
+    // Realtime subscription below handles inserts; no polling needed.
   });
 
   // Fetch profiles for senders
@@ -179,7 +179,7 @@ export function ChatTab({ workspaceId }: ChatTabProps) {
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'messages',
           filter: `conversation_id=eq.${conversation.id}`,

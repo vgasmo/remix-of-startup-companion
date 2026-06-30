@@ -36,7 +36,8 @@ export function useAllDocuments() {
         .from('documents')
         .select('*')
         .in('workspace_id', workspaceIds)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(1000);
 
       if (error) throw error;
 

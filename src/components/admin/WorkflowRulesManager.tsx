@@ -154,7 +154,7 @@ export function WorkflowRulesManager({ programId }: WorkflowRulesManagerProps) {
                       </DialogHeader>
                       <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                          <Label>Rule Name</Label>
+                          <Label>{t('workflowRules.ruleName', { defaultValue: 'Nome da regra' })}</Label>
                           <p className="text-sm">{editingRule?.name || 'Unnamed Rule'}</p>
                         </div>
                         {editingRule?.trigger_type !== 'health_dropped_to_risk' && (

@@ -35,23 +35,23 @@ export function NewConversationDialog({ open, onOpenChange, onConversationCreate
   const createConversation = useCreateConversation();
 
   // Fetch all users the current user can message (workspace members, etc.)
+  const currentUserId = user?.id ?? null;
   const { data: users, isLoading } = useQuery({
-    queryKey: ['messageable-users'],
+    queryKey: ['messageable-users', currentUserId],
     queryFn: async (): Promise<UserOption[]> => {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (!currentUser) return [];
+      if (!currentUserId) return [];
 
       // Get all profiles except current user
       const { data, error } = await supabase
         .from('profiles_safe')
         .select('id, full_name, email, avatar_url')
-        .neq('id', currentUser.id)
+        .neq('id', currentUserId)
         .order('full_name');
 
       if (error) throw error;
       return data || [];
     },
-    enabled: open,
+    enabled: open && !!currentUserId,
   });
 
   const filteredUsers = users?.filter(u => 

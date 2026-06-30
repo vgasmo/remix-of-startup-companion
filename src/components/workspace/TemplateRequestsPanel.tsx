@@ -4,7 +4,7 @@ import { Sparkles, Plus, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-re
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useTemplateRequests, type TemplateRequestStatus } from '@/hooks/useTemplateRequests';
+import { useMyTemplateRequests, type TemplateRequestStatus } from '@/hooks/useTemplateRequests';
 import { RequestTemplateDialog } from './RequestTemplateDialog';
 import { formatDistanceToNow } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -18,7 +18,7 @@ const STATUS_META: Record<TemplateRequestStatus, { labelKey: string; defaultLabe
 
 export function TemplateRequestsPanel({ workspaceId }: { workspaceId: string }) {
   const { t } = useTranslation();
-  const { data: requests = [], isLoading } = useTemplateRequests({ workspaceId });
+  const { data: requests = [], isLoading, isError, refetch } = useMyTemplateRequests();
   const [open, setOpen] = useState(false);
 
   return (
@@ -43,7 +43,19 @@ export function TemplateRequestsPanel({ workspaceId }: { workspaceId: string }) 
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-xs text-muted-foreground">{t('common.loading', { defaultValue: 'A carregar...' })}</p>
+            <div className="space-y-2 py-1">
+              <div className="h-10 rounded-md bg-muted animate-pulse" />
+              <div className="h-10 rounded-md bg-muted animate-pulse" />
+            </div>
+          ) : isError ? (
+            <div className="flex items-center justify-between gap-2 py-2">
+              <p className="text-xs text-muted-foreground">
+                {t('common.errorLoading', { defaultValue: 'Erro ao carregar.' })}
+              </p>
+              <Button size="sm" variant="outline" onClick={() => refetch()}>
+                {t('common.retry', { defaultValue: 'Tentar novamente' })}
+              </Button>
+            </div>
           ) : requests.length === 0 ? (
             <p className="text-xs text-muted-foreground py-2">
               {t('templateRequests.empty', { defaultValue: 'Ainda não há pedidos. Use "Novo pedido" se faltar um modelo.' })}

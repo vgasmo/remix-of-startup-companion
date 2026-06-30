@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { MoreHorizontal, Building2, Users, ExternalLink, Calendar, AlertTriangle, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Archive, Trash2, ShieldCheck } from 'lucide-react';
@@ -130,8 +130,10 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
   };
 
   // Reset page when items change significantly
-  const safePage = Math.min(page, totalPages - 1);
-  if (safePage !== page) setPage(safePage);
+  useEffect(() => {
+    const safe = Math.min(page, Math.max(0, totalPages - 1));
+    if (safe !== page) setPage(safe);
+  }, [totalPages, page]);
 
   const from = items.length > 0 ? page * pageSize + 1 : 0;
   const to = Math.min((page + 1) * pageSize, items.length);

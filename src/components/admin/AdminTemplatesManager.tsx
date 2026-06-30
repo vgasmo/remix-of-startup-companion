@@ -421,11 +421,12 @@ export function AdminTemplatesManager() {
             
             <TabsContent value="schema" className="py-4">
               <div className="space-y-2">
-                <Label>{t('adminTemplates.schemaJson', { defaultValue: 'Esquema JSON' })}</Label>
+                <Label htmlFor="schema-json-textarea">{t('adminTemplates.schemaJson', { defaultValue: 'Esquema JSON' })}</Label>
                 <p className="text-xs text-muted-foreground">
                   {t('adminTemplates.schemaDescription', { defaultValue: 'Defina secções e campos. Tipos de campo: texto, área de texto, número, checkbox, checklist' })}
                 </p>
                 <Textarea
+                  id="schema-json-textarea"
                   value={formData.schema_json}
                   onChange={e => setFormData(f => ({ ...f, schema_json: e.target.value }))}
                   className="font-mono text-xs"
