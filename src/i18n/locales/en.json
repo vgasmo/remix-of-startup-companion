@@ -2405,7 +2405,8 @@
     "warning": "Warning",
     "workspace": "Workspace",
     "years": "years",
-    "yes": "Yes"
+    "yes": "Yes",
+    "errorLoading": "Failed to load."
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -9062,5 +9063,39 @@
   "publicContractSigning": {
     "reviewBeforeSendingViaProvider": "Review the documents before sending for signature via {{provider}}.",
     "checkYourEmailAtPrefix": "Check your email at"
+  },
+  "templateRequests": {
+    "newRequest": "New request",
+    "empty": "No requests yet. Use \"New request\" if a template is missing.",
+    "adminNote": "Team note",
+    "adminTitle": "Template Requests",
+    "adminSubtitle": "Requests submitted by founders when no suitable template exists.",
+    "adminEmpty": "No requests in this state.",
+    "startWork": "Start",
+    "resolve": "Resolve",
+    "reject": "Reject",
+    "reopen": "Reopen",
+    "reopened": "Request reopened",
+    "resolveTitle": "Resolve request",
+    "markFulfilled": "Mark as resolved",
+    "markedFulfilled": "Request marked as resolved",
+    "pickTemplate": "Published template",
+    "pickTemplatePlaceholder": "Pick template…",
+    "pickTemplateRequired": "Select the published template",
+    "notePlaceholder": "Note for the founder (e.g. template published in Documents → ...)",
+    "relatedTo": "Related to",
+    "tabs": {
+      "pending": "Pending",
+      "in_progress": "In progress",
+      "fulfilled": "Resolved",
+      "rejected": "Rejected",
+      "all": "All"
+    },
+    "status": {
+      "pending": "Pending",
+      "inProgress": "In progress",
+      "fulfilled": "Resolved",
+      "rejected": "Rejected"
+    }
   }
 }

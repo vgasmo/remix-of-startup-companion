@@ -2405,7 +2405,8 @@
     "warning": "Aviso",
     "workspace": "Workspace",
     "years": "anos",
-    "yes": "Sim"
+    "yes": "Sim",
+    "errorLoading": "Erro ao carregar."
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -9062,5 +9063,39 @@
   "publicContractSigning": {
     "reviewBeforeSendingViaProvider": "Reveja os documentos antes de enviar para assinatura via {{provider}}.",
     "checkYourEmailAtPrefix": "Verifique o email"
+  },
+  "templateRequests": {
+    "newRequest": "Novo pedido",
+    "empty": "Ainda não há pedidos. Use \"Novo pedido\" se faltar um modelo.",
+    "adminNote": "Nota da equipa",
+    "adminTitle": "Pedidos de Template",
+    "adminSubtitle": "Pedidos submetidos por founders quando não existe template adequado.",
+    "adminEmpty": "Sem pedidos neste estado.",
+    "startWork": "Iniciar",
+    "resolve": "Resolver",
+    "reject": "Rejeitar",
+    "reopen": "Reabrir",
+    "reopened": "Pedido reaberto",
+    "resolveTitle": "Resolver pedido",
+    "markFulfilled": "Marcar como resolvido",
+    "markedFulfilled": "Pedido marcado como resolvido",
+    "pickTemplate": "Template publicado",
+    "pickTemplatePlaceholder": "Escolher template…",
+    "pickTemplateRequired": "Selecione o template publicado",
+    "notePlaceholder": "Nota para o founder (ex: template publicado em Documentos → ...)",
+    "relatedTo": "Relacionado com",
+    "tabs": {
+      "pending": "Pendentes",
+      "in_progress": "Em curso",
+      "fulfilled": "Resolvidos",
+      "rejected": "Rejeitados",
+      "all": "Todos"
+    },
+    "status": {
+      "pending": "Pendente",
+      "inProgress": "Em curso",
+      "fulfilled": "Resolvido",
+      "rejected": "Rejeitado"
+    }
   }
 }
