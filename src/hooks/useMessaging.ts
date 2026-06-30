@@ -221,6 +221,15 @@ export function useSendMessage() {
         .update({ updated_at: new Date().toISOString() })
         .eq('id', conversationId);
 
+      // Fire-and-forget email alert to other participants
+      try {
+        void supabase.functions.invoke('send-message-email-alert', {
+          body: { messageId: data.id },
+        });
+      } catch {
+        // ignore — best-effort
+      }
+
       return data;
     },
     onSuccess: (_, variables) => {
