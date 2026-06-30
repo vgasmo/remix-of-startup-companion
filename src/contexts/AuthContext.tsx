@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import { AppRole } from '@/types/database';
@@ -173,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [fetchUserData]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     setIsAuthReady(false);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
@@ -183,18 +183,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       void track('login');
     }
     return { error: error as Error | null };
-  };
+  }, []);
 
-  const signUp = async (email: string, password: string, fullName: string, selectedRole?: 'founder' | 'mentor_externo') => {
+  const signUp = useCallback(async (email: string, password: string, fullName: string, selectedRole?: 'founder' | 'mentor_externo') => {
     const redirectUrl = `${window.location.origin}/`;
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: { 
+        data: {
           full_name: fullName,
-          selected_role: selectedRole 
+          selected_role: selectedRole
         }
       }
     });
@@ -202,9 +202,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logger.warn('sign_up_failed', { domain: email.split('@')[1] });
     }
     return { error: error as Error | null };
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       setIsAuthReady(false);
       resetSession(queryClient, 'logout');
@@ -215,27 +215,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(null);
       setRoles([]);
       setIsAuthReady(true);
-      // Force redirect to login after sign out
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
     }
-  };
+  }, []);
 
-  const isAdmin = roles.includes('admin');
-  const isConsultor = roles.includes('consultor');
-  const isBackoffice = roles.includes('backoffice');
-  const isStaff = isAdmin || isConsultor || isBackoffice;
-  const isExternalMentor = roles.includes('mentor_externo') && !isConsultor && !isAdmin;
-  const isMentor = roles.includes('mentor_externo') || isConsultor || isAdmin;
-  const isFounder = roles.includes('founder');
-  
-  const isAccountApproved = profile?.account_status === 'approved';
-  const isAccountPending = profile?.account_status === 'pending';
-  const isAccountSuspended = profile?.account_status === 'suspended';
-
-  return (
-    <AuthContext.Provider value={{
+  const value = useMemo<AuthContextType>(() => {
+    const isAdmin = roles.includes('admin');
+    const isConsultor = roles.includes('consultor');
+    const isBackoffice = roles.includes('backoffice');
+    const isStaff = isAdmin || isConsultor || isBackoffice;
+    const isExternalMentor = roles.includes('mentor_externo') && !isConsultor && !isAdmin;
+    const isMentor = roles.includes('mentor_externo') || isConsultor || isAdmin;
+    const isFounder = roles.includes('founder');
+    return {
       user,
       session,
       profile,
@@ -249,13 +243,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isMentor,
       isExternalMentor,
       isFounder,
-      isAccountApproved,
-      isAccountPending,
-      isAccountSuspended,
+      isAccountApproved: profile?.account_status === 'approved',
+      isAccountPending: profile?.account_status === 'pending',
+      isAccountSuspended: profile?.account_status === 'suspended',
       signIn,
       signUp,
-      signOut
-    }}>
+      signOut,
+    };
+  }, [user, session, profile, roles, isLoading, isAuthReady, signIn, signUp, signOut]);
+
+  return (
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

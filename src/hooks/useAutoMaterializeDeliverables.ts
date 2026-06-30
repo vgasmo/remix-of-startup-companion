@@ -59,6 +59,8 @@ export function useAutoMaterializeDeliverables(
       logger.info('materialize_deliverables_success', { workspaceId, programId, result });
       queryClient.invalidateQueries({ queryKey: ['workspace-milestones', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-actions', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['milestones', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-tab-badges', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['acceleration-materialized', workspaceId] });
     },

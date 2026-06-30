@@ -176,7 +176,6 @@ export function useUpdateDataroomItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dataroom-items'] });
-      notify.success(i18n.t('common.deleted'));
     },
   });
 }
@@ -195,7 +194,6 @@ export function useDeleteDataroomItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dataroom-items'] });
-      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -220,7 +218,6 @@ export function useCreateShareLink() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dataroom-links'] });
-      notify.success(i18n.t('common.updated'));
     },
   });
 }
@@ -241,7 +238,6 @@ export function useRevokeShareLink() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dataroom-links'] });
-      notify.success(i18n.t('common.created'));
     },
   });
 }

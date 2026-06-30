@@ -65,6 +65,66 @@ export function useMyTemplateRequests() {
   });
 }
 
+async function notifyStaffOfNewRequest(req: TemplateRequest) {
+  try {
+    // Find recipients: workspace assigned consultant + all admins
+    const recipients = new Set<string>();
+    if (req.workspace_id) {
+      const { data: ws } = await supabase
+        .from('workspaces')
+        .select('assigned_consultor_id')
+        .eq('id', req.workspace_id)
+        .maybeSingle();
+      if (ws?.assigned_consultor_id) recipients.add(ws.assigned_consultor_id);
+    }
+    const { data: admins } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .eq('role', 'admin');
+    admins?.forEach(a => a.user_id && recipients.add(a.user_id as string));
+
+    if (recipients.size === 0) return;
+
+    const rows = [...recipients].map(uid => ({
+      user_id: uid,
+      type: 'system',
+      title: 'Novo pedido de template',
+      message: req.title,
+      link: '/admin?tab=programs',
+      read: false,
+      entity_type: 'template_request',
+      entity_id: req.id,
+      metadata: { workspace_id: req.workspace_id, context_type: req.context_type },
+    }));
+    await supabase.from('notifications').insert(rows);
+  } catch {
+    // best-effort
+  }
+}
+
+async function notifyRequesterOfResolution(req: TemplateRequest) {
+  try {
+    if (!req.requested_by) return;
+    const title =
+      req.status === 'fulfilled' ? 'Pedido de template resolvido'
+      : req.status === 'rejected' ? 'Pedido de template rejeitado'
+      : 'Pedido de template em curso';
+    await supabase.from('notifications').insert({
+      user_id: req.requested_by,
+      type: 'system',
+      title,
+      message: req.title,
+      link: req.workspace_id ? `/workspace/${req.workspace_id}?tab=documents` : null,
+      read: false,
+      entity_type: 'template_request',
+      entity_id: req.id,
+      metadata: { status: req.status, admin_note: req.admin_note },
+    });
+  } catch {
+    // best-effort
+  }
+}
+
 export function useCreateTemplateRequest() {
   const qc = useQueryClient();
   return useMutation({
@@ -86,7 +146,9 @@ export function useCreateTemplateRequest() {
         .select()
         .single();
       if (error) throw error;
-      return data as TemplateRequest;
+      const created = data as TemplateRequest;
+      void notifyStaffOfNewRequest(created);
+      return created;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [QK] });
@@ -97,13 +159,17 @@ export function useCreateTemplateRequest() {
 export function useUpdateTemplateRequest() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { id: string; status?: TemplateRequestStatus; admin_note?: string | null; fulfilled_template_id?: string | null }) => {
+    mutationFn: async (input: { id: string; status?: TemplateRequestStatus; admin_note?: string | null; fulfilled_template_id?: string | null; reopen?: boolean }) => {
       const { data: { user } } = await supabase.auth.getUser();
       const patch: Record<string, unknown> = {};
       if (input.status !== undefined) patch.status = input.status;
       if (input.admin_note !== undefined) patch.admin_note = input.admin_note;
       if (input.fulfilled_template_id !== undefined) patch.fulfilled_template_id = input.fulfilled_template_id;
-      if (input.status === 'fulfilled' || input.status === 'rejected') {
+      if (input.reopen) {
+        patch.resolved_by = null;
+        patch.resolved_at = null;
+        patch.fulfilled_template_id = null;
+      } else if (input.status === 'fulfilled' || input.status === 'rejected') {
         patch.resolved_by = user?.id ?? null;
         patch.resolved_at = new Date().toISOString();
       }
@@ -114,7 +180,11 @@ export function useUpdateTemplateRequest() {
         .select()
         .single();
       if (error) throw error;
-      return data as TemplateRequest;
+      const updated = data as TemplateRequest;
+      if (input.status === 'fulfilled' || input.status === 'rejected' || input.status === 'in_progress') {
+        void notifyRequesterOfResolution(updated);
+      }
+      return updated;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [QK] });
