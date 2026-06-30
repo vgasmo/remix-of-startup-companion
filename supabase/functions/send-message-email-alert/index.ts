@@ -98,16 +98,17 @@ Deno.serve(async (req) => {
       const lastRead = participantMap.get(recipient.id);
       if (lastRead && lastRead > activeCutoff) { skipped++; continue; }
 
-      // Cooldown: skip if we already sent them a message-email recently
+      // Cooldown: skip if we already sent them a message-email recently for this conversation
       const { data: recentAlert } = await supabase
         .from('email_log')
         .select('id')
-        .eq('user_id', recipient.id)
         .eq('email_type', 'message_alert')
-        .gte('sent_at', cooldownCutoff)
+        .contains('recipients', [{ email: recipient.email }])
+        .gte('created_at', cooldownCutoff)
         .limit(1)
         .maybeSingle();
       if (recentAlert) { skipped++; continue; }
+
 
       if (!RESEND_API_KEY) {
         log.warn('RESEND_API_KEY missing — skipping send', { recipientId: recipient.id });
