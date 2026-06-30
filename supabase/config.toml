@@ -285,3 +285,6 @@ verify_jwt = false
 # ============================================
 [functions.smart-import-pdf]
 verify_jwt = true
+
+[functions.send-message-email-alert]
+verify_jwt = true
