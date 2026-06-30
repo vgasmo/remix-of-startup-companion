@@ -158,11 +158,11 @@ Deno.serve(async (req) => {
       }
 
       await supabase.from('email_log').insert({
-        user_id: recipient.id,
         email_type: 'message_alert',
-        recipient_email: recipient.email,
+        recipients: [{ email: recipient.email, user_id: recipient.id }],
         subject: `Nova mensagem de ${senderName}`,
-        metadata: { conversation_id: message.conversation_id, message_id: message.id },
+        status: 'sent',
+        sent_at: new Date().toISOString(),
       });
 
       sent++;
