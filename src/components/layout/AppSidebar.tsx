@@ -93,6 +93,9 @@ export function AppSidebar() {
 
   // Get first workspace ID for founder navigation
   const firstWorkspaceId = workspaces.length > 0 ? workspaces[0].id : null;
+  // Prefer the workspace currently being viewed so deep-links follow context
+  const routeMatch = location.pathname.match(/^\/workspace\/([^/?#]+)/);
+  const activeWorkspaceId = routeMatch?.[1] ?? firstWorkspaceId;
 
   // ============================================
   // ROLE-SPECIFIC NAVIGATION ITEMS
