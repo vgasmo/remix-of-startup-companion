@@ -127,22 +127,17 @@ export function OwnershipCard({ workspaceId, compact = false }: OwnershipCardPro
             {t('ownership.assignedConsultor')}
           </label>
           {isEditingOwner && canEdit ? (
-            <Select
-              value={ownership?.assigned_consultor_id || 'none'}
-              onValueChange={handleAssignConsultor}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('ownership.selectConsultor')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t('ownership.unassigned')}</SelectItem>
-                {consultors?.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.full_name || c.email}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ConsultantCombobox
+              value={ownership?.assigned_consultor_id ?? null}
+              onChange={(id) => handleAssignConsultor(id ?? 'none')}
+              options={consultors?.map((c) => ({
+                id: c.id,
+                full_name: c.full_name,
+                email: c.email,
+              }))}
+              placeholder={t('ownership.selectConsultor')}
+              triggerClassName="w-full"
+            />
           ) : (
             <div className="flex items-center gap-3">
               <Avatar className="h-8 w-8">
