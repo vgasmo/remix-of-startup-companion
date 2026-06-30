@@ -7,19 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ConsultantCombobox } from '@/components/ecosystem/ConsultantCombobox';
 import {
   useWorkspaceOwner,
   useUpdateWorkspaceOwner,
