@@ -130,8 +130,10 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
   };
 
   // Reset page when items change significantly
-  const safePage = Math.min(page, totalPages - 1);
-  if (safePage !== page) setPage(safePage);
+  useEffect(() => {
+    const safe = Math.min(page, Math.max(0, totalPages - 1));
+    if (safe !== page) setPage(safe);
+  }, [totalPages, page]);
 
   const from = items.length > 0 ? page * pageSize + 1 : 0;
   const to = Math.min((page + 1) * pageSize, items.length);
