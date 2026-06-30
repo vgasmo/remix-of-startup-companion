@@ -108,15 +108,15 @@ export function AppSidebar() {
 
   const founderNavigation: NavItem[] = [
     { name: t('nav.founder.home', { defaultValue: 'Início' }), href: '/my-workspaces', icon: Home, exact: true },
-    ...(firstWorkspaceId ? [
-      { 
-        name: t('nav.founder.myStartup', { defaultValue: 'A Minha Startup' }), 
-        href: `/workspace/${firstWorkspaceId}`, 
+    ...(activeWorkspaceId ? [
+      {
+        name: t('nav.founder.myStartup', { defaultValue: 'A Minha Startup' }),
+        href: `/workspace/${activeWorkspaceId}`,
         icon: Building2,
       },
-      { 
-        name: t('nav.founder.documents', { defaultValue: 'Documentos' }), 
-        href: `/workspace/${firstWorkspaceId}?tab=documents`, 
+      {
+        name: t('nav.founder.documents', { defaultValue: 'Documentos' }),
+        href: `/workspace/${activeWorkspaceId}?tab=documents`,
         icon: FolderOpen,
       },
     ] : []),
