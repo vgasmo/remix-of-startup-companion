@@ -129,6 +129,7 @@ export function InlineKpiEditor({ workspaceId, className }: InlineKpiEditorProps
       notify.success(t('workspace.kpiAtualizado'));
       queryClient.invalidateQueries({ queryKey: ['workspace-kpis', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['health-score', workspaceId] });
+      await loadKpis();
     } catch (error) {
       logger.error('Error saving KPI', {}, error);
       notify.error(t('workspace.erroAoGuardarKpi'));
