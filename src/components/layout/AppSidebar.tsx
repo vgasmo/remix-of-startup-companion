@@ -74,6 +74,10 @@ export function AppSidebar() {
   const isFounder = roles.includes('founder');
   const [collapsed, setCollapsed] = useState(false);
   const [messagingOpen, setMessagingOpen] = useState(false);
+  const { data: conversations } = useConversations();
+  const totalUnread = (conversations || []).reduce((sum, c: any) => sum + (c.unread_count || 0), 0);
+  const unreadLabel = totalUnread > 9 ? '9+' : String(totalUnread);
+
 
   // Global "messaging:open" event so any deep-linked CTA can open the panel
   // without prop-drilling. Mirrors the existing `copilot:open` contract.
