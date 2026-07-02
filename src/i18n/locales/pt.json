@@ -1462,6 +1462,11 @@
       "readyToPublish": "Pronto para Publicar",
       "rulesEnabled": "de {{count}} regras ativas",
       "selectMoreCoreKpis": "Selecione pelo menos mais {{count}} KPI(s) principal(is)",
+      "stages": {
+        "description": "Descrição",
+        "displayName": "Nome a apresentar",
+        "position": "Posição"
+      },
       "totalAcrossStages": "total em todas as etapas"
     },
     "workspaceAssigned": "Workspace atribuído e conta aprovada!",
