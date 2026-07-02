@@ -68,6 +68,9 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
   const [isResending, setIsResending] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [rescheduleValue, setRescheduleValue] = useState('');
+  const [isRescheduling, setIsRescheduling] = useState(false);
 
   const updateMutation = useUpdateSession(workspaceId);
   const createActionItem = useCreateActionItem(workspaceId);
