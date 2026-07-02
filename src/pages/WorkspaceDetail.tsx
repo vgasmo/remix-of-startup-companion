@@ -109,7 +109,7 @@ export default function WorkspaceDetail() {
   const activeTab = allVisibleIds.has(currentTab) ? currentTab : 'overview';
   
   const handleTabChange = useCallback((value: string) => {
-    setSearchParams({ tab: value }, { replace: false });
+    setSearchParams({ tab: value }, { replace: true });
     // Reset scroll so users land at the top of the newly selected tab content.
     if (typeof window !== 'undefined') {
       window.requestAnimationFrame(() => {
@@ -224,12 +224,6 @@ export default function WorkspaceDetail() {
             <Copy className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">{t('common.copyLink')}</span>
           </Button>
-          <Link to="/my-workspaces">
-            <Button variant="outline" size="sm" className="px-2 sm:px-3">
-              <ArrowLeft className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">{t('common.back')}</span>
-            </Button>
-          </Link>
         </div>
       }
     >

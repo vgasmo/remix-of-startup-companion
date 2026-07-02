@@ -8,18 +8,14 @@ import {
   AlertTriangle,
   Building2,
   ArrowRight,
-  ArrowUpRight,
-  ArrowDownRight,
   RefreshCw,
   Users,
   TrendingUp,
-  Minus,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Sparkline } from '@/components/ui/Sparkline';
 import { BrandSurface } from '@/components/ui/BrandSurface';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -79,7 +75,7 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
     totalConsultants: 0,
   });
 
-  const signals: Array<{ key: string; label: string; value: number | string; icon: any; href: string; variant: 'default' | 'info' | 'warning' | 'destructive'; trend: 'up' | 'down' | 'neutral'; sparkData: number[] }> = [
+  const signals: Array<{ key: string; label: string; value: number | string; icon: any; href: string; variant: 'default' | 'info' | 'warning' | 'destructive' }> = [
     {
       key: 'approvals',
       label: t('admin.pendingApprovals'),
@@ -87,8 +83,6 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
       icon: Users,
       href: '/admin?tab=users',
       variant: 'warning' as const,
-      trend: 'up' as const,
-      sparkData: [2, 3, 1, 4, 2, stats?.pendingApprovalsCount ?? 0],
     },
     {
       key: 'renewals',
@@ -97,8 +91,6 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
       icon: FileText,
       href: '/admin?tab=backoffice',
       variant: 'info' as const,
-      trend: 'neutral' as const,
-      sparkData: [1, 2, 1, 3, 2, stats?.contractRenewals30d ?? 0],
     },
     {
       key: 'occupancy',
@@ -107,15 +99,6 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
       icon: Building2,
       href: '/admin?tab=backoffice',
       variant: 'default' as const,
-      trend: 'neutral' as const,
-      sparkData: stats ? [
-        Math.max(stats.occupiedSpaces - 2, 0),
-        Math.max(stats.occupiedSpaces - 1, 0),
-        stats.occupiedSpaces,
-        stats.occupiedSpaces,
-        stats.occupiedSpaces,
-        stats.occupiedSpaces
-      ] : [0, 0, 0, 0, 0, 0],
     },
   ];
 
@@ -212,72 +195,7 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
         </Card>
       )}
 
-      {/* Signal Cards — Enterprise Command Center style */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        {signals.map((signal) => {
-          const Icon = signal.icon;
-          const hasAlert = typeof signal.value === 'number' && signal.value > 0 && signal.variant !== 'default';
-          const TrendIcon = signal.trend === 'up' ? ArrowUpRight : signal.trend === 'down' ? ArrowDownRight : Minus;
-          const trendColor = signal.variant === 'destructive' && signal.trend === 'up'
-            ? 'text-destructive'
-            : signal.trend === 'up'
-            ? 'text-success'
-            : signal.trend === 'down'
-            ? 'text-success'
-            : 'text-muted-foreground';
-
-          return (
-            <Card
-              key={signal.key}
-              className={cn(
-                'group cursor-pointer transition-all duration-200 rounded-2xl hover:shadow-md hover:scale-[1.01]',
-                hasAlert && signal.variant === 'destructive' && 'border-destructive/30 bg-gradient-to-br from-destructive/5 to-transparent',
-                hasAlert && signal.variant === 'warning' && 'border-warning/40 bg-gradient-to-br from-warning/10 to-transparent',
-              )}
-              onClick={() => navigate(signal.href)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-muted-foreground mb-3">
-                  <div className={cn(
-                    'h-8 w-8 rounded-lg flex items-center justify-center',
-                    hasAlert && signal.variant === 'destructive' ? 'bg-destructive/10' :
-                    hasAlert && signal.variant === 'warning' ? 'bg-warning/15' :
-                    'bg-muted/50'
-                  )}>
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <span className="text-xs font-medium flex-1">{signal.label}</span>
-                </div>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <span className={cn(
-                      'text-2xl font-bold block',
-                      hasAlert && signal.variant === 'destructive' && 'text-destructive',
-                      hasAlert && signal.variant === 'warning' && 'text-warning',
-                    )}>
-                      {signal.value}
-                    </span>
-                    <div className={cn('flex items-center gap-0.5 text-xs mt-0.5', trendColor)}>
-                      <TrendIcon className="h-3 w-3" />
-                      <span className="text-[10px]">30d</span>
-                    </div>
-                  </div>
-                  <Sparkline
-                    data={signal.sparkData}
-                    width={56}
-                    height={24}
-                    color={
-                      hasAlert && signal.variant === 'destructive' ? 'hsl(var(--destructive))' :
-                      hasAlert && signal.variant === 'warning' ? 'hsl(var(--warning))' :
-                      'hsl(var(--muted-foreground))'
-                    }
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      {/* Signal cards removed — data already surfaced by ExceptionAlerts above (no fabricated sparklines). */}
 
       {/* Smart Insights */}
       <EcosystemInsights insights={insights} />
@@ -293,7 +211,7 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
             <TrendingUp className="h-4 w-4 text-primary" />
             {t('admin.portfolioHealth')}
             {needsAttention > 0 && (
-              <Badge variant="destructive" className="text-xs animate-pulse">
+              <Badge variant="destructive" className="text-xs">
                 {needsAttention} {t('admin.needAttention')}
               </Badge>
             )}

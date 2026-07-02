@@ -9,6 +9,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { DialogFooterActions } from '@/components/ui/dialog-footer-actions';
 
 interface NextActionDialogProps {
@@ -66,6 +67,31 @@ export function NextActionDialog({
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label>{t('crm.nextActionDate')}</Label>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: 'tomorrow', labelKey: 'common.presets.tomorrow', days: 1 },
+                { key: 'threeDays', labelKey: 'common.presets.threeDays', days: 3 },
+                { key: 'nextWeek', labelKey: 'common.presets.nextWeek', days: 7 },
+              ].map((p) => (
+                <Button
+                  key={p.key}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const d = new Date();
+                    d.setDate(d.getDate() + p.days);
+                    d.setHours(9, 0, 0, 0);
+                    const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+                      .toISOString()
+                      .slice(0, 16);
+                    setDate(iso);
+                  }}
+                >
+                  {t(p.labelKey)}
+                </Button>
+              ))}
+            </div>
             <Input
               type="datetime-local"
               value={date}

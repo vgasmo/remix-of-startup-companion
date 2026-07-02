@@ -670,7 +670,7 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
           onOpenChange={setConvertDialog}
           onConverted={(workspaceId) => {
             onOpenChange(false);
-            navigate(`/admin?tab=workspaces&workspace=${workspaceId}`);
+            navigate(`/workspace/${workspaceId}`);
           }}
         />
       </SheetContent>
