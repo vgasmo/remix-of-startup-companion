@@ -100,8 +100,8 @@ export function RequestTemplateDialog({
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             {t('common.cancel')}
           </Button>
-          <Button size="sm" onClick={submit} disabled={create.isPending}>
-            {create.isPending ? t('common.saving', { defaultValue: 'A enviar...' }) : t('templateRequests.submit', { defaultValue: 'Enviar pedido' })}
+          <Button size="sm" onClick={submit} loading={create.isPending} loadingText={t('common.saving', { defaultValue: 'A enviar...' }) as string}>
+            {t('templateRequests.submit', { defaultValue: 'Enviar pedido' })}
           </Button>
         </DialogFooter>
       </DialogContent>
