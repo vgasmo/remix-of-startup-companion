@@ -176,7 +176,7 @@ export default function SearchPage() {
         <div className="flex flex-wrap gap-4">
           {/* Type filters */}
           <div className="flex flex-wrap gap-2">
-            {RESULT_TYPES.map(({ key, label, icon: Icon }) => (
+            {RESULT_TYPES.map(({ key, labelKey, icon: Icon }) => (
               <Button
                 key={key}
                 variant={filters.types?.includes(key) ? 'default' : 'outline'}
@@ -184,7 +184,7 @@ export default function SearchPage() {
                 onClick={() => toggleType(key)}
               >
                 <Icon className="h-3.5 w-3.5 mr-1" />
-                {label}
+                {t(labelKey)}
               </Button>
             ))}
           </div>
