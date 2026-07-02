@@ -131,13 +131,13 @@ export function useRecomputeHealthScores() {
 // Get health score config - returns translation keys for label/description
 export function getHealthScoreConfig(score: string | null) {
   const configs: Record<string, { color: string; icon: string; labelKey: string; descriptionKey: string }> = {
-    thriving: { color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400', icon: '🌟', labelKey: 'health.levels.thriving', descriptionKey: 'health.descriptions.thriving' },
-    healthy: { color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400', icon: '✅', labelKey: 'health.levels.healthy', descriptionKey: 'health.descriptions.healthy' },
-    stable: { color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400', icon: '➡️', labelKey: 'health.levels.stable', descriptionKey: 'health.descriptions.stable' },
-    at_risk: { color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400', icon: '⚠️', labelKey: 'health.levels.at_risk', descriptionKey: 'health.descriptions.at_risk' },
-    critical: { color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400', icon: '🚨', labelKey: 'health.levels.critical', descriptionKey: 'health.descriptions.critical' },
+    thriving: { color: 'bg-health-thriving/15 text-health-thriving border border-health-thriving/25', icon: '🌟', labelKey: 'health.levels.thriving', descriptionKey: 'health.descriptions.thriving' },
+    healthy: { color: 'bg-health-healthy/15 text-health-healthy border border-health-healthy/25', icon: '✅', labelKey: 'health.levels.healthy', descriptionKey: 'health.descriptions.healthy' },
+    stable: { color: 'bg-health-stable/15 text-health-stable border border-health-stable/25', icon: '➡️', labelKey: 'health.levels.stable', descriptionKey: 'health.descriptions.stable' },
+    at_risk: { color: 'bg-health-at-risk/15 text-health-at-risk border border-health-at-risk/25', icon: '⚠️', labelKey: 'health.levels.at_risk', descriptionKey: 'health.descriptions.at_risk' },
+    critical: { color: 'bg-health-critical/15 text-health-critical border border-health-critical/25', icon: '🚨', labelKey: 'health.levels.critical', descriptionKey: 'health.descriptions.critical' },
   };
-  return configs[score || ''] || { color: 'bg-muted text-muted-foreground', icon: '❓', labelKey: 'health.levels.unknown', descriptionKey: 'health.descriptions.unknown' };
+  return configs[score || ''] || { color: 'bg-muted text-muted-foreground border border-border', icon: '❓', labelKey: 'health.levels.unknown', descriptionKey: 'health.descriptions.unknown' };
 }
 
 // Legacy functions below for backwards compatibility

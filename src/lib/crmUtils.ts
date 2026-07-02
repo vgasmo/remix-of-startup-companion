@@ -67,22 +67,22 @@ export function getRelationshipStatusConfig(status: RelationshipStatus): Relatio
       return {
         status: 'healthy',
         label: 'Healthy',
-        color: 'text-green-600',
-        bgColor: 'bg-green-100',
+        color: 'text-success',
+        bgColor: 'bg-success/10',
       };
     case 'at_risk':
       return {
         status: 'at_risk',
         label: 'At Risk',
-        color: 'text-amber-600',
-        bgColor: 'bg-amber-100',
+        color: 'text-warning',
+        bgColor: 'bg-warning/10',
       };
     case 'stale':
       return {
         status: 'stale',
         label: 'Stale',
-        color: 'text-orange-600',
-        bgColor: 'bg-orange-100',
+        color: 'text-muted-foreground',
+        bgColor: 'bg-muted',
       };
   }
 }

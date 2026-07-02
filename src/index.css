@@ -54,6 +54,8 @@
 
     --warning: 45 90% 50%;
     --warning-foreground: 60 5% 10%;
+    /* Text-safe deep amber for warning TEXT/ICONS on light surfaces. */
+    --warning-strong: 32 90% 38%;
 
     --info: 200 65% 50%;
     --info-foreground: 0 0% 100%;
@@ -664,15 +666,9 @@
     .card-brand-accent::after { transition: none; }
   }
 
-  /* Eyebrow alias — matches the documented `.text-eyebrow` API. */
+  /* Eyebrow alias — matches the documented `.text-eyebrow` API (same as .label-eyebrow). */
   .text-eyebrow {
-    font-family: 'Outfit', system-ui, sans-serif;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    line-height: 1;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: hsl(var(--muted-foreground));
+    @apply label-eyebrow;
   }
 
   /* Scrollbar */
@@ -944,25 +940,25 @@
   @apply bg-card/80 border-border/30;
 }
 
-/* Dark mode badge adjustments */
+/* Dark mode health badge — token-driven so light/dark stays in sync. */
 .dark [data-health="critical"] {
-  @apply bg-destructive/15 text-destructive border-destructive/25;
+  @apply bg-health-critical/15 text-health-critical border-health-critical/25;
 }
 
 .dark [data-health="at-risk"] {
-  @apply bg-orange-500/15 text-orange-400 border-orange-500/25;
+  @apply bg-health-at-risk/15 text-health-at-risk border-health-at-risk/25;
 }
 
 .dark [data-health="stable"] {
-  @apply bg-blue-500/15 text-blue-400 border-blue-500/25;
+  @apply bg-health-stable/15 text-health-stable border-health-stable/25;
 }
 
 .dark [data-health="healthy"] {
-  @apply bg-green-500/15 text-green-400 border-green-500/25;
+  @apply bg-health-healthy/15 text-health-healthy border-health-healthy/25;
 }
 
 .dark [data-health="thriving"] {
-  @apply bg-emerald-500/15 text-emerald-400 border-emerald-500/25;
+  @apply bg-health-thriving/15 text-health-thriving border-health-thriving/25;
 }
 
 /* Dark mode input refinements */
@@ -1065,14 +1061,7 @@ button, a, [role="button"], [role="tab"], .interactive-card, [data-radix-collect
   transition-timing-function: cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
 
-/* Card hover micro-interactions */
-.hover-lift {
-  @apply transition-all duration-200 ease-out;
-}
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px -8px hsl(var(--foreground) / 0.1);
-}
+/* .hover-lift defined earlier (line ~371); duplicate removed. */
 
 /* P3: Reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
