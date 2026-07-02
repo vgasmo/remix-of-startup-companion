@@ -321,7 +321,7 @@ export default function SearchPage() {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2">
                       <Icon className="h-5 w-5" />
-                      {typeConfig?.label || type}
+                      {typeConfig ? t(typeConfig.labelKey) : type}
                       <Badge variant="secondary">{items.length}</Badge>
                     </CardTitle>
                   </CardHeader>
