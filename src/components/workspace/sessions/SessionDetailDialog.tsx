@@ -250,6 +250,24 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                   title={t('sessions.exportIcs', { defaultValue: 'Exportar para calendário (.ics)' })}>
                   <Download className="h-4 w-4 mr-1" />.ics
                 </Button>
+                {canWrite && (
+                  <Button variant="outline" size="sm" type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      // Prefill with the current scheduled_at formatted as datetime-local (local wall-clock).
+                      try {
+                        const d = new Date(session.scheduled_at);
+                        const pad = (n: number) => String(n).padStart(2, '0');
+                        const val = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                        setRescheduleValue(val);
+                      } catch { /* ignore */ }
+                      setRescheduleOpen(true);
+                    }}>
+                    <CalendarClock className="h-4 w-4 mr-1" />
+                    {t('sessions.reschedule', { defaultValue: 'Reagendar' })}
+                  </Button>
+                )}
                 {canUseFacilitator && (
                   <Button variant="outline" size="sm" type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpenFacilitator(session); }}>
