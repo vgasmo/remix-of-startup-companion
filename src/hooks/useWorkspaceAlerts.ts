@@ -261,15 +261,15 @@ export function useRecomputeAlerts() {
 export function getAlertCTA(ruleType: string, workspaceId: string): { label: string; href: string } | null {
   switch (ruleType) {
     case 'no_session_days':
-      return { label: 'Schedule session', href: `/workspace/${workspaceId}?tab=agenda` };
+      return { label: t('alerts.cta.scheduleSession', 'Agendar sessão'), href: `/workspace/${workspaceId}?tab=agenda` };
     case 'overdue_actions_count':
-      return { label: 'View actions', href: `/workspace/${workspaceId}?tab=milestones-actions&sub=actions` };
+      return { label: t('alerts.cta.viewActions', 'Ver ações'), href: `/workspace/${workspaceId}?tab=milestones-actions&sub=actions` };
     case 'missing_kpis_current_month':
-      return { label: 'Update KPIs', href: `/workspace/${workspaceId}?tab=kpis` };
+      return { label: t('alerts.cta.updateKpis', 'Atualizar KPIs'), href: `/workspace/${workspaceId}?tab=kpis` };
     case 'checkin_overdue_days':
-      return { label: 'Complete check-in', href: `/workspace/${workspaceId}?tab=overview` };
+      return { label: t('alerts.cta.completeCheckin', 'Fazer check-in'), href: `/workspace/${workspaceId}?tab=overview` };
     case 'milestone_overdue_count':
-      return { label: 'View milestones', href: `/workspace/${workspaceId}?tab=milestones-actions` };
+      return { label: t('alerts.cta.viewMilestones', 'Ver marcos'), href: `/workspace/${workspaceId}?tab=milestones-actions` };
     default:
       return null;
   }
@@ -279,13 +279,13 @@ export function getAlertCTA(ruleType: string, workspaceId: string): { label: str
 export function getSeverityConfig(severity: string) {
   switch (severity) {
     case 'critical':
-      return { color: 'bg-destructive/10 text-destructive border border-destructive/25', icon: '🔴', label: 'Critical' };
+      return { color: 'bg-destructive/10 text-destructive border border-destructive/25', icon: '🔴', label: t('alerts.critical', 'Crítico') };
     case 'warning':
-      return { color: 'bg-warning/10 text-warning border border-warning/25', icon: '🟠', label: 'Warning' };
+      return { color: 'bg-warning/10 text-warning border border-warning/25', icon: '🟠', label: t('alerts.warning', 'Aviso') };
     case 'info':
-      return { color: 'bg-info/10 text-info border border-info/25', icon: '🔵', label: 'Info' };
+      return { color: 'bg-info/10 text-info border border-info/25', icon: '🔵', label: t('alerts.info', 'Info') };
     default:
-      return { color: 'bg-muted text-muted-foreground border border-border', icon: '⚪', label: 'Unknown' };
+      return { color: 'bg-muted text-muted-foreground border border-border', icon: '⚪', label: t('alerts.unknown', 'Desconhecido') };
   }
 }
 
@@ -293,16 +293,17 @@ export function getSeverityConfig(severity: string) {
 export function getRuleTypeLabel(ruleType: string): string {
   switch (ruleType) {
     case 'no_session_days':
-      return 'Days without session';
+      return t('alerts.ruleType.noSessionDays', 'Dias sem sessão');
     case 'overdue_actions_count':
-      return 'Overdue actions';
+      return t('alerts.ruleType.overdueActions', 'Ações atrasadas');
     case 'missing_kpis_current_month':
-      return 'Missing KPIs';
+      return t('alerts.ruleType.missingKpis', 'KPIs em falta');
     case 'checkin_overdue_days':
-      return 'Overdue check-in';
+      return t('alerts.ruleType.checkinOverdue', 'Check-in atrasado');
     case 'milestone_overdue_count':
-      return 'Overdue milestones';
+      return t('alerts.ruleType.milestoneOverdue', 'Marcos atrasados');
     default:
       return ruleType;
   }
 }
+
