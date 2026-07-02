@@ -205,7 +205,7 @@ export function CalendarFeedCard({ workspaceId }: CalendarFeedCardProps) {
               <Button
                 size="sm"
                 onClick={generateToken}
-                disabled={isGenerating}
+                disabled={isGenerating} loading={isGenerating}
                 className="mt-2"
               >
                 {isGenerating ? t('common.generating', { defaultValue: 'A gerar...' }) : t('calendarFeed.regenerateToken', { defaultValue: 'Regenerar Token' })}
@@ -226,7 +226,7 @@ export function CalendarFeedCard({ workspaceId }: CalendarFeedCardProps) {
               <Button
                 size="sm"
                 onClick={generateToken}
-                disabled={isGenerating}
+                disabled={isGenerating} loading={isGenerating}
                 className="mt-2"
               >
                 {isGenerating ? t('common.generating', { defaultValue: 'A gerar...' }) : t('calendarFeed.generateToken', { defaultValue: 'Gerar Token de Calendário' })}
@@ -282,7 +282,7 @@ export function CalendarFeedCard({ workspaceId }: CalendarFeedCardProps) {
               variant="ghost"
               size="sm"
               onClick={regenerateToken}
-              disabled={isGenerating}
+              disabled={isGenerating} loading={isGenerating}
               className="gap-2 text-muted-foreground"
             >
               <RefreshCw className="h-3.5 w-3.5" />

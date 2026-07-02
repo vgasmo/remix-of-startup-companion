@@ -374,7 +374,7 @@ export function ContractReviewForm({
               <Button type="button" variant="outline" onClick={onCancel}>
                 {t('common.cancel', { defaultValue: 'Cancel' })}
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="gap-2">
+              <Button type="submit" disabled={isSubmitting} loading={isSubmitting} className="gap-2">
                 <Save className="h-4 w-4" />
                 {t('contracts.review.saveContract', { defaultValue: 'Save Contract to Database' })}
               </Button>

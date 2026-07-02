@@ -88,7 +88,7 @@ export function BulkActionsBar<T>({
       {statusOptions && onStatusChange && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" disabled={isLoading}>
+            <Button variant="outline" size="sm" disabled={isLoading} loading={isLoading}>
               <Check className="h-4 w-4 mr-1" />
               Set Status
             </Button>
@@ -111,7 +111,7 @@ export function BulkActionsBar<T>({
           variant="destructive" 
           size="sm" 
           onClick={handleDelete}
-          disabled={isLoading}
+          disabled={isLoading} loading={isLoading}
         >
           <Trash2 className="h-4 w-4 mr-1" />
           Delete

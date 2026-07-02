@@ -78,7 +78,7 @@ export function ChaseActionsButton({
             variant="outline"
             size="sm"
             onClick={handleChaseActions}
-            disabled={isSending}
+            disabled={isSending} loading={isSending}
             className="text-warning border-warning/50 hover:bg-warning/10"
           >
             {isSending ? (

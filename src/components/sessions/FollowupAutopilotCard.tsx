@@ -221,7 +221,7 @@ export function FollowupAutopilotCard({
 
         {/* Send Button */}
         {!isFollowupSent && (
-          <Button onClick={handleSendFollowup} disabled={sending} className="w-full">
+          <Button onClick={handleSendFollowup} disabled={sending} loading={sending} className="w-full">
             {sending ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             ) : (

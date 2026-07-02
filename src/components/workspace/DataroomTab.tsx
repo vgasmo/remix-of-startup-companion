@@ -465,7 +465,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
             <Button variant="outline" onClick={() => setGenerateUpdateOpen(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleGenerateUpdate} disabled={isGenerating}>
+            <Button onClick={handleGenerateUpdate} disabled={isGenerating} loading={isGenerating}>
               {isGenerating ? t('common.generating') : t('investorUpdates.generate')}
             </Button>
           </DialogFooter>

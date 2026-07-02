@@ -304,7 +304,7 @@ export function QuickKpiModal({ open, onOpenChange, workspaceId, programId }: Qu
           <Button
             className="flex-1 gap-2"
             onClick={handleSubmit}
-            disabled={submitting || filledCount === 0}
+            disabled={submitting || filledCount === 0} loading={submitting}
           >
             {submitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />

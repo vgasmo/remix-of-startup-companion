@@ -387,7 +387,7 @@ export default function Login() {
                     <Button 
                       type="submit" 
                       className="w-full h-11 text-base font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/25" 
-                      disabled={isSubmitting}
+                      disabled={isSubmitting} loading={isSubmitting}
                     >
                       {isSubmitting ? (
                         <span className="flex items-center gap-2">
@@ -542,7 +542,7 @@ export default function Login() {
                     <Button
                       type="submit" 
                       className="w-full h-11 text-base font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/25" 
-                      disabled={isSubmitting}
+                      disabled={isSubmitting} loading={isSubmitting}
                     >
                       {isSubmitting ? (
                         <span className="flex items-center gap-2">

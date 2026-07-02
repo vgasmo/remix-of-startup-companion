@@ -67,7 +67,7 @@ export function DialogFooterActions({
           type="button"
           variant="outline"
           onClick={onCancel}
-          disabled={isLoading}
+          disabled={isLoading} loading={isLoading}
         >
           {resolvedCancel}
         </Button>
@@ -76,7 +76,7 @@ export function DialogFooterActions({
         type={confirmType}
         variant={variant}
         onClick={confirmType === 'submit' ? undefined : onConfirm}
-        disabled={disabled || isLoading}
+        disabled={disabled || isLoading} loading={isLoading}
       >
         {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />}
         {isLoading ? resolvedLoading : resolvedConfirm}

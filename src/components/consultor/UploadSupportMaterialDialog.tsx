@@ -221,7 +221,7 @@ export function UploadSupportMaterialDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleSubmit} disabled={submitting}>
+          <Button onClick={handleSubmit} disabled={submitting} loading={submitting}>
             <Upload className="h-4 w-4 mr-2" />
             {submitting
               ? t('consultorTools.upload.uploading')

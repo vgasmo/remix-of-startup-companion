@@ -103,7 +103,7 @@ export function WorkQueueBulkActions({
 
       <div className="h-6 w-px bg-border" />
 
-      <Button variant="outline" size="sm" onClick={handleMarkDone} disabled={isLoading}>
+      <Button variant="outline" size="sm" onClick={handleMarkDone} disabled={isLoading} loading={isLoading}>
         <CheckCircle2 className="h-4 w-4 mr-1" />
         {t('workQueue.markDone')}
       </Button>

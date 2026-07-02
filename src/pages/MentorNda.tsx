@@ -171,7 +171,7 @@ export default function MentorNda() {
           <Button 
             className="w-full" 
             size="lg" 
-            disabled={!accepted || isSubmitting}
+            disabled={!accepted || isSubmitting} loading={isSubmitting}
             onClick={handleSubmit}
           >
             <FileText className="h-4 w-4 mr-2" />

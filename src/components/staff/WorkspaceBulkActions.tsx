@@ -170,7 +170,7 @@ export function WorkspaceBulkActionsBar({
         {/* Priority dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" disabled={isLoading}>
+            <Button variant="outline" size="sm" disabled={isLoading} loading={isLoading}>
               <Flag className="h-4 w-4 mr-1" />
               Priority
             </Button>
@@ -200,7 +200,7 @@ export function WorkspaceBulkActionsBar({
           variant="outline" 
           size="sm" 
           onClick={handleRequestCheckin}
-          disabled={isLoading}
+          disabled={isLoading} loading={isLoading}
         >
           <Bell className="h-4 w-4 mr-1" />
           Request Check-in
@@ -260,7 +260,7 @@ export function WorkspaceBulkActionsBar({
             <Button variant="outline" onClick={() => setShowTaskDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreateBulkTask} disabled={isLoading}>
+            <Button onClick={handleCreateBulkTask} disabled={isLoading} loading={isLoading}>
               {isLoading ? 'Creating...' : `Create ${selectedCount} Tasks`}
             </Button>
           </DialogFooter>

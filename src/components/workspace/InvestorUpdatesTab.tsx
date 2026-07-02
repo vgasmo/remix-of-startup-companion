@@ -585,7 +585,7 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
             <Button variant="outline" onClick={() => setShowGenerateDialog(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleGenerate} disabled={isGenerating} className="gap-2">
+            <Button onClick={handleGenerate} disabled={isGenerating} loading={isGenerating} className="gap-2">
               {isGenerating ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
