@@ -9336,7 +9336,12 @@ export type Database = {
     }
     Enums: {
       account_status: "pending" | "approved" | "suspended"
-      action_status: "pending" | "in_progress" | "completed" | "cancelled"
+      action_status:
+        | "pending"
+        | "in_progress"
+        | "awaiting_validation"
+        | "completed"
+        | "cancelled"
       app_role:
         | "admin"
         | "consultor"
@@ -9491,7 +9496,13 @@ export const Constants = {
   public: {
     Enums: {
       account_status: ["pending", "approved", "suspended"],
-      action_status: ["pending", "in_progress", "completed", "cancelled"],
+      action_status: [
+        "pending",
+        "in_progress",
+        "awaiting_validation",
+        "completed",
+        "cancelled",
+      ],
       app_role: [
         "admin",
         "consultor",
