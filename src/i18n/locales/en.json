@@ -1768,8 +1768,8 @@
     "pendingTitle": "Account Pending Approval",
     "responseTime": "We typically respond within 2-3 business days.",
     "step1": "Our team will review your application",
-    "step2": "Step2",
-    "step3": "Access all workspace features after approval",
+    "step2": "You'll be notified once approved",
+    "step3": "Full workspace access after approval",
     "suspendedDescription": "Your account has been suspended. Please contact support if you believe this is an error.",
     "suspendedTitle": "Account Suspended",
     "whatHappensNext": "What happens next?"
@@ -4017,7 +4017,16 @@
     "timeout": "Request timed out. Please try again.",
     "tryAgain": "Try Again",
     "unauthorized": "You are not authorized for this action.",
-    "validationError": "Please check the data you entered."
+    "validationError": "Please check the data you entered.",
+    "UNAUTHORIZED": "Please sign in to continue.",
+    "FORBIDDEN": "You don't have permission for this action.",
+    "RATE_LIMITED": "Too many requests. Please wait a moment.",
+    "BAD_REQUEST": "Invalid request. Please check your input.",
+    "NOT_FOUND": "Not found.",
+    "INTERNAL_ERROR": "Something went wrong. Please try again.",
+    "NETWORK_ERROR": "Network error. Check your connection.",
+    "TIMEOUT": "Request timed out. Please try again.",
+    "VALIDATION_ERROR": "Please check your input and try again."
   },
   "exercises": {
     "addMaterial": "Add material",
@@ -5339,7 +5348,7 @@
     "passwordHint": "Must be at least 6 characters",
     "passwordMinLength": "Password must be at least 6 characters",
     "passwordPlaceholder": "••••••••",
-    "platformSubtitle": "Your incubation & ecosystem OS. Manage programs, track KPIs, hit milestones, and connect with mentors.",
+    "platformSubtitle": "The platform that keeps your startup on track: goals, metrics and sessions with your support team.",
     "platformTitle": "Startup Leiria",
     "sessions": "Sessions",
     "signInDescription": "Sign in to access your workspaces or create a new account",
@@ -7054,7 +7063,20 @@
       "startups": "Startups",
       "workspaces": "Workspaces"
     },
-    "viewAllResults": "View all results"
+    "viewAllResults": "View all results",
+    "globalSettings": "Global Settings (no workspace)",
+    "filters": {
+      "sessions": "Sessions",
+      "actions": "Actions",
+      "notes": "Notes",
+      "documents": "Documents",
+      "messages": "Messages",
+      "milestones": "Milestones",
+      "dateAll": "All time",
+      "dateWeek": "Last 7 days",
+      "dateMonth": "Last 30 days",
+      "dateQuarter": "Last 90 days"
+    }
   },
   "sectors": {
     "cleantech": "CleanTech / Sustainability",

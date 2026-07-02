@@ -1767,9 +1767,9 @@
     "pendingDescription": "A sua conta está pendente de aprovação pela equipa de gestão.",
     "pendingTitle": "Conta Pendente de Aprovação",
     "responseTime": "Normalmente respondemos em 2-3 dias úteis.",
-    "step1": "A nossa equipa irá rever a sua candidatura",
-    "step2": "Será notificado por email quando aprovado",
-    "step3": "Aceda a todas as funcionalidades do workspace após aprovação",
+    "step1": "A equipa vai analisar a sua candidatura",
+    "step2": "Será notificado assim que for aprovada",
+    "step3": "Acesso completo ao workspace após aprovação",
     "suspendedDescription": "A sua conta foi suspensa. Por favor contacte o suporte se acredita que isto é um erro.",
     "suspendedTitle": "Conta Suspensa",
     "whatHappensNext": "O que acontece a seguir?"
@@ -4017,7 +4017,16 @@
     "timeout": "Tempo limite excedido. Tente novamente.",
     "tryAgain": "Tentar Novamente",
     "unauthorized": "Não tem autorização para esta ação.",
-    "validationError": "Verifique os dados introduzidos."
+    "validationError": "Verifique os dados introduzidos.",
+    "UNAUTHORIZED": "Entre para continuar.",
+    "FORBIDDEN": "Sem permissões para esta ação.",
+    "RATE_LIMITED": "Demasiados pedidos. Aguarde um momento.",
+    "BAD_REQUEST": "Pedido inválido. Verifique os dados.",
+    "NOT_FOUND": "Não encontrado.",
+    "INTERNAL_ERROR": "Ocorreu um erro. Tente novamente.",
+    "NETWORK_ERROR": "Sem ligação. Verifique a sua internet.",
+    "TIMEOUT": "A operação demorou demasiado. Tente novamente.",
+    "VALIDATION_ERROR": "Verifique os dados e tente novamente."
   },
   "exercises": {
     "addMaterial": "Adicionar material",
@@ -5339,7 +5348,7 @@
     "passwordHint": "Mínimo de 6 caracteres",
     "passwordMinLength": "A palavra-passe deve ter pelo menos 6 caracteres",
     "passwordPlaceholder": "••••••••",
-    "platformSubtitle": "O seu OS de incubação e ecossistema. Gerir programas, acompanhar KPIs, atingir milestones e conectar com mentores.",
+    "platformSubtitle": "A plataforma que acompanha a sua startup: objetivos, métricas e sessões com a equipa de apoio.",
     "platformTitle": "Startup Leiria",
     "sessions": "Sessões",
     "signInDescription": "Entre para aceder aos seus workspaces ou crie uma nova conta",
@@ -7054,7 +7063,20 @@
       "startups": "Startups",
       "workspaces": "Workspaces"
     },
-    "viewAllResults": "Ver todos os resultados"
+    "viewAllResults": "Ver todos os resultados",
+    "globalSettings": "Definições Globais (sem Workspace)",
+    "filters": {
+      "sessions": "Sessões",
+      "actions": "Ações",
+      "notes": "Notas",
+      "documents": "Documentos",
+      "messages": "Mensagens",
+      "milestones": "Marcos",
+      "dateAll": "Sempre",
+      "dateWeek": "Últimos 7 dias",
+      "dateMonth": "Últimos 30 dias",
+      "dateQuarter": "Últimos 90 dias"
+    }
   },
   "sectors": {
     "cleantech": "CleanTech / Sustentabilidade",
