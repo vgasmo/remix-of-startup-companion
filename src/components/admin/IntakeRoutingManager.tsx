@@ -429,7 +429,7 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
               </div>
             ) : bookingLinks && bookingLinks.length > 0 ? (
               <Table>
-                <TableHeader>
+                <TableHeader sticky>
                   <TableRow>
                     <TableHead>{t('admin.intakeRouting.link', 'Link')}</TableHead>
                     <TableHead>{t('admin.intakeRouting.createdAt', 'Created')}</TableHead>

@@ -503,7 +503,7 @@ function ProgramHealthModelCard({
             <div>
               <h4 className="text-sm font-medium mb-2">{t('admin.healthModel.weightsMust100')}</h4>
               <Table>
-                <TableHeader>
+                <TableHeader sticky>
                   <TableRow>
                     <TableHead>Component</TableHead>
                     <TableHead className="text-right">Weight</TableHead>

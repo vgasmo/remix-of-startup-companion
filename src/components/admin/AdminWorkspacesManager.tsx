@@ -423,7 +423,7 @@ export function AdminWorkspacesManager() {
         ) : (
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader>
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead>{t('admin.workspacesManager.startup')}</TableHead>
                   <TableHead>{t('admin.workspacesManager.program')}</TableHead>

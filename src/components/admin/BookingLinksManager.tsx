@@ -246,7 +246,7 @@ export function BookingLinksManager() {
           </p>
         ) : (
           <Table>
-            <TableHeader>
+            <TableHeader sticky>
               <TableRow>
                 <TableHead>{t('common.program', 'Programa')}</TableHead>
                 <TableHead>{t('common.created', 'Criado')}</TableHead>

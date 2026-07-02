@@ -371,7 +371,7 @@ export function AdminAnnouncementsManager() {
           <p className="text-muted-foreground text-center py-8">{t('admin.announcements.empty')}</p>
         ) : (
           <Table>
-            <TableHeader>
+            <TableHeader sticky>
               <TableRow>
                 <TableHead>{t('admin.announcements.categoryHeader')}</TableHead>
                 <TableHead>{t('admin.announcements.startup')}</TableHead>
