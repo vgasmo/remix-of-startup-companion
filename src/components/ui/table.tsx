@@ -11,8 +11,22 @@ const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableE
 );
 Table.displayName = "Table";
 
-const TableHeader = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
-  ({ className, ...props }, ref) => <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />,
+interface TableHeaderProps extends React.HTMLAttributes<HTMLTableSectionElement> {
+  /** Opt-in: header row sticks to the top of the scroll container. */
+  sticky?: boolean;
+}
+const TableHeader = React.forwardRef<HTMLTableSectionElement, TableHeaderProps>(
+  ({ className, sticky, ...props }, ref) => (
+    <thead
+      ref={ref}
+      className={cn(
+        "[&_tr]:border-b",
+        sticky && "sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80",
+        className,
+      )}
+      {...props}
+    />
+  ),
 );
 TableHeader.displayName = "TableHeader";
 
