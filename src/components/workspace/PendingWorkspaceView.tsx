@@ -69,7 +69,7 @@ export function PendingWorkspaceView({ workspace }: PendingWorkspaceViewProps) {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">{t('admin.submitted', 'Submitted')}</span>
-              <span className="text-sm">{formatDistanceToNow(new Date(workspace.created_at), { addSuffix: true })}</span>
+              <span className="text-sm">{formatRelativeTime(workspace.created_at)}</span>
             </div>
           </div>
 
