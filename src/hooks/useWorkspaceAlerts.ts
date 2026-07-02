@@ -263,7 +263,7 @@ export function getAlertCTA(ruleType: string, workspaceId: string): { label: str
     case 'no_session_days':
       return { label: 'Schedule session', href: `/workspace/${workspaceId}?tab=agenda` };
     case 'overdue_actions_count':
-      return { label: 'View actions', href: `/workspace/${workspaceId}?tab=milestones-actions-actions` };
+      return { label: 'View actions', href: `/workspace/${workspaceId}?tab=milestones-actions&sub=actions` };
     case 'missing_kpis_current_month':
       return { label: 'Update KPIs', href: `/workspace/${workspaceId}?tab=kpis` };
     case 'checkin_overdue_days':

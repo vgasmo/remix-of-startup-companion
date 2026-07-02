@@ -112,7 +112,7 @@ export function useSmartNudges(workspaceId: string | undefined) {
           defaultValue: `You have ${actionData.overdueCount} overdue action(s). Tackle them to stay on track.`,
         }),
         cta: t('smartNudges.viewActions', { defaultValue: 'View Actions' }),
-        href: `/workspace/${workspaceId}?tab=milestones-actions-actions`,
+        href: `/workspace/${workspaceId}?tab=milestones-actions&sub=actions`,
       });
     }
 

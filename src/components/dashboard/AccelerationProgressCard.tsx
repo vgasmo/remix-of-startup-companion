@@ -249,7 +249,7 @@ export const AccelerationProgressCard = memo(function AccelerationProgressCard({
                           onClick={(e) => {
                             e.stopPropagation();
                             if (workspaceId) {
-                              navigate(`/workspace/${workspaceId}?tab=milestones-actions-actions`);
+                              navigate(`/workspace/${workspaceId}?tab=milestones-actions&sub=actions`);
                             }
                           }}
                           className={cn(

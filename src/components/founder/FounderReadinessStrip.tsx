@@ -50,7 +50,7 @@ export function FounderReadinessStrip({ workspace }: FounderReadinessStripProps)
         done: workspace.overdueActionsCount === 0,
         icon: Target,
         action: workspace.overdueActionsCount > 0 
-          ? { label: `${workspace.overdueActionsCount} ${t('common.overdue', 'atrasadas')}`, path: `/workspace/${workspace.id}?tab=milestones-actions-actions` }
+          ? { label: `${workspace.overdueActionsCount} ${t('common.overdue', 'atrasadas')}`, path: `/workspace/${workspace.id}?tab=milestones-actions&sub=actions` }
           : undefined,
       },
       {

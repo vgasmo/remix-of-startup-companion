@@ -66,7 +66,7 @@ export function MentorOpenLoops({ workspaces }: MentorOpenLoopsProps) {
           type: 'overdue_actions',
           label: t('mentor.openLoops.overdueActions', { defaultValue: '{{count}} ações atrasadas', count: w.overdueActionsCount }),
           urgency: 'high',
-          actionPath: `/workspace/${w.id}?tab=milestones-actions-actions`,
+          actionPath: `/workspace/${w.id}?tab=milestones-actions&sub=actions`,
           icon: Target,
         });
       }
