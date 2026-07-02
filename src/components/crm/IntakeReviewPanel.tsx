@@ -368,7 +368,7 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
         {events && events.length > 0 && (
           <div className="space-y-1">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('intake.history', 'Histórico')}</p>
-            <ScrollArea className="max-h-32">
+            <ScrollArea  viewportClassName="max-h-32">
               <div className="space-y-1">
                 {events.map(ev => (
                   <div key={ev.id} className="flex items-start gap-2 text-[10px] text-muted-foreground py-0.5">

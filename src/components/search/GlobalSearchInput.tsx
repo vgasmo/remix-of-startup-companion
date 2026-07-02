@@ -226,7 +226,7 @@ export function GlobalSearchInput() {
           </div>
         )}
 
-        <ScrollArea className="max-h-[440px]">
+        <ScrollArea  viewportClassName="max-h-[440px]">
           {/* AI mode */}
           {aiMode ? (
             <div className="p-3 space-y-3">

@@ -131,7 +131,7 @@ function TranscriptItem({
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="px-3 pb-3 pt-0">
-            <ScrollArea className="max-h-48">
+            <ScrollArea  viewportClassName="max-h-48">
               <p className="text-sm whitespace-pre-wrap bg-muted/50 p-3 rounded-lg">
                 {transcript.transcript_text}
               </p>

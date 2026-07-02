@@ -162,7 +162,7 @@ export function UnifiedSmartInbox({
               variant="inline"
             />
           ) : (
-            <ScrollArea className="max-h-[280px]">
+            <ScrollArea  viewportClassName="max-h-[280px]">
               <div className="space-y-1.5">
                 {filteredItems.map(item => (
                   <div

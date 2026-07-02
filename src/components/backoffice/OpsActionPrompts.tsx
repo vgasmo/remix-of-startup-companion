@@ -252,7 +252,7 @@ export function OpsActionPrompts() {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="max-h-[400px]">
+        <ScrollArea  viewportClassName="max-h-[400px]">
           <div className="space-y-2 px-6 pb-4">
             {visiblePrompts.map(prompt => (
               <div

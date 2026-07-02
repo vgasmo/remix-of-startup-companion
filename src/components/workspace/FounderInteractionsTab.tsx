@@ -208,7 +208,7 @@ export function FounderInteractionsTab({ workspaceId }: FounderInteractionsTabPr
               <p className="text-xs text-muted-foreground mt-1">{t('crm.noInteractionsHint')}</p>
             </div>
           ) : (
-            <ScrollArea className="max-h-[400px]">
+            <ScrollArea  viewportClassName="max-h-[400px]">
               <div className="space-y-5">
                 {Object.entries(groupedActivities).map(([period, items]) => (
                   <div key={period}>
