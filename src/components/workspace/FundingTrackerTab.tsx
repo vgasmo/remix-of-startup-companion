@@ -200,7 +200,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
           </div>
           <Card>
             <Table>
-              <TableHeader>
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead>{t('funding.roundType')}</TableHead>
                   <TableHead>{t('funding.targetAmount')}</TableHead>
@@ -253,7 +253,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
           </div>
           <Card>
             <Table>
-              <TableHeader>
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead>{t('funding.name')}</TableHead>
                   <TableHead>{t('funding.type')}</TableHead>
@@ -311,7 +311,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card>
               <Table>
-                <TableHeader>
+                <TableHeader sticky>
                   <TableRow>
                     <TableHead>{t('funding.holder')}</TableHead>
                     <TableHead>{t('funding.type')}</TableHead>

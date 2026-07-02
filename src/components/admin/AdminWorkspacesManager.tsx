@@ -554,7 +554,7 @@ export function AdminWorkspacesManager() {
                                   size="sm"
                                   className="w-full text-destructive hover:text-destructive"
                                   onClick={() => removeConsultorMutation.mutate(ws.id)}
-                                  disabled={removeConsultorMutation.isPending}
+                                  disabled={removeConsultorMutation.isPending} loading={removeConsultorMutation.isPending}
                                 >
                                   {t('admin.workspacesManager.removeConsultant', 'Remove Consultant')}
                                 </Button>
@@ -585,7 +585,7 @@ export function AdminWorkspacesManager() {
                               variant="outline" 
                               size="sm"
                               onClick={() => unblockMutation.mutate(ws.id)}
-                              disabled={unblockMutation.isPending}
+                              disabled={unblockMutation.isPending} loading={unblockMutation.isPending}
                             >
                               <CheckCircle className="h-4 w-4 mr-1" />
                               {t('admin.workspacesManager.unblock')}
@@ -658,7 +658,7 @@ export function AdminWorkspacesManager() {
             <Button 
               variant="destructive" 
               onClick={() => workspaceToBlock && blockMutation.mutate({ workspaceId: workspaceToBlock.id, reason: blockReason })}
-              disabled={blockMutation.isPending}
+              disabled={blockMutation.isPending} loading={blockMutation.isPending}
             >
               <Ban className="h-4 w-4 mr-2" />
               {blockMutation.isPending ? t('common.loading') : t('admin.workspacesManager.confirmBlock')}

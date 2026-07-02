@@ -838,7 +838,7 @@ export default function Mentors() {
                                       status: 'accepted',
                                       founderId: conn.founder_id 
                                     })}
-                                    disabled={updateConnectionStatus.isPending}
+                                    disabled={updateConnectionStatus.isPending} loading={updateConnectionStatus.isPending}
                                   >
                                     <Check className="h-4 w-4 mr-1" />
                                     {t('mentorsPage.accept')}
@@ -851,7 +851,7 @@ export default function Mentors() {
                                       status: 'declined',
                                       founderId: conn.founder_id 
                                     })}
-                                    disabled={updateConnectionStatus.isPending}
+                                    disabled={updateConnectionStatus.isPending} loading={updateConnectionStatus.isPending}
                                   >
                                     <X className="h-4 w-4 mr-1" />
                                     {t('mentorsPage.decline')}

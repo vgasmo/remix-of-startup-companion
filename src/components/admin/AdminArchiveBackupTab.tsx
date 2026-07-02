@@ -115,7 +115,7 @@ function ContractArchiveStatus() {
             <Button
               variant="outline"
               onClick={() => runAllMutation.mutate()}
-              disabled={runAllMutation.isPending}
+              disabled={runAllMutation.isPending} loading={runAllMutation.isPending}
             >
               {runAllMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Play className="h-4 w-4 mr-2" />}
               {t('admin.archive.runNow')}
@@ -186,7 +186,7 @@ function ContractArchiveStatus() {
                         variant="ghost"
                         size="icon"
                         onClick={() => retryMutation.mutate(contract.id)}
-                        disabled={retryMutation.isPending}
+                        disabled={retryMutation.isPending} loading={retryMutation.isPending}
                         title={contract.archive_status === 'failed' ? t('admin.archive.retry') : t('admin.archive.archiveNow')}
                        aria-label={t('common.loading')}>
                         {retryMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
@@ -278,7 +278,7 @@ function EcosystemSnapshotStatus() {
             variant="outline"
             size="sm"
             onClick={() => triggerMutation.mutate()}
-            disabled={triggerMutation.isPending}
+            disabled={triggerMutation.isPending} loading={triggerMutation.isPending}
           >
             {triggerMutation.isPending ? (
               <Loader2 className="h-4 w-4 mr-1 animate-spin" />

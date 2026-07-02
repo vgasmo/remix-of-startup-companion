@@ -231,7 +231,7 @@ export function FounderMentorRequestPanel() {
               selectedExpertise.length === 0 || 
               (workspaces && workspaces.length > 1 && !selectedWorkspace) ||
               (workspaces && workspaces.length === 0)
-            }
+            } loading={submitRequest.isPending}
             className="w-full"
           >
             <Send className="h-4 w-4 mr-2" />
@@ -284,7 +284,7 @@ export function FounderMentorRequestPanel() {
                   variant="ghost"
                   size="sm"
                   onClick={() => cancelRequest.mutate(req.id)}
-                  disabled={cancelRequest.isPending}
+                  disabled={cancelRequest.isPending} loading={cancelRequest.isPending}
                   title={t('mentorsPage.cancelRequest', 'Cancel request')}
                 >
                   <XCircle className="h-4 w-4" />

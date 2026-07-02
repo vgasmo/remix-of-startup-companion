@@ -202,7 +202,7 @@ export function PendingUsersManager() {
                         size="sm"
                         variant="outline"
                         onClick={() => setRejectUserId(user.id)}
-                        disabled={suspendMutation.isPending}
+                        disabled={suspendMutation.isPending} loading={suspendMutation.isPending}
                       >
                         <X className="h-4 w-4 mr-1" />
                         {t('common.reject', 'Reject')}
@@ -210,7 +210,7 @@ export function PendingUsersManager() {
                       <Button
                         size="sm"
                         onClick={() => approveMutation.mutate(user.id)}
-                        disabled={approveMutation.isPending}
+                        disabled={approveMutation.isPending} loading={approveMutation.isPending}
                       >
                         <Check className="h-4 w-4 mr-1" />
                         {t('admin.approve')}

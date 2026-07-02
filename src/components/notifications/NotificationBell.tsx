@@ -114,7 +114,7 @@ export function NotificationBell() {
               size="sm"
               className="h-7 text-xs"
               onClick={() => markAllRead.mutate()}
-              disabled={markAllRead.isPending}
+              disabled={markAllRead.isPending} loading={markAllRead.isPending}
             >
               <CheckCheck className="h-3 w-3 mr-1" />
               {t('notifications.markAllRead')}

@@ -863,7 +863,7 @@ export default function PublicContractSigning() {
             <div className="flex justify-end">
               <Button
                 onClick={() => saveCompanyData.mutate()}
-                disabled={!isFormValid || saveCompanyData.isPending}
+                disabled={!isFormValid || saveCompanyData.isPending} loading={saveCompanyData.isPending}
                 className="gap-2"
               >
                 {saveCompanyData.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
@@ -999,7 +999,7 @@ export default function PublicContractSigning() {
                 </Button>
                 <Button
                   onClick={() => submitForSigning.mutate()}
-                  disabled={!contractAccepted || !regulationAccepted || submitForSigning.isPending}
+                  disabled={!contractAccepted || !regulationAccepted || submitForSigning.isPending} loading={submitForSigning.isPending}
                   className="gap-2"
                 >
                   {submitForSigning.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <PenTool className="h-4 w-4" />}

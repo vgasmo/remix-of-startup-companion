@@ -534,7 +534,7 @@ export default function BulkContractImport() {
               <CardContent>
                 <div className="border rounded-md overflow-auto max-h-[60vh]">
                   <Table>
-                    <TableHeader>
+                    <TableHeader sticky>
                       <TableRow>
                         <TableHead className="w-10">
                           <Checkbox

@@ -532,7 +532,7 @@ export default function ProgramSetupWizard() {
             )}
 
             {currentStep !== 'review' ? (
-              <Button type="button" onClick={handleSaveAndContinue} disabled={updateDraft.isPending}>
+              <Button type="button" onClick={handleSaveAndContinue} disabled={updateDraft.isPending} loading={updateDraft.isPending}>
                 <Save className="h-4 w-4 mr-1" />
                 {t('programSetup.saveAndContinue')}
               </Button>
@@ -540,7 +540,7 @@ export default function ProgramSetupWizard() {
               <Button
                 type="button"
                 onClick={handlePublish}
-                disabled={publishDraft.isPending || getValidationErrors().length > 0 || publishedRef.current}
+                disabled={publishDraft.isPending || getValidationErrors().length > 0 || publishedRef.current} loading={publishDraft.isPending}
                 className="bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]"
               >
                 {publishDraft.isPending || publishedRef.current ? (

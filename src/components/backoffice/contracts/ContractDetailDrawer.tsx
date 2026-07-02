@@ -354,7 +354,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
               size="sm"
               className="h-7 text-xs gap-1"
               onClick={() => generatePdf.mutate()}
-              disabled={generatePdf.isPending}
+              disabled={generatePdf.isPending} loading={generatePdf.isPending}
             >
               {generatePdf.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileDown className="h-3 w-3" />}
               {t('contractDetail.generatePDF', { defaultValue: 'Gerar PDF' })}

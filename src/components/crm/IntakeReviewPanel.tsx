@@ -222,7 +222,7 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
                       size="sm"
                       className="gap-1.5 bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]"
                       onClick={() => handleTransition('approved_for_signature')}
-                      disabled={transition.isPending}
+                      disabled={transition.isPending} loading={transition.isPending}
                     >
                       {transition.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
                       Confirmar Aprovação
@@ -234,7 +234,7 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
                       variant="outline"
                       className="gap-1.5 border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning))]/10"
                       onClick={() => handleTransition('changes_requested')}
-                      disabled={transition.isPending || !actionNotes.trim()}
+                      disabled={transition.isPending || !actionNotes.trim()} loading={transition.isPending}
                     >
                       {transition.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <RotateCcw className="h-3 w-3" />}
                       Confirmar Pedido
@@ -246,7 +246,7 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
                       variant="destructive"
                       className="gap-1.5"
                       onClick={() => handleTransition('cancelled')}
-                      disabled={transition.isPending}
+                      disabled={transition.isPending} loading={transition.isPending}
                     >
                       {transition.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3" />}
                       Confirmar Cancelamento

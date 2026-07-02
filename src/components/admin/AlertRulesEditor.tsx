@@ -183,7 +183,7 @@ export function AlertRulesEditor({ programId, programName }: AlertRulesEditorPro
                       <Button
                         size="sm"
                         onClick={() => handleSave(rule.id)}
-                        disabled={updateRule.isPending}
+                        disabled={updateRule.isPending} loading={updateRule.isPending}
                       >
                         <Save className="h-4 w-4 mr-1" />
                         Guardar

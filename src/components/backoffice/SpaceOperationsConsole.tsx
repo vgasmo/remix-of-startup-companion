@@ -445,7 +445,7 @@ export function SpaceOperationsConsole() {
       <Card className="rounded-xl overflow-hidden">
         <ScrollArea className="max-h-[600px]">
           <Table>
-            <TableHeader>
+            <TableHeader sticky>
               <TableRow className="bg-muted/30">
                 <TableHead className="text-xs font-semibold">{t('spaces.room', 'Sala')}</TableHead>
                 <TableHead className="text-xs font-semibold">{t('spaces.status', 'Estado')}</TableHead>

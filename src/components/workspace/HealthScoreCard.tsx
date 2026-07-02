@@ -156,7 +156,7 @@ export function HealthScoreCard({ workspaceId, programId, canManage = false }: H
                         size="icon"
                         className="h-8 w-8"
                         onClick={()=> recompute.mutate()}
-                        disabled={recompute.isPending}
+                        disabled={recompute.isPending} loading={recompute.isPending}
                        aria-label={t('common.refresh')}>
                         <RefreshCw className={`h-4 w-4 ${recompute.isPending ? 'animate-spin' : ''}`} />
                       </Button>

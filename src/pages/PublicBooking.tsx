@@ -637,7 +637,7 @@ export default function PublicBooking() {
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={bookMutation.isPending || uploading}
+                  disabled={bookMutation.isPending || uploading} loading={bookMutation.isPending}
                 >
                   {(bookMutation.isPending || uploading) ? t('publicBooking.booking') : t('publicBooking.confirmBooking')}
                 </Button>

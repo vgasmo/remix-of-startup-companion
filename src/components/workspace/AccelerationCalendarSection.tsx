@@ -255,7 +255,7 @@ export function AccelerationCalendarSection({ programId, isStaff, currentWeek }:
                           onChange={e => setEditUrl(e.target.value)}
                           className="h-7 w-[180px] text-xs"
                         />
-                        <Button size="sm" className="h-7 w-7 p-0" onClick={() => handleSave(pw.id)} disabled={updateWeek.isPending}>
+                        <Button size="sm" className="h-7 w-7 p-0" onClick={() => handleSave(pw.id)} disabled={updateWeek.isPending} loading={updateWeek.isPending}>
                           <Save className="h-3.5 w-3.5" />
                         </Button>
                         <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingWeekId(null)}>
