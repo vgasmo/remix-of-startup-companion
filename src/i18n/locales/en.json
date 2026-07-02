@@ -9122,5 +9122,8 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
+  },
+  "tags": {
+    "noTagsFound": "No tags found"
   }
 }
