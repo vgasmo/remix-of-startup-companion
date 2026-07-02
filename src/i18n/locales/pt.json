@@ -3381,6 +3381,9 @@
     "winProbability": "Probabilidade (%)"
   },
   "dashboard": {
+    "activity": {
+      "actionCompleted": "Ação concluída"
+    },
     "acrossPrograms": "Em {{count}} programa",
     "acrossPrograms_plural": "Em {{count}} programas",
     "allOnTrack": "Todas as startups estão no caminho certo!",
