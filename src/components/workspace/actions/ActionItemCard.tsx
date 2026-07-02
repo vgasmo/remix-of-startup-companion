@@ -2,7 +2,7 @@ import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format, isPast, isToday, parseISO } from 'date-fns';
-import { AlertTriangle, Calendar, Trash2, GripVertical, Paperclip, FileText, Plus, Check, ExternalLink } from 'lucide-react';
+import { AlertTriangle, Calendar, Trash2, GripVertical, Paperclip, FileText, Plus, Check, ExternalLink, Hourglass, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
