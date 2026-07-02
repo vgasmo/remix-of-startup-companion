@@ -449,8 +449,8 @@ export function CreateStartupDialog({ open, onOpenChange }: CreateStartupDialogP
               >
                 {t('common.cancel')}
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? t('common.creating') : t('createStartup.submitApplication')}
+              <Button type="submit" loading={isSubmitting} loadingText={t('common.creating')}>
+                {t('createStartup.submitApplication')}
               </Button>
             </DialogFooter>
           </form>

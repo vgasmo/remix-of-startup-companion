@@ -656,7 +656,7 @@ export function AdminStartupsManager() {
           <p className="text-muted-foreground">{t('admin.startupsManager.loading')}</p>
         ) : (
           <Table>
-            <TableHeader>
+            <TableHeader sticky>
               <TableRow>
                 <TableHead>{t('admin.startupsManager.name')}</TableHead>
                 <TableHead>{t('admin.startupsManager.nif')}</TableHead>

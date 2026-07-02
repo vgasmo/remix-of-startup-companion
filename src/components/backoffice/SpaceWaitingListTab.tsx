@@ -329,7 +329,7 @@ export function SpaceWaitingListTab() {
             <div className="text-center py-8 text-muted-foreground">{t('common.loading')}</div>
           ) : waitingList && waitingList.length > 0 ? (
             <Table>
-              <TableHeader>
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead>{t('waitingList.organization', 'Organization')}</TableHead>
                   <TableHead>{t('waitingList.type', 'Type')}</TableHead>

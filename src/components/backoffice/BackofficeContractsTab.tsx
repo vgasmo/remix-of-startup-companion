@@ -551,7 +551,7 @@ export function BackofficeContractsTab() {
               </div>
               <div className="max-h-64 overflow-auto border rounded-lg bg-background">
                 <Table>
-                  <TableHeader>
+                  <TableHeader sticky>
                     <TableRow>
                       <TableHead className="w-10">
                         <Checkbox
@@ -614,7 +614,7 @@ export function BackofficeContractsTab() {
             <div className="text-center py-8 text-muted-foreground">{t('common.loading', { defaultValue: 'Loading...' })}</div>
           ) : (
             <Table>
-              <TableHeader>
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead className="w-10">
                     <Checkbox

@@ -508,7 +508,7 @@ export function AdminBackoffice() {
         ) : (
           <div className="rounded-md border overflow-x-auto">
             <Table>
-              <TableHeader>
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead>{t('admin.backoffice.startup')}</TableHead>
                   <TableHead>{t('admin.backoffice.program')}</TableHead>
