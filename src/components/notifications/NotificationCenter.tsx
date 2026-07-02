@@ -294,7 +294,7 @@ export function NotificationCenter() {
           </div>
         )}
 
-        <ScrollArea className="max-h-[400px]">
+        <ScrollArea  viewportClassName="max-h-[400px]">
           {isLoading ? (
             <div className="p-4 text-center text-muted-foreground text-sm" aria-live="polite">
               {t('common.loading')}

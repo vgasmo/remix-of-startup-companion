@@ -237,7 +237,7 @@ export function InlineKpiEditor({ workspaceId, className }: InlineKpiEditorProps
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
-                  disabled={saving[kpi.kpi_definition_id]} loading={saving}
+                  disabled={saving[kpi.kpi_definition_id]} loading={saving[kpi.kpi_definition_id]}
                   onClick={() => handleSave(kpi.kpi_definition_id)}
                  aria-label="Loading">
                   {saving[kpi.kpi_definition_id] ? (

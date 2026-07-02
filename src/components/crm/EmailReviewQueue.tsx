@@ -55,7 +55,7 @@ export function EmailReviewQueue({ onAttach }: EmailReviewQueueProps) {
             </p>
           </div>
         ) : (
-          <ScrollArea className="max-h-[500px]">
+          <ScrollArea  viewportClassName="max-h-[500px]">
             <div className="space-y-2">
               {emails.map(email => (
                 <Card key={email.id} className="border-border/40">

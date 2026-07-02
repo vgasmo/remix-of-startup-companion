@@ -640,7 +640,7 @@ export function InfrastructureTab() {
                           autoFocus
                         />
                       </div>
-                      <ScrollArea className="max-h-[200px]">
+                      <ScrollArea  viewportClassName="max-h-[200px]">
                         <div className="space-y-1">
                           {filteredUnmappedRooms.length === 0 ? (
                             <p className="text-sm text-muted-foreground text-center py-4">
@@ -683,7 +683,7 @@ export function InfrastructureTab() {
                     />
                   </div>
                   {roomSearch && (
-                    <ScrollArea className="mt-2 max-h-[200px]">
+                    <ScrollArea className="mt-2" viewportClassName="max-h-[200px]">
                       <div className="space-y-1">
                         {filteredRooms.slice(0, 20).map(room => {
                           const alloc = room.current_allocation;

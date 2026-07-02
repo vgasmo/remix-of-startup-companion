@@ -94,7 +94,7 @@ export function IntakeOperationalView({ onSelectIntake }: IntakeOperationalViewP
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-2 pt-0 flex-1">
-                <ScrollArea className="max-h-[300px]">
+                <ScrollArea  viewportClassName="max-h-[300px]">
                   {intakes.length === 0 ? (
                     <div className="p-4 text-center space-y-1">
                       <Inbox className="h-6 w-6 mx-auto text-muted-foreground/40" />

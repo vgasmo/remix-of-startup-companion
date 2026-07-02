@@ -74,7 +74,7 @@ export function NotesSection({ workspaceId, canManage }: NotesSectionProps) {
       <Card>
         <CardHeader><CardTitle className="text-lg">{t('notes.notesHistory')}</CardTitle></CardHeader>
         <CardContent>
-          <ScrollArea className="max-h-[500px]">
+          <ScrollArea  viewportClassName="max-h-[500px]">
             {isLoading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map(i => (

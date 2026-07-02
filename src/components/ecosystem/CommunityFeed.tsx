@@ -361,7 +361,7 @@ export function CommunityFeed() {
               className="pl-9"
             />
           </div>
-          <ScrollArea className="max-h-[400px]">
+          <ScrollArea  viewportClassName="max-h-[400px]">
             <div className="space-y-3 pr-2">
               {filteredChallenges.length === 0 ? (
                 <EmptyState
