@@ -643,6 +643,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
             </>
           )}
 
+          {showMoreOptions && (<>
           <div className="space-y-2">
             <Label htmlFor="location">{t('sessions.location', 'Location')}</Label>
             <Input
@@ -664,6 +665,8 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
               placeholder="Optional - Teams link added automatically if synced"
             />
           </div>
+          </>)}
+
 
           {!logPast && (
             <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
