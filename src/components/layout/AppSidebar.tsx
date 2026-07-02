@@ -467,9 +467,14 @@ export function AppSidebar() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setMessagingOpen(true)}
-                  className="h-10 w-10 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                  className="relative h-10 w-10 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                  aria-label={t('common._iconOpenChat')}>
                   <MessageCircle className="h-5 w-5" />
+                  {totalUnread > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center">
+                      {unreadLabel}
+                    </span>
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">{t('common.messages')}</TooltipContent>
@@ -481,7 +486,12 @@ export function AppSidebar() {
               className="w-full justify-start gap-3 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
             >
               <MessageCircle className="h-5 w-5" />
-              {t('common.messages')}
+              <span className="flex-1 text-left">{t('common.messages')}</span>
+              {totalUnread > 0 && (
+                <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center">
+                  {unreadLabel}
+                </span>
+              )}
             </Button>
           )}
         </div>
