@@ -540,7 +540,7 @@ export function BackofficeContractsTab() {
                 </div>
                 <Button
                   onClick={handleBulkCreateContracts}
-                  disabled={selectedWorkspaces.size === 0 || isBulkCreating}
+                  disabled={selectedWorkspaces.size === 0 || isBulkCreating} loading={isBulkCreating}
                   className="bg-warning hover:bg-warning"
                 >
                   <Zap className="h-4 w-4 mr-2" />

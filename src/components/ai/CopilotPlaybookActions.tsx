@@ -126,7 +126,7 @@ function ApplyPlaybookChip({ playbook }: { playbook: PlaybookSummary }) {
         <Button
           size="sm"
           variant="outline"
-          disabled={applying || loadingWs}
+          disabled={applying || loadingWs} loading={applying}
           onClick={(e) => {
             e.preventDefault();
             handleTriggerClick();

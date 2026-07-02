@@ -117,7 +117,7 @@ export const ExportAnalyticsModal = forwardRef<HTMLDivElement, ExportAnalyticsMo
                 <Button
                   size="sm"
                   variant={isCompleted ? 'outline' : 'default'}
-                  disabled={isExporting}
+                  disabled={isExporting} loading={isExporting}
                   onClick={() => handleExport(option.id)}
                   className="shrink-0 gap-1.5 text-xs"
                 >

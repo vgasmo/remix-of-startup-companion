@@ -434,7 +434,7 @@ export default function Settings() {
                     </p>
                   </div>
 
-                  <Button type="submit" disabled={isUpdatingProfile}>
+                  <Button type="submit" disabled={isUpdatingProfile} loading={isUpdatingProfile}>
                     {isUpdatingProfile ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -505,7 +505,7 @@ export default function Settings() {
                     </p>
                   </div>
 
-                  <Button type="submit" disabled={isUpdatingEmail}>
+                  <Button type="submit" disabled={isUpdatingEmail} loading={isUpdatingEmail}>
                     {isUpdatingEmail ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -563,7 +563,7 @@ export default function Settings() {
                     />
                   </div>
 
-                  <Button type="submit" disabled={isUpdatingPassword}>
+                  <Button type="submit" disabled={isUpdatingPassword} loading={isUpdatingPassword}>
                     {isUpdatingPassword ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />

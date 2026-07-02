@@ -276,7 +276,7 @@ export function DataQualityDashboard() {
               </Button>
               <Button
                 onClick={handleBulkInvite}
-                disabled={selectedFounderInvites === 0 || isSendingInvites}
+                disabled={selectedFounderInvites === 0 || isSendingInvites} loading={isSendingInvites}
               >
                 {isSendingInvites ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />

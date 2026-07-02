@@ -647,7 +647,7 @@ export function InvestorUpdatesTab({ workspaceId, canWrite }: InvestorUpdatesTab
             <Button variant="outline" onClick={() => setShowShareDialog(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleCreateShareLink} disabled={isCreatingLink} className="gap-2">
+            <Button onClick={handleCreateShareLink} disabled={isCreatingLink} loading={isCreatingLink} className="gap-2">
               {isCreatingLink ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />

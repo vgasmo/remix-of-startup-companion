@@ -1049,7 +1049,7 @@ export default function PublicContractSigning() {
                     <p className="text-xs text-muted-foreground mb-3">
                       {t('publicContractSigning.reviewTheContractBeforeSigningBy')}
                     </p>
-                    <Button variant="outline" size="sm" className="gap-2" onClick={handleDownloadPdf} disabled={pdfLoading}>
+                    <Button variant="outline" size="sm" className="gap-2" onClick={handleDownloadPdf} disabled={pdfLoading} loading={pdfLoading}>
                       <FileText className="h-3.5 w-3.5" />
                       {pdfLoading
                         ? (t('publicContractSigning.preparingPdf'))
