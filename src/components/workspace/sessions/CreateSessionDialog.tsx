@@ -84,6 +84,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
 
   const [meetingWith, setMeetingWith] = useState<'consultor' | 'mentor_externo'>('consultor');
   const [participantId, setParticipantId] = useState<string>('');
+  const [showMoreOptions, setShowMoreOptions] = useState(false);
 
   useEffect(() => {
     if (participantId) return;
@@ -95,6 +96,18 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
       setParticipantId(assignedMentors[0].user_id);
     }
   }, [participantId, meetingWith, assignedConsultant?.user_id, assignedMentors]);
+
+  // Auto-default title when opening with a consultant/mentor in context
+  useEffect(() => {
+    if (!open || title.trim()) return;
+    const participantName =
+      meetingWith === 'consultor'
+        ? assignedConsultant?.profile?.full_name || assignedConsultant?.profile?.email
+        : assignedMentors.find((m) => m.user_id === participantId)?.profile?.full_name;
+    if (participantName) {
+      setTitle(t('sessions.defaultTitleWith', { name: participantName, defaultValue: `Sessão com ${participantName}` }));
+    }
+  }, [open, meetingWith, assignedConsultant, assignedMentors, participantId, t, title]);
 
   const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined;
   const { data: consultantAvailability, isLoading: loadingConsultantAvailability } = useConsultantAvailability(
