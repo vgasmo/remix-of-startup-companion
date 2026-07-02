@@ -100,7 +100,7 @@ export function AddActivityDialog({
               </Label>
             </div>
           )}
-          <Button onClick={handleSubmit} disabled={isPending || !subject.trim()} className="w-full">
+          <Button onClick={handleSubmit} disabled={isPending || !subject.trim()} loading={isPending} className="w-full">
             {isPending ? t('common.saving') : t('common.save')}
           </Button>
         </div>
@@ -213,7 +213,7 @@ export function AddTaskDialog({
               </Label>
             </div>
           )}
-          <Button onClick={handleSubmit} disabled={isPending || !subject.trim()} className="w-full">
+          <Button onClick={handleSubmit} disabled={isPending || !subject.trim()} loading={isPending} className="w-full">
             {isPending ? t('common.saving') : t('common.save')}
           </Button>
         </div>
@@ -293,7 +293,7 @@ export function NextActionDialog({
               rows={2}
             />
           </div>
-          <Button onClick={handleSubmit} disabled={isPending || !date} className="w-full">
+          <Button onClick={handleSubmit} disabled={isPending || !date} loading={isPending} className="w-full">
             {isPending ? t('common.saving') : t('common.save')}
           </Button>
         </div>

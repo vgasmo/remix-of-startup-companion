@@ -123,7 +123,7 @@ export function AddTaskDialog({
               </Label>
             </div>
           )}
-          <Button onClick={handleSubmit} disabled={isPending || !subject.trim()} className="w-full">
+          <Button onClick={handleSubmit} disabled={isPending || !subject.trim()} loading={isPending} className="w-full">
             {isPending ? t('common.saving') : t('common.save')}
           </Button>
         </div>
