@@ -163,7 +163,7 @@ export default function SearchPage() {
                     placeholder={t('search.searchNamePlaceholder', 'My search...')}
                   />
                 </div>
-                <Button onClick={handleSaveSearch} disabled={saveSearch.isPending}>
+                <Button onClick={handleSaveSearch} disabled={saveSearch.isPending} loading={saveSearch.isPending}>
                   {saveSearch.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {t('common.save', 'Save')}
                 </Button>

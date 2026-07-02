@@ -532,7 +532,7 @@ export default function ProgramSetupWizard() {
             )}
 
             {currentStep !== 'review' ? (
-              <Button type="button" onClick={handleSaveAndContinue} disabled={updateDraft.isPending}>
+              <Button type="button" onClick={handleSaveAndContinue} disabled={updateDraft.isPending} loading={updateDraft.isPending}>
                 <Save className="h-4 w-4 mr-1" />
                 {t('programSetup.saveAndContinue')}
               </Button>

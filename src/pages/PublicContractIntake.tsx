@@ -601,7 +601,7 @@ export default function PublicContractIntake() {
               !formData.legal_representative_name ||
               !formData.legal_representative_email ||
               !formData.legal_representative_phone
-            }
+            } loading={submitMutation.isPending}
             onClick={async () => { await autosave.flush(); submitMutation.mutate(); }}
           >
             {submitMutation.isPending ? (
