@@ -33,7 +33,7 @@ import { useExportActions, exportActionsToCsv } from '@/hooks/useExportData';
 import { ActionItemCard, type PlatformDocument } from './actions/ActionItemCard';
 import { buildPlatformDocumentOptions } from '@/lib/platformDocuments';
 import { notify } from '@/lib/notify';
-import { useQuickWinToast } from '@/hooks/useQuickWinToast';
+
 import { toTitleCase } from '@/lib/textUtils';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/lib/supabaseClient';
@@ -87,7 +87,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
   const bulkUpdate = useBulkUpdateActions(workspaceId);
   const bulkDelete = useBulkDeleteActions(workspaceId);
   const { refetch: fetchExportData } = useExportActions(workspaceId);
-  const { showQuickWin } = useQuickWinToast();
+  
 
   // State
   const [expandedMilestones, setExpandedMilestones] = useState<Set<string>>(() => new Set());
@@ -171,7 +171,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
     if (!canWrite) return;
     try {
       await updateMilestone.mutateAsync({ id: milestone.id, status });
-      if (status === 'completed') showQuickWin('milestone_completed');
+      // Confetti is handled by useMilestones' onSuccess (single source of truth).
     } catch { notify.error(t('milestones.failedToUpdate')); }
   };
 

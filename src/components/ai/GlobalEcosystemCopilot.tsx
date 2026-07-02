@@ -257,7 +257,8 @@ export function GlobalEcosystemCopilot() {
           'transition-all duration-300 hover:scale-110 hover:shadow-xl',
           'active:scale-95',
           'ring-2 ring-primary/20 ring-offset-2 ring-offset-background',
-          'lg:bottom-6 bottom-24',
+          // Hide on mobile — MobileQuickActions/QuickActionsFab own the bottom-right slot there
+          'hidden lg:flex',
         )}
         aria-label="Open AI Copilot"
       >

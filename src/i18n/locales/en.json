@@ -1693,6 +1693,13 @@
     "activeAlerts": "Active Alerts",
     "allOnTrack": "All startups are on track!",
     "critical": "Critical",
+    "cta": {
+      "completeCheckin": "Complete check-in",
+      "scheduleSession": "Schedule session",
+      "updateKpis": "Update KPIs",
+      "viewActions": "View actions",
+      "viewMilestones": "View milestones"
+    },
     "everythingOnTrack": "Everything is running smoothly!",
     "healthAlerts": "Health Alerts",
     "ignoreAlert": "Ignore alert",
@@ -1704,6 +1711,13 @@
     "recalculate": "Recalculate",
     "recalculated": "Alerts recalculated",
     "resolved": "Alert resolved",
+    "ruleType": {
+      "checkinOverdue": "Overdue check-in",
+      "milestoneOverdue": "Overdue milestones",
+      "missingKpis": "Missing KPIs",
+      "noSessionDays": "Days without session",
+      "overdueActions": "Overdue actions"
+    },
     "ruleUpdated": "Rule updated",
     "severity": {
       "critical": "Crítico",
@@ -1714,6 +1728,7 @@
     "snoozeFailed": "Failed to snooze alert",
     "snoozedDays": "Alert snoozed for {{days}} days",
     "title": "Alerts",
+    "unknown": "Unknown",
     "viewDetails": "View details",
     "warning": "Warning"
   },
@@ -2254,6 +2269,7 @@
     "endDate": "End",
     "error": "Error",
     "errorGeneric": "An error occurred. Please try again.",
+    "errorLoading": "Failed to load.",
     "errorSaving": "Error saving",
     "errors": "Errors",
     "expand": "Expand",
@@ -2410,8 +2426,7 @@
     "warning": "Warning",
     "workspace": "Workspace",
     "years": "years",
-    "yes": "Yes",
-    "errorLoading": "Failed to load."
+    "yes": "Yes"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -3381,11 +3396,11 @@
     "winProbability": "Probabilidade (%)"
   },
   "dashboard": {
+    "acrossPrograms": "Across {{count}} program",
+    "acrossPrograms_plural": "Across {{count}} programs",
     "activity": {
       "actionCompleted": "Action completed"
     },
-    "acrossPrograms": "Across {{count}} program",
-    "acrossPrograms_plural": "Across {{count}} programs",
     "allOnTrack": "All startups are on track!",
     "allStartups": "All Startups",
     "atRisk": "At Risk",
@@ -4724,6 +4739,8 @@
     "addNote": "Add note",
     "breakdown": "Score Breakdown",
     "contributing": "Contributing factors",
+    "overrideApplied": "Override applied",
+    "overrideRemoved": "Override removed",
     "whyThisScore": "Why this score?"
   },
   "healthTooltip": {
@@ -4750,16 +4767,16 @@
   },
   "inbox": {
     "empty": {
-      "description": "You",
+      "description": "You're all caught up. Great work staying on top of things.",
       "title": "Inbox Zero!"
     },
     "missingKpis": "KPI data missing for this month",
     "missingKpisDesc": "Update your metrics to keep your health score accurate.",
-    "overdueActions": "Overdue Actions",
+    "overdueActions": "{{count}} overdue action item(s)",
     "overdueActionsDesc": "Review and update your pending tasks to stay on track.",
-    "pendingSessions": "Pending Sessions",
+    "pendingSessions": "{{count}} session(s) awaiting confirmation",
     "pendingSessionsDesc": "Confirm or reschedule your upcoming mentorship sessions.",
-    "subtitle": "Subtitle",
+    "subtitle": "{{count}} item(s) need attention",
     "thisMonth": "This month",
     "thisWeek": "This week",
     "title": "Smart Inbox",
@@ -6683,6 +6700,32 @@
     "yourDetails": "Your Details"
   },
   "publicContract": {
+    "docs": {
+      "certidao_comercial": {
+        "desc": "Permanent certificate or commercial registry access code",
+        "label": "Commercial Registry Certificate / Access Code"
+      },
+      "comprovativo_iban": {
+        "desc": "Proof of company bank account IBAN",
+        "label": "IBAN Proof"
+      },
+      "comprovativo_morada": {
+        "desc": "Proof of address of the company or legal representative",
+        "label": "Proof of Address"
+      },
+      "docs_associacoes": {
+        "desc": "Documents from relevant associations for the project",
+        "label": "Association Documents"
+      },
+      "id_representante": {
+        "desc": "Citizen card, ID card or passport of the legal representative",
+        "label": "Legal Representative ID Document"
+      },
+      "pitch_deck": {
+        "desc": "Project presentation (PDF or PPT)",
+        "label": "Pitch Deck / Startup Presentation"
+      }
+    },
     "errors": {
       "pdfDownloadFailed": "Failed to download contract PDF",
       "saveDataFailed": "Failed to save data. Check the fields and try again.",
@@ -6694,33 +6737,11 @@
     "invalidLinkTitle": "Invalid or expired link",
     "loadingContract": "Loading contract...",
     "optional": "Optional",
-    "required": "Required",
-    "docs": {
-      "certidao_comercial": {
-        "label": "Commercial Registry Certificate / Access Code",
-        "desc": "Permanent certificate or commercial registry access code"
-      },
-      "id_representante": {
-        "label": "Legal Representative ID Document",
-        "desc": "Citizen card, ID card or passport of the legal representative"
-      },
-      "comprovativo_morada": {
-        "label": "Proof of Address",
-        "desc": "Proof of address of the company or legal representative"
-      },
-      "comprovativo_iban": {
-        "label": "IBAN Proof",
-        "desc": "Proof of company bank account IBAN"
-      },
-      "pitch_deck": {
-        "label": "Pitch Deck / Startup Presentation",
-        "desc": "Project presentation (PDF or PPT)"
-      },
-      "docs_associacoes": {
-        "label": "Association Documents",
-        "desc": "Documents from relevant associations for the project"
-      }
-    }
+    "required": "Required"
+  },
+  "publicContractSigning": {
+    "checkYourEmailAtPrefix": "Check your email at",
+    "reviewBeforeSendingViaProvider": "Review the documents before sending for signature via {{provider}}."
   },
   "quality": {
     "blockingWarning": "This {{entityType}} cannot be marked as ready until the score reaches 70+",
@@ -8028,6 +8049,40 @@
     "teamMembers": "Co-founders",
     "title": "Co-founders"
   },
+  "templateRequests": {
+    "adminEmpty": "No requests in this state.",
+    "adminNote": "Team note",
+    "adminSubtitle": "Requests submitted by founders when no suitable template exists.",
+    "adminTitle": "Template Requests",
+    "empty": "No requests yet. Use \"New request\" if a template is missing.",
+    "markFulfilled": "Mark as resolved",
+    "markedFulfilled": "Request marked as resolved",
+    "newRequest": "New request",
+    "notePlaceholder": "Note for the founder (e.g. template published in Documents → ...)",
+    "pickTemplate": "Published template",
+    "pickTemplatePlaceholder": "Pick template…",
+    "pickTemplateRequired": "Select the published template",
+    "reject": "Reject",
+    "relatedTo": "Related to",
+    "reopen": "Reopen",
+    "reopened": "Request reopened",
+    "resolve": "Resolve",
+    "resolveTitle": "Resolve request",
+    "startWork": "Start",
+    "status": {
+      "fulfilled": "Resolved",
+      "inProgress": "In progress",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    },
+    "tabs": {
+      "all": "All",
+      "fulfilled": "Resolved",
+      "in_progress": "In progress",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    }
+  },
   "templates": {
     "actionsCreatedFromAI": "Created {{count}} action items from AI recommendations",
     "aiAnalysis": "AI Analysis",
@@ -9067,43 +9122,5 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
-  },
-  "publicContractSigning": {
-    "reviewBeforeSendingViaProvider": "Review the documents before sending for signature via {{provider}}.",
-    "checkYourEmailAtPrefix": "Check your email at"
-  },
-  "templateRequests": {
-    "newRequest": "New request",
-    "empty": "No requests yet. Use \"New request\" if a template is missing.",
-    "adminNote": "Team note",
-    "adminTitle": "Template Requests",
-    "adminSubtitle": "Requests submitted by founders when no suitable template exists.",
-    "adminEmpty": "No requests in this state.",
-    "startWork": "Start",
-    "resolve": "Resolve",
-    "reject": "Reject",
-    "reopen": "Reopen",
-    "reopened": "Request reopened",
-    "resolveTitle": "Resolve request",
-    "markFulfilled": "Mark as resolved",
-    "markedFulfilled": "Request marked as resolved",
-    "pickTemplate": "Published template",
-    "pickTemplatePlaceholder": "Pick template…",
-    "pickTemplateRequired": "Select the published template",
-    "notePlaceholder": "Note for the founder (e.g. template published in Documents → ...)",
-    "relatedTo": "Related to",
-    "tabs": {
-      "pending": "Pending",
-      "in_progress": "In progress",
-      "fulfilled": "Resolved",
-      "rejected": "Rejected",
-      "all": "All"
-    },
-    "status": {
-      "pending": "Pending",
-      "inProgress": "In progress",
-      "fulfilled": "Resolved",
-      "rejected": "Rejected"
-    }
   }
 }

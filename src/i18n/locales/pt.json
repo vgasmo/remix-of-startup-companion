@@ -1693,6 +1693,13 @@
     "activeAlerts": "Alertas Ativos",
     "allOnTrack": "Todas as startups estão no caminho certo!",
     "critical": "Crítico",
+    "cta": {
+      "completeCheckin": "Fazer check-in",
+      "scheduleSession": "Agendar sessão",
+      "updateKpis": "Atualizar KPIs",
+      "viewActions": "Ver ações",
+      "viewMilestones": "Ver marcos"
+    },
     "everythingOnTrack": "Tudo a funcionar bem!",
     "healthAlerts": "Alertas de Saúde",
     "ignoreAlert": "Ignorar alerta",
@@ -1704,6 +1711,13 @@
     "recalculate": "Recalcular",
     "recalculated": "Alertas recalculados",
     "resolved": "Alerta resolvido",
+    "ruleType": {
+      "checkinOverdue": "Check-in atrasado",
+      "milestoneOverdue": "Marcos atrasados",
+      "missingKpis": "KPIs em falta",
+      "noSessionDays": "Dias sem sessão",
+      "overdueActions": "Ações atrasadas"
+    },
     "ruleUpdated": "Regra atualizada",
     "severity": {
       "critical": "Crítico",
@@ -1714,6 +1728,7 @@
     "snoozeFailed": "Falha ao adiar alerta",
     "snoozedDays": "Alerta adiado por {{days}} dias",
     "title": "Alertas",
+    "unknown": "Desconhecido",
     "viewDetails": "Ver detalhes",
     "warning": "Aviso"
   },
@@ -2254,6 +2269,7 @@
     "endDate": "Fim",
     "error": "Erro",
     "errorGeneric": "Ocorreu um erro. Por favor tente novamente.",
+    "errorLoading": "Erro ao carregar.",
     "errorSaving": "Erro ao guardar",
     "errors": "Erros",
     "expand": "Expandir",
@@ -2286,11 +2302,11 @@
     "logout": "Terminar sessão",
     "menu": "Menu",
     "messages": "Mensagens",
-    "milestones": "Milestones",
-    "month": "month",
+    "milestones": "Marcos",
+    "month": "mês",
     "months": "meses",
     "more": "Mais opções",
-    "moreActions": "More actions",
+    "moreActions": "Mais ações",
     "moreDetails": "Mais",
     "morePages": "Mais páginas",
     "moveDown": "Mover para baixo",
@@ -2410,8 +2426,7 @@
     "warning": "Aviso",
     "workspace": "Workspace",
     "years": "anos",
-    "yes": "Sim",
-    "errorLoading": "Erro ao carregar."
+    "yes": "Sim"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -3381,11 +3396,11 @@
     "winProbability": "Probabilidade (%)"
   },
   "dashboard": {
+    "acrossPrograms": "Em {{count}} programa",
+    "acrossPrograms_plural": "Em {{count}} programas",
     "activity": {
       "actionCompleted": "Ação concluída"
     },
-    "acrossPrograms": "Em {{count}} programa",
-    "acrossPrograms_plural": "Em {{count}} programas",
     "allOnTrack": "Todas as startups estão no caminho certo!",
     "allStartups": "Todas as Startups",
     "atRisk": "Em Risco",
@@ -4724,6 +4739,8 @@
     "addNote": "Adicionar nota",
     "breakdown": "Decomposição do Score",
     "contributing": "Fatores contribuintes",
+    "overrideApplied": "Override aplicado",
+    "overrideRemoved": "Override removido",
     "whyThisScore": "Porquê este score?"
   },
   "healthTooltip": {
@@ -4750,20 +4767,20 @@
   },
   "inbox": {
     "empty": {
-      "description": "You",
-      "title": "Inbox Zero!"
+      "description": "Está tudo em dia. Bom trabalho a manter-se à frente.",
+      "title": "Caixa de entrada vazia!"
     },
-    "missingKpis": "KPI data missing for this month",
-    "missingKpisDesc": "Update your metrics to keep your health score accurate.",
-    "overdueActions": "Atrasado Ações",
-    "overdueActionsDesc": "Review and update your pending tasks to stay on track.",
-    "pendingSessions": "Pendente Sessões",
-    "pendingSessionsDesc": "Confirm or reschedule your upcoming mentorship sessions.",
-    "subtitle": "Subtitle",
+    "missingKpis": "KPIs em falta este mês",
+    "missingKpisDesc": "Atualize as suas métricas para manter o Health Score fiável.",
+    "overdueActions": "{{count}} ação(ões) em atraso",
+    "overdueActionsDesc": "Reveja e atualize as suas tarefas pendentes para se manter no rumo.",
+    "pendingSessions": "{{count}} sessão(ões) por confirmar",
+    "pendingSessionsDesc": "Confirme ou reagende as suas próximas sessões de mentoria.",
+    "subtitle": "{{count}} item(s) precisam de atenção",
     "thisMonth": "Este mês",
     "thisWeek": "Esta semana",
-    "title": "Smart Inbox",
-    "today": "Today"
+    "title": "Caixa de entrada",
+    "today": "Hoje"
   },
   "intake": {
     "changesRequested": "Correções Pedidas",
@@ -5825,7 +5842,7 @@
     "completeCheckin": "Completar check-in",
     "completeOrReschedule": "Completar ou reagendar",
     "continue": "Continuar",
-    "continueWork": "Continuar Work",
+    "continueWork": "Continuar de onde parou",
     "derived": "derivada do estado real",
     "dueOn": "Due On",
     "founder": {
@@ -6683,6 +6700,32 @@
     "yourDetails": "Os Seus Dados"
   },
   "publicContract": {
+    "docs": {
+      "certidao_comercial": {
+        "desc": "Certidão permanente da empresa ou código de acesso ao registo comercial",
+        "label": "Certidão Permanente / Código de Acesso"
+      },
+      "comprovativo_iban": {
+        "desc": "Comprovativo do IBAN da conta bancária da empresa",
+        "label": "Comprovativo de IBAN"
+      },
+      "comprovativo_morada": {
+        "desc": "Comprovativo de morada da empresa ou representante legal",
+        "label": "Comprovativo de Morada"
+      },
+      "docs_associacoes": {
+        "desc": "Documentos de associações relevantes para o projeto",
+        "label": "Documentos de Associações"
+      },
+      "id_representante": {
+        "desc": "Cartão de cidadão, BI ou passaporte do representante legal",
+        "label": "Documento de Identificação do Representante Legal"
+      },
+      "pitch_deck": {
+        "desc": "Apresentação do projeto (PDF ou PPT)",
+        "label": "Pitch Deck / Apresentação da Startup"
+      }
+    },
     "errors": {
       "pdfDownloadFailed": "Erro ao descarregar PDF do contrato",
       "saveDataFailed": "Erro ao guardar dados. Verifique os campos e tente novamente.",
@@ -6694,33 +6737,11 @@
     "invalidLinkTitle": "Link inválido ou expirado",
     "loadingContract": "A carregar contrato...",
     "optional": "Opcional",
-    "required": "Obrigatório",
-    "docs": {
-      "certidao_comercial": {
-        "label": "Certidão Permanente / Código de Acesso",
-        "desc": "Certidão permanente da empresa ou código de acesso ao registo comercial"
-      },
-      "id_representante": {
-        "label": "Documento de Identificação do Representante Legal",
-        "desc": "Cartão de cidadão, BI ou passaporte do representante legal"
-      },
-      "comprovativo_morada": {
-        "label": "Comprovativo de Morada",
-        "desc": "Comprovativo de morada da empresa ou representante legal"
-      },
-      "comprovativo_iban": {
-        "label": "Comprovativo de IBAN",
-        "desc": "Comprovativo do IBAN da conta bancária da empresa"
-      },
-      "pitch_deck": {
-        "label": "Pitch Deck / Apresentação da Startup",
-        "desc": "Apresentação do projeto (PDF ou PPT)"
-      },
-      "docs_associacoes": {
-        "label": "Documentos de Associações",
-        "desc": "Documentos de associações relevantes para o projeto"
-      }
-    }
+    "required": "Obrigatório"
+  },
+  "publicContractSigning": {
+    "checkYourEmailAtPrefix": "Verifique o email",
+    "reviewBeforeSendingViaProvider": "Reveja os documentos antes de enviar para assinatura via {{provider}}."
   },
   "quality": {
     "blockingWarning": "Este {{entityType}} não pode ser marcado como pronto até a pontuação atingir 70+",
@@ -6765,8 +6786,8 @@
     "uploadDocument": "Carregar Documento",
     "uploadDocumentDesc": "Adicionar ficheiros ao workspace",
     "viewAlerts": "Ver Alertas",
-    "weeklyCheckin": "Weekly Checkin",
-    "weeklyCheckinDesc": "Weekly Checkin Desc"
+    "weeklyCheckin": "Check-in semanal",
+    "weeklyCheckinDesc": "Partilhe vitórias, obstáculos e prioridades desta semana"
   },
   "quickGuideBanner": {
     "cta": "Abrir Guia Rápido",
@@ -8000,6 +8021,9 @@
     "program": "Programa",
     "progress": "Progresso"
   },
+  "tags": {
+    "noTagsFound": "Sem etiquetas encontradas"
+  },
   "team": {
     "addMember": "Adicionar Co-fundador",
     "editMember": "Editar Co-fundador",
@@ -8027,6 +8051,40 @@
     "saveChanges": "Guardar Alterações",
     "teamMembers": "Co-fundadores",
     "title": "Co-fundadores"
+  },
+  "templateRequests": {
+    "adminEmpty": "Sem pedidos neste estado.",
+    "adminNote": "Nota da equipa",
+    "adminSubtitle": "Pedidos submetidos por founders quando não existe template adequado.",
+    "adminTitle": "Pedidos de Template",
+    "empty": "Ainda não há pedidos. Use \"Novo pedido\" se faltar um modelo.",
+    "markFulfilled": "Marcar como resolvido",
+    "markedFulfilled": "Pedido marcado como resolvido",
+    "newRequest": "Novo pedido",
+    "notePlaceholder": "Nota para o founder (ex: template publicado em Documentos → ...)",
+    "pickTemplate": "Template publicado",
+    "pickTemplatePlaceholder": "Escolher template…",
+    "pickTemplateRequired": "Selecione o template publicado",
+    "reject": "Rejeitar",
+    "relatedTo": "Relacionado com",
+    "reopen": "Reabrir",
+    "reopened": "Pedido reaberto",
+    "resolve": "Resolver",
+    "resolveTitle": "Resolver pedido",
+    "startWork": "Iniciar",
+    "status": {
+      "fulfilled": "Resolvido",
+      "inProgress": "Em curso",
+      "pending": "Pendente",
+      "rejected": "Rejeitado"
+    },
+    "tabs": {
+      "all": "Todos",
+      "fulfilled": "Resolvidos",
+      "in_progress": "Em curso",
+      "pending": "Pendentes",
+      "rejected": "Rejeitados"
+    }
   },
   "templates": {
     "actionsCreatedFromAI": "Criadas {{count}} ações a partir de recomendações IA",
@@ -9067,43 +9125,5 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
-  },
-  "publicContractSigning": {
-    "reviewBeforeSendingViaProvider": "Reveja os documentos antes de enviar para assinatura via {{provider}}.",
-    "checkYourEmailAtPrefix": "Verifique o email"
-  },
-  "templateRequests": {
-    "newRequest": "Novo pedido",
-    "empty": "Ainda não há pedidos. Use \"Novo pedido\" se faltar um modelo.",
-    "adminNote": "Nota da equipa",
-    "adminTitle": "Pedidos de Template",
-    "adminSubtitle": "Pedidos submetidos por founders quando não existe template adequado.",
-    "adminEmpty": "Sem pedidos neste estado.",
-    "startWork": "Iniciar",
-    "resolve": "Resolver",
-    "reject": "Rejeitar",
-    "reopen": "Reabrir",
-    "reopened": "Pedido reaberto",
-    "resolveTitle": "Resolver pedido",
-    "markFulfilled": "Marcar como resolvido",
-    "markedFulfilled": "Pedido marcado como resolvido",
-    "pickTemplate": "Template publicado",
-    "pickTemplatePlaceholder": "Escolher template…",
-    "pickTemplateRequired": "Selecione o template publicado",
-    "notePlaceholder": "Nota para o founder (ex: template publicado em Documentos → ...)",
-    "relatedTo": "Relacionado com",
-    "tabs": {
-      "pending": "Pendentes",
-      "in_progress": "Em curso",
-      "fulfilled": "Resolvidos",
-      "rejected": "Rejeitados",
-      "all": "Todos"
-    },
-    "status": {
-      "pending": "Pendente",
-      "inProgress": "Em curso",
-      "fulfilled": "Resolvido",
-      "rejected": "Rejeitado"
-    }
   }
 }
