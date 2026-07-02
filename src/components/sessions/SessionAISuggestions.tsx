@@ -75,7 +75,7 @@ export function SessionAISuggestions({ sessionNotes, workspaceId, onApplySuggest
           </p>
           <Button 
             onClick={handleGenerate} 
-            disabled={isGenerating || !sessionNotes?.trim()}
+            disabled={isGenerating || !sessionNotes?.trim()} loading={isGenerating}
             variant={aiError ? 'outline' : 'default'}
           >
             {isGenerating ? (
@@ -103,7 +103,7 @@ export function SessionAISuggestions({ sessionNotes, workspaceId, onApplySuggest
             <Sparkles className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg">{t('sessions.aiSuggestions')}</CardTitle>
           </div>
-          <Button variant="outline" size="sm" onClick={handleGenerate} disabled={isGenerating}>
+          <Button variant="outline" size="sm" onClick={handleGenerate} disabled={isGenerating} loading={isGenerating}>
             {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : t('sessions.regenerate')}
           </Button>
         </div>

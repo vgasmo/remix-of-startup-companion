@@ -127,7 +127,7 @@ export const ForgotPasswordDialog = forwardRef<HTMLDivElement, ForgotPasswordDia
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   {t('common.back')}
                 </Button>
-                <Button type="submit" disabled={isSubmitting} className="flex-1">
+                <Button type="submit" disabled={isSubmitting} loading={isSubmitting} className="flex-1">
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />

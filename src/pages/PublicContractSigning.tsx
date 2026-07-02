@@ -838,7 +838,7 @@ export default function PublicContractSigning() {
                                 variant="outline"
                                 size="sm"
                                 className="h-8 text-xs gap-1.5"
-                                disabled={isUploading}
+                                disabled={isUploading} loading={isUploading}
                                 onClick={() => fileInputRefs.current[doc.key]?.click()}
                               >
                                 {isUploading ? (
@@ -1049,7 +1049,7 @@ export default function PublicContractSigning() {
                     <p className="text-xs text-muted-foreground mb-3">
                       {t('publicContractSigning.reviewTheContractBeforeSigningBy')}
                     </p>
-                    <Button variant="outline" size="sm" className="gap-2" onClick={handleDownloadPdf} disabled={pdfLoading}>
+                    <Button variant="outline" size="sm" className="gap-2" onClick={handleDownloadPdf} disabled={pdfLoading} loading={pdfLoading}>
                       <FileText className="h-3.5 w-3.5" />
                       {pdfLoading
                         ? (t('publicContractSigning.preparingPdf'))
@@ -1159,7 +1159,7 @@ export default function PublicContractSigning() {
 
                     <Button 
                       className="w-full gap-2"
-                      disabled={!typedSignature || !acceptedTerms || !acceptedDigital || typedSignature.length < 3 || isSubmitting}
+                      disabled={!typedSignature || !acceptedTerms || !acceptedDigital || typedSignature.length < 3 || isSubmitting} loading={isSubmitting}
                       onClick={handleDigitalSign}
                     >
                       {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <PenTool className="h-4 w-4" />}

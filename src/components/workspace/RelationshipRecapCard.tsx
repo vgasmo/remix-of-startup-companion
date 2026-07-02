@@ -87,7 +87,7 @@ export function RelationshipRecapCard({ workspaceId }: RelationshipRecapCardProp
               </p>
             </div>
           </div>
-          <Button size="sm" onClick={handleGenerate} disabled={loading} className="gap-1.5">
+          <Button size="sm" onClick={handleGenerate} disabled={loading} loading={loading} className="gap-1.5">
             <Sparkles className="h-3.5 w-3.5" />
             {t('workspace.relationshipRecap.generate', { defaultValue: 'Gerar Resumo' })}
           </Button>

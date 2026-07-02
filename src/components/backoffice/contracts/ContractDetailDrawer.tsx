@@ -1017,7 +1017,7 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
               variant="outline"
               className="w-full gap-2"
               onClick={handleDownloadPdf}
-              disabled={sending}
+              disabled={sending} loading={sending}
             >
               {sending ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileDown className="h-3 w-3" />}
               {t('contractDetail.step1DownloadPdf')}

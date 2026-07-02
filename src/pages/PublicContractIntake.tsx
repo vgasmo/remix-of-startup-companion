@@ -554,7 +554,7 @@ export default function PublicContractIntake() {
                           type="button"
                           size="sm"
                           variant="outline"
-                          disabled={isSubmitted || isUploading}
+                          disabled={isSubmitted || isUploading} loading={isUploading}
                           onClick={() => {
                             const input = document.getElementById(`upload-${doc.key}`) as HTMLInputElement | null;
                             input?.click();

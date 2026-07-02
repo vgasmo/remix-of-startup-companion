@@ -45,7 +45,7 @@ export function DownloadHtmlReportButton({
   };
 
   return (
-    <Button onClick={handle} disabled={loading} variant={variant} size={size}>
+    <Button onClick={handle} disabled={loading} loading={loading} variant={variant} size={size}>
       {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileDown className="h-4 w-4 mr-2" />}
       {loading ? (loadingLabel || t('reports.generating', 'A gerar...')) : label}
     </Button>

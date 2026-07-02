@@ -891,7 +891,7 @@ function ConvertDialog({
         </div>
         
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose} disabled={isLoading}>
+          <Button variant="outline" onClick={onClose} disabled={isLoading} loading={isLoading}>
             {t('common.cancel')}
           </Button>
           <Button 

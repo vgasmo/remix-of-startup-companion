@@ -323,7 +323,7 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
             <Button
               className="w-full gap-2"
               onClick={handleSendToSignature}
-              disabled={sendingSignature || !selectedProvider}
+              disabled={sendingSignature || !selectedProvider} loading={sendingSignature}
             >
               {sendingSignature ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

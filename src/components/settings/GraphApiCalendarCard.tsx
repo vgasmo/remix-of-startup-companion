@@ -200,7 +200,7 @@ export function GraphApiCalendarCard({ workspaceId, canEdit = true }: GraphApiCa
 
           <Button 
             onClick={handleSaveCredentials}
-            disabled={(!tenantId || !clientId) || isSaving || !canEdit}
+            disabled={(!tenantId || !clientId) || isSaving || !canEdit} loading={isSaving}
             size="sm"
             className="w-full"
           >

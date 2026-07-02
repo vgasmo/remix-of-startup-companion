@@ -353,7 +353,7 @@ export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }
             <Button variant="outline" onClick={() => setShowRequestDialog(false)}>
               {t('common.cancel', 'Cancel')}
             </Button>
-            <Button onClick={handleRequestReview} disabled={isSubmitting}>
+            <Button onClick={handleRequestReview} disabled={isSubmitting} loading={isSubmitting}>
               {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {t('governance.submitRequest', 'Submit Request')}
             </Button>
@@ -436,7 +436,7 @@ export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }
             </Button>
             <Button 
               onClick={handleApproveReview} 
-              disabled={isSubmitting || (decision === 'conditional' && !conditions.trim())}
+              disabled={isSubmitting || (decision === 'conditional' && !conditions.trim())} loading={isSubmitting}
               variant={decision === 'rejected' ? 'destructive' : 'default'}
             >
               {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

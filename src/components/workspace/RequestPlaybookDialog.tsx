@@ -166,7 +166,7 @@ export function RequestPlaybookDialog({
           <Button variant="ghost" onClick={() => setOpen(false)}>
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting || !goal.trim()}>
+          <Button onClick={handleSubmit} disabled={isSubmitting || !goal.trim()} loading={isSubmitting}>
             {isSubmitting ? (
               <>{t('common.sending')}</>
             ) : (

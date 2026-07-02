@@ -249,7 +249,7 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
                         </div>
                         <Button
                           size="sm"
-                          disabled={isSubmitting || startup.workspaces.length === 0}
+                          disabled={isSubmitting || startup.workspaces.length === 0} loading={isSubmitting}
                           onClick={() => {
                             const ws = startup.workspaces[0];
                             if (ws) handleAssign(ws.id);
@@ -292,7 +292,7 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
                     </div>
                     <Button
                       size="sm"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting} loading={isSubmitting}
                       onClick={() => handleAssign(w.id)}
                     >
                       {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t('admin.assign', { defaultValue: 'Associar' })}
@@ -367,7 +367,7 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 {t('common.cancel', { defaultValue: 'Cancelar' })}
               </Button>
-              <Button onClick={handleCreate} disabled={isSubmitting || !(newStartupName.trim() || suggestedName)}>
+              <Button onClick={handleCreate} disabled={isSubmitting || !(newStartupName.trim() || suggestedName)} loading={isSubmitting}>
                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
                 {t('admin.createAndAssign', { defaultValue: 'Criar e Atribuir' })}
               </Button>

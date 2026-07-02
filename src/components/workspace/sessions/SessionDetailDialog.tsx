@@ -290,7 +290,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                       </p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" onClick={handleResendInvites} disabled={isResending}>
+                  <Button variant="outline" size="sm" onClick={handleResendInvites} disabled={isResending} loading={isResending}>
                     <Mail className="h-4 w-4 mr-1" />
                     {isResending ? t('common.sending', 'Sending...') : t('sessions.resendInvites', 'Resend Invites')}
                   </Button>

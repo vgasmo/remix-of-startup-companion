@@ -177,7 +177,7 @@ export function NpsFeedbackDialog({ open, onOpenChange }: NpsFeedbackDialogProps
               </Button>
               <Button 
                 onClick={handleSubmit} 
-                disabled={score === null || submitting}
+                disabled={score === null || submitting} loading={submitting}
               >
                 {submitting ? t('common.submitting', 'Submitting...') : t('common.submit', 'Submit')}
               </Button>

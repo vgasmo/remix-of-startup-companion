@@ -197,7 +197,7 @@ export function BulkReportGenerator({ programId }: BulkReportGeneratorProps) {
           </div>
         </div>
 
-        <Button onClick={handleGenerateReport} disabled={loading} className="w-full">
+        <Button onClick={handleGenerateReport} disabled={loading} loading={loading} className="w-full">
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

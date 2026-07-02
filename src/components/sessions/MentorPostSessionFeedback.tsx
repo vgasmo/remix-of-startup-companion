@@ -224,7 +224,7 @@ export function MentorPostSessionFeedback({
             size="sm"
             className="gap-1.5 mr-auto"
             onClick={handleStructureNotes}
-            disabled={structuring || submitting}
+            disabled={structuring || submitting} loading={submitting}
           >
             {structuring ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
             {t('mentorFeedback.structureNotes', { defaultValue: 'Clean up & Structure' })}
@@ -232,7 +232,7 @@ export function MentorPostSessionFeedback({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleSubmit} disabled={submitting}>
+          <Button onClick={handleSubmit} disabled={submitting} loading={submitting}>
             {submitting ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             ) : (

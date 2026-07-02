@@ -152,7 +152,7 @@ export function PrioritySelector({
           
           <Button 
             onClick={handleSave} 
-            disabled={isSaving}
+            disabled={isSaving} loading={isSaving}
             className="w-full"
             size="sm"
           >

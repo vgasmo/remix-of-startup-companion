@@ -115,7 +115,7 @@ export function ProgressReportView({ workspaceId, workspace }: ProgressReportVie
             variant="default" 
             size="sm" 
             onClick={handleExportPdf}
-            disabled={isGeneratingPdf}
+            disabled={isGeneratingPdf} loading={isGeneratingPdf}
           >
             {isGeneratingPdf ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

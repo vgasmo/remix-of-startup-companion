@@ -78,7 +78,7 @@ export function QuickNoteDialog({ open, onOpenChange, workspaceId, startupName }
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleSave} disabled={!content.trim() || saving}>
+          <Button onClick={handleSave} disabled={!content.trim() || saving} loading={saving}>
             {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {t('common.save')}
           </Button>

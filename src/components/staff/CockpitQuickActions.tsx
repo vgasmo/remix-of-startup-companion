@@ -384,7 +384,7 @@ function QuickSessionDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel', { defaultValue: 'Cancelar' })}</Button>
-          <Button onClick={onSubmit} disabled={isLoading}>
+          <Button onClick={onSubmit} disabled={isLoading} loading={isLoading}>
             {isLoading ? t('common.creating', { defaultValue: 'A criar...' }) : t('cockpit.schedule', { defaultValue: 'Agendar' })}
           </Button>
         </DialogFooter>
@@ -463,7 +463,7 @@ function QuickActionDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel', { defaultValue: 'Cancelar' })}</Button>
-          <Button onClick={onSubmit} disabled={isLoading}>
+          <Button onClick={onSubmit} disabled={isLoading} loading={isLoading}>
             {isLoading ? t('common.creating', { defaultValue: 'A criar...' }) : t('actions.addAction', { defaultValue: 'Adicionar Ação' })}
           </Button>
         </DialogFooter>

@@ -169,7 +169,7 @@ export function AdminHealthTools({ programId, className }: AdminHealthToolsProps
             variant="outline"
             size="sm"
             onClick={handleRecompute}
-            disabled={recomputeLoading}
+            disabled={recomputeLoading} loading={recomputeLoading}
           >
             {recomputeLoading ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -191,7 +191,7 @@ export function AdminHealthTools({ programId, className }: AdminHealthToolsProps
               variant="outline"
               size="sm"
               onClick={handleExportPdf}
-              disabled={exportLoading}
+              disabled={exportLoading} loading={exportLoading}
             >
               {exportLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />

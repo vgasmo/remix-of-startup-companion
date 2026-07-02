@@ -777,7 +777,7 @@ export function PendingApprovalsManager() {
                   <Button variant="outline" onClick={resetClaimDialog}>{t('common.cancel', 'Cancelar')}</Button>
                   <Button 
                     onClick={handleCreateWorkspaceForClaim} 
-                    disabled={!newStartupName.trim() || !newProgramId || isCreatingWorkspace}
+                    disabled={!newStartupName.trim() || !newProgramId || isCreatingWorkspace} loading={isCreatingWorkspace}
                   >
                     <Rocket className="h-4 w-4 mr-1" />
                     {isCreatingWorkspace ? t('admin.creating', 'A criar...') : t('admin.createWorkspace', 'Criar Workspace')}
