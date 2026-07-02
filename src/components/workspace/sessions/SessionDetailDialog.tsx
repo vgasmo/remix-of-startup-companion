@@ -535,6 +535,49 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
         open={showActionDialog}
         onOpenChange={setShowActionDialog}
       />
+
+      <Dialog open={rescheduleOpen} onOpenChange={setRescheduleOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('sessions.reschedule', { defaultValue: 'Reagendar' })}</DialogTitle>
+            <DialogDescription>
+              {t('sessions.rescheduleDesc', { defaultValue: 'Escolha uma nova data e hora para esta sessão.' })}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="reschedule-dt">{t('sessions.dateTime', { defaultValue: 'Data e hora' })}</Label>
+            <Input
+              id="reschedule-dt"
+              type="datetime-local"
+              value={rescheduleValue}
+              onChange={(e) => setRescheduleValue(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRescheduleOpen(false)}>{t('common.cancel')}</Button>
+            <Button
+              disabled={!rescheduleValue || isRescheduling}
+              loading={isRescheduling}
+              onClick={async () => {
+                if (!rescheduleValue) return;
+                setIsRescheduling(true);
+                try {
+                  const iso = lisbonWallClockToUtcIso(rescheduleValue);
+                  await updateMutation.mutateAsync({ id: session.id, scheduled_at: iso });
+                  notify.success(t('sessions.rescheduled', { defaultValue: 'Sessão reagendada' }));
+                  setRescheduleOpen(false);
+                } catch {
+                  notify.error(t('sessions.failedToUpdateSession'));
+                } finally {
+                  setIsRescheduling(false);
+                }
+              }}
+            >
+              {t('sessions.reschedule', { defaultValue: 'Reagendar' })}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
