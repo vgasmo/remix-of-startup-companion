@@ -171,7 +171,14 @@ export function FounderInteractionsTab({ workspaceId }: FounderInteractionsTabPr
                   </p>
                 </div>
               </div>
-              <Button size="sm" variant="default">
+              <Button
+                size="sm"
+                variant="default"
+                onClick={() => {
+                  const params = new URLSearchParams({ tab: 'agenda', session: upcomingSession.id });
+                  window.location.assign(`/workspace/${workspaceId}?${params.toString()}`);
+                }}
+              >
                 {t('crm.viewSession')}
               </Button>
             </div>

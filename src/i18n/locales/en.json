@@ -3381,6 +3381,9 @@
     "winProbability": "Probabilidade (%)"
   },
   "dashboard": {
+    "activity": {
+      "actionCompleted": "Action completed"
+    },
     "acrossPrograms": "Across {{count}} program",
     "acrossPrograms_plural": "Across {{count}} programs",
     "allOnTrack": "All startups are on track!",
