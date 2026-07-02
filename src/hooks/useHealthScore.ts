@@ -103,7 +103,7 @@ export function useSetHealthOverride() {
       queryClient.invalidateQueries({ queryKey: ['workspace-health', vars.workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['health-distribution'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      notify.success(vars.override ? 'Override aplicado' : 'Override removido');
+      notify.success(vars.override ? t('healthScore.overrideApplied', 'Override aplicado') : t('healthScore.overrideRemoved', 'Override removido'));
     },
     onError: (error: Error) => notify.error(error.message),
   });
