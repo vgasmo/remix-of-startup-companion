@@ -2426,7 +2426,12 @@
     "warning": "Aviso",
     "workspace": "Workspace",
     "years": "anos",
-    "yes": "Sim"
+    "yes": "Sim",
+    "presets": {
+      "tomorrow": "Amanhã",
+      "threeDays": "Em 3 dias",
+      "nextWeek": "Próxima semana"
+    }
   },
   "communication": {
     "communicationLogged": "Communication logged",

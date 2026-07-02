@@ -2426,7 +2426,12 @@
     "warning": "Warning",
     "workspace": "Workspace",
     "years": "years",
-    "yes": "Yes"
+    "yes": "Yes",
+    "presets": {
+      "tomorrow": "Tomorrow",
+      "threeDays": "In 3 days",
+      "nextWeek": "Next week"
+    }
   },
   "communication": {
     "communicationLogged": "Communication logged",

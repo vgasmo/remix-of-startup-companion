@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { format, isPast, isToday, parseISO } from 'date-fns';
@@ -136,6 +137,42 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
       }
     }
   }, [milestones]);
+
+  // Deep-link highlight: ?highlight={actionId} expands the containing milestone,
+  // scrolls the row into view, and flashes it. Wired from OneThingToday links.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const highlightId = searchParams.get('highlight');
+  const highlightedOnceRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!highlightId || !actionItems) return;
+    if (highlightedOnceRef.current === highlightId) return;
+    const target = actionItems.find(a => a.id === highlightId);
+    if (!target) return;
+    highlightedOnceRef.current = highlightId;
+    if (target.milestone_id) {
+      setExpandedMilestones(prev => {
+        if (prev.has(target.milestone_id!)) return prev;
+        const next = new Set(prev);
+        next.add(target.milestone_id!);
+        return next;
+      });
+    }
+    // Defer to next frame so the collapsible content has mounted.
+    requestAnimationFrame(() => {
+      const el = document.querySelector(`[data-action-id="${highlightId}"]`) as HTMLElement | null;
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'transition-all');
+      window.setTimeout(() => {
+        el.classList.remove('ring-2', 'ring-primary', 'ring-offset-2');
+        // Clear the param so a refresh doesn't re-flash.
+        const params = new URLSearchParams(searchParams);
+        params.delete('highlight');
+        setSearchParams(params, { replace: true });
+      }, 2400);
+    });
+  }, [highlightId, actionItems, searchParams, setSearchParams]);
+
 
   const trackEngagement = useTrackEngagement(workspaceId);
   const toggleMilestoneExpanded = (id: string) => {
@@ -576,14 +613,16 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
                         </div>
                       ) : (
                         milestoneActions.map(item => (
-                          <ActionItemCard key={item.id} item={item} canWrite={canWrite} isStaff={isStaff}
-                            deliverables={deliverablesByAction?.[item.id] || []}
-                            platformDocuments={platformDocuments}
-                            onStatusChange={handleStatusChange} onDueDateChange={handleDueDateChange}
-                            onDelete={(item) => setDeleteActionTarget(item)}
-                            onAddDeliverable={handleAddDeliverable} onCompleteDeliverable={handleCompleteDeliverable}
-                            isSelected={isSelected(item.id)} onToggleSelect={toggleItem}
-                          />
+                          <div key={item.id} data-action-id={item.id} className="rounded-lg">
+                            <ActionItemCard item={item} canWrite={canWrite} isStaff={isStaff}
+                              deliverables={deliverablesByAction?.[item.id] || []}
+                              platformDocuments={platformDocuments}
+                              onStatusChange={handleStatusChange} onDueDateChange={handleDueDateChange}
+                              onDelete={(item) => setDeleteActionTarget(item)}
+                              onAddDeliverable={handleAddDeliverable} onCompleteDeliverable={handleCompleteDeliverable}
+                              isSelected={isSelected(item.id)} onToggleSelect={toggleItem}
+                            />
+                          </div>
                         ))
                       )}
                     </CardContent>
@@ -605,14 +644,16 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
           </CardHeader>
           <CardContent className="px-4 pb-4 space-y-2">
             {actionsByMilestone.unassigned.map(item => (
-              <ActionItemCard key={item.id} item={item} canWrite={canWrite} isStaff={isStaff}
-                deliverables={deliverablesByAction?.[item.id] || []}
-                platformDocuments={platformDocuments}
-                onStatusChange={handleStatusChange} onDueDateChange={handleDueDateChange}
-                onDelete={(item) => setDeleteActionTarget(item)}
-                onAddDeliverable={handleAddDeliverable} onCompleteDeliverable={handleCompleteDeliverable}
-                isSelected={isSelected(item.id)} onToggleSelect={toggleItem}
-              />
+              <div key={item.id} data-action-id={item.id} className="rounded-lg">
+                <ActionItemCard item={item} canWrite={canWrite} isStaff={isStaff}
+                  deliverables={deliverablesByAction?.[item.id] || []}
+                  platformDocuments={platformDocuments}
+                  onStatusChange={handleStatusChange} onDueDateChange={handleDueDateChange}
+                  onDelete={(item) => setDeleteActionTarget(item)}
+                  onAddDeliverable={handleAddDeliverable} onCompleteDeliverable={handleCompleteDeliverable}
+                  isSelected={isSelected(item.id)} onToggleSelect={toggleItem}
+                />
+              </div>
             ))}
           </CardContent>
         </Card>
