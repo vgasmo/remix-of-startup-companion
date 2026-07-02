@@ -222,8 +222,8 @@ export default function SearchPage() {
               <SelectValue placeholder={t("common.placeholders.allTime")} />
             </SelectTrigger>
             <SelectContent>
-              {DATE_RANGES.map(({ value, label }) => (
-                <SelectItem key={value} value={value}>{label}</SelectItem>
+              {DATE_RANGES.map(({ value, labelKey }) => (
+                <SelectItem key={value} value={value}>{t(labelKey)}</SelectItem>
               ))}
             </SelectContent>
           </Select>
