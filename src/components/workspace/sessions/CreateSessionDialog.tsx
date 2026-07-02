@@ -359,6 +359,19 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
             </div>
           </div>
 
+          <button
+            type="button"
+            onClick={() => setShowMoreOptions((v) => !v)}
+            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
+          >
+            {showMoreOptions
+              ? t('sessions.hideMoreOptions', 'Ocultar opções avançadas')
+              : t('sessions.showMoreOptions', 'Mais opções (título, participantes, agenda, ligação)')}
+          </button>
+
+          {showMoreOptions && (<>
+
+
           {sessionTemplates && sessionTemplates.length > 0 && (
             <div className="space-y-2">
               <Label>{t('sessions.useTemplateOptional', 'Use Template (optional)')}</Label>
