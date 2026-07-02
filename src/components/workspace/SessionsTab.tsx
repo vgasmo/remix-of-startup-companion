@@ -43,6 +43,16 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
   const [facilitatorSession, setFacilitatorSession] = useState<any>(null);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (canWrite && searchParams.get('new') === '1') {
+      setShowCreateDialog(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete('new');
+      setSearchParams(next, { replace: true });
+    }
+  }, [canWrite, searchParams, setSearchParams]);
 
   const { data: sessions, isLoading } = useSessions(workspaceId);
   const deleteMutation = useDeleteSession(workspaceId);
