@@ -19,6 +19,7 @@ interface WizardStagesStepProps {
 }
 
 export function WizardStagesStep({ data, onUpdate }: WizardStagesStepProps) {
+  const { t } = useTranslation();
   const allStageKeys = getAllStageKeys();
 
   const buildDefaultStages = (): DraftStage[] =>
