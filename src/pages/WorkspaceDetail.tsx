@@ -110,6 +110,12 @@ export default function WorkspaceDetail() {
   
   const handleTabChange = useCallback((value: string) => {
     setSearchParams({ tab: value }, { replace: false });
+    // Reset scroll so users land at the top of the newly selected tab content.
+    if (typeof window !== 'undefined') {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      });
+    }
   }, [setSearchParams]);
 
   // Phase 7D/7E: fire a view event when the user lands on a trackable tab.
