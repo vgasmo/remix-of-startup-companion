@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StageBadge } from '@/components/ui/StageBadge';
-import { formatDistanceToNow } from 'date-fns';
+import { formatRelativeTime } from '@/lib/dateUtils';
 import { StartupStage } from '@/types/database';
 
 interface PendingWorkspaceViewProps {
