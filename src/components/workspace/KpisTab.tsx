@@ -465,7 +465,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
                 <Button
                   size="sm"
                   onClick={handleMarkCheckin}
-                  disabled={markCheckin.isPending || progressInfo.filled === 0}
+                  disabled={markCheckin.isPending || progressInfo.filled === 0} loading={markCheckin.isPending}
                   className={cn(
                     "transition-all",
                     progressInfo.percent === 100 && "bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))] animate-pulse"
@@ -591,7 +591,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
               variant="outline"
               size="sm"
               onClick={handleMarkCheckin}
-              disabled={markCheckin.isPending}
+              disabled={markCheckin.isPending} loading={markCheckin.isPending}
             >
               <CheckCircle className="h-4 w-4 mr-2" />
             </Button>

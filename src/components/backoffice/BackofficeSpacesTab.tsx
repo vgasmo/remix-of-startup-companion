@@ -211,7 +211,7 @@ export function BackofficeSpacesTab() {
                 <Button type="button" variant="outline" onClick={() => setSpaceDialogOpen(false)}>
                   {t('common.cancel')}
                 </Button>
-                <Button type="submit" disabled={createSpace.isPending || updateSpace.isPending}>
+                <Button type="submit" disabled={createSpace.isPending || updateSpace.isPending} loading={createSpace.isPending}>
                   {t('common.save')}
                 </Button>
               </div>
@@ -396,7 +396,7 @@ export function BackofficeSpacesTab() {
               <Button type="button" variant="outline" onClick={() => setAllocationDialogOpen(false)}>
                 {t('common.cancel')}
               </Button>
-              <Button type="submit" disabled={createAllocation.isPending}>
+              <Button type="submit" disabled={createAllocation.isPending} loading={createAllocation.isPending}>
                 {t('admin.backoffice.confirmAllocation')}
               </Button>
             </div>

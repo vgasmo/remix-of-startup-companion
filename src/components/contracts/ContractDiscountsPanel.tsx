@@ -302,7 +302,7 @@ export function ContractDiscountsPanel({ contractId, monthlyFee, currency = 'EUR
               <Button
                 size="sm"
                 className="h-7 text-xs"
-                disabled={!newDiscount.discount_percentage || !newDiscount.start_date || addMutation.isPending}
+                disabled={!newDiscount.discount_percentage || !newDiscount.start_date || addMutation.isPending} loading={addMutation.isPending}
                 onClick={() => addMutation.mutate()}
               >
                 {t('discounts.save')}

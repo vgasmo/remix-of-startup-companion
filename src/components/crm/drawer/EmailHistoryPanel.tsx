@@ -98,7 +98,7 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
               size="sm"
               className="h-6 text-xs gap-1"
               onClick={handleGenerateRecap}
-              disabled={generateRecap.isPending}
+              disabled={generateRecap.isPending} loading={generateRecap.isPending}
             >
               {generateRecap.isPending ? (
                 <Loader2 className="h-3 w-3 animate-spin" />

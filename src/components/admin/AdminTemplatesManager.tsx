@@ -443,7 +443,7 @@ export function AdminTemplatesManager() {
             }}>
               {t('common.cancel', { defaultValue: 'Cancelar' })}
             </Button>
-            <Button onClick={handleSave} disabled={createTemplate.isPending || updateTemplate.isPending}>
+            <Button onClick={handleSave} disabled={createTemplate.isPending || updateTemplate.isPending} loading={createTemplate.isPending}>
               {editingTemplate ? t('common.update', { defaultValue: 'Atualizar' }) : t('common.create', { defaultValue: 'Criar' })}
             </Button>
           </DialogFooter>

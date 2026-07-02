@@ -157,7 +157,7 @@ export function TeamsIntegrationCard({ workspaceId, programId, canEdit }: TeamsI
             <Button 
               variant="outline" 
               onClick={handleSaveWebhook} 
-              disabled={!webhookUrl || updateSettings.isPending || !canEdit}
+              disabled={!webhookUrl || updateSettings.isPending || !canEdit} loading={updateSettings.isPending}
             >
               {t('settings.save')}
             </Button>
@@ -225,7 +225,7 @@ export function TeamsIntegrationCard({ workspaceId, programId, canEdit }: TeamsI
             variant="outline" 
             size="sm" 
             onClick={handleTestWebhook}
-            disabled={testWebhook.isPending}
+            disabled={testWebhook.isPending} loading={testWebhook.isPending}
             className="gap-2"
           >
             <Send className="h-3 w-3" />

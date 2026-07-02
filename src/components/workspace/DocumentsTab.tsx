@@ -554,7 +554,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
                     </div>
                     <Button 
                       onClick={handleAddLink} 
-                      disabled={addLinkMutation.isPending}
+                      disabled={addLinkMutation.isPending} loading={addLinkMutation.isPending}
                       className="w-full"
                     >
                       {t('documents.addLink')}

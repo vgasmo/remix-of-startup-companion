@@ -426,7 +426,7 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
                   </Button>
                   <Button
                     onClick={handleAddSession}
-                    disabled={createSession.isPending || !formData.title || !formData.date || !formData.startTime}
+                    disabled={createSession.isPending || !formData.title || !formData.date || !formData.startTime} loading={createSession.isPending}
                   >
                     {createSession.isPending ? t('sessions.scheduling') : t('sessions.scheduleSession')}
                   </Button>
@@ -645,7 +645,7 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
             </Button>
             <Button
               onClick={handleEditSession}
-              disabled={updateSession.isPending || !formData.title || !formData.date || !formData.startTime}
+              disabled={updateSession.isPending || !formData.title || !formData.date || !formData.startTime} loading={updateSession.isPending}
             >
               {updateSession.isPending ? t('sessions.saving') : t('sessions.saveChanges')}
             </Button>

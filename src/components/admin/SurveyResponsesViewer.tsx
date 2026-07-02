@@ -104,7 +104,7 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
 
       <Card>
         <Table>
-          <TableHeader>
+          <TableHeader sticky>
             <TableRow>
               <TableHead>{t('common.startup', 'Startup')}</TableHead>
               <TableHead>{t('common.status', 'Status')}</TableHead>

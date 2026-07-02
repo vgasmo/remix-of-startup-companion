@@ -228,7 +228,7 @@ export function ExerciseFormDialog({ open, onOpenChange, exercise }: ExerciseFor
 
         <DialogFooter className="shrink-0">
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel', 'Cancelar')}</Button>
-          <Button onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending}>
+          <Button onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending} loading={createMutation.isPending}>
             {exercise ? t('exercises.saveChanges', 'Guardar Alterações') : t('exercises.createExercise', 'Criar Exercício')}
           </Button>
         </DialogFooter>

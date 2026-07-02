@@ -284,7 +284,7 @@ export function AdminEcosystemManager() {
         ) : (
           <div className="rounded-md border overflow-x-auto">
             <Table>
-              <TableHeader>
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead>{t('common.startup', 'Startup')}</TableHead>
                   <TableHead>{t('common.program', 'Programa')}</TableHead>

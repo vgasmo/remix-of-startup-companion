@@ -208,7 +208,7 @@ export function MentorBookingPanel({
                 </Button>
                 <Button 
                   onClick={handleBookSession} 
-                  disabled={!selectedDate || !selectedSlot || createBooking.isPending}
+                  disabled={!selectedDate || !selectedSlot || createBooking.isPending} loading={createBooking.isPending}
                   className="flex-1"
                 >
                   {createBooking.isPending ? (

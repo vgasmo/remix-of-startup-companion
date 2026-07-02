@@ -102,7 +102,7 @@ export function OwnershipCard({ workspaceId, compact = false }: OwnershipCardPro
             variant="ghost"
             size="sm"
             onClick={handleMarkContact}
-            disabled={markContact.isPending}
+            disabled={markContact.isPending} loading={markContact.isPending}
             className="ml-auto"
           >
             <MessageSquare className="h-4 w-4" />
@@ -180,7 +180,7 @@ export function OwnershipCard({ workspaceId, compact = false }: OwnershipCardPro
                 variant="outline"
                 size="sm"
                 onClick={handleMarkContact}
-                disabled={markContact.isPending}
+                disabled={markContact.isPending} loading={markContact.isPending}
               >
                 <MessageSquare className="h-4 w-4 mr-2" />
                 {t('ownership.logContact')}

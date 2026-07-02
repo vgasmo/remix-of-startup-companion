@@ -217,7 +217,7 @@ export function ValuePropWizard({ workspaceId, onComplete }: ValuePropWizardProp
               {t('vp.editInputs', 'Editar Respostas')}
             </Button>
             {canSave ? (
-              <Button onClick={handleSave} disabled={createMutation.isPending}>
+              <Button onClick={handleSave} disabled={createMutation.isPending} loading={createMutation.isPending}>
                 <Check className="h-4 w-4 mr-2" />
                 {t('vp.saveVp', 'Guardar Proposta de Valor')}
               </Button>

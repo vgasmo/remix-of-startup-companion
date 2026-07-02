@@ -206,7 +206,7 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
       {/* Save Button */}
       <Button
         onClick={handleSave}
-        disabled={upsertRoute.isPending || !hasChanges || (active && selectedConsultants.length === 0)}
+        disabled={upsertRoute.isPending || !hasChanges || (active && selectedConsultants.length === 0)} loading={upsertRoute.isPending}
       >
         {upsertRoute.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
         {t('common.saveChanges', 'Guardar Alterações')}
@@ -429,7 +429,7 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
               </div>
             ) : bookingLinks && bookingLinks.length > 0 ? (
               <Table>
-                <TableHeader>
+                <TableHeader sticky>
                   <TableRow>
                     <TableHead>{t('admin.intakeRouting.link', 'Link')}</TableHead>
                     <TableHead>{t('admin.intakeRouting.createdAt', 'Created')}</TableHead>

@@ -291,7 +291,7 @@ export function TeamTab({ startupId, canEdit = false }: TeamTabProps) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
-            <Button onClick={handleSubmit} disabled={createMember.isPending || updateMember.isPending}>
+            <Button onClick={handleSubmit} disabled={createMember.isPending || updateMember.isPending} loading={createMember.isPending}>
               {editingMember ? t('team.saveChanges') : t('team.addMember')}
             </Button>
           </DialogFooter>

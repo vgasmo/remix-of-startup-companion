@@ -107,6 +107,9 @@ export function InlineKpiEditor({ workspaceId, className }: InlineKpiEditorProps
       return;
     }
 
+    // Optimistic update: snapshot previous state for rollback
+    const previousKpis = kpis;
+    setKpis(prev => prev.map(k => k.kpi_definition_id === kpiDefId ? { ...k, value } : k));
     setSaving(prev => ({ ...prev, [kpiDefId]: true }));
 
     try {
@@ -129,8 +132,13 @@ export function InlineKpiEditor({ workspaceId, className }: InlineKpiEditorProps
       notify.success(t('workspace.kpiAtualizado'));
       queryClient.invalidateQueries({ queryKey: ['workspace-kpis', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['health-score', workspaceId] });
-      await loadKpis();
     } catch (error) {
+      // Rollback on error
+      setKpis(previousKpis);
+      setValues(prev => ({
+        ...prev,
+        [kpiDefId]: previousKpis.find(k => k.kpi_definition_id === kpiDefId)?.value?.toString() || '',
+      }));
       logger.error('Error saving KPI', {}, error);
       notify.error(t('workspace.erroAoGuardarKpi'));
     } finally {

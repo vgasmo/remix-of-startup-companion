@@ -111,7 +111,7 @@ export function CommunicationsTab({ workspaceId }: CommunicationsTabProps) {
               </Button>
             </div>
           ) : (
-            <Button onClick={handleCreateAlias} disabled={createAlias.isPending}>
+            <Button onClick={handleCreateAlias} disabled={createAlias.isPending} loading={createAlias.isPending}>
               <Plus className="h-4 w-4 mr-2" />
               {t('communications.generateAlias')}
             </Button>
@@ -167,7 +167,7 @@ export function CommunicationsTab({ workspaceId }: CommunicationsTabProps) {
                   <Button 
                     onClick={handleAddCommunication} 
                     className="w-full"
-                    disabled={addCommunication.isPending}
+                    disabled={addCommunication.isPending} loading={addCommunication.isPending}
                   >
                     {t('communications.saveCommunication')}
                   </Button>

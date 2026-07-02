@@ -410,7 +410,7 @@ export function AdminWorkspacesManager() {
                 )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={createMutation.isPending}>
+              <Button type="submit" className="w-full" disabled={createMutation.isPending} loading={createMutation.isPending}>
                 {createMutation.isPending ? t('common.creating', 'A criar...') : t('admin.workspacesManager.create', 'Criar Workspace')}
               </Button>
             </form>
@@ -423,7 +423,7 @@ export function AdminWorkspacesManager() {
         ) : (
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader>
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead>{t('admin.workspacesManager.startup')}</TableHead>
                   <TableHead>{t('admin.workspacesManager.program')}</TableHead>

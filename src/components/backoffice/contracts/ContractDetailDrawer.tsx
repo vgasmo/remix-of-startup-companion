@@ -274,7 +274,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                     <Button size="sm" variant="ghost" onClick={handleCancel} className="h-8 px-2">
                       <X className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" onClick={handleSave} disabled={updateContract.isPending} className="h-8 gap-1.5">
+                    <Button size="sm" onClick={handleSave} disabled={updateContract.isPending} loading={updateContract.isPending} className="h-8 gap-1.5">
                       <Save className="h-3.5 w-3.5" />
                       {t('common.save')}
                     </Button>

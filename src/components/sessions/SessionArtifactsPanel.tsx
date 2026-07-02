@@ -162,7 +162,7 @@ export function SessionArtifactsPanel({
                 <Button 
                   size="sm" 
                   onClick={handleAddTranscript}
-                  disabled={addTranscript.isPending}
+                  disabled={addTranscript.isPending} loading={addTranscript.isPending}
                 >
                   {addTranscript.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {t('sessions.saveTranscript')}
@@ -192,7 +192,7 @@ export function SessionArtifactsPanel({
         {/* Generate button */}
         <Button 
           onClick={handleGenerate} 
-          disabled={!hasContent || generateArtifacts.isPending}
+          disabled={!hasContent || generateArtifacts.isPending} loading={generateArtifacts.isPending}
           className="w-full"
         >
           {generateArtifacts.isPending ? (

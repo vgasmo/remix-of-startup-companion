@@ -418,7 +418,7 @@ export function HealthModelViewer() {
             <Button variant="outline" onClick={() => setEditingModel(null)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleSave} disabled={upsertModel.isPending || weightsSum !== 100}>
+            <Button onClick={handleSave} disabled={upsertModel.isPending || weightsSum !== 100} loading={upsertModel.isPending}>
               {upsertModel.isPending ? t('common.loading') : t('common.save')}
             </Button>
           </DialogFooter>
@@ -503,7 +503,7 @@ function ProgramHealthModelCard({
             <div>
               <h4 className="text-sm font-medium mb-2">{t('admin.healthModel.weightsMust100')}</h4>
               <Table>
-                <TableHeader>
+                <TableHeader sticky>
                   <TableRow>
                     <TableHead>Component</TableHead>
                     <TableHead className="text-right">Weight</TableHead>

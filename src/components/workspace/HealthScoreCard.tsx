@@ -362,7 +362,7 @@ export function HealthScoreCard({ workspaceId, programId, canManage = false }: H
             <Button variant="outline" onClick={() => setShowOverrideDialog(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleOverrideSave} disabled={setOverride.isPending}>
+            <Button onClick={handleOverrideSave} disabled={setOverride.isPending} loading={setOverride.isPending}>
               {setOverride.isPending ? t('common.saving') : t('common.save')}
             </Button>
           </DialogFooter>

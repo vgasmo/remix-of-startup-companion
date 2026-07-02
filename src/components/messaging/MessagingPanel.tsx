@@ -97,7 +97,7 @@ export const MessagingPanel = React.forwardRef<HTMLDivElement, MessagingPanelPro
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 />
-                <Button onClick={handleSend} disabled={sendMessage.isPending || !newMessage.trim()}>
+                <Button onClick={handleSend} disabled={sendMessage.isPending || !newMessage.trim()} loading={sendMessage.isPending}>
                   <Send className="h-4 w-4" />
                 </Button>
               </div>

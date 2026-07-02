@@ -352,7 +352,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
               <Button type="button" variant="outline" onClick={() => setAssignDialogOpen(false)}>
                 {t('common.cancel', { defaultValue: 'Cancelar' })}
               </Button>
-              <Button type="submit" disabled={createAllocation.isPending || updateRoom.isPending}>
+              <Button type="submit" disabled={createAllocation.isPending || updateRoom.isPending} loading={createAllocation.isPending}>
                 {t('admin.backoffice.confirmAllocation', { defaultValue: 'Confirmar Atribuição' })}
               </Button>
             </DialogFooter>
@@ -380,7 +380,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
             <Button variant="outline" onClick={() => setVacateDialogOpen(false)}>
               {t('common.cancel', { defaultValue: 'Cancelar' })}
             </Button>
-            <Button variant="destructive" onClick={handleVacate} disabled={endAllocation.isPending}>
+            <Button variant="destructive" onClick={handleVacate} disabled={endAllocation.isPending} loading={endAllocation.isPending}>
               {t('admin.backoffice.confirmVacateAction', { defaultValue: 'Desocupar' })}
             </Button>
           </DialogFooter>
@@ -406,7 +406,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
             <Button variant="outline" onClick={() => setMaintenanceDialogOpen(false)}>
               {t('common.cancel', { defaultValue: 'Cancelar' })}
             </Button>
-            <Button onClick={handleMaintenance} disabled={updateRoom.isPending}>
+            <Button onClick={handleMaintenance} disabled={updateRoom.isPending} loading={updateRoom.isPending}>
               {t('common.confirm', { defaultValue: 'Confirmar' })}
             </Button>
           </DialogFooter>

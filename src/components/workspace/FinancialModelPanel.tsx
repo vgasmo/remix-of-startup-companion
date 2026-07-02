@@ -417,13 +417,13 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
                     <Download className="h-4 w-4" />
                   </Button>
                   {activeVersion.status === 'uploaded' && canWrite && (
-                    <Button size="sm" onClick={handleParse} disabled={parseModel.isPending}>
+                    <Button size="sm" onClick={handleParse} disabled={parseModel.isPending} loading={parseModel.isPending}>
                       {parseModel.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4 mr-1" />}
                       {t('financialPanel.parse', { defaultValue: 'Parse' })}
                     </Button>
                   )}
                   {activeVersion.status === 'failed' && canWrite && (
-                    <Button size="sm" variant="outline" onClick={handleParse} disabled={parseModel.isPending}>
+                    <Button size="sm" variant="outline" onClick={handleParse} disabled={parseModel.isPending} loading={parseModel.isPending}>
                       <RefreshCw className="h-4 w-4 mr-1" />
                       {t('financialPanel.retry', { defaultValue: 'Retry' })}
                     </Button>
@@ -477,7 +477,7 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
 
                   {canWrite && (
                     <div className="flex justify-end">
-                      <Button size="sm" onClick={handleSyncKpis} disabled={syncKpis.isPending}>
+                      <Button size="sm" onClick={handleSyncKpis} disabled={syncKpis.isPending} loading={syncKpis.isPending}>
                         {syncKpis.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Target className="h-4 w-4 mr-1" />}
                         {t('financialPanel.syncToKpis', { defaultValue: 'Sync to KPIs' })}
                       </Button>
@@ -517,7 +517,7 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
                           <Button 
                             size="sm" 
                             onClick={handleCreateAllInsightActions}
-                            disabled={createActionsFromInsights.isPending}
+                            disabled={createActionsFromInsights.isPending} loading={createActionsFromInsights.isPending}
                           >
                             {createActionsFromInsights.isPending ? (
                               <Loader2 className="h-4 w-4 animate-spin mr-1" />
@@ -554,7 +554,7 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
                               <SelectItem value="mentor_prep">{t('financialPanel.mentorPrep', { defaultValue: 'Mentor Prep' })}</SelectItem>
                             </SelectContent>
                           </Select>
-                          <Button onClick={handleGenerateAIReview} disabled={generateReview.isPending}>
+                          <Button onClick={handleGenerateAIReview} disabled={generateReview.isPending} loading={generateReview.isPending}>
                             {generateReview.isPending ? (
                               <Loader2 className="h-4 w-4 animate-spin mr-1" />
                             ) : (
@@ -652,7 +652,7 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
                                 size="sm" 
                                 className="w-full"
                                 onClick={handleCreateAIActions}
-                                disabled={createActionsFromAI.isPending}
+                                disabled={createActionsFromAI.isPending} loading={createActionsFromAI.isPending}
                               >
                                 {createActionsFromAI.isPending ? (
                                   <Loader2 className="h-4 w-4 animate-spin mr-1" />
@@ -713,7 +713,7 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
                                <SelectItem value="mentor_prep">{t('financialPanel.mentorPrep', { defaultValue: 'Mentor Prep' })}</SelectItem>
                             </SelectContent>
                           </Select>
-                          <Button size="sm" variant="outline" onClick={handleGenerateAIReview} disabled={generateReview.isPending}>
+                          <Button size="sm" variant="outline" onClick={handleGenerateAIReview} disabled={generateReview.isPending} loading={generateReview.isPending}>
                              {generateReview.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
                              {t('financialPanel.regenerate', { defaultValue: 'Regenerate' })}
                           </Button>

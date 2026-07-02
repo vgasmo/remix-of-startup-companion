@@ -244,7 +244,7 @@ export function AdminTagCategoriesManager() {
             />
           ) : (
             <Table>
-              <TableHeader>
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead>{t('common.name')}</TableHead>
                   <TableHead>{t('common.description')}</TableHead>
@@ -316,7 +316,7 @@ export function AdminTagCategoriesManager() {
             />
           ) : (
             <Table>
-              <TableHeader>
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead>{t('common.name')}</TableHead>
                   <TableHead>{t('admin.tags.category', 'Category')}</TableHead>

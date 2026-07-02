@@ -218,7 +218,7 @@ export function GlobalGraphApiCard() {
 
           <Button 
             onClick={handleSaveCredentials}
-            disabled={(!tenantId || !clientId) || updateSettings.isPending}
+            disabled={(!tenantId || !clientId) || updateSettings.isPending} loading={updateSettings.isPending}
             size="sm"
             className="w-full"
           >

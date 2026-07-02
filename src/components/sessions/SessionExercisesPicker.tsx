@@ -313,7 +313,7 @@ function AddExerciseDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleAdd} disabled={!selectedId || addMutation.isPending}>
+          <Button onClick={handleAdd} disabled={!selectedId || addMutation.isPending} loading={addMutation.isPending}>
             Add Exercise
           </Button>
         </DialogFooter>

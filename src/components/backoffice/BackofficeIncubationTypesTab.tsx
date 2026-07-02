@@ -226,7 +226,7 @@ export function BackofficeIncubationTypesTab() {
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   {t('common.cancel')}
                 </Button>
-                <Button type="submit" disabled={createType.isPending || updateType.isPending}>
+                <Button type="submit" disabled={createType.isPending || updateType.isPending} loading={createType.isPending}>
                   {t('common.save')}
                 </Button>
               </div>

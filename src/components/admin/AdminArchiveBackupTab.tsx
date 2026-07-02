@@ -146,7 +146,7 @@ function ContractArchiveStatus() {
 
         {/* Table */}
         <Table>
-          <TableHeader>
+          <TableHeader sticky>
             <TableRow>
               <TableHead>{t('admin.archive.colContract')}</TableHead>
               <TableHead>{t('admin.archive.colOrganization')}</TableHead>
@@ -315,7 +315,7 @@ function EcosystemSnapshotStatus() {
 
         {/* Recent snapshots */}
         <Table>
-          <TableHeader>
+          <TableHeader sticky>
             <TableRow>
               <TableHead>{t('admin.archive.colDate')}</TableHead>
               <TableHead>{t('admin.archive.colStatus')}</TableHead>

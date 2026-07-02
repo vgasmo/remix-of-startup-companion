@@ -330,7 +330,7 @@ function FileDownloadButton({ path }: { path: string }) {
     }
   };
   return (
-    <Button onClick={handleClick} disabled={getUrl.isPending} variant="default">
+    <Button onClick={handleClick} disabled={getUrl.isPending} loading={getUrl.isPending} variant="default">
       <Download className="h-4 w-4 mr-2" />
       {getUrl.isPending
         ? t('common.loading', 'A carregar…')

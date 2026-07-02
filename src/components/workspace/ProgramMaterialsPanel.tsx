@@ -130,7 +130,7 @@ function ProgramMaterialCard({ material }: { material: SupportMaterial }) {
         )}
         <div className="mt-auto flex flex-col gap-2 pt-2">
           {material.file_path && (
-            <Button onClick={handleDownload} disabled={getUrl.isPending} size="sm" className="w-full">
+            <Button onClick={handleDownload} disabled={getUrl.isPending} loading={getUrl.isPending} size="sm" className="w-full">
               <Download className="h-4 w-4 mr-2" />
               {getUrl.isPending
                 ? t('common.loading', 'A carregar…')

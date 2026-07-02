@@ -149,7 +149,7 @@ export function SessionFeedbackCard({ sessionId, sessionTitle }: SessionFeedback
           </div>
            <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('common.cancel', { defaultValue: 'Cancelar' })}</Button>
-            <Button onClick={handleSubmit} disabled={submitFeedback.isPending}>{t('common.submit', { defaultValue: 'Submeter' })}</Button>
+            <Button onClick={handleSubmit} disabled={submitFeedback.isPending} loading={submitFeedback.isPending}>{t('common.submit', { defaultValue: 'Submeter' })}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

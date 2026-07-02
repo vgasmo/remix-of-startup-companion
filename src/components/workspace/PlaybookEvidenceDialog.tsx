@@ -206,7 +206,7 @@ export function PlaybookEvidenceDialog({ workspaceId, playbookItemId, playbookIt
               <Button
                 size="sm"
                 onClick={handleSubmit}
-                disabled={submitEvidence.isPending || (!notes.trim() && !file)}
+                disabled={submitEvidence.isPending || (!notes.trim() && !file)} loading={submitEvidence.isPending}
                 className="gap-1"
               >
                 <Send className="h-3.5 w-3.5" />

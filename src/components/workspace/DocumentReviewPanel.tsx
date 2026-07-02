@@ -162,7 +162,7 @@ export function DocumentReviewPanel({ documentId, workspaceId, documentName, isS
                     {t('review.aiAnalysis', { defaultValue: 'Análise IA' })}
                   </h3>
                   {canReview && !aiReview && (
-                    <Button size="sm" onClick={handleAnalyzeWithAI} disabled={analyzeMutation.isPending}>
+                    <Button size="sm" onClick={handleAnalyzeWithAI} disabled={analyzeMutation.isPending} loading={analyzeMutation.isPending}>
                       {analyzeMutation.isPending ? (
                         <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
                       ) : (
@@ -316,7 +316,7 @@ export function DocumentReviewPanel({ documentId, workspaceId, documentName, isS
                       </Select>
                     </div>
 
-                    <Button onClick={handleSubmitReview} disabled={createReview.isPending} className="w-full">
+                    <Button onClick={handleSubmitReview} disabled={createReview.isPending} loading={createReview.isPending} className="w-full">
                       {createReview.isPending
                         ? t('common.saving', { defaultValue: 'A guardar...' })
                         : t('review.submitReview', { defaultValue: 'Submeter Avaliação' })

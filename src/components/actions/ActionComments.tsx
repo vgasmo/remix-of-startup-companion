@@ -200,7 +200,7 @@ export function ActionComments({ actionId, canWrite }: ActionCommentsProps) {
               type="submit" 
               size="icon" 
               className="shrink-0"
-              disabled={!newComment.trim() || addComment.isPending}
+              disabled={!newComment.trim() || addComment.isPending} loading={addComment.isPending}
              aria-label="Send">
               <Send className="h-4 w-4" />
             </Button>

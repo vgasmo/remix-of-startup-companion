@@ -410,7 +410,7 @@ export function AdminSupportMaterialsManager() {
             </Button>
             <Button 
               onClick={handleSave} 
-              disabled={createMutation.isPending || updateMutation.isPending}
+              disabled={createMutation.isPending || updateMutation.isPending} loading={createMutation.isPending}
             >
               {editingMaterial ? t('common.save') : t('common.create')}
             </Button>

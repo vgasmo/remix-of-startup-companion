@@ -212,7 +212,7 @@ export default function AdminDatarooms() {
                 </div>
               ) : (
                 <Table>
-                  <TableHeader>
+                  <TableHeader sticky>
                     <TableRow>
                       <TableHead>{t('common.startup')}</TableHead>
                       <TableHead>{t('common.program')}</TableHead>
@@ -290,7 +290,7 @@ export default function AdminDatarooms() {
                 </div>
               ) : (
                 <Table>
-                  <TableHeader>
+                  <TableHeader sticky>
                     <TableRow>
                       <TableHead>{t('common.name')}</TableHead>
                       <TableHead>{t('common.email')}</TableHead>

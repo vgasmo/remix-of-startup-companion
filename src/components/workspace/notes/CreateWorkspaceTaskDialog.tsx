@@ -108,7 +108,7 @@ export function CreateWorkspaceTaskDialog({ open, onOpenChange, workspaceId, sta
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
-            <Button type="submit" disabled={createMutation.isPending}>{createMutation.isPending ? t('common.creating') : t('notes.createTask')}</Button>
+            <Button type="submit" disabled={createMutation.isPending} loading={createMutation.isPending}>{createMutation.isPending ? t('common.creating') : t('notes.createTask')}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

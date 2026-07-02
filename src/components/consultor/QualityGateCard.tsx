@@ -64,7 +64,7 @@ export function QualityGateCard({ entityType, entityId, entityData, workspaceId,
               {t('quality.computeError', { defaultValue: 'Não foi possível calcular a qualidade' })}
             </span>
           </div>
-          <Button variant="outline" size="sm" onClick={handleRecompute} disabled={computeMutation.isPending}>
+          <Button variant="outline" size="sm" onClick={handleRecompute} disabled={computeMutation.isPending} loading={computeMutation.isPending}>
             <RefreshCw className={cn('h-3.5 w-3.5 mr-1', computeMutation.isPending && 'animate-spin')} />
             {t('common.retry', { defaultValue: 'Tentar novamente' })}
           </Button>
@@ -164,7 +164,7 @@ export function QualityGateCard({ entityType, entityId, entityData, workspaceId,
               </div>
             )}
             <div className="flex justify-end pt-2">
-              <Button variant="outline" size="sm" onClick={handleRecompute} disabled={computeMutation.isPending}>
+              <Button variant="outline" size="sm" onClick={handleRecompute} disabled={computeMutation.isPending} loading={computeMutation.isPending}>
                 <RefreshCw className={cn('h-3.5 w-3.5 mr-1', computeMutation.isPending && 'animate-spin')} />
                 {t('quality.recalculate', 'Recalcular')}
               </Button>

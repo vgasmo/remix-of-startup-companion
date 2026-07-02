@@ -162,13 +162,13 @@ export function FounderWelcomeWizard({ workspaceId }: Props) {
         </p>
 
         <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button variant="ghost" onClick={close} disabled={dismiss.isPending}>
+          <Button variant="ghost" onClick={close} disabled={dismiss.isPending} loading={dismiss.isPending}>
             {t('founderWizard.skip', 'Saltar por agora')}
           </Button>
-          <Button variant="outline" onClick={current.action} disabled={dismiss.isPending}>
+          <Button variant="outline" onClick={current.action} disabled={dismiss.isPending} loading={dismiss.isPending}>
             {current.cta}
           </Button>
-          <Button onClick={next} disabled={dismiss.isPending}>
+          <Button onClick={next} disabled={dismiss.isPending} loading={dismiss.isPending}>
             {step < totalSteps - 1 ? (
               <>
                 {t('founderWizard.next', 'Seguinte')} <ArrowRight className="h-4 w-4 ml-1" />

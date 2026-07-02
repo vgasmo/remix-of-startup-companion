@@ -939,7 +939,7 @@ function TemplateEditorDialog({
               <Button
                 variant="outline"
                 onClick={handleSubmitForReview}
-                disabled={actionsBlocked || submitForReview.isPending}
+                disabled={actionsBlocked || submitForReview.isPending} loading={submitForReview.isPending}
               >
                 <Send className="h-4 w-4 mr-1" />
                 {t('templates.submitForReview')}
@@ -948,7 +948,7 @@ function TemplateEditorDialog({
             {canWrite && isFounder && instance?.status !== 'completed' && (
               <Button
                 onClick={handleMarkComplete}
-                disabled={actionsBlocked || completeInstance.isPending}
+                disabled={actionsBlocked || completeInstance.isPending} loading={completeInstance.isPending}
               >
                 <Check className="h-4 w-4 mr-1" />
                 {t('templates.markComplete', 'Mark Complete')}

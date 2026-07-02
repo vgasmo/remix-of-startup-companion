@@ -213,7 +213,7 @@ export function AdminTeamsTestPanel() {
           </div>
           <Button
             onClick={handleTest}
-            disabled={testMutation.isPending || !hasGlobalConfig}
+            disabled={testMutation.isPending || !hasGlobalConfig} loading={testMutation.isPending}
             className="gap-2"
           >
             <Send className="h-4 w-4" />

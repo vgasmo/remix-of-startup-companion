@@ -309,7 +309,7 @@ export function DataQualityDashboard() {
             </div>
           ) : (
             <Table>
-              <TableHeader>
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead className="w-12"></TableHead>
                   <TableHead>{t('dataQuality.startup', 'Startup')}</TableHead>

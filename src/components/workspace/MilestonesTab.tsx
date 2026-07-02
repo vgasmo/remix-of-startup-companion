@@ -262,7 +262,7 @@ export function MilestonesTab({ workspaceId, canWrite }: MilestonesTabProps) {
             <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleCreate} disabled={createMilestone.isPending}>
+            <Button onClick={handleCreate} disabled={createMilestone.isPending} loading={createMilestone.isPending}>
               {t('common.create')}
             </Button>
           </DialogFooter>

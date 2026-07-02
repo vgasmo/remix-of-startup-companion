@@ -108,7 +108,7 @@ export function AlertRulesEditor({ programId, programName }: AlertRulesEditorPro
       </CardHeader>
       <CardContent>
         <Table>
-          <TableHeader>
+          <TableHeader sticky>
             <TableRow>
               <TableHead>{t('alertRules.type', 'Tipo')}</TableHead>
               <TableHead>{t('alertRules.threshold', 'Threshold')}</TableHead>

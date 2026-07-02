@@ -250,7 +250,7 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
                     variant="outline"
                     size="sm"
                     onClick={handleSaveTranscript}
-                    disabled={!transcript.trim() || saveTranscriptMutation.isPending}
+                    disabled={!transcript.trim() || saveTranscriptMutation.isPending} loading={saveTranscriptMutation.isPending}
                   >
                     {saveTranscriptMutation.isPending ? (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -287,7 +287,7 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
             <div className="flex flex-wrap gap-2">
               <Button
                 onClick={handleGenerate}
-                disabled={generateMutation.isPending || isCoolingDown}
+                disabled={generateMutation.isPending || isCoolingDown} loading={generateMutation.isPending}
               >
                 {generateMutation.isPending ? (
                   <>
@@ -311,7 +311,7 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
                 <Button
                   variant="outline"
                   onClick={handleSendFollowup}
-                  disabled={sendFollowupMutation.isPending}
+                  disabled={sendFollowupMutation.isPending} loading={sendFollowupMutation.isPending}
                 >
                   {sendFollowupMutation.isPending ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -476,7 +476,7 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
                         <Button
                           size="sm"
                           onClick={handleApplySelected}
-                          disabled={selectedActions.length === 0 || applyActionsMutation.isPending}
+                          disabled={selectedActions.length === 0 || applyActionsMutation.isPending} loading={applyActionsMutation.isPending}
                         >
                           {applyActionsMutation.isPending ? (
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -489,7 +489,7 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
                           size="sm"
                           variant="outline"
                           onClick={handleApplyAll}
-                          disabled={applyActionsMutation.isPending}
+                          disabled={applyActionsMutation.isPending} loading={applyActionsMutation.isPending}
                         >
                           {t('sessions.applyAll', 'Aplicar Todas')}
                         </Button>

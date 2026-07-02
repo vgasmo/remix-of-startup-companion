@@ -457,7 +457,7 @@ export function AdminProgramsManager() {
               {t('adminPrograms.continueDraft')}
             </Button>
           )}
-          <Button onClick={handleNewProgramWizard} disabled={createDraft.isPending}>
+          <Button onClick={handleNewProgramWizard} disabled={createDraft.isPending} loading={createDraft.isPending}>
             <Wand2 className="h-4 w-4 mr-1" />
             {t('adminPrograms.newProgramWizard')}
           </Button>

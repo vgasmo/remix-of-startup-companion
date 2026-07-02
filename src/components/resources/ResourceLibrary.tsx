@@ -197,7 +197,7 @@ export function ResourceLibrary({ programId }: ResourceLibraryProps) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
-            <Button onClick={handleSubmit} disabled={createResource.isPending}>{t('resources.addResource', 'Adicionar Recurso')}</Button>
+            <Button onClick={handleSubmit} disabled={createResource.isPending} loading={createResource.isPending}>{t('resources.addResource', 'Adicionar Recurso')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

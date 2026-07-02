@@ -570,7 +570,7 @@ export function ActionItemsTab({ workspaceId, canWrite }: ActionItemsTabProps) {
             <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleCreate} disabled={createAction.isPending || !newAction.milestone_id}>
+            <Button onClick={handleCreate} disabled={createAction.isPending || !newAction.milestone_id} loading={createAction.isPending}>
               {t('common.create')}
             </Button>
           </DialogFooter>

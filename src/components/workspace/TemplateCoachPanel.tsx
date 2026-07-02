@@ -340,7 +340,7 @@ export function TemplateCoachPanel({
                   size="sm"
                   variant="outline"
                   onClick={handleCreateActions}
-                  disabled={createActions.isPending}
+                  disabled={createActions.isPending} loading={createActions.isPending}
                   className="w-full mt-2"
                 >
                   {createActions.isPending ? (
@@ -433,7 +433,7 @@ export function TemplateCoachPanel({
                 size="sm"
                 variant="ghost"
                 onClick={handleGenerate}
-                disabled={generateCoach.isPending}
+                disabled={generateCoach.isPending} loading={generateCoach.isPending}
                 className="gap-1"
               >
                 <Sparkles className="h-3 w-3" />

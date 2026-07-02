@@ -432,7 +432,7 @@ export function SpaceOperationsConsole() {
             variant="outline"
             size="sm"
             className="gap-2 text-warning border-warning/30 hover:bg-warning/10 dark:hover:bg-warning/20"
-            disabled={cleanupMutation.isPending}
+            disabled={cleanupMutation.isPending} loading={cleanupMutation.isPending}
             onClick={() => cleanupMutation.mutate(staleRoomIds)}
           >
             <AlertTriangle className="h-3.5 w-3.5" />

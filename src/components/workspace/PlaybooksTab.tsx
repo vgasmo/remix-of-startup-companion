@@ -328,7 +328,7 @@ export function PlaybooksTab({ workspaceId, currentStage, programId, canWrite }:
                             <AlertDialogTrigger asChild>
                               <Button
                                 className="flex-1 gap-2"
-                                disabled={instantiate.isPending || !canWrite}
+                                disabled={instantiate.isPending || !canWrite} loading={instantiate.isPending}
                               >
                                 <Play className="h-4 w-4" />
                                 {instantiate.isPending 

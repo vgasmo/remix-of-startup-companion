@@ -156,22 +156,22 @@ export function AdminTemplateRequestsManager() {
                   </div>
                   <div className="flex flex-col gap-1 shrink-0">
                     {r.status === 'pending' && (
-                      <Button size="sm" variant="outline" disabled={update.isPending} onClick={() => setStatus(r, 'in_progress')}>
+                      <Button size="sm" variant="outline" disabled={update.isPending} loading={update.isPending} onClick={() => setStatus(r, 'in_progress')}>
                         {t('templateRequests.startWork', { defaultValue: 'Iniciar' })}
                       </Button>
                     )}
                     {(r.status === 'pending' || r.status === 'in_progress') && (
                       <>
-                        <Button size="sm" disabled={update.isPending} onClick={() => { setResolving(r); setNote(r.admin_note || ''); setSelectedTemplateId(r.fulfilled_template_id || ''); }}>
+                        <Button size="sm" disabled={update.isPending} loading={update.isPending} onClick={() => { setResolving(r); setNote(r.admin_note || ''); setSelectedTemplateId(r.fulfilled_template_id || ''); }}>
                           {t('templateRequests.resolve', { defaultValue: 'Resolver' })}
                         </Button>
-                        <Button size="sm" variant="ghost" disabled={update.isPending} onClick={() => setStatus(r, 'rejected')}>
+                        <Button size="sm" variant="ghost" disabled={update.isPending} loading={update.isPending} onClick={() => setStatus(r, 'rejected')}>
                           {t('templateRequests.reject', { defaultValue: 'Rejeitar' })}
                         </Button>
                       </>
                     )}
                     {(r.status === 'fulfilled' || r.status === 'rejected') && (
-                      <Button size="sm" variant="ghost" disabled={update.isPending} onClick={() => reopen(r)} className="gap-1">
+                      <Button size="sm" variant="ghost" disabled={update.isPending} loading={update.isPending} onClick={() => reopen(r)} className="gap-1">
                         <RotateCcw className="h-3 w-3" />
                         {t('templateRequests.reopen', { defaultValue: 'Reabrir' })}
                       </Button>
@@ -219,7 +219,7 @@ export function AdminTemplateRequestsManager() {
           </div>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => { setResolving(null); setNote(''); setSelectedTemplateId(''); }}>{t('common.cancel')}</Button>
-            <Button size="sm" onClick={submitResolve} disabled={update.isPending || !selectedTemplateId}>
+            <Button size="sm" onClick={submitResolve} disabled={update.isPending || !selectedTemplateId} loading={update.isPending}>
               {t('templateRequests.markFulfilled', { defaultValue: 'Marcar como resolvido' })}
             </Button>
           </DialogFooter>

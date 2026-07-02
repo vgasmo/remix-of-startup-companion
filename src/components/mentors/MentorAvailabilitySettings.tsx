@@ -275,7 +275,7 @@ export function MentorAvailabilitySettings() {
         {/* Save */}
         {hasChanges && (
           <div className="flex justify-end pt-4 border-t">
-            <Button onClick={handleSave} disabled={setAvailability.isPending}>
+            <Button onClick={handleSave} disabled={setAvailability.isPending} loading={setAvailability.isPending}>
               {setAvailability.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />

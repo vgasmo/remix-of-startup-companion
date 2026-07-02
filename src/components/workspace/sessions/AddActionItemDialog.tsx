@@ -147,7 +147,7 @@ export function AddActionItemDialog({ workspaceId, sessionId, open, onOpenChange
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t('common.cancel', { defaultValue: 'Cancelar' })}
             </Button>
-            <Button type="submit" disabled={createMutation.isPending}>
+            <Button type="submit" disabled={createMutation.isPending} loading={createMutation.isPending}>
               {createMutation.isPending ? t('common.creating', { defaultValue: 'A criar...' }) : t('actions.createAction', { defaultValue: 'Criar Ação' })}
             </Button>
           </DialogFooter>
