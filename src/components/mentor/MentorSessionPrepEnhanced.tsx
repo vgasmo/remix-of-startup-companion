@@ -73,7 +73,7 @@ export function MentorSessionPrepEnhanced({ workspaces }: MentorSessionPrepEnhan
       done: w.pendingActionsCount === 0,
       icon: Target,
       detail: w.pendingActionsCount > 0 ? `${w.pendingActionsCount} pendentes` : undefined,
-      path: `/workspace/${w.id}?tab=milestones-actions-actions`
+      path: `/workspace/${w.id}?tab=milestones-actions&sub=actions`
     },
     {
       label: t('mentorPrep.lastSession', { defaultValue: 'Notas da última sessão' }),

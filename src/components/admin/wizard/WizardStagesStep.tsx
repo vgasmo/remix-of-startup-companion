@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +19,7 @@ interface WizardStagesStepProps {
 }
 
 export function WizardStagesStep({ data, onUpdate }: WizardStagesStepProps) {
+  const { t } = useTranslation();
   const allStageKeys = getAllStageKeys();
 
   const buildDefaultStages = (): DraftStage[] =>
@@ -143,12 +145,12 @@ export function WizardStagesStep({ data, onUpdate }: WizardStagesStepProps) {
                   <Badge variant="outline" className="text-xs">
                     {stage.stage_key}
                   </Badge>
-                  <span className="text-xs text-muted-foreground">Position: {stage.position + 1}</span>
+                  <span className="text-xs text-muted-foreground">{t('admin.wizard.stages.position')}: {stage.position + 1}</span>
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="space-y-1">
-                    <Label className="text-xs">Nome a apresentar</Label>
+                    <Label className="text-xs">{t('admin.wizard.stages.displayName')}</Label>
                     <Input
                       value={stage.name}
                       onChange={(e) => handleFieldChange(stage.stage_key, 'name', e.target.value)}
@@ -156,7 +158,7 @@ export function WizardStagesStep({ data, onUpdate }: WizardStagesStepProps) {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Description</Label>
+                    <Label className="text-xs">{t('admin.wizard.stages.description')}</Label>
                     <Textarea
                       value={stage.description || ''}
                       onChange={(e) => handleFieldChange(stage.stage_key, 'description', e.target.value)}

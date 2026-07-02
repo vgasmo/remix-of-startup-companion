@@ -207,7 +207,7 @@ export function useUpdateActionItem(workspaceId: string) {
                summary: `"${result.title}" has been assigned to ${ownerName}`,
                startup_name: startupName,
                fields: [{ name: 'Assignee', value: ownerName }],
-               link: `${getAppUrl()}/workspace/${workspaceId}?tab=milestones-actions-actions`,
+               link: `${getAppUrl()}/workspace/${workspaceId}?tab=milestones-actions&sub=actions`,
                linkText: 'View Action',
              },
            }).catch((err) => logger.warn('action_assign_notification_failed', { error: String(err) }));

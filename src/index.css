@@ -1019,15 +1019,8 @@
   padding-top: env(safe-area-inset-top, 0);
 }
 
-/* P3: Focus indicators for accessibility */
-:focus-visible {
-  @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
-}
-
-.dark :focus-visible {
-  --tw-ring-offset-color: hsl(var(--background));
-  --tw-ring-color: hsl(var(--accent));
-}
+/* Focus indicators: defined once in @layer base (line ~221). Dark mode uses the
+   same primary ring so keyboard focus stays visible on dark surfaces. */
 
 /* Smooth global defaults for interactive elements */
 button, a, [role="button"], [role="tab"], .interactive-card, [data-radix-collection-item] {

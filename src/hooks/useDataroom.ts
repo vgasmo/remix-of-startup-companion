@@ -157,7 +157,7 @@ export function useCreateDataroomItem() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['dataroom-items', data.dataroom_id] });
-      notify.success(i18n.t('common.created'));
+      // Toast owned by DataroomTab.tsx (t('dataroom.itemAdded')) to match update/delete/link pattern.
     },
   });
 }

@@ -100,6 +100,9 @@ export default function WorkspaceDetail() {
       setSearchParams({ tab: 'documents', sub: 'dataroom' }, { replace: true });
     } else if (currentTab === 'sessions' || currentTab === 'calendar') {
       setSearchParams({ tab: 'agenda' }, { replace: true });
+    } else if (currentTab === 'milestones-actions-actions') {
+      // Legacy token from older links/emails — canonical is milestones-actions + sub=actions
+      setSearchParams({ tab: 'milestones-actions', sub: 'actions' }, { replace: true });
     }
   }, [currentTab, setSearchParams]);
   

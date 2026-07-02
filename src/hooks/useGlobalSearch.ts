@@ -151,7 +151,7 @@ export function useGlobalSearch(filters: SearchFilters) {
             title: a.title,
             snippet: a.description?.slice(0, 150) || '',
             updated_at: a.updated_at,
-            url: `/workspace/${a.workspace_id}?tab=milestones-actions-actions`,
+            url: `/workspace/${a.workspace_id}?tab=milestones-actions&sub=actions`,
             workspace_name: (a.workspaces as any)?.startup?.name,
           }));
 
