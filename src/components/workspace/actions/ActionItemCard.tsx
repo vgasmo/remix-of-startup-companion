@@ -70,16 +70,18 @@ export const ActionItemCard = memo(function ActionItemCard({
   const completedDeliverables = deliverables.filter(d => d.completed_at).length;
   const allDeliverablesCompleted = totalDeliverables > 0 && completedDeliverables === totalDeliverables;
 
-  // Status options: founders can only set pending/in_progress; staff can also set completed
+  // Status options: founders can set pending/in_progress/awaiting_validation; only staff can set completed.
   const statusOptions = isStaff
     ? [
         { value: 'pending', label: t('status.open', 'Aberta') },
         { value: 'in_progress', label: t('status.doing', 'A Fazer') },
+        { value: 'awaiting_validation', label: t('actions.awaitingValidation', 'A aguardar validação') },
         { value: 'completed', label: t('status.done', 'Concluída') },
       ]
     : [
         { value: 'pending', label: t('status.open', 'Aberta') },
         { value: 'in_progress', label: t('status.doing', 'A Fazer') },
+        { value: 'awaiting_validation', label: t('actions.requestValidation', 'Concluído — pedir validação') },
       ];
 
   const handleStatusChange = (newStatus: string) => {
@@ -87,7 +89,7 @@ export const ActionItemCard = memo(function ActionItemCard({
       notify.error(t('actions.onlyStaffCanComplete', 'Apenas o consultor pode marcar como concluída'));
       return;
     }
-    if (newStatus === 'completed' && totalDeliverables > 0 && !allDeliverablesCompleted) {
+    if ((newStatus === 'completed' || newStatus === 'awaiting_validation') && totalDeliverables > 0 && !allDeliverablesCompleted) {
       notify.error(t('actions.deliverablesRequired', 'Todos os entregáveis devem estar concluídos antes de concluir a ação'));
       return;
     }
