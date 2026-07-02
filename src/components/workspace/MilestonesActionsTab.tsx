@@ -113,7 +113,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
       let passes = true;
       if (filters.priority !== 'all' && item.priority !== filters.priority) passes = false;
       if (filters.overdue) {
-        const isOverdue = item.due_date && isPast(parseISO(item.due_date)) && !isToday(parseISO(item.due_date)) && item.status !== 'completed';
+        const isOverdue = item.due_date && isPast(parseISO(item.due_date)) && !isToday(parseISO(item.due_date)) && item.status !== 'completed' && item.status !== 'awaiting_validation';
         if (!isOverdue) passes = false;
       }
       if (!passes) return;
