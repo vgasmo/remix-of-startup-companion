@@ -457,6 +457,9 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
               </Select>
             </div>
           </div>
+          </>)}
+
+
 
           <div className="flex items-center gap-2 text-sm">
             <button
