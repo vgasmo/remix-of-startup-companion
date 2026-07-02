@@ -503,6 +503,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
         statusOptions={[
           { value: 'pending', label: t('actions.open') },
           { value: 'in_progress', label: t('actions.doing') },
+          { value: 'awaiting_validation', label: t('actions.awaitingValidation', 'A aguardar validação') },
           { value: 'completed', label: t('actions.done') },
         ]}
         getItemId={(item) => item.id}
