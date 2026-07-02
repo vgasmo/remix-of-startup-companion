@@ -331,7 +331,7 @@ export const FounderDashboard = memo(function FounderDashboard({
         return (
           <BrandSurface
             intensity="hero"
-            className="surface-hero rounded-2xl p-4 sm:p-7 overflow-hidden animate-fade-in-up stagger-1"
+            className="surface-hero rounded-2xl p-4 sm:p-6 overflow-hidden animate-fade-in-up stagger-1"
           >
 
             <div className="flex items-start gap-3 sm:gap-4">

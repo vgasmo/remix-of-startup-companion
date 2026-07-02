@@ -279,13 +279,13 @@ export function getAlertCTA(ruleType: string, workspaceId: string): { label: str
 export function getSeverityConfig(severity: string) {
   switch (severity) {
     case 'critical':
-      return { color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400', icon: '🔴', label: 'Critical' };
+      return { color: 'bg-destructive/10 text-destructive border border-destructive/25', icon: '🔴', label: 'Critical' };
     case 'warning':
-      return { color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400', icon: '🟠', label: 'Warning' };
+      return { color: 'bg-warning/10 text-warning border border-warning/25', icon: '🟠', label: 'Warning' };
     case 'info':
-      return { color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400', icon: '🔵', label: 'Info' };
+      return { color: 'bg-info/10 text-info border border-info/25', icon: '🔵', label: 'Info' };
     default:
-      return { color: 'bg-muted text-muted-foreground', icon: '⚪', label: 'Unknown' };
+      return { color: 'bg-muted text-muted-foreground border border-border', icon: '⚪', label: 'Unknown' };
   }
 }
 
