@@ -182,6 +182,52 @@ serve(async (req) => {
         if (ok) createdCount++;
       }
 
+      // Founder actions awaiting validation by staff
+      const { data: awaitingValidation } = await supabase
+        .from("action_items")
+        .select("id")
+        .eq("workspace_id", workspace.id)
+        .eq("status", "awaiting_validation");
+
+      if (awaitingValidation && awaitingValidation.length > 0) {
+        const ok = await upsertWorkQueueItem({
+          workspace_id: workspace.id,
+          type: "validate_actions",
+          title: `${startupName}: ${awaitingValidation.length} ${awaitingValidation.length === 1 ? "ação para validar" : "ações para validar"}`,
+          description: "Founder marcou como concluído. Aguarda a sua validação.",
+          priority: "high",
+          due_at: new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+          status: "open",
+          assigned_to: leadConsultant,
+          evidence_json: { count: awaitingValidation.length },
+        });
+        if (ok) createdCount++;
+      }
+
+      // Submitted but unreviewed check-ins
+      const { data: unreviewedCheckins } = await supabase
+        .from("checkin_instances")
+        .select("id")
+        .eq("workspace_id", workspace.id)
+        .eq("status", "submitted")
+        .is("reviewed_at", null);
+
+      if (unreviewedCheckins && unreviewedCheckins.length > 0) {
+        const ok = await upsertWorkQueueItem({
+          workspace_id: workspace.id,
+          type: "review_checkin",
+          title: `${startupName}: Check-in por rever`,
+          description: `${unreviewedCheckins.length} check-in(s) submetido(s) a aguardar revisão`,
+          priority: "medium",
+          due_at: new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+          status: "open",
+          assigned_to: leadConsultant,
+          evidence_json: { count: unreviewedCheckins.length },
+        });
+        if (ok) createdCount++;
+      }
+
+
       // Update health confidence
       let confidence = "high";
       let reason = "Dados completos";
