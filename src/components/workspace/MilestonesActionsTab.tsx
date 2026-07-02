@@ -171,7 +171,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
     if (!canWrite) return;
     try {
       await updateMilestone.mutateAsync({ id: milestone.id, status });
-      if (status === 'completed') showQuickWin('milestone_completed');
+      // Confetti is handled by useMilestones' onSuccess (single source of truth).
     } catch { notify.error(t('milestones.failedToUpdate')); }
   };
 
