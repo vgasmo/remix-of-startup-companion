@@ -188,9 +188,11 @@ export function ActivityFeed() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <p className="font-medium text-sm truncate">{activity.title}</p>
-                          {activity.description && (
+                          {(activity.description || activity.metadata?.i18nDescription) && (
                             <p className="text-xs text-muted-foreground truncate">
-                              {activity.description}
+                              {activity.metadata?.i18nDescription
+                                ? t(activity.metadata.i18nDescription, { defaultValue: activity.description || '' })
+                                : activity.description}
                             </p>
                           )}
                         </div>
