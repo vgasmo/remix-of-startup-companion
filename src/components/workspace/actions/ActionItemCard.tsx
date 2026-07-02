@@ -203,6 +203,36 @@ export const ActionItemCard = memo(function ActionItemCard({
 
           <span className={`text-xs ${priorityConfig.color}`}>{t(priorityConfig.labelKey)}</span>
 
+          {item.status === 'awaiting_validation' && (
+            <Badge variant="outline" className="text-xs gap-1 bg-info/10 text-info border-info/30">
+              <Hourglass className="h-3 w-3" />
+              {t('actions.awaitingValidation', 'A aguardar validação')}
+            </Badge>
+          )}
+
+          {isStaff && item.status === 'awaiting_validation' && canWrite && (
+            <>
+              <Button size="sm" variant="outline" className="h-6 px-2 text-xs gap-1"
+                onClick={() => onStatusChange(item, 'completed' as ActionStatus)}>
+                <Check className="h-3 w-3" />
+                {t('actions.validate', 'Validar')}
+              </Button>
+              <Button size="sm" variant="ghost" className="h-6 px-2 text-xs gap-1 text-muted-foreground"
+                onClick={() => onStatusChange(item, 'in_progress' as ActionStatus)}>
+                <Undo2 className="h-3 w-3" />
+                {t('actions.return', 'Devolver')}
+              </Button>
+            </>
+          )}
+
+          {!isStaff && item.status === 'awaiting_validation' && canWrite && (
+            <Button size="sm" variant="ghost" className="h-6 px-2 text-xs gap-1 text-muted-foreground"
+              onClick={() => onStatusChange(item, 'in_progress' as ActionStatus)}>
+              <Undo2 className="h-3 w-3" />
+              {t('actions.revertToInProgress', 'Voltar para em curso')}
+            </Button>
+          )}
+
           {/* Deliverables count badge */}
           {totalDeliverables > 0 && (
             <Badge variant={allDeliverablesCompleted ? 'default' : 'outline'} className="text-xs gap-1">
