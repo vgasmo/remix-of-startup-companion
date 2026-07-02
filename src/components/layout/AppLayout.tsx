@@ -12,6 +12,7 @@ import { OfflineBadge } from '@/components/ui/OfflineBadge';
 import { GlobalEcosystemCopilot } from '@/components/ai/GlobalEcosystemCopilot';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspaces } from '@/hooks/useWorkspaces';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { cn } from '@/lib/utils';
 
 interface AppLayoutProps {
@@ -27,6 +28,7 @@ export const AppLayout = forwardRef<HTMLDivElement, AppLayoutProps>(function App
 ) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  useDocumentTitle(title);
 
   useEffect(() => {
     setMounted(true);
