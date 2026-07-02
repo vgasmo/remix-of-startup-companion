@@ -57,6 +57,8 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   missing_kpis: <TrendingUp className="h-4 w-4" />,
   stage_gate_review: <Shield className="h-4 w-4" />,
   escalation: <Bell className="h-4 w-4" />,
+  validate_actions: <Hourglass className="h-4 w-4" />,
+  review_checkin: <ClipboardCheck className="h-4 w-4" />,
 };
 
 // Note: Type labels are used dynamically with i18n keys workQueue.types.{key}
@@ -69,6 +71,8 @@ const TYPE_KEYS = [
   'missing_kpis',
   'stage_gate_review',
   'escalation',
+  'validate_actions',
+  'review_checkin',
 ];
 
 const PRIORITY_COLORS: Record<string, string> = {
