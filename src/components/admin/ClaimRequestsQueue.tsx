@@ -153,7 +153,7 @@ export function ClaimRequestsQueue() {
               size="sm"
               variant="default"
               className="h-8"
-              disabled={!selectedWorkspaces[claim.id] || approveMutation.isPending}
+              disabled={!selectedWorkspaces[claim.id] || approveMutation.isPending} loading={approveMutation.isPending}
               onClick={() => approveMutation.mutate({ claimId: claim.id, workspaceId: selectedWorkspaces[claim.id] })}
             >
               <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -163,7 +163,7 @@ export function ClaimRequestsQueue() {
               size="sm"
               variant="ghost"
               className="h-8 text-destructive"
-              disabled={rejectMutation.isPending}
+              disabled={rejectMutation.isPending} loading={rejectMutation.isPending}
               onClick={() => rejectMutation.mutate(claim.id)}
             >
               <XCircle className="h-3 w-3" />

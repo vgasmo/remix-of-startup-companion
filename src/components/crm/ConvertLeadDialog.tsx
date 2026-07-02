@@ -124,7 +124,7 @@ export function ConvertLeadDialog({ item, open, onOpenChange, onConverted }: Con
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={convert.isPending}>
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleConvert} disabled={!programId || convert.isPending}>
+          <Button onClick={handleConvert} disabled={!programId || convert.isPending} loading={convert.isPending}>
             {convert.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t('crm.convertToWorkspace.confirm', { defaultValue: 'Converter' })}
           </Button>

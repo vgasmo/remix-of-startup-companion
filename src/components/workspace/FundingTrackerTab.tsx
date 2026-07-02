@@ -413,7 +413,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowRoundDialog(false)}>{t('common.cancel')}</Button>
-              <Button type="submit" disabled={createRound.isPending}>{t('common.create')}</Button>
+              <Button type="submit" disabled={createRound.isPending} loading={createRound.isPending}>{t('common.create')}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -461,7 +461,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowInvestorDialog(false)}>{t('common.cancel')}</Button>
-              <Button type="submit" disabled={createInvestor.isPending}>{t('funding.addInvestor')}</Button>
+              <Button type="submit" disabled={createInvestor.isPending} loading={createInvestor.isPending}>{t('funding.addInvestor')}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -507,7 +507,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowCapTableDialog(false)}>{t('common.cancel')}</Button>
-              <Button type="submit" disabled={createCapEntry.isPending}>{t('funding.addEntry')}</Button>
+              <Button type="submit" disabled={createCapEntry.isPending} loading={createCapEntry.isPending}>{t('funding.addEntry')}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

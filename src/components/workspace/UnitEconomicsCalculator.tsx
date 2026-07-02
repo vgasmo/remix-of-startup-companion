@@ -418,7 +418,7 @@ export function UnitEconomicsCalculator({ workspaceId }: UnitEconomicsCalculator
           <div className="flex justify-end">
             <Button 
               onClick={handleSave} 
-              disabled={!hasChanges || saveUnitEconomics.isPending}
+              disabled={!hasChanges || saveUnitEconomics.isPending} loading={saveUnitEconomics.isPending}
             >
               {saveUnitEconomics.isPending ? (
                 <>

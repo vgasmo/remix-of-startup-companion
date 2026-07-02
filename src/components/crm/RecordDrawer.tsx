@@ -701,7 +701,7 @@ function IntakeActionsForDrawer({ item, user }: { item: FunnelItem; user: any })
           <Button
             size="sm"
             className="h-8 text-xs gap-1.5"
-            disabled={createIntake.isPending}
+            disabled={createIntake.isPending} loading={createIntake.isPending}
             onClick={async () => {
               try {
                 const result = await createIntake.mutateAsync({

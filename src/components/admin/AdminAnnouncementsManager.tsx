@@ -337,7 +337,7 @@ export function AdminAnnouncementsManager() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={createMutation.isPending}>
+              <Button type="submit" className="w-full" disabled={createMutation.isPending} loading={createMutation.isPending}>
                 {createMutation.isPending ? t('common.sending') : t('admin.announcements.send')}
               </Button>
             </form>

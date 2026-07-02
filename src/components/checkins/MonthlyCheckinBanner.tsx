@@ -205,7 +205,7 @@ export function MonthlyCheckinBanner({ workspaceId }: MonthlyCheckinBannerProps)
             <Button variant="outline" onClick={() => setShowForm(false)}>
               {t('common.cancel', 'Cancel')}
             </Button>
-            <Button onClick={handleSubmit} disabled={submitCheckin.isPending}>
+            <Button onClick={handleSubmit} disabled={submitCheckin.isPending} loading={submitCheckin.isPending}>
               {submitCheckin.isPending ? t('monthlyWins.submitting', 'Submitting...') : t('monthlyWins.submit', 'Submit Monthly Wins')}
             </Button>
           </DialogFooter>

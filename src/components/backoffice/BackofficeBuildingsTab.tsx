@@ -143,7 +143,7 @@ export function BackofficeBuildingsTab() {
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   {t('common.cancel')}
                 </Button>
-                <Button type="submit" disabled={createBuilding.isPending || updateBuilding.isPending}>
+                <Button type="submit" disabled={createBuilding.isPending || updateBuilding.isPending} loading={createBuilding.isPending}>
                   {t('common.save')}
                 </Button>
               </div>

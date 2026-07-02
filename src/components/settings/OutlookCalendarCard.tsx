@@ -189,7 +189,7 @@ export function OutlookCalendarCard({ workspaceId, canEdit = true }: OutlookCale
                 <Button 
                   variant="outline" 
                   onClick={handleSaveWebhook} 
-                  disabled={!webhookUrl || updateSettings.isPending || !canEdit}
+                  disabled={!webhookUrl || updateSettings.isPending || !canEdit} loading={updateSettings.isPending}
                 >
                   {t('common.save', 'Guardar')}
                 </Button>

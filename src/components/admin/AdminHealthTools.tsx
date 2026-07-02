@@ -225,7 +225,7 @@ export function AdminHealthTools({ programId, className }: AdminHealthToolsProps
               variant="secondary"
               size="sm"
               onClick={handleApplyTemplate}
-              disabled={!selectedTemplate || !programId || applyTemplate.isPending}
+              disabled={!selectedTemplate || !programId || applyTemplate.isPending} loading={applyTemplate.isPending}
             >
               {applyTemplate.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -276,7 +276,7 @@ export function AdminHealthTools({ programId, className }: AdminHealthToolsProps
                   </Button>
                   <Button 
                     onClick={handleSaveAsTemplate}
-                    disabled={!newTemplateName || createTemplate.isPending}
+                    disabled={!newTemplateName || createTemplate.isPending} loading={createTemplate.isPending}
                   >
                     {createTemplate.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />

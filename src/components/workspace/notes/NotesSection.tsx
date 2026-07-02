@@ -62,7 +62,7 @@ export function NotesSection({ workspaceId, canManage }: NotesSectionProps) {
                   {isPrivate ? (<><Lock className="h-4 w-4" />{t('notes.privateLabel')}</>) : (<><Unlock className="h-4 w-4" />{t('notes.visibleLabel')}</>)}
                 </Label>
               </div>
-              <Button onClick={handleSubmit} disabled={createNote.isPending || !newNote.trim()}>
+              <Button onClick={handleSubmit} disabled={createNote.isPending || !newNote.trim()} loading={createNote.isPending}>
                 <Plus className="h-4 w-4 mr-2" />
                 {createNote.isPending ? t('notes.adding') : t('notes.addNote')}
               </Button>

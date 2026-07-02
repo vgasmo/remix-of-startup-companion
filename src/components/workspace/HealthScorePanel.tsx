@@ -81,7 +81,7 @@ export function HealthScorePanel({
               variant="ghost" 
               size="sm" 
               onClick={handleRecompute}
-              disabled={recomputeHealth.isPending}
+              disabled={recomputeHealth.isPending} loading={recomputeHealth.isPending}
               className="h-7 text-xs"
             >
               <RefreshCw className={`h-3 w-3 mr-1 ${recomputeHealth.isPending ? 'animate-spin' : ''}`} />
@@ -143,7 +143,7 @@ export function HealthScorePanel({
                 <Button 
                   size="sm" 
                   onClick={handleSaveNotes}
-                  disabled={updateHealthNotes.isPending}
+                  disabled={updateHealthNotes.isPending} loading={updateHealthNotes.isPending}
                   className="h-7"
                 >
                   <Check className="h-3 w-3 mr-1" />

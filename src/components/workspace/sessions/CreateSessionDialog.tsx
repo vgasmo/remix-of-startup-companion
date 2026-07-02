@@ -659,7 +659,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createMutation.isPending || isSending}>
+            <Button type="submit" disabled={createMutation.isPending || isSending} loading={createMutation.isPending}>
               {(createMutation.isPending || isSending) ? 'Scheduling...' : 'Schedule Session'}
             </Button>
           </DialogFooter>

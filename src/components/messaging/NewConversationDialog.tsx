@@ -161,7 +161,7 @@ export function NewConversationDialog({ open, onOpenChange, onConversationCreate
             </Button>
             <Button 
               onClick={handleCreate} 
-              disabled={selectedUsers.length === 0 || createConversation.isPending}
+              disabled={selectedUsers.length === 0 || createConversation.isPending} loading={createConversation.isPending}
             >
               {t('messaging.startConversation', 'Iniciar Conversa')}
             </Button>

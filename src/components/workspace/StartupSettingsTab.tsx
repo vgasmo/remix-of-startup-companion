@@ -496,7 +496,7 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
           </div>
 
           <div className="flex justify-end">
-            <Button type="submit" disabled={updateMutation.isPending}>
+            <Button type="submit" disabled={updateMutation.isPending} loading={updateMutation.isPending}>
               {updateMutation.isPending ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : null}

@@ -246,7 +246,7 @@ export function WorkspaceCalendarCard({ workspaceId, canEdit = true }: Workspace
                   <Button 
                     variant="outline" 
                     onClick={handleSaveCustomEmail}
-                    disabled={!email || updateSettings.isPending || !canEdit}
+                    disabled={!email || updateSettings.isPending || !canEdit} loading={updateSettings.isPending}
                   >
                     {t('common.save')}
                   </Button>

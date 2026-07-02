@@ -512,7 +512,7 @@ export function AdminExternalMentorsManager() {
             <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleAddMentor} disabled={!selectedUserId || addMentorRole.isPending}>
+            <Button onClick={handleAddMentor} disabled={!selectedUserId || addMentorRole.isPending} loading={addMentorRole.isPending}>
               {t('common.add')}
             </Button>
           </DialogFooter>
@@ -546,7 +546,7 @@ export function AdminExternalMentorsManager() {
             <Button variant="outline" onClick={() => setAssignDialogMentor(null)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleAssignWorkspace} disabled={!selectedWorkspaceId || assignMentor.isPending}>
+            <Button onClick={handleAssignWorkspace} disabled={!selectedWorkspaceId || assignMentor.isPending} loading={assignMentor.isPending}>
               {t('admin.mentors.assign')}
             </Button>
           </DialogFooter>

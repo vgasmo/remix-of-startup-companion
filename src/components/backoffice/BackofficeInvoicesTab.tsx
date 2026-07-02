@@ -293,7 +293,7 @@ export function BackofficeInvoicesTab() {
               <Button type="button" variant="outline" onClick={() => setPaymentDialogOpen(false)}>
                 {t('common.cancel')}
               </Button>
-              <Button type="submit" disabled={updateInvoice.isPending}>
+              <Button type="submit" disabled={updateInvoice.isPending} loading={updateInvoice.isPending}>
                 {t('admin.backoffice.confirmPayment')}
               </Button>
             </div>

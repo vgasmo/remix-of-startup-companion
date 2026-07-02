@@ -164,7 +164,7 @@ export function SurveyTemplateEditor({ definitions }: SurveyTemplateEditorProps)
             <p className="text-muted-foreground mb-4">
               {t("admin.surveys.noTemplates", "No survey templates yet")}
             </p>
-            <Button onClick={handleCreateDefault} disabled={createDefinition.isPending}>
+            <Button onClick={handleCreateDefault} disabled={createDefinition.isPending} loading={createDefinition.isPending}>
               <Plus className="h-4 w-4 mr-2" />
               {t("admin.surveys.createDefaultTemplate", "Create Ecosystem Survey Template")}
             </Button>
@@ -220,7 +220,7 @@ export function SurveyTemplateEditor({ definitions }: SurveyTemplateEditorProps)
                     <Button
                       size="sm"
                       onClick={handleSave}
-                      disabled={updateDefinition.isPending}
+                      disabled={updateDefinition.isPending} loading={updateDefinition.isPending}
                       className="ml-2"
                     >
                       <Save className="h-4 w-4 mr-1" />

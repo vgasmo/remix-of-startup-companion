@@ -70,7 +70,7 @@ export function ContractIntelligenceCard({ contractId, contractLabel }: Contract
           size="sm"
           className="gap-2"
           onClick={handleAnalyze}
-          disabled={analyzeContract.isPending}
+          disabled={analyzeContract.isPending} loading={analyzeContract.isPending}
         >
           {analyzeContract.isPending ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -96,7 +96,7 @@ export function ContractIntelligenceCard({ contractId, contractLabel }: Contract
               <Button variant="outline" onClick={() => setShowConfirm(false)}>
                 {t('common.cancel', 'Cancel')}
               </Button>
-              <Button onClick={confirmAnalyze} disabled={analyzeContract.isPending}>
+              <Button onClick={confirmAnalyze} disabled={analyzeContract.isPending} loading={analyzeContract.isPending}>
                 {analyzeContract.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : (

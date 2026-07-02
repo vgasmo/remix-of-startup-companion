@@ -572,7 +572,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddItemOpen(false)}>{t('common.cancel')}</Button>
-            <Button onClick={handleAddItem} disabled={createItem.isPending}>
+            <Button onClick={handleAddItem} disabled={createItem.isPending} loading={createItem.isPending}>
               {createItem.isPending ? t('common.saving') : t('common.add')}
             </Button>
           </DialogFooter>
@@ -638,7 +638,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
               {createdLink ? t('common.close') : t('common.cancel')}
             </Button>
             {!createdLink && (
-              <Button onClick={handleCreateLink} disabled={createShareLink.isPending}>
+              <Button onClick={handleCreateLink} disabled={createShareLink.isPending} loading={createShareLink.isPending}>
                 {createShareLink.isPending ? t('common.creating') : t('dataroom.createLink')}
               </Button>
             )}

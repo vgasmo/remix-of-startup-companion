@@ -158,7 +158,7 @@ export function SavedViewsDropdown({ viewType, currentFilters, onApplyView }: Sa
             <Button variant="outline" onClick={() => setSaveDialog(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleSave} disabled={!viewName.trim() || saveView.isPending}>
+            <Button onClick={handleSave} disabled={!viewName.trim() || saveView.isPending} loading={saveView.isPending}>
               {t('common.save')}
             </Button>
           </DialogFooter>

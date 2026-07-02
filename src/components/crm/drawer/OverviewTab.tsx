@@ -150,7 +150,7 @@ export function OverviewTab({
                   <Input type="number" min="0" max="100" value={winProb} onChange={e => setWinProb(e.target.value)} className="h-8" />
                 </div>
               </div>
-              <Button size="sm" className="w-full h-7 text-xs" onClick={handleSaveDeal} disabled={updateItem.isPending}>
+              <Button size="sm" className="w-full h-7 text-xs" onClick={handleSaveDeal} disabled={updateItem.isPending} loading={updateItem.isPending}>
                 {t('common.save')}
               </Button>
             </div>
@@ -359,7 +359,7 @@ export function OverviewTab({
             size="sm"
             className="w-full h-8 text-xs"
             onClick={handleSaveCommercialProposal}
-            disabled={updateItem.isPending}
+            disabled={updateItem.isPending} loading={updateItem.isPending}
           >
             {t('crm.saveCommercialProposal', { defaultValue: 'Guardar proposta comercial' })}
           </Button>

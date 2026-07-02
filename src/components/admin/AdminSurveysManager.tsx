@@ -423,7 +423,7 @@ function CreateCampaignDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t("common.cancel", "Cancel")}
             </Button>
-            <Button type="submit" disabled={createCampaign.isPending || !formData.survey_definition_id}>
+            <Button type="submit" disabled={createCampaign.isPending || !formData.survey_definition_id} loading={createCampaign.isPending}>
               {t("common.create", "Create")}
             </Button>
           </div>

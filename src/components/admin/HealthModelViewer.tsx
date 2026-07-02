@@ -418,7 +418,7 @@ export function HealthModelViewer() {
             <Button variant="outline" onClick={() => setEditingModel(null)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleSave} disabled={upsertModel.isPending || weightsSum !== 100}>
+            <Button onClick={handleSave} disabled={upsertModel.isPending || weightsSum !== 100} loading={upsertModel.isPending}>
               {upsertModel.isPending ? t('common.loading') : t('common.save')}
             </Button>
           </DialogFooter>

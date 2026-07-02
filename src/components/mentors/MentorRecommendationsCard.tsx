@@ -267,7 +267,7 @@ export function MentorRecommendationsCard({ workspaceId, stage, className }: Men
             </Button>
             <Button 
               onClick={handleExpressInterest}
-              disabled={selectedMentors.length === 0 || expressInterest.isPending}
+              disabled={selectedMentors.length === 0 || expressInterest.isPending} loading={expressInterest.isPending}
             >
               <Send className="h-4 w-4 mr-1.5" />
               {expressInterest.isPending 

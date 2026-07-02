@@ -393,7 +393,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                       variant="outline"
                       size="sm"
                       onClick={handleConvertDecisionsToActions}
-                      disabled={createActionItem.isPending}
+                      disabled={createActionItem.isPending} loading={createActionItem.isPending}
                     >
                       <ListChecks className="h-4 w-4 mr-1" />
                       {t('sessions.convertDecisionsToActions', { defaultValue: 'Transformar em ações' })}
@@ -497,7 +497,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
           {canWrite && (
             <DialogFooter className="mt-4">
               <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common.close', 'Close')}</Button>
-              <Button onClick={handleSave} disabled={updateMutation.isPending}>
+              <Button onClick={handleSave} disabled={updateMutation.isPending} loading={updateMutation.isPending}>
                 {updateMutation.isPending ? t('common.saving', 'Saving...') : t('common.saveChanges', 'Save Changes')}
               </Button>
             </DialogFooter>

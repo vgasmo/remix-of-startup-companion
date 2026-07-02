@@ -293,7 +293,7 @@ export function RoomShapeEditor({
             <X className="h-4 w-4 mr-2" />
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleSave} disabled={!hasValidShape || updateRoom.isPending}>
+          <Button onClick={handleSave} disabled={!hasValidShape || updateRoom.isPending} loading={updateRoom.isPending}>
             <Save className="h-4 w-4 mr-2" />
             {t('common.save')}
           </Button>

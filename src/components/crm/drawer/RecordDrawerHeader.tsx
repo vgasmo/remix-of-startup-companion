@@ -115,7 +115,7 @@ export function RecordDrawerHeader({ item, onStageChange, isUpdating }: RecordDr
               className="h-8 text-sm"
             />
             <div className="flex gap-2">
-              <Button size="sm" className="h-7 text-xs" onClick={handleSaveContact} disabled={updateItem.isPending}>
+              <Button size="sm" className="h-7 text-xs" onClick={handleSaveContact} disabled={updateItem.isPending} loading={updateItem.isPending}>
                 {t('common.save', 'Save')}
               </Button>
               <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setIsEditing(false)}>

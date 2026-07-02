@@ -197,7 +197,7 @@ export function TimeTrackingTab({ workspaceId }: TimeTrackingTabProps) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
-            <Button onClick={handleSubmit} disabled={createEntry.isPending}>{t('time.logTime')}</Button>
+            <Button onClick={handleSubmit} disabled={createEntry.isPending} loading={createEntry.isPending}>{t('time.logTime')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
