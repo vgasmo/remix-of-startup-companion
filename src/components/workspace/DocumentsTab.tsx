@@ -692,7 +692,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
                                       variant="ghost"
                                       size="icon"
                                       onClick={() => handleDelete(doc)}
-                                      disabled={deleteMutation.isPending}
+                                      disabled={deleteMutation.isPending} loading={deleteMutation.isPending}
                                       className="text-destructive hover:text-destructive h-8 w-8"
                                      aria-label={t('common.delete')}>
                                       <Trash2 className="h-4 w-4" />

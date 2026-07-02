@@ -374,7 +374,7 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
                             variant="ghost"
                             className="h-7 text-xs"
                             onClick={() => generateRecap.mutate({ funnelItemId: item.id, language })}
-                            disabled={generateRecap.isPending}
+                            disabled={generateRecap.isPending} loading={generateRecap.isPending}
                           >
                             <Sparkles className="h-3 w-3 mr-1" />
                             {generateRecap.isPending ? t('common.generating') : t('crm.generateRecap')}
@@ -388,7 +388,7 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
                           variant="ghost"
                           className="h-7 text-xs mt-3 text-muted-foreground"
                           onClick={() => generateRecap.mutate({ funnelItemId: item.id, language })}
-                          disabled={generateRecap.isPending}
+                          disabled={generateRecap.isPending} loading={generateRecap.isPending}
                         >
                           <RefreshCw className={cn('h-3.5 w-3.5 mr-1', generateRecap.isPending && 'animate-spin')} />
                           {t('crm.regenerate')}

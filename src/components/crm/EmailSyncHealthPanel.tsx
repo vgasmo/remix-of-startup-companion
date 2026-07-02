@@ -50,7 +50,7 @@ export function EmailSyncHealthPanel({ allConsultants = false, compact = false }
           size="sm"
           className="h-6 text-xs gap-1"
           onClick={() => triggerSync.mutate()}
-          disabled={triggerSync.isPending}
+          disabled={triggerSync.isPending} loading={triggerSync.isPending}
         >
           <RefreshCw className={cn('h-3 w-3', triggerSync.isPending && 'animate-spin')} />
           {t('crm.sync', { defaultValue: 'Sync' })}
@@ -79,7 +79,7 @@ export function EmailSyncHealthPanel({ allConsultants = false, compact = false }
               size="sm"
               className="mt-2 h-7 text-xs"
               onClick={() => triggerSync.mutate()}
-              disabled={triggerSync.isPending}
+              disabled={triggerSync.isPending} loading={triggerSync.isPending}
             >
               <RefreshCw className={cn('h-3 w-3 mr-1', triggerSync.isPending && 'animate-spin')} />
               {t('crm.startFirstSync', { defaultValue: 'Iniciar primeira sincronização' })}
@@ -101,7 +101,7 @@ export function EmailSyncHealthPanel({ allConsultants = false, compact = false }
                   size="sm"
                   className="h-6 text-xs gap-1"
                   onClick={() => triggerSync.mutate()}
-                  disabled={triggerSync.isPending}
+                  disabled={triggerSync.isPending} loading={triggerSync.isPending}
                 >
                   <RefreshCw className={cn('h-3 w-3', triggerSync.isPending && 'animate-spin')} />
                   {t('crm.syncNow', { defaultValue: 'Sincronizar' })}

@@ -272,7 +272,7 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
         <div className="flex gap-2">
           {!isSubmitted && (
             <>
-              <Button variant="outline" onClick={() => handleSave(false)} disabled={saveResponses.isPending}>
+              <Button variant="outline" onClick={() => handleSave(false)} disabled={saveResponses.isPending} loading={saveResponses.isPending}>
                 <Save className="h-4 w-4 mr-2" />
                 {t("surveys.saveDraft", "Save Draft")}
               </Button>
@@ -280,7 +280,7 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
               {currentSectionIndex === sections.length - 1 && (
                 <Button
                   onClick={() => handleSave(true)}
-                  disabled={!canSubmit() || saveResponses.isPending}
+                  disabled={!canSubmit() || saveResponses.isPending} loading={saveResponses.isPending}
                 >
                   <Send className="h-4 w-4 mr-2" />
                   {t("surveys.submit", "Submit Survey")}

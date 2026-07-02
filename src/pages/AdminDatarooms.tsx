@@ -375,7 +375,7 @@ export default function AdminDatarooms() {
             <Button variant="outline" onClick={() => setAddMentorOpen(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={() => addMentor.mutate(mentorEmail)} disabled={!mentorEmail || addMentor.isPending}>
+            <Button onClick={() => addMentor.mutate(mentorEmail)} disabled={!mentorEmail || addMentor.isPending} loading={addMentor.isPending}>
               {addMentor.isPending ? t('common.adding') : t('common.add')}
             </Button>
           </DialogFooter>

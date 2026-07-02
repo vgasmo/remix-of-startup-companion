@@ -220,7 +220,7 @@ export function HealthModelViewer() {
           </p>
         </div>
         {isAdmin && (
-          <Button onClick={() => recompute.mutate()} disabled={recompute.isPending}>
+          <Button onClick={() => recompute.mutate()} disabled={recompute.isPending} loading={recompute.isPending}>
             <RefreshCw className={`h-4 w-4 mr-2 ${recompute.isPending ? 'animate-spin' : ''}`} />
             {t('admin.healthModel.recomputeAll')}
           </Button>

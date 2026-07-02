@@ -235,7 +235,7 @@ export function ContractDiscountsPanel({ contractId, monthlyFee, currency = 'EUR
                         size="sm"
                         className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                         onClick={() => removeMutation.mutate(d.id)}
-                        disabled={removeMutation.isPending}
+                        disabled={removeMutation.isPending} loading={removeMutation.isPending}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>

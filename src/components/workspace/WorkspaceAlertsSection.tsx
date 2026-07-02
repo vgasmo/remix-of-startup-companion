@@ -151,7 +151,7 @@ export function WorkspaceAlertsSection({ workspaceId, canManage = false }: Works
                               size="icon"
                               className="h-8 w-8"
                               onClick={()=> resolveAlert.mutate(alert.id)}
-                              disabled={resolveAlert.isPending}
+                              disabled={resolveAlert.isPending} loading={resolveAlert.isPending}
                              aria-label={t('common.confirm')}>
                               <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />
                             </Button>
@@ -165,7 +165,7 @@ export function WorkspaceAlertsSection({ workspaceId, canManage = false }: Works
                               size="icon"
                               className="h-8 w-8"
                               onClick={()=> ignoreAlert.mutate(alert.id)}
-                              disabled={ignoreAlert.isPending}
+                              disabled={ignoreAlert.isPending} loading={ignoreAlert.isPending}
                              aria-label={t('common._iconHide')}>
                               <EyeOff className="h-4 w-4 text-muted-foreground" />
                             </Button>

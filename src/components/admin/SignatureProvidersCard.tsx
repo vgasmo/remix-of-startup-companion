@@ -178,7 +178,7 @@ function DocuSignSettingsCard() {
                 integration_type: 'docusign',
                 settings_json: { account_id: accountId, user_id: userId, base_url: baseUrl },
               })}
-              disabled={save.isPending || !accountId || !userId}
+              disabled={save.isPending || !accountId || !userId} loading={save.isPending}
             >
               {save.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
               {t('common.save', { defaultValue: 'Guardar' })}
@@ -307,7 +307,7 @@ function PandaDocSettingsCard() {
                 settings_json: { configured: true, webhook_url: pandadocWebhookEndpoint },
                 is_enabled: true,
               })}
-              disabled={save.isPending}
+              disabled={save.isPending} loading={save.isPending}
             >
               {save.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
               {t('systemSettings.pandadoc.markConfigured', { defaultValue: 'Marcar como configurado' })}

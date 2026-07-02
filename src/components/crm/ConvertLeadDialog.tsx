@@ -121,7 +121,7 @@ export function ConvertLeadDialog({ item, open, onOpenChange, onConverted }: Con
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={convert.isPending}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={convert.isPending} loading={convert.isPending}>
             {t('common.cancel')}
           </Button>
           <Button onClick={handleConvert} disabled={!programId || convert.isPending} loading={convert.isPending}>

@@ -540,7 +540,7 @@ export default function ProgramSetupWizard() {
               <Button
                 type="button"
                 onClick={handlePublish}
-                disabled={publishDraft.isPending || getValidationErrors().length > 0 || publishedRef.current}
+                disabled={publishDraft.isPending || getValidationErrors().length > 0 || publishedRef.current} loading={publishDraft.isPending}
                 className="bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]"
               >
                 {publishDraft.isPending || publishedRef.current ? (

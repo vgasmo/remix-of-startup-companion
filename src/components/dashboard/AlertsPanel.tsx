@@ -81,7 +81,7 @@ export function AlertsPanel() {
               variant="outline"
               size="sm"
               onClick={() => recompute.mutate()}
-              disabled={recompute.isPending}
+              disabled={recompute.isPending} loading={recompute.isPending}
             >
               <RefreshCw className={`h-4 w-4 mr-1 ${recompute.isPending ? 'animate-spin' : ''}`} />
               {t('alerts.recalculate', 'Recalculate')}
@@ -154,7 +154,7 @@ export function AlertsPanel() {
                         variant="ghost"
                         size="sm"
                         onClick={() => resolveAlert.mutate(alert.id)}
-                        disabled={resolveAlert.isPending}
+                        disabled={resolveAlert.isPending} loading={resolveAlert.isPending}
                       >
                         <CheckCircle className="h-4 w-4 text-success" />
                       </Button>

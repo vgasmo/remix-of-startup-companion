@@ -280,7 +280,7 @@ export function EnhancedFounderMentorRequest() {
 
             <Button
               onClick={() => submitRequest.mutate()}
-              disabled={submitRequest.isPending || !canSubmit}
+              disabled={submitRequest.isPending || !canSubmit} loading={submitRequest.isPending}
               className="w-full"
             >
               <Send className="h-4 w-4 mr-2" />
@@ -328,7 +328,7 @@ export function EnhancedFounderMentorRequest() {
                     variant="ghost"
                     size="sm"
                     onClick={() => cancelRequest.mutate(req.id)}
-                    disabled={cancelRequest.isPending}
+                    disabled={cancelRequest.isPending} loading={cancelRequest.isPending}
                   >
                     <XCircle className="h-4 w-4" />
                   </Button>

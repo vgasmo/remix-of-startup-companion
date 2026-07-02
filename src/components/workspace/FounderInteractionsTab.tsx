@@ -143,7 +143,7 @@ export function FounderInteractionsTab({ workspaceId }: FounderInteractionsTabPr
                     variant="ghost"
                     className="mt-2 h-8 text-xs"
                     onClick={() => generateRecap.mutate({ workspaceId, language })}
-                    disabled={generateRecap.isPending}
+                    disabled={generateRecap.isPending} loading={generateRecap.isPending}
                   >
                     <Sparkles className="h-3 w-3 mr-1" />
                     {generateRecap.isPending ? t('common.generating') : t('crm.generateRecap')}

@@ -628,7 +628,7 @@ export function PendingApprovalsManager() {
                     <Button
                       size="sm"
                       onClick={() => handleApprove(workspace.id)}
-                      disabled={approveWorkspace.isPending}
+                      disabled={approveWorkspace.isPending} loading={approveWorkspace.isPending}
                     >
                       <Check className="h-4 w-4 mr-1" />
                       {t('admin.approve')}

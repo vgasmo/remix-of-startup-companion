@@ -411,7 +411,7 @@ export function AdminTagCategoriesManager() {
             </Button>
             <Button 
               onClick={() => saveCategory.mutate({ id: editingCategory?.id, ...categoryForm })}
-              disabled={!categoryForm.name.trim() || saveCategory.isPending}
+              disabled={!categoryForm.name.trim() || saveCategory.isPending} loading={saveCategory.isPending}
             >
               {saveCategory.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {t('common.save')}
@@ -477,7 +477,7 @@ export function AdminTagCategoriesManager() {
             </Button>
             <Button 
               onClick={() => saveTag.mutate({ id: editingTag?.id, ...tagForm })}
-              disabled={!tagForm.name.trim() || saveTag.isPending}
+              disabled={!tagForm.name.trim() || saveTag.isPending} loading={saveTag.isPending}
             >
               {saveTag.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {t('common.save')}

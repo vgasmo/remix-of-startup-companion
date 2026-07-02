@@ -315,7 +315,7 @@ export function PlaybooksTab({ workspaceId, currentStage, programId, canWrite }:
                           size="sm"
                           className="text-muted-foreground"
                           onClick={() => restorePlaybook.mutate({ workspaceId, playbookId: playbook.id })}
-                          disabled={restorePlaybook.isPending || !canWrite}
+                          disabled={restorePlaybook.isPending || !canWrite} loading={restorePlaybook.isPending}
                         >
                           {t('playbooks.undoDismiss', { defaultValue: 'Restaurar' })}
                         </Button>
@@ -389,7 +389,7 @@ export function PlaybooksTab({ workspaceId, currentStage, programId, canWrite }:
                           variant="ghost"
                           size="icon"
                           onClick={()=> dismiss.mutate({ workspaceId, playbookId: playbook.id })}
-                          disabled={dismiss.isPending || !canWrite}
+                          disabled={dismiss.isPending || !canWrite} loading={dismiss.isPending}
                           title={t('playbooks.dismiss')}
                          aria-label={t('common.close')}>
                           <X className="h-4 w-4" />

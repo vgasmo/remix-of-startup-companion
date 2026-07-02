@@ -127,7 +127,7 @@ export function IntegrationErrorsPanel({ compact = false, maxHeight = '300px' }:
                         size="icon"
                         className="shrink-0"
                         onClick={()=> handleResolve(error.id)}
-                        disabled={resolveMutation.isPending}
+                        disabled={resolveMutation.isPending} loading={resolveMutation.isPending}
                        aria-label={t('common.close')}>
                         <X className="h-4 w-4" />
                       </Button>

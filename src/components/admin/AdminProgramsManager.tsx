@@ -323,7 +323,7 @@ function GatesWeeksManager({ programId }: { programId: string }) {
                         className="h-7 w-[80px] text-xs" />
                       <Input type="url" placeholder="URL da sessão (Teams, Zoom...)" value={editUrl}
                         onChange={e => setEditUrl(e.target.value)} className="h-7 flex-1 text-xs" />
-                      <Button size="sm" className="h-7 w-7 p-0" onClick={() => handleSave(week.id)} disabled={updateWeek.isPending}>
+                      <Button size="sm" className="h-7 w-7 p-0" onClick={() => handleSave(week.id)} disabled={updateWeek.isPending} loading={updateWeek.isPending}>
                         <Save className="h-3.5 w-3.5" />
                       </Button>
                       <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingWeekId(null)}>
@@ -533,7 +533,7 @@ export function AdminProgramsManager() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleSetupProgram(program.id)}
-                        disabled={createDraft.isPending}
+                        disabled={createDraft.isPending} loading={createDraft.isPending}
                       >
                         <FileEdit className="h-3 w-3 mr-1" />
                         {getProgramDraft(program.id) ? t('adminPrograms.continueSetup') : t('adminPrograms.setup')}

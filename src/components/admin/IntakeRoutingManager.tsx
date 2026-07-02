@@ -412,7 +412,7 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
                   {t('admin.intakeRouting.bookingLinksDesc', 'Generate shareable links for external booking')}
                 </CardDescription>
               </div>
-              <Button onClick={() => createLinkMutation.mutate()} disabled={createLinkMutation.isPending}>
+              <Button onClick={() => createLinkMutation.mutate()} disabled={createLinkMutation.isPending} loading={createLinkMutation.isPending}>
                 {createLinkMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (

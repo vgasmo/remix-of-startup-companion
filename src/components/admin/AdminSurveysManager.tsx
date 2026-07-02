@@ -280,7 +280,7 @@ function CampaignCard({
             <Button
               size="sm"
               onClick={() => launchCampaign.mutate(campaign.id)}
-              disabled={launchCampaign.isPending}
+              disabled={launchCampaign.isPending} loading={launchCampaign.isPending}
             >
               <Rocket className="h-4 w-4 mr-2" />
               {t("admin.surveys.launch", "Launch")}
@@ -291,7 +291,7 @@ function CampaignCard({
               size="sm"
               variant="outline"
               onClick={() => closeCampaign.mutate(campaign.id)}
-              disabled={closeCampaign.isPending}
+              disabled={closeCampaign.isPending} loading={closeCampaign.isPending}
             >
               <StopCircle className="h-4 w-4 mr-2" />
               {t("admin.surveys.close", "Close")}

@@ -780,7 +780,7 @@ export function AdminStartupsManager() {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => restoreMutation.mutate(startup.id)}
-                                    disabled={restoreMutation.isPending}
+                                    disabled={restoreMutation.isPending} loading={restoreMutation.isPending}
                                    aria-label={t('common.restore')}>
                                     <ArchiveRestore className="h-4 w-4 text-primary" />
                                   </Button>
@@ -813,7 +813,7 @@ export function AdminStartupsManager() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => archiveMutation.mutate(startup.id)}
-                                  disabled={archiveMutation.isPending}
+                                  disabled={archiveMutation.isPending} loading={archiveMutation.isPending}
                                  aria-label={t('common._iconArchive')}>
                                   <Archive className="h-4 w-4 text-destructive" />
                                 </Button>

@@ -422,7 +422,7 @@ export function AdminAnnouncementsManager() {
                         variant="ghost"
                         size="icon"
                         onClick={() => deleteMutation.mutate(ann.id)}
-                        disabled={deleteMutation.isPending}
+                        disabled={deleteMutation.isPending} loading={deleteMutation.isPending}
                        aria-label={t('common.delete')}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>

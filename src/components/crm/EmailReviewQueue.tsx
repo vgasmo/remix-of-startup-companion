@@ -103,7 +103,7 @@ export function EmailReviewQueue({ onAttach }: EmailReviewQueueProps) {
                             size="sm"
                             className="h-6 text-[10px] gap-1 text-muted-foreground"
                             onClick={() => ignoreEmail.mutate(email.id)}
-                            disabled={ignoreEmail.isPending}
+                            disabled={ignoreEmail.isPending} loading={ignoreEmail.isPending}
                           >
                             <XCircle className="h-3 w-3" />
                             {t('crm.ignoreEmail', { defaultValue: 'Ignorar' })}

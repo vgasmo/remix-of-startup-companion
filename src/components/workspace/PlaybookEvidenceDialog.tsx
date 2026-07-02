@@ -154,7 +154,7 @@ export function PlaybookEvidenceDialog({ workspaceId, playbookItemId, playbookIt
                           variant="outline"
                           className="gap-1 text-[hsl(var(--success))] border-[hsl(var(--success))]/30 hover:bg-[hsl(var(--success))]/10"
                           onClick={() => handleReview(ev.id, 'approved')}
-                          disabled={reviewEvidence.isPending}
+                          disabled={reviewEvidence.isPending} loading={reviewEvidence.isPending}
                         >
                           <CheckCircle className="h-3.5 w-3.5" />
                         </Button>
@@ -163,7 +163,7 @@ export function PlaybookEvidenceDialog({ workspaceId, playbookItemId, playbookIt
                           variant="outline"
                           className="gap-1 text-destructive border-destructive hover:bg-destructive/5"
                           onClick={() => handleReview(ev.id, 'rejected')}
-                          disabled={reviewEvidence.isPending}
+                          disabled={reviewEvidence.isPending} loading={reviewEvidence.isPending}
                         >
                           <XCircle className="h-3.5 w-3.5" />
                         </Button>

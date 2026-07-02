@@ -374,7 +374,7 @@ export function PendingMentorRequestsPanel() {
                   });
                 }
               }}
-              disabled={!selectedMentorId || assignMentor.isPending}
+              disabled={!selectedMentorId || assignMentor.isPending} loading={assignMentor.isPending}
             >
               <CheckCircle2 className="h-4 w-4 mr-2" />
               {t('mentorsPage.confirmAssign')}

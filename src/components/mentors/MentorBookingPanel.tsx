@@ -319,14 +319,14 @@ export function MentorBookingPanel({
                       size="sm" 
                       variant="outline"
                       onClick={() => handleUpdateStatus(booking, 'declined')}
-                      disabled={updateStatus.isPending}
+                      disabled={updateStatus.isPending} loading={updateStatus.isPending}
                     >
                       <X className="h-4 w-4" />
                     </Button>
                     <Button 
                       size="sm"
                       onClick={() => handleUpdateStatus(booking, 'accepted')}
-                      disabled={updateStatus.isPending}
+                      disabled={updateStatus.isPending} loading={updateStatus.isPending}
                     >
                       <Check className="h-4 w-4" />
                     </Button>

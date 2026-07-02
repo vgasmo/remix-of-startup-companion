@@ -218,7 +218,7 @@ export function BookingLinksManager() {
 
                 <Button 
                   onClick={() => generateLink.mutate()} 
-                  disabled={generateLink.isPending}
+                  disabled={generateLink.isPending} loading={generateLink.isPending}
                   className="w-full"
                 >
                   {generateLink.isPending ? t('admin.generating', 'A gerar...') : t('admin.generateAndCopy', 'Gerar e Copiar Link')}
