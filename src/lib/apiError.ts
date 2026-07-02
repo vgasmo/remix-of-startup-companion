@@ -4,6 +4,7 @@
  */
 
 import { logError } from './logError';
+import i18n from '@/i18n';
 
 export interface ApiError {
   message: string;
