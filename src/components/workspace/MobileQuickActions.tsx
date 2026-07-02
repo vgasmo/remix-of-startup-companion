@@ -75,7 +75,7 @@ export function MobileQuickActions({
       label: t('quickActions.uploadDocument'),
       icon: <Upload className="h-4 w-4" />,
       onClick: () => {
-        setSearchParams({ tab: 'dataroom' });
+        setSearchParams({ tab: 'documents', sub: 'dataroom' });
         setIsOpen(false);
       },
       color: 'bg-[hsl(var(--warning))] hover:bg-[hsl(var(--warning))]',
@@ -84,7 +84,8 @@ export function MobileQuickActions({
 
   return (
     <>
-      <div className={cn('fixed bottom-6 right-6 z-50', className)}>
+      <div className={cn('fixed right-6 z-50 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))]', className)}>
+
         {/* Action buttons */}
         <div
           className={cn(
