@@ -2431,7 +2431,8 @@
       "tomorrow": "Tomorrow",
       "threeDays": "In 3 days",
       "nextWeek": "Next week"
-    }
+    },
+    "moreOptions": "More options"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -3398,7 +3399,8 @@
     "viewAll": "View All",
     "viewSession": "View Session",
     "weighted": "EUR",
-    "winProbability": "Probabilidade (%)"
+    "winProbability": "Probabilidade (%)",
+    "newLeadHint": "Fill in a contact name or organization name to create the lead."
   },
   "dashboard": {
     "acrossPrograms": "Across {{count}} program",

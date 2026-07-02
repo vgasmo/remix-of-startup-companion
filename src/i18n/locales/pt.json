@@ -2431,7 +2431,8 @@
       "tomorrow": "Amanhã",
       "threeDays": "Em 3 dias",
       "nextWeek": "Próxima semana"
-    }
+    },
+    "moreOptions": "Mais opções"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -3398,7 +3399,8 @@
     "viewAll": "Ver Tudo",
     "viewSession": "Ver Sessão",
     "weighted": "EUR",
-    "winProbability": "Probabilidade (%)"
+    "winProbability": "Probabilidade (%)",
+    "newLeadHint": "Preencha o nome do contacto ou o nome da organização para criar a lead."
   },
   "dashboard": {
     "acrossPrograms": "Em {{count}} programa",
