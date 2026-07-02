@@ -57,6 +57,7 @@ import {
 import startupLeiriaLogo from '@/assets/startup-leiria.svg';
 import { MessagingPanel } from '@/components/messaging/MessagingPanel';
 import { SidebarContactInfo } from './SidebarContactInfo';
+import { useConversations } from '@/hooks/useMessaging';
 
 interface NavItem {
   name: string;
