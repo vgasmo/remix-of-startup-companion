@@ -20,19 +20,19 @@ import { notify } from "@/lib/notify";
 import { ContentSkeleton } from '@/components/ui/ContentSkeleton';
 
 const RESULT_TYPES = [
-  { key: 'session', label: 'Sessions', icon: Calendar },
-  { key: 'action', label: 'Actions', icon: CheckSquare },
-  { key: 'note', label: 'Notes', icon: FileText },
-  { key: 'document', label: 'Documents', icon: File },
-  { key: 'message', label: 'Messages', icon: MessageSquare },
-  { key: 'milestone', label: 'Milestones', icon: Target },
+  { key: 'session', labelKey: 'search.filters.sessions', icon: Calendar },
+  { key: 'action', labelKey: 'search.filters.actions', icon: CheckSquare },
+  { key: 'note', labelKey: 'search.filters.notes', icon: FileText },
+  { key: 'document', labelKey: 'search.filters.documents', icon: File },
+  { key: 'message', labelKey: 'search.filters.messages', icon: MessageSquare },
+  { key: 'milestone', labelKey: 'search.filters.milestones', icon: Target },
 ] as const;
 
 const DATE_RANGES = [
-  { value: 'all', label: 'All time' },
-  { value: 'week', label: 'Last 7 days' },
-  { value: 'month', label: 'Last 30 days' },
-  { value: 'quarter', label: 'Last 90 days' },
+  { value: 'all', labelKey: 'search.filters.dateAll' },
+  { value: 'week', labelKey: 'search.filters.dateWeek' },
+  { value: 'month', labelKey: 'search.filters.dateMonth' },
+  { value: 'quarter', labelKey: 'search.filters.dateQuarter' },
 ];
 
 export default function SearchPage() {
