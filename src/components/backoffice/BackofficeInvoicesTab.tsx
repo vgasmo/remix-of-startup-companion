@@ -153,7 +153,7 @@ export function BackofficeInvoicesTab() {
             <div className="text-center py-8 text-muted-foreground">{t('common.loading')}</div>
           ) : (
             <Table>
-              <TableHeader>
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead>{t('admin.backoffice.invoiceNumber')}</TableHead>
                   <TableHead>{t('admin.backoffice.startup')}</TableHead>

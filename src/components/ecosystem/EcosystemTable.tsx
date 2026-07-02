@@ -245,7 +245,7 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
       {/* ── Desktop: standard table ── */}
       <div className="border border-border/70 rounded-xl overflow-hidden hidden md:block bg-card">
         <Table>
-          <TableHeader>
+          <TableHeader sticky>
             <TableRow className="hover:bg-transparent border-border/70 bg-muted/30">
               <TableHead className="w-[250px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.name', { defaultValue: 'Name' })}</TableHead>
               <TableHead className="w-[80px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.type', { defaultValue: 'Type' })}</TableHead>

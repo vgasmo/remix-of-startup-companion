@@ -205,7 +205,7 @@ export const WorkspaceTable = memo(function WorkspaceTable({
       {/* ── Desktop: standard table ── */}
       <div className="overflow-x-auto -mx-4 sm:mx-0 hidden md:block rounded-xl border border-border/70 bg-card">
         <Table className="min-w-[800px]">
-          <TableHeader>
+          <TableHeader sticky>
             <TableRow className="hover:bg-transparent border-border/70 bg-muted/30">
               {selectionEnabled && (
                 <TableHead className="w-[40px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
