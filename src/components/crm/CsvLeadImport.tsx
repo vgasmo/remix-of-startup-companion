@@ -199,7 +199,7 @@ export function CsvLeadImport() {
 
               <div className="border rounded-lg overflow-hidden max-h-64 overflow-y-auto">
                 <Table>
-                  <TableHeader>
+                  <TableHeader sticky>
                     <TableRow>
                       <TableHead className="w-8">#</TableHead>
                       <TableHead>{t('crm.import.name', { defaultValue: 'Nome' })}</TableHead>
