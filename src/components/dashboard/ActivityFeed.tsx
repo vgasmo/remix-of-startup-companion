@@ -79,9 +79,9 @@ export function useActivityFeed(limit = 20) {
           id: `action-${a.id}`,
           type: 'action',
           title: a.title,
-          description: 'Action completed',
           timestamp: a.completed_at!,
           startup: (a.workspace as any)?.startup,
+          metadata: { i18nDescription: 'dashboard.activity.actionCompleted' },
         });
       });
 
