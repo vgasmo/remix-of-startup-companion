@@ -605,6 +605,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
             </>
           )}
 
+          {showMoreOptions && (
           <div className="space-y-2">
             <Label htmlFor="agenda">{t('sessions.agenda', 'Agenda')}</Label>
             <Textarea
@@ -615,6 +616,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
               rows={2}
             />
           </div>
+          )}
 
           {logPast && (
             <>
