@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StageBadge } from '@/components/ui/StageBadge';
-import { formatDistanceToNow } from 'date-fns';
+import { formatRelativeTime } from '@/lib/dateUtils';
 import { StartupStage } from '@/types/database';
 
 interface PendingWorkspaceViewProps {
@@ -69,7 +69,7 @@ export function PendingWorkspaceView({ workspace }: PendingWorkspaceViewProps) {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">{t('admin.submitted', 'Submitted')}</span>
-              <span className="text-sm">{formatDistanceToNow(new Date(workspace.created_at), { addSuffix: true })}</span>
+              <span className="text-sm">{formatRelativeTime(workspace.created_at)}</span>
             </div>
           </div>
 

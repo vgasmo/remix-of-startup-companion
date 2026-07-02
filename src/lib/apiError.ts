@@ -4,6 +4,7 @@
  */
 
 import { logError } from './logError';
+import i18n from '@/i18n';
 
 export interface ApiError {
   message: string;
@@ -35,19 +36,13 @@ export const ErrorCode = {
 export type ErrorCodeType = (typeof ErrorCode)[keyof typeof ErrorCode];
 
 /**
- * Map error codes to user-friendly messages
+ * Map error codes to user-friendly messages (localized via i18n `errors.*` namespace).
+ * Access via getErrorMessage(code) — do not read this record directly.
  */
-const ERROR_MESSAGES: Record<string, string> = {
-  [ErrorCode.UNAUTHORIZED]: 'Please sign in to continue.',
-  [ErrorCode.FORBIDDEN]: 'You do not have permission to perform this action.',
-  [ErrorCode.RATE_LIMITED]: 'Too many requests. Please wait a moment and try again.',
-  [ErrorCode.BAD_REQUEST]: 'Invalid request. Please check your input.',
-  [ErrorCode.NOT_FOUND]: 'The requested resource was not found.',
-  [ErrorCode.INTERNAL_ERROR]: 'An unexpected error occurred. Please try again.',
-  [ErrorCode.NETWORK_ERROR]: 'Network error. Please check your connection.',
-  [ErrorCode.TIMEOUT]: 'Request timed out. Please try again.',
-  [ErrorCode.VALIDATION_ERROR]: 'Please check your input and try again.',
-};
+const ERROR_MESSAGES: Record<string, string> = new Proxy({} as Record<string, string>, {
+  get: (_t, prop: string) => i18n.t(`errors.${prop}`, { defaultValue: 'Something went wrong.' }),
+});
+
 
 /**
  * Parse various error formats into a standardized ApiError

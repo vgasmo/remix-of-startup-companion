@@ -20,19 +20,19 @@ import { notify } from "@/lib/notify";
 import { ContentSkeleton } from '@/components/ui/ContentSkeleton';
 
 const RESULT_TYPES = [
-  { key: 'session', label: 'Sessions', icon: Calendar },
-  { key: 'action', label: 'Actions', icon: CheckSquare },
-  { key: 'note', label: 'Notes', icon: FileText },
-  { key: 'document', label: 'Documents', icon: File },
-  { key: 'message', label: 'Messages', icon: MessageSquare },
-  { key: 'milestone', label: 'Milestones', icon: Target },
+  { key: 'session', labelKey: 'search.filters.sessions', icon: Calendar },
+  { key: 'action', labelKey: 'search.filters.actions', icon: CheckSquare },
+  { key: 'note', labelKey: 'search.filters.notes', icon: FileText },
+  { key: 'document', labelKey: 'search.filters.documents', icon: File },
+  { key: 'message', labelKey: 'search.filters.messages', icon: MessageSquare },
+  { key: 'milestone', labelKey: 'search.filters.milestones', icon: Target },
 ] as const;
 
 const DATE_RANGES = [
-  { value: 'all', label: 'All time' },
-  { value: 'week', label: 'Last 7 days' },
-  { value: 'month', label: 'Last 30 days' },
-  { value: 'quarter', label: 'Last 90 days' },
+  { value: 'all', labelKey: 'search.filters.dateAll' },
+  { value: 'week', labelKey: 'search.filters.dateWeek' },
+  { value: 'month', labelKey: 'search.filters.dateMonth' },
+  { value: 'quarter', labelKey: 'search.filters.dateQuarter' },
 ];
 
 export default function SearchPage() {
@@ -176,7 +176,7 @@ export default function SearchPage() {
         <div className="flex flex-wrap gap-4">
           {/* Type filters */}
           <div className="flex flex-wrap gap-2">
-            {RESULT_TYPES.map(({ key, label, icon: Icon }) => (
+            {RESULT_TYPES.map(({ key, labelKey, icon: Icon }) => (
               <Button
                 key={key}
                 variant={filters.types?.includes(key) ? 'default' : 'outline'}
@@ -184,7 +184,7 @@ export default function SearchPage() {
                 onClick={() => toggleType(key)}
               >
                 <Icon className="h-3.5 w-3.5 mr-1" />
-                {label}
+                {t(labelKey)}
               </Button>
             ))}
           </div>
@@ -222,8 +222,8 @@ export default function SearchPage() {
               <SelectValue placeholder={t("common.placeholders.allTime")} />
             </SelectTrigger>
             <SelectContent>
-              {DATE_RANGES.map(({ value, label }) => (
-                <SelectItem key={value} value={value}>{label}</SelectItem>
+              {DATE_RANGES.map(({ value, labelKey }) => (
+                <SelectItem key={value} value={value}>{t(labelKey)}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -321,7 +321,7 @@ export default function SearchPage() {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2">
                       <Icon className="h-5 w-5" />
-                      {typeConfig?.label || type}
+                      {typeConfig ? t(typeConfig.labelKey) : type}
                       <Badge variant="secondary">{items.length}</Badge>
                     </CardTitle>
                   </CardHeader>
