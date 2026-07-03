@@ -2703,6 +2703,16 @@
     }
   },
   "contractDetail": {
+    "renewCta": "Renovar",
+    "renewTitle": "Renovar contrato",
+    "renewDesc": "Renova por 12 meses a partir do dia seguinte ao fim atual. Atualiza a data de fim e regista um evento no histórico.",
+    "renewStart": "Novo início",
+    "renewEnd": "Novo fim",
+    "renewFee": "Mensalidade (€)",
+    "confirmRenew": "Confirmar renovação",
+    "renewSuccess": "Contrato renovado",
+    "renewError": "Não foi possível renovar o contrato",
+
     "completedAt": "Concluído em",
     "configured": "Configurado",
     "contractTimeline": "Cronologia do Contrato",
