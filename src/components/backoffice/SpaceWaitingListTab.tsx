@@ -409,7 +409,8 @@ export function SpaceWaitingListTab() {
                               }}
                               disabled={availableRooms.length === 0}
                             >
-                              Fulfill
+                              {t('waitingList.fulfill', { defaultValue: 'Atribuir' })}
+
                             </Button>
                             <Button
                               variant="outline"
