@@ -400,48 +400,51 @@ const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, is
         </Card>
       )}
 
-      {/* Quick Stats */}
-      <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
-        {[
-          { label: t('mentor.myStartups'), value: workspaces.length, icon: Briefcase, accent: false, onClick: () => document.getElementById('mentor-startups-section')?.scrollIntoView({ behavior: 'smooth' }) },
-          { label: t('mentor.upcomingMeetings'), value: upcomingMeetings.length, icon: Calendar, accent: false, 
-            extra: workspaces.filter(w => w.nextMeetingDate && isToday(new Date(w.nextMeetingDate))).length,
-            onClick: () => document.getElementById('mentor-calendar-section')?.scrollIntoView({ behavior: 'smooth' }) },
-          { label: t('mentor.startupsHealthy'), value: impactStats.healthyCount, icon: TrendingUp, accent: true },
-          { label: t('mentor.pendingActions'), value: impactStats.actionsCreated, icon: CheckCircle2, accent: false },
-        ].map((stat, i) => {
-          const Icon = stat.icon;
-          const isClickable = !!stat.onClick;
-          return (
-            <Card 
-              key={i} 
-              className={cn(
-                "p-4 rounded-2xl border-border/60 transition-all duration-200 hover:shadow-sm hover:border-border/80",
-                isClickable && "cursor-pointer hover:border-primary/30"
-              )}
-              onClick={stat.onClick}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{stat.label}</p>
-                  <p className={cn("text-3xl font-semibold", stat.accent && 'text-success')}>{stat.value}</p>
+      {/* Quick Stats — full view */}
+      <FullViewOnly>
+        <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
+          {[
+            { label: t('mentor.myStartups'), value: workspaces.length, icon: Briefcase, accent: false, onClick: () => document.getElementById('mentor-startups-section')?.scrollIntoView({ behavior: 'smooth' }) },
+            { label: t('mentor.upcomingMeetings'), value: upcomingMeetings.length, icon: Calendar, accent: false,
+              extra: workspaces.filter(w => w.nextMeetingDate && isToday(new Date(w.nextMeetingDate))).length,
+              onClick: () => document.getElementById('mentor-calendar-section')?.scrollIntoView({ behavior: 'smooth' }) },
+            { label: t('mentor.startupsHealthy'), value: impactStats.healthyCount, icon: TrendingUp, accent: true },
+            { label: t('mentor.pendingActions'), value: impactStats.actionsCreated, icon: CheckCircle2, accent: false },
+          ].map((stat, i) => {
+            const Icon = stat.icon;
+            const isClickable = !!stat.onClick;
+            return (
+              <Card
+                key={i}
+                className={cn(
+                  "p-4 rounded-2xl border-border/60 transition-all duration-200 hover:shadow-sm hover:border-border/80",
+                  isClickable && "cursor-pointer hover:border-primary/30"
+                )}
+                onClick={stat.onClick}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">{stat.label}</p>
+                    <p className={cn("text-3xl font-semibold", stat.accent && 'text-success')}>{stat.value}</p>
+                  </div>
+                  <div className="h-9 w-9 rounded-xl bg-muted/50 flex items-center justify-center">
+                    <Icon className={cn("h-4 w-4", stat.accent ? 'text-success' : 'text-muted-foreground/50')} />
+                  </div>
                 </div>
-                <div className="h-9 w-9 rounded-xl bg-muted/50 flex items-center justify-center">
-                  <Icon className={cn("h-4 w-4", stat.accent ? 'text-success' : 'text-muted-foreground/50')} />
-                </div>
-              </div>
-              {stat.extra !== undefined && stat.extra > 0 && (
-                <p className="text-xs text-primary mt-1 font-medium">
-                  {stat.extra} {t('common.today')}
-                </p>
-              )}
-            </Card>
-          );
-        })}
-      </div>
+                {stat.extra !== undefined && stat.extra > 0 && (
+                  <p className="text-xs text-primary mt-1 font-medium">
+                    {stat.extra} {t('common.today')}
+                  </p>
+                )}
+              </Card>
+            );
+          })}
+        </div>
 
-      {/* Cross-startup portfolio pulse */}
-      <MentorPortfolioPulse workspaces={workspaces} />
+        {/* Cross-startup portfolio pulse — full view */}
+        <MentorPortfolioPulse workspaces={workspaces} />
+      </FullViewOnly>
+
 
 
       {/* Two-column layout: Startups + Calendar */}
