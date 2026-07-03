@@ -217,6 +217,16 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
 
   return (
     <div className="space-y-6 max-w-5xl">
+      <FirstStepsCard
+        storageScope="mentor"
+        title={t('firstSteps.mentor.title', { defaultValue: 'Primeiros passos' })}
+        subtitle={t('firstSteps.mentor.subtitle', { defaultValue: 'Comece com estes três passos.' })}
+        items={[
+          { id: 'availability', label: t('firstSteps.mentor.availability', { defaultValue: 'Configure a sua disponibilidade' }), href: '/settings', icon: Calendar },
+          { id: 'startups', label: t('firstSteps.mentor.startups', { defaultValue: 'Conheça as suas startups' }), href: '/my-workspaces', icon: Briefcase },
+          { id: 'impact', label: t('firstSteps.mentor.impact', { defaultValue: 'Veja o seu impacto' }), href: '/mentors/impact', icon: BarChart3 },
+        ]}
+      />
       {/* 1. GREETING HERO — branded surface, availability inline */}
       <BrandSurface
         intensity="hero"
