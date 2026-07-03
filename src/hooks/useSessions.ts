@@ -369,6 +369,17 @@ export function useUpdateSession(workspaceId: string) {
       // P1.2: Log activity
       logActivity('updated', 'session', result.session.id, workspaceId, { title: result.session.title });
 
+      // Inbox + email notifications for all participants on reschedule
+      if (result.needsSync) {
+        void notifySessionEvent('rescheduled', {
+          id: result.session.id,
+          title: result.session.title,
+          scheduled_at: result.session.scheduled_at,
+          duration: result.session.duration,
+          agenda: result.session.agenda,
+        }, workspaceId);
+      }
+
       // Auto-recompute health score after session update (fire-and-forget)
       supabase.functions.invoke('recompute-health-scores', {
         body: { workspaceId },
