@@ -211,6 +211,7 @@ function useConnections(userId: string | undefined, role: 'founder' | 'mentor') 
           return {
             id: conn.id,
             founder_id: conn.founder_id,
+            workspace_id: conn.workspace_id,
             mentor_id: conn.mentor_id,
             status: conn.status,
             message: conn.message,
