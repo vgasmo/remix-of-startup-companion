@@ -426,7 +426,7 @@ export default function PublicBooking() {
                 {selectedSlot && (
                   <span className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    {format(new Date(selectedSlot.date), 'MMMM d')} at {selectedSlot.time}
+                    {format(new Date(selectedSlot.date), 'MMMM d', { locale: dateLocale })}{atConnector}{selectedSlot.time}
                     <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => setStep('slots')}>
                       {t('publicBooking.change')}
                     </Button>
