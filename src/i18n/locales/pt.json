@@ -413,7 +413,7 @@
       "floor": "Piso",
       "floorLabel": "Piso",
       "floorMaps": "Mapas dos Pisos",
-      "floorPlaceholder": "Rés-do-Chão, 1, 2...",
+      "floorPlaceholder": "1, Piso térreo, Mezzanine...",
       "floorPlan": "Planta",
       "fulfillRequest": "Atender Pedido",
       "health": "Saúde",
@@ -619,8 +619,6 @@
       "spaceAssigned": "Espaço atribuído com sucesso",
       "spaceName": "Nome do Espaço",
       "spaceNamePlaceholder": "Mesa A1, Sala 101...",
-      "floorPlaceholder": "1, Piso térreo, Mezzanine...",
-
       "spaceTypes": {
         "desk": "Secretária",
         "hotDesk": "Hot Desk",
@@ -1884,7 +1882,6 @@
       "cancelled": "Cancelada",
       "refunded": "Reembolsada"
     },
-
     "allocationEndError": "Erro ao terminar atribuição",
     "allocationEnded": "Atribuição terminada",
     "billing": {
@@ -2744,7 +2741,6 @@
       "notifyFounderTitle": "O seu contrato foi terminado",
       "notifyFounderMsg": "A equipa Startup Leiria terminou o contrato. Motivo: {{reason}}"
     },
-
     "completedAt": "Concluído em",
     "configured": "Configurado",
     "contractTimeline": "Cronologia do Contrato",
@@ -6307,7 +6303,6 @@
       "title": "Sem espaço atribuído",
       "desc": "{{name}} não tem sala/gabinete alocado."
     },
-
     "checklistCopied": "Checklist copiada",
     "console": {
       "allStatuses": "Todos os estados",
@@ -9129,7 +9124,6 @@
     "numberOfPeople": "Número de pessoas",
     "anyBuilding": "Qualquer edifício...",
     "selectAvailableRoom": "Selecionar sala disponível...",
-
     "allRequests": "Todos os Pedidos",
     "any": "Qualquer",
     "availableRooms": "Salas Disponíveis",
@@ -9440,5 +9434,35 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
+  },
+  "firstSteps": {
+    "consultor": {
+      "title": "Primeiros passos",
+      "subtitle": "Configure o essencial para começar com o seu portefólio.",
+      "workQueue": "Conheça o Work Queue",
+      "availability": "Configure a sua disponibilidade",
+      "portfolio": "Veja o seu portefólio"
+    },
+    "backoffice": {
+      "title": "Primeiros passos",
+      "subtitle": "O ciclo diário do backoffice em três paragens.",
+      "contracts": "Contratos a expirar",
+      "spaces": "Espaços & ocupação",
+      "approvals": "Aprovações pendentes"
+    },
+    "admin": {
+      "title": "Primeiros passos",
+      "subtitle": "Os três painéis onde o admin passa mais tempo.",
+      "approvals": "Aprovações",
+      "programs": "Programas & coortes",
+      "ecosystem": "Saúde do ecossistema"
+    },
+    "mentor": {
+      "title": "Primeiros passos",
+      "subtitle": "Comece com estes três passos.",
+      "availability": "Configure a sua disponibilidade",
+      "startups": "Conheça as suas startups",
+      "impact": "Veja o seu impacto"
+    }
   }
 }
