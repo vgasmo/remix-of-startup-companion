@@ -474,6 +474,7 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
                 onSetNextAction={() => setNextActionDialog(true)}
                 onClearNextAction={handleClearNextAction}
                 isClearingNextAction={clearNextAction.isPending}
+                consultors={consultors as any}
               />
 
               {/* Intake Actions Panel — stage-aware */}
