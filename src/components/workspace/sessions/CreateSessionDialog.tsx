@@ -171,6 +171,68 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
 
   const validateSlotMutation = useValidateBookingSlot();
 
+  /**
+   * Detect overlapping scheduled sessions to prevent double-booking.
+   * Uses UTC timestamps so timezone (e.g. Europe/Lisbon vs browser TZ) doesn't
+   * cause false positives/negatives. Checks:
+   *  - existing sessions in the same workspace overlapping the requested window
+   *  - mentor_bookings for the same mentor overlapping the requested window
+   */
+  const findSchedulingConflict = async (
+    startIsoUtc: string,
+    durationMinutes: number,
+  ): Promise<string | null> => {
+    const startMs = new Date(startIsoUtc).getTime();
+    if (!Number.isFinite(startMs)) return null;
+    const endMs = startMs + durationMinutes * 60000;
+
+    // Search window: any session starting up to 4h before could still overlap.
+    const windowStart = new Date(startMs - 4 * 60 * 60000).toISOString();
+    const windowEnd = new Date(endMs).toISOString();
+
+    // 1) Same-workspace duplicate / overlap
+    const { data: wsSessions } = await supabase
+      .from('sessions')
+      .select('id, title, scheduled_at, duration')
+      .eq('workspace_id', workspaceId)
+      .gte('scheduled_at', windowStart)
+      .lt('scheduled_at', windowEnd);
+
+    for (const s of wsSessions || []) {
+      const sStart = new Date(s.scheduled_at).getTime();
+      const sEnd = sStart + ((s.duration ?? 60) * 60000);
+      if (sStart < endMs && sEnd > startMs) {
+        return t('sessions.conflictWorkspace', {
+          title: s.title,
+          defaultValue: `Já existe uma sessão neste horário: "${s.title}".`,
+        });
+      }
+    }
+
+    // 2) Mentor already booked at that time (across workspaces)
+    if (meetingWith === 'mentor_externo' && participantId) {
+      const { data: bookings } = await supabase
+        .from('mentor_bookings')
+        .select('id, scheduled_at, duration_minutes, status')
+        .eq('mentor_user_id', participantId)
+        .in('status', ['pending', 'confirmed'])
+        .gte('scheduled_at', windowStart)
+        .lt('scheduled_at', windowEnd);
+
+      for (const b of bookings || []) {
+        const bStart = new Date(b.scheduled_at).getTime();
+        const bEnd = bStart + ((b.duration_minutes ?? 60) * 60000);
+        if (bStart < endMs && bEnd > startMs) {
+          return t('sessions.conflictMentor', {
+            defaultValue: 'O mentor já tem uma reserva neste horário.',
+          });
+        }
+      }
+    }
+
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
