@@ -611,6 +611,11 @@ function BackofficeDashboardInner() {
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         room={selectedRoom}
+        buildingName={(() => {
+          const buildingId = (selectedFloorMap as any)?.space?.building_id
+            ?? (selectedRoom as any)?.space?.building_id;
+          return buildingId ? buildings?.find(b => b.id === buildingId)?.name : undefined;
+        })()}
       />
     </div>
   );

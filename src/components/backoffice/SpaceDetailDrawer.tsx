@@ -50,7 +50,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
   const updateRoom = useUpdateRoom();
   const fulfillWaitlist = useFulfillWaitingListRequest();
   const { data: workspaces } = useWorkspaces({}, false, ALL_WORKSPACE_STATUSES);
-  const { data: waitingList } = useSpaceWaitingList({ status: 'pending' });
+  const { data: waitingList } = useSpaceWaitingList({ status: 'waiting' });
 
   if (!room) return null;
 
@@ -174,7 +174,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
                         variant="ghost"
                         size="sm"
                         className="h-7 text-xs"
-                        onClick={() => navigate(`/workspaces/${allocation.workspace_id}`)}
+                        onClick={() => navigate(`/workspace/${allocation.workspace_id}`)}
                       >
                         <ExternalLink className="h-3 w-3 mr-1" />
                         {t('admin.backoffice.openStartup', { defaultValue: 'Abrir Startup' })}

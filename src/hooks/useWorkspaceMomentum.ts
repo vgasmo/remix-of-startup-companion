@@ -179,7 +179,7 @@ function bandFor(score: number): MomentumBand {
 
 function recommendFor(workspace: WorkspaceWithDetails, signals: MomentumSignal[]): RecommendedAction {
   const worst = signals.find(s => s.status === 'bad') ?? signals[0];
-  const base = `/workspaces/${workspace.id}`;
+  const base = `/workspace/${workspace.id}`;
   switch (worst?.key) {
     case 'actions':
       return { label: 'Ver ações em atraso', href: `${base}?tab=milestones-actions` };
