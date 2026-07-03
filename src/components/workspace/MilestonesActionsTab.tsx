@@ -712,10 +712,11 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="act-milestone">{t('milestones.title')} *</Label>
-              <Select value={newAction.milestone_id} onValueChange={v => setNewAction(a => ({ ...a, milestone_id: v }))}>
+              <Label htmlFor="act-milestone">{t('milestones.title')} <span className="text-muted-foreground text-xs">({t('common.optional', { defaultValue: 'opcional' })})</span></Label>
+              <Select value={newAction.milestone_id || '__none__'} onValueChange={v => setNewAction(a => ({ ...a, milestone_id: v === '__none__' ? '' : v }))}>
                 <SelectTrigger id="act-milestone"><Target className="h-4 w-4 mr-2" /><SelectValue placeholder={t('actions.selectMilestone')} /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__none__">{t('actions.noMilestone', { defaultValue: 'Sem marco' })}</SelectItem>
                   {milestones?.map(m => <SelectItem key={m.id} value={m.id}>{m.title}</SelectItem>)}
                 </SelectContent>
               </Select>
