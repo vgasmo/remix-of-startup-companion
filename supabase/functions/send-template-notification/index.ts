@@ -168,14 +168,51 @@ serve(async (req: Request) => {
       );
 
     } else if (body.type === "reviewed") {
-      // Notify the founder who submitted the template
+      const isApprovedInbox = body.review_status === "approved";
+
+      // Inbox: notify founder (creator) + workspace consultors/admins so the
+      // whole team sees the lifecycle step in the bell.
+      const inboxTargets = new Set<string>();
+      if (instance.created_by) inboxTargets.add(instance.created_by as string);
+      const { data: staffOnWs } = await supabaseAdmin
+        .from("workspace_users")
+        .select("user_id, role")
+        .eq("workspace_id", workspaceId)
+        .eq("active", true)
+        .in("role", ["consultor", "admin", "backoffice", "mentor_externo"]);
+      staffOnWs?.forEach((r) => r.user_id && inboxTargets.add(r.user_id as string));
+      // Don't ping the reviewer themselves
+      if (instance.reviewer_id) inboxTargets.delete(instance.reviewer_id as string);
+
+      if (inboxTargets.size > 0) {
+        const inboxRows = [...inboxTargets].map((uid) => ({
+          user_id: uid,
+          type: isApprovedInbox ? "template_approved" : "template_changes_requested",
+          title: isApprovedInbox
+            ? `Template aprovado: ${templateName}`
+            : `Alterações pedidas: ${templateName}`,
+          message: `${startupName} — ${isApprovedInbox ? "template marcado como entregue." : "revisão devolvida ao founder."}`,
+          link: `/workspace/${workspaceId}?tab=documents&sub=tools&doc=${body.instanceId}`,
+          entity_type: "template_instance",
+          entity_id: body.instanceId,
+          event_key: `template_reviewed:${body.instanceId}:${body.review_status}:${uid}`,
+          metadata: { template_name: templateName, startup_name: startupName, workspace_id: workspaceId, review_status: body.review_status },
+        }));
+        const { error: notifErr } = await supabaseAdmin
+          .from("notifications")
+          .upsert(inboxRows, { onConflict: "user_id,event_key", ignoreDuplicates: true });
+        if (notifErr) console.error("reviewed notifications upsert failed:", notifErr);
+      }
+
+      // Notify the founder who submitted the template (email)
       if (!instance.created_by) {
-        console.log("No creator to notify");
+        console.log("No creator to email");
         return new Response(
           JSON.stringify({ success: true, emailsSent: 0, reason: "No creator" }),
           { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
         );
       }
+
 
       const { data: creator } = await supabaseAdmin
         .from("profiles")
