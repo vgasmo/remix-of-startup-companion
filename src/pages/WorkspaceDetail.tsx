@@ -143,9 +143,13 @@ export default function WorkspaceDetail() {
   const activeTab = allVisibleIds.has(currentTab) ? currentTab : 'overview';
 
   // Visual highlight for the tab when arriving from an external link (e.g. notification).
-  // We pulse the tab briefly whenever activeTab changes without an explicit user click.
+  // We pulse the tab briefly and move keyboard focus to it whenever activeTab changes
+  // without an explicit user click.
   const [highlightedTab, setHighlightedTab] = useState<string | null>(null);
   const userClickedTabRef = useRef(false);
+  const tabButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const overflowTriggerRef = useRef<HTMLButtonElement | null>(null);
+
   useEffect(() => {
     if (userClickedTabRef.current) {
       userClickedTabRef.current = false;
@@ -153,9 +157,22 @@ export default function WorkspaceDetail() {
     }
     if (!activeTab || activeTab === 'overview') return;
     setHighlightedTab(activeTab);
+
+    // Move keyboard focus to the correct control so screen readers announce it
+    // and arrow-key navigation continues from the highlighted tab.
+    const focusTarget =
+      tabButtonRefs.current.get(activeTab) ??
+      (overflowTabs.some(o => o.id === activeTab) ? overflowTriggerRef.current : null);
+    if (focusTarget) {
+      window.requestAnimationFrame(() => {
+        focusTarget.focus({ preventScroll: true });
+        focusTarget.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+      });
+    }
+
     const timer = window.setTimeout(() => setHighlightedTab(null), 3000);
     return () => window.clearTimeout(timer);
-  }, [activeTab]);
+  }, [activeTab, overflowTabs]);
 
   const handleTabChange = useCallback((value: string) => {
     userClickedTabRef.current = true;
@@ -298,6 +315,10 @@ export default function WorkspaceDetail() {
           {primaryTabs.map(tab => (
             <button
               key={tab.id}
+              ref={(el) => {
+                if (el) tabButtonRefs.current.set(tab.id, el);
+                else tabButtonRefs.current.delete(tab.id);
+              }}
               role="tab"
               id={`tab-${tab.id}`}
               aria-selected={activeTab === tab.id}
@@ -330,6 +351,8 @@ export default function WorkspaceDetail() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
+                  ref={overflowTriggerRef}
+                  aria-label={t('common.moreDetails', { defaultValue: 'Mais' })}
                   className={cn(
                     "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2.5 py-1.5 text-xs sm:text-sm font-medium gap-1 transition-all",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1",
