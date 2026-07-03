@@ -11,6 +11,8 @@ import { CockpitPortfolioOverview } from '@/components/staff/CockpitPortfolioOve
 import { MomentumPanel } from '@/components/staff/MomentumPanel';
 import { OnboardingPipelineCard } from '@/components/staff/OnboardingPipelineCard';
 import { AdminQuickAccessCard } from '@/components/staff/AdminQuickAccessCard';
+import { NextBestActionStaff } from '@/components/dashboard/NextBestActionPanels';
+
 import { PendingApprovalsManager } from '@/components/admin/PendingApprovalsManager';
 import { IntakeRoutingManager } from '@/components/admin/IntakeRoutingManager';
 import { ClaimRequestsQueue } from '@/components/admin/ClaimRequestsQueue';
