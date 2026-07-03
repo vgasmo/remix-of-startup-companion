@@ -139,11 +139,17 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
           icon={FileText}
           title={search ? t('sessions.noSearchResults') : t('emptyStates.sessions.title')}
           description={search ? t('sessions.tryAdjustingSearch') : t('emptyStates.sessions.description')}
-          action={!search && canWrite ? {
-            label: t('sessions.createSession'),
-            onClick: () => setShowCreateDialog(true),
-            icon: Plus,
-          } : (!search && !canWrite ? {
+          action={!search && canWrite ? (
+            isFounderOnly ? {
+              label: t('sessions.bookWithMentor', { defaultValue: 'Marcar com mentor/consultor' }),
+              onClick: goToMentorBooking,
+              icon: Plus,
+            } : {
+              label: t('sessions.createSession'),
+              onClick: () => setShowCreateDialog(true),
+              icon: Plus,
+            }
+          ) : (!search && !canWrite ? {
             label: t('sessions.askConsultor', { defaultValue: 'Pedir sessão ao consultor' }),
             onClick: () => {
               try {
