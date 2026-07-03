@@ -87,7 +87,7 @@ export function useNotifications() {
         .limit(50);
 
       if (error) throw error;
-      return (data || []) as Notification[];
+      return dedupePendingMentorConnections((data || []) as Notification[]);
     },
   });
 }
