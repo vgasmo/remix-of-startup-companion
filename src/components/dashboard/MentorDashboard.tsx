@@ -360,7 +360,9 @@ const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, is
 
       {/* P0 HERO: Single Session Prep surface (MentorNextSessionPrep removed — it duplicated this) */}
       <WidgetErrorBoundary name="MentorSessionPrep">
-        <MentorSessionPrepEnhanced workspaces={workspaces} />
+        <div id="session-prep" className="scroll-mt-20">
+          <MentorSessionPrepEnhanced workspaces={workspaces} />
+        </div>
       </WidgetErrorBoundary>
 
 
