@@ -87,6 +87,14 @@ const notificationTypeColors: Record<string, string> = {
   intake_stale: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
   session_no_notes: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
   workspace_no_consultant: 'bg-destructive/10 text-destructive',
+  session_scheduled: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
+  session_rescheduled: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
+  session_cancelled: 'bg-destructive/10 text-destructive',
+  playbook_requested: 'bg-primary/10 text-primary',
+  template_submitted: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
+  document_uploaded: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
+  message_alert: 'bg-primary/10 text-primary',
+
 };
 
 type Bucket = 'today' | 'yesterday' | 'earlier';
