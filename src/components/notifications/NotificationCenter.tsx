@@ -58,6 +58,9 @@ const notificationTypeIcons: Record<string, string> = {
   template_submitted: '📝',
   document_uploaded: '📎',
   message_alert: '💬',
+  template_request: '📋',
+  feedback_request: '🗣️',
+
 
 };
 
