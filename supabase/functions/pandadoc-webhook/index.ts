@@ -114,15 +114,43 @@ Deno.serve(async (req) => {
 
       console.log(`PandaDoc webhook: doc=${pandadocDocId}, event=${eventName}, eventId=${eventId}`)
 
-      // Find contract by provider_document_id
+      // Find contract by provider_document_id — PostgREST alias syntax.
       const { data: contract, error: findError } = await supabase
         .from('startup_contracts')
-        .select('id, workspace_id, status as contract_status, legal_representative_email, legal_representative_name, signature_status, provider_webhook_event_id')
+        .select('id, workspace_id, contract_status:status, legal_representative_email, legal_representative_name, signature_status, provider_webhook_event_id')
         .eq('provider_document_id', pandadocDocId)
         .eq('signature_provider', 'pandadoc')
-        .single()
+        .maybeSingle()
 
-      if (findError || !contract) {
+      if (findError) {
+        console.error('[pandadoc-webhook] contract lookup failed:', findError)
+        try {
+          await supabase.from('contract_lifecycle_events').insert({
+            contract_id: null,
+            event_type: 'pandadoc_webhook_lookup_error',
+            event_date: new Date().toISOString().split('T')[0],
+            details: { pandadoc_document_id: pandadocDocId, error: findError.message, event_id: eventId },
+          })
+          const { data: staffUsers } = await supabase
+            .from('user_roles').select('user_id').in('role', ['admin', 'consultor', 'backoffice'])
+          if (staffUsers?.length) {
+            await supabase.from('notifications').insert(staffUsers.map((s: any) => ({
+              user_id: s.user_id,
+              type: 'system',
+              title: 'Erro no webhook PandaDoc',
+              message: `Falha ao localizar contrato (doc ${pandadocDocId}): ${findError.message}`,
+              entity_type: 'contract',
+              link: '/admin?tab=backoffice&subtab=contracts',
+            })))
+          }
+        } catch (_) { /* best-effort */ }
+        // Return 500 for the whole batch so PandaDoc retries.
+        return new Response(JSON.stringify({ error: 'lookup_failed', document_id: pandadocDocId }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      if (!contract) {
         console.warn('Contract not found for PandaDoc document:', pandadocDocId)
         continue
       }
