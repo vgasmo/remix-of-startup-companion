@@ -58,6 +58,30 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
   const [prepSheetWorkspaceId, setPrepSheetWorkspaceId] = useState<string | null>(null);
   const [quickNoteWorkspaceId, setQuickNoteWorkspaceId] = useState<string | null>(null);
   const { data: mySlots } = useMyAvailability();
+  const { data: myBookings } = useMyBookings();
+  const { needsNda } = useMentorNdaStatus();
+  const pendingRequestsCount = (myBookings || []).filter(
+    (b: any) => b.status === 'pending' && b.mentor_id === profile?.id,
+  ).length;
+  const upcomingCount = (workspaces || []).filter(w => !!w.nextMeetingDate).length;
+
+  // Post-NDA one-time onboarding checklist (localStorage flag per user).
+  const ndaChecklistKey = profile?.id ? `sl-mentor-nda-checklist-${profile.id}` : null;
+  const [showNdaChecklist, setShowNdaChecklist] = useState(false);
+  useMemo(() => {
+    if (!ndaChecklistKey || needsNda) return;
+    try {
+      if (typeof window !== 'undefined' && !window.localStorage.getItem(ndaChecklistKey)) {
+        setShowNdaChecklist(true);
+      }
+    } catch { /* ignore */ }
+  }, [ndaChecklistKey, needsNda]);
+  const dismissNdaChecklist = () => {
+    if (ndaChecklistKey) {
+      try { window.localStorage.setItem(ndaChecklistKey, '1'); } catch { /* ignore */ }
+    }
+    setShowNdaChecklist(false);
+  };
   
   const slotsThisWeek = mySlots?.filter(s => s.is_active).length ?? 0;
   const availabilityStatus = slotsThisWeek > 2 ? 'available' : slotsThisWeek > 0 ? 'limited' : 'full';
