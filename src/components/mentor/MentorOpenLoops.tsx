@@ -72,11 +72,13 @@ export function MentorOpenLoops({ workspaces }: MentorOpenLoopsProps) {
     workspaces.forEach(w => {
       const name = w.startup?.name || 'Startup';
 
-      // Recent sessions that may need notes (within 48h)
+      // Recent sessions that may need notes (within 72h) — but only if the
+      // mentor hasn't already written a note in that window.
       if (w.lastSession?.scheduled_at) {
         const sessionDate = new Date(w.lastSession.scheduled_at);
         const hoursSince = (now.getTime() - sessionDate.getTime()) / (1000 * 60 * 60);
-        if (hoursSince >= 0 && hoursSince <= 72) {
+        const hasRecentNote = workspacesWithRecentNotes?.has(w.id);
+        if (hoursSince >= 0 && hoursSince <= 72 && !hasRecentNote) {
           result.push({
             workspaceId: w.id,
             startupName: name,
