@@ -131,6 +131,9 @@ async function notifySessionEvent(
   } catch (e) {
     logger.warn('session_event_notify_failed', { kind, error: String(e) });
   }
+}
+
+
 
 export interface Session {
   id: string;
