@@ -498,6 +498,13 @@
       "officeSpaces": "Office Spaces",
       "openPdf": "Open PDF",
       "openStartup": "Open Startup",
+      "openContract": "Open contract",
+      "contract": "Contract",
+      "contractSince": "Under contract since",
+      "inSpaceSince": "In space since",
+      "sinceShort": "Since",
+      "reviewTerms": "Review terms",
+      "anniversaryLine": "Completes {{years}} year(s) on {{date}} ({{days}} days)",
       "opsHub": {
         "allContractsGood": "All contracts in good standing",
         "allPaid": "All invoices paid",
