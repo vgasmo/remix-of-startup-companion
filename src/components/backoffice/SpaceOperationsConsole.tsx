@@ -557,7 +557,7 @@ export function SpaceOperationsConsole() {
                 {/* Allocation */}
                 <div>
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                    <MapPin className="h-3.5 w-3.5 inline mr-1" />Alocação
+                    <MapPin className="h-3.5 w-3.5 inline mr-1" />{t('spaces.allocation', 'Alocação')}
                   </h3>
                   {selectedRecord.allocation_id ? (
                     <div className="grid grid-cols-2 gap-2 text-sm">
@@ -570,7 +570,7 @@ export function SpaceOperationsConsole() {
                   ) : (
                     <p className="text-sm text-muted-foreground italic flex items-center gap-1.5">
                       <Link2Off className="h-3.5 w-3.5" />
-                      Sem alocação ativa
+                      {t('spaces.noActiveAllocation', 'Sem alocação ativa')}
                     </p>
                   )}
                 </div>
