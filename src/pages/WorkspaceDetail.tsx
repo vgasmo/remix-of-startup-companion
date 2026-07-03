@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { WorkspaceOverview } from '@/components/workspace/WorkspaceOverview';
+import { WorkspaceRoomChip } from '@/components/workspace/WorkspaceRoomChip';
 import { AgendaTab } from '@/components/workspace/AgendaTab';
 import { MilestonesActionsTab } from '@/components/workspace/MilestonesActionsTab';
 import { KpisTab } from '@/components/workspace/KpisTab';
