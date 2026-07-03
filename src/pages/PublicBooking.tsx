@@ -71,7 +71,12 @@ export default function PublicBooking() {
     const next = lang === 'pt' ? 'en' : 'pt';
     setLang(next);
     i18n.changeLanguage(next);
+    if (typeof document !== 'undefined') document.documentElement.lang = next;
   };
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') document.documentElement.lang = lang;
+  }, [lang]);
 
   // Validate token and get routing options
   const { data: tokenResult, isLoading: tokenLoading, error: tokenError } = useQuery({
