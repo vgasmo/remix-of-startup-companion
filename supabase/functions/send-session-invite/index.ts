@@ -399,7 +399,7 @@ serve(async (req) => {
               </p>
             </div>
           `,
-          attachments: [
+          attachments: eventType === 'cancelled' ? [] : [
             {
               filename: "session-invite.ics",
               content: btoa(icsContent),
