@@ -35,6 +35,33 @@ import { useUrlParam } from '@/hooks/useUrlParam';
 // Status key set for filter dropdown. Visual styling is owned by <ContractStatusBadge>.
 const STATUS_KEYS = ['draft', 'pending_signature', 'active', 'suspended', 'terminated', 'expired'] as const;
 
+function ContractRoomLink({ contractId }: { contractId: string }) {
+  const room = useContractRoom(contractId);
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  if (!room) return null;
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            aria-label={t('admin.backoffice.viewOnMap', { defaultValue: 'Ver no mapa' })}
+            onClick={() => navigate(buildRoomDeepLink(room.id))}
+          >
+            <MapPin className="h-3.5 w-3.5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="left" className="text-xs">
+          {t('admin.backoffice.viewOnMap', { defaultValue: 'Ver no mapa' })} · {room.name}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 function getIncubationTenure(startDate: string) {
   const start = new Date(startDate);
   const now = new Date();
