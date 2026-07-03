@@ -150,6 +150,7 @@ export function AppSidebar() {
     { name: t('nav.mentor.impact', { defaultValue: 'O Meu Impacto' }), href: '/mentors/impact', icon: BarChart3 },
     { name: t('nav.mentor.resources', { defaultValue: 'Conexões & Recursos' }), href: '/mentors', icon: BookOpen },
     { name: t('nav.mentor.quickGuide', { defaultValue: 'Guia Rápido' }), href: '/guide', icon: BookOpenCheck },
+    { name: t('nav.founder.glossaryFaq', { defaultValue: 'Glossário & FAQ' }), href: '/help', icon: HelpCircle },
     { name: t('nav.mentor.profile', { defaultValue: 'Perfil' }), href: '/settings', icon: UserCircle },
   ];
 
