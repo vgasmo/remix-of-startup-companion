@@ -1872,6 +1872,15 @@
     "updatePassword": "Atualizar Palavra-passe"
   },
   "backoffice": {
+    "invoiceStatus": {
+      "draft": "Rascunho",
+      "sent": "Enviada",
+      "paid": "Paga",
+      "overdue": "Em atraso",
+      "cancelled": "Cancelada",
+      "refunded": "Reembolsada"
+    },
+
     "allocationEndError": "Erro ao terminar atribuição",
     "allocationEnded": "Atribuição terminada",
     "billing": {
