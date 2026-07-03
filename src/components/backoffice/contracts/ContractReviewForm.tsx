@@ -73,12 +73,14 @@ export function ContractReviewForm({
 }: ContractReviewFormProps) {
   const { t } = useTranslation();
 
+  const todayIso = new Date().toISOString().slice(0, 10);
   const form = useForm<ContractFormValues>({
     resolver: zodResolver(fromCRM ? contractSchemaCRM : contractSchema),
     defaultValues: {
       workspace_id: defaultWorkspaceId || '',
       status: 'draft',
-      start_date: aiData?.startDate || '',
+      // Default start_date to today when AI didn't extract one — keeps alert engine alive.
+      start_date: aiData?.startDate || todayIso,
       end_date: aiData?.endDate || '',
       monthly_fee: aiData?.monthlyFee || 0,
       discount_percentage: 0,
