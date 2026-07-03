@@ -897,7 +897,7 @@ export default function Mentors() {
                     )}
 
                     {acceptedConnections.length > 0 && (
-                      <div>
+                      <div ref={acceptedSectionRef} style={{ scrollMarginTop: 96 }}>
                         <h4 className="text-sm font-medium mb-3 text-muted-foreground">
                           {t('mentorsPage.connectedFounders')} ({acceptedConnections.length})
                         </h4>
