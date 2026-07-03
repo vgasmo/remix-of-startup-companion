@@ -121,20 +121,32 @@ Deno.serve(async (req) => {
       status = body.data?.envelopeSummary?.status || body.event
       eventId = body.data?.eventId || `ds-${envelopeId}-${body.event || status}-${body.generatedDateTime || Date.now()}`
 
+      // Envelope-level events drive canonical contract status.
+      // Recipient-level events are per-signer only and must NOT activate the
+      // contract on their own (bilateral: founder completing recipient-1 must
+      // not fire full activation before the counter-signer). We map recipient
+      // events to a distinct per-signer bucket handled below.
       const statusMap: Record<string, string> = {
         'envelope-sent': 'sent_for_signature',
         'envelope-delivered': 'viewed',
         'envelope-completed': 'completed',
         'envelope-declined': 'declined',
         'envelope-voided': 'voided',
-        'recipient-sent': 'sent_for_signature',
+      }
+      const recipientEventMap: Record<string, string> = {
+        'recipient-sent': 'sent',
         'recipient-delivered': 'viewed',
-        'recipient-completed': 'completed',
+        'recipient-completed': 'signed',
         'recipient-declined': 'declined',
       }
 
       if (body.event && statusMap[body.event]) {
         status = statusMap[body.event]
+      } else if (body.event && recipientEventMap[body.event]) {
+        // Tag with a distinguishable prefix so downstream logic branches correctly
+        status = `recipient:${recipientEventMap[body.event]}`
+        ;(body as any)._recipientId = body.data?.recipientId || body.data?.envelopeSummary?.recipients?.signers?.[0]?.recipientId || null
+        ;(body as any)._recipientEmail = body.data?.email || body.data?.envelopeSummary?.recipients?.signers?.[0]?.email || null
       }
     } else {
       const xmlText = rawBody
