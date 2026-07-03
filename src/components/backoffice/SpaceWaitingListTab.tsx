@@ -417,7 +417,8 @@ export function SpaceWaitingListTab() {
                               size="sm"
                               onClick={() => updateRequest.mutate({ id: item.id, status: 'cancelled' })}
                             >
-                              Cancel
+                              {t('common.cancel')}
+
                             </Button>
                           </div>
                         )}
