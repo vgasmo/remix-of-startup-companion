@@ -7161,6 +7161,12 @@
   },
   "sessions": {
     "actionItemCreated": "Action item created",
+    "reschedule": "Reschedule",
+    "rescheduleDesc": "Choose a new date and time for this session.",
+    "rescheduled": "Session rescheduled",
+    "showMoreOptions": "More options (title, participants, agenda, link)",
+    "hideMoreOptions": "Hide advanced options",
+    "defaultTitleWith": "Session with {{name}}",
     "actionItemsFromSession": "Action Items from this Session",
     "actions": "Actions",
     "actionsCreated": "Actions Created",
