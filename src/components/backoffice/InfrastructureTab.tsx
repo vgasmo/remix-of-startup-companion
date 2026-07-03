@@ -53,18 +53,28 @@ const STATUS_COLORS: Record<string, string> = {
   reserved: 'bg-primary',
 };
 
+type SubView = 'dashboard' | 'map' | 'list' | 'buildings' | 'waitlist';
+const VALID_VIEWS: SubView[] = ['dashboard', 'map', 'list', 'buildings', 'waitlist'];
+
 export function InfrastructureTab() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [subView, setSubView] = useState<'dashboard' | 'map' | 'list' | 'buildings' | 'waitlist'>('dashboard');
+
+  // URL-backed sub-view (?view=) and deep-link (?room=) — parsed once per mount.
+  const initialParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const initialView = (initialParams.get('view') as SubView | null);
+  const [subView, setSubView] = useState<SubView>(
+    initialView && VALID_VIEWS.includes(initialView) ? initialView : 'dashboard'
+  );
   const [selectedBuildingId, setSelectedBuildingId] = useState<string>('all');
   const [selectedFloorMapId, setSelectedFloorMapId] = useState<string>('');
   const [roomSearch, setRoomSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  
+
   // Drawer state
   const [drawerRoom, setDrawerRoom] = useState<Room | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const deepLinkHandledRef = useRef<string | null>(null);
   
   // Map viewer state
   const [displayImageUrl, setDisplayImageUrl] = useState<string>('');
@@ -133,6 +143,40 @@ export function InfrastructureTab() {
       setSelectedFloorMapId('');
     }
   }, [buildingFloorMaps]);
+
+  // ── Persist the active view in the URL (?view=...) so refresh/back preserves it. ──
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('subtab') !== 'spaces' && params.get('tab') !== 'spaces') return;
+    if (params.get('view') === subView) return;
+    params.set('view', subView);
+    window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+  }, [subView]);
+
+  // ── ?room=<id> deep-link: select the room's building + floor map, open drawer. ──
+  useEffect(() => {
+    if (typeof window === 'undefined' || !rooms || !spaces) return;
+    const params = new URLSearchParams(window.location.search);
+    const roomId = params.get('room');
+    if (!roomId || deepLinkHandledRef.current === roomId) return;
+    const target = rooms.find(r => r.id === roomId);
+    if (!target) return;
+    deepLinkHandledRef.current = roomId;
+    // Pick the owning building from the room's space
+    const targetSpace = spaces.find((s: any) => s.id === target.space_id);
+    const buildingId = (targetSpace as any)?.building_id;
+    if (buildingId) setSelectedBuildingId(buildingId);
+    // Prefer the map view when the room is placed; otherwise the list view.
+    if (target.floor_map_id) {
+      setSelectedFloorMapId(target.floor_map_id);
+      setSubView('map');
+    } else {
+      setSubView('list');
+    }
+    setDrawerRoom(target);
+    setDrawerOpen(true);
+  }, [rooms, spaces]);
 
   const activeFloorMap = buildingFloorMaps.find(fm => fm.id === selectedFloorMapId);
 

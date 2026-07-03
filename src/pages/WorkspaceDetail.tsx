@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { WorkspaceOverview } from '@/components/workspace/WorkspaceOverview';
+import { WorkspaceRoomChip } from '@/components/workspace/WorkspaceRoomChip';
 import { AgendaTab } from '@/components/workspace/AgendaTab';
 import { MilestonesActionsTab } from '@/components/workspace/MilestonesActionsTab';
 import { KpisTab } from '@/components/workspace/KpisTab';
@@ -440,7 +441,9 @@ export default function WorkspaceDetail() {
                   <WorkspaceEmailHistoryPanel workspaceId={workspace.id} />
                 </div>
               )}
+              {isStaff && <WorkspaceRoomChip workspaceId={workspace.id} />}
               <WorkspaceOverview 
+
                 workspace={{
                   id: workspace.id,
                   startup_id: workspace.startup_id,

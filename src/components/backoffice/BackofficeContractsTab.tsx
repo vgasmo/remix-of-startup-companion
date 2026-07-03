@@ -10,7 +10,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, FileText, Search, Clock, AlertTriangle, Cake, Zap, Building2 } from 'lucide-react';
+import { Plus, FileText, Search, Clock, AlertTriangle, Cake, Zap, Building2, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useContractRoom, buildRoomDeepLink } from '@/hooks/useEntityRoom';
 import { useContracts, useIncubationTypes, useBuildings, useCreateContract, useUpdateContract, type StartupContract, type IncubationType } from '@/hooks/useBackoffice';
 import { useWorkspaces, ALL_WORKSPACE_STATUSES } from '@/hooks/useWorkspaces';
 import { format, differenceInMonths, addYears, differenceInDays } from 'date-fns';
@@ -32,6 +34,33 @@ import { useUrlParam } from '@/hooks/useUrlParam';
 
 // Status key set for filter dropdown. Visual styling is owned by <ContractStatusBadge>.
 const STATUS_KEYS = ['draft', 'pending_signature', 'active', 'suspended', 'terminated', 'expired'] as const;
+
+function ContractRoomLink({ contractId }: { contractId: string }) {
+  const room = useContractRoom(contractId);
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  if (!room) return null;
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            aria-label={t('admin.backoffice.viewOnMap', { defaultValue: 'Ver no mapa' })}
+            onClick={() => navigate(buildRoomDeepLink(room.id))}
+          >
+            <MapPin className="h-3.5 w-3.5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="left" className="text-xs">
+          {t('admin.backoffice.viewOnMap', { defaultValue: 'Ver no mapa' })} · {room.name}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
 
 function getIncubationTenure(startDate: string) {
   const start = new Date(startDate);
@@ -729,9 +758,12 @@ export function BackofficeContractsTab() {
                         </div>
                       </TableCell>
                       <TableCell onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" onClick={() => openContractDrawer(contract)}>
-                          {t('common.edit', { defaultValue: 'Edit' })}
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <ContractRoomLink contractId={contract.id} />
+                          <Button variant="ghost" size="sm" onClick={() => openContractDrawer(contract)}>
+                            {t('common.edit', { defaultValue: 'Edit' })}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
