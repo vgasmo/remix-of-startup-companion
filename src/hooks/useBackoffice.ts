@@ -558,6 +558,7 @@ export function useEndRoomAllocation() {
       queryClient.invalidateQueries({ queryKey: ['room-allocations'] });
       queryClient.invalidateQueries({ queryKey: ['rooms'] });
       queryClient.invalidateQueries({ queryKey: ['rooms-with-allocations'] });
+      queryClient.invalidateQueries({ queryKey: ['building-occupancy'] });
       notify.success(t('backoffice.allocationEnded'));
     },
     onError: () => notify.error(t('backoffice.allocationEndError')),
