@@ -271,9 +271,35 @@ export function OverviewTab({
           <span className="text-muted-foreground">{t('crm.stage')}</span>
           <Badge className={cn(stageColor, 'text-white')}>{stageLabel}</Badge>
         </div>
-        <div className="flex justify-between text-sm">
+        <div className="flex items-center justify-between text-sm gap-2">
           <span className="text-muted-foreground">{t('crm.owner')}</span>
-          <span>{item.owner?.full_name || t('crm.unassigned')}</span>
+          {consultors && consultors.length > 0 ? (
+            <Select
+              value={item.owner_consultant_id || '__none__'}
+              onValueChange={async (value) => {
+                const nextOwner = value === '__none__' ? null : value;
+                if (nextOwner === (item.owner_consultant_id || null)) return;
+                try {
+                  await updateItem.mutateAsync({ id: item.id, owner_consultant_id: nextOwner } as any);
+                  notify.success(t('crm.ownerUpdated', { defaultValue: 'Responsável atualizado' }));
+                } catch {
+                  notify.error(t('crm.ownerUpdateFailed', { defaultValue: 'Falha ao atualizar responsável' }));
+                }
+              }}
+            >
+              <SelectTrigger className="h-7 w-52 text-xs">
+                <SelectValue placeholder={t('crm.unassigned')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">{t('crm.unassigned')}</SelectItem>
+                {consultors.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.full_name || t('common.unnamed', { defaultValue: 'Sem nome' })}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <span>{item.owner?.full_name || t('crm.unassigned')}</span>
+          )}
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">{t('crm.created')}</span>
