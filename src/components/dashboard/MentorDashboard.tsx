@@ -243,29 +243,32 @@ const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, is
         intensity="hero"
         className="surface-hero rounded-2xl p-4 sm:p-7 overflow-hidden animate-fade-in-up stagger-1"
       >
-        <div className="space-y-2">
-          <p className="label-eyebrow">
-            {t('mentor.hero.eyebrow', { defaultValue: 'Painel do mentor' })}
-          </p>
-          <h1 className="text-display text-foreground break-words">
-            {t(greetingKey, { defaultValue: greetingDefault, name: firstName })}
-          </h1>
-          <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground">
-            <span>
-              {t('mentor.hero.subline', {
-                defaultValue: '{{count}} startups · {{sessions}} sessões esta semana',
-                count: workspaces.length,
-                sessions: sessionsThisWeek,
-              })}
-            </span>
-            <Badge
-              variant="outline"
-              className="gap-1.5 rounded-full border-border/60 bg-background/70 text-xs font-medium"
-            >
-              <span className={cn('h-2 w-2 rounded-full', statusColors[availabilityStatus])} />
-              {statusLabels[availabilityStatus]}
-            </Badge>
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-2 min-w-0">
+            <p className="label-eyebrow">
+              {t('mentor.hero.eyebrow', { defaultValue: 'Painel do mentor' })}
+            </p>
+            <h1 className="text-display text-foreground break-words">
+              {t(greetingKey, { defaultValue: greetingDefault, name: firstName })}
+            </h1>
+            <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground">
+              <span>
+                {t('mentor.hero.subline', {
+                  defaultValue: '{{count}} startups · {{sessions}} sessões esta semana',
+                  count: workspaces.length,
+                  sessions: sessionsThisWeek,
+                })}
+              </span>
+              <Badge
+                variant="outline"
+                className="gap-1.5 rounded-full border-border/60 bg-background/70 text-xs font-medium"
+              >
+                <span className={cn('h-2 w-2 rounded-full', statusColors[availabilityStatus])} />
+                {statusLabels[availabilityStatus]}
+              </Badge>
+            </div>
           </div>
+          <FocusModeToggle />
         </div>
 
         {slotsThisWeek === 0 && (
