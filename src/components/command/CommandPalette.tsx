@@ -127,11 +127,19 @@ export function CommandPalette() {
     navItems.push(
       { id: 'crm', label: t('nav.crm'), icon: <Briefcase className="h-4 w-4" />, path: '/crm' },
       { id: 'admin', label: t('nav.adminPanel'), icon: <Building2 className="h-4 w-4" />, path: '/admin' },
+      { id: 'contracts', label: t('nav.backoffice.contracts', { defaultValue: 'Contratos' }), icon: <FileText className="h-4 w-4" />, path: '/admin?tab=backoffice&subtab=contracts' },
+      { id: 'spaces', label: t('nav.backoffice.spaces', { defaultValue: 'Espaços' }), icon: <Building2 className="h-4 w-4" />, path: '/admin?tab=backoffice' },
+      { id: 'leads', label: t('nav.admin.crmPipeline', { defaultValue: 'CRM & Leads' }), icon: <Users className="h-4 w-4" />, path: '/crm' },
     );
   }
   if (isStaff || isMentor) {
     navItems.push(
       { id: 'mentors', label: t('nav.mentors'), icon: <Users className="h-4 w-4" />, path: '/mentors' },
+    );
+  }
+  if (isMentor) {
+    navItems.push(
+      { id: 'my-sessions', label: t('nav.mentor.mySessions', { defaultValue: 'As Minhas Sessões' }), icon: <Calendar className="h-4 w-4" />, path: '/my-workspaces' },
     );
   }
 
