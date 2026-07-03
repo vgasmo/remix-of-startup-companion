@@ -5,13 +5,14 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  CalendarClock, Cake, AlertTriangle, Clock, FileText, 
+import {
+  CalendarClock, Cake, AlertTriangle, Clock, FileText,
   CheckCircle2, RefreshCw, Bell
 } from 'lucide-react';
 import { format, differenceInDays, addYears, subDays } from 'date-fns';
