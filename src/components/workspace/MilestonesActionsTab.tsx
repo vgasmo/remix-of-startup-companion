@@ -339,7 +339,6 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
 
   const handleCreateAction = async () => {
     if (!newAction.title.trim()) { notify.error(t('actions.titleRequired')); return; }
-    if (!newAction.milestone_id) { notify.error(t('actions.selectMilestoneRequired')); return; }
     try {
       await createAction.mutateAsync({
         title: newAction.title,
@@ -347,11 +346,26 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
         due_date: newAction.due_date || null,
         priority: newAction.priority,
         owner_user_id: founderId || null,
-        milestone_id: newAction.milestone_id,
+        milestone_id: newAction.milestone_id || null,
       });
       notify.success(t('actions.actionCreated'));
       setCreateActionDialogOpen(false);
       setNewAction({ title: '', description: '', due_date: '', priority: 'medium', milestone_id: '' });
+    } catch { notify.error(t('actions.failedToCreate')); }
+  };
+
+  const handleQuickAddAction = async () => {
+    const title = quickAddTitle.trim();
+    if (!title) return;
+    try {
+      await createAction.mutateAsync({
+        title,
+        priority: 'medium',
+        owner_user_id: founderId || null,
+        milestone_id: quickAddMilestoneId || null,
+      });
+      setQuickAddTitle('');
+      notify.success(t('actions.actionCreated'));
     } catch { notify.error(t('actions.failedToCreate')); }
   };
 
