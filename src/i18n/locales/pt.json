@@ -6736,6 +6736,7 @@
     "booking": "A marcar...",
     "bookingConfirmed": "Marcação Confirmada!",
     "bookingConfirmedDesc": "A sua sessão de primeiro contacto foi agendada. Receberá um convite de calendário em breve.",
+    "bookingConfirmedDescNoInvite": "A sua sessão foi registada. A equipa entrará em contacto por email com os detalhes da reunião.",
     "change": "Alterar",
     "changeProgram": "alterar",
     "confirmBooking": "Confirmar Marcação",
