@@ -276,16 +276,43 @@ export function ContractReviewForm({
               <FormField
                 control={form.control}
                 name="end_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('admin.backoffice.endDate', { defaultValue: 'End Date' })}</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const startDateVal = form.watch('start_date');
+                  const handleAdd12Months = () => {
+                    const base = startDateVal ? new Date(startDateVal) : new Date();
+                    base.setMonth(base.getMonth() + 12);
+                    field.onChange(base.toISOString().slice(0, 10));
+                  };
+                  return (
+                    <FormItem>
+                      <FormLabel>{t('admin.backoffice.endDate', { defaultValue: 'End Date' })}</FormLabel>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleAdd12Months}
+                          className="whitespace-nowrap"
+                        >
+                          {t('contracts.review.add12Months', { defaultValue: '+12 meses' })}
+                        </Button>
+                      </div>
+                      {!field.value && (
+                        <p className="text-xs text-warning mt-1">
+                          {t('contracts.review.noEndDateNudge', {
+                            defaultValue: 'Sem data de fim, este contrato não gera alertas de renovação.',
+                          })}
+                        </p>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
+
 
               <FormField
                 control={form.control}
