@@ -6826,6 +6826,7 @@
       }
     },
     "errors": {
+      "fieldRequired": "Campo obrigatório",
       "pdfDownloadFailed": "Erro ao descarregar PDF do contrato",
       "saveDataFailed": "Erro ao guardar dados. Verifique os campos e tente novamente.",
       "sendSigningFailed": "Erro ao enviar contrato para assinatura",

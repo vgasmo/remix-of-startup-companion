@@ -66,7 +66,7 @@ function useSpaceOperationsData() {
       // Fetch rooms with space/building info
       const { data: rooms } = await supabase
         .from('rooms')
-        .select('id, name, room_number, floor, room_type, status, space_id, space:office_spaces(id, name)')
+        .select('id, name, room_number, floor, room_type, status, space_id, building_id, space:office_spaces(id, name), building:buildings(id, name)')
         .order('name');
 
       // Fetch current allocations
@@ -144,8 +144,12 @@ function useSpaceOperationsData() {
           if (daysLeft <= 30 && daysLeft > 0) warnings.push('allocation_expiring');
         }
 
-        const buildingFromContract = contract?.building?.name;
-        const buildingId = contract?.building?.id || null;
+        // Prefer the room→building join (canonical). Only fall back to the
+        // contract's building when the room has none set.
+        const buildingFromRoom = (room as any).building?.name || null;
+        const buildingFromContract = contract?.building?.name || null;
+        const buildingId = (room as any).building_id || contract?.building?.id || null;
+        const buildingName = buildingFromRoom || buildingFromContract || null;
 
         return {
           room_id: room.id,
@@ -154,7 +158,7 @@ function useSpaceOperationsData() {
           room_status: room.status,
           room_type: room.room_type,
           floor: room.floor,
-          building_name: buildingFromContract || null,
+          building_name: buildingName,
           building_id: buildingId,
           space_name: (room as any).space?.name || null,
           allocation_id: alloc?.id || null,

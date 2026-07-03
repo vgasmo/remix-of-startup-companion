@@ -142,6 +142,15 @@ export default function PublicContractSigning() {
   const [signSuccess, setSignSuccess] = useState(false);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
+  // Per-field validation surfaced on submit. Reuses the exact required-field
+  // set already used to gate the Next button (see `isFormValid` below).
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const clearFieldError = (name: string) =>
+    setFieldErrors(prev => {
+      if (!prev[name]) return prev;
+      const next = { ...prev }; delete next[name]; return next;
+    });
+
 
   const [formData, setFormData] = useState<CompanyFormData>({
     legal_representative_name: '',
@@ -459,6 +468,36 @@ export default function PublicContractSigning() {
     formData.company_city.trim() &&
     formData.company_postal_code.trim();
 
+  // Ordered list — matches the check above; used to focus the first invalid field.
+  const REQUIRED_STEP1_FIELDS: Array<keyof CompanyFormData> = [
+    'legal_representative_name',
+    'legal_representative_email',
+    'company_nif',
+    'company_address',
+    'company_city',
+    'company_postal_code',
+  ];
+
+  const handleStep1Next = () => {
+    const errors: Record<string, string> = {};
+    const requiredMsg = t('publicContract.errors.fieldRequired', { defaultValue: 'Campo obrigatório' });
+    for (const key of REQUIRED_STEP1_FIELDS) {
+      if (!String(formData[key] ?? '').trim()) errors[key] = requiredMsg;
+    }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      const first = REQUIRED_STEP1_FIELDS.find(k => errors[k]);
+      if (first) {
+        const el = document.getElementById(first);
+        if (el && typeof (el as HTMLInputElement).focus === 'function') (el as HTMLInputElement).focus();
+      }
+      return;
+    }
+    setFieldErrors({});
+    saveCompanyData.mutate();
+  };
+
+
   // Loading state
   if (isLoading) {
     return (
@@ -670,9 +709,14 @@ export default function PublicContractSigning() {
                     <Input
                       id="legal_representative_name"
                       value={formData.legal_representative_name}
-                      onChange={e => setFormData(prev => ({ ...prev, legal_representative_name: e.target.value }))}
+                      onChange={e => { setFormData(prev => ({ ...prev, legal_representative_name: e.target.value })); clearFieldError('legal_representative_name'); }}
                       placeholder={t('publicContractSigning.fullName')}
+                      aria-invalid={!!fieldErrors.legal_representative_name}
+                      aria-describedby={fieldErrors.legal_representative_name ? 'legal_representative_name-error' : undefined}
                     />
+                    {fieldErrors.legal_representative_name && (
+                      <p id="legal_representative_name-error" className="text-xs text-destructive">{fieldErrors.legal_representative_name}</p>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="legal_representative_email">{t('publicContractSigning.representativeEmail')}</Label>
@@ -680,9 +724,14 @@ export default function PublicContractSigning() {
                       id="legal_representative_email"
                       type="email"
                       value={formData.legal_representative_email}
-                      onChange={e => setFormData(prev => ({ ...prev, legal_representative_email: e.target.value }))}
+                      onChange={e => { setFormData(prev => ({ ...prev, legal_representative_email: e.target.value })); clearFieldError('legal_representative_email'); }}
                       placeholder="email@empresa.pt"
+                      aria-invalid={!!fieldErrors.legal_representative_email}
+                      aria-describedby={fieldErrors.legal_representative_email ? 'legal_representative_email-error' : undefined}
                     />
+                    {fieldErrors.legal_representative_email && (
+                      <p id="legal_representative_email-error" className="text-xs text-destructive">{fieldErrors.legal_representative_email}</p>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="legal_representative_phone">{t('publicContractSigning.phone')}</Label>
@@ -713,39 +762,60 @@ export default function PublicContractSigning() {
                     <Input
                       id="company_nif"
                       value={formData.company_nif}
-                      onChange={e => setFormData(prev => ({ ...prev, company_nif: e.target.value }))}
+                      onChange={e => { setFormData(prev => ({ ...prev, company_nif: e.target.value })); clearFieldError('company_nif'); }}
                       placeholder="123456789"
                       maxLength={9}
+                      aria-invalid={!!fieldErrors.company_nif}
+                      aria-describedby={fieldErrors.company_nif ? 'company_nif-error' : undefined}
                     />
+                    {fieldErrors.company_nif && (
+                      <p id="company_nif-error" className="text-xs text-destructive">{fieldErrors.company_nif}</p>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="company_address">{t('publicContractSigning.registeredAddress')}</Label>
                     <Input
                       id="company_address"
                       value={formData.company_address}
-                      onChange={e => setFormData(prev => ({ ...prev, company_address: e.target.value }))}
+                      onChange={e => { setFormData(prev => ({ ...prev, company_address: e.target.value })); clearFieldError('company_address'); }}
                       placeholder={t('publicContractSigning.streetNumberFloor')}
+                      aria-invalid={!!fieldErrors.company_address}
+                      aria-describedby={fieldErrors.company_address ? 'company_address-error' : undefined}
                     />
+                    {fieldErrors.company_address && (
+                      <p id="company_address-error" className="text-xs text-destructive">{fieldErrors.company_address}</p>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="company_city">{t('publicContractSigning.city')}</Label>
                     <Input
                       id="company_city"
                       value={formData.company_city}
-                      onChange={e => setFormData(prev => ({ ...prev, company_city: e.target.value }))}
+                      onChange={e => { setFormData(prev => ({ ...prev, company_city: e.target.value })); clearFieldError('company_city'); }}
                       placeholder="Leiria"
+                      aria-invalid={!!fieldErrors.company_city}
+                      aria-describedby={fieldErrors.company_city ? 'company_city-error' : undefined}
                     />
+                    {fieldErrors.company_city && (
+                      <p id="company_city-error" className="text-xs text-destructive">{fieldErrors.company_city}</p>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="company_postal_code">{t('publicContractSigning.postalCode')}</Label>
                     <Input
                       id="company_postal_code"
                       value={formData.company_postal_code}
-                      onChange={e => setFormData(prev => ({ ...prev, company_postal_code: e.target.value }))}
+                      onChange={e => { setFormData(prev => ({ ...prev, company_postal_code: e.target.value })); clearFieldError('company_postal_code'); }}
                       placeholder="2400-000"
+                      aria-invalid={!!fieldErrors.company_postal_code}
+                      aria-describedby={fieldErrors.company_postal_code ? 'company_postal_code-error' : undefined}
                     />
+                    {fieldErrors.company_postal_code && (
+                      <p id="company_postal_code-error" className="text-xs text-destructive">{fieldErrors.company_postal_code}</p>
+                    )}
                   </div>
                 </div>
+
 
                 {/* Contract summary */}
                 <Separator />
@@ -881,8 +951,8 @@ export default function PublicContractSigning() {
 
             <div className="flex justify-end">
               <Button
-                onClick={() => saveCompanyData.mutate()}
-                disabled={!isFormValid || saveCompanyData.isPending} loading={saveCompanyData.isPending}
+                onClick={handleStep1Next}
+                disabled={saveCompanyData.isPending} loading={saveCompanyData.isPending}
                 className="gap-2"
               >
                 {saveCompanyData.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}

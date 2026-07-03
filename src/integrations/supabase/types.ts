@@ -4323,6 +4323,7 @@ export type Database = {
           calendar_feed_token: string | null
           calendar_token_expires_at: string | null
           created_at: string
+          dismissed_prompts: Json
           email: string
           expertise: string[] | null
           full_name: string | null
@@ -4340,6 +4341,7 @@ export type Database = {
           calendar_feed_token?: string | null
           calendar_token_expires_at?: string | null
           created_at?: string
+          dismissed_prompts?: Json
           email: string
           expertise?: string[] | null
           full_name?: string | null
@@ -4357,6 +4359,7 @@ export type Database = {
           calendar_feed_token?: string | null
           calendar_token_expires_at?: string | null
           created_at?: string
+          dismissed_prompts?: Json
           email?: string
           expertise?: string[] | null
           full_name?: string | null

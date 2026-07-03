@@ -25,6 +25,7 @@ import {
   useRoomsWithAllocations,
   type SpaceWaitingListItem
 } from '@/hooks/useBackoffice';
+import { useBuildings } from '@/hooks/backoffice/useBuildings';
 import { useWorkspaces, ALL_WORKSPACE_STATUSES } from '@/hooks/useWorkspaces';
 import { useFunnelItems } from '@/hooks/useFunnel';
 import { useAuth } from '@/contexts/AuthContext';
@@ -59,6 +60,7 @@ export function SpaceWaitingListTab() {
 
   const { data: waitingList, isLoading } = useSpaceWaitingList({ status: statusFilter === 'all' ? undefined : statusFilter });
   const { data: spaces } = useOfficeSpaces();
+  const { data: buildings } = useBuildings();
   const { data: rooms } = useRoomsWithAllocations();
   const { data: workspaces } = useWorkspaces({}, false, ALL_WORKSPACE_STATUSES);
   const { data: funnelItems } = useFunnelItems();
@@ -224,8 +226,8 @@ export function SpaceWaitingListTab() {
                       <SelectValue placeholder={t('waitingList.anyBuilding', { defaultValue: 'Qualquer edifício...' })} />
                     </SelectTrigger>
                     <SelectContent>
-                      {spaces?.map(space => (
-                        <SelectItem key={space.id} value={space.id}>{space.name}</SelectItem>
+                      {buildings?.filter(b => b.is_active).map(b => (
+                        <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

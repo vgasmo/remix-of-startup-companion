@@ -300,18 +300,13 @@ export function BackofficeSpacesTab() {
                           >
                             {t('common.edit')}
                           </Button>
-                          {!isOccupied && space.is_available && (
-                            <Button
-                              size="sm"
-                              className="flex-1"
-                              onClick={() => {
-                                setSelectedSpaceForAllocation(space);
-                                setAllocationDialogOpen(true);
-                              }}
-                            >
-                              {t('admin.backoffice.allocate')}
-                            </Button>
-                          )}
+                          {/*
+                            Space model unification (R2-8): legacy office_spaces
+                            allocations are now read-only. New allocations happen
+                            through rooms → contracts. The Allocate button is
+                            intentionally disabled — remove the entire block once
+                            the legacy office_spaces UI is deleted.
+                          */}
                         </div>
                       </CardContent>
                     </Card>

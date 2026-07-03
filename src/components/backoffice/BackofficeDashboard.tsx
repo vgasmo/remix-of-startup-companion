@@ -319,10 +319,10 @@ export function BackofficeDashboard() {
               {floorMaps && floorMaps.length > 0 ? (
                 <div className="grid grid-cols-2 gap-2">
                   {floorMaps.slice(0, 4).map(fm => {
-                    const building = buildings?.find(b => {
-                      // Match via space_id -> building
-                      return true; // Show all maps
-                    });
+                    // Match floor map to a building by name substring
+                    // (office_spaces has no building_id yet; do best-effort UI match).
+                    const fmName = (fm.name || '').toLowerCase();
+                    const building = buildings?.find(b => fmName.includes((b.name || '').toLowerCase()) || fmName.includes((b.code || '').toLowerCase()));
                     return (
                       <Button
                         key={fm.id}
@@ -334,9 +334,11 @@ export function BackofficeDashboard() {
                           <MapPin className="h-3.5 w-3.5 text-primary" />
                           {fm.name}
                         </span>
-                        {fm.floor && (
+                        {(building || fm.floor) && (
                           <span className="text-xs text-muted-foreground">
-                            {t('admin.backoffice.floorLabel', 'Floor')} {fm.floor}
+                            {building?.name}
+                            {building && fm.floor ? ' · ' : ''}
+                            {fm.floor && `${t('admin.backoffice.floorLabel', 'Floor')} ${fm.floor}`}
                           </span>
                         )}
                       </Button>

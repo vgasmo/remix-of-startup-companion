@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { 
   Building2, Users, Settings, Home, Briefcase, Calendar, 
   Contact, BookOpen, MoreHorizontal, Cog, FileText, ClipboardList,
-  Network, LucideIcon
+  Network, MessageCircle, LucideIcon
 } from 'lucide-react';
+import { useConversations } from '@/hooks/useMessaging';
 import { AppSidebar } from './AppSidebar';
 import { TopBar } from './TopBar';
 import { OfflineBadge } from '@/components/ui/OfflineBadge';
@@ -115,9 +116,11 @@ export const AppLayout = forwardRef<HTMLDivElement, AppLayoutProps>(function App
 });
 
 interface MobileNavItem {
-  href: string;
+  href?: string;
+  onClick?: () => void;
   icon: LucideIcon;
   label: string;
+  badge?: number;
 }
 
 // Mobile bottom navigation - role-aware
@@ -127,6 +130,16 @@ function MobileBottomNav() {
   const { isAdmin, isConsultor, isBackoffice, isStaff, isExternalMentor, isFounder } = useAuth();
   const { data: workspaces = [] } = useWorkspaces();
   const firstWorkspaceId = workspaces.length > 0 ? workspaces[0].id : null;
+
+  const { data: conversations } = useConversations();
+  const unread = (conversations || []).reduce((sum: number, c: any) => sum + (c.unread_count || 0), 0);
+  const openMessaging = () => window.dispatchEvent(new Event('messaging:open'));
+  const messagingItem: MobileNavItem = {
+    onClick: openMessaging,
+    icon: MessageCircle,
+    label: t('common.messages'),
+    badge: unread,
+  };
   
   const navItems = useMemo((): MobileNavItem[] => {
     // ADMIN
@@ -135,6 +148,7 @@ function MobileBottomNav() {
         { href: '/staff-cockpit', icon: Home, label: t('nav.mobile.cockpit', { defaultValue: 'Cockpit' }) },
         { href: '/admin', icon: ClipboardList, label: t('nav.mobile.ecosystem', { defaultValue: 'Ecossistema' }) },
         { href: '/crm', icon: Contact, label: t('nav.mobile.crm', { defaultValue: 'CRM' }) },
+        messagingItem,
         { href: '/settings', icon: Settings, label: t('nav.settings') },
       ];
     }
@@ -145,6 +159,7 @@ function MobileBottomNav() {
         { href: '/staff-cockpit', icon: Home, label: t('nav.mobile.cockpit', { defaultValue: 'Cockpit' }) },
         { href: '/admin?tab=backoffice', icon: Building2, label: t('nav.mobile.spaces', { defaultValue: 'Espaços' }) },
         { href: '/admin?tab=backoffice&subtab=contracts', icon: FileText, label: t('nav.mobile.contracts', { defaultValue: 'Contratos' }) },
+        messagingItem,
         { href: '/settings', icon: Settings, label: t('nav.settings') },
       ];
     }
@@ -155,6 +170,7 @@ function MobileBottomNav() {
         { href: '/my-workspaces', icon: Briefcase, label: t('nav.mobile.portfolio', { defaultValue: 'Portefólio' }) },
         { href: '/consultor-tools', icon: Calendar, label: t('nav.mobile.sessions', { defaultValue: 'Sessões' }) },
         { href: '/crm', icon: Contact, label: t('nav.mobile.crm', { defaultValue: 'CRM' }) },
+        messagingItem,
         { href: '/settings', icon: Settings, label: t('nav.settings') },
       ];
     }
@@ -165,6 +181,7 @@ function MobileBottomNav() {
         { href: '/my-workspaces', icon: Building2, label: t('nav.mobile.startups', { defaultValue: 'Startups' }) },
         { href: '/mentors/impact', icon: Calendar, label: t('nav.mobile.sessions', { defaultValue: 'Sessões' }) },
         { href: '/mentors', icon: BookOpen, label: t('nav.mobile.resources', { defaultValue: 'Recursos' }) },
+        messagingItem,
         { href: '/settings', icon: Settings, label: t('nav.settings') },
       ];
     }
@@ -174,6 +191,7 @@ function MobileBottomNav() {
       return [
         { href: '/my-workspaces', icon: Home, label: t('nav.mobile.home', { defaultValue: 'Início' }) },
         ...(firstWorkspaceId ? [{ href: `/workspace/${firstWorkspaceId}`, icon: Building2, label: t('nav.mobile.startup', { defaultValue: 'Startup' }) }] : []),
+        messagingItem,
         { href: '/resources', icon: Network, label: t('nav.mobile.resources', { defaultValue: 'Recursos' }) },
         { href: '/settings', icon: Settings, label: t('nav.settings') },
       ];
@@ -184,32 +202,52 @@ function MobileBottomNav() {
       { href: '/my-workspaces', icon: Home, label: t('nav.home', { defaultValue: 'Home' }) },
       { href: '/settings', icon: Settings, label: t('nav.settings') },
     ];
-  }, [isAdmin, isConsultor, isBackoffice, isStaff, isExternalMentor, isFounder, firstWorkspaceId, t]);
+  }, [isAdmin, isConsultor, isBackoffice, isStaff, isExternalMentor, isFounder, firstWorkspaceId, t, unread]);
   
   return (
     <div className="flex items-center justify-around h-16 px-2" role="navigation" aria-label="Mobile navigation">
-      {navItems.map((item) => {
-        const isActive = item.href.includes('?')
-          ? location.pathname + location.search === item.href
-          : location.pathname === item.href || 
-            (item.href !== '/' && item.href !== '/my-workspaces' && location.pathname.startsWith(item.href));
-        
-        return (
-          <Link
-            key={item.href}
-            to={item.href}
-            className={cn(
-              "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px] min-h-[44px]",
-              isActive 
-                ? "text-primary bg-primary/10" 
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-            )}
-          >
+      {navItems.map((item, idx) => {
+        const isActive = item.href
+          ? (item.href.includes('?')
+              ? location.pathname + location.search === item.href
+              : location.pathname === item.href || 
+                (item.href !== '/' && item.href !== '/my-workspaces' && location.pathname.startsWith(item.href)))
+          : false;
+
+        const className = cn(
+          "relative flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px] min-h-[44px]",
+          isActive 
+            ? "text-primary bg-primary/10" 
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+        );
+
+        const content = (
+          <>
             <item.icon className="h-5 w-5" />
+            {(item.badge ?? 0) > 0 && (
+              <span className="absolute top-1 right-2 min-w-[16px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center">
+                {item.badge! > 9 ? '9+' : item.badge}
+              </span>
+            )}
             <span className="text-[10px] font-medium">{item.label}</span>
+          </>
+        );
+
+        if (item.onClick) {
+          return (
+            <button key={`btn-${idx}`} type="button" onClick={item.onClick} className={className}>
+              {content}
+            </button>
+          );
+        }
+
+        return (
+          <Link key={item.href} to={item.href!} className={className}>
+            {content}
           </Link>
         );
       })}
     </div>
   );
+
 }

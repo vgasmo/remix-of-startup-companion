@@ -6826,6 +6826,7 @@
       }
     },
     "errors": {
+      "fieldRequired": "Required field",
       "pdfDownloadFailed": "Failed to download contract PDF",
       "saveDataFailed": "Failed to save data. Check the fields and try again.",
       "sendSigningFailed": "Failed to send contract for signature",
