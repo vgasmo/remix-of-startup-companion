@@ -45,6 +45,7 @@ import { StartupStage, HealthScore, WorkspacePriority } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFounderOnboardingState } from '@/hooks/useFounderOnboardingState';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useAttentionCount } from '@/hooks/useAttentionCount';
 
 const PAGE_SIZE = 15;
 
@@ -78,15 +79,24 @@ export default function MyWorkspaces() {
   const [showSmartImport, setShowSmartImport] = useState(false);
   const [showDetailedView, setShowDetailedView] = useState(false);
 
-  // Handle URL filter parameter
+  // Handle URL filter parameter — only enable the chips that actually have
+  // matching items so we don't AND-filter into an empty list (e.g. 0 critical
+  // + 0 at_risk + 277 overdue previously collapsed to no results).
+  const { data: attentionStatsForFilter } = useAttentionCount();
   useEffect(() => {
     const filterParam = searchParams.get('filter');
-    if (filterParam === 'attention') {
-      setQuickFilters({ critical: true, at_risk: true, overdue: true });
-      setShowDetailedView(true);
-      setSearchParams({}, { replace: true });
-    }
-  }, [searchParams, setSearchParams]);
+    if (filterParam !== 'attention') return;
+    if (!attentionStatsForFilter) return; // wait for counts before applying
+    const next: Record<string, boolean> = {};
+    if (attentionStatsForFilter.criticalCount > 0) next.critical = true;
+    if (attentionStatsForFilter.atRiskCount > 0) next.at_risk = true;
+    if (attentionStatsForFilter.overdueCount > 0) next.overdue = true;
+    // Fallback: if nothing has counts, still show overdue chip so the view isn't empty.
+    if (Object.keys(next).length === 0) next.overdue = true;
+    setQuickFilters(next);
+    setShowDetailedView(true);
+    setSearchParams({}, { replace: true });
+  }, [searchParams, setSearchParams, attentionStatsForFilter]);
 
   // Enable realtime updates
   useRealtimeWorkspaces();
