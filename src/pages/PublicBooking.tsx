@@ -270,7 +270,9 @@ export default function PublicBooking() {
             <CheckCircle className="h-12 w-12 text-primary mx-auto" />
             <h1 className="text-xl font-semibold text-foreground">{t('publicBooking.bookingConfirmed')}</h1>
             <p className="text-muted-foreground">
-              {t('publicBooking.bookingConfirmedDesc')}
+              {bookingHasInvite
+                ? t('publicBooking.bookingConfirmedDesc')
+                : t('publicBooking.bookingConfirmedDescNoInvite', { defaultValue: 'A sua sessão foi registada. A equipa entrará em contacto por email com os detalhes da reunião.' })}
             </p>
             {selectedSlot && (
               <div className="bg-muted rounded-lg p-4 mt-4">
