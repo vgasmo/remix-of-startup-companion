@@ -62,6 +62,8 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<Record<string, any>>({});
   const [activeTab, setActiveTab] = useState('details');
+  const [renewOpen, setRenewOpen] = useState(false);
+
   const { data: pricingTable } = useCurrentPricingTable();
 
   // Fetch discounts for pricing engine
