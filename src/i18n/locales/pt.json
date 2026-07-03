@@ -326,6 +326,7 @@
       "contractNumber": "Número do Contrato",
       "contractSigners": {
         "autoAssigned": "Será atribuído automaticamente ao enviar",
+        "bilateralSignatures": "Assinaturas Bilaterais",
         "firstParty": "Primeiro Outorgante",
         "secondParty": "Segundo Outorgante"
       },
