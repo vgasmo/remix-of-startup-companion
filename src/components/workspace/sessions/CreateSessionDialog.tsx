@@ -292,6 +292,16 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
       scheduledAtISO = startUtcIso;
     }
 
+    // Universal conflict guard — same-workspace duplicates + mentor overlap.
+    // Skipped for logging past off-platform meetings (that's a record, not a booking).
+    if (!logPast) {
+      const conflict = await findSchedulingConflict(scheduledAtISO, parseInt(duration));
+      if (conflict) {
+        notify.error(conflict);
+        return;
+      }
+    }
+
     setIsSending(true);
     try {
       const session = await createMutation.mutateAsync({
