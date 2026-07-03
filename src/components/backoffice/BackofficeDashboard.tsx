@@ -317,33 +317,35 @@ function BackofficeDashboardInner() {
           </CardContent>
         </Card>
 
-        {/* Available Rooms */}
-        <Card className="rounded-2xl">
-          <CardContent className="pt-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold tracking-tight">{data.availableRooms}</div>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {t('admin.backoffice.opsHub.availableRooms', { defaultValue: 'Available Rooms' })}
-                </p>
-                {data.waitingListCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => navigate('/admin?tab=backoffice&subtab=waitlist')}
-                    className="text-xs text-warning hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-                  >
-                    {data.waitingListCount} {t('admin.backoffice.opsHub.inWaitlist', { defaultValue: 'in waitlist' })}
-                  </button>
-                )}
-
+        {/* Available Rooms — full view only */}
+        <FullViewOnly>
+          <Card className="rounded-2xl">
+            <CardContent className="pt-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-3xl font-bold tracking-tight">{data.availableRooms}</div>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {t('admin.backoffice.opsHub.availableRooms', { defaultValue: 'Available Rooms' })}
+                  </p>
+                  {data.waitingListCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => navigate('/admin?tab=backoffice&subtab=waitlist')}
+                      className="text-xs text-warning hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                    >
+                      {data.waitingListCount} {t('admin.backoffice.opsHub.inWaitlist', { defaultValue: 'in waitlist' })}
+                    </button>
+                  )}
+                </div>
+                <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center">
+                  <DoorOpen className="h-6 w-6 text-accent-foreground" />
+                </div>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center">
-                <DoorOpen className="h-6 w-6 text-accent-foreground" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </FullViewOnly>
       </div>
+
 
       {/* ═══════════════════ THE PHYSICAL WORLD ═══════════════════ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
