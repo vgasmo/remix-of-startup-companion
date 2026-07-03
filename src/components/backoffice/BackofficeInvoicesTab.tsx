@@ -191,7 +191,7 @@ export function BackofficeInvoicesTab() {
                       </TableCell>
                       <TableCell>
                         <Badge className={cn('text-xs', statusConfig?.className)}>
-                          {statusConfig?.label}
+                          {statusConfig && t(statusConfig.labelKey)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right font-medium">
