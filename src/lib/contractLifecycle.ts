@@ -74,15 +74,31 @@ export function suggestRenewalWindow(
   };
 }
 
-/** Compute the next contract anniversary (based on start_date). */
+/**
+ * Compute the next contract anniversary using calendar-exact math.
+ * Adds whole years to start_date until the resulting date is strictly after today.
+ * (Avoids the ~30.44-day approximation that drifts across leap years.)
+ */
 export function nextAnniversary(contract: ContractLite, today: Date = new Date()): Date {
   const start = new Date(contract.start_date);
-  const monthsSince = Math.floor(
-    (today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30.44),
-  );
-  const yearsSince = Math.floor(monthsSince / 12);
-  return addYears(start, yearsSince + 1);
+  let years = Math.max(0, today.getFullYear() - start.getFullYear());
+  let candidate = addYears(start, years);
+  while (candidate <= today) {
+    years += 1;
+    candidate = addYears(start, years);
+  }
+  return candidate;
 }
+
+/** Full years completed on the contract as of `today` (calendar-exact). */
+export function yearsCompleted(contract: ContractLite, today: Date = new Date()): number {
+  const start = new Date(contract.start_date);
+  let years = Math.max(0, today.getFullYear() - start.getFullYear());
+  // Walk back if we haven't reached the anniversary yet this year.
+  while (years > 0 && addYears(start, years) > today) years -= 1;
+  return years;
+}
+
 
 /** Days until the next biennial (24-month cadence) price review from start_date. */
 export function daysUntilBiennialReview(contract: ContractLite, today: Date = new Date()): number {
