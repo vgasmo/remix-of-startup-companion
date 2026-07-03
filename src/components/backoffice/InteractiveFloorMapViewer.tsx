@@ -485,7 +485,7 @@ export function InteractiveFloorMapViewer({
         {/* Legend */}
         <div className="flex items-center gap-6 pt-2 border-t text-sm">
           <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-primary fill-primary/20" />
+            <MapPin className="h-4 w-4 text-info fill-info/20" />
             <span>{t('admin.backoffice.occupied', 'Occupied')}</span>
           </div>
           <div className="flex items-center gap-2">
