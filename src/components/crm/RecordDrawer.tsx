@@ -71,7 +71,7 @@ interface RecordDrawerProps {
   onNavigateSibling?: (id: string) => void;
 }
 
-export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
+export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateSibling }: RecordDrawerProps) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
