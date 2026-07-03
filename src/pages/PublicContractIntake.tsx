@@ -80,6 +80,46 @@ export default function PublicContractIntake() {
   const [uploadingDocKey, setUploadingDocKey] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
+  // Per-field validation surfaced on submit. Mirrors the required-field set
+  // used to gate the submit button below.
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const clearFieldError = (name: string) =>
+    setFieldErrors(prev => {
+      if (!prev[name]) return prev;
+      const next = { ...prev }; delete next[name]; return next;
+    });
+
+  const REQUIRED_INTAKE_FIELDS: Array<keyof IntakeFormData> = [
+    'organization_name',
+    'company_nif',
+    'company_address',
+    'company_city',
+    'company_postal_code',
+    'legal_representative_name',
+    'legal_representative_email',
+    'legal_representative_phone',
+  ];
+
+  const handleSubmit = async () => {
+    const errors: Record<string, string> = {};
+    const requiredMsg = t('publicContract.errors.fieldRequired', { defaultValue: 'Campo obrigatório' });
+    for (const key of REQUIRED_INTAKE_FIELDS) {
+      if (!String(formData[key] ?? '').trim()) errors[key] = requiredMsg;
+    }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      const first = REQUIRED_INTAKE_FIELDS.find(k => errors[k]);
+      if (first) {
+        const el = document.getElementById(first);
+        if (el && typeof (el as HTMLInputElement).focus === 'function') (el as HTMLInputElement).focus();
+      }
+      return;
+    }
+    setFieldErrors({});
+    await autosave.flush();
+    submitMutation.mutate();
+  };
+
   const handleUploadDoc = async (docKey: string, file: File) => {
     const MAX_BYTES = 10 * 1024 * 1024;
     if (file.size > MAX_BYTES) {
