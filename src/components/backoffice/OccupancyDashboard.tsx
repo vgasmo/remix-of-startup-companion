@@ -61,9 +61,9 @@ export function OccupancyDashboard() {
     let monthlyNet = 0;
     for (const c of activeContracts) {
       const fee = c.monthly_fee || 0;
-      const discount = c.discount_percentage || 0;
+      const disc = computeEffectiveDiscount(null, c.discount_percentage, c.discount_reason);
       monthlyGross += fee;
-      monthlyNet += fee * (1 - discount / 100);
+      monthlyNet += fee * (1 - disc.effectivePct / 100);
     }
     return {
       monthlyGross: Math.round(monthlyGross),
