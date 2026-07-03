@@ -141,8 +141,25 @@ export default function WorkspaceDetail() {
   }, [isLoading, workspace, allVisibleIds, currentTab, setSearchParams, t]);
 
   const activeTab = allVisibleIds.has(currentTab) ? currentTab : 'overview';
-  
+
+  // Visual highlight for the tab when arriving from an external link (e.g. notification).
+  // We pulse the tab briefly whenever activeTab changes without an explicit user click.
+  const [highlightedTab, setHighlightedTab] = useState<string | null>(null);
+  const userClickedTabRef = useRef(false);
+  useEffect(() => {
+    if (userClickedTabRef.current) {
+      userClickedTabRef.current = false;
+      return;
+    }
+    if (!activeTab || activeTab === 'overview') return;
+    setHighlightedTab(activeTab);
+    const timer = window.setTimeout(() => setHighlightedTab(null), 3000);
+    return () => window.clearTimeout(timer);
+  }, [activeTab]);
+
   const handleTabChange = useCallback((value: string) => {
+    userClickedTabRef.current = true;
+    setHighlightedTab(null);
     setSearchParams({ tab: value }, { replace: true });
     // Reset scroll so users land at the top of the newly selected tab content.
     if (typeof window !== 'undefined') {
