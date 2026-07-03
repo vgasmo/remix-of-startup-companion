@@ -806,8 +806,14 @@ Deno.serve(async (req) => {
             signingResult = await dsRes.json()
             signingResult.provider = 'docusign'
           } else {
-            console.warn('DocuSign send failed:', await dsRes.text())
-            signingResult = { status: 'pending_manual', provider: 'docusign', message: 'DocuSign unavailable — staff notified' }
+            const errText = await dsRes.text()
+            console.warn('DocuSign send failed:', errText)
+            await supabase.from('startup_contracts').update({
+              signature_status: 'failed',
+              provider_last_error: `docusign_send: ${errText.slice(0, 500)}`,
+              provider_last_sync_at: new Date().toISOString(),
+            }).eq('id', contract.id)
+            signingResult = { status: 'failed', provider: 'docusign', message: 'DocuSign dispatch failed — staff notified.' }
           }
 
         } else if (provider === 'pandadoc') {
@@ -830,8 +836,14 @@ Deno.serve(async (req) => {
             signingResult = await pdRes.json()
             signingResult.provider = 'pandadoc'
           } else {
-            console.warn('PandaDoc send failed:', await pdRes.text())
-            signingResult = { status: 'pending_manual', provider: 'pandadoc', message: 'PandaDoc unavailable — staff notified' }
+            const errText = await pdRes.text()
+            console.warn('PandaDoc send failed:', errText)
+            await supabase.from('startup_contracts').update({
+              signature_status: 'failed',
+              provider_last_error: `pandadoc_send: ${errText.slice(0, 500)}`,
+              provider_last_sync_at: new Date().toISOString(),
+            }).eq('id', contract.id)
+            signingResult = { status: 'failed', provider: 'pandadoc', message: 'PandaDoc dispatch failed — staff notified.' }
           }
 
         } else if (provider === 'assinatura_digital') {
