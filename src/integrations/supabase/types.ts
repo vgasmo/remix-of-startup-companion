@@ -9062,6 +9062,7 @@ export type Database = {
         Returns: boolean
       }
       can_manage_startup: { Args: { _startup_id: string }; Returns: boolean }
+      can_notify_user: { Args: { _target_user: string }; Returns: boolean }
       can_see_startup_pii: { Args: { _startup_id: string }; Returns: boolean }
       can_see_team_member_pii: {
         Args: { _startup_id: string }
