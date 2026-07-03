@@ -51,6 +51,14 @@ const notificationTypeIcons: Record<string, string> = {
   intake_stale: '📨',
   session_no_notes: '✏️',
   workspace_no_consultant: '🔍',
+  session_scheduled: '📅',
+  session_rescheduled: '🔄',
+  session_cancelled: '❌',
+  playbook_requested: '📘',
+  template_submitted: '📝',
+  document_uploaded: '📎',
+  message_alert: '💬',
+
 };
 
 const notificationTypeColors: Record<string, string> = {
