@@ -35,6 +35,16 @@ const DAYS_OF_WEEK_PT: Record<number, string> = {
 };
 const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+function timeToMin(t: string) {
+  const [h, m] = t.split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
+function minToTime(m: number) {
+  const h = Math.floor(m / 60);
+  const mm = m % 60;
+  return `${String(h).padStart(2, '0')}:${String(mm).padStart(2, '0')}:00`;
+}
+
 export function MentorBookingPanel({ 
   mentorId, 
   mentorName, 
