@@ -200,7 +200,7 @@ export function ContractLifecycleEventsCard() {
         {isLoading ? (
           <div className="space-y-2">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-14 bg-muted animate-pulse rounded-lg" />
+              <div key={i} className="h-14 bg-muted/40 rounded-lg" />
             ))}
           </div>
         ) : events.length === 0 ? (
@@ -225,11 +225,12 @@ export function ContractLifecycleEventsCard() {
                   })}
                   className={cn(
                     'w-full text-left p-3 rounded-lg border flex items-start gap-3 text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    event.severity === 'critical' && 'bg-destructive/50 border-destructive/30 dark:bg-destructive/10',
-                    event.severity === 'warning' && 'bg-warning/50 border-warning/30 dark:bg-warning/10',
-                    event.severity === 'info' && 'bg-info/50 border-info/30 dark:bg-info/10',
+                    event.severity === 'critical' && 'bg-destructive/5 border-destructive/30',
+                    event.severity === 'warning' && 'bg-warning/5 border-warning/30',
+                    event.severity === 'info' && 'bg-info/5 border-info/30',
                   )}
                 >
+
                   <div className={cn(
                     'mt-0.5',
                     event.severity === 'critical' && 'text-destructive',
