@@ -143,9 +143,13 @@ export default function WorkspaceDetail() {
   const activeTab = allVisibleIds.has(currentTab) ? currentTab : 'overview';
 
   // Visual highlight for the tab when arriving from an external link (e.g. notification).
-  // We pulse the tab briefly whenever activeTab changes without an explicit user click.
+  // We pulse the tab briefly and move keyboard focus to it whenever activeTab changes
+  // without an explicit user click.
   const [highlightedTab, setHighlightedTab] = useState<string | null>(null);
   const userClickedTabRef = useRef(false);
+  const tabButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const overflowTriggerRef = useRef<HTMLButtonElement | null>(null);
+
   useEffect(() => {
     if (userClickedTabRef.current) {
       userClickedTabRef.current = false;
@@ -153,9 +157,22 @@ export default function WorkspaceDetail() {
     }
     if (!activeTab || activeTab === 'overview') return;
     setHighlightedTab(activeTab);
+
+    // Move keyboard focus to the correct control so screen readers announce it
+    // and arrow-key navigation continues from the highlighted tab.
+    const focusTarget =
+      tabButtonRefs.current.get(activeTab) ??
+      (overflowTabs.some(o => o.id === activeTab) ? overflowTriggerRef.current : null);
+    if (focusTarget) {
+      window.requestAnimationFrame(() => {
+        focusTarget.focus({ preventScroll: true });
+        focusTarget.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+      });
+    }
+
     const timer = window.setTimeout(() => setHighlightedTab(null), 3000);
     return () => window.clearTimeout(timer);
-  }, [activeTab]);
+  }, [activeTab, overflowTabs]);
 
   const handleTabChange = useCallback((value: string) => {
     userClickedTabRef.current = true;
