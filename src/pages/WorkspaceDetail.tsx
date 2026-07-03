@@ -311,7 +311,9 @@ export default function WorkspaceDetail() {
                 "disabled:pointer-events-none disabled:opacity-50",
                 activeTab === tab.id
                   ? "bg-primary/10 text-primary shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50",
+                highlightedTab === tab.id &&
+                  "ring-2 ring-primary/60 ring-offset-1 animate-pulse"
               )}
             >
               {t(tab.labelKey)}
