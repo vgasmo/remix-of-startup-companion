@@ -343,7 +343,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                 variant="outline"
                 size="sm"
                 className="h-7 text-xs gap-1"
-                onClick={() => navigate('/admin?tab=funnel')}
+                onClick={() => navigate(`/crm?open=${contract.funnel_item_id}`)}
               >
                 <LinkIcon className="h-3 w-3" />
                 {t('contractDetail.viewInCRM')}
