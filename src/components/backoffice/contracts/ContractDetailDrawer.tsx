@@ -376,6 +376,17 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                 {t('contractDetail.renewCta', { defaultValue: 'Renovar' })}
               </Button>
             )}
+            {['active', 'suspended', 'pending_signature'].includes(contract.status) && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1 border-destructive/40 text-destructive hover:bg-destructive/10"
+                onClick={() => setTerminateOpen(true)}
+              >
+                <XCircle className="h-3 w-3" />
+                {t('contractDetail.terminateCta', { defaultValue: 'Terminar' })}
+              </Button>
+            )}
 
             {/* Generate public signing link for founder */}
             {['draft', 'pending_signature'].includes(contract.status) && (
