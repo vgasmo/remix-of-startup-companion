@@ -74,15 +74,31 @@ export function suggestRenewalWindow(
   };
 }
 
-/** Compute the next contract anniversary (based on start_date). */
+/**
+ * Compute the next contract anniversary using calendar-exact math.
+ * Adds whole years to start_date until the resulting date is strictly after today.
+ * (Avoids the ~30.44-day approximation that drifts across leap years.)
+ */
 export function nextAnniversary(contract: ContractLite, today: Date = new Date()): Date {
   const start = new Date(contract.start_date);
-  const monthsSince = Math.floor(
-    (today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30.44),
-  );
-  const yearsSince = Math.floor(monthsSince / 12);
-  return addYears(start, yearsSince + 1);
+  let years = Math.max(0, today.getFullYear() - start.getFullYear());
+  let candidate = addYears(start, years);
+  while (candidate <= today) {
+    years += 1;
+    candidate = addYears(start, years);
+  }
+  return candidate;
 }
+
+/** Full years completed on the contract as of `today` (calendar-exact). */
+export function yearsCompleted(contract: ContractLite, today: Date = new Date()): number {
+  const start = new Date(contract.start_date);
+  let years = Math.max(0, today.getFullYear() - start.getFullYear());
+  // Walk back if we haven't reached the anniversary yet this year.
+  while (years > 0 && addYears(start, years) > today) years -= 1;
+  return years;
+}
+
 
 /** Days until the next biennial (24-month cadence) price review from start_date. */
 export function daysUntilBiennialReview(contract: ContractLite, today: Date = new Date()): number {
@@ -101,3 +117,59 @@ export function noticeDeadline(contract: ContractLite, today: Date = new Date())
   const nextReview = addYears(start, nextReviewYear);
   return subDays(nextReview, LIFECYCLE_THRESHOLDS.noticePeriodDays);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Effective discount — one rule, used by map, drawer, billing snapshot, console.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ContractDiscountRow {
+  id?: string;
+  discount_percentage: number;
+  start_date: string;
+  end_date: string | null;
+  reason: string | null;
+}
+
+export interface EffectiveDiscount {
+  /** Applied percentage (0–100). */
+  effectivePct: number;
+  /** Where it came from — 'table' = contract_discounts, 'legacy' = column, 'none'. */
+  source: 'table' | 'legacy' | 'none';
+  /** Human-readable reason (empty when source === 'none'). */
+  reason: string;
+}
+
+/**
+ * Canonical discount resolver shared by every space/contract surface.
+ * Prefers active rows in `contract_discounts` (single best via
+ * `resolveApplicableDiscounts`); falls back to the legacy
+ * `startup_contracts.discount_percentage` column only when no table
+ * rows are currently active.
+ */
+export function computeEffectiveDiscount(
+  discounts: ContractDiscountRow[] | null | undefined,
+  legacyPct: number | null | undefined,
+  legacyReason?: string | null,
+  today: Date = new Date(),
+): EffectiveDiscount {
+  const active = (discounts ?? []).filter(d => {
+    const start = new Date(d.start_date);
+    const end = d.end_date ? new Date(d.end_date) : null;
+    return start <= today && (!end || end >= today);
+  });
+  if (active.length) {
+    // Best (highest) — matches resolveApplicableDiscounts behaviour.
+    const best = active.reduce((a, b) => (b.discount_percentage > a.discount_percentage ? b : a));
+    return {
+      effectivePct: Number(best.discount_percentage) || 0,
+      source: 'table',
+      reason: best.reason || 'Deliberação CA',
+    };
+  }
+  const legacy = Number(legacyPct) || 0;
+  if (legacy > 0) {
+    return { effectivePct: legacy, source: 'legacy', reason: legacyReason || '' };
+  }
+  return { effectivePct: 0, source: 'none', reason: '' };
+}
+
