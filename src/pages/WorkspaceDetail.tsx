@@ -351,6 +351,8 @@ export default function WorkspaceDetail() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
+                  ref={overflowTriggerRef}
+                  aria-label={t('common.moreDetails', { defaultValue: 'Mais' })}
                   className={cn(
                     "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2.5 py-1.5 text-xs sm:text-sm font-medium gap-1 transition-all",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1",
