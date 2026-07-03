@@ -376,7 +376,11 @@ export default function Mentors() {
     onSuccess: (_, { status }) => {
       queryClient.invalidateQueries({ queryKey: ['mentor-connections'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      // Founder notification is handled by DB trigger (notify_mentor_connection_change)
+      // DB trigger (notify_mentor_connection_change) both inserts a resolution
+      // notification and marks the founder's pending one as read; invalidate
+      // notifications for the acting user immediately so the mentor's own inbox
+      // reflects the change without waiting for realtime.
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
       notify.success(`${t('mentorsPage.connection')} ${status === 'accepted' ? t('mentorsPage.accepted') : t('mentorsPage.declined')}`);
     },
     onError: (error: any) => {
