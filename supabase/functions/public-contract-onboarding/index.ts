@@ -12,6 +12,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { syncIntakeOnSent, syncIntakeOnCompleted } from '../_shared/lifecycleSync.ts'
 import { handleLifecycleSyncResult } from '../_shared/lifecycleSyncResultHandler.ts'
+import { autoCreateFounderAccount, enqueueFounderInviteTask } from '../_shared/founderAccount.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -946,22 +947,55 @@ Deno.serve(async (req) => {
         user_agent: signatureData.user_agent || req.headers.get('User-Agent'),
       }
       
-      // Update contract: mark as signed
+      // Update contract: mark founder as signed.
+      // BILATERAL GAP FIX: if a counter-signer is configured we do NOT activate
+      // on the founder alone — set counter_signer_status='pending' and enqueue a
+      // work-queue item so staff can counter-sign. Only single-party contracts
+      // proceed to full activation via lifecycleSync below.
+      const hasCounterSigner = !!(contract as any).counter_signer_email
+      const founderPatch: Record<string, unknown> = {
+        signature_status: hasCounterSigner ? 'partially_signed' : 'signed',
+        founder_signer_status: 'signed',
+        signature_proof_json: signatureProof,
+      }
+      if (!hasCounterSigner) {
+        founderPatch.signed_at = new Date().toISOString()
+      } else {
+        founderPatch.counter_signer_status = 'pending'
+      }
+
       const { error: updateError } = await supabase
         .from('startup_contracts')
-        .update({
-          signature_status: 'signed',
-          signed_at: new Date().toISOString(),
-          founder_signer_status: 'signed',
-          signature_proof_json: signatureProof,
-        })
+        .update(founderPatch)
         .eq('id', contract.id)
-      
+
       if (updateError) {
         console.error('Signature update error:', updateError)
         return new Response(JSON.stringify({ error: 'Failed to record signature' }), {
           status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
+      }
+
+      if (hasCounterSigner) {
+        // Enqueue counter-sign work item; do NOT activate the workspace yet.
+        try {
+          await supabase.from('staff_work_queue_items').insert({
+            item_type: 'counter_sign_contract',
+            title: `Contra-assinar contrato — ${(contract as any).workspace?.startup?.name || contract.id.slice(0, 8)}`,
+            description: 'Founder assinou digitalmente. Contra-assinatura por Startup Leiria pendente.',
+            entity_type: 'contract',
+            entity_id: contract.id,
+            workspace_id: (contract as any).workspace?.id ?? null,
+            priority: 'high',
+            status: 'open',
+          })
+        } catch (qErr) {
+          console.warn('counter-sign work-queue insert failed (non-fatal):', qErr)
+        }
+        return new Response(JSON.stringify({
+          status: 'partially_signed',
+          message: 'Assinatura registada. Aguardando contra-assinatura.',
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
       
       // === CANONICAL LIFECYCLE SYNC (shared helper): contract + workspace + intake + CRM ===
@@ -988,12 +1022,32 @@ Deno.serve(async (req) => {
         })
       }
       
+      // Auto-create founder account (parity with docusign path)
+      try {
+        const acctRes = await autoCreateFounderAccount(supabase, {
+          id: contract.id,
+          workspace_id: wsId,
+          legal_representative_email: (contract as any).legal_representative_email ?? signatureData.signer_email ?? null,
+          legal_representative_name: (contract as any).legal_representative_name ?? signatureData.typed_name ?? null,
+        })
+        if (!acctRes.ok) {
+          await enqueueFounderInviteTask(supabase, {
+            id: contract.id,
+            workspace_id: wsId,
+            legal_representative_email: (contract as any).legal_representative_email ?? null,
+            legal_representative_name: (contract as any).legal_representative_name ?? null,
+          }, acctRes.reason || 'unknown')
+        }
+      } catch (acctErr) {
+        console.warn('digital_sign founder account creation failed (non-fatal):', acctErr)
+      }
+
       // Notify staff
       const { data: staffUsers } = await supabase
         .from('user_roles')
         .select('user_id')
         .in('role', ['admin', 'consultor', 'backoffice'])
-      
+
       if (staffUsers?.length) {
         const startupName = (contract as any).workspace?.startup?.name || 'Startup'
         try {

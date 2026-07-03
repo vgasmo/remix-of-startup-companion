@@ -57,12 +57,14 @@ Deno.serve(async (req) => {
     const alerts: any[] = []
     const lifecycleEvents: any[] = []
 
-    // Fetch all active contracts
+    // Fetch all active/suspended contracts (include incubation_type to honor auto-renewal)
     const { data: contracts, error: fetchError } = await supabase
       .from('startup_contracts')
       .select(`
-        id, workspace_id, start_date, end_date, monthly_fee, 
+        id, workspace_id, start_date, end_date, monthly_fee, status,
         incubation_year, is_post_incubation, next_price_review_date, last_price_review_date,
+        incubation_type_id,
+        incubation_type:incubation_types(auto_renewal, renewal_months),
         workspace:workspaces(startup:startups(name))
       `)
       .in('status', ['active', 'suspended'])
@@ -227,13 +229,14 @@ Deno.serve(async (req) => {
           .eq('id', contract.id)
       }
 
-      // ═══ 5. CONTRACT RENEWAL (30 days before end date — Cláusula 10.ª) ═══
+      // ═══ 5. CONTRACT RENEWAL WINDOW (30d before end — Cláusula 10.ª) ═══
       if (contract.end_date) {
         const endDate = new Date(contract.end_date)
         const daysUntilEnd = Math.round((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 
         if (daysUntilEnd > 0 && daysUntilEnd <= 35 && daysUntilEnd >= 25) {
-          const reminderType = `renewal_notice_${endDate.getFullYear()}`
+          // Dedupe by end_date (not year) so successive renewals still alert
+          const reminderType = `renewal_notice_${contract.end_date}`
           const { data: existing } = await supabase
             .from('contract_reminders')
             .select('id')
@@ -269,6 +272,59 @@ Deno.serve(async (req) => {
             })
           }
         }
+
+        // ═══ 6. AUTO-EXPIRY SWEEP — contracts past end_date ═══
+        // Respect auto-renewal (Cláusula 10.ª): auto-extend those instead of expiring.
+        if (contract.status === 'active' && daysUntilEnd < 0) {
+          const autoRenew = (contract as any).incubation_type?.auto_renewal === true
+          const renewalMonths = (contract as any).incubation_type?.renewal_months ?? 12
+          if (autoRenew) {
+            const newEnd = new Date(endDate)
+            newEnd.setMonth(newEnd.getMonth() + renewalMonths)
+            await supabase.from('startup_contracts')
+              .update({ end_date: newEnd.toISOString().split('T')[0] })
+              .eq('id', contract.id)
+            await supabase.from('contract_lifecycle_events').insert({
+              contract_id: contract.id,
+              event_type: 'auto_renewed',
+              event_date: todayStr,
+              details: {
+                previous_end_date: contract.end_date,
+                new_end_date: newEnd.toISOString().split('T')[0],
+                startup_name: startupName,
+                regulation_reference: 'Cláusula 10.ª — Renovação automática',
+              },
+            })
+            alerts.push({
+              contractId: contract.id,
+              workspaceId: contract.workspace_id,
+              startupName,
+              type: 'auto_renewed',
+              newEnd: newEnd.toISOString().split('T')[0],
+            })
+          } else {
+            await supabase.from('startup_contracts')
+              .update({ status: 'expired' })
+              .eq('id', contract.id)
+            await supabase.from('contract_lifecycle_events').insert({
+              contract_id: contract.id,
+              event_type: 'expired',
+              event_date: todayStr,
+              details: {
+                end_date: contract.end_date,
+                startup_name: startupName,
+                action_required: 'staff_review_expired_contract',
+              },
+            })
+            alerts.push({
+              contractId: contract.id,
+              workspaceId: contract.workspace_id,
+              startupName,
+              type: 'expired',
+              endDate: contract.end_date,
+            })
+          }
+        }
       }
     }
 
@@ -293,6 +349,12 @@ Deno.serve(async (req) => {
           } else if (alert.type === 'renewal_approaching') {
             title = `🔄 Renovação — ${alert.startupName}`
             message = `O contrato de ${alert.startupName} termina em ${alert.daysUntilEnd} dias. Verificar renovação automática ou denúncia.`
+          } else if (alert.type === 'auto_renewed') {
+            title = `♻️ Renovado automaticamente — ${alert.startupName}`
+            message = `Contrato renovado até ${alert.newEnd} (Cláusula 10.ª). Confirme alocação e mensalidade se necessário.`
+          } else if (alert.type === 'expired') {
+            title = `⏰ Contrato expirado — ${alert.startupName}`
+            message = `O contrato terminou a ${alert.endDate} sem renovação. Marcado como 'expired'. Verifique alocações e transição do workspace.`
           } else {
             title = `🎂 ${alert.startupName} — ${alert.years} ${alert.years === 1 ? 'ano' : 'anos'}`
             message = `Aniversário contratual de ${alert.startupName} (${alert.years} ${alert.years === 1 ? 'ano' : 'anos'}).`

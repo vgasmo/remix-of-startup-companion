@@ -13,6 +13,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { syncIntakeOnSent, syncIntakeOnCompleted } from '../_shared/lifecycleSync.ts'
 import { handleLifecycleSyncResult } from '../_shared/lifecycleSyncResultHandler.ts'
+import { autoCreateFounderAccount as sharedCreateFounder, enqueueFounderInviteTask } from '../_shared/founderAccount.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -248,6 +249,24 @@ Deno.serve(async (req) => {
           workspace_id: contract.workspace_id,
           metadata: { pandadoc_document_id: pandadocDocId, event: eventName, event_id: eventId },
         })
+
+        // Auto-create founder account (parity with docusign)
+        if (contract.legal_representative_email) {
+          const acctRes = await sharedCreateFounder(supabase, {
+            id: contract.id,
+            workspace_id: contract.workspace_id,
+            legal_representative_email: contract.legal_representative_email,
+            legal_representative_name: contract.legal_representative_name,
+          })
+          if (!acctRes.ok) {
+            await enqueueFounderInviteTask(supabase, {
+              id: contract.id,
+              workspace_id: contract.workspace_id,
+              legal_representative_email: contract.legal_representative_email,
+              legal_representative_name: contract.legal_representative_name,
+            }, acctRes.reason || 'unknown')
+          }
+        }
 
         // ═══ AUTO-GENERATE FIRST INVOICE on completion ═══
         // Disabled per product decision (invoicing surface hidden, no payment tracking).

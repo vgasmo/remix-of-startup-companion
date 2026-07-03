@@ -45,38 +45,97 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
     setMonthlyFee(contract?.monthly_fee ?? 0);
   }, [contract?.id, suggestion.start, suggestion.end, contract?.monthly_fee]);
 
+  const canRenew = !!contract && ['active', 'expired'].includes((contract.status || '') as string);
+
   const renew = useMutation({
     mutationFn: async () => {
       if (!contract) throw new Error('no contract');
+      if (!canRenew) throw new Error('invalid_status');
+
+      // Persist new start (if provided) + reset terminated/expired flags on revive.
+      const patch: Record<string, unknown> = {
+        end_date: newEnd,
+        monthly_fee: monthlyFee,
+      };
+      if (newStart) patch.start_date = newStart;
+      if (contract.status === 'expired') {
+        patch.status = 'active';
+        patch.terminated_at = null;
+        patch.termination_reason = null;
+      }
+
       const { error: updErr } = await supabase
         .from('startup_contracts')
-        .update({
-          end_date: newEnd,
-          monthly_fee: monthlyFee,
-        })
+        .update(patch)
         .eq('id', contract.id);
       if (updErr) throw updErr;
-      // Best-effort lifecycle event log
+
+      // Extend the linked room_allocation end_date so occupancy stays in sync.
+      try {
+        const { data: allocs } = await (supabase as any)
+          .from('room_allocations')
+          .select('id, end_date')
+          .eq('contract_id', contract.id)
+          .is('released_at', null);
+        for (const a of allocs || []) {
+          await (supabase as any)
+            .from('room_allocations')
+            .update({ end_date: newEnd })
+            .eq('id', a.id);
+        }
+      } catch {
+        // non-fatal: occupancy sync failure logged only
+      }
+
+      // Lifecycle event
       try {
         await supabase.from('contract_lifecycle_events').insert({
           contract_id: contract.id,
           event_type: 'renewal',
-          event_date: newStart,
+          event_date: newStart || new Date().toISOString().split('T')[0],
           notes: `Renovado até ${newEnd} · ${monthlyFee}€/mês`,
         } as any);
-      } catch {
-        // non-fatal
-      }
+      } catch { /* non-fatal */ }
+
+      // Notify staff + founder members (best-effort)
+      try {
+        const [{ data: staff }, { data: members }] = await Promise.all([
+          supabase.from('user_roles').select('user_id').in('role', ['admin', 'consultor', 'backoffice']),
+          contract.workspace_id
+            ? supabase.from('workspace_users').select('user_id').eq('workspace_id', contract.workspace_id).eq('role', 'founder').eq('active', true)
+            : Promise.resolve({ data: [] as any[] }),
+        ]);
+        const targets = [
+          ...(staff || []).map((s: any) => s.user_id),
+          ...(members || []).map((m: any) => m.user_id),
+        ];
+        if (targets.length) {
+          await supabase.from('notifications').insert(targets.map((uid: string) => ({
+            user_id: uid,
+            type: 'contract_renewed',
+            title: t('contractDetail.renewNotifyTitle', { defaultValue: 'Contrato renovado' }),
+            message: t('contractDetail.renewNotifyMsg', { defaultValue: 'O contrato foi renovado até {{end}}.', end: newEnd }),
+            entity_type: 'contract',
+            entity_id: contract.id,
+            link: '/admin?tab=backoffice&subtab=contracts',
+          })));
+        }
+      } catch { /* non-fatal */ }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
       queryClient.invalidateQueries({ queryKey: ['lifecycle-events-contracts'] });
       queryClient.invalidateQueries({ queryKey: ['contract-lifecycle-events'] });
+      queryClient.invalidateQueries({ queryKey: ['room-allocations'] });
       notify.success(t('contractDetail.renewSuccess', { defaultValue: 'Contrato renovado' }));
       onOpenChange(false);
     },
-    onError: () => {
-      notify.error(t('contractDetail.renewError', { defaultValue: 'Não foi possível renovar o contrato' }));
+    onError: (err: any) => {
+      if (err?.message === 'invalid_status') {
+        notify.error(t('contractDetail.renewInvalidStatus', { defaultValue: 'Só é possível renovar contratos ativos ou expirados.' }));
+      } else {
+        notify.error(t('contractDetail.renewError', { defaultValue: 'Não foi possível renovar o contrato' }));
+      }
     },
   });
 

@@ -308,18 +308,20 @@ export function BackofficeContractsTab() {
     }
   };
 
+  // NOTE: labelled "archive" for legacy reasons but actually TERMINATES contracts.
+  // See BulkActionsBar for the honest label ("Terminar selecionados").
   const handleArchiveSelected = async () => {
     setIsArchiving(true);
-    let archived = 0;
+    let terminated = 0;
     for (const id of selectedContractIds) {
       try {
         await updateContract.mutateAsync({ id, status: 'terminated' });
-        archived++;
+        terminated++;
       } catch { /* skip */ }
     }
     setSelectedContractIds(new Set());
     setIsArchiving(false);
-    notify.success(t('contracts.bulk.archiveSuccess', { count: archived, defaultValue: '{{count}} contracts archived' }));
+    notify.success(t('contracts.bulk.terminateSuccess', { count: terminated, defaultValue: '{{count}} contratos terminados' }));
   };
 
   return (

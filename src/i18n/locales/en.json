@@ -2909,6 +2909,8 @@
     "bulk": {
       "archiveSelected": "Archive Selected",
       "archiveSuccess": "{{count}} contracts archived",
+      "terminateSelected": "Terminate selected",
+      "terminateSuccess": "{{count}} contracts terminated",
       "selected": "{{count}} selected"
     },
     "confirmAnalysis": "Confirm AI Analysis",

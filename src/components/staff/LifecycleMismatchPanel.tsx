@@ -41,7 +41,7 @@ interface LifecycleMismatchPanelProps {
 
 interface Mismatch {
   id: string;
-  severity: 'warn' | 'info';
+  severity: 'warn' | 'info' | 'error';
   title: string;
   detail: string;
   recordType: 'contract' | 'intake' | 'crm' | 'workspace';
@@ -128,6 +128,23 @@ export function LifecycleMismatchPanel({
           }),
           detail: t('lifecycleMismatch.pendingSignatureNoProvider.detail', {
             defaultValue: 'signature_provider está vazio.',
+          }),
+          recordType: 'contract',
+          recordId: c.id,
+          recordLabel: label,
+        });
+      }
+
+      // 3b) ACTIVE contract without workspace — blocks activation & founder onboarding
+      if (c.status === 'active' && !c.workspace_id) {
+        out.push({
+          id: `contract-active-no-workspace-${c.id}`,
+          severity: 'error',
+          title: t('lifecycleMismatch.activeNoWorkspace.title', {
+            defaultValue: 'Contrato activo sem workspace',
+          }),
+          detail: t('lifecycleMismatch.activeNoWorkspace.detail', {
+            defaultValue: 'Nenhum workspace associado — o founder não vê o produto.',
           }),
           recordType: 'contract',
           recordId: c.id,

@@ -112,8 +112,9 @@ export async function syncIntakeOnCompleted(
   workspaceId: string | null,
   performedBy: string | null,
   source: string,
-): Promise<SyncResult> {
+): Promise<SyncResult & { workspaceId?: string | null }> {
   const errors: string[] = []
+  let effectiveWorkspaceId = workspaceId
 
   const { data: intake, error: findErr } = await supabase
     .from('contract_intakes')
@@ -126,6 +127,54 @@ export async function syncIntakeOnCompleted(
   if (findErr) {
     console.warn('[lifecycleSync] syncIntakeOnCompleted find error', { contractId, error: findErr.message })
     errors.push(`find_intake: ${findErr.message}`)
+  }
+
+  // ── Fallback: CRM-direct contracts have no intake → resolve funnel via contract row
+  let fallbackFunnelItemId: string | null = null
+  if (!intake) {
+    const { data: contractRow } = await supabase
+      .from('startup_contracts')
+      .select('funnel_item_id, workspace_id, organization_name, legal_representative_email, legal_representative_name')
+      .eq('id', contractId)
+      .maybeSingle()
+    fallbackFunnelItemId = contractRow?.funnel_item_id ?? null
+
+    // If no workspace on the contract either, mint startup + workspace from CRM/organization data
+    if (!effectiveWorkspaceId && !contractRow?.workspace_id) {
+      const orgName = contractRow?.organization_name
+        || (fallbackFunnelItemId ? (await supabase.from('funnel_items').select('organization_name').eq('id', fallbackFunnelItemId).maybeSingle()).data?.organization_name : null)
+        || 'Startup'
+      const contactEmail = contractRow?.legal_representative_email || null
+      const contactName = contractRow?.legal_representative_name || null
+      try {
+        const { data: newStartup, error: startupErr } = await supabase
+          .from('startups')
+          .insert({ name: orgName, main_contact_email: contactEmail, main_contact_name: contactName, stage: 'ideation' })
+          .select('id')
+          .single()
+        if (startupErr) throw startupErr
+        const { data: newWs, error: wsErr } = await supabase
+          .from('workspaces')
+          .insert({ startup_id: newStartup.id, status: 'pending', needs_onboarding: true })
+          .select('id')
+          .single()
+        if (wsErr) throw wsErr
+        effectiveWorkspaceId = newWs.id
+        await supabase.from('startup_contracts')
+          .update({ workspace_id: effectiveWorkspaceId })
+          .eq('id', contractId)
+        if (fallbackFunnelItemId) {
+          await supabase.from('funnel_items')
+            .update({ workspace_id: effectiveWorkspaceId })
+            .eq('id', fallbackFunnelItemId)
+        }
+      } catch (mintErr: any) {
+        console.error('[lifecycleSync] auto-mint workspace failed', { contractId, error: mintErr?.message })
+        errors.push(`auto_mint_workspace: ${mintErr?.message || mintErr}`)
+      }
+    } else if (!effectiveWorkspaceId) {
+      effectiveWorkspaceId = contractRow?.workspace_id ?? null
+    }
   }
 
   if (intake) {
@@ -151,7 +200,6 @@ export async function syncIntakeOnCompleted(
       }
     }
 
-    // Transition: signed → activated
     if (intake.status !== 'activated') {
       const { error: actErr } = await supabase
         .from('contract_intakes')
@@ -172,7 +220,6 @@ export async function syncIntakeOnCompleted(
       }
     }
 
-    // Sync CRM fine-grained stage
     if (intake.funnel_item_id) {
       const { error: crmErr } = await supabase.from('funnel_items')
         .update({ stage: 'contracted' })
@@ -184,16 +231,21 @@ export async function syncIntakeOnCompleted(
         errors.push(`funnel_stage: ${crmErr.message}`)
       }
     }
+  } else if (fallbackFunnelItemId) {
+    // CRM-direct fallback: still advance the funnel stage
+    const { error: crmErr } = await supabase.from('funnel_items')
+      .update({ stage: 'contracted' })
+      .eq('id', fallbackFunnelItemId)
+    if (crmErr) errors.push(`funnel_stage_fallback: ${crmErr.message}`)
   }
 
-  // Activate workspace (canonical gate: only from pre-active states)
-  if (workspaceId) {
+  if (effectiveWorkspaceId) {
     const { error: wsErr } = await supabase.from('workspaces')
       .update({ status: 'active', updated_at: new Date().toISOString() })
-      .eq('id', workspaceId)
+      .eq('id', effectiveWorkspaceId)
       .in('status', ['pending', 'claimed', 'imported_unclaimed'])
     if (wsErr) {
-      console.error('[lifecycleSync] workspace activation failed', { workspaceId, error: wsErr.message })
+      console.error('[lifecycleSync] workspace activation failed', { workspaceId: effectiveWorkspaceId, error: wsErr.message })
       errors.push(`workspace_activate: ${wsErr.message}`)
     }
   }
@@ -201,6 +253,7 @@ export async function syncIntakeOnCompleted(
   return {
     synced: errors.length === 0,
     intakeId: intake?.id,
+    workspaceId: effectiveWorkspaceId,
     errors: errors.length ? errors : undefined,
   }
 }
