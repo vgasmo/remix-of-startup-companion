@@ -196,7 +196,7 @@ export default function PublicBooking() {
       if (upload.path) {
         setFormData(prev => ({ ...prev, pitch_deck_path: upload.path } as any));
       } else if (upload.failed) {
-        notify.warning(
+        notify.warn(
           lang === 'pt'
             ? 'A reserva vai ser criada, mas o ficheiro não foi carregado — pode enviá-lo por email.'
             : 'Your booking will be created, but the file did not upload — you can send it by email.',
