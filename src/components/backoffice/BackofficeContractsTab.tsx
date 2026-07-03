@@ -729,9 +729,12 @@ export function BackofficeContractsTab() {
                         </div>
                       </TableCell>
                       <TableCell onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" onClick={() => openContractDrawer(contract)}>
-                          {t('common.edit', { defaultValue: 'Edit' })}
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <ContractRoomLink contractId={contract.id} />
+                          <Button variant="ghost" size="sm" onClick={() => openContractDrawer(contract)}>
+                            {t('common.edit', { defaultValue: 'Edit' })}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
