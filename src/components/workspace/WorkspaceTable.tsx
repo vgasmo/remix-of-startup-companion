@@ -35,6 +35,40 @@ import { WorkspaceWithDetails, SortOption } from '@/hooks/useWorkspaces';
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
+function SortHeader({
+  label,
+  sortKey,
+  sortBy,
+  onSortByChange,
+  className,
+}: {
+  label: string;
+  sortKey: SortOption;
+  sortBy?: SortOption;
+  onSortByChange?: (v: SortOption) => void;
+  className?: string;
+}) {
+  const active = sortBy === sortKey;
+  const clickable = !!onSortByChange;
+  return (
+    <TableHead
+      className={cn(
+        'h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium',
+        clickable && 'cursor-pointer select-none hover:text-foreground transition-colors',
+        active && 'text-foreground',
+        className,
+      )}
+      onClick={clickable ? () => onSortByChange!(sortKey) : undefined}
+      aria-sort={active ? 'descending' : undefined}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        {clickable && (active ? <ArrowDown className="h-3 w-3" /> : <ArrowUpDown className="h-3 w-3 opacity-50" />)}
+      </span>
+    </TableHead>
+  );
+}
+
 interface WorkspaceTableProps {
   workspaces: WorkspaceWithDetails[];
   onRowClick: (id: string) => void;
