@@ -370,10 +370,10 @@ function BackofficeDashboardInner() {
               {floorMaps && floorMaps.length > 0 ? (
                 <div className="grid grid-cols-2 gap-2">
                   {floorMaps.slice(0, 4).map(fm => {
-                    // Match floor map to a building by name substring
-                    // (office_spaces has no building_id yet; do best-effort UI match).
-                    const fmName = (fm.name || '').toLowerCase();
-                    const building = buildings?.find(b => fmName.includes((b.name || '').toLowerCase()) || fmName.includes((b.code || '').toLowerCase()));
+                    // Match floor map to a building via its parent office_space.building_id
+                    // (id-based — renaming a building must not break the link).
+                    const buildingId = (fm as any).space?.building_id as string | null | undefined;
+                    const building = buildingId ? buildings?.find(b => b.id === buildingId) : undefined;
                     return (
                       <Button
                         key={fm.id}
