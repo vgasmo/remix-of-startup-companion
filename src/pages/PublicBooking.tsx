@@ -45,6 +45,7 @@ export default function PublicBooking() {
   const [lang, setLang] = useState(i18n.language === 'en' ? 'en' : 'pt');
   const [step, setStep] = useState<'loading' | 'program_select' | 'slots' | 'form' | 'success' | 'error'>('loading');
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
+  const [bookingHasInvite, setBookingHasInvite] = useState<boolean>(false);
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(null);
   const [selectedProgramName, setSelectedProgramName] = useState<string | null>(null);
   const [pitchFile, setPitchFile] = useState<File | null>(null);
