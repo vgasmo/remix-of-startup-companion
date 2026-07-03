@@ -617,6 +617,9 @@
       "space": "Space",
       "spaceAssigned": "Space assigned successfully",
       "spaceName": "Space Name",
+      "spaceNamePlaceholder": "Desk A1, Office 101...",
+      "floorPlaceholder": "1, Ground, Mezzanine...",
+
       "spaceTypes": {
         "desk": "Desk",
         "hotDesk": "Hot Desk",
