@@ -65,6 +65,10 @@ interface RecordDrawerProps {
   item: FunnelItem | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Ordered sibling list for triage navigation (prev / next). */
+  siblingIds?: string[];
+  /** Callback invoked with the id to open (parent controls the actual open). */
+  onNavigateSibling?: (id: string) => void;
 }
 
 export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
