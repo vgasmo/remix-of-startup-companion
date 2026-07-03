@@ -478,7 +478,7 @@ export function SpaceWaitingListTab() {
               <Label>{t('admin.backoffice.assignRoom', 'Assign Room')}</Label>
               <Select name="room_id" required>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select available room..." />
+                  <SelectValue placeholder={t('waitingList.selectAvailableRoom', { defaultValue: 'Selecionar sala disponível...' })} />
                 </SelectTrigger>
                 <SelectContent>
                   {availableRooms.map(room => (
