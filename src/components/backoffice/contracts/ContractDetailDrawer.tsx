@@ -24,6 +24,8 @@ import { ContractDiscountsPanel } from '@/components/contracts/ContractDiscounts
 import { ContractIntelligenceCard } from '@/components/contracts/ContractIntelligenceCard';
 import { PricingBreakdown } from '@/components/contracts/PricingBreakdown';
 import { ContractStatusBadge } from './ContractStatusBadge';
+import { RenewContractDialog } from './RenewContractDialog';
+
 import { ContractLifecycleStepper } from '@/components/contracts/ContractLifecycleStepper';
 import { ContractReadinessChecklist } from '@/components/contracts/ContractReadinessChecklist';
 import { ProvenanceBadge } from '@/components/shared/ProvenanceBadge';
