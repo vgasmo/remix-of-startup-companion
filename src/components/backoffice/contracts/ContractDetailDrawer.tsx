@@ -715,9 +715,11 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
 
   const provider = contract.signature_provider as string | null;
   const sigStatus = contract.signature_status;
-  const isSent = sigStatus && !['draft', 'failed', 'ready_to_send', 'pending_manual', 'pending', 'pending_signature'].includes(sigStatus);
-  const canRetry = sigStatus === 'failed' || sigStatus === 'ready_to_send';
+  // Retryable states: dispatch failure OR the signer rejected / staff voided the envelope.
+  const canRetry = sigStatus === 'failed' || sigStatus === 'ready_to_send' || sigStatus === 'declined' || sigStatus === 'voided';
+  const isSent = sigStatus && !['draft', 'failed', 'ready_to_send', 'pending_manual', 'pending', 'pending_signature', 'declined', 'voided'].includes(sigStatus);
   const canChangeProvider = !isSent && (!contract.provider_document_id || canRetry);
+  const isBlockedByProvider = sigStatus === 'declined' || sigStatus === 'voided';
 
   const providerLabel = provider === 'pandadoc' ? 'PandaDoc' : provider === 'docusign' ? 'DocuSign' : provider === 'assinatura_digital' ? t('contractDetail.digitalSignature') : provider === 'pandadoc_manual' ? t('contractDetail.pandadocManual') : provider === 'manual' ? t('contractDetail.manualSignature') : t('contractDetail.notSelected');
 
