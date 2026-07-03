@@ -40,7 +40,7 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
   const navigate = useNavigate();
 
   const goToMentorBooking = () => {
-    navigate('/mentors');
+    navigate('/mentors?book=consultor');
   };
 
   const [search, setSearch] = useState('');

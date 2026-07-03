@@ -324,6 +324,16 @@ export default function Mentors() {
   const [selectedMentorForBooking, setSelectedMentorForBooking] = useState<string | null>(null);
   const [selectedGalleryMentor, setSelectedGalleryMentor] = useState<MentorProfile | null>(null);
   const [showConsultantBooking, setShowConsultantBooking] = useState(false);
+
+  // Deep link from Agenda tab: `/mentors?book=consultor` auto-opens the
+  // consultant booking dialog so founders land directly on the availability
+  // calendar with slots already filtered by consultor.
+  const bookTarget = searchParams.get('book');
+  useEffect(() => {
+    if (bookTarget === 'consultor' && isFounder && founderWorkspaceContext?.workspaceId) {
+      setShowConsultantBooking(true);
+    }
+  }, [bookTarget, isFounder, founderWorkspaceContext?.workspaceId]);
   // Post-action scroll targets: after the mentor accepts a pending request we
   // jump to the "connected founders" section; after declining we scroll back
   // to the top of the pending list so the shrunk queue is in view.
