@@ -322,6 +322,11 @@ export default function Mentors() {
   const [mentorSearch, setMentorSearch] = useState('');
   const [selectedMentorForBooking, setSelectedMentorForBooking] = useState<string | null>(null);
   const [selectedGalleryMentor, setSelectedGalleryMentor] = useState<MentorProfile | null>(null);
+
+  // Deep link from inbox: `/mentors?mentor=<id>` (optionally &connection=<id>)
+  // auto-opens the mentor's profile dialog so founders land on the exact
+  // reconnection request instead of scanning the gallery.
+  const deepLinkMentorId = searchParams.get('mentor');
   const { data: allMentors, isLoading: loadingAllMentors } = useQuery({
     queryKey: ['all-mentors-gallery'],
     queryFn: async (): Promise<MentorProfile[]> => {
