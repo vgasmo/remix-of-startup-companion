@@ -11,7 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import {
   Building2, Users, MapPin, Calendar, ExternalLink, Clock,
-  UserPlus, UserMinus, Wrench, FileText, AlertTriangle
+  UserPlus, UserMinus, Wrench, FileText, AlertTriangle,
+  CalendarClock, Percent, Euro
 } from 'lucide-react';
 import {
   type Room,
@@ -23,12 +24,21 @@ import {
   useFulfillWaitingListRequest,
 } from '@/hooks/useBackoffice';
 import { useWorkspaces, ALL_WORKSPACE_STATUSES } from '@/hooks/useWorkspaces';
+import { useBuildingOccupancy } from '@/hooks/useBuildingOccupancy';
+import { LIFECYCLE_THRESHOLDS } from '@/lib/contractLifecycle';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { RoomAllocationHistory } from './RoomAllocationHistory';
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
 import { notify } from "@/lib/notify";
+
+const fmtEUR = new Intl.NumberFormat('pt-PT', {
+  style: 'currency',
+  currency: 'EUR',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 
 interface SpaceDetailDrawerProps {
   open: boolean;
