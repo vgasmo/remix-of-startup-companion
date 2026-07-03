@@ -80,6 +80,46 @@ export default function PublicContractIntake() {
   const [uploadingDocKey, setUploadingDocKey] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
+  // Per-field validation surfaced on submit. Mirrors the required-field set
+  // used to gate the submit button below.
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const clearFieldError = (name: string) =>
+    setFieldErrors(prev => {
+      if (!prev[name]) return prev;
+      const next = { ...prev }; delete next[name]; return next;
+    });
+
+  const REQUIRED_INTAKE_FIELDS: Array<keyof IntakeFormData> = [
+    'organization_name',
+    'company_nif',
+    'company_address',
+    'company_city',
+    'company_postal_code',
+    'legal_representative_name',
+    'legal_representative_email',
+    'legal_representative_phone',
+  ];
+
+  const handleSubmit = async () => {
+    const errors: Record<string, string> = {};
+    const requiredMsg = t('publicContract.errors.fieldRequired', { defaultValue: 'Campo obrigatório' });
+    for (const key of REQUIRED_INTAKE_FIELDS) {
+      if (!String(formData[key] ?? '').trim()) errors[key] = requiredMsg;
+    }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      const first = REQUIRED_INTAKE_FIELDS.find(k => errors[k]);
+      if (first) {
+        const el = document.getElementById(first);
+        if (el && typeof (el as HTMLInputElement).focus === 'function') (el as HTMLInputElement).focus();
+      }
+      return;
+    }
+    setFieldErrors({});
+    await autosave.flush();
+    submitMutation.mutate();
+  };
+
   const handleUploadDoc = async (docKey: string, file: File) => {
     const MAX_BYTES = 10 * 1024 * 1024;
     if (file.size > MAX_BYTES) {
@@ -378,7 +418,16 @@ export default function PublicContractIntake() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="organization_name">{t('publicContractIntake.organizationName')} *</Label>
-                <Input id="organization_name" value={formData.organization_name} onChange={e => setFormData(p => ({ ...p, organization_name: e.target.value }))} />
+                <Input
+                  id="organization_name"
+                  value={formData.organization_name}
+                  onChange={e => { setFormData(p => ({ ...p, organization_name: e.target.value })); clearFieldError('organization_name'); }}
+                  aria-invalid={!!fieldErrors.organization_name}
+                  aria-describedby={fieldErrors.organization_name ? 'organization_name-error' : undefined}
+                />
+                {fieldErrors.organization_name && (
+                  <p id="organization_name-error" className="text-xs text-destructive">{fieldErrors.organization_name}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="project_name">{t('publicContractIntake.projectNameIfDifferent')}</Label>
@@ -386,19 +435,55 @@ export default function PublicContractIntake() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="company_nif">{t('publicContractIntake.taxIdCompanyOrPersonal')} *</Label>
-                <Input id="company_nif" value={formData.company_nif} onChange={e => setFormData(p => ({ ...p, company_nif: e.target.value }))} />
+                <Input
+                  id="company_nif"
+                  value={formData.company_nif}
+                  onChange={e => { setFormData(p => ({ ...p, company_nif: e.target.value })); clearFieldError('company_nif'); }}
+                  aria-invalid={!!fieldErrors.company_nif}
+                  aria-describedby={fieldErrors.company_nif ? 'company_nif-error' : undefined}
+                />
+                {fieldErrors.company_nif && (
+                  <p id="company_nif-error" className="text-xs text-destructive">{fieldErrors.company_nif}</p>
+                )}
               </div>
               <div className="md:col-span-2 space-y-1.5">
                 <Label htmlFor="company_address">{t('publicContractIntake.address')} *</Label>
-                <Input id="company_address" value={formData.company_address} onChange={e => setFormData(p => ({ ...p, company_address: e.target.value }))} />
+                <Input
+                  id="company_address"
+                  value={formData.company_address}
+                  onChange={e => { setFormData(p => ({ ...p, company_address: e.target.value })); clearFieldError('company_address'); }}
+                  aria-invalid={!!fieldErrors.company_address}
+                  aria-describedby={fieldErrors.company_address ? 'company_address-error' : undefined}
+                />
+                {fieldErrors.company_address && (
+                  <p id="company_address-error" className="text-xs text-destructive">{fieldErrors.company_address}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="company_city">{t('publicContractIntake.city')} *</Label>
-                <Input id="company_city" value={formData.company_city} onChange={e => setFormData(p => ({ ...p, company_city: e.target.value }))} />
+                <Input
+                  id="company_city"
+                  value={formData.company_city}
+                  onChange={e => { setFormData(p => ({ ...p, company_city: e.target.value })); clearFieldError('company_city'); }}
+                  aria-invalid={!!fieldErrors.company_city}
+                  aria-describedby={fieldErrors.company_city ? 'company_city-error' : undefined}
+                />
+                {fieldErrors.company_city && (
+                  <p id="company_city-error" className="text-xs text-destructive">{fieldErrors.company_city}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="company_postal_code">{t('publicContractIntake.postalCode')} *</Label>
-                <Input id="company_postal_code" value={formData.company_postal_code} onChange={e => setFormData(p => ({ ...p, company_postal_code: e.target.value }))} />
+                <Input
+                  id="company_postal_code"
+                  value={formData.company_postal_code}
+                  onChange={e => { setFormData(p => ({ ...p, company_postal_code: e.target.value })); clearFieldError('company_postal_code'); }}
+                  aria-invalid={!!fieldErrors.company_postal_code}
+                  aria-describedby={fieldErrors.company_postal_code ? 'company_postal_code-error' : undefined}
+                />
+                {fieldErrors.company_postal_code && (
+                  <p id="company_postal_code-error" className="text-xs text-destructive">{fieldErrors.company_postal_code}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="iban">IBAN</Label>
@@ -423,15 +508,45 @@ export default function PublicContractIntake() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="legal_representative_name">{t('publicContractIntake.fullName')} *</Label>
-                <Input id="legal_representative_name" value={formData.legal_representative_name} onChange={e => setFormData(p => ({ ...p, legal_representative_name: e.target.value }))} />
+                <Input
+                  id="legal_representative_name"
+                  value={formData.legal_representative_name}
+                  onChange={e => { setFormData(p => ({ ...p, legal_representative_name: e.target.value })); clearFieldError('legal_representative_name'); }}
+                  aria-invalid={!!fieldErrors.legal_representative_name}
+                  aria-describedby={fieldErrors.legal_representative_name ? 'legal_representative_name-error' : undefined}
+                />
+                {fieldErrors.legal_representative_name && (
+                  <p id="legal_representative_name-error" className="text-xs text-destructive">{fieldErrors.legal_representative_name}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="legal_representative_email">Email *</Label>
-                <Input id="legal_representative_email" type="email" value={formData.legal_representative_email} onChange={e => setFormData(p => ({ ...p, legal_representative_email: e.target.value }))} />
+                <Input
+                  id="legal_representative_email"
+                  type="email"
+                  value={formData.legal_representative_email}
+                  onChange={e => { setFormData(p => ({ ...p, legal_representative_email: e.target.value })); clearFieldError('legal_representative_email'); }}
+                  aria-invalid={!!fieldErrors.legal_representative_email}
+                  aria-describedby={fieldErrors.legal_representative_email ? 'legal_representative_email-error' : undefined}
+                />
+                {fieldErrors.legal_representative_email && (
+                  <p id="legal_representative_email-error" className="text-xs text-destructive">{fieldErrors.legal_representative_email}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="legal_representative_phone">{t('publicContractIntake.phone')} *</Label>
-                <Input id="legal_representative_phone" type="tel" value={formData.legal_representative_phone} onChange={e => setFormData(p => ({ ...p, legal_representative_phone: e.target.value }))} placeholder="+351 900 000 000" />
+                <Input
+                  id="legal_representative_phone"
+                  type="tel"
+                  value={formData.legal_representative_phone}
+                  onChange={e => { setFormData(p => ({ ...p, legal_representative_phone: e.target.value })); clearFieldError('legal_representative_phone'); }}
+                  aria-invalid={!!fieldErrors.legal_representative_phone}
+                  aria-describedby={fieldErrors.legal_representative_phone ? 'legal_representative_phone-error' : undefined}
+                  placeholder="+351 900 000 000"
+                />
+                {fieldErrors.legal_representative_phone && (
+                  <p id="legal_representative_phone-error" className="text-xs text-destructive">{fieldErrors.legal_representative_phone}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="billing_email">{t('publicContractIntake.billingEmail')}</Label>
@@ -597,15 +712,9 @@ export default function PublicContractIntake() {
           <Button
             size="lg"
             className="gap-2"
-            disabled={
-              submitMutation.isPending ||
-              !formData.organization_name ||
-              !formData.company_nif ||
-              !formData.legal_representative_name ||
-              !formData.legal_representative_email ||
-              !formData.legal_representative_phone
-            } loading={submitMutation.isPending}
-            onClick={async () => { await autosave.flush(); submitMutation.mutate(); }}
+            disabled={submitMutation.isPending}
+            loading={submitMutation.isPending}
+            onClick={handleSubmit}
           >
             {submitMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
