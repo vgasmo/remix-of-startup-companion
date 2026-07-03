@@ -127,6 +127,7 @@ export function BackofficeContractsTab() {
   // Table row selection for bulk actions
   const [selectedContractIds, setSelectedContractIds] = useState<Set<string>>(new Set());
   const [isArchiving, setIsArchiving] = useState(false);
+  const [bulkTerminateOpen, setBulkTerminateOpen] = useState(false);
   const [detailContract, setDetailContract] = useState<StartupContract | null>(null);
   const [contractIdFromUrl, setContractIdInUrl] = useUrlParam('contract');
 
