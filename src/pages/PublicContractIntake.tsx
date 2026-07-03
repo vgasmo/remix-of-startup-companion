@@ -217,6 +217,7 @@ export default function PublicContractIntake() {
     const next = lang === 'pt' ? 'en' : 'pt';
     setLang(next);
     i18n.changeLanguage(next);
+    if (typeof document !== 'undefined') document.documentElement.lang = next;
   };
 
   if (isLoading) {
