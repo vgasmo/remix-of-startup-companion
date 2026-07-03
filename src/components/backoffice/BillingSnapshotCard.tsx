@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
 import { supabase } from '@/lib/supabaseClient';
+import { computeEffectiveDiscount } from '@/lib/contractLifecycle';
 
 const fmtEUR = new Intl.NumberFormat('pt-PT', {
   style: 'currency',
