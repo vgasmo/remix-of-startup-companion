@@ -190,12 +190,42 @@ export default function PublicBooking() {
     return { path, failed: false };
   };
 
+  const [invalidFields, setInvalidFields] = useState<Set<string>>(new Set());
+
+  const focusField = (id: string) => {
+    // wait for aria-invalid re-render
+    setTimeout(() => {
+      const el = document.getElementById(id) as HTMLElement | null;
+      if (el) {
+        el.focus();
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 50);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message || !formData.organization || !formData.has_tech || !formData.is_iies || !formData.vertical || !formData.stage || !formData.help_expectation || !formData.personal_intro || !formData.referral_source) {
+    const requiredOrder: Array<[string, string]> = [
+      ['name', formData.name],
+      ['email', formData.email],
+      ['organization', formData.organization],
+      ['message', formData.message],
+      ['has_tech', formData.has_tech],
+      ['is_iies', formData.is_iies],
+      ['vertical', formData.vertical],
+      ['stage', formData.stage],
+      ['help_expectation', formData.help_expectation],
+      ['personal_intro', formData.personal_intro],
+      ['referral_source', formData.referral_source],
+    ];
+    const missing = requiredOrder.filter(([, v]) => !v).map(([k]) => k);
+    if (missing.length > 0) {
+      setInvalidFields(new Set(missing));
       notify.error(t('publicBooking.fillRequired'));
+      focusField(missing[0]);
       return;
     }
+    setInvalidFields(new Set());
 
     setUploading(true);
     try {
