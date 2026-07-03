@@ -290,6 +290,12 @@ export function ContractLifecycleEventsCard() {
           </ScrollArea>
         )}
       </CardContent>
+      <RenewContractDialog
+        contract={renewContract as any}
+        open={!!renewContract}
+        onOpenChange={(o) => !o && setRenewContract(null)}
+      />
     </Card>
   );
 }
+
