@@ -72,23 +72,32 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
 
   const sortedItems = useMemo(() => {
     if (!sortKey) return items;
+    const collator = new Intl.Collator('pt', { sensitivity: 'base' });
     const cmp = (a: EcosystemItem, b: EcosystemItem) => {
       const getVal = (it: EcosystemItem): string | number => {
         switch (sortKey) {
-          case 'name': return (it.name || '').toLowerCase();
+          case 'name': return it.name || '';
           case 'stage': return (it.stage || '') as string;
-          case 'health': return typeof it.health_score === 'number' ? it.health_score : (it.health_score ? String(it.health_score) : '');
-          case 'consultant': return (it.owner_name || '').toLowerCase();
+          case 'health': {
+            const raw = it.health_score as unknown;
+            const n = raw == null || raw === '' ? NaN : Number(raw);
+            return Number.isFinite(n) ? n : -Infinity;
+          }
+          case 'consultant': return it.owner_name || '';
           case 'updated': return it.last_activity_at ? new Date(it.last_activity_at).getTime() : 0;
         }
       };
       const va = getVal(a); const vb = getVal(b);
+      if (typeof va === 'string' && typeof vb === 'string') {
+        return sortDir === 'asc' ? collator.compare(va, vb) : collator.compare(vb, va);
+      }
       if (va < vb) return sortDir === 'asc' ? -1 : 1;
       if (va > vb) return sortDir === 'asc' ? 1 : -1;
       return 0;
     };
     return [...items].sort(cmp);
   }, [items, sortKey, sortDir]);
+
 
   const totalPages = Math.max(1, Math.ceil(sortedItems.length / pageSize));
   const paginatedItems = useMemo(
@@ -168,12 +177,19 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
         return;
       }
 
-      // Snapshot full lead row for undo
+      // Snapshot full lead row + intake ids for undo
       const { data: snapshot } = await supabase
         .from('funnel_items')
         .select('*')
         .eq('id', item.funnel_item_id)
         .maybeSingle();
+
+      const { data: detachedIntakes } = (intakeCount || 0) > 0
+        ? await supabase
+            .from('contract_intakes')
+            .select('id')
+            .eq('funnel_item_id', item.funnel_item_id)
+        : { data: [] as { id: string }[] };
 
       // Detach intakes (FK is SET NULL but we make it explicit for clarity)
       if ((intakeCount || 0) > 0) {
@@ -188,14 +204,26 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
         .delete()
         .eq('id', item.funnel_item_id);
       if (error) throw error;
+
+      let undoInFlight = false;
       notify.success(t('ecosystem.leadDeleted', { defaultValue: 'Lead eliminada' }), {
         duration: 8000,
         action: snapshot ? {
           label: t('common.undo', { defaultValue: 'Anular' }),
           onClick: async () => {
+            if (undoInFlight) return;
+            undoInFlight = true;
             try {
               const { error: insErr } = await supabase.from('funnel_items').insert(snapshot as any);
               if (insErr) throw insErr;
+              // Re-attach any intakes we detached
+              const intakeIds = (detachedIntakes || []).map((r) => r.id);
+              if (intakeIds.length > 0) {
+                await supabase
+                  .from('contract_intakes')
+                  .update({ funnel_item_id: item.funnel_item_id })
+                  .in('id', intakeIds);
+              }
               notify.success(t('ecosystem.leadRestored', { defaultValue: 'Lead restaurada' }));
             } catch {
               notify.error(t('common.undoFailed', { defaultValue: 'Não foi possível anular' }));
@@ -205,6 +233,7 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
           },
         } : undefined,
       });
+
       queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
     } catch (err: any) {
       const msg = err?.message || '';

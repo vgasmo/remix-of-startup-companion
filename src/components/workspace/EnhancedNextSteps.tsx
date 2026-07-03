@@ -59,7 +59,7 @@ export function EnhancedNextSteps({ workspaceId, programId, stage, canWrite }: E
 
     // 1. Overdue actions (highest priority)
     const overdueActions = actions?.filter(
-      (a) => a.due_date && new Date(a.due_date) < today && a.status !== 'completed'
+      (a) => a.due_date && new Date(a.due_date) < today && a.status !== 'completed' && a.status !== 'awaiting_validation' && a.status !== 'cancelled'
     ) || [];
 
     if (overdueActions.length > 0) {

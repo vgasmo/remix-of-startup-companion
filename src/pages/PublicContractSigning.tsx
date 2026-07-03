@@ -749,7 +749,7 @@ export default function PublicContractSigning() {
                     </div>
                     <div>
                       <span className="text-muted-foreground">{t('publicContractSigning.start')}</span>{' '}
-                      {new Date(contract.start_date).toLocaleDateString(t('publicContractSigning.enGb'))}
+                      {new Date(contract.start_date).toLocaleDateString(lang === 'pt' ? 'pt-PT' : 'en-GB')}
                     </div>
                     {contract.square_meters && (
                       <div>

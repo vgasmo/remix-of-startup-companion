@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { notify } from "@/lib/notify";
 import { format } from 'date-fns';
+import { useMarkConversationRead } from '@/hooks/useMessaging';
+
 
 interface ChatTabProps {
   workspaceId: string;
@@ -199,6 +201,16 @@ export function ChatTab({ workspaceId }: ChatTabProps) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
+
+  // Mark conversation as read when it is opened / when new messages arrive
+  const markRead = useMarkConversationRead();
+  useEffect(() => {
+    if (conversation?.id && messages.length > 0) {
+      markRead.mutate(conversation.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversation?.id, messages.length]);
+
 
   // Send message
   const sendMutation = useMutation({

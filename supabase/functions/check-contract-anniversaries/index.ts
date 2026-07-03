@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
           status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
-      const { data: roles } = await supabase.from('user_roles').select('role').eq('user_id', user.id).in('role', ['admin', 'consultor'])
+      const { data: roles } = await supabase.from('user_roles').select('role').eq('user_id', user.id).in('role', ['admin', 'consultor', 'backoffice'])
       if (!roles?.length) {
         return new Response(JSON.stringify({ error: 'Staff only' }), {
           status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -277,7 +277,7 @@ Deno.serve(async (req) => {
       const { data: staffUsers } = await supabase
         .from('user_roles')
         .select('user_id')
-        .in('role', ['admin', 'consultor'])
+        .in('role', ['admin', 'consultor', 'backoffice'])
 
       if (staffUsers?.length) {
         const notifications = alerts.map(alert => {
@@ -305,7 +305,7 @@ Deno.serve(async (req) => {
             message,
             entity_type: 'contract',
             entity_id: alert.contractId,
-            link: `/admin?tab=backoffice&subtab=contracts`,
+            link: `/admin?tab=backoffice&subtab=contracts&contract=${alert.contractId}`,
           }))
         }).flat()
 

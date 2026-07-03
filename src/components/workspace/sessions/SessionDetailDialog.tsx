@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format, isPast } from 'date-fns';
-import { lisbonWallClockToUtcIso } from '@/lib/dateUtils';
+import { lisbonWallClockToUtcIso, utcIsoToLisbonWallClock } from '@/lib/dateUtils';
 import { Input } from '@/components/ui/input';
 import {
   Plus,
@@ -255,13 +255,12 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      // Prefill with the current scheduled_at formatted as datetime-local (local wall-clock).
+                      // Prefill with the current scheduled_at as a Lisbon wall-clock,
+                      // matching the save convention (browser TZ is not used).
                       try {
-                        const d = new Date(session.scheduled_at);
-                        const pad = (n: number) => String(n).padStart(2, '0');
-                        const val = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-                        setRescheduleValue(val);
+                        setRescheduleValue(utcIsoToLisbonWallClock(session.scheduled_at));
                       } catch { /* ignore */ }
+
                       setRescheduleOpen(true);
                     }}>
                     <CalendarClock className="h-4 w-4 mr-1" />

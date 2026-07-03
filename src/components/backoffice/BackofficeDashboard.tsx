@@ -375,7 +375,7 @@ export function BackofficeDashboard() {
                           alert.severity === 'warning' && 'bg-warning/50 border-warning/30 dark:bg-warning/10',
                           alert.severity === 'info' && 'bg-info/50 border-info/30 dark:bg-info/10',
                         )}
-                        {...clickableProps(() => navigate(`/workspaces/${alert.id}`))}
+                        {...clickableProps(() => navigate(`/admin?tab=backoffice&subtab=contracts&contract=${alert.id}`))}
                       >
                         <div className={cn(
                           alert.severity === 'critical' && 'text-destructive',
@@ -451,7 +451,7 @@ export function BackofficeDashboard() {
                           <div
                             key={contract.id}
                             className="p-3 rounded-xl border hover:bg-muted/30 transition-colors cursor-pointer"
-                            {...clickableProps(() => navigate(`/workspaces/${contract.workspace_id}`))}
+                            {...clickableProps(() => navigate(`/admin?tab=backoffice&subtab=contracts&contract=${contract.id}`))}
                           >
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-sm font-medium truncate">

@@ -178,7 +178,10 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
 
     if (useManualTime) {
       if (!title.trim() || !manualDateTime) {
-        notify.error(t('common.error'));
+        if (!title.trim()) setShowMoreOptions(true); // reveal the title field
+        notify.error(!title.trim()
+          ? t('sessions.titleRequiredHint', { defaultValue: 'Indique um título para a sessão.' })
+          : t('common.error'));
         return;
       }
       // Manual datetime-local input is a wall-clock string. Treat it as
@@ -187,9 +190,13 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
       scheduledAtISO = lisbonWallClockToUtcIso(manualDateTime);
     } else {
       if (!title.trim() || !selectedDate || !selectedSlot) {
-        notify.error(t('sessions.selectDateAndSlot', 'Please select a date and time slot'));
+        if (!title.trim()) setShowMoreOptions(true);
+        notify.error(!title.trim()
+          ? t('sessions.titleRequiredHint', { defaultValue: 'Indique um título para a sessão.' })
+          : t('sessions.selectDateAndSlot', 'Please select a date and time slot'));
         return;
       }
+
 
       // selectedSlot comes from check-consultant-availability and is a
       // wall-clock string in Europe/Lisbon (e.g. "2026-04-29T09:00:00").

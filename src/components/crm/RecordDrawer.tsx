@@ -274,11 +274,9 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
     }
   };
 
-  if (!item) return null;
-
-  const nextActionAt = localNextAction !== null ? localNextAction.at : (item.next_action_at ?? null);
-  const nextActionDescription = localNextAction !== null ? localNextAction.desc : (item.next_action_description ?? null);
-  const lastActivityAt = item.last_activity_at ?? null;
+  const nextActionAt = localNextAction !== null ? localNextAction.at : (item?.next_action_at ?? null);
+  const nextActionDescription = localNextAction !== null ? localNextAction.desc : (item?.next_action_description ?? null);
+  const lastActivityAt = item?.last_activity_at ?? null;
 
   // Triage navigation across the filtered list
   const siblingIndex = useMemo(() => {
@@ -307,6 +305,9 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [open, canGoPrev, canGoNext, goPrev, goNext]);
+
+  if (!item) return null;
+
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

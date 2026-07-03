@@ -299,6 +299,9 @@ export function useMarkConversationRead() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['workspace-tab-badges'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-messages-count'] });
     },
+
   });
 }

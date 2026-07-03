@@ -226,7 +226,7 @@ Deno.serve(async (req) => {
 
           // Notify staff if manual fallback
           if (signingResult.status === 'pending_manual') {
-            const { data: staffUsers } = await supabase.from('user_roles').select('user_id').in('role', ['admin', 'consultor'])
+            const { data: staffUsers } = await supabase.from('user_roles').select('user_id').in('role', ['admin', 'consultor', 'backoffice'])
             if (staffUsers?.length) {
               const startupName = (contract as any).workspace?.startup?.name || 'Startup'
               await supabase.from('notifications').insert(
@@ -860,7 +860,7 @@ Deno.serve(async (req) => {
           const { data: staffUsers } = await supabase
             .from('user_roles')
             .select('user_id')
-            .in('role', ['admin', 'consultor'])
+            .in('role', ['admin', 'consultor', 'backoffice'])
 
           if (staffUsers?.length) {
             const startupName = (contract as any).workspace?.startup?.name || 'Startup'
@@ -963,7 +963,7 @@ Deno.serve(async (req) => {
       const { data: staffUsers } = await supabase
         .from('user_roles')
         .select('user_id')
-        .in('role', ['admin', 'consultor'])
+        .in('role', ['admin', 'consultor', 'backoffice'])
       
       if (staffUsers?.length) {
         const startupName = (contract as any).workspace?.startup?.name || 'Startup'
