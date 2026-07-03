@@ -64,11 +64,16 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
 
   if (!room) return null;
 
+  const { data: occupancy } = useBuildingOccupancy();
+  const occupancyRoom = occupancy?.rooms.find(r => r.id === room.id) ?? null;
+  const contractSummary = occupancyRoom?.contract ?? null;
+
   const allocation = room.current_allocation;
   const isOccupied = !!allocation;
-  const occupantName = allocation?.workspace?.startup?.name ||
-    allocation?.funnel_item?.organization_name ||
-    allocation?.funnel_item?.contact_name;
+  const occupantName = occupancyRoom?.occupant?.name
+    ?? allocation?.workspace?.startup?.name
+    ?? allocation?.funnel_item?.organization_name
+    ?? allocation?.funnel_item?.contact_name;
 
   const tenure = allocation?.start_date
     ? formatDistanceToNow(new Date(allocation.start_date))
