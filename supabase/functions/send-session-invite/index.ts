@@ -19,6 +19,7 @@ interface SessionInviteRequest {
   recipientEmails: string[];
   organizerName: string;
   startupName: string;
+  eventType?: 'created' | 'rescheduled' | 'cancelled';
 }
 
 // HTML escape function to prevent XSS
