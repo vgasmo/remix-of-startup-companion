@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
+import { WorkspaceWithDetails, SortOption } from '@/hooks/useWorkspaces';
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
@@ -41,6 +41,8 @@ interface WorkspaceTableProps {
   selectionEnabled?: boolean;
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string) => void;
+  sortBy?: SortOption;
+  onSortByChange?: (value: SortOption) => void;
 }
 
 export const WorkspaceTable = memo(function WorkspaceTable({
@@ -49,6 +51,8 @@ export const WorkspaceTable = memo(function WorkspaceTable({
   selectionEnabled = false,
   selectedIds = new Set(),
   onToggleSelect,
+  sortBy,
+  onSortByChange,
 }: WorkspaceTableProps) {
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language.startsWith('pt') ? ptLocale : enUS;
