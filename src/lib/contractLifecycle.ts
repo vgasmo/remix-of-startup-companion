@@ -117,3 +117,59 @@ export function noticeDeadline(contract: ContractLite, today: Date = new Date())
   const nextReview = addYears(start, nextReviewYear);
   return subDays(nextReview, LIFECYCLE_THRESHOLDS.noticePeriodDays);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Effective discount — one rule, used by map, drawer, billing snapshot, console.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ContractDiscountRow {
+  id?: string;
+  discount_percentage: number;
+  start_date: string;
+  end_date: string | null;
+  reason: string | null;
+}
+
+export interface EffectiveDiscount {
+  /** Applied percentage (0–100). */
+  effectivePct: number;
+  /** Where it came from — 'table' = contract_discounts, 'legacy' = column, 'none'. */
+  source: 'table' | 'legacy' | 'none';
+  /** Human-readable reason (empty when source === 'none'). */
+  reason: string;
+}
+
+/**
+ * Canonical discount resolver shared by every space/contract surface.
+ * Prefers active rows in `contract_discounts` (single best via
+ * `resolveApplicableDiscounts`); falls back to the legacy
+ * `startup_contracts.discount_percentage` column only when no table
+ * rows are currently active.
+ */
+export function computeEffectiveDiscount(
+  discounts: ContractDiscountRow[] | null | undefined,
+  legacyPct: number | null | undefined,
+  legacyReason?: string | null,
+  today: Date = new Date(),
+): EffectiveDiscount {
+  const active = (discounts ?? []).filter(d => {
+    const start = new Date(d.start_date);
+    const end = d.end_date ? new Date(d.end_date) : null;
+    return start <= today && (!end || end >= today);
+  });
+  if (active.length) {
+    // Best (highest) — matches resolveApplicableDiscounts behaviour.
+    const best = active.reduce((a, b) => (b.discount_percentage > a.discount_percentage ? b : a));
+    return {
+      effectivePct: Number(best.discount_percentage) || 0,
+      source: 'table',
+      reason: best.reason || 'Deliberação CA',
+    };
+  }
+  const legacy = Number(legacyPct) || 0;
+  if (legacy > 0) {
+    return { effectivePct: legacy, source: 'legacy', reason: legacyReason || '' };
+  }
+  return { effectivePct: 0, source: 'none', reason: '' };
+}
+
