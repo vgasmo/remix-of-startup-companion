@@ -832,7 +832,7 @@ export default function Mentors() {
                 ) : (
                   <div className="space-y-6">
                     {pendingConnections.length > 0 && (
-                      <div>
+                      <div ref={pendingSectionRef} style={{ scrollMarginTop: 96 }}>
                         <h4 className="text-sm font-medium mb-3 text-muted-foreground">
                           {t('mentorsPage.pendingRequests')} ({pendingConnections.length})
                         </h4>
