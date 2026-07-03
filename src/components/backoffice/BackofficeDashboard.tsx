@@ -592,6 +592,7 @@ function BackofficeDashboardInner() {
           )}
         </CardContent>
       </Card>
+      </FullViewOnly>
 
       {/* Interactive Floor Map Viewer (Dialog) */}
       {selectedFloorMap && (
