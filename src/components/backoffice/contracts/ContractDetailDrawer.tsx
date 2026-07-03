@@ -66,6 +66,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
   const [editValues, setEditValues] = useState<Record<string, any>>({});
   const [activeTab, setActiveTab] = useState('details');
   const [renewOpen, setRenewOpen] = useState(false);
+  const [terminateOpen, setTerminateOpen] = useState(false);
 
   const { data: pricingTable } = useCurrentPricingTable();
 
