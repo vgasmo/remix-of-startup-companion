@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Clock, CheckCircle, AlertCircle, Building2, ArrowLeft, Upload, FileText, X, Globe } from 'lucide-react';
 import { format } from 'date-fns';
+import { pt as ptLocale, enUS } from 'date-fns/locale';
 import { notify } from "@/lib/notify";
 
 interface TimeSlot {
