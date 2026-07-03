@@ -529,6 +529,16 @@ export default function Mentors() {
                       <Mail className="h-3.5 w-3.5" />
                       {t('mentorsPage.contact')}
                     </Button>
+                    {founderWorkspaceId && (
+                      <Button
+                        size="sm"
+                        className="h-8 text-xs gap-1"
+                        onClick={() => setShowConsultantBooking(true)}
+                      >
+                        <CalendarDays className="h-3.5 w-3.5" />
+                        {t('mentorsPage.bookSession', { defaultValue: 'Marcar sessão' })}
+                      </Button>
+                    )}
                   </div>
                 </div>
               ) : (
