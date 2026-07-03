@@ -53,18 +53,28 @@ const STATUS_COLORS: Record<string, string> = {
   reserved: 'bg-primary',
 };
 
+type SubView = 'dashboard' | 'map' | 'list' | 'buildings' | 'waitlist';
+const VALID_VIEWS: SubView[] = ['dashboard', 'map', 'list', 'buildings', 'waitlist'];
+
 export function InfrastructureTab() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [subView, setSubView] = useState<'dashboard' | 'map' | 'list' | 'buildings' | 'waitlist'>('dashboard');
+
+  // URL-backed sub-view (?view=) and deep-link (?room=) — parsed once per mount.
+  const initialParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const initialView = (initialParams.get('view') as SubView | null);
+  const [subView, setSubView] = useState<SubView>(
+    initialView && VALID_VIEWS.includes(initialView) ? initialView : 'dashboard'
+  );
   const [selectedBuildingId, setSelectedBuildingId] = useState<string>('all');
   const [selectedFloorMapId, setSelectedFloorMapId] = useState<string>('');
   const [roomSearch, setRoomSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  
+
   // Drawer state
   const [drawerRoom, setDrawerRoom] = useState<Room | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const deepLinkHandledRef = useRef<string | null>(null);
   
   // Map viewer state
   const [displayImageUrl, setDisplayImageUrl] = useState<string>('');
