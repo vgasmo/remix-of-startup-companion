@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
 import { clickableProps } from '@/lib/clickable';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, subHours } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 
