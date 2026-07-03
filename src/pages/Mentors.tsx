@@ -322,6 +322,11 @@ export default function Mentors() {
   const [mentorSearch, setMentorSearch] = useState('');
   const [selectedMentorForBooking, setSelectedMentorForBooking] = useState<string | null>(null);
   const [selectedGalleryMentor, setSelectedGalleryMentor] = useState<MentorProfile | null>(null);
+  // Post-action scroll targets: after the mentor accepts a pending request we
+  // jump to the "connected founders" section; after declining we scroll back
+  // to the top of the pending list so the shrunk queue is in view.
+  const acceptedSectionRef = useRef<HTMLDivElement | null>(null);
+  const pendingSectionRef = useRef<HTMLDivElement | null>(null);
 
   // Deep link from inbox: `/mentors?mentor=<id>` (optionally &connection=<id>)
   // auto-opens the mentor's profile dialog so founders land on the exact
