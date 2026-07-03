@@ -2909,6 +2909,8 @@
     "bulk": {
       "archiveSelected": "Arquivar Selecionados",
       "archiveSuccess": "{{count}} contratos arquivados",
+      "terminateSelected": "Terminar selecionados",
+      "terminateSuccess": "{{count}} contratos terminados",
       "selected": "{{count}} selecionados"
     },
     "confirmAnalysis": "Confirmar Análise IA",
