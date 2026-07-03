@@ -35,6 +35,16 @@ const DAYS_OF_WEEK_PT: Record<number, string> = {
 };
 const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+function timeToMin(t: string) {
+  const [h, m] = t.split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
+function minToTime(m: number) {
+  const h = Math.floor(m / 60);
+  const mm = m % 60;
+  return `${String(h).padStart(2, '0')}:${String(mm).padStart(2, '0')}:00`;
+}
+
 export function MentorBookingPanel({ 
   mentorId, 
   mentorName, 
@@ -58,9 +68,43 @@ export function MentorBookingPanel({
     return name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
   };
 
+  // Generate 60-min slots inside each availability window, excluding those
+  // that overlap with existing accepted bookings for this mentor.
+  const SLOT_MIN = 60;
   const getAvailableSlotsForDate = (date: Date) => {
     const dayOfWeek = date.getDay();
-    return availability?.filter(a => a.day_of_week === dayOfWeek) || [];
+    const windows = availability?.filter(a => a.day_of_week === dayOfWeek) || [];
+    if (!windows.length) return [] as { start: string; end: string; key: string }[];
+
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const busy = (bookings || [])
+      .filter(b =>
+        b.mentor_id === mentorId &&
+        b.requested_date === dateStr &&
+        (b.status === 'accepted' || b.status === 'pending'),
+      )
+      .map(b => ({
+        s: timeToMin(b.requested_start_time),
+        e: timeToMin(b.requested_end_time),
+      }));
+
+    const slots: { start: string; end: string; key: string }[] = [];
+    for (const w of windows) {
+      let cursor = timeToMin(w.start_time);
+      const end = timeToMin(w.end_time);
+      while (cursor + SLOT_MIN <= end) {
+        const slotStart = cursor;
+        const slotEnd = cursor + SLOT_MIN;
+        const clash = busy.some(b => slotStart < b.e && slotEnd > b.s);
+        if (!clash) {
+          const startStr = minToTime(slotStart);
+          const endStr = minToTime(slotEnd);
+          slots.push({ start: startStr, end: endStr, key: `${startStr}-${endStr}` });
+        }
+        cursor += SLOT_MIN;
+      }
+    }
+    return slots;
   };
 
   const isDateAvailable = (date: Date) => {
@@ -178,8 +222,8 @@ export function MentorBookingPanel({
                     </SelectTrigger>
                     <SelectContent>
                       {getAvailableSlotsForDate(selectedDate).map(slot => (
-                        <SelectItem key={slot.id} value={`${slot.start_time}-${slot.end_time}`}>
-                          {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
+                        <SelectItem key={slot.key} value={slot.key}>
+                          {slot.start.slice(0, 5)} - {slot.end.slice(0, 5)}
                         </SelectItem>
                       ))}
                     </SelectContent>

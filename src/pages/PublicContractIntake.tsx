@@ -207,6 +207,8 @@ export default function PublicContractIntake() {
       autosave.clearDraft();
       void track('intake_submitted', { properties: { token: token?.slice(0, 6) ?? null } });
       notify.success(t('publicContractIntake.dataSubmittedSuccessfully'));
+      // Re-fetch so the "submitted" confirmation renders without a manual reload.
+      void queryClient.invalidateQueries({ queryKey: ['public-intake', token] });
     },
     onError: (err: any) => {
       notify.error(err?.message || 'Erro ao submeter');
@@ -217,6 +219,7 @@ export default function PublicContractIntake() {
     const next = lang === 'pt' ? 'en' : 'pt';
     setLang(next);
     i18n.changeLanguage(next);
+    if (typeof document !== 'undefined') document.documentElement.lang = next;
   };
 
   if (isLoading) {

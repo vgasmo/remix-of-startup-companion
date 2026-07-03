@@ -136,6 +136,22 @@ export function useMyBookings() {
   });
 }
 
+async function safeNotify(payload: {
+  user_id: string;
+  type: string;
+  title: string;
+  message: string;
+  link?: string;
+  entity_type?: string;
+  entity_id?: string;
+}) {
+  try {
+    await supabase.from('notifications').insert({ ...payload, read: false });
+  } catch {
+    /* best-effort */
+  }
+}
+
 export function useCreateBooking() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -156,6 +172,26 @@ export function useCreateBooking() {
         .select()
         .single();
       if (error) throw error;
+
+      // Notify mentor of new booking request
+      let founderName = '';
+      try {
+        const { data: prof } = await supabase
+          .from('profiles_safe')
+          .select('full_name, email')
+          .eq('id', user.id)
+          .maybeSingle();
+        founderName = prof?.full_name || prof?.email || 'Um fundador';
+      } catch { /* ignore */ }
+      void safeNotify({
+        user_id: booking.mentor_id,
+        type: 'system',
+        title: 'Novo pedido de sessão',
+        message: `${founderName} pediu uma sessão para ${booking.requested_date} às ${booking.requested_start_time.slice(0, 5)}`,
+        link: '/mentors',
+        entity_type: 'mentor_booking',
+        entity_id: data.id,
+      });
       return data;
     },
     onSuccess: () => {
@@ -168,14 +204,81 @@ export function useUpdateBookingStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      // Fetch booking pre-update
+      const { data: booking, error: fetchErr } = await supabase
+        .from('mentor_bookings')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+      if (fetchErr) throw fetchErr;
+
       const { error } = await supabase
         .from('mentor_bookings')
         .update({ status })
         .eq('id', id);
       if (error) throw error;
+
+      if (!booking) return;
+
+      // Mentor name lookup
+      let mentorName = 'o mentor';
+      try {
+        const { data: prof } = await supabase
+          .from('profiles_safe')
+          .select('full_name, email')
+          .eq('id', booking.mentor_id)
+          .maybeSingle();
+        mentorName = prof?.full_name || prof?.email || mentorName;
+      } catch { /* ignore */ }
+
+      if (status === 'accepted') {
+        // Create session row so it appears in calendars/prep
+        try {
+          const startIso = new Date(
+            `${booking.requested_date}T${booking.requested_start_time}`,
+          ).toISOString();
+          const [sh, sm] = booking.requested_start_time.split(':').map(Number);
+          const [eh, em] = booking.requested_end_time.split(':').map(Number);
+          const durationMin = Math.max(30, (eh * 60 + em) - (sh * 60 + sm));
+          if (booking.workspace_id) {
+            await supabase.from('sessions').insert({
+              workspace_id: booking.workspace_id,
+              title: `Sessão de mentoria com ${mentorName}`,
+              scheduled_at: startIso,
+              duration: durationMin,
+              created_by: booking.mentor_id,
+              source: 'mentor_booking',
+              session_type: 'mentoring',
+            });
+          }
+        } catch (e) {
+          // don't fail the accept if session insert bounces
+        }
+        void safeNotify({
+          user_id: booking.founder_id,
+          type: 'system',
+          title: 'Sessão confirmada',
+          message: `A sua sessão com ${mentorName} foi confirmada para ${booking.requested_date} às ${booking.requested_start_time.slice(0, 5)}`,
+          link: booking.workspace_id ? `/workspace/${booking.workspace_id}?tab=agenda` : '/my-workspaces',
+          entity_type: 'mentor_booking',
+          entity_id: booking.id,
+        });
+      } else if (status === 'declined') {
+        void safeNotify({
+          user_id: booking.founder_id,
+          type: 'system',
+          title: 'Pedido de sessão não confirmado',
+          message: `${mentorName} não pôde confirmar o horário pedido. Escolha outra disponibilidade quando quiser.`,
+          link: '/mentors',
+          entity_type: 'mentor_booking',
+          entity_id: booking.id,
+        });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['calendar-sessions'] });
     },
   });
 }

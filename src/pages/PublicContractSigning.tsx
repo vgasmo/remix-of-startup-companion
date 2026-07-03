@@ -159,6 +159,7 @@ export default function PublicContractSigning() {
     const next = lang === 'pt' ? 'en' : 'pt';
     setLang(next);
     i18n.changeLanguage(next);
+    if (typeof document !== 'undefined') document.documentElement.lang = next;
   };
 
   // Fetch contract via public edge function
@@ -485,7 +486,17 @@ export default function PublicContractSigning() {
             <p className="text-muted-foreground text-sm">
               {t('publicContract.invalidLinkDesc')}
             </p>
-
+            <div className="pt-2 space-y-2 text-sm">
+              <p className="text-muted-foreground">
+                {lang === 'pt' ? 'Precisa de ajuda?' : 'Need help?'}{' '}
+                <a href="mailto:hello@startupleiria.com" className="text-primary hover:underline">
+                  hello@startupleiria.com
+                </a>
+              </p>
+              <a href="https://startupleiria.com" className="inline-flex text-primary hover:underline">
+                {lang === 'pt' ? 'Voltar ao site' : 'Back to website'}
+              </a>
+            </div>
           </CardContent>
         </Card>
       </div>

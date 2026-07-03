@@ -275,7 +275,7 @@ export function NextBestActionMentor({
           count: upcomingSessionsCount,
         }),
         ctaLabel: t('nextBestAction.prepare', { defaultValue: 'Preparar' }),
-        to: '/',
+        to: '/my-workspaces',
       };
     }
 

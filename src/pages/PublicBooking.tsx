@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Clock, CheckCircle, AlertCircle, Building2, ArrowLeft, Upload, FileText, X, Globe } from 'lucide-react';
 import { format } from 'date-fns';
+import { pt as ptLocale, enUS } from 'date-fns/locale';
 import { notify } from "@/lib/notify";
 
 interface TimeSlot {
@@ -70,7 +71,12 @@ export default function PublicBooking() {
     const next = lang === 'pt' ? 'en' : 'pt';
     setLang(next);
     i18n.changeLanguage(next);
+    if (typeof document !== 'undefined') document.documentElement.lang = next;
   };
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') document.documentElement.lang = lang;
+  }, [lang]);
 
   // Validate token and get routing options
   const { data: tokenResult, isLoading: tokenLoading, error: tokenError } = useQuery({
@@ -167,16 +173,19 @@ export default function PublicBooking() {
     return acc;
   }, {} as Record<string, TimeSlot[]>) || {};
 
-  const uploadPitchDeck = async (): Promise<string | null> => {
-    if (!pitchFile) return null;
+  const dateLocale = lang === 'pt' ? ptLocale : enUS;
+  const atConnector = lang === 'pt' ? ' às ' : ' at ';
+
+  const uploadPitchDeck = async (): Promise<{ path: string | null; failed: boolean }> => {
+    if (!pitchFile) return { path: null, failed: false };
     const ext = pitchFile.name.split('.').pop() || 'pdf';
     const path = `${crypto.randomUUID()}.${ext}`;
     const { error } = await supabase.storage.from('booking-uploads').upload(path, pitchFile);
     if (error) {
       logger.warn('booking_upload_failed', { error: error?.message });
-      return null;
+      return { path: null, failed: true };
     }
-    return path;
+    return { path, failed: false };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -188,11 +197,17 @@ export default function PublicBooking() {
 
     setUploading(true);
     try {
-      const pitchPath = await uploadPitchDeck();
-      if (pitchPath) {
-        setFormData(prev => ({ ...prev, pitch_deck_path: pitchPath } as any));
+      const upload = await uploadPitchDeck();
+      if (upload.path) {
+        setFormData(prev => ({ ...prev, pitch_deck_path: upload.path } as any));
+      } else if (upload.failed) {
+        notify.warn(
+          lang === 'pt'
+            ? 'A reserva vai ser criada, mas o ficheiro não foi carregado — pode enviá-lo por email.'
+            : 'Your booking will be created, but the file did not upload — you can send it by email.',
+        );
       }
-      bookMutation.mutate(pitchPath);
+      bookMutation.mutate(upload.path);
     } finally {
       setUploading(false);
     }
@@ -228,6 +243,17 @@ export default function PublicBooking() {
             <p className="text-muted-foreground">
               {t('publicBooking.invalidLinkDesc')}
             </p>
+            <div className="pt-2 space-y-2 text-sm">
+              <p className="text-muted-foreground">
+                {lang === 'pt' ? 'Precisa de ajuda?' : 'Need help?'}{' '}
+                <a href="mailto:hello@startupleiria.com" className="text-primary hover:underline">
+                  hello@startupleiria.com
+                </a>
+              </p>
+              <a href="https://startupleiria.com" className="inline-flex text-primary hover:underline">
+                {lang === 'pt' ? 'Voltar ao site' : 'Back to website'}
+              </a>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -248,7 +274,7 @@ export default function PublicBooking() {
               <div className="bg-muted rounded-lg p-4 mt-4">
                 <div className="flex items-center justify-center gap-2 text-sm text-foreground">
                   <Calendar className="h-4 w-4" />
-                  {format(new Date(selectedSlot.date), 'EEEE, MMMM d, yyyy')}
+                  {format(new Date(selectedSlot.date), 'EEEE, MMMM d, yyyy', { locale: dateLocale })}
                 </div>
                 <div className="flex items-center justify-center gap-2 text-sm text-foreground mt-1">
                   <Clock className="h-4 w-4" />
@@ -377,7 +403,7 @@ export default function PublicBooking() {
                   {Object.entries(slotsByDate).slice(0, 5).map(([date, daySlots]) => (
                     <div key={date}>
                       <h3 className="font-medium mb-2 text-foreground">
-                        {format(new Date(date), 'EEEE, MMMM d')}
+                        {format(new Date(date), 'EEEE, MMMM d', { locale: dateLocale })}
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {daySlots.map((slot) => (
@@ -416,7 +442,7 @@ export default function PublicBooking() {
                 {selectedSlot && (
                   <span className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    {format(new Date(selectedSlot.date), 'MMMM d')} at {selectedSlot.time}
+                    {format(new Date(selectedSlot.date), 'MMMM d', { locale: dateLocale })}{atConnector}{selectedSlot.time}
                     <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => setStep('slots')}>
                       {t('publicBooking.change')}
                     </Button>
