@@ -9057,6 +9057,13 @@
     "whyAlternativesFail": "Why do these alternatives fail?"
   },
   "waitingList": {
+    "fulfill": "Fulfill",
+    "selectStartup": "Select startup...",
+    "selectLead": "Select lead...",
+    "numberOfPeople": "Number of people",
+    "anyBuilding": "Any building...",
+    "selectAvailableRoom": "Select available room...",
+
     "allRequests": "All Requests",
     "any": "Any",
     "availableRooms": "Available Rooms",
