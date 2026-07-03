@@ -28,7 +28,7 @@ function BillingSnapshotCardInner() {
       const [mrrRes, overdueRes, renewalsRes] = await Promise.all([
         supabase
           .from('startup_contracts' as any)
-          .select('monthly_fee, discount_percentage')
+          .select('id, monthly_fee, discount_percentage, discount_reason, contract_discounts(id, discount_percentage, start_date, end_date, reason)')
           .eq('status', 'active'),
         supabase
           .from('invoices' as any)
@@ -44,8 +44,8 @@ function BillingSnapshotCardInner() {
 
       const mrr = (mrrRes.data || []).reduce((sum: number, c: any) => {
         const fee = Number(c.monthly_fee) || 0;
-        const disc = Number(c.discount_percentage) || 0;
-        return sum + fee * (1 - disc / 100);
+        const disc = computeEffectiveDiscount(c.contract_discounts, c.discount_percentage, c.discount_reason);
+        return sum + fee * (1 - disc.effectivePct / 100);
       }, 0);
 
       const overdueList = overdueRes.data || [];
