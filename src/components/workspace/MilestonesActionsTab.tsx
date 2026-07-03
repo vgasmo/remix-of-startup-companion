@@ -749,7 +749,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateActionDialogOpen(false)}>{t('common.cancel')}</Button>
-            <Button onClick={handleCreateAction} disabled={createAction.isPending || !newAction.milestone_id} loading={createAction.isPending}>{t('common.create')}</Button>
+            <Button onClick={handleCreateAction} disabled={createAction.isPending || !newAction.title.trim()} loading={createAction.isPending}>{t('common.create')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
