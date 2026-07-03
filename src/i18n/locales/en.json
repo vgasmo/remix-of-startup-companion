@@ -6252,6 +6252,31 @@
     "updateKpis": "Update your KPIs for this month"
   },
   "ops": {
+    "state": {
+      "pending": "pending",
+      "onboarding": "onboarding"
+    },
+    "onboardingNoContract": {
+      "title": "Contract to be sent",
+      "desc": "{{name}} is in {{state}} without a recorded contract."
+    },
+    "readyActivation": {
+      "title": "Ready for manual activation",
+      "desc": "{{name}} has an active contract but the workspace is in \"{{status}}\"."
+    },
+    "pendingSignature": {
+      "title": "Awaiting signature",
+      "desc": "The contract for {{name}} is pending signature."
+    },
+    "missingContract": {
+      "title": "No contract",
+      "desc": "{{name}} has an active workspace with no linked contract."
+    },
+    "missingAllocation": {
+      "title": "No space assigned",
+      "desc": "{{name}} has no room or office allocated."
+    },
+
     "checklistCopied": "Checklist copied",
     "console": {
       "allStatuses": "All statuses",

@@ -11,6 +11,8 @@ import { CockpitPortfolioOverview } from '@/components/staff/CockpitPortfolioOve
 import { MomentumPanel } from '@/components/staff/MomentumPanel';
 import { OnboardingPipelineCard } from '@/components/staff/OnboardingPipelineCard';
 import { AdminQuickAccessCard } from '@/components/staff/AdminQuickAccessCard';
+import { NextBestActionStaff } from '@/components/dashboard/NextBestActionPanels';
+
 import { PendingApprovalsManager } from '@/components/admin/PendingApprovalsManager';
 import { IntakeRoutingManager } from '@/components/admin/IntakeRoutingManager';
 import { ClaimRequestsQueue } from '@/components/admin/ClaimRequestsQueue';
@@ -46,9 +48,31 @@ export default function StaffCockpit() {
 
   const heroLoading = workspacesLoading || programsLoading;
 
-  const isAdmin = roles?.includes('admin');
-  const isConsultor = roles?.includes('consultor');
   const isBackoffice = roles?.includes('backoffice');
+  const isAdmin = roles?.includes('admin');
+
+  // Counts for NextBestActionStaff (backoffice branch)
+  const { data: backofficeCounts } = useQuery({
+    queryKey: ['staff-cockpit-nba-counts'],
+    enabled: !!(isBackoffice || isAdmin),
+    queryFn: async () => {
+      const [contractsRes, intakesRes, unassignedRes] = await Promise.all([
+        supabase.from('startup_contracts').select('id', { count: 'exact', head: true }).eq('status', 'pending_signature'),
+        supabase.from('contract_intakes').select('id', { count: 'exact', head: true }).in('status', ['review_pending', 'changes_requested']),
+        supabase.from('workspaces').select('id', { count: 'exact', head: true }).eq('status', 'active').is('primary_consultor_id', null),
+      ]);
+      return {
+        contractsAwaitingSignatureCount: contractsRes.count ?? 0,
+        intakesBlockedCount: intakesRes.count ?? 0,
+        unassignedActiveWorkspacesCount: unassignedRes.count ?? 0,
+      };
+    },
+    staleTime: 60_000,
+  });
+
+
+  const isConsultor = roles?.includes('consultor');
+
   const greeting = profile?.full_name
     ? t('staffCockpit.greeting', { defaultValue: 'Olá, {{name}}', name: profile.full_name.split(' ')[0] })
     : t('staffCockpit.greetingGeneric', { defaultValue: 'Bem-vindo ao Painel' });
@@ -114,8 +138,18 @@ export default function StaffCockpit() {
           <MomentumPanel workspaces={workspaces} />
         )}
 
-        {/* Backoffice-specific: Contracts expiring + Startup Portugal status */}
+        {/* Backoffice-specific: Next best action + Contracts expiring + Startup Portugal status */}
         {(isBackoffice || isAdmin) && (
+          <WidgetErrorBoundary name="NextBestActionStaff">
+            <NextBestActionStaff
+              contractsAwaitingSignatureCount={backofficeCounts?.contractsAwaitingSignatureCount ?? 0}
+              intakesBlockedCount={backofficeCounts?.intakesBlockedCount ?? 0}
+              unassignedActiveWorkspacesCount={backofficeCounts?.unassignedActiveWorkspacesCount ?? 0}
+            />
+          </WidgetErrorBoundary>
+        )}
+        {(isBackoffice || isAdmin) && (
+
           <div className="grid gap-4 lg:grid-cols-2">
             <WidgetErrorBoundary name="ContractsExpiring">
               <BackofficeContractsExpiringCard />

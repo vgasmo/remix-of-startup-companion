@@ -115,8 +115,14 @@ export function OpsActionPrompts() {
             id: `onboarding-no-contract-${ws.id}`,
             type: 'onboarding_no_contract',
             severity: 'warning',
-            title: 'Contrato por enviar',
-            description: `${name} está em ${ws.status === 'pending' ? 'estado pendente' : 'onboarding'} sem contrato registado.`,
+            title: t('ops.onboardingNoContract.title', { defaultValue: 'Contrato por enviar' }),
+            description: t('ops.onboardingNoContract.desc', {
+              defaultValue: '{{name}} está em {{state}} sem contrato registado.',
+              name,
+              state: ws.status === 'pending'
+                ? t('ops.state.pending', { defaultValue: 'estado pendente' })
+                : t('ops.state.onboarding', { defaultValue: 'onboarding' }),
+            }),
             entityName: name,
             workspaceId: ws.id,
             actions: [],
@@ -129,8 +135,12 @@ export function OpsActionPrompts() {
             id: `ready-activation-${ws.id}`,
             type: 'ready_activation',
             severity: 'info',
-            title: 'Pronto para ativação manual',
-            description: `${name} tem contrato ativo mas workspace em estado "${ws.status}".`,
+            title: t('ops.readyActivation.title', { defaultValue: 'Pronto para ativação manual' }),
+            description: t('ops.readyActivation.desc', {
+              defaultValue: '{{name}} tem contrato ativo mas workspace em estado "{{status}}".',
+              name,
+              status: ws.status,
+            }),
             entityName: name,
             workspaceId: ws.id,
             contractId: contract.id,
@@ -144,8 +154,11 @@ export function OpsActionPrompts() {
             id: `pending-sig-${ws.id}`,
             type: 'pending_signature',
             severity: 'warning',
-            title: 'Aguarda assinatura',
-            description: `O contrato de ${name} está pendente de assinatura.`,
+            title: t('ops.pendingSignature.title', { defaultValue: 'Aguarda assinatura' }),
+            description: t('ops.pendingSignature.desc', {
+              defaultValue: 'O contrato de {{name}} está pendente de assinatura.',
+              name,
+            }),
             entityName: name,
             workspaceId: ws.id,
             contractId: contract.id,
@@ -159,8 +172,11 @@ export function OpsActionPrompts() {
             id: `active-no-contract-${ws.id}`,
             type: 'missing_contract',
             severity: 'critical',
-            title: 'Sem contrato',
-            description: `${name} tem workspace ativo sem contrato associado.`,
+            title: t('ops.missingContract.title', { defaultValue: 'Sem contrato' }),
+            description: t('ops.missingContract.desc', {
+              defaultValue: '{{name}} tem workspace ativo sem contrato associado.',
+              name,
+            }),
             entityName: name,
             workspaceId: ws.id,
             actions: [],
@@ -173,8 +189,11 @@ export function OpsActionPrompts() {
             id: `no-allocation-${ws.id}`,
             type: 'missing_allocation_link',
             severity: 'info',
-            title: 'Sem espaço atribuído',
-            description: `${name} não tem sala/gabinete alocado.`,
+            title: t('ops.missingAllocation.title', { defaultValue: 'Sem espaço atribuído' }),
+            description: t('ops.missingAllocation.desc', {
+              defaultValue: '{{name}} não tem sala/gabinete alocado.',
+              name,
+            }),
             entityName: name,
             workspaceId: ws.id,
             actions: [],
@@ -183,6 +202,7 @@ export function OpsActionPrompts() {
       });
 
       // Sort by severity
+
       const order = { critical: 0, warning: 1, info: 2 };
       result.sort((a, b) => order[a.severity] - order[b.severity]);
 
