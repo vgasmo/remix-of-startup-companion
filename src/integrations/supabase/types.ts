@@ -5084,6 +5084,7 @@ export type Database = {
       room_allocations: {
         Row: {
           allocation_type: string
+          contract_id: string | null
           created_at: string
           created_by: string | null
           end_date: string | null
@@ -5097,6 +5098,7 @@ export type Database = {
         }
         Insert: {
           allocation_type?: string
+          contract_id?: string | null
           created_at?: string
           created_by?: string | null
           end_date?: string | null
@@ -5110,6 +5112,7 @@ export type Database = {
         }
         Update: {
           allocation_type?: string
+          contract_id?: string | null
           created_at?: string
           created_by?: string | null
           end_date?: string | null
@@ -5122,6 +5125,20 @@ export type Database = {
           workspace_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "room_allocations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "startup_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_allocations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "startup_contracts_safe"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "room_allocations_funnel_item_id_fkey"
             columns: ["funnel_item_id"]
