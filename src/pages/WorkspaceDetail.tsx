@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, KeyboardEvent } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, KeyboardEvent } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Copy, MoreHorizontal, ChevronDown } from 'lucide-react';
@@ -141,8 +141,25 @@ export default function WorkspaceDetail() {
   }, [isLoading, workspace, allVisibleIds, currentTab, setSearchParams, t]);
 
   const activeTab = allVisibleIds.has(currentTab) ? currentTab : 'overview';
-  
+
+  // Visual highlight for the tab when arriving from an external link (e.g. notification).
+  // We pulse the tab briefly whenever activeTab changes without an explicit user click.
+  const [highlightedTab, setHighlightedTab] = useState<string | null>(null);
+  const userClickedTabRef = useRef(false);
+  useEffect(() => {
+    if (userClickedTabRef.current) {
+      userClickedTabRef.current = false;
+      return;
+    }
+    if (!activeTab || activeTab === 'overview') return;
+    setHighlightedTab(activeTab);
+    const timer = window.setTimeout(() => setHighlightedTab(null), 3000);
+    return () => window.clearTimeout(timer);
+  }, [activeTab]);
+
   const handleTabChange = useCallback((value: string) => {
+    userClickedTabRef.current = true;
+    setHighlightedTab(null);
     setSearchParams({ tab: value }, { replace: true });
     // Reset scroll so users land at the top of the newly selected tab content.
     if (typeof window !== 'undefined') {
@@ -294,7 +311,9 @@ export default function WorkspaceDetail() {
                 "disabled:pointer-events-none disabled:opacity-50",
                 activeTab === tab.id
                   ? "bg-primary/10 text-primary shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50",
+                highlightedTab === tab.id &&
+                  "ring-2 ring-primary/60 ring-offset-1 animate-pulse"
               )}
             >
               {t(tab.labelKey)}
@@ -316,7 +335,9 @@ export default function WorkspaceDetail() {
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1",
                     isOverflowTabActive
                       ? "bg-primary/10 text-primary shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                      : "text-muted-foreground hover:text-foreground hover:bg-background/50",
+                    highlightedTab && overflowTabs.some(o => o.id === highlightedTab) &&
+                      "ring-2 ring-primary/60 ring-offset-1 animate-pulse"
                   )}
                 >
                   <MoreHorizontal className="h-4 w-4" />
