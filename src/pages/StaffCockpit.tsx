@@ -116,6 +116,44 @@ export default function StaffCockpit() {
         {/* Quick Actions Bar */}
         <CockpitQuickActions workspaces={workspaces} compact={false} />
 
+        {/* First-run "primeiros passos" (per role, dismissible) */}
+        {isConsultor && !isAdmin && !isBackoffice && (
+          <FirstStepsCard
+            storageScope="consultor"
+            title={t('firstSteps.consultor.title', { defaultValue: 'Primeiros passos' })}
+            subtitle={t('firstSteps.consultor.subtitle', { defaultValue: 'Configure o essencial para começar com o seu portefólio.' })}
+            items={[
+              { id: 'wq', label: t('firstSteps.consultor.workQueue', { defaultValue: 'Conheça o Work Queue' }), href: '/staff-cockpit', icon: ListTodo },
+              { id: 'avail', label: t('firstSteps.consultor.availability', { defaultValue: 'Configure a sua disponibilidade' }), href: '/consultor-tools', icon: CalendarIcon },
+              { id: 'portfolio', label: t('firstSteps.consultor.portfolio', { defaultValue: 'Veja o seu portefólio' }), href: '/my-workspaces', icon: Briefcase },
+            ] satisfies FirstStepItem[]}
+          />
+        )}
+        {isBackoffice && !isAdmin && (
+          <FirstStepsCard
+            storageScope="backoffice"
+            title={t('firstSteps.backoffice.title', { defaultValue: 'Primeiros passos' })}
+            subtitle={t('firstSteps.backoffice.subtitle', { defaultValue: 'O ciclo diário do backoffice em três paragens.' })}
+            items={[
+              { id: 'contracts', label: t('firstSteps.backoffice.contracts', { defaultValue: 'Contratos a expirar' }), href: '/admin?tab=backoffice&subtab=contracts', icon: FileText },
+              { id: 'spaces', label: t('firstSteps.backoffice.spaces', { defaultValue: 'Espaços & ocupação' }), href: '/admin?tab=backoffice', icon: Building2 },
+              { id: 'approvals', label: t('firstSteps.backoffice.approvals', { defaultValue: 'Aprovações pendentes' }), href: '/admin?tab=approvals', icon: ClockIcon },
+            ] satisfies FirstStepItem[]}
+          />
+        )}
+        {isAdmin && (
+          <FirstStepsCard
+            storageScope="admin"
+            title={t('firstSteps.admin.title', { defaultValue: 'Primeiros passos' })}
+            subtitle={t('firstSteps.admin.subtitle', { defaultValue: 'Os três painéis onde o admin passa mais tempo.' })}
+            items={[
+              { id: 'approvals', label: t('firstSteps.admin.approvals', { defaultValue: 'Aprovações' }), href: '/admin?tab=approvals', icon: ShieldCheck },
+              { id: 'programs', label: t('firstSteps.admin.programs', { defaultValue: 'Programas & coortes' }), href: '/admin?tab=programs-setup', icon: GraduationCap },
+              { id: 'ecosystem', label: t('firstSteps.admin.ecosystem', { defaultValue: 'Saúde do ecossistema' }), href: '/ecosystem', icon: HeartPulse },
+            ] satisfies FirstStepItem[]}
+          />
+        )}
+
         {/* Admin-only: Onboarding Pipeline + Quick Access */}
         {isAdmin && (
           <div className="grid gap-4 lg:grid-cols-2">
