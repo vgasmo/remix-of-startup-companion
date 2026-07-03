@@ -7160,7 +7160,13 @@
     "title": "Aviso de Expiração de Sessão"
   },
   "sessions": {
-    "actionItemCreated": "Action item created",
+    "actionItemCreated": "Item de ação criado",
+    "reschedule": "Reagendar",
+    "rescheduleDesc": "Escolha uma nova data e hora para esta sessão.",
+    "rescheduled": "Sessão reagendada",
+    "showMoreOptions": "Mais opções (título, participantes, agenda, ligação)",
+    "hideMoreOptions": "Ocultar opções avançadas",
+    "defaultTitleWith": "Sessão com {{name}}",
     "actionItemsFromSession": "Itens de Ação desta Sessão",
     "actions": "Ações",
     "actionsCreated": "Ações Criadas",
