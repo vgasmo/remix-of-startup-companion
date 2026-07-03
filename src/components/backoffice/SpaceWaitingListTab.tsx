@@ -180,7 +180,7 @@ export function SpaceWaitingListTab() {
                     <TabsContent value="lead" className="mt-2">
                       <Select name="funnel_item_id">
                         <SelectTrigger>
-                          <SelectValue placeholder="Select lead..." />
+                          <SelectValue placeholder={t('waitingList.selectLead', { defaultValue: 'Selecionar lead...' })} />
                         </SelectTrigger>
                         <SelectContent>
                           <ScrollArea className="h-[200px]">
