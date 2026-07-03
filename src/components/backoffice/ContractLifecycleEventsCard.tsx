@@ -219,23 +219,30 @@ export function ContractLifecycleEventsCard() {
               {events.slice(0, 15).map((event, idx) => {
                 const goToContract = () =>
                   navigate(`/admin?tab=backoffice&subtab=contracts&contract=${event.contractId}`);
+                const canRenew = event.eventType === 'anniversary' || event.eventType === 'incubation_limit';
+                const openRenew = (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  const c = contracts?.find(x => x.id === event.contractId);
+                  if (c) setRenewContract(c);
+                };
                 return (
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   key={`${event.contractId}-${event.eventType}-${idx}`}
                   onClick={goToContract}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToContract(); } }}
                   aria-label={t('lifecycle.stepper.openContractAria', {
                     defaultValue: 'Abrir contrato de {{startup}}',
                     startup: event.startupName,
                   })}
                   className={cn(
-                    'w-full text-left p-3 rounded-lg border flex items-start gap-3 text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'w-full text-left p-3 rounded-lg border flex items-start gap-3 text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer',
                     event.severity === 'critical' && 'bg-destructive/5 border-destructive/30',
                     event.severity === 'warning' && 'bg-warning/5 border-warning/30',
                     event.severity === 'info' && 'bg-info/5 border-info/30',
                   )}
                 >
-
                   <div className={cn(
                     'mt-0.5',
                     event.severity === 'critical' && 'text-destructive',
@@ -264,9 +271,21 @@ export function ContractLifecycleEventsCard() {
                       </span>
                     </div>
                   </div>
-                </button>
+                  {canRenew && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs gap-1 shrink-0"
+                      onClick={openRenew}
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                      {t('contractDetail.renewCta', { defaultValue: 'Renovar' })}
+                    </Button>
+                  )}
+                </div>
                 );
               })}
+
             </div>
           </ScrollArea>
         )}
