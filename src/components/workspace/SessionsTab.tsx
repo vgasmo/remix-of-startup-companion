@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, Plus, FileText, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,8 +34,14 @@ interface SessionsTabProps {
 
 export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
   const { t } = useTranslation();
-  const { isAdmin, isConsultor } = useAuth();
+  const { isAdmin, isConsultor, isFounder } = useAuth();
   const canUseFacilitator = isAdmin || isConsultor;
+  const isFounderOnly = isFounder && !isAdmin && !isConsultor;
+  const navigate = useNavigate();
+
+  const goToMentorBooking = () => {
+    navigate('/mentors');
+  };
 
   const [search, setSearch] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -108,10 +114,17 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
             {t('sessions.export')}
           </Button>
           {canWrite && (
-            <Button onClick={() => setShowCreateDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t('sessions.createSession')}
-            </Button>
+            isFounderOnly ? (
+              <Button onClick={goToMentorBooking}>
+                <Plus className="h-4 w-4 mr-2" />
+                {t('sessions.bookWithMentor', { defaultValue: 'Marcar com mentor/consultor' })}
+              </Button>
+            ) : (
+              <Button onClick={() => setShowCreateDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                {t('sessions.createSession')}
+              </Button>
+            )
           )}
         </div>
       </div>
@@ -126,11 +139,17 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
           icon={FileText}
           title={search ? t('sessions.noSearchResults') : t('emptyStates.sessions.title')}
           description={search ? t('sessions.tryAdjustingSearch') : t('emptyStates.sessions.description')}
-          action={!search && canWrite ? {
-            label: t('sessions.createSession'),
-            onClick: () => setShowCreateDialog(true),
-            icon: Plus,
-          } : (!search && !canWrite ? {
+          action={!search && canWrite ? (
+            isFounderOnly ? {
+              label: t('sessions.bookWithMentor', { defaultValue: 'Marcar com mentor/consultor' }),
+              onClick: goToMentorBooking,
+              icon: Plus,
+            } : {
+              label: t('sessions.createSession'),
+              onClick: () => setShowCreateDialog(true),
+              icon: Plus,
+            }
+          ) : (!search && !canWrite ? {
             label: t('sessions.askConsultor', { defaultValue: 'Pedir sessão ao consultor' }),
             onClick: () => {
               try {
