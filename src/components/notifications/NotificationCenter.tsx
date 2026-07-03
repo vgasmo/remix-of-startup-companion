@@ -60,6 +60,11 @@ const notificationTypeIcons: Record<string, string> = {
   message_alert: '💬',
   template_request: '📋',
   feedback_request: '🗣️',
+  playbook_accepted: '✅',
+  playbook_completed: '🏁',
+  template_approved: '✅',
+  template_changes_requested: '↩️',
+
 
 
 };
@@ -99,6 +104,11 @@ const notificationTypeColors: Record<string, string> = {
   message_alert: 'bg-primary/10 text-primary',
   template_request: 'bg-primary/10 text-primary',
   feedback_request: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
+  playbook_accepted: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
+  playbook_completed: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
+  template_approved: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]',
+  template_changes_requested: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]',
+
 
 
 };

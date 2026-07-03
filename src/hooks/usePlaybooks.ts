@@ -285,6 +285,15 @@ export function useInstantiatePlaybook() {
         },
       });
 
+      // Notify workspace consultors/admins that the founder accepted the playbook.
+      await notifyPlaybookLifecycle({
+        kind: 'accepted',
+        workspaceId,
+        playbookId,
+        instanceId,
+        actorId: user.id,
+      });
+
       return { instanceId, milestonesCreated: milestoneItems.length, actionsCreated: actionItems.length };
     },
     onSuccess: (result, { workspaceId }) => {
@@ -301,6 +310,89 @@ export function useInstantiatePlaybook() {
     },
   });
 }
+
+// Mark a workspace playbook instance as completed/delivered.
+export function useCompletePlaybookInstance() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ workspaceId, playbookId, instanceId }: { workspaceId: string; playbookId: string; instanceId: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from('workspace_playbook_instances')
+        .update({ status: 'completed', completed_at: new Date().toISOString() })
+        .eq('id', instanceId);
+      if (error) throw error;
+
+      await notifyPlaybookLifecycle({
+        kind: 'completed',
+        workspaceId,
+        playbookId,
+        instanceId,
+        actorId: user?.id ?? null,
+      });
+    },
+    onSuccess: (_, { workspaceId }) => {
+      queryClient.invalidateQueries({ queryKey: ['workspace-playbook-instances', workspaceId] });
+    },
+    onError: (error: Error) => {
+      logger.error('Playbook complete error', {}, error.message);
+    },
+  });
+}
+
+// Shared: insert inbox notifications for workspace consultors/admins on
+// playbook lifecycle transitions (accepted/completed). Best-effort.
+async function notifyPlaybookLifecycle(params: {
+  kind: 'accepted' | 'completed';
+  workspaceId: string;
+  playbookId: string;
+  instanceId: string;
+  actorId: string | null;
+}) {
+  try {
+    const { data: pb } = await supabase
+      .from('playbooks')
+      .select('title')
+      .eq('id', params.playbookId)
+      .maybeSingle();
+    const { data: ws } = await supabase
+      .from('workspaces')
+      .select('startup:startups(name)')
+      .eq('id', params.workspaceId)
+      .maybeSingle();
+    const playbookTitle = pb?.title || 'Playbook';
+    const startupName = (ws as any)?.startup?.name || 'Workspace';
+
+    const { data: recipients } = await supabase
+      .from('workspace_users')
+      .select('user_id, role')
+      .eq('workspace_id', params.workspaceId)
+      .eq('active', true)
+      .in('role', ['consultor', 'admin', 'backoffice']);
+
+    const rows = (recipients || [])
+      .filter((r) => r.user_id && r.user_id !== params.actorId)
+      .map((r) => ({
+        user_id: r.user_id as string,
+        type: params.kind === 'accepted' ? 'playbook_accepted' : 'playbook_completed',
+        title: params.kind === 'accepted'
+          ? `Playbook aceite: ${playbookTitle}`
+          : `Playbook entregue: ${playbookTitle}`,
+        message: `${startupName} — ${params.kind === 'accepted' ? 'o founder aceitou o playbook.' : 'playbook marcado como entregue.'}`,
+        link: `/workspace/${params.workspaceId}?tab=playbooks`,
+        entity_type: 'playbook_instance',
+        entity_id: params.instanceId,
+        read: false,
+        metadata: { workspace_id: params.workspaceId, playbook_id: params.playbookId },
+      }));
+    if (rows.length) {
+      await supabase.from('notifications').insert(rows);
+    }
+  } catch (e) {
+    logger.warn('notifyPlaybookLifecycle failed', { error: (e as Error)?.message });
+  }
+}
+
 
 // Dismiss a playbook suggestion
 export function useDismissPlaybook() {
