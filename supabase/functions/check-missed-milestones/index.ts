@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
             { name: 'Due Date', value: milestone.target_date },
             { name: 'Status', value: 'Marked as Delayed' },
           ],
-          link: `${appUrl}/workspace/${milestone.workspace_id}?tab=milestones`,
+          link: `${appUrl}/workspace/${milestone.workspace_id}?tab=milestones-actions`,
           link_text: 'View Milestone',
           priority: 'high',
         }

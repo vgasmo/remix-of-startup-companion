@@ -106,7 +106,7 @@ serve(async (req) => {
               type: 'health_alert',
               title: `Schedule session with ${(workspace.startup as any)?.name || 'Startup'}`,
               message: reason,
-              link: `/workspace/${workspace.id}?tab=sessions`,
+              link: `/workspace/${workspace.id}?tab=agenda`,
             });
           }
         }

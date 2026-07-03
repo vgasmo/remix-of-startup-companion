@@ -469,7 +469,7 @@ Deno.serve(async (req) => {
             await notify(supabase, member.user_id, 'milestone_overdue',
               `Milestone atrasado — ${m.title}`,
               `O milestone "${m.title}" da ${startupName} está atrasado (limite: ${m.due_date}).`,
-              `/workspace/${m.workspace_id}?tab=milestones`,
+              `/workspace/${m.workspace_id}?tab=milestones-actions`,
               'milestone', m.id)
             await recordRun(supabase, 'milestone_overdue', m.id, 'milestone', member.user_id, todayStr, 'app')
             result.notifications++
@@ -579,7 +579,7 @@ Deno.serve(async (req) => {
           await notify(supabase, consultorId, 'session_no_notes',
             `Sessão sem notas há 48h — ${startupName}`,
             `A sessão "${s.title}" ainda não tem notas registadas.`,
-            `/workspace/${s.workspace_id}?tab=sessions`,
+            `/workspace/${s.workspace_id}?tab=agenda`,
             'session', s.id)
           await recordRun(supabase, 'session_no_notes', s.id, 'session', consultorId, todayStr, 'app')
           result.notifications++
