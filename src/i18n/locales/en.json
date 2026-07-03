@@ -1872,6 +1872,15 @@
     "updatePassword": "Update Password"
   },
   "backoffice": {
+    "invoiceStatus": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded"
+    },
+
     "allocationEndError": "Failed to end allocation",
     "allocationEnded": "Allocation ended",
     "billing": {
