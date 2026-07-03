@@ -24,6 +24,8 @@ import { ContractDiscountsPanel } from '@/components/contracts/ContractDiscounts
 import { ContractIntelligenceCard } from '@/components/contracts/ContractIntelligenceCard';
 import { PricingBreakdown } from '@/components/contracts/PricingBreakdown';
 import { ContractStatusBadge } from './ContractStatusBadge';
+import { RenewContractDialog } from './RenewContractDialog';
+
 import { ContractLifecycleStepper } from '@/components/contracts/ContractLifecycleStepper';
 import { ContractReadinessChecklist } from '@/components/contracts/ContractReadinessChecklist';
 import { ProvenanceBadge } from '@/components/shared/ProvenanceBadge';
@@ -62,6 +64,8 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<Record<string, any>>({});
   const [activeTab, setActiveTab] = useState('details');
+  const [renewOpen, setRenewOpen] = useState(false);
+
   const { data: pricingTable } = useCurrentPricingTable();
 
   // Fetch discounts for pricing engine
@@ -343,7 +347,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                 variant="outline"
                 size="sm"
                 className="h-7 text-xs gap-1"
-                onClick={() => navigate('/admin?tab=funnel')}
+                onClick={() => navigate(`/crm?open=${contract.funnel_item_id}`)}
               >
                 <LinkIcon className="h-3 w-3" />
                 {t('contractDetail.viewInCRM')}
@@ -359,6 +363,18 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
               {generatePdf.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileDown className="h-3 w-3" />}
               {t('contractDetail.generatePDF', { defaultValue: 'Gerar PDF' })}
             </Button>
+            {contract.status === 'active' && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1"
+                onClick={() => setRenewOpen(true)}
+              >
+                <RefreshCw className="h-3 w-3" />
+                {t('contractDetail.renewCta', { defaultValue: 'Renovar' })}
+              </Button>
+            )}
+
             {/* Generate public signing link for founder */}
             {['draft', 'pending_signature'].includes(contract.status) && (
               <Button
@@ -685,7 +701,9 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
           </Tabs>
         </div>
       </SheetContent>
+      <RenewContractDialog contract={contract} open={renewOpen} onOpenChange={setRenewOpen} />
     </Sheet>
+
   );
 }
 

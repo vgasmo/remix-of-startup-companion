@@ -2703,6 +2703,16 @@
     }
   },
   "contractDetail": {
+    "renewCta": "Renew",
+    "renewTitle": "Renew contract",
+    "renewDesc": "Renews for 12 months from the day after the current end date. Updates end_date and logs a lifecycle event.",
+    "renewStart": "New start",
+    "renewEnd": "New end",
+    "renewFee": "Monthly fee (€)",
+    "confirmRenew": "Confirm renewal",
+    "renewSuccess": "Contract renewed",
+    "renewError": "Could not renew the contract",
+
     "completedAt": "Completed at",
     "configured": "Configured",
     "contractTimeline": "Contract Timeline",
