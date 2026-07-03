@@ -322,19 +322,19 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
           {totalSiblings > 1 && (
             <div className="flex items-center gap-1 mr-1">
               <Button variant="ghost" size="icon" className="h-7 w-7" disabled={!canGoPrev} onClick={goPrev} aria-label={t('common.previous', { defaultValue: 'Anterior' })}>
-                <ChevronLeftIcon className="h-4 w-4" />
+                <ChevronLeft className="h-4 w-4" />
               </Button>
               <span className="text-xs text-muted-foreground tabular-nums">
                 {siblingIndex + 1} {t('common.of', { defaultValue: 'de' })} {totalSiblings}
               </span>
               <Button variant="ghost" size="icon" className="h-7 w-7" disabled={!canGoNext} onClick={goNext} aria-label={t('common.next', { defaultValue: 'Seguinte' })}>
-                <ChevronRightIcon className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4" />
               </Button>
               <div className="h-4 w-px bg-border/60 ml-1" />
             </div>
           )}
           <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setAddActivityDialog('call')}>
-            <PhoneIcon className="h-3 w-3 mr-1" />
+            <Phone className="h-3 w-3 mr-1" />
             {t('crm.logCall')}
           </Button>
           <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setAddActivityDialog('note')}>
@@ -342,7 +342,7 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
             {t('crm.addNote')}
           </Button>
           <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setAddActivityDialog('meeting')}>
-            <CalendarIcon className="h-3 w-3 mr-1" />
+            <Calendar className="h-3 w-3 mr-1" />
             {t('crm.logMeeting')}
           </Button>
         </div>
