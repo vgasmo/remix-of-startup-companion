@@ -596,6 +596,17 @@ export function BackofficeContractsTab() {
         isArchiving={isArchiving}
       />
 
+      <BulkTerminateContractsDialog
+        open={bulkTerminateOpen}
+        onOpenChange={setBulkTerminateOpen}
+        contracts={
+          (contracts || [])
+            .filter(c => selectedContractIds.has(c.id))
+            .map(c => ({ id: c.id, workspace_id: c.workspace_id }))
+        }
+        onDone={() => setSelectedContractIds(new Set())}
+      />
+
       {/* Contracts Table */}
       <Card>
         <CardHeader>
