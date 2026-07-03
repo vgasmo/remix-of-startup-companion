@@ -361,6 +361,18 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
               {generatePdf.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileDown className="h-3 w-3" />}
               {t('contractDetail.generatePDF', { defaultValue: 'Gerar PDF' })}
             </Button>
+            {contract.status === 'active' && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1"
+                onClick={() => setRenewOpen(true)}
+              >
+                <RefreshCw className="h-3 w-3" />
+                {t('contractDetail.renewCta', { defaultValue: 'Renovar' })}
+              </Button>
+            )}
+
             {/* Generate public signing link for founder */}
             {['draft', 'pending_signature'].includes(contract.status) && (
               <Button
