@@ -21,13 +21,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { useCrmSavedViews, useSaveCrmView, useDeleteCrmView, CrmSavedView } from '@/hooks/useCrmSavedViews';
+import { useCrmSavedViews, useSaveCrmView, useDeleteCrmView, CrmSavedView, SavedViewType } from '@/hooks/useCrmSavedViews';
 import { useQueryClient } from '@tanstack/react-query';
 import { deferredDelete } from '@/lib/deferredDelete';
 import { notify } from "@/lib/notify";
 
 interface SavedViewsDropdownProps {
-  viewType: 'crm' | 'backoffice';
+  viewType: SavedViewType;
   currentFilters: Record<string, unknown>;
   onApplyView: (filters: Record<string, unknown>) => void;
 }
