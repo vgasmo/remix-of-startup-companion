@@ -316,32 +316,35 @@ const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLo
         </CardContent>
       </Card>
 
-      {/* Quick Links */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
-        {[
-          { label: t('staffCockpit.navLabel', { defaultValue: 'Painel' }), href: '/staff-cockpit', icon: TrendingUp, desc: t('admin.commandCenterDesc', { defaultValue: 'Triage diária e visão operacional' }) },
-          { label: t('admin.crmPipeline'), href: '/crm', icon: Users, desc: t('admin.crmDesc', { defaultValue: 'Pipeline comercial' }) },
-          { label: t('admin.spaceOps', { defaultValue: 'Operações de Espaço' }), href: '/admin?tab=backoffice', icon: Building2, desc: t('admin.spaceOpsDesc', { defaultValue: 'Contratos, faturas e infra' }) },
-          { label: t('admin.programs'), href: '/admin?tab=programs-setup', icon: FileText, desc: t('admin.programsDesc', { defaultValue: 'Configuração de programas' }) },
-          { label: t('admin.reports'), href: '/admin?tab=analytics', icon: AlertTriangle, desc: t('admin.reportsDesc', { defaultValue: 'Relatórios e métricas' }) },
-        ].map((link) => {
-          const Icon = link.icon;
-          return (
-            <Button
-              key={link.href}
-              variant="outline"
-              className="h-auto py-3 px-3 flex-col items-start gap-1 rounded-xl hover:shadow-sm hover:scale-[1.01] transition-all duration-200 text-left"
-              onClick={() => navigate(link.href)}
-            >
-              <div className="flex items-center gap-2">
-                <Icon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">{link.label}</span>
-              </div>
-              <span className="text-[10px] text-muted-foreground font-normal">{link.desc}</span>
-            </Button>
-          );
-        })}
-      </div>
+      {/* Quick Links — full view only */}
+      <FullViewOnly>
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
+          {[
+            { label: t('staffCockpit.navLabel', { defaultValue: 'Painel' }), href: '/staff-cockpit', icon: TrendingUp, desc: t('admin.commandCenterDesc', { defaultValue: 'Triage diária e visão operacional' }) },
+            { label: t('admin.crmPipeline'), href: '/crm', icon: Users, desc: t('admin.crmDesc', { defaultValue: 'Pipeline comercial' }) },
+            { label: t('admin.spaceOps', { defaultValue: 'Operações de Espaço' }), href: '/admin?tab=backoffice', icon: Building2, desc: t('admin.spaceOpsDesc', { defaultValue: 'Contratos, faturas e infra' }) },
+            { label: t('admin.programs'), href: '/admin?tab=programs-setup', icon: FileText, desc: t('admin.programsDesc', { defaultValue: 'Configuração de programas' }) },
+            { label: t('admin.reports'), href: '/admin?tab=analytics', icon: AlertTriangle, desc: t('admin.reportsDesc', { defaultValue: 'Relatórios e métricas' }) },
+          ].map((link) => {
+            const Icon = link.icon;
+            return (
+              <Button
+                key={link.href}
+                variant="outline"
+                className="h-auto py-3 px-3 flex-col items-start gap-1 rounded-xl hover:shadow-sm hover:scale-[1.01] transition-all duration-200 text-left"
+                onClick={() => navigate(link.href)}
+              >
+                <div className="flex items-center gap-2">
+                  <Icon className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">{link.label}</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground font-normal">{link.desc}</span>
+              </Button>
+            );
+          })}
+        </div>
+      </FullViewOnly>
+
     </div>
   );
 });
