@@ -60,6 +60,11 @@ const notificationTypeIcons: Record<string, string> = {
   message_alert: '💬',
   template_request: '📋',
   feedback_request: '🗣️',
+  playbook_accepted: '✅',
+  playbook_completed: '🏁',
+  template_approved: '✅',
+  template_changes_requested: '↩️',
+
 
 
 };
