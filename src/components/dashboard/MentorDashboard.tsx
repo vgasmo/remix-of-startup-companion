@@ -447,7 +447,8 @@ const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, is
 
 
 
-      {/* Two-column layout: Startups + Calendar */}
+      {/* Two-column layout: Startups + Calendar — full view only */}
+      <FullViewOnly>
       <div className="grid gap-6 lg:grid-cols-3">
         <div id="mentor-startups-section" className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
