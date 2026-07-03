@@ -141,6 +141,7 @@ export function AppSidebar() {
     { name: t('nav.consultor.programs', { defaultValue: 'Programas' }), href: '/admin?tab=programs-setup', icon: GraduationCap },
     { name: t('nav.consultor.reports', { defaultValue: 'Relatórios' }), href: '/admin?tab=analytics', icon: BarChart3 },
     { name: t('nav.consultor.quickGuide', { defaultValue: 'Guia Rápido' }), href: '/guide', icon: BookOpenCheck },
+    { name: t('nav.founder.glossaryFaq', { defaultValue: 'Glossário & FAQ' }), href: '/help', icon: HelpCircle },
   ];
 
   // MENTOR COMPANION Navigation
@@ -149,6 +150,7 @@ export function AppSidebar() {
     { name: t('nav.mentor.impact', { defaultValue: 'O Meu Impacto' }), href: '/mentors/impact', icon: BarChart3 },
     { name: t('nav.mentor.resources', { defaultValue: 'Conexões & Recursos' }), href: '/mentors', icon: BookOpen },
     { name: t('nav.mentor.quickGuide', { defaultValue: 'Guia Rápido' }), href: '/guide', icon: BookOpenCheck },
+    { name: t('nav.founder.glossaryFaq', { defaultValue: 'Glossário & FAQ' }), href: '/help', icon: HelpCircle },
     { name: t('nav.mentor.profile', { defaultValue: 'Perfil' }), href: '/settings', icon: UserCircle },
   ];
 
@@ -160,6 +162,7 @@ export function AppSidebar() {
     // Billing/Invoices removed from nav per user request
     { name: t('nav.backoffice.approvals', { defaultValue: 'Aprovações' }), href: '/admin?tab=approvals', icon: Clock },
     { name: t('nav.backoffice.quickGuide', { defaultValue: 'Guia Rápido' }), href: '/guide', icon: BookOpenCheck },
+    { name: t('nav.founder.glossaryFaq', { defaultValue: 'Glossário & FAQ' }), href: '/help', icon: HelpCircle },
   ];
 
   // ADMIN Navigation (simplified)
@@ -173,6 +176,7 @@ export function AppSidebar() {
     { name: t('nav.admin.usersPermissions', { defaultValue: 'Utilizadores & Permissões' }), href: '/admin?tab=users', icon: Shield },
     { name: t('consultorTools.title', { defaultValue: 'Ferramentas de Consultor' }), href: '/consultor-tools', icon: Briefcase },
     { name: t('nav.admin.quickGuide', { defaultValue: 'Guia Rápido' }), href: '/guide', icon: BookOpenCheck },
+    { name: t('nav.founder.glossaryFaq', { defaultValue: 'Glossário & FAQ' }), href: '/help', icon: HelpCircle },
     { name: t('systemSettings.navLabel', { defaultValue: 'Definições do Sistema' }), href: '/system-settings', icon: Cog },
     { name: t('nav.admin.diagnostics', { defaultValue: 'Diagnósticos' }), href: '/admin/diagnostics', icon: Stethoscope },
   ];
