@@ -127,7 +127,9 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
   const years = Math.floor(months / 12);
   const remainingMonths = months % 12;
 
-  const nextAnniversary = addYears(startDate, years + 1);
+  const nextAnniversary = contract
+    ? computeNextAnniversary({ start_date: contract.start_date, end_date: contract.end_date ?? null, status: contract.status }, now)
+    : addYears(startDate, years + 1);
   const daysUntilAnniversary = differenceInDays(nextAnniversary, now);
   const endDate = contract?.end_date ? new Date(contract.end_date) : null;
   const daysUntilEnd = endDate ? differenceInDays(endDate, now) : null;
