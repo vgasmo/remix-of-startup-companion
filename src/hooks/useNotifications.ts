@@ -89,7 +89,11 @@ export function useNotifications() {
           filter: `user_id=eq.${userId}`,
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
+          // Force a network refetch (not just a stale mark) on every
+          // INSERT/UPDATE/DELETE so dedupePendingMentorConnections re-runs
+          // against fresh rows and duplicate `mentor_connection_pending`
+          // items are collapsed before consumers see them.
+          queryClient.invalidateQueries({ queryKey: ['notifications', userId], refetchType: 'active' });
         }
       )
       .subscribe();
@@ -113,8 +117,12 @@ export function useNotifications() {
         .limit(50);
 
       if (error) throw error;
-      return dedupePendingMentorConnections((data || []) as Notification[]);
+      return (data || []) as Notification[];
     },
+    // Also dedupe on every cache read (optimistic updates, setQueryData,
+    // realtime-triggered refetches) so no consumer of this hook can ever
+    // observe duplicate pending mentor-connection notifications.
+    select: dedupePendingMentorConnections,
   });
 }
 
