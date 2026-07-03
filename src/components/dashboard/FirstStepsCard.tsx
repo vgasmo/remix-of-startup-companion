@@ -1,7 +1,9 @@
-import { useEffect, useState, type ComponentType } from 'react';
+import { type ComponentType, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { X, ArrowRight, Sparkles } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,7 +18,7 @@ export interface FirstStepItem {
 }
 
 interface FirstStepsCardProps {
-  /** Unique storage key suffix, e.g. "consultor" | "backoffice" | "admin" | "mentor" */
+  /** Unique dismissal scope, e.g. "consultor" | "backoffice" | "admin" | "mentor" */
   storageScope: string;
   title: string;
   subtitle?: string;
@@ -26,32 +28,50 @@ interface FirstStepsCardProps {
 
 /**
  * Dismissible "primeiros passos" card shown once per user+role.
- * Persistence uses localStorage: `sl-first-steps-{userId}-{scope}`.
- * Kept intentionally lightweight — no DB writes.
+ * Persistence uses `profiles.dismissed_prompts` (jsonb array) — same mechanism
+ * as OpsActionPrompts — so dismissal survives device changes and cache clears.
+ * The prompt id stored is `first-steps:{scope}`.
  */
 export function FirstStepsCard({ storageScope, title, subtitle, items, className }: FirstStepsCardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const storageKey = user?.id ? `sl-first-steps-${user.id}-${storageScope}` : null;
-  const [dismissed, setDismissed] = useState<boolean>(true);
+  const queryClient = useQueryClient();
+  const promptId = `first-steps:${storageScope}`;
 
-  useEffect(() => {
-    if (!storageKey) return;
-    try {
-      setDismissed(localStorage.getItem(storageKey) === '1');
-    } catch {
-      setDismissed(false);
-    }
-  }, [storageKey]);
+  const { data: dismissedList } = useQuery({
+    queryKey: ['profile', 'dismissed_prompts', user?.id],
+    enabled: !!user?.id,
+    staleTime: 60_000,
+    queryFn: async (): Promise<string[]> => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('dismissed_prompts')
+        .eq('id', user!.id)
+        .maybeSingle();
+      const raw = (data?.dismissed_prompts ?? []) as unknown;
+      return Array.isArray(raw) ? raw.filter((v): v is string => typeof v === 'string') : [];
+    },
+  });
 
-  if (dismissed || !items.length) return null;
+  const dismissed = useMemo(() => (dismissedList ?? []).includes(promptId), [dismissedList, promptId]);
 
-  const handleDismiss = () => {
-    if (storageKey) {
-      try { localStorage.setItem(storageKey, '1'); } catch { /* ignore */ }
-    }
-    setDismissed(true);
-  };
+  const dismissMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error('not authenticated');
+      const next = Array.from(new Set<string>([...(dismissedList ?? []), promptId]));
+      const { error } = await supabase
+        .from('profiles')
+        .update({ dismissed_prompts: next })
+        .eq('id', user.id);
+      if (error) throw error;
+      return next;
+    },
+    onSuccess: (next) => {
+      queryClient.setQueryData(['profile', 'dismissed_prompts', user?.id], next);
+    },
+  });
+
+  if (!user?.id || dismissed || !items.length) return null;
 
   return (
     <Card className={cn('border-primary/30 bg-gradient-to-br from-primary/5 via-background to-background', className)}>
@@ -72,8 +92,9 @@ export function FirstStepsCard({ storageScope, title, subtitle, items, className
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 -mr-1 -mt-1 text-muted-foreground hover:text-foreground"
-                onClick={handleDismiss}
-                aria-label={t('common.dismiss', { defaultValue: 'Dispensar' })}
+                onClick={() => dismissMutation.mutate()}
+                disabled={dismissMutation.isPending}
+                aria-label={t('common.dismiss')}
               >
                 <X className="h-4 w-4" />
               </Button>
