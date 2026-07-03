@@ -54,10 +54,46 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(25);
 
-  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+  type SortKey = 'name' | 'stage' | 'health' | 'consultant' | 'updated';
+  type SortDir = 'asc' | 'desc';
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey !== key) { setSortKey(key); setSortDir('asc'); }
+    else if (sortDir === 'asc') setSortDir('desc');
+    else { setSortKey(null); setSortDir('asc'); }
+  };
+  const ariaSortFor = (key: SortKey): 'ascending' | 'descending' | 'none' =>
+    sortKey === key ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none';
+  const SortIcon = ({ k }: { k: SortKey }) =>
+    sortKey !== k ? <ArrowUpDown className="h-3 w-3 opacity-50" /> :
+    sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />;
+
+  const sortedItems = useMemo(() => {
+    if (!sortKey) return items;
+    const cmp = (a: EcosystemItem, b: EcosystemItem) => {
+      const getVal = (it: EcosystemItem): string | number => {
+        switch (sortKey) {
+          case 'name': return (it.name || '').toLowerCase();
+          case 'stage': return (it.stage || '') as string;
+          case 'health': return typeof it.health_score === 'number' ? it.health_score : (it.health_score ? String(it.health_score) : '');
+          case 'consultant': return (it.owner_name || '').toLowerCase();
+          case 'updated': return it.last_activity_at ? new Date(it.last_activity_at).getTime() : 0;
+        }
+      };
+      const va = getVal(a); const vb = getVal(b);
+      if (va < vb) return sortDir === 'asc' ? -1 : 1;
+      if (va > vb) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    };
+    return [...items].sort(cmp);
+  }, [items, sortKey, sortDir]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedItems.length / pageSize));
   const paginatedItems = useMemo(
-    () => items.slice(page * pageSize, (page + 1) * pageSize),
-    [items, page, pageSize],
+    () => sortedItems.slice(page * pageSize, (page + 1) * pageSize),
+    [sortedItems, page, pageSize],
   );
 
   // Reset page when pageSize changes
