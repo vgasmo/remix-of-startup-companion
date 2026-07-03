@@ -541,7 +541,8 @@ function BackofficeDashboardInner() {
         </div>
       </div>
 
-      {/* ═══════════════════ TENURE BREAKDOWN ═══════════════════ */}
+      {/* ═══════════════════ TENURE BREAKDOWN — full view only ═══════════════════ */}
+      <FullViewOnly>
       <Card className="rounded-2xl">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
