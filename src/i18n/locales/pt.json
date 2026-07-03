@@ -6026,6 +6026,12 @@
     "visibleLabel": "Visível para membros do workspace"
   },
   "notifications": {
+    "actionAwaitingValidationTitle": "Ação para validar",
+    "actionAwaitingValidationBody": "{{founder}} concluiu «{{action}}»",
+    "actionValidatedTitle": "Ação validada",
+    "actionValidatedBody": "«{{action}}» foi validada ✓",
+    "checkinReviewedTitle": "Check-in visto",
+    "checkinReviewedBody": "O seu check-in de {{month}} foi visto ✓",
     "earlier": "Mais antigas",
     "emailSyncDone": "Emails Sincronizados",
     "filterAll": "Todas",
