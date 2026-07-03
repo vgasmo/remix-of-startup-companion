@@ -8967,9 +8967,11 @@
       "outreach": "Outreach",
       "overdue_actions": "Overdue Actions",
       "post_session_followup": "Follow-up",
+      "review_checkin": "Review Check-in",
       "schedule_session": "Schedule Session",
       "stage_gate_review": "Stage Review",
-      "triage": "Triage"
+      "triage": "Triage",
+      "validate_actions": "Validate Actions"
     },
     "updateFailed": "Failed to update work queue",
     "updated": "Work queue updated",
