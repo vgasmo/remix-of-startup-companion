@@ -18,6 +18,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import {
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   FileText,
   CheckSquare,
   Sparkles,
@@ -30,6 +31,8 @@ import {
   ExternalLink,
   Copy,
   Send,
+  Phone,
+  Calendar,
 } from 'lucide-react';
 import { FunnelItem, FunnelStage, useUpdateFunnelItem } from '@/hooks/useFunnel';
 import { useActivityTimeline, useRelationshipRecap, useGenerateRecap, useSyncEmails, useAddActivity, ActivityType, ActivityEntry } from '@/hooks/useActivityTimeline';
@@ -65,9 +68,13 @@ interface RecordDrawerProps {
   item: FunnelItem | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Ordered sibling list for triage navigation (prev / next). */
+  siblingIds?: string[];
+  /** Callback invoked with the id to open (parent controls the actual open). */
+  onNavigateSibling?: (id: string) => void;
 }
 
-export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
+export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateSibling }: RecordDrawerProps) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -273,6 +280,34 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
   const nextActionDescription = localNextAction !== null ? localNextAction.desc : (item.next_action_description ?? null);
   const lastActivityAt = item.last_activity_at ?? null;
 
+  // Triage navigation across the filtered list
+  const siblingIndex = useMemo(() => {
+    if (!siblingIds || !item) return -1;
+    return siblingIds.indexOf(item.id);
+  }, [siblingIds, item]);
+  const totalSiblings = siblingIds?.length ?? 0;
+  const canGoPrev = siblingIndex > 0;
+  const canGoNext = siblingIndex >= 0 && siblingIndex < totalSiblings - 1;
+  const goPrev = useCallback(() => {
+    if (canGoPrev && onNavigateSibling && siblingIds) onNavigateSibling(siblingIds[siblingIndex - 1]);
+  }, [canGoPrev, onNavigateSibling, siblingIds, siblingIndex]);
+  const goNext = useCallback(() => {
+    if (canGoNext && onNavigateSibling && siblingIds) onNavigateSibling(siblingIds[siblingIndex + 1]);
+  }, [canGoNext, onNavigateSibling, siblingIds, siblingIndex]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      // Ignore when typing in inputs / editable areas
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      if (e.key === 'ArrowLeft' && canGoPrev) { e.preventDefault(); goPrev(); }
+      else if (e.key === 'ArrowRight' && canGoNext) { e.preventDefault(); goNext(); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [open, canGoPrev, canGoNext, goPrev, goNext]);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-[95vw] sm:w-[600px] sm:max-w-[600px] h-full p-0 flex flex-col overflow-hidden" data-testid="record-drawer">
@@ -281,6 +316,37 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
           onStageChange={handleStageChange}
           isUpdating={updateFunnelItem.isPending}
         />
+
+        {/* Triage nav + quick-log */}
+        <div className="flex flex-wrap items-center gap-2 px-5 py-2 border-b bg-muted/20">
+          {totalSiblings > 1 && (
+            <div className="flex items-center gap-1 mr-1">
+              <Button variant="ghost" size="icon" className="h-7 w-7" disabled={!canGoPrev} onClick={goPrev} aria-label={t('common.previous', { defaultValue: 'Anterior' })}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {siblingIndex + 1} {t('common.of', { defaultValue: 'de' })} {totalSiblings}
+              </span>
+              <Button variant="ghost" size="icon" className="h-7 w-7" disabled={!canGoNext} onClick={goNext} aria-label={t('common.next', { defaultValue: 'Seguinte' })}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <div className="h-4 w-px bg-border/60 ml-1" />
+            </div>
+          )}
+          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setAddActivityDialog('call')}>
+            <Phone className="h-3 w-3 mr-1" />
+            {t('crm.logCall')}
+          </Button>
+          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setAddActivityDialog('note')}>
+            <FileText className="h-3 w-3 mr-1" />
+            {t('crm.addNote')}
+          </Button>
+          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setAddActivityDialog('meeting')}>
+            <Calendar className="h-3 w-3 mr-1" />
+            {t('crm.logMeeting')}
+          </Button>
+        </div>
+
 
         <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <TabsList className="mx-5 mt-3 mb-1 w-auto grid grid-cols-4 shrink-0 h-10">
@@ -408,6 +474,7 @@ export function RecordDrawer({ item, open, onOpenChange }: RecordDrawerProps) {
                 onSetNextAction={() => setNextActionDialog(true)}
                 onClearNextAction={handleClearNextAction}
                 isClearingNextAction={clearNextAction.isPending}
+                consultors={consultors as any}
               />
 
               {/* Intake Actions Panel — stage-aware */}

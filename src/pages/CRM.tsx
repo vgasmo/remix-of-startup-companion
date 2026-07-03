@@ -83,12 +83,30 @@ export default function CRM() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedItem, setSelectedItem] = useState<FunnelItem | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [programFilter, setProgramFilter] = useState<string>('all');
-  const [stageFilter, setStageFilter] = useState<string>('all');
-  const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [myItemsOnly, setMyItemsOnly] = useState(false);
-  const [focusMode, setFocusMode] = useState(false);
+
+  // Filters live in the URL so refresh survives and views are shareable
+  const programFilter = searchParams.get('program') || 'all';
+  const stageFilter = searchParams.get('stage') || 'all';
+  const assigneeFilter = searchParams.get('assignee') || 'all';
+  const searchQuery = searchParams.get('q') || '';
+  const myItemsOnly = searchParams.get('mine') === '1';
+  const focusMode = searchParams.get('focus') === '1';
+
+  const updateFilterParam = useCallback((key: string, value: string | boolean, defaultValue: string | boolean = 'all') => {
+    const next = new URLSearchParams(searchParams);
+    const stringVal = typeof value === 'boolean' ? (value ? '1' : '') : value;
+    const stringDefault = typeof defaultValue === 'boolean' ? '' : defaultValue;
+    if (!stringVal || stringVal === stringDefault) next.delete(key);
+    else next.set(key, stringVal);
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  const setProgramFilter = (v: string) => updateFilterParam('program', v, 'all');
+  const setStageFilter = (v: string) => updateFilterParam('stage', v, 'all');
+  const setAssigneeFilter = (v: string) => updateFilterParam('assignee', v, 'all');
+  const setSearchQuery = (v: string) => updateFilterParam('q', v, '');
+  const setMyItemsOnly = (v: boolean) => updateFilterParam('mine', v, false);
+  const setFocusMode = (v: boolean) => updateFilterParam('focus', v, false);
 
   const { data: programs } = usePrograms();
   const { data: consultors } = useConsultors();
@@ -273,6 +291,28 @@ export default function CRM() {
     (inbox?.upcoming.length || 0) + (inbox?.noNextAction.length || 0) + (inbox?.stale.length || 0);
   const tasksTotal = (tasksDue?.overdue.length || 0) + (tasksDue?.today.length || 0) + 
     (tasksDue?.upcoming.length || 0);
+
+  // Ordered sibling list for drawer triage — Follow-Up Inbox is the priority consumer.
+  // Priority order: overdue → today → upcoming → noNextAction → stale (matches column order).
+  const siblingIds = useMemo(() => {
+    if (focusMode) return focusItems.map(i => i.id);
+    if (!inbox) return [];
+    return [
+      ...(inbox.overdue || []),
+      ...(inbox.today || []),
+      ...(inbox.upcoming || []),
+      ...(inbox.noNextAction || []),
+      ...(inbox.stale || []),
+    ].map(i => i.id);
+  }, [inbox, focusMode, focusItems]);
+
+  const handleNavigateSibling = useCallback((id: string) => {
+    // Reuse the deep-link path so the drawer refetches the correct item cleanly.
+    const next = new URLSearchParams(searchParams);
+    next.set('open', id);
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
 
   return (
     <AppLayout>
@@ -604,6 +644,8 @@ export default function CRM() {
               setSearchParams(next, { replace: true });
             }
           }}
+          siblingIds={siblingIds}
+          onNavigateSibling={handleNavigateSibling}
         />
       </div>
     </AppLayout>

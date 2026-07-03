@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { MoreHorizontal, Building2, Users, ExternalLink, Calendar, AlertTriangle, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Archive, Trash2, ShieldCheck } from 'lucide-react';
+import { MoreHorizontal, Building2, Users, ExternalLink, Calendar, AlertTriangle, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Archive, Trash2, ShieldCheck, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { InlineConsultantSelect } from './InlineConsultantSelect';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
@@ -54,10 +54,46 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(25);
 
-  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+  type SortKey = 'name' | 'stage' | 'health' | 'consultant' | 'updated';
+  type SortDir = 'asc' | 'desc';
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey !== key) { setSortKey(key); setSortDir('asc'); }
+    else if (sortDir === 'asc') setSortDir('desc');
+    else { setSortKey(null); setSortDir('asc'); }
+  };
+  const ariaSortFor = (key: SortKey): 'ascending' | 'descending' | 'none' =>
+    sortKey === key ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none';
+  const SortIcon = ({ k }: { k: SortKey }) =>
+    sortKey !== k ? <ArrowUpDown className="h-3 w-3 opacity-50" /> :
+    sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />;
+
+  const sortedItems = useMemo(() => {
+    if (!sortKey) return items;
+    const cmp = (a: EcosystemItem, b: EcosystemItem) => {
+      const getVal = (it: EcosystemItem): string | number => {
+        switch (sortKey) {
+          case 'name': return (it.name || '').toLowerCase();
+          case 'stage': return (it.stage || '') as string;
+          case 'health': return typeof it.health_score === 'number' ? it.health_score : (it.health_score ? String(it.health_score) : '');
+          case 'consultant': return (it.owner_name || '').toLowerCase();
+          case 'updated': return it.last_activity_at ? new Date(it.last_activity_at).getTime() : 0;
+        }
+      };
+      const va = getVal(a); const vb = getVal(b);
+      if (va < vb) return sortDir === 'asc' ? -1 : 1;
+      if (va > vb) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    };
+    return [...items].sort(cmp);
+  }, [items, sortKey, sortDir]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedItems.length / pageSize));
   const paginatedItems = useMemo(
-    () => items.slice(page * pageSize, (page + 1) * pageSize),
-    [items, page, pageSize],
+    () => sortedItems.slice(page * pageSize, (page + 1) * pageSize),
+    [sortedItems, page, pageSize],
   );
 
   // Reset page when pageSize changes
@@ -69,12 +105,39 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
   const handleArchiveWorkspace = async (item: EcosystemItem) => {
     if (!item.workspace_id) return;
     try {
+      // Snapshot previous status for undo
+      const { data: prev } = await supabase
+        .from('workspaces')
+        .select('status')
+        .eq('id', item.workspace_id)
+        .maybeSingle();
+      const prevStatus = (prev?.status as string) || 'active';
+
       const { error } = await supabase
         .from('workspaces')
         .update({ status: 'archived' })
         .eq('id', item.workspace_id);
       if (error) throw error;
-      notify.success(t('ecosystem.workspaceArchived', { defaultValue: 'Workspace arquivado' }));
+      notify.success(t('ecosystem.workspaceArchived', { defaultValue: 'Workspace arquivado' }), {
+        duration: 8000,
+        action: {
+          label: t('common.undo', { defaultValue: 'Anular' }),
+          onClick: async () => {
+            try {
+              const { error: restoreErr } = await supabase
+                .from('workspaces')
+                .update({ status: prevStatus })
+                .eq('id', item.workspace_id!);
+              if (restoreErr) throw restoreErr;
+              notify.success(t('ecosystem.workspaceRestored', { defaultValue: 'Workspace restaurado' }));
+            } catch {
+              notify.error(t('common.undoFailed', { defaultValue: 'Não foi possível anular' }));
+            } finally {
+              queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
+            }
+          },
+        },
+      });
       queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
     } catch (err: any) {
       notify.error(t('ecosystem.archiveError', { defaultValue: 'Erro ao arquivar workspace' }), {
@@ -105,6 +168,13 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
         return;
       }
 
+      // Snapshot full lead row for undo
+      const { data: snapshot } = await supabase
+        .from('funnel_items')
+        .select('*')
+        .eq('id', item.funnel_item_id)
+        .maybeSingle();
+
       // Detach intakes (FK is SET NULL but we make it explicit for clarity)
       if ((intakeCount || 0) > 0) {
         await supabase
@@ -118,7 +188,23 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
         .delete()
         .eq('id', item.funnel_item_id);
       if (error) throw error;
-      notify.success(t('ecosystem.leadDeleted', { defaultValue: 'Lead eliminada' }));
+      notify.success(t('ecosystem.leadDeleted', { defaultValue: 'Lead eliminada' }), {
+        duration: 8000,
+        action: snapshot ? {
+          label: t('common.undo', { defaultValue: 'Anular' }),
+          onClick: async () => {
+            try {
+              const { error: insErr } = await supabase.from('funnel_items').insert(snapshot as any);
+              if (insErr) throw insErr;
+              notify.success(t('ecosystem.leadRestored', { defaultValue: 'Lead restaurada' }));
+            } catch {
+              notify.error(t('common.undoFailed', { defaultValue: 'Não foi possível anular' }));
+            } finally {
+              queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
+            }
+          },
+        } : undefined,
+      });
       queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
     } catch (err: any) {
       const msg = err?.message || '';
@@ -247,14 +333,24 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
         <Table>
           <TableHeader sticky>
             <TableRow className="hover:bg-transparent border-border/70 bg-muted/30">
-              <TableHead className="w-[250px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.name', { defaultValue: 'Name' })}</TableHead>
+              <TableHead aria-sort={ariaSortFor('name')} className="w-[250px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium cursor-pointer select-none" onClick={() => toggleSort('name')}>
+                <span className="inline-flex items-center gap-1">{t('ecosystem.name', { defaultValue: 'Name' })} <SortIcon k="name" /></span>
+              </TableHead>
               <TableHead className="w-[80px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.type', { defaultValue: 'Type' })}</TableHead>
               <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.program', { defaultValue: 'Program' })}</TableHead>
-              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.stage', { defaultValue: 'Stage' })}</TableHead>
+              <TableHead aria-sort={ariaSortFor('stage')} className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium cursor-pointer select-none" onClick={() => toggleSort('stage')}>
+                <span className="inline-flex items-center gap-1">{t('workspace.stage', { defaultValue: 'Stage' })} <SortIcon k="stage" /></span>
+              </TableHead>
               <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.category', { defaultValue: 'Cat.' })}</TableHead>
-              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.healthScore', { defaultValue: 'Health' })}</TableHead>
-              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.owner', { defaultValue: 'Owner' })}</TableHead>
-              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.lastActivity', { defaultValue: 'Last Activity' })}</TableHead>
+              <TableHead aria-sort={ariaSortFor('health')} className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium cursor-pointer select-none" onClick={() => toggleSort('health')}>
+                <span className="inline-flex items-center gap-1">{t('workspace.healthScore', { defaultValue: 'Health' })} <SortIcon k="health" /></span>
+              </TableHead>
+              <TableHead aria-sort={ariaSortFor('consultant')} className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium cursor-pointer select-none" onClick={() => toggleSort('consultant')}>
+                <span className="inline-flex items-center gap-1">{t('ecosystem.owner', { defaultValue: 'Owner' })} <SortIcon k="consultant" /></span>
+              </TableHead>
+              <TableHead aria-sort={ariaSortFor('updated')} className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium cursor-pointer select-none" onClick={() => toggleSort('updated')}>
+                <span className="inline-flex items-center gap-1">{t('ecosystem.lastActivity', { defaultValue: 'Last Activity' })} <SortIcon k="updated" /></span>
+              </TableHead>
               <TableHead className="w-[50px] h-9"></TableHead>
             </TableRow>
           </TableHeader>

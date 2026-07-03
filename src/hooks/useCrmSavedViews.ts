@@ -2,17 +2,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { Json } from '@/integrations/supabase/types';
 
+export type SavedViewType = 'crm' | 'backoffice' | 'ecosystem';
+
 export interface CrmSavedView {
   id: string;
   user_id: string;
   name: string;
-  view_type: 'crm' | 'backoffice';
+  view_type: SavedViewType;
   filters_json: Record<string, unknown>;
   is_default: boolean;
   created_at: string;
 }
 
-export function useCrmSavedViews(viewType: 'crm' | 'backoffice' = 'crm') {
+export function useCrmSavedViews(viewType: SavedViewType = 'crm') {
   return useQuery({
     queryKey: ['crm-saved-views', viewType],
     queryFn: async (): Promise<CrmSavedView[]> => {
@@ -52,7 +54,7 @@ export function useSaveCrmView() {
   return useMutation({
     mutationFn: async (params: {
       name: string;
-      viewType: 'crm' | 'backoffice';
+      viewType: SavedViewType;
       filters: Record<string, unknown>;
       isDefault?: boolean;
     }) => {

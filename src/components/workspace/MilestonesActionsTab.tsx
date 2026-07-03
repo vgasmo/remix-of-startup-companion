@@ -99,6 +99,9 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
   const [deleteActionTarget, setDeleteActionTarget] = useState<ActionItem | null>(null);
   const [newMilestone, setNewMilestone] = useState({ title: '', description: '', target_date: '' });
   const [newAction, setNewAction] = useState({ title: '', description: '', due_date: '', priority: 'medium', milestone_id: '' });
+  // Inline quick-add on the actions section
+  const [quickAddTitle, setQuickAddTitle] = useState('');
+  const [quickAddMilestoneId, setQuickAddMilestoneId] = useState<string>('');
 
   // Bulk selection
   const { selectedIds, toggleItem, selectAll, deselectAll, isSelected } = useBulkSelection(
@@ -336,7 +339,6 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
 
   const handleCreateAction = async () => {
     if (!newAction.title.trim()) { notify.error(t('actions.titleRequired')); return; }
-    if (!newAction.milestone_id) { notify.error(t('actions.selectMilestoneRequired')); return; }
     try {
       await createAction.mutateAsync({
         title: newAction.title,
@@ -344,11 +346,26 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
         due_date: newAction.due_date || null,
         priority: newAction.priority,
         owner_user_id: founderId || null,
-        milestone_id: newAction.milestone_id,
+        milestone_id: newAction.milestone_id || null,
       });
       notify.success(t('actions.actionCreated'));
       setCreateActionDialogOpen(false);
       setNewAction({ title: '', description: '', due_date: '', priority: 'medium', milestone_id: '' });
+    } catch { notify.error(t('actions.failedToCreate')); }
+  };
+
+  const handleQuickAddAction = async () => {
+    const title = quickAddTitle.trim();
+    if (!title) return;
+    try {
+      await createAction.mutateAsync({
+        title,
+        priority: 'medium',
+        owner_user_id: founderId || null,
+        milestone_id: quickAddMilestoneId || null,
+      });
+      setQuickAddTitle('');
+      notify.success(t('actions.actionCreated'));
     } catch { notify.error(t('actions.failedToCreate')); }
   };
 
@@ -508,6 +525,46 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
         ]}
         getItemId={(item) => item.id}
       />
+
+      {/* Inline Quick Add — create action with optional milestone */}
+      {canWrite && (
+        <div className="flex flex-wrap items-center gap-2 px-3 py-2 bg-card border border-border/50 rounded-lg">
+          <Plus className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <Input
+            value={quickAddTitle}
+            onChange={e => setQuickAddTitle(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && quickAddTitle.trim() && !createAction.isPending) {
+                e.preventDefault();
+                handleQuickAddAction();
+              }
+            }}
+            placeholder={t('actions.quickAddPlaceholder', { defaultValue: 'Nova ação — escreva o título e prima Enter' })}
+            className="h-8 text-sm flex-1 min-w-[220px] border-0 bg-transparent focus-visible:ring-1"
+          />
+          <Select value={quickAddMilestoneId || '__none__'} onValueChange={v => setQuickAddMilestoneId(v === '__none__' ? '' : v)}>
+            <SelectTrigger className="h-8 text-xs w-[180px]">
+              <SelectValue placeholder={t('actions.selectMilestone')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">{t('actions.noMilestone', { defaultValue: 'Sem marco' })}</SelectItem>
+              {milestones?.map(m => (
+                <SelectItem key={m.id} value={m.id}>{m.title}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            size="sm"
+            className="h-8 text-xs"
+            onClick={handleQuickAddAction}
+            disabled={createAction.isPending || !quickAddTitle.trim()}
+            loading={createAction.isPending}
+          >
+            {t('common.add', { defaultValue: 'Adicionar' })}
+          </Button>
+        </div>
+      )}
+
 
       {/* Milestones with nested actions */}
       {(!milestones || milestones.length === 0) ? (
@@ -695,10 +752,11 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="act-milestone">{t('milestones.title')} *</Label>
-              <Select value={newAction.milestone_id} onValueChange={v => setNewAction(a => ({ ...a, milestone_id: v }))}>
+              <Label htmlFor="act-milestone">{t('milestones.title')} <span className="text-muted-foreground text-xs">({t('common.optional', { defaultValue: 'opcional' })})</span></Label>
+              <Select value={newAction.milestone_id || '__none__'} onValueChange={v => setNewAction(a => ({ ...a, milestone_id: v === '__none__' ? '' : v }))}>
                 <SelectTrigger id="act-milestone"><Target className="h-4 w-4 mr-2" /><SelectValue placeholder={t('actions.selectMilestone')} /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__none__">{t('actions.noMilestone', { defaultValue: 'Sem marco' })}</SelectItem>
                   {milestones?.map(m => <SelectItem key={m.id} value={m.id}>{m.title}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -731,7 +789,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateActionDialogOpen(false)}>{t('common.cancel')}</Button>
-            <Button onClick={handleCreateAction} disabled={createAction.isPending || !newAction.milestone_id} loading={createAction.isPending}>{t('common.create')}</Button>
+            <Button onClick={handleCreateAction} disabled={createAction.isPending || !newAction.title.trim()} loading={createAction.isPending}>{t('common.create')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

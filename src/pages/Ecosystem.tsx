@@ -10,6 +10,7 @@ import { ConsultorPortfolioView } from '@/components/ecosystem/ConsultorPortfoli
 import { useEcosystemItems } from '@/hooks/useEcosystemItems';
 import { ContentSkeleton } from '@/components/ui/ContentSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SavedViewsDropdown } from '@/components/crm/SavedViewsDropdown';
 import { Globe2, Users, Building2, UserCog } from 'lucide-react';
 
 export default function Ecosystem() {
@@ -60,7 +61,14 @@ export default function Ecosystem() {
           </TabsList>
 
           <TabsContent value="startups" className="space-y-6 mt-0">
-            <EcosystemFilters filters={filters} onChange={setFilters} />
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <EcosystemFilters filters={filters} onChange={setFilters} />
+              <SavedViewsDropdown
+                viewType="ecosystem"
+                currentFilters={filters as unknown as Record<string, unknown>}
+                onApplyView={(f) => setFilters({ ...filters, ...(f as Partial<EcosystemFiltersState>) })}
+              />
+            </div>
             {isLoading ? (
               <ContentSkeleton type="list" count={10} />
             ) : (
