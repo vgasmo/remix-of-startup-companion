@@ -230,12 +230,12 @@ const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, is
     <div className="space-y-6 max-w-5xl">
       <FirstStepsCard
         storageScope="mentor"
-        title={t('firstSteps.mentor.title', { defaultValue: 'Primeiros passos' })}
-        subtitle={t('firstSteps.mentor.subtitle', { defaultValue: 'Comece com estes três passos.' })}
+        title={t('firstSteps.mentor.title')}
+        subtitle={t('firstSteps.mentor.subtitle')}
         items={[
-          { id: 'availability', label: t('firstSteps.mentor.availability', { defaultValue: 'Configure a sua disponibilidade' }), href: '/settings', icon: Calendar },
-          { id: 'startups', label: t('firstSteps.mentor.startups', { defaultValue: 'Conheça as suas startups' }), href: '/my-workspaces', icon: Briefcase },
-          { id: 'impact', label: t('firstSteps.mentor.impact', { defaultValue: 'Veja o seu impacto' }), href: '/mentors/impact', icon: BarChart3 },
+          { id: 'availability', label: t('firstSteps.mentor.availability'), href: '/settings', icon: Calendar },
+          { id: 'startups', label: t('firstSteps.mentor.startups'), href: '/my-workspaces', icon: Briefcase },
+          { id: 'impact', label: t('firstSteps.mentor.impact'), href: '/mentors/impact', icon: BarChart3 },
         ]}
       />
       {/* 1. GREETING HERO — branded surface, availability inline */}
@@ -360,7 +360,9 @@ const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, is
 
       {/* P0 HERO: Single Session Prep surface (MentorNextSessionPrep removed — it duplicated this) */}
       <WidgetErrorBoundary name="MentorSessionPrep">
-        <MentorSessionPrepEnhanced workspaces={workspaces} />
+        <div id="session-prep" className="scroll-mt-20">
+          <MentorSessionPrepEnhanced workspaces={workspaces} />
+        </div>
       </WidgetErrorBoundary>
 
 

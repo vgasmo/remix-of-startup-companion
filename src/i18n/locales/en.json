@@ -413,7 +413,7 @@
       "floor": "Floor",
       "floorLabel": "Floor",
       "floorMaps": "Floor Maps",
-      "floorPlaceholder": "Ground, 1, 2...",
+      "floorPlaceholder": "1, Ground, Mezzanine...",
       "floorPlan": "Floor Plan",
       "fulfillRequest": "Fulfill Request",
       "health": "Health",
@@ -619,8 +619,6 @@
       "spaceAssigned": "Space assigned successfully",
       "spaceName": "Space Name",
       "spaceNamePlaceholder": "Desk A1, Office 101...",
-      "floorPlaceholder": "1, Ground, Mezzanine...",
-
       "spaceTypes": {
         "desk": "Desk",
         "hotDesk": "Hot Desk",
@@ -1884,7 +1882,6 @@
       "cancelled": "Cancelled",
       "refunded": "Refunded"
     },
-
     "allocationEndError": "Failed to end allocation",
     "allocationEnded": "Allocation ended",
     "billing": {
@@ -2744,7 +2741,6 @@
       "notifyFounderTitle": "Your contract has been terminated",
       "notifyFounderMsg": "The Startup Leiria team terminated the contract. Reason: {{reason}}"
     },
-
     "completedAt": "Completed at",
     "configured": "Configured",
     "contractTimeline": "Contract Timeline",
@@ -6307,7 +6303,6 @@
       "title": "No space assigned",
       "desc": "{{name}} has no room or office allocated."
     },
-
     "checklistCopied": "Checklist copied",
     "console": {
       "allStatuses": "All statuses",
@@ -9129,7 +9124,6 @@
     "numberOfPeople": "Number of people",
     "anyBuilding": "Any building...",
     "selectAvailableRoom": "Select available room...",
-
     "allRequests": "All Requests",
     "any": "Any",
     "availableRooms": "Available Rooms",
@@ -9440,5 +9434,35 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
+  },
+  "firstSteps": {
+    "consultor": {
+      "title": "First steps",
+      "subtitle": "Set up the essentials to start with your portfolio.",
+      "workQueue": "Meet the Work Queue",
+      "availability": "Set up your availability",
+      "portfolio": "View your portfolio"
+    },
+    "backoffice": {
+      "title": "First steps",
+      "subtitle": "The daily backoffice cycle in three stops.",
+      "contracts": "Contracts expiring",
+      "spaces": "Spaces & occupancy",
+      "approvals": "Pending approvals"
+    },
+    "admin": {
+      "title": "First steps",
+      "subtitle": "The three panels where admins spend most time.",
+      "approvals": "Approvals",
+      "programs": "Programs & cohorts",
+      "ecosystem": "Ecosystem health"
+    },
+    "mentor": {
+      "title": "First steps",
+      "subtitle": "Start with these three steps.",
+      "availability": "Set up your availability",
+      "startups": "Meet your startups",
+      "impact": "View your impact"
+    }
   }
 }

@@ -79,16 +79,17 @@ function BackofficeDashboardInner() {
   const { data: buildings } = useBuildings();
   const { data: allRooms } = useRoomsWithAllocations();
 
-  // Fetch floor maps for quick access
+  // Fetch floor maps for quick access (include the parent space's building_id
+  // so we can match by building id — name/code matching silently breaks on rename).
   const { data: floorMaps } = useQuery({
     queryKey: ['floor-maps-all'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('floor_maps')
-        .select('*')
+        .select('*, space:office_spaces!floor_maps_space_id_fkey(building_id)')
         .order('name');
       if (error) throw error;
-      return data as FloorMap[];
+      return (data as unknown) as (FloorMap & { space?: { building_id: string | null } | null })[];
     },
   });
 
@@ -369,10 +370,10 @@ function BackofficeDashboardInner() {
               {floorMaps && floorMaps.length > 0 ? (
                 <div className="grid grid-cols-2 gap-2">
                   {floorMaps.slice(0, 4).map(fm => {
-                    // Match floor map to a building by name substring
-                    // (office_spaces has no building_id yet; do best-effort UI match).
-                    const fmName = (fm.name || '').toLowerCase();
-                    const building = buildings?.find(b => fmName.includes((b.name || '').toLowerCase()) || fmName.includes((b.code || '').toLowerCase()));
+                    // Match floor map to a building via its parent office_space.building_id
+                    // (id-based — renaming a building must not break the link).
+                    const buildingId = (fm as any).space?.building_id as string | null | undefined;
+                    const building = buildingId ? buildings?.find(b => b.id === buildingId) : undefined;
                     return (
                       <Button
                         key={fm.id}
