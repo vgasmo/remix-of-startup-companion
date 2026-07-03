@@ -580,12 +580,12 @@ export function SpaceOperationsConsole() {
                 {/* Workspace / Startup */}
                 <div>
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                    <Building2 className="h-3.5 w-3.5 inline mr-1" />Workspace / Startup
+                    <Building2 className="h-3.5 w-3.5 inline mr-1" />{t('spaces.workspaceStartup', 'Workspace / Startup')}
                   </h3>
                   {selectedRecord.workspace_id ? (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">{selectedRecord.startup_name || 'Sem nome'}</span>
+                        <span className="font-medium">{selectedRecord.startup_name || t('common.noName', 'Sem nome')}</span>
                         <StatusBadge status={selectedRecord.workspace_status} type="workspace" />
                       </div>
                       {selectedRecord.startup_contact_email && (
@@ -613,13 +613,13 @@ export function SpaceOperationsConsole() {
                         onClick={() => navigate(`/workspace/${selectedRecord.workspace_id}`)}
                       >
                         <ArrowRight className="h-3.5 w-3.5" />
-                        Abrir Workspace
+                        {t('spaces.openWorkspace', 'Abrir Workspace')}
                       </Button>
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground italic flex items-center gap-1.5">
                       <Link2Off className="h-3.5 w-3.5" />
-                      Sem workspace associado
+                      {t('spaces.noWorkspaceAssociated', 'Sem workspace associado')}
                     </p>
                   )}
                 </div>
