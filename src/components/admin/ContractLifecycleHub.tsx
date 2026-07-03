@@ -774,10 +774,16 @@ export function ContractLifecycleHub() {
             onConvert={handleConvert}
             onClose={() => setConvertDialogItem(null)}
             isLoading={convertToStartup.isPending}
-          />
+           />
         )}
+        <RenewContractDialog
+          contract={renewContract}
+          open={!!renewContract}
+          onOpenChange={(o) => !o && setRenewContract(null)}
+        />
       </div>
     </TooltipProvider>
+
   );
 }
 
