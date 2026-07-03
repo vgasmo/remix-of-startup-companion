@@ -221,7 +221,7 @@ export function SpaceWaitingListTab() {
                   <Label>{t('admin.backoffice.preferredBuilding', 'Preferred Building')}</Label>
                   <Select name="preferred_space_id">
                     <SelectTrigger>
-                      <SelectValue placeholder="Any building..." />
+                      <SelectValue placeholder={t('waitingList.anyBuilding', { defaultValue: 'Qualquer edifício...' })} />
                     </SelectTrigger>
                     <SelectContent>
                       {spaces?.map(space => (
