@@ -146,6 +146,7 @@ export function AppSidebar() {
   // MENTOR COMPANION Navigation
   const mentorNavigation: NavItem[] = [
     { name: t('nav.mentor.assignedStartups', { defaultValue: 'Startups Atribuídas' }), href: '/my-workspaces', icon: Building2, exact: true },
+    { name: t('nav.mentor.impact', { defaultValue: 'O Meu Impacto' }), href: '/mentors/impact', icon: BarChart3 },
     { name: t('nav.mentor.resources', { defaultValue: 'Conexões & Recursos' }), href: '/mentors', icon: BookOpen },
     { name: t('nav.mentor.quickGuide', { defaultValue: 'Guia Rápido' }), href: '/guide', icon: BookOpenCheck },
     { name: t('nav.mentor.profile', { defaultValue: 'Perfil' }), href: '/settings', icon: UserCircle },
