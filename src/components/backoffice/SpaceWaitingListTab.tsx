@@ -213,7 +213,7 @@ export function SpaceWaitingListTab() {
 
                   <div className="space-y-2">
                     <Label>{t('admin.backoffice.preferredCapacity', 'Preferred Capacity')}</Label>
-                    <Input type="number" name="preferred_capacity" placeholder="Number of people" />
+                    <Input type="number" name="preferred_capacity" placeholder={t('waitingList.numberOfPeople', { defaultValue: 'Número de pessoas' })} />
                   </div>
                 </div>
 
