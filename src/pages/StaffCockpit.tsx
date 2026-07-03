@@ -71,9 +71,8 @@ export default function StaffCockpit() {
   });
 
 
-  const isAdmin = roles?.includes('admin');
   const isConsultor = roles?.includes('consultor');
-  const isBackoffice = roles?.includes('backoffice');
+
   const greeting = profile?.full_name
     ? t('staffCockpit.greeting', { defaultValue: 'Olá, {{name}}', name: profile.full_name.split(' ')[0] })
     : t('staffCockpit.greetingGeneric', { defaultValue: 'Bem-vindo ao Painel' });
