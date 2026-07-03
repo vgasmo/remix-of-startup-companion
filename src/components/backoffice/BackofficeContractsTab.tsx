@@ -21,6 +21,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { ContractUploadDropzone, type AIExtractedData } from './contracts/ContractUploadDropzone';
 import { ContractReviewForm, type ContractFormValues } from './contracts/ContractReviewForm';
 import { BulkActionsBar } from './contracts/BulkActionsBar';
+import { BulkTerminateContractsDialog } from './contracts/BulkTerminateContractsDialog';
 import { ContractDetailDrawer } from './contracts/ContractDetailDrawer';
 import { ContractStatusBadge } from './contracts/ContractStatusBadge';
 import { ProvenanceBadge } from '@/components/shared/ProvenanceBadge';
@@ -126,6 +127,7 @@ export function BackofficeContractsTab() {
   // Table row selection for bulk actions
   const [selectedContractIds, setSelectedContractIds] = useState<Set<string>>(new Set());
   const [isArchiving, setIsArchiving] = useState(false);
+  const [bulkTerminateOpen, setBulkTerminateOpen] = useState(false);
   const [detailContract, setDetailContract] = useState<StartupContract | null>(null);
   const [contractIdFromUrl, setContractIdInUrl] = useUrlParam('contract');
 
@@ -308,20 +310,12 @@ export function BackofficeContractsTab() {
     }
   };
 
-  // NOTE: labelled "archive" for legacy reasons but actually TERMINATES contracts.
-  // See BulkActionsBar for the honest label ("Terminar selecionados").
-  const handleArchiveSelected = async () => {
-    setIsArchiving(true);
-    let terminated = 0;
-    for (const id of selectedContractIds) {
-      try {
-        await updateContract.mutateAsync({ id, status: 'terminated' });
-        terminated++;
-      } catch { /* skip */ }
-    }
-    setSelectedContractIds(new Set());
-    setIsArchiving(false);
-    notify.success(t('contracts.bulk.terminateSuccess', { count: terminated, defaultValue: '{{count}} contratos terminados' }));
+  // Bulk termination now opens a dialog to collect the reason and delegates to
+  // useBulkTerminateContracts (same side-effects as single termination — frees
+  // rooms, cancels future sessions via staff task, notifies founders + staff).
+  const handleArchiveSelected = () => {
+    if (selectedContractIds.size === 0) return;
+    setBulkTerminateOpen(true);
   };
 
   return (
@@ -600,6 +594,17 @@ export function BackofficeContractsTab() {
         onArchive={handleArchiveSelected}
         onClearSelection={() => setSelectedContractIds(new Set())}
         isArchiving={isArchiving}
+      />
+
+      <BulkTerminateContractsDialog
+        open={bulkTerminateOpen}
+        onOpenChange={setBulkTerminateOpen}
+        contracts={
+          (contracts || [])
+            .filter(c => selectedContractIds.has(c.id))
+            .map(c => ({ id: c.id, workspace_id: c.workspace_id }))
+        }
+        onDone={() => setSelectedContractIds(new Set())}
       />
 
       {/* Contracts Table */}

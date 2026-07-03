@@ -25,6 +25,7 @@ import { ContractIntelligenceCard } from '@/components/contracts/ContractIntelli
 import { PricingBreakdown } from '@/components/contracts/PricingBreakdown';
 import { ContractStatusBadge } from './ContractStatusBadge';
 import { RenewContractDialog } from './RenewContractDialog';
+import { TerminateContractDialog } from './TerminateContractDialog';
 
 import { ContractLifecycleStepper } from '@/components/contracts/ContractLifecycleStepper';
 import { ContractReadinessChecklist } from '@/components/contracts/ContractReadinessChecklist';
@@ -65,6 +66,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
   const [editValues, setEditValues] = useState<Record<string, any>>({});
   const [activeTab, setActiveTab] = useState('details');
   const [renewOpen, setRenewOpen] = useState(false);
+  const [terminateOpen, setTerminateOpen] = useState(false);
 
   const { data: pricingTable } = useCurrentPricingTable();
 
@@ -372,6 +374,17 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
               >
                 <RefreshCw className="h-3 w-3" />
                 {t('contractDetail.renewCta', { defaultValue: 'Renovar' })}
+              </Button>
+            )}
+            {['active', 'suspended', 'pending_signature'].includes(contract.status) && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1 border-destructive/40 text-destructive hover:bg-destructive/10"
+                onClick={() => setTerminateOpen(true)}
+              >
+                <XCircle className="h-3 w-3" />
+                {t('contractDetail.terminateCta', { defaultValue: 'Terminar' })}
               </Button>
             )}
 
@@ -702,6 +715,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
         </div>
       </SheetContent>
       <RenewContractDialog contract={contract} open={renewOpen} onOpenChange={setRenewOpen} />
+      <TerminateContractDialog contract={contract} open={terminateOpen} onOpenChange={setTerminateOpen} />
     </Sheet>
 
   );
