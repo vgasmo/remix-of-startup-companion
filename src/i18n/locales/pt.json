@@ -617,6 +617,9 @@
       "space": "Espaço",
       "spaceAssigned": "Espaço atribuído com sucesso",
       "spaceName": "Nome do Espaço",
+      "spaceNamePlaceholder": "Mesa A1, Sala 101...",
+      "floorPlaceholder": "1, Piso térreo, Mezzanine...",
+
       "spaceTypes": {
         "desk": "Secretária",
         "hotDesk": "Hot Desk",
