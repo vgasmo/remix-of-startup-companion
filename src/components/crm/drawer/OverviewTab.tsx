@@ -28,6 +28,7 @@ interface OverviewTabProps {
   onSetNextAction: () => void;
   onClearNextAction: () => void;
   isClearingNextAction: boolean;
+  consultors?: Array<{ id: string; full_name: string | null }> | null;
 }
 
 const DEFAULT_WIN_PROBABILITY: Record<string, number> = {
