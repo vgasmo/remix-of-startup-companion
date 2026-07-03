@@ -270,6 +270,13 @@ export function useCreateSession(workspaceId: string) {
       // Tier-0 analytics
       void track('session_scheduled', { workspaceId, properties: { sessionId: data.id } });
 
+      // Inbox notifications for all participants (email invites for "created"
+      // are sent by CreateSessionDialog when the organizer keeps "sendInvites"
+      // enabled — passing sendEmail: false avoids duplicates here).
+      void notifySessionEvent('created', {
+        id: data.id, title: data.title, scheduled_at: data.scheduled_at, duration: data.duration, agenda: data.agenda,
+      }, workspaceId, { sendEmail: false });
+
       // Skip Outlook/Teams notifications for sessions logged after the fact
       // (i.e. scheduled in the past). These are records of meetings that
       // already happened off-platform, not new invites to send out.
