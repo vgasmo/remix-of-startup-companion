@@ -144,6 +144,40 @@ export function InfrastructureTab() {
     }
   }, [buildingFloorMaps]);
 
+  // ── Persist the active view in the URL (?view=...) so refresh/back preserves it. ──
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('subtab') !== 'spaces' && params.get('tab') !== 'spaces') return;
+    if (params.get('view') === subView) return;
+    params.set('view', subView);
+    window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+  }, [subView]);
+
+  // ── ?room=<id> deep-link: select the room's building + floor map, open drawer. ──
+  useEffect(() => {
+    if (typeof window === 'undefined' || !rooms || !spaces) return;
+    const params = new URLSearchParams(window.location.search);
+    const roomId = params.get('room');
+    if (!roomId || deepLinkHandledRef.current === roomId) return;
+    const target = rooms.find(r => r.id === roomId);
+    if (!target) return;
+    deepLinkHandledRef.current = roomId;
+    // Pick the owning building from the room's space
+    const targetSpace = spaces.find((s: any) => s.id === target.space_id);
+    const buildingId = (targetSpace as any)?.building_id;
+    if (buildingId) setSelectedBuildingId(buildingId);
+    // Prefer the map view when the room is placed; otherwise the list view.
+    if (target.floor_map_id) {
+      setSelectedFloorMapId(target.floor_map_id);
+      setSubView('map');
+    } else {
+      setSubView('list');
+    }
+    setDrawerRoom(target);
+    setDrawerOpen(true);
+  }, [rooms, spaces]);
+
   const activeFloorMap = buildingFloorMaps.find(fm => fm.id === selectedFloorMapId);
 
   // ── Load floor map image ──
