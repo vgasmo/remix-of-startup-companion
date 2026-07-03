@@ -443,6 +443,14 @@ export function useDeleteSession(workspaceId: string) {
 
   return useMutation({
     mutationFn: async (sessionId: string) => {
+      // Snapshot session details BEFORE the delete so we can still notify
+      // participants (inbox + email) once the row is gone.
+      const { data: sessionSnapshot } = await supabase
+        .from('sessions')
+        .select('id, title, scheduled_at, duration, agenda')
+        .eq('id', sessionId)
+        .maybeSingle();
+
       // P0.1: First, trigger Outlook delete BEFORE removing from DB
       // This ensures we still have the outlook_event_id
       await syncOutlookCalendar({
@@ -450,6 +458,13 @@ export function useDeleteSession(workspaceId: string) {
         action: 'delete',
         workspaceId,
       }).catch(() => {}); // Silent fail - non-blocking
+
+      // Inbox + email cancellation notice while session data is still available
+      if (sessionSnapshot) {
+        await notifySessionEvent('cancelled', sessionSnapshot as {
+          id: string; title: string; scheduled_at: string; duration: number | null; agenda?: string | null;
+        }, workspaceId);
+      }
 
       // P1.2: Log activity before delete
       await logActivity('deleted', 'session', sessionId, workspaceId);
