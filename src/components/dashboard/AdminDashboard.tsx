@@ -25,6 +25,8 @@ import { EcosystemInsights } from '@/components/dashboard/EcosystemInsights';
 import { EcosystemHeatmap } from '@/components/admin/EcosystemHeatmap';
 import { ExportAnalyticsModal } from '@/components/admin/ExportAnalyticsModal';
 import type { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
+import { FocusModeProvider, FocusModeToggle } from '@/components/ui/FocusModeToggle';
+import { FullViewOnly } from '@/components/dashboard/FocusGate';
 
 interface AdminDashboardProps {
   workspaces: WorkspaceWithDetails[];
