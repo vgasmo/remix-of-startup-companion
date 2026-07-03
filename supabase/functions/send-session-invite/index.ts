@@ -19,6 +19,7 @@ interface SessionInviteRequest {
   recipientEmails: string[];
   organizerName: string;
   startupName: string;
+  eventType?: 'created' | 'rescheduled' | 'cancelled';
 }
 
 // HTML escape function to prevent XSS
@@ -294,31 +295,57 @@ serve(async (req) => {
       (recipientProfiles ?? []).map((p: any) => [String(p.email).toLowerCase(), (p.preferred_language as 'pt' | 'en') ?? 'pt'])
     );
 
+    const eventType: 'created' | 'rescheduled' | 'cancelled' = payload.eventType ?? 'created';
+
     const stringsByLocale = {
       pt: {
-        subject: (t: string, n: string) => `Sessão agendada: ${t} - ${n}`,
-        heading: '📅 Sessão Agendada',
-        intro: 'Foi convidado para uma sessão de mentoria.',
+        subject: (t: string, n: string) =>
+          eventType === 'cancelled' ? `Sessão cancelada: ${t} - ${n}`
+          : eventType === 'rescheduled' ? `Sessão reagendada: ${t} - ${n}`
+          : `Sessão agendada: ${t} - ${n}`,
+        heading:
+          eventType === 'cancelled' ? '❌ Sessão Cancelada'
+          : eventType === 'rescheduled' ? '🔄 Sessão Reagendada'
+          : '📅 Sessão Agendada',
+        intro:
+          eventType === 'cancelled' ? 'Esta sessão de mentoria foi cancelada.'
+          : eventType === 'rescheduled' ? 'Esta sessão de mentoria foi reagendada. Veja abaixo os novos detalhes.'
+          : 'Foi convidado para uma sessão de mentoria.',
         startup: 'Startup',
         date: 'Data',
         time: 'Hora',
         duration: 'Duração',
         minutes: 'minutos',
         agenda: 'Agenda',
-        icsNote: 'Está anexado um convite de calendário (.ics). Adicione-o ao seu calendário para receber lembretes.',
+        icsNote:
+          eventType === 'cancelled'
+            ? 'Se já tinha adicionado esta sessão ao seu calendário, por favor remova-a.'
+            : 'Está anexado um convite de calendário (.ics). Adicione-o ao seu calendário para receber lembretes.',
         organizedBy: 'Organizado por',
       },
       en: {
-        subject: (t: string, n: string) => `Session Scheduled: ${t} - ${n}`,
-        heading: '📅 Session Scheduled',
-        intro: "You've been invited to a mentoring session.",
+        subject: (t: string, n: string) =>
+          eventType === 'cancelled' ? `Session Cancelled: ${t} - ${n}`
+          : eventType === 'rescheduled' ? `Session Rescheduled: ${t} - ${n}`
+          : `Session Scheduled: ${t} - ${n}`,
+        heading:
+          eventType === 'cancelled' ? '❌ Session Cancelled'
+          : eventType === 'rescheduled' ? '🔄 Session Rescheduled'
+          : '📅 Session Scheduled',
+        intro:
+          eventType === 'cancelled' ? 'This mentoring session has been cancelled.'
+          : eventType === 'rescheduled' ? 'This mentoring session has been rescheduled. See the new details below.'
+          : "You've been invited to a mentoring session.",
         startup: 'Startup',
         date: 'Date',
         time: 'Time',
         duration: 'Duration',
         minutes: 'minutes',
         agenda: 'Agenda',
-        icsNote: 'A calendar invite (.ics file) is attached. Add it to your calendar to receive reminders.',
+        icsNote:
+          eventType === 'cancelled'
+            ? 'If you had already added this session to your calendar, please remove it.'
+            : 'A calendar invite (.ics file) is attached. Add it to your calendar to receive reminders.',
         organizedBy: 'Organized by',
       },
     };
@@ -372,7 +399,7 @@ serve(async (req) => {
               </p>
             </div>
           `,
-          attachments: [
+          attachments: eventType === 'cancelled' ? [] : [
             {
               filename: "session-invite.ics",
               content: btoa(icsContent),

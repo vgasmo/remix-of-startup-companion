@@ -24,6 +24,117 @@ async function logActivity(action: string, entityType: string, entityId: string,
   }
 }
 
+// Notify workspace participants (founder, consultor, mentors) on session
+// create/reschedule/cancel — inbox notification for everyone, email for
+// rescheduled/cancelled (create emails are triggered from CreateSessionDialog
+// when the organizer opts in via "sendInvites").
+type SessionEventKind = 'created' | 'rescheduled' | 'cancelled';
+
+async function notifySessionEvent(
+  kind: SessionEventKind,
+  session: { id: string; title: string; scheduled_at: string; duration: number | null; agenda?: string | null },
+  workspaceId: string,
+  opts: { sendEmail?: boolean } = {},
+): Promise<void> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Recipients: all active workspace members. Exclude the actor so they
+    // don't ping themselves. Fetch profile emails/preferred language too.
+    const { data: members } = await supabase
+      .from('workspace_users')
+      .select('user_id, role, active')
+      .eq('workspace_id', workspaceId)
+      .eq('active', true);
+
+    const memberIds = (members || []).map((m) => m.user_id).filter(Boolean);
+    if (memberIds.length === 0) return;
+
+    const { data: profiles } = await supabase
+      .from('profiles_safe')
+      .select('id, full_name, email')
+      .in('id', memberIds);
+
+    const workspaceInfo = await supabase
+      .from('workspaces')
+      .select('id, startup:startups(name)')
+      .eq('id', workspaceId)
+      .maybeSingle();
+    const startupName = ((workspaceInfo.data as { startup?: { name?: string } } | null)?.startup?.name) || 'Startup';
+
+    const scheduledDate = new Date(session.scheduled_at);
+    const dateStr = Number.isFinite(scheduledDate.getTime())
+      ? scheduledDate.toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' })
+      : session.scheduled_at;
+
+    const titleByKind: Record<SessionEventKind, string> = {
+      created: `Sessão agendada: ${session.title}`,
+      rescheduled: `Sessão reagendada: ${session.title}`,
+      cancelled: `Sessão cancelada: ${session.title}`,
+    };
+    const messageByKind: Record<SessionEventKind, string> = {
+      created: `Nova sessão em ${dateStr}.`,
+      rescheduled: `Nova data: ${dateStr}.`,
+      cancelled: `Prevista para ${dateStr}.`,
+    };
+    const typeByKind: Record<SessionEventKind, string> = {
+      created: 'session_scheduled',
+      rescheduled: 'session_rescheduled',
+      cancelled: 'session_cancelled',
+    };
+
+    const link = `/workspace/${workspaceId}?tab=agenda`;
+
+    // Inbox notifications — one per recipient (skip the actor).
+    const inboxRows = memberIds
+      .filter((id) => id !== user?.id)
+      .map((id) => ({
+        user_id: id,
+        type: typeByKind[kind],
+        title: titleByKind[kind],
+        message: messageByKind[kind],
+        link,
+        entity_type: 'session',
+        entity_id: session.id,
+        read: false,
+      }));
+
+    if (inboxRows.length > 0) {
+      await supabase.from('notifications').insert(inboxRows);
+    }
+
+    // Email invites — always for rescheduled/cancelled, opt-in for created
+    // (create is handled by CreateSessionDialog's sendInvites flow).
+    if (opts.sendEmail !== false && (kind === 'rescheduled' || kind === 'cancelled')) {
+      const recipientEmails = (profiles || [])
+        .filter((p) => p.id !== user?.id && !!p.email)
+        .map((p) => p.email as string);
+
+      if (recipientEmails.length > 0) {
+        const organizerProfile = (profiles || []).find((p) => p.id === user?.id);
+        await supabase.functions.invoke('send-session-invite', {
+          body: {
+            sessionId: session.id,
+            workspaceId,
+            title: session.title,
+            scheduledAt: session.scheduled_at,
+            duration: session.duration || 60,
+            agenda: session.agenda || undefined,
+            recipientEmails,
+            organizerName: organizerProfile?.full_name || organizerProfile?.email || 'Startup Leiria',
+            startupName,
+            eventType: kind,
+          },
+        });
+      }
+    }
+  } catch (e) {
+    logger.warn('session_event_notify_failed', { kind, error: String(e) });
+  }
+}
+
+
+
 export interface Session {
   id: string;
   workspace_id: string;
@@ -159,6 +270,13 @@ export function useCreateSession(workspaceId: string) {
       // Tier-0 analytics
       void track('session_scheduled', { workspaceId, properties: { sessionId: data.id } });
 
+      // Inbox notifications for all participants (email invites for "created"
+      // are sent by CreateSessionDialog when the organizer keeps "sendInvites"
+      // enabled — passing sendEmail: false avoids duplicates here).
+      void notifySessionEvent('created', {
+        id: data.id, title: data.title, scheduled_at: data.scheduled_at, duration: data.duration, agenda: data.agenda,
+      }, workspaceId, { sendEmail: false });
+
       // Skip Outlook/Teams notifications for sessions logged after the fact
       // (i.e. scheduled in the past). These are records of meetings that
       // already happened off-platform, not new invites to send out.
@@ -251,6 +369,17 @@ export function useUpdateSession(workspaceId: string) {
       // P1.2: Log activity
       logActivity('updated', 'session', result.session.id, workspaceId, { title: result.session.title });
 
+      // Inbox + email notifications for all participants on reschedule
+      if (result.needsSync) {
+        void notifySessionEvent('rescheduled', {
+          id: result.session.id,
+          title: result.session.title,
+          scheduled_at: result.session.scheduled_at,
+          duration: result.session.duration,
+          agenda: result.session.agenda,
+        }, workspaceId);
+      }
+
       // Auto-recompute health score after session update (fire-and-forget)
       supabase.functions.invoke('recompute-health-scores', {
         body: { workspaceId },
@@ -314,6 +443,14 @@ export function useDeleteSession(workspaceId: string) {
 
   return useMutation({
     mutationFn: async (sessionId: string) => {
+      // Snapshot session details BEFORE the delete so we can still notify
+      // participants (inbox + email) once the row is gone.
+      const { data: sessionSnapshot } = await supabase
+        .from('sessions')
+        .select('id, title, scheduled_at, duration, agenda')
+        .eq('id', sessionId)
+        .maybeSingle();
+
       // P0.1: First, trigger Outlook delete BEFORE removing from DB
       // This ensures we still have the outlook_event_id
       await syncOutlookCalendar({
@@ -321,6 +458,13 @@ export function useDeleteSession(workspaceId: string) {
         action: 'delete',
         workspaceId,
       }).catch(() => {}); // Silent fail - non-blocking
+
+      // Inbox + email cancellation notice while session data is still available
+      if (sessionSnapshot) {
+        await notifySessionEvent('cancelled', sessionSnapshot as {
+          id: string; title: string; scheduled_at: string; duration: number | null; agenda?: string | null;
+        }, workspaceId);
+      }
 
       // P1.2: Log activity before delete
       await logActivity('deleted', 'session', sessionId, workspaceId);
