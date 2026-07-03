@@ -970,6 +970,52 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
           {t('contractDetail.signatureActions')}
         </Label>
 
+        {/* Reset / resend for declined or voided envelopes */}
+        {isBlockedByProvider && (
+          <div className="rounded-lg border border-warning/30 bg-warning/10 p-3 space-y-2">
+            <p className="text-xs text-warning-foreground">
+              {sigStatus === 'declined'
+                ? t('contractDetail.declinedNotice', { defaultValue: 'O contrato foi recusado. Reponha o estado para reenviar.' })
+                : t('contractDetail.voidedNotice', { defaultValue: 'O envelope foi anulado. Reponha o estado para reenviar.' })}
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full"
+              disabled={sending}
+              onClick={async () => {
+                setSending(true);
+                try {
+                  const { error } = await supabase
+                    .from('startup_contracts')
+                    .update({
+                      signature_status: 'draft',
+                      status: 'draft',
+                      provider_document_id: null,
+                      docusign_envelope_id: null,
+                      provider_last_error: null,
+                      provider_last_event: null,
+                      canonical_signature_status: null,
+                      founder_signer_status: 'pending',
+                      counter_signer_status: null,
+                    } as any)
+                    .eq('id', contract.id);
+                  if (error) throw error;
+                  notify.success(t('contractDetail.resetOk', { defaultValue: 'Estado reposto. Pode reenviar.' }));
+                  queryClient.invalidateQueries({ queryKey: ['contracts'] });
+                } catch (e: any) {
+                  notify.error(e?.message || t('contractDetail.resetFailed', { defaultValue: 'Falha ao repor estado' }));
+                } finally {
+                  setSending(false);
+                }
+              }}
+            >
+              {t('contractDetail.resetAndResend', { defaultValue: 'Repor e reenviar' })}
+            </Button>
+          </div>
+        )}
+
+
         {/* ROTA 1: Assinatura Digital Simples (nacionais PT) */}
         {provider === 'assinatura_digital' && (!isSent || canRetry) && (
           <div className="space-y-3">
