@@ -145,7 +145,8 @@ export default function PublicBooking() {
       
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setBookingHasInvite(Boolean(data?.teamsLink || data?.calendarEventId));
       setStep('success');
     },
     onError: (err: Error) => {
