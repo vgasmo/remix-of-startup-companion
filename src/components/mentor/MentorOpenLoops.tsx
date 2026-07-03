@@ -35,6 +35,35 @@ export function MentorOpenLoops({ workspaces }: MentorOpenLoopsProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
+  // Workspaces with a session in the last 72h — candidates for "notes missing".
+  const candidateNoteWorkspaceIds = useMemo(() => {
+    const now = new Date();
+    return (workspaces || [])
+      .filter(w => {
+        if (!w.lastSession?.scheduled_at) return false;
+        const d = new Date(w.lastSession.scheduled_at);
+        const hrs = (now.getTime() - d.getTime()) / (1000 * 60 * 60);
+        return hrs >= 0 && hrs <= 72;
+      })
+      .map(w => w.id);
+  }, [workspaces]);
+
+  // Fetch note-existence flags so we don't nag the diligent.
+  const { data: workspacesWithRecentNotes } = useQuery({
+    queryKey: ['mentor-recent-notes', candidateNoteWorkspaceIds.sort().join(',')],
+    enabled: candidateNoteWorkspaceIds.length > 0,
+    queryFn: async () => {
+      const since = subHours(new Date(), 72).toISOString();
+      const { data, error } = await supabase
+        .from('consultant_notes')
+        .select('workspace_id')
+        .in('workspace_id', candidateNoteWorkspaceIds)
+        .gte('created_at', since);
+      if (error) return new Set<string>();
+      return new Set((data || []).map((r: any) => r.workspace_id));
+    },
+  });
+
   const loops = useMemo((): OpenLoop[] => {
     if (!workspaces?.length) return [];
     const now = new Date();
