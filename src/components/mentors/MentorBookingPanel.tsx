@@ -222,8 +222,8 @@ export function MentorBookingPanel({
                     </SelectTrigger>
                     <SelectContent>
                       {getAvailableSlotsForDate(selectedDate).map(slot => (
-                        <SelectItem key={slot.id} value={`${slot.start_time}-${slot.end_time}`}>
-                          {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
+                        <SelectItem key={slot.key} value={slot.key}>
+                          {slot.start.slice(0, 5)} - {slot.end.slice(0, 5)}
                         </SelectItem>
                       ))}
                     </SelectContent>
