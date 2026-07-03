@@ -16,6 +16,7 @@ import {
   useContracts,
   useSpaceWaitingList,
 } from '@/hooks/useBackoffice';
+import { computeEffectiveDiscount } from '@/lib/contractLifecycle';
 import { useNavigate } from 'react-router-dom';
 import { format, differenceInDays, addDays } from 'date-fns';
 
@@ -26,7 +27,7 @@ export function OccupancyDashboard() {
   const { data: buildings } = useBuildings();
   const { data: spaces } = useOfficeSpaces();
   const { data: contracts } = useContracts({ status: 'active' });
-  const { data: waitingList } = useSpaceWaitingList({ status: 'pending' });
+  const { data: waitingList } = useSpaceWaitingList({ status: 'waiting' });
 
   // ── Occupancy by building ──
   const buildingStats = useMemo(() => {
