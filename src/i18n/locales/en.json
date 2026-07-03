@@ -326,6 +326,7 @@
       "contractNumber": "Contract Number",
       "contractSigners": {
         "autoAssigned": "Will be auto-assigned on send",
+        "bilateralSignatures": "Bilateral Signatures",
         "firstParty": "First Party",
         "secondParty": "Second Party"
       },
