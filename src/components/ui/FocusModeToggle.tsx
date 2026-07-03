@@ -1,4 +1,4 @@
-import { useState, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,8 +16,33 @@ export function useFocusMode() {
   return useContext(FocusContext);
 }
 
-export function FocusModeProvider({ children, defaultFocused = true }: { children: ReactNode; defaultFocused?: boolean }) {
-  const [isFocused, setIsFocused] = useState(defaultFocused);
+interface FocusModeProviderProps {
+  children: ReactNode;
+  defaultFocused?: boolean;
+  /**
+   * When provided, the toggle state is persisted in localStorage under
+   * `sl-focus-mode-${persistKey}`. Use one key per dashboard/role.
+   */
+  persistKey?: string;
+}
+
+export function FocusModeProvider({ children, defaultFocused = true, persistKey }: FocusModeProviderProps) {
+  const storageKey = persistKey ? `sl-focus-mode-${persistKey}` : null;
+  const [isFocused, setIsFocused] = useState<boolean>(() => {
+    if (!storageKey || typeof window === 'undefined') return defaultFocused;
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      if (raw === 'true') return true;
+      if (raw === 'false') return false;
+    } catch { /* ignore */ }
+    return defaultFocused;
+  });
+
+  useEffect(() => {
+    if (!storageKey || typeof window === 'undefined') return;
+    try { window.localStorage.setItem(storageKey, String(isFocused)); } catch { /* ignore */ }
+  }, [storageKey, isFocused]);
+
   return (
     <FocusContext.Provider value={{ isFocused, toggle: () => setIsFocused(p => !p) }}>
       {children}
