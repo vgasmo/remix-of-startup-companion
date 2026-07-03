@@ -14,14 +14,15 @@ import { format, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 
-const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  draft: { label: 'Draft', className: 'bg-muted text-muted-foreground' },
-  sent: { label: 'Sent', className: 'bg-info/10 text-info' },
-  paid: { label: 'Paid', className: 'bg-success/10 text-success' },
-  overdue: { label: 'Overdue', className: 'bg-destructive/10 text-destructive' },
-  cancelled: { label: 'Cancelled', className: 'bg-muted text-muted-foreground' },
-  refunded: { label: 'Refunded', className: 'bg-primary/10 text-primary' },
+const STATUS_CONFIG: Record<string, { labelKey: string; className: string }> = {
+  draft: { labelKey: 'backoffice.invoiceStatus.draft', className: 'bg-muted text-muted-foreground' },
+  sent: { labelKey: 'backoffice.invoiceStatus.sent', className: 'bg-info/10 text-info' },
+  paid: { labelKey: 'backoffice.invoiceStatus.paid', className: 'bg-success/10 text-success' },
+  overdue: { labelKey: 'backoffice.invoiceStatus.overdue', className: 'bg-destructive/10 text-destructive' },
+  cancelled: { labelKey: 'backoffice.invoiceStatus.cancelled', className: 'bg-muted text-muted-foreground' },
+  refunded: { labelKey: 'backoffice.invoiceStatus.refunded', className: 'bg-primary/10 text-primary' },
 };
+
 
 export function BackofficeInvoicesTab() {
   const { t } = useTranslation();
