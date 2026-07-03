@@ -491,25 +491,39 @@ export function useCreateRoomAllocation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {
+      // Auto-link the single active contract when the caller didn't provide one.
+      const finalPayload: Record<string, unknown> = { ...payload };
+      if (!finalPayload.contract_id && finalPayload.workspace_id) {
+        const { data: activeContracts } = await supabase
+          .from('startup_contracts')
+          .select('id')
+          .eq('workspace_id', finalPayload.workspace_id as string)
+          .eq('status', 'active');
+        if (activeContracts && activeContracts.length === 1) {
+          finalPayload.contract_id = activeContracts[0].id;
+        }
+      }
+
       const { data, error } = await supabase
         .from('room_allocations')
-        .insert(payload as any)
+        .insert(finalPayload as any)
         .select()
         .single();
       if (error) throw error;
-      
+
       // Update room status
       await supabase
         .from('rooms')
         .update({ status: 'occupied' })
         .eq('id', payload.room_id as string);
-      
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['room-allocations'] });
       queryClient.invalidateQueries({ queryKey: ['rooms'] });
       queryClient.invalidateQueries({ queryKey: ['rooms-with-allocations'] });
+      queryClient.invalidateQueries({ queryKey: ['building-occupancy'] });
       notify.success(t('backoffice.roomAllocated'));
     },
     onError: () => notify.error(t('backoffice.roomAllocateError')),
