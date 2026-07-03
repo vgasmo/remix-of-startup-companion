@@ -41,6 +41,32 @@ export interface Notification {
   entity_id: string | null;
 }
 
+/**
+ * De-duplicate `mentor_connection_pending` notifications keyed by connection_id
+ * (fallback: mentor_id + founder pair via entity_id). Multiple booking updates
+ * for the same founder↔mentor pair can produce repeat pending rows; the founder
+ * inbox should only surface the most recent one. Other notification types are
+ * returned untouched.
+ */
+function dedupePendingMentorConnections(rows: Notification[]): Notification[] {
+  const seen = new Set<string>();
+  const result: Notification[] = [];
+  for (const n of rows) {
+    if (n.type === 'mentor_connection_pending') {
+      const meta = (n.metadata ?? {}) as Record<string, unknown>;
+      const key =
+        (typeof meta.connection_id === 'string' && meta.connection_id) ||
+        (typeof meta.mentor_id === 'string' && `m:${meta.mentor_id}`) ||
+        n.entity_id ||
+        n.id;
+      if (seen.has(key)) continue;
+      seen.add(key);
+    }
+    result.push(n);
+  }
+  return result;
+}
+
 export function useNotifications() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
