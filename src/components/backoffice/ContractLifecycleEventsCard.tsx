@@ -2,7 +2,7 @@
  * ContractLifecycleEventsCard — Dashboard card showing upcoming lifecycle deadlines
  * Anniversaries, biennial price reviews, notice windows, incubation limits
  */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -11,12 +11,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { RenewContractDialog } from '@/components/backoffice/contracts/RenewContractDialog';
 import {
   CalendarClock, Cake, AlertTriangle, Clock, FileText,
   CheckCircle2, RefreshCw, Bell
 } from 'lucide-react';
 import { format, differenceInDays, addYears, subDays } from 'date-fns';
 import { cn } from '@/lib/utils';
+
 
 interface ContractForEvents {
   id: string;
@@ -43,6 +45,9 @@ interface LifecycleEvent {
 export function ContractLifecycleEventsCard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [renewContract, setRenewContract] = useState<ContractForEvents | null>(null);
+
+
 
 
   const { data: contracts, isLoading } = useQuery({
@@ -214,23 +219,30 @@ export function ContractLifecycleEventsCard() {
               {events.slice(0, 15).map((event, idx) => {
                 const goToContract = () =>
                   navigate(`/admin?tab=backoffice&subtab=contracts&contract=${event.contractId}`);
+                const canRenew = event.eventType === 'anniversary' || event.eventType === 'incubation_limit';
+                const openRenew = (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  const c = contracts?.find(x => x.id === event.contractId);
+                  if (c) setRenewContract(c);
+                };
                 return (
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   key={`${event.contractId}-${event.eventType}-${idx}`}
                   onClick={goToContract}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToContract(); } }}
                   aria-label={t('lifecycle.stepper.openContractAria', {
                     defaultValue: 'Abrir contrato de {{startup}}',
                     startup: event.startupName,
                   })}
                   className={cn(
-                    'w-full text-left p-3 rounded-lg border flex items-start gap-3 text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'w-full text-left p-3 rounded-lg border flex items-start gap-3 text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer',
                     event.severity === 'critical' && 'bg-destructive/5 border-destructive/30',
                     event.severity === 'warning' && 'bg-warning/5 border-warning/30',
                     event.severity === 'info' && 'bg-info/5 border-info/30',
                   )}
                 >
-
                   <div className={cn(
                     'mt-0.5',
                     event.severity === 'critical' && 'text-destructive',
@@ -259,13 +271,31 @@ export function ContractLifecycleEventsCard() {
                       </span>
                     </div>
                   </div>
-                </button>
+                  {canRenew && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs gap-1 shrink-0"
+                      onClick={openRenew}
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                      {t('contractDetail.renewCta', { defaultValue: 'Renovar' })}
+                    </Button>
+                  )}
+                </div>
                 );
               })}
+
             </div>
           </ScrollArea>
         )}
       </CardContent>
+      <RenewContractDialog
+        contract={renewContract as any}
+        open={!!renewContract}
+        onOpenChange={(o) => !o && setRenewContract(null)}
+      />
     </Card>
   );
 }
+

@@ -19,6 +19,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useContracts, useIncubationTypes, useBuildings, useCreateContract } from '@/hooks/useBackoffice';
+import { RenewContractDialog } from '@/components/backoffice/contracts/RenewContractDialog';
+
 import { useFunnelItems, useConvertToStartup } from '@/hooks/useFunnel';
 import { usePrograms } from '@/hooks/useWorkspaces';
 import { useContractIntakes } from '@/hooks/useContractIntakes';
@@ -47,6 +49,8 @@ export function ContractLifecycleHub() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'alerts' | 'pipeline'>('overview');
   const [convertDialogItem, setConvertDialogItem] = useState<any>(null);
+  const [renewContract, setRenewContract] = useState<any>(null);
+
   
   const { data: contracts } = useContracts();
   const { data: funnelItems } = useFunnelItems();
@@ -293,7 +297,11 @@ export function ContractLifecycleHub() {
         if (item) setConvertDialogItem(item);
         break;
       }
-      case 'renew':
+      case 'renew': {
+        const contract = contracts?.find(c => c.id === alert.entityId);
+        if (contract) setRenewContract(contract);
+        break;
+      }
       case 'review': {
         const contract = contracts?.find(c => c.id === alert.entityId);
         if (contract?.workspace_id) {
@@ -301,6 +309,7 @@ export function ContractLifecycleHub() {
         }
         break;
       }
+
       case 'archive':
         notify.info(t('lifecycle.archiveNotImplemented'));
         break;
@@ -765,10 +774,16 @@ export function ContractLifecycleHub() {
             onConvert={handleConvert}
             onClose={() => setConvertDialogItem(null)}
             isLoading={convertToStartup.isPending}
-          />
+           />
         )}
+        <RenewContractDialog
+          contract={renewContract}
+          open={!!renewContract}
+          onOpenChange={(o) => !o && setRenewContract(null)}
+        />
       </div>
     </TooltipProvider>
+
   );
 }
 
