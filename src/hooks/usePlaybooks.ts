@@ -389,7 +389,7 @@ async function notifyPlaybookLifecycle(params: {
       await supabase.from('notifications').insert(rows);
     }
   } catch (e) {
-    logger.warn('notifyPlaybookLifecycle failed', {}, e as unknown as Error);
+    logger.warn('notifyPlaybookLifecycle failed', { error: (e as Error)?.message });
   }
 }
 
