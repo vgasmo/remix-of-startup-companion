@@ -508,7 +508,12 @@ export default function MyWorkspaces() {
           ) : (
             <Card>
               <CardContent className="p-0">
-                <WorkspaceTable workspaces={paginatedWorkspaces} onRowClick={handleRowClick} />
+                <WorkspaceTable
+                  workspaces={paginatedWorkspaces}
+                  onRowClick={handleRowClick}
+                  sortBy={sortBy}
+                  onSortByChange={(v) => { setSortBy(v); handleFilterChange(); }}
+                />
                 <WorkspacePagination
                   currentPage={currentPage}
                   totalPages={totalPages}

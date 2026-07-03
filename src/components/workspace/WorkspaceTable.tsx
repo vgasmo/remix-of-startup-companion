@@ -2,7 +2,7 @@ import { memo, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format, isToday } from 'date-fns';
 import { pt as ptLocale, enUS } from 'date-fns/locale';
-import { Calendar, FileText, ExternalLink, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Calendar, FileText, ExternalLink, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, ArrowDown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,9 +31,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
+import { WorkspaceWithDetails, SortOption } from '@/hooks/useWorkspaces';
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100];
+
+function SortHeader({
+  label,
+  sortKey,
+  sortBy,
+  onSortByChange,
+  className,
+}: {
+  label: string;
+  sortKey: SortOption;
+  sortBy?: SortOption;
+  onSortByChange?: (v: SortOption) => void;
+  className?: string;
+}) {
+  const active = sortBy === sortKey;
+  const clickable = !!onSortByChange;
+  return (
+    <TableHead
+      className={cn(
+        'h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium',
+        clickable && 'cursor-pointer select-none hover:text-foreground transition-colors',
+        active && 'text-foreground',
+        className,
+      )}
+      onClick={clickable ? () => onSortByChange!(sortKey) : undefined}
+      aria-sort={active ? 'descending' : undefined}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        {clickable && (active ? <ArrowDown className="h-3 w-3" /> : <ArrowUpDown className="h-3 w-3 opacity-50" />)}
+      </span>
+    </TableHead>
+  );
+}
 
 interface WorkspaceTableProps {
   workspaces: WorkspaceWithDetails[];
@@ -41,6 +75,8 @@ interface WorkspaceTableProps {
   selectionEnabled?: boolean;
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string) => void;
+  sortBy?: SortOption;
+  onSortByChange?: (value: SortOption) => void;
 }
 
 export const WorkspaceTable = memo(function WorkspaceTable({
@@ -49,6 +85,8 @@ export const WorkspaceTable = memo(function WorkspaceTable({
   selectionEnabled = false,
   selectedIds = new Set(),
   onToggleSelect,
+  sortBy,
+  onSortByChange,
 }: WorkspaceTableProps) {
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language.startsWith('pt') ? ptLocale : enUS;
@@ -212,12 +250,34 @@ export const WorkspaceTable = memo(function WorkspaceTable({
                   <span className="sr-only">{t('common.select', { defaultValue: 'Select' })}</span>
                 </TableHead>
               )}
-              <TableHead className="w-[180px] sm:w-[200px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.startup', { defaultValue: 'Startup' })}</TableHead>
+              <SortHeader
+                className="w-[180px] sm:w-[200px]"
+                label={t('workspaceTable.startup', { defaultValue: 'Startup' })}
+                sortKey="name"
+                sortBy={sortBy}
+                onSortByChange={onSortByChange}
+              />
               <TableHead className="hidden sm:table-cell h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.program', { defaultValue: 'Program' })}</TableHead>
-              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.priority', { defaultValue: 'Priority' })}</TableHead>
-              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.healthScore', { defaultValue: 'Health' })}</TableHead>
+              <SortHeader
+                label={t('workspaceTable.priority', { defaultValue: 'Priority' })}
+                sortKey="priority"
+                sortBy={sortBy}
+                onSortByChange={onSortByChange}
+              />
+              <SortHeader
+                label={t('workspace.healthScore', { defaultValue: 'Health' })}
+                sortKey="urgency"
+                sortBy={sortBy}
+                onSortByChange={onSortByChange}
+              />
               <TableHead className="text-center h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.overdue', { defaultValue: 'Overdue' })}</TableHead>
-              <TableHead className="hidden md:table-cell h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.nextMeeting', { defaultValue: 'Next Meeting' })}</TableHead>
+              <SortHeader
+                className="hidden md:table-cell"
+                label={t('workspaceTable.nextMeeting', { defaultValue: 'Next Meeting' })}
+                sortKey="meeting"
+                sortBy={sortBy}
+                onSortByChange={onSortByChange}
+              />
               <TableHead className="hidden lg:table-cell w-[200px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.lastSession', { defaultValue: 'Last Session' })}</TableHead>
             </TableRow>
           </TableHeader>
