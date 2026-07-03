@@ -137,7 +137,7 @@ export function MentorOpenLoops({ workspaces }: MentorOpenLoopsProps) {
     // Sort by urgency
     const urgencyOrder = { high: 0, medium: 1, low: 2 };
     return result.sort((a, b) => urgencyOrder[a.urgency] - urgencyOrder[b.urgency]).slice(0, 8);
-  }, [workspaces, t]);
+  }, [workspaces, workspacesWithRecentNotes, t]);
 
   if (loops.length === 0) {
     return (
