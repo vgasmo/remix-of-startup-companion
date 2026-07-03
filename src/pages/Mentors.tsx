@@ -737,6 +737,12 @@ export default function Mentors() {
             open={!!selectedGalleryMentor}
             onOpenChange={(open) => !open && setSelectedGalleryMentor(null)}
             isAssigned={selectedGalleryMentor ? uniqueMentors.some(um => um.user_id === selectedGalleryMentor.id) : false}
+            workspaceId={founderWorkspaceId}
+            existingStatus={
+              selectedGalleryMentor
+                ? ((connections?.find(c => c.mentor_id === selectedGalleryMentor.id)?.status as 'pending' | 'accepted' | 'declined' | undefined) ?? null)
+                : null
+            }
           />
 
           <FounderMentorRequestPanel />
