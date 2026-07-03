@@ -441,7 +441,9 @@ export default function WorkspaceDetail() {
                   <WorkspaceEmailHistoryPanel workspaceId={workspace.id} />
                 </div>
               )}
+              {isStaff && <WorkspaceRoomChip workspaceId={workspace.id} />}
               <WorkspaceOverview 
+
                 workspace={{
                   id: workspace.id,
                   startup_id: workspace.startup_id,
