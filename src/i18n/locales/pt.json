@@ -2908,9 +2908,11 @@
     "recommendedActions": "Ações Recomendadas",
     "rerunAnalysis": "Executar novamente",
     "review": {
+      "add12Months": "+12 meses",
       "aiDesc": "A IA extraiu estes campos do PDF. Reveja e edite antes de guardar.",
       "aiPopulated": "Preenchido por IA",
       "manualDesc": "Preencha os detalhes do contrato manualmente.",
+      "noEndDateNudge": "Sem data de fim, este contrato não gera alertas de renovação.",
       "saveContract": "Guardar Contrato na Base de Dados",
       "title": "Rever Detalhes do Contrato"
     },
@@ -5281,6 +5283,7 @@
       "noEvents": "Sem eventos do ciclo nos próximos 90 dias",
       "noIntake": "Contrato sem processo de intake registado",
       "noticeDeadline": "Prazo de aviso prévio",
+      "openContractAria": "Abrir contrato de {{startup}}",
       "overdue": "Em atraso",
       "pending_signature": "Aguarda Assinatura",
       "phaseContract": "Contrato",

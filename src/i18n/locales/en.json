@@ -2908,9 +2908,11 @@
     "recommendedActions": "Recommended Actions",
     "rerunAnalysis": "Run again",
     "review": {
+      "add12Months": "+12 months",
       "aiDesc": "AI extracted these fields from the PDF. Review and edit before saving.",
       "aiPopulated": "AI Populated",
       "manualDesc": "Fill in the contract details manually.",
+      "noEndDateNudge": "Without an end date this contract will not trigger renewal alerts.",
       "saveContract": "Save Contract to Database",
       "title": "Review Contract Details"
     },
@@ -5281,6 +5283,7 @@
       "noEvents": "No lifecycle events in the next 90 days",
       "noIntake": "Contract without a recorded intake process",
       "noticeDeadline": "Notice deadline",
+      "openContractAria": "Open contract for {{startup}}",
       "overdue": "Overdue",
       "pending_signature": "Pending Signature",
       "phaseContract": "Contract",
