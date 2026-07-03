@@ -94,6 +94,12 @@ export default function WorkspaceDetail() {
   // URL-synced tab state
   const currentTab = searchParams.get('tab') || 'overview';
   
+  // Known legacy aliases from older emails/notifications → canonical tab
+  const LEGACY_TABS = new Set([
+    'dataroom', 'sessions', 'calendar', 'milestones', 'actions',
+    'templates', 'milestones-actions-actions',
+  ]);
+
   // Redirect legacy tabs (old email/notification deep-links)
   useEffect(() => {
     const sub = searchParams.get('sub');
@@ -116,7 +122,24 @@ export default function WorkspaceDetail() {
     }
   }, [currentTab, searchParams, setSearchParams]);
 
-  
+  // Fallback for invalid/unknown tab keys coming from notifications or stale links.
+  // Only runs once the workspace (and therefore visible tabs) is loaded and the
+  // tab is neither a valid tab nor a legacy alias handled above.
+  useEffect(() => {
+    if (isLoading || !workspace) return;
+    if (allVisibleIds.size === 0) return;
+    if (allVisibleIds.has(currentTab)) return;
+    if (LEGACY_TABS.has(currentTab)) return;
+    if (currentTab === 'overview') return;
+
+    notify.info(
+      t('workspace.invalidTab', {
+        defaultValue: 'Secção indisponível — redirecionámos para a vista geral.',
+      })
+    );
+    setSearchParams({ tab: 'overview' }, { replace: true });
+  }, [isLoading, workspace, allVisibleIds, currentTab, setSearchParams, t]);
+
   const activeTab = allVisibleIds.has(currentTab) ? currentTab : 'overview';
   
   const handleTabChange = useCallback((value: string) => {
