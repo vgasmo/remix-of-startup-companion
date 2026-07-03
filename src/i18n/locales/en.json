@@ -2911,6 +2911,9 @@
       "archiveSuccess": "{{count}} contracts archived",
       "terminateSelected": "Terminate selected",
       "terminateSuccess": "{{count}} contracts terminated",
+      "terminateTitle": "Terminate contracts",
+      "terminateDescription": "You are about to terminate {{count}} contracts. Rooms will be freed and a task will be created to cancel future sessions.",
+      "terminateConfirm": "Terminate {{count}} contracts",
       "selected": "{{count}} selected"
     },
     "confirmAnalysis": "Confirm AI Analysis",
