@@ -54,7 +54,7 @@ export function useSaveCrmView() {
   return useMutation({
     mutationFn: async (params: {
       name: string;
-      viewType: 'crm' | 'backoffice';
+      viewType: SavedViewType;
       filters: Record<string, unknown>;
       isDefault?: boolean;
     }) => {
