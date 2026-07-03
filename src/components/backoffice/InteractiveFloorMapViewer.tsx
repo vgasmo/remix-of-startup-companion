@@ -293,6 +293,14 @@ export function InteractiveFloorMapViewer({
                       allocation?.funnel_item?.organization_name ||
                       allocation?.funnel_item?.contact_name;
                     const isOccupied = !!allocation;
+                    const initials = occupantName
+                      ? occupantName
+                          .split(/\s+/)
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .map(w => w[0]?.toUpperCase() ?? '')
+                          .join('')
+                      : '';
 
                     return (
                       <Tooltip key={room.id}>
@@ -301,7 +309,6 @@ export function InteractiveFloorMapViewer({
                             className={cn(
                               'absolute transform -translate-x-1/2 -translate-y-full',
                               'transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary',
-                              editMode && 'cursor-move'
                             )}
                             style={{ left: `${room.pin_x}%`, top: `${room.pin_y}%` }}
                             onClick={(e) => {
@@ -311,20 +318,23 @@ export function InteractiveFloorMapViewer({
                               }
                             }}
                           >
-                            <div className={cn(
-                              'flex flex-col items-center',
-                            )}>
+                            <div className="flex flex-col items-center">
                               <MapPin
                                 className={cn(
                                   'h-5 w-5 drop-shadow-md',
-                                  isOccupied ? 'text-primary fill-primary/20' : 'text-accent-foreground fill-accent/20'
+                                  isOccupied ? 'text-info fill-info/20' : 'text-accent-foreground fill-accent/20'
                                 )}
                               />
                               <span className={cn(
-                                'text-[10px] font-medium px-1 py-px rounded bg-background/90 shadow-sm -mt-0.5',
-                                isOccupied ? 'text-primary' : 'text-accent-foreground'
+                                'text-[10px] font-medium px-1 py-px rounded bg-background/90 shadow-sm -mt-0.5 flex items-center gap-1',
+                                isOccupied ? 'text-info' : 'text-accent-foreground'
                               )}>
                                 {room.name}
+                                {initials && (
+                                  <span className="ml-0.5 rounded bg-info/15 text-info px-1 text-[9px] font-semibold">
+                                    {initials}
+                                  </span>
+                                )}
                               </span>
                             </div>
                           </button>
@@ -335,14 +345,14 @@ export function InteractiveFloorMapViewer({
                             {room.room_number && <div className="text-xs text-muted-foreground">#{room.room_number}</div>}
                             <div className="flex items-center gap-1 text-xs">
                               <Users className="h-3 w-3" />
-                              {room.capacity || '?'} people
+                              {room.capacity || '?'} {t('admin.backoffice.people', { defaultValue: 'pessoas' })}
                             </div>
                             {occupantName ? (
-                              <div className="text-xs bg-primary/10 text-primary px-2 py-1 rounded mt-1">
+                              <div className="text-xs bg-info/10 text-info px-2 py-1 rounded mt-1">
                                 {occupantName}
                                 {allocation?.start_date && (
                                   <span className="block text-muted-foreground">
-                                    Since {format(new Date(allocation.start_date), 'MMM yyyy')}
+                                    {t('admin.backoffice.sinceShort', { defaultValue: 'Desde' })} {format(new Date(allocation.start_date), 'MMM yyyy')}
                                   </span>
                                 )}
                               </div>
