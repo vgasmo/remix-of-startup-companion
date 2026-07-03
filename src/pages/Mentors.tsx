@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { sanitizeUrl } from '@/lib/sanitizeUrl';
 import { useQuery } from '@tanstack/react-query';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
@@ -322,6 +322,11 @@ export default function Mentors() {
   const [mentorSearch, setMentorSearch] = useState('');
   const [selectedMentorForBooking, setSelectedMentorForBooking] = useState<string | null>(null);
   const [selectedGalleryMentor, setSelectedGalleryMentor] = useState<MentorProfile | null>(null);
+
+  // Deep link from inbox: `/mentors?mentor=<id>` (optionally &connection=<id>)
+  // auto-opens the mentor's profile dialog so founders land on the exact
+  // reconnection request instead of scanning the gallery.
+  const deepLinkMentorId = searchParams.get('mentor');
   const { data: allMentors, isLoading: loadingAllMentors } = useQuery({
     queryKey: ['all-mentors-gallery'],
     queryFn: async (): Promise<MentorProfile[]> => {
@@ -345,6 +350,15 @@ export default function Mentors() {
     },
     enabled: isFounder,
   });
+
+  // Auto-open the mentor profile dialog when arriving via a deep link from an
+  // inbox notification (e.g. `mentor_connection_pending` → `?mentor=<id>`).
+  useEffect(() => {
+    if (!isFounder || !deepLinkMentorId || !allMentors?.length) return;
+    if (selectedGalleryMentor?.id === deepLinkMentorId) return;
+    const target = allMentors.find(m => m.id === deepLinkMentorId);
+    if (target) setSelectedGalleryMentor(target);
+  }, [isFounder, deepLinkMentorId, allMentors, selectedGalleryMentor?.id]);
 
   const updateConnectionStatus = useMutation({
     mutationFn: async ({ connectionId, status, workspaceId }: { connectionId: string; status: string; founderId: string; workspaceId: string | null }) => {
