@@ -418,7 +418,16 @@ export default function PublicContractIntake() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="organization_name">{t('publicContractIntake.organizationName')} *</Label>
-                <Input id="organization_name" value={formData.organization_name} onChange={e => setFormData(p => ({ ...p, organization_name: e.target.value }))} />
+                <Input
+                  id="organization_name"
+                  value={formData.organization_name}
+                  onChange={e => { setFormData(p => ({ ...p, organization_name: e.target.value })); clearFieldError('organization_name'); }}
+                  aria-invalid={!!fieldErrors.organization_name}
+                  aria-describedby={fieldErrors.organization_name ? 'organization_name-error' : undefined}
+                />
+                {fieldErrors.organization_name && (
+                  <p id="organization_name-error" className="text-xs text-destructive">{fieldErrors.organization_name}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="project_name">{t('publicContractIntake.projectNameIfDifferent')}</Label>
@@ -426,19 +435,55 @@ export default function PublicContractIntake() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="company_nif">{t('publicContractIntake.taxIdCompanyOrPersonal')} *</Label>
-                <Input id="company_nif" value={formData.company_nif} onChange={e => setFormData(p => ({ ...p, company_nif: e.target.value }))} />
+                <Input
+                  id="company_nif"
+                  value={formData.company_nif}
+                  onChange={e => { setFormData(p => ({ ...p, company_nif: e.target.value })); clearFieldError('company_nif'); }}
+                  aria-invalid={!!fieldErrors.company_nif}
+                  aria-describedby={fieldErrors.company_nif ? 'company_nif-error' : undefined}
+                />
+                {fieldErrors.company_nif && (
+                  <p id="company_nif-error" className="text-xs text-destructive">{fieldErrors.company_nif}</p>
+                )}
               </div>
               <div className="md:col-span-2 space-y-1.5">
                 <Label htmlFor="company_address">{t('publicContractIntake.address')} *</Label>
-                <Input id="company_address" value={formData.company_address} onChange={e => setFormData(p => ({ ...p, company_address: e.target.value }))} />
+                <Input
+                  id="company_address"
+                  value={formData.company_address}
+                  onChange={e => { setFormData(p => ({ ...p, company_address: e.target.value })); clearFieldError('company_address'); }}
+                  aria-invalid={!!fieldErrors.company_address}
+                  aria-describedby={fieldErrors.company_address ? 'company_address-error' : undefined}
+                />
+                {fieldErrors.company_address && (
+                  <p id="company_address-error" className="text-xs text-destructive">{fieldErrors.company_address}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="company_city">{t('publicContractIntake.city')} *</Label>
-                <Input id="company_city" value={formData.company_city} onChange={e => setFormData(p => ({ ...p, company_city: e.target.value }))} />
+                <Input
+                  id="company_city"
+                  value={formData.company_city}
+                  onChange={e => { setFormData(p => ({ ...p, company_city: e.target.value })); clearFieldError('company_city'); }}
+                  aria-invalid={!!fieldErrors.company_city}
+                  aria-describedby={fieldErrors.company_city ? 'company_city-error' : undefined}
+                />
+                {fieldErrors.company_city && (
+                  <p id="company_city-error" className="text-xs text-destructive">{fieldErrors.company_city}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="company_postal_code">{t('publicContractIntake.postalCode')} *</Label>
-                <Input id="company_postal_code" value={formData.company_postal_code} onChange={e => setFormData(p => ({ ...p, company_postal_code: e.target.value }))} />
+                <Input
+                  id="company_postal_code"
+                  value={formData.company_postal_code}
+                  onChange={e => { setFormData(p => ({ ...p, company_postal_code: e.target.value })); clearFieldError('company_postal_code'); }}
+                  aria-invalid={!!fieldErrors.company_postal_code}
+                  aria-describedby={fieldErrors.company_postal_code ? 'company_postal_code-error' : undefined}
+                />
+                {fieldErrors.company_postal_code && (
+                  <p id="company_postal_code-error" className="text-xs text-destructive">{fieldErrors.company_postal_code}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="iban">IBAN</Label>
