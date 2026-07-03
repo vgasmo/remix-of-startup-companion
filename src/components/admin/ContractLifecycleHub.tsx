@@ -297,7 +297,11 @@ export function ContractLifecycleHub() {
         if (item) setConvertDialogItem(item);
         break;
       }
-      case 'renew':
+      case 'renew': {
+        const contract = contracts?.find(c => c.id === alert.entityId);
+        if (contract) setRenewContract(contract);
+        break;
+      }
       case 'review': {
         const contract = contracts?.find(c => c.id === alert.entityId);
         if (contract?.workspace_id) {
@@ -305,6 +309,7 @@ export function ContractLifecycleHub() {
         }
         break;
       }
+
       case 'archive':
         notify.info(t('lifecycle.archiveNotImplemented'));
         break;
