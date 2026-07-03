@@ -220,6 +220,137 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
               </div>
             )}
 
+            {/* Contract block — fed by the shared occupancy hook. */}
+            {isOccupied && contractSummary && (
+              <>
+                <Separator />
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-info" />
+                    {t('admin.backoffice.contract', { defaultValue: 'Contrato' })}
+                  </h3>
+                  <div className="rounded-lg border border-info/20 bg-info/5 p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      {contractSummary.typeName && (
+                        <Badge variant="outline" className="text-xs">{contractSummary.typeName}</Badge>
+                      )}
+                      <Badge
+                        className={cn(
+                          'text-[10px] border-0',
+                          contractSummary.status === 'active' && 'bg-success/10 text-success',
+                          contractSummary.status === 'pending_signature' && 'bg-warning/10 text-warning',
+                        )}
+                      >
+                        {t(`spaces.status${contractSummary.status === 'active' ? 'Active' : 'PendingSignature'}`, {
+                          defaultValue: contractSummary.status === 'active' ? 'Ativo' : 'Aguarda Assinatura',
+                        })}
+                      </Badge>
+                    </div>
+
+                    {/* Fee — struck-through base when discounted. */}
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <Euro className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      {contractSummary.effectiveMonthlyFee != null ? (
+                        <>
+                          <span className="text-lg font-semibold tabular-nums">
+                            {fmtEUR.format(contractSummary.effectiveMonthlyFee)}
+                          </span>
+                          {contractSummary.effectiveDiscount.effectivePct > 0 && contractSummary.monthlyFee != null && (
+                            <>
+                              <span className="text-xs text-muted-foreground line-through tabular-nums">
+                                {fmtEUR.format(contractSummary.monthlyFee)}
+                              </span>
+                              <Badge className="text-[10px] border-0 bg-warning/10 text-warning gap-0.5">
+                                <Percent className="h-2.5 w-2.5" />
+                                −{contractSummary.effectiveDiscount.effectivePct}%
+                                {contractSummary.effectiveDiscount.reason && (
+                                  <span className="ml-1 opacity-80">· {contractSummary.effectiveDiscount.reason}</span>
+                                )}
+                              </Badge>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-sm text-muted-foreground italic">—</span>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <div className="text-muted-foreground">
+                          {t('admin.backoffice.contractSince', { defaultValue: 'Contrato desde' })}
+                        </div>
+                        <div className="font-medium">
+                          {format(new Date(contractSummary.contractStart), 'dd MMM yyyy')}
+                        </div>
+                      </div>
+                      {contractSummary.contractEnd && (
+                        <div>
+                          <div className="text-muted-foreground">{t('common.endDate', { defaultValue: 'Fim' })}</div>
+                          <div className="font-medium">{format(new Date(contractSummary.contractEnd), 'dd MMM yyyy')}</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Anniversary callout */}
+                    {contractSummary.anniversary && contractSummary.anniversaryDaysUntil != null && (
+                      <div
+                        className={cn(
+                          'rounded-md p-2.5 text-xs flex items-start gap-2',
+                          contractSummary.anniversaryDaysUntil <= LIFECYCLE_THRESHOLDS.anniversaryWindowDays
+                            ? 'bg-accent/50 border border-accent'
+                            : 'bg-muted/40',
+                        )}
+                      >
+                        <CalendarClock className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <div>
+                            {t('admin.backoffice.anniversaryLine', {
+                              years: contractSummary.anniversaryYearsCompleted + 1,
+                              date: format(contractSummary.anniversary, 'dd MMM yyyy'),
+                              days: contractSummary.anniversaryDaysUntil,
+                              defaultValue: 'Faz {{years}} ano(s) a {{date}} ({{days}} dias)',
+                            })}
+                          </div>
+                          {contractSummary.anniversaryDaysUntil <= LIFECYCLE_THRESHOLDS.anniversaryWindowDays && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() =>
+                                navigate(
+                                  `/admin?tab=backoffice&subtab=contracts&contract=${contractSummary.id}`,
+                                )
+                              }
+                            >
+                              <CalendarClock className="h-3 w-3 mr-1" />
+                              {t('admin.backoffice.reviewTerms', { defaultValue: 'Rever condições' })}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() =>
+                          navigate(
+                            `/admin?tab=backoffice&subtab=contracts&contract=${contractSummary.id}`,
+                          )
+                        }
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        {t('admin.backoffice.openContract', { defaultValue: 'Abrir contrato' })}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
             <Separator />
 
             {/* Quick Actions */}
