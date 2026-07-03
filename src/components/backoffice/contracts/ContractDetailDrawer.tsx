@@ -704,6 +704,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
         </div>
       </SheetContent>
       <RenewContractDialog contract={contract} open={renewOpen} onOpenChange={setRenewOpen} />
+      <TerminateContractDialog contract={contract} open={terminateOpen} onOpenChange={setTerminateOpen} />
     </Sheet>
 
   );
