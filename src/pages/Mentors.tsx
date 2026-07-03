@@ -34,6 +34,7 @@ import { FounderMentorRequestPanel } from '@/components/mentors/FounderMentorReq
 import { PendingMentorRequestsPanel } from '@/components/mentors/PendingMentorRequestsPanel';
 import { AdminExternalMentorsManager } from '@/components/admin/AdminExternalMentorsManager';
 import { MentorProfileDialog } from '@/components/mentors/MentorProfileDialog';
+import { CreateSessionDialog } from '@/components/workspace/sessions/CreateSessionDialog';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
