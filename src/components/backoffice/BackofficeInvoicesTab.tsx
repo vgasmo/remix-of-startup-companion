@@ -134,7 +134,7 @@ export function BackofficeInvoicesTab() {
           <SelectContent>
             <SelectItem value="all">{t('admin.backoffice.allStatuses')}</SelectItem>
             {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-              <SelectItem key={key} value={key}>{config.label}</SelectItem>
+              <SelectItem key={key} value={key}>{t(config.labelKey)}</SelectItem>
             ))}
           </SelectContent>
         </Select>
