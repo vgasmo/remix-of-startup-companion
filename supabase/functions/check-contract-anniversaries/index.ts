@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
           status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
-      const { data: roles } = await supabase.from('user_roles').select('role').eq('user_id', user.id).in('role', ['admin', 'consultor'])
+      const { data: roles } = await supabase.from('user_roles').select('role').eq('user_id', user.id).in('role', ['admin', 'consultor', 'backoffice'])
       if (!roles?.length) {
         return new Response(JSON.stringify({ error: 'Staff only' }), {
           status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
