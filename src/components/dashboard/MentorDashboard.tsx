@@ -615,7 +615,8 @@ const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, is
             <MentorImpactPanel workspaces={workspaces} />
           </WidgetErrorBoundary>
         </div>
-      </div>
+      </FullViewOnly>
+
 
       {/* Prep Sheet Dialog */}
       {prepSheetWorkspaceId && (
