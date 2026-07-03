@@ -461,6 +461,8 @@ function BackofficeDashboardInner() {
           </Card>
         </div>
       </div>
+      </FullViewOnly>
+
 
       {/* ═══════════════════ CONTRACTS HEALTH ═══════════════════ */}
       <div>
