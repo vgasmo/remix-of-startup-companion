@@ -44,6 +44,7 @@ export function OverviewTab({
   onSetNextAction,
   onClearNextAction,
   isClearingNextAction,
+  consultors,
 }: OverviewTabProps) {
   const { t } = useTranslation();
   const stageColor = STAGE_COLORS[item.stage];
