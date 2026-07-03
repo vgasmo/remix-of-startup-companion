@@ -827,10 +827,11 @@ export default function Mentors() {
                                 <div className="flex gap-2 mt-3">
                                   <Button
                                     size="sm"
-                                    onClick={() => updateConnectionStatus.mutate({ 
-                                      connectionId: conn.id, 
+                                    onClick={() => updateConnectionStatus.mutate({
+                                      connectionId: conn.id,
                                       status: 'accepted',
-                                      founderId: conn.founder_id 
+                                      founderId: conn.founder_id,
+                                      workspaceId: conn.workspace_id,
                                     })}
                                     disabled={updateConnectionStatus.isPending} loading={updateConnectionStatus.isPending}
                                   >
@@ -840,10 +841,11 @@ export default function Mentors() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => updateConnectionStatus.mutate({ 
-                                      connectionId: conn.id, 
+                                    onClick={() => updateConnectionStatus.mutate({
+                                      connectionId: conn.id,
                                       status: 'declined',
-                                      founderId: conn.founder_id 
+                                      founderId: conn.founder_id,
+                                      workspaceId: conn.workspace_id,
                                     })}
                                     disabled={updateConnectionStatus.isPending} loading={updateConnectionStatus.isPending}
                                   >
