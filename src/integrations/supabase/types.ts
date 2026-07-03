@@ -9165,6 +9165,14 @@ export type Database = {
           p75: number
         }[]
       }
+      get_mentor_busy_slots: {
+        Args: { p_from: string; p_mentor_id: string; p_to: string }
+        Returns: {
+          busy_date: string
+          end_time: string
+          start_time: string
+        }[]
+      }
       get_my_calendar_token_status: {
         Args: never
         Returns: {

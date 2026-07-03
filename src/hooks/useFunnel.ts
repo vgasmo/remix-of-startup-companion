@@ -250,6 +250,11 @@ export function useConvertToStartup() {
         .single();
       if (itemError) throw itemError;
 
+      // C3: block double-convert — if this lead already has a workspace, refuse cleanly.
+      if (item.linked_workspace_id) {
+        throw new Error(`Este lead já foi convertido num workspace. Abra o workspace existente em vez de criar um novo.`);
+      }
+
       // Build prefill payload from lead metadata so mentors immediately see context
       const meta = (item.metadata_json as Record<string, any> | null) || {};
       const projectName = (meta.project_name as string) || item.organization_name || item.contact_name || 'New Startup';

@@ -43,16 +43,29 @@ export function QuickNoteDialog({ open, onOpenChange, workspaceId, startupName }
       if (error) throw error;
 
       // Auto-log mentoring time (invisible to mentor UI, feeds Impact page).
-      // Best-effort: swallow failures so note save is not blocked.
+      // C2: dedupe per (mentor, workspace, day) — multiple notes about one session
+      // must not compound to 1.5h/3.0h in the Impact metrics.
       try {
-        await supabase.from('time_entries').insert({
-          workspace_id: workspaceId,
-          user_id: user.id,
-          date: new Date().toISOString().split('T')[0],
-          hours: 0.5,
-          category: 'mentoring',
-          description: 'Sessão de mentoria (auto)',
-        });
+        const today = new Date().toISOString().split('T')[0];
+        const { data: existing } = await supabase
+          .from('time_entries')
+          .select('id')
+          .eq('workspace_id', workspaceId)
+          .eq('user_id', user.id)
+          .eq('date', today)
+          .eq('category', 'mentoring')
+          .limit(1)
+          .maybeSingle();
+        if (!existing) {
+          await supabase.from('time_entries').insert({
+            workspace_id: workspaceId,
+            user_id: user.id,
+            date: today,
+            hours: 0.5,
+            category: 'mentoring',
+            description: 'Sessão de mentoria (auto)',
+          });
+        }
       } catch { /* ignore */ }
 
       void track('mentor_session_logged', { workspaceId });

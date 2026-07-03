@@ -57,6 +57,7 @@ interface MentorConnection {
    * prefer `workspace_id` and fall back to `founder_id` only when missing.
    */
   founder_id: string;
+  workspace_id: string | null;
   mentor_id: string;
   status: string;
   message: string | null;
@@ -163,6 +164,7 @@ function useConnections(userId: string | undefined, role: 'founder' | 'mentor') 
         return data.map(conn => ({
           id: conn.id,
           founder_id: conn.founder_id,
+          workspace_id: conn.workspace_id,
           mentor_id: conn.mentor_id,
           status: conn.status,
           message: conn.message,
@@ -209,6 +211,7 @@ function useConnections(userId: string | undefined, role: 'founder' | 'mentor') 
           return {
             id: conn.id,
             founder_id: conn.founder_id,
+            workspace_id: conn.workspace_id,
             mentor_id: conn.mentor_id,
             status: conn.status,
             message: conn.message,
@@ -344,7 +347,7 @@ export default function Mentors() {
   });
 
   const updateConnectionStatus = useMutation({
-    mutationFn: async ({ connectionId, status, founderId }: { connectionId: string; status: string; founderId: string }) => {
+    mutationFn: async ({ connectionId, status, workspaceId }: { connectionId: string; status: string; founderId: string; workspaceId: string | null }) => {
       const { error } = await supabase
         .from('mentor_connections')
         .update({
@@ -356,33 +359,24 @@ export default function Mentors() {
       if (error) throw error;
 
       if (status === 'accepted' && user) {
-        const { data: founderWorkspaces } = await supabase
-          .from('workspace_users')
-          .select('workspace_id')
-          .eq('user_id', founderId)
-          .eq('role', 'founder')
-          .eq('active', true);
-
-        if (founderWorkspaces && founderWorkspaces.length > 0) {
-          const workspaceInserts = founderWorkspaces.map(wu => ({
-            workspace_id: wu.workspace_id,
-            user_id: user.id,
-            role: 'mentor_externo' as const,
-            active: true,
-          }));
-
-          await supabase
-            .from('workspace_users')
-            .upsert(workspaceInserts, {
-              onConflict: 'workspace_id,user_id',
-              ignoreDuplicates: true,
-            });
+        // C2: scope mentor membership to the SINGLE workspace the connection is bound to.
+        // Legacy rows without workspace_id are refused — force an explicit error rather than silent no-op.
+        if (!workspaceId) {
+          throw new Error(t('mentorsPage.legacyConnectionRefused', { defaultValue: 'Esta ligação legada não está associada a um workspace específico. Peça ao staff para reatribuir.' }));
         }
+        const { error: upsertError } = await supabase
+          .from('workspace_users')
+          .upsert(
+            [{ workspace_id: workspaceId, user_id: user.id, role: 'mentor_externo' as const, active: true }],
+            { onConflict: 'workspace_id,user_id', ignoreDuplicates: true }
+          );
+        if (upsertError) throw upsertError;
       }
     },
     onSuccess: (_, { status }) => {
       queryClient.invalidateQueries({ queryKey: ['mentor-connections'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      // Founder notification is handled by DB trigger (notify_mentor_connection_change)
       notify.success(`${t('mentorsPage.connection')} ${status === 'accepted' ? t('mentorsPage.accepted') : t('mentorsPage.declined')}`);
     },
     onError: (error: any) => {
@@ -743,6 +737,12 @@ export default function Mentors() {
             open={!!selectedGalleryMentor}
             onOpenChange={(open) => !open && setSelectedGalleryMentor(null)}
             isAssigned={selectedGalleryMentor ? uniqueMentors.some(um => um.user_id === selectedGalleryMentor.id) : false}
+            workspaceId={founderWorkspaceId}
+            existingStatus={
+              selectedGalleryMentor
+                ? ((connections?.find(c => c.mentor_id === selectedGalleryMentor.id)?.status as 'pending' | 'accepted' | 'declined' | undefined) ?? null)
+                : null
+            }
           />
 
           <FounderMentorRequestPanel />
@@ -833,10 +833,11 @@ export default function Mentors() {
                                 <div className="flex gap-2 mt-3">
                                   <Button
                                     size="sm"
-                                    onClick={() => updateConnectionStatus.mutate({ 
-                                      connectionId: conn.id, 
+                                    onClick={() => updateConnectionStatus.mutate({
+                                      connectionId: conn.id,
                                       status: 'accepted',
-                                      founderId: conn.founder_id 
+                                      founderId: conn.founder_id,
+                                      workspaceId: conn.workspace_id,
                                     })}
                                     disabled={updateConnectionStatus.isPending} loading={updateConnectionStatus.isPending}
                                   >
@@ -846,10 +847,11 @@ export default function Mentors() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => updateConnectionStatus.mutate({ 
-                                      connectionId: conn.id, 
+                                    onClick={() => updateConnectionStatus.mutate({
+                                      connectionId: conn.id,
                                       status: 'declined',
-                                      founderId: conn.founder_id 
+                                      founderId: conn.founder_id,
+                                      workspaceId: conn.workspace_id,
                                     })}
                                     disabled={updateConnectionStatus.isPending} loading={updateConnectionStatus.isPending}
                                   >
