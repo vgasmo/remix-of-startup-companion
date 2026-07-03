@@ -34,8 +34,14 @@ interface SessionsTabProps {
 
 export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
   const { t } = useTranslation();
-  const { isAdmin, isConsultor } = useAuth();
+  const { isAdmin, isConsultor, isFounder } = useAuth();
   const canUseFacilitator = isAdmin || isConsultor;
+  const isFounderOnly = isFounder && !isAdmin && !isConsultor;
+  const navigate = useNavigate();
+
+  const goToMentorBooking = () => {
+    navigate('/mentors');
+  };
 
   const [search, setSearch] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
