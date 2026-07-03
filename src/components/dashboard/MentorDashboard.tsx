@@ -45,6 +45,7 @@ import { NextBestActionMentor } from '@/components/dashboard/NextBestActionPanel
 import { MentorPortfolioPulse } from '@/components/mentor/MentorPortfolioPulse';
 import { MomentumBadge } from '@/components/shared/MomentumBadge';
 import { computeMomentum } from '@/hooks/useWorkspaceMomentum';
+import { FirstStepsCard } from '@/components/dashboard/FirstStepsCard';
 
 interface MentorDashboardProps {
   workspaces: WorkspaceWithDetails[];
