@@ -9057,6 +9057,13 @@
     "whyAlternativesFail": "Porque falham essas alternativas?"
   },
   "waitingList": {
+    "fulfill": "Atribuir",
+    "selectStartup": "Selecionar startup...",
+    "selectLead": "Selecionar lead...",
+    "numberOfPeople": "Número de pessoas",
+    "anyBuilding": "Qualquer edifício...",
+    "selectAvailableRoom": "Selecionar sala disponível...",
+
     "allRequests": "Todos os Pedidos",
     "any": "Qualquer",
     "availableRooms": "Salas Disponíveis",
