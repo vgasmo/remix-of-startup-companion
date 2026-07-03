@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { sanitizeUrl } from '@/lib/sanitizeUrl';
 import { useQuery } from '@tanstack/react-query';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
@@ -322,6 +322,11 @@ export default function Mentors() {
   const [mentorSearch, setMentorSearch] = useState('');
   const [selectedMentorForBooking, setSelectedMentorForBooking] = useState<string | null>(null);
   const [selectedGalleryMentor, setSelectedGalleryMentor] = useState<MentorProfile | null>(null);
+  // Post-action scroll targets: after the mentor accepts a pending request we
+  // jump to the "connected founders" section; after declining we scroll back
+  // to the top of the pending list so the shrunk queue is in view.
+  const acceptedSectionRef = useRef<HTMLDivElement | null>(null);
+  const pendingSectionRef = useRef<HTMLDivElement | null>(null);
 
   // Deep link from inbox: `/mentors?mentor=<id>` (optionally &connection=<id>)
   // auto-opens the mentor's profile dialog so founders land on the exact
@@ -396,6 +401,13 @@ export default function Mentors() {
       // reflects the change without waiting for realtime.
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       notify.success(`${t('mentorsPage.connection')} ${status === 'accepted' ? t('mentorsPage.accepted') : t('mentorsPage.declined')}`);
+      // Move focus to the section the mentor most likely wants to see next:
+      // accepted → the connected founders list; declined → the remaining
+      // pending requests. Wait a frame so the re-render finishes first.
+      requestAnimationFrame(() => {
+        const target = status === 'accepted' ? acceptedSectionRef.current : pendingSectionRef.current;
+        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     },
     onError: (error: any) => {
       notify.error(error.message || t('mentorsPage.failedToUpdate'));
@@ -820,7 +832,7 @@ export default function Mentors() {
                 ) : (
                   <div className="space-y-6">
                     {pendingConnections.length > 0 && (
-                      <div>
+                      <div ref={pendingSectionRef} style={{ scrollMarginTop: 96 }}>
                         <h4 className="text-sm font-medium mb-3 text-muted-foreground">
                           {t('mentorsPage.pendingRequests')} ({pendingConnections.length})
                         </h4>
@@ -885,7 +897,7 @@ export default function Mentors() {
                     )}
 
                     {acceptedConnections.length > 0 && (
-                      <div>
+                      <div ref={acceptedSectionRef} style={{ scrollMarginTop: 96 }}>
                         <h4 className="text-sm font-medium mb-3 text-muted-foreground">
                           {t('mentorsPage.connectedFounders')} ({acceptedConnections.length})
                         </h4>
