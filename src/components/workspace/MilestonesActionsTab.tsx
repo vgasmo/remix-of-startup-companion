@@ -526,6 +526,46 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
         getItemId={(item) => item.id}
       />
 
+      {/* Inline Quick Add — create action with optional milestone */}
+      {canWrite && (
+        <div className="flex flex-wrap items-center gap-2 px-3 py-2 bg-card border border-border/50 rounded-lg">
+          <Plus className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <Input
+            value={quickAddTitle}
+            onChange={e => setQuickAddTitle(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && quickAddTitle.trim() && !createAction.isPending) {
+                e.preventDefault();
+                handleQuickAddAction();
+              }
+            }}
+            placeholder={t('actions.quickAddPlaceholder', { defaultValue: 'Nova ação — escreva o título e prima Enter' })}
+            className="h-8 text-sm flex-1 min-w-[220px] border-0 bg-transparent focus-visible:ring-1"
+          />
+          <Select value={quickAddMilestoneId || '__none__'} onValueChange={v => setQuickAddMilestoneId(v === '__none__' ? '' : v)}>
+            <SelectTrigger className="h-8 text-xs w-[180px]">
+              <SelectValue placeholder={t('actions.selectMilestone')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">{t('actions.noMilestone', { defaultValue: 'Sem marco' })}</SelectItem>
+              {milestones?.map(m => (
+                <SelectItem key={m.id} value={m.id}>{m.title}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            size="sm"
+            className="h-8 text-xs"
+            onClick={handleQuickAddAction}
+            disabled={createAction.isPending || !quickAddTitle.trim()}
+            loading={createAction.isPending}
+          >
+            {t('common.add', { defaultValue: 'Adicionar' })}
+          </Button>
+        </div>
+      )}
+
+
       {/* Milestones with nested actions */}
       {(!milestones || milestones.length === 0) ? (
         <EmptyState
