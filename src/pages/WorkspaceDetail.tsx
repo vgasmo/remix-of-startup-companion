@@ -345,10 +345,11 @@ export default function WorkspaceDetail() {
 
       {/* ── WAI-ARIA Tablist ── */}
       <div className="space-y-6">
-        <div 
+        <div
+          ref={tablistRef}
           role="tablist" 
           aria-label={t('workspace.tabs', { defaultValue: 'Workspace sections' })}
-          className="bg-muted/30 h-auto gap-0.5 p-1 flex items-center rounded-md overflow-x-auto scrollbar-thin"
+          className="bg-muted/30 h-auto gap-0.5 p-1 flex items-center rounded-md overflow-x-auto scrollbar-thin scroll-smooth"
         >
           {/* Primary tabs */}
           {primaryTabs.map(tab => (
