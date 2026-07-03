@@ -54,7 +54,10 @@ export function useNotifications() {
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          // Listen for INSERT (new notifications) AND UPDATE (e.g. DB triggers
+          // that mark `mentor_connection_pending` as read when the mentor
+          // accepts/declines) so the inbox unread count settles immediately.
+          event: '*',
           schema: 'public',
           table: 'notifications',
           filter: `user_id=eq.${userId}`,
