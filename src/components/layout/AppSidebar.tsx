@@ -176,6 +176,7 @@ export function AppSidebar() {
     { name: t('nav.admin.usersPermissions', { defaultValue: 'Utilizadores & Permissões' }), href: '/admin?tab=users', icon: Shield },
     { name: t('consultorTools.title', { defaultValue: 'Ferramentas de Consultor' }), href: '/consultor-tools', icon: Briefcase },
     { name: t('nav.admin.quickGuide', { defaultValue: 'Guia Rápido' }), href: '/guide', icon: BookOpenCheck },
+    { name: t('nav.founder.glossaryFaq', { defaultValue: 'Glossário & FAQ' }), href: '/help', icon: HelpCircle },
     { name: t('systemSettings.navLabel', { defaultValue: 'Definições do Sistema' }), href: '/system-settings', icon: Cog },
     { name: t('nav.admin.diagnostics', { defaultValue: 'Diagnósticos' }), href: '/admin/diagnostics', icon: Stethoscope },
   ];
