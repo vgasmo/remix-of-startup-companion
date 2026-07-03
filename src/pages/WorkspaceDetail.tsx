@@ -315,6 +315,10 @@ export default function WorkspaceDetail() {
           {primaryTabs.map(tab => (
             <button
               key={tab.id}
+              ref={(el) => {
+                if (el) tabButtonRefs.current.set(tab.id, el);
+                else tabButtonRefs.current.delete(tab.id);
+              }}
               role="tab"
               id={`tab-${tab.id}`}
               aria-selected={activeTab === tab.id}
