@@ -19,6 +19,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useContracts, useIncubationTypes, useBuildings, useCreateContract } from '@/hooks/useBackoffice';
+import { RenewContractDialog } from '@/components/backoffice/contracts/RenewContractDialog';
+
 import { useFunnelItems, useConvertToStartup } from '@/hooks/useFunnel';
 import { usePrograms } from '@/hooks/useWorkspaces';
 import { useContractIntakes } from '@/hooks/useContractIntakes';
