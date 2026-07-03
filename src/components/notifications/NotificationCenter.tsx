@@ -58,6 +58,9 @@ const notificationTypeIcons: Record<string, string> = {
   template_submitted: '📝',
   document_uploaded: '📎',
   message_alert: '💬',
+  template_request: '📋',
+  feedback_request: '🗣️',
+
 
 };
 
@@ -94,6 +97,9 @@ const notificationTypeColors: Record<string, string> = {
   template_submitted: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
   document_uploaded: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
   message_alert: 'bg-primary/10 text-primary',
+  template_request: 'bg-primary/10 text-primary',
+  feedback_request: 'bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]',
+
 
 };
 

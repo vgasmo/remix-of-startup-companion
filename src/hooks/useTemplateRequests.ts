@@ -67,30 +67,37 @@ export function useMyTemplateRequests() {
 
 async function notifyStaffOfNewRequest(req: TemplateRequest) {
   try {
-    // Find recipients: workspace assigned consultant + all admins
     const recipients = new Set<string>();
+    let startupName = 'Uma startup';
     if (req.workspace_id) {
       const { data: ws } = await supabase
         .from('workspaces')
-        .select('assigned_consultor_id')
+        .select('assigned_consultor_id, startup:startups(name)')
         .eq('id', req.workspace_id)
         .maybeSingle();
-      if (ws?.assigned_consultor_id) recipients.add(ws.assigned_consultor_id);
-    }
-    const { data: admins } = await supabase
-      .from('user_roles')
-      .select('user_id')
-      .eq('role', 'admin');
-    admins?.forEach(a => a.user_id && recipients.add(a.user_id as string));
+      if (ws?.assigned_consultor_id) recipients.add(ws.assigned_consultor_id as string);
+      startupName = (ws as any)?.startup?.name || startupName;
 
+      // Include other active consultors/admins on the workspace so nothing is missed.
+      const { data: peers } = await supabase
+        .from('workspace_users')
+        .select('user_id, role')
+        .eq('workspace_id', req.workspace_id)
+        .eq('active', true)
+        .in('role', ['consultor', 'admin', 'backoffice']);
+      peers?.forEach((p) => p.user_id && recipients.add(p.user_id as string));
+    }
     if (recipients.size === 0) return;
 
-    const rows = [...recipients].map(uid => ({
+    const link = req.workspace_id
+      ? `/workspace/${req.workspace_id}?tab=documents&sub=tools`
+      : '/admin?tab=programs';
+    const rows = [...recipients].map((uid) => ({
       user_id: uid,
-      type: 'system',
-      title: 'Novo pedido de template',
+      type: 'template_request',
+      title: `Novo pedido de template — ${startupName}`,
       message: req.title,
-      link: '/admin?tab=programs',
+      link,
       read: false,
       entity_type: 'template_request',
       entity_id: req.id,
@@ -111,10 +118,10 @@ async function notifyRequesterOfResolution(req: TemplateRequest) {
       : 'Pedido de template em curso';
     await supabase.from('notifications').insert({
       user_id: req.requested_by,
-      type: 'system',
+      type: 'template_request',
       title,
       message: req.title,
-      link: req.workspace_id ? `/workspace/${req.workspace_id}?tab=documents` : null,
+      link: req.workspace_id ? `/workspace/${req.workspace_id}?tab=documents&sub=tools` : null,
       read: false,
       entity_type: 'template_request',
       entity_id: req.id,
@@ -124,6 +131,7 @@ async function notifyRequesterOfResolution(req: TemplateRequest) {
     // best-effort
   }
 }
+
 
 export function useCreateTemplateRequest() {
   const qc = useQueryClient();
