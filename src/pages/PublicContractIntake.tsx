@@ -377,44 +377,44 @@ export default function PublicContractIntake() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>{t('publicContractIntake.organizationName')} *</Label>
-                <Input value={formData.organization_name} onChange={e => setFormData(p => ({ ...p, organization_name: e.target.value }))} />
+                <Label htmlFor="organization_name">{t('publicContractIntake.organizationName')} *</Label>
+                <Input id="organization_name" value={formData.organization_name} onChange={e => setFormData(p => ({ ...p, organization_name: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label>{t('publicContractIntake.projectNameIfDifferent')}</Label>
-                <Input value={formData.project_name} onChange={e => setFormData(p => ({ ...p, project_name: e.target.value }))} placeholder={t('publicContractIntake.commercialProjectName')} />
+                <Label htmlFor="project_name">{t('publicContractIntake.projectNameIfDifferent')}</Label>
+                <Input id="project_name" value={formData.project_name} onChange={e => setFormData(p => ({ ...p, project_name: e.target.value }))} placeholder={t('publicContractIntake.commercialProjectName')} />
               </div>
               <div className="space-y-1.5">
-                <Label>{t('publicContractIntake.taxIdCompanyOrPersonal')} *</Label>
-                <Input value={formData.company_nif} onChange={e => setFormData(p => ({ ...p, company_nif: e.target.value }))} />
+                <Label htmlFor="company_nif">{t('publicContractIntake.taxIdCompanyOrPersonal')} *</Label>
+                <Input id="company_nif" value={formData.company_nif} onChange={e => setFormData(p => ({ ...p, company_nif: e.target.value }))} />
               </div>
               <div className="md:col-span-2 space-y-1.5">
-                <Label>{t('publicContractIntake.address')} *</Label>
-                <Input value={formData.company_address} onChange={e => setFormData(p => ({ ...p, company_address: e.target.value }))} />
+                <Label htmlFor="company_address">{t('publicContractIntake.address')} *</Label>
+                <Input id="company_address" value={formData.company_address} onChange={e => setFormData(p => ({ ...p, company_address: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label>{t('publicContractIntake.city')} *</Label>
-                <Input value={formData.company_city} onChange={e => setFormData(p => ({ ...p, company_city: e.target.value }))} />
+                <Label htmlFor="company_city">{t('publicContractIntake.city')} *</Label>
+                <Input id="company_city" value={formData.company_city} onChange={e => setFormData(p => ({ ...p, company_city: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label>{t('publicContractIntake.postalCode')} *</Label>
-                <Input value={formData.company_postal_code} onChange={e => setFormData(p => ({ ...p, company_postal_code: e.target.value }))} />
+                <Label htmlFor="company_postal_code">{t('publicContractIntake.postalCode')} *</Label>
+                <Input id="company_postal_code" value={formData.company_postal_code} onChange={e => setFormData(p => ({ ...p, company_postal_code: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label>IBAN</Label>
-                <Input value={formData.iban} onChange={e => setFormData(p => ({ ...p, iban: e.target.value }))} />
+                <Label htmlFor="iban">IBAN</Label>
+                <Input id="iban" value={formData.iban} onChange={e => setFormData(p => ({ ...p, iban: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label>Website</Label>
-                <Input value={formData.website} onChange={e => setFormData(p => ({ ...p, website: e.target.value }))} />
+                <Label htmlFor="website">Website</Label>
+                <Input id="website" value={formData.website} onChange={e => setFormData(p => ({ ...p, website: e.target.value }))} />
               </div>
             </div>
 
             <Separator />
 
             <div className="space-y-1.5">
-              <Label>{t('publicContractIntake.permanentCertificateCode')}</Label>
-              <Input value={formData.certidao_permanente_code} onChange={e => setFormData(p => ({ ...p, certidao_permanente_code: e.target.value }))} placeholder={t('publicContractIntake.onlineAccessCode')} />
+              <Label htmlFor="certidao_permanente_code">{t('publicContractIntake.permanentCertificateCode')}</Label>
+              <Input id="certidao_permanente_code" value={formData.certidao_permanente_code} onChange={e => setFormData(p => ({ ...p, certidao_permanente_code: e.target.value }))} placeholder={t('publicContractIntake.onlineAccessCode')} />
             </div>
 
             <Separator />
@@ -422,20 +422,20 @@ export default function PublicContractIntake() {
             <p className="text-sm font-semibold">{t('publicContractIntake.legalRepresentativeManagerSPromoter')}</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>{t('publicContractIntake.fullName')} *</Label>
-                <Input value={formData.legal_representative_name} onChange={e => setFormData(p => ({ ...p, legal_representative_name: e.target.value }))} />
+                <Label htmlFor="legal_representative_name">{t('publicContractIntake.fullName')} *</Label>
+                <Input id="legal_representative_name" value={formData.legal_representative_name} onChange={e => setFormData(p => ({ ...p, legal_representative_name: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label>Email *</Label>
-                <Input type="email" value={formData.legal_representative_email} onChange={e => setFormData(p => ({ ...p, legal_representative_email: e.target.value }))} />
+                <Label htmlFor="legal_representative_email">Email *</Label>
+                <Input id="legal_representative_email" type="email" value={formData.legal_representative_email} onChange={e => setFormData(p => ({ ...p, legal_representative_email: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label>{t('publicContractIntake.phone')} *</Label>
-                <Input type="tel" value={formData.legal_representative_phone} onChange={e => setFormData(p => ({ ...p, legal_representative_phone: e.target.value }))} placeholder="+351 900 000 000" />
+                <Label htmlFor="legal_representative_phone">{t('publicContractIntake.phone')} *</Label>
+                <Input id="legal_representative_phone" type="tel" value={formData.legal_representative_phone} onChange={e => setFormData(p => ({ ...p, legal_representative_phone: e.target.value }))} placeholder="+351 900 000 000" />
               </div>
               <div className="space-y-1.5">
-                <Label>{t('publicContractIntake.billingEmail')}</Label>
-                <Input type="email" value={formData.billing_email} onChange={e => setFormData(p => ({ ...p, billing_email: e.target.value }))} />
+                <Label htmlFor="billing_email">{t('publicContractIntake.billingEmail')}</Label>
+                <Input id="billing_email" type="email" value={formData.billing_email} onChange={e => setFormData(p => ({ ...p, billing_email: e.target.value }))} />
               </div>
             </div>
 

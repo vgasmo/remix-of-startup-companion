@@ -6736,6 +6736,7 @@
     "booking": "Booking...",
     "bookingConfirmed": "Booking Confirmed!",
     "bookingConfirmedDesc": "Your first contact session has been scheduled. You'll receive a calendar invite shortly.",
+    "bookingConfirmedDescNoInvite": "Your session has been recorded. The team will contact you by email with meeting details.",
     "change": "Change",
     "changeProgram": "change",
     "confirmBooking": "Confirm Booking",

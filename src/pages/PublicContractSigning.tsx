@@ -666,16 +666,18 @@ export default function PublicContractSigning() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label>{t('publicContractSigning.legalRepresentativeManagerSPromoter')}</Label>
+                    <Label htmlFor="legal_representative_name">{t('publicContractSigning.legalRepresentativeManagerSPromoter')}</Label>
                     <Input
+                      id="legal_representative_name"
                       value={formData.legal_representative_name}
                       onChange={e => setFormData(prev => ({ ...prev, legal_representative_name: e.target.value }))}
                       placeholder={t('publicContractSigning.fullName')}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t('publicContractSigning.representativeEmail')}</Label>
+                    <Label htmlFor="legal_representative_email">{t('publicContractSigning.representativeEmail')}</Label>
                     <Input
+                      id="legal_representative_email"
                       type="email"
                       value={formData.legal_representative_email}
                       onChange={e => setFormData(prev => ({ ...prev, legal_representative_email: e.target.value }))}
@@ -683,8 +685,9 @@ export default function PublicContractSigning() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t('publicContractSigning.phone')}</Label>
+                    <Label htmlFor="legal_representative_phone">{t('publicContractSigning.phone')}</Label>
                     <Input
+                      id="legal_representative_phone"
                       type="tel"
                       value={formData.legal_representative_phone}
                       onChange={e => setFormData(prev => ({ ...prev, legal_representative_phone: e.target.value }))}
@@ -692,8 +695,9 @@ export default function PublicContractSigning() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t('publicContractSigning.projectNameIfDifferent')}</Label>
+                    <Label htmlFor="project_name">{t('publicContractSigning.projectNameIfDifferent')}</Label>
                     <Input
+                      id="project_name"
                       value={formData.project_name}
                       onChange={e => setFormData(prev => ({ ...prev, project_name: e.target.value }))}
                       placeholder={t('publicContractSigning.commercialProjectName')}
@@ -705,8 +709,9 @@ export default function PublicContractSigning() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label>{t('publicContractSigning.taxIdCompanyOrPersonal')}</Label>
+                    <Label htmlFor="company_nif">{t('publicContractSigning.taxIdCompanyOrPersonal')}</Label>
                     <Input
+                      id="company_nif"
                       value={formData.company_nif}
                       onChange={e => setFormData(prev => ({ ...prev, company_nif: e.target.value }))}
                       placeholder="123456789"
@@ -714,24 +719,27 @@ export default function PublicContractSigning() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t('publicContractSigning.registeredAddress')}</Label>
+                    <Label htmlFor="company_address">{t('publicContractSigning.registeredAddress')}</Label>
                     <Input
+                      id="company_address"
                       value={formData.company_address}
                       onChange={e => setFormData(prev => ({ ...prev, company_address: e.target.value }))}
                       placeholder={t('publicContractSigning.streetNumberFloor')}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t('publicContractSigning.city')}</Label>
+                    <Label htmlFor="company_city">{t('publicContractSigning.city')}</Label>
                     <Input
+                      id="company_city"
                       value={formData.company_city}
                       onChange={e => setFormData(prev => ({ ...prev, company_city: e.target.value }))}
                       placeholder="Leiria"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t('publicContractSigning.postalCode')}</Label>
+                    <Label htmlFor="company_postal_code">{t('publicContractSigning.postalCode')}</Label>
                     <Input
+                      id="company_postal_code"
                       value={formData.company_postal_code}
                       onChange={e => setFormData(prev => ({ ...prev, company_postal_code: e.target.value }))}
                       placeholder="2400-000"
