@@ -60,7 +60,7 @@ export default function StaffCockpit() {
       const [contractsRes, intakesRes, unassignedRes] = await Promise.all([
         supabase.from('startup_contracts').select('id', { count: 'exact', head: true }).eq('status', 'pending_signature'),
         supabase.from('contract_intakes').select('id', { count: 'exact', head: true }).in('status', ['review_pending', 'changes_requested']),
-        supabase.from('workspaces').select('id', { count: 'exact', head: true }).eq('status', 'active').is('primary_consultor_id', null),
+        supabase.from('workspaces').select('id', { count: 'exact', head: true }).eq('status', 'active').is('assigned_consultor_id', null),
       ]);
       return {
         contractsAwaitingSignatureCount: contractsRes.count ?? 0,
