@@ -10,6 +10,7 @@ import { ConsultorPortfolioView } from '@/components/ecosystem/ConsultorPortfoli
 import { useEcosystemItems } from '@/hooks/useEcosystemItems';
 import { ContentSkeleton } from '@/components/ui/ContentSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SavedViewsDropdown } from '@/components/crm/SavedViewsDropdown';
 import { Globe2, Users, Building2, UserCog } from 'lucide-react';
 
 export default function Ecosystem() {
