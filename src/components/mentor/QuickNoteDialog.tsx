@@ -41,6 +41,20 @@ export function QuickNoteDialog({ open, onOpenChange, workspaceId, startupName }
         visibility: 'team',
       });
       if (error) throw error;
+
+      // Auto-log mentoring time (invisible to mentor UI, feeds Impact page).
+      // Best-effort: swallow failures so note save is not blocked.
+      try {
+        await supabase.from('time_entries').insert({
+          workspace_id: workspaceId,
+          user_id: user.id,
+          date: new Date().toISOString().split('T')[0],
+          hours: 0.5,
+          category: 'mentoring',
+          description: 'Sessão de mentoria (auto)',
+        });
+      } catch { /* ignore */ }
+
       void track('mentor_session_logged', { workspaceId });
       notify.success(t('mentor.noteAdded', { defaultValue: 'Nota adicionada com sucesso' }));
       setContent('');
