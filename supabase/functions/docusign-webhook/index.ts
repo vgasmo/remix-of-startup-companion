@@ -173,7 +173,43 @@ Deno.serve(async (req) => {
       .eq('docusign_envelope_id', envelopeId)
       .single()
 
-    if (findError || !contract) {
+    // Find the contract — use PostgREST alias syntax (SQL "as" is invalid here).
+    const { data: contract, error: findError } = await supabase
+      .from('startup_contracts')
+      .select('id, workspace_id, contract_status:status, legal_representative_email, legal_representative_name, signature_status, provider_webhook_event_id, pricing_snapshot_json, counter_signer_email, founder_signer_status, counter_signer_status')
+      .eq('docusign_envelope_id', envelopeId)
+      .maybeSingle()
+
+    if (findError) {
+      // Query error is different from "no match": log to lifecycle_events,
+      // notify staff, and return 5xx so DocuSign retries.
+      console.error('[docusign-webhook] contract lookup failed:', findError)
+      try {
+        await supabase.from('contract_lifecycle_events').insert({
+          contract_id: null,
+          event_type: 'docusign_webhook_lookup_error',
+          event_date: new Date().toISOString().split('T')[0],
+          details: { envelope_id: envelopeId, error: findError.message, event_id: eventId },
+        })
+        const { data: staffUsers } = await supabase
+          .from('user_roles').select('user_id').in('role', ['admin', 'consultor', 'backoffice'])
+        if (staffUsers?.length) {
+          await supabase.from('notifications').insert(staffUsers.map((s: any) => ({
+            user_id: s.user_id,
+            type: 'system',
+            title: 'Erro no webhook DocuSign',
+            message: `Falha ao localizar contrato (envelope ${envelopeId}): ${findError.message}`,
+            entity_type: 'contract',
+            link: '/admin?tab=backoffice&subtab=contracts',
+          })))
+        }
+      } catch (_) { /* best-effort */ }
+      return new Response(JSON.stringify({ error: 'lookup_failed', envelope_id: envelopeId }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    if (!contract) {
       console.warn('Contract not found for envelope:', envelopeId)
       return new Response(JSON.stringify({ ok: true, message: 'No matching contract' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -202,6 +238,32 @@ Deno.serve(async (req) => {
       },
     })
 
+    // === RECIPIENT-LEVEL EVENTS: per-signer only, never activate ===
+    if (typeof status === 'string' && status.startsWith('recipient:')) {
+      const recStatus = status.slice('recipient:'.length)
+      const recipientEmail = ((rawPayload as any)?._recipientEmail || null) as string | null
+      const recipientId = ((rawPayload as any)?._recipientId || null) as string | null
+      // Best-effort attribution: match on email against founder vs counter-signer.
+      const founderEmail = (contract.legal_representative_email || '').toLowerCase()
+      const counterEmail = (contract.counter_signer_email || '').toLowerCase()
+      const isFounder = recipientEmail && recipientEmail.toLowerCase() === founderEmail
+      const isCounter = recipientEmail && counterEmail && recipientEmail.toLowerCase() === counterEmail
+      const patch: Record<string, unknown> = {
+        provider_last_event: `recipient-${recStatus}`,
+        provider_last_sync_at: new Date().toISOString(),
+        provider_last_error: null,
+        provider_webhook_event_id: eventId,
+      }
+      if (isFounder) patch.founder_signer_status = recStatus
+      else if (isCounter) patch.counter_signer_status = recStatus
+      // If we could not attribute (missing email), fall back to first-signer = founder heuristic
+      else if (!recipientEmail && !contract.founder_signer_status) patch.founder_signer_status = recStatus
+      await supabase.from('startup_contracts').update(patch).eq('id', contract.id)
+      return new Response(JSON.stringify({ ok: true, message: 'recipient event recorded', recipient: { id: recipientId, email: recipientEmail, status: recStatus } }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // Update contract
     const updatePayload: Record<string, unknown> = {
       signature_status: status,
@@ -219,6 +281,8 @@ Deno.serve(async (req) => {
       updatePayload.canonical_signature_status = 'completed'
       updatePayload.onboarding_token_hash = null
       updatePayload.onboarding_token_expires_at = null
+      updatePayload.founder_signer_status = 'signed'
+      if (contract.counter_signer_email) updatePayload.counter_signer_status = 'signed'
     } else if (status === 'declined') {
       updatePayload.canonical_signature_status = 'declined'
     } else if (status === 'voided') {
@@ -235,8 +299,6 @@ Deno.serve(async (req) => {
       .eq('id', contract.id)
 
     // === CANONICAL LIFECYCLE SYNC (shared helper) ===
-    // Webhook always returns 200 to avoid DocuSign retry storms, but failures
-    // are persisted to contract_lifecycle_events + staff are notified.
     if (status === 'sent_for_signature') {
       const r = await syncIntakeOnSent(supabase, contract.id, null, `docusign_webhook`)
       await handleLifecycleSyncResult(supabase, r, {
@@ -249,6 +311,27 @@ Deno.serve(async (req) => {
         contractId: contract.id, workspaceId: contract.workspace_id,
         source: 'docusign_webhook_completed', operation: 'completed',
       })
+    }
+
+    // === STAFF NOTIFICATION on decline/void (parity with pandadoc-webhook) ===
+    if (status === 'declined' || status === 'voided') {
+      try {
+        const { data: staffUsers } = await supabase
+          .from('user_roles').select('user_id').in('role', ['admin', 'consultor', 'backoffice'])
+        if (staffUsers?.length) {
+          await supabase.from('notifications').insert(staffUsers.map((s: any) => ({
+            user_id: s.user_id,
+            type: status === 'declined' ? 'contract_declined' : 'contract_voided',
+            title: status === 'declined' ? 'Contrato recusado (DocuSign)' : 'Contrato anulado (DocuSign)',
+            message: `Contrato ${contract.id.slice(0, 8)} — ${contract.legal_representative_name || 'founder'} (${status}).`,
+            entity_type: 'contract',
+            entity_id: contract.id,
+            link: '/admin?tab=backoffice&subtab=contracts',
+          })))
+        }
+      } catch (notifyErr) {
+        console.warn('decline/void staff notification failed (non-fatal):', notifyErr)
+      }
     }
 
     // === AUTO-REGISTRATION on completion ===
