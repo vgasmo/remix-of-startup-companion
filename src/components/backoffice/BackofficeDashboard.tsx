@@ -241,7 +241,34 @@ function BackofficeDashboardInner() {
 
   return (
     <div className="space-y-6">
-      <BillingSnapshotCard />
+      {/* Greeting hero — visual parity with mentor/consultor dashboards */}
+      <BrandSurface
+        intensity="hero"
+        className="surface-hero rounded-2xl p-4 sm:p-7 overflow-hidden animate-fade-in-up stagger-1"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-2 min-w-0">
+            <p className="label-eyebrow">
+              {t('admin.backoffice.hero.eyebrow', { defaultValue: 'Painel de operações' })}
+            </p>
+            <h1 className="text-display text-foreground break-words">
+              {t(greetingKey, { defaultValue: greetingDefault, name: firstName })}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {t('admin.backoffice.hero.subline', {
+                defaultValue: '{{occ}}% ocupação · {{exp}} contratos a expirar',
+                occ: data.occupancyRate,
+                exp: data.expiringContractsCount,
+              })}
+            </p>
+          </div>
+          <FocusModeToggle />
+        </div>
+      </BrandSurface>
+
+      <FullViewOnly>
+        <BillingSnapshotCard />
+      </FullViewOnly>
       {/* ═══════════════════ HERO METRICS ═══════════════════ */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Occupancy Rate */}
