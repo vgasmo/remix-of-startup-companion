@@ -141,6 +141,7 @@ export function AppSidebar() {
     { name: t('nav.consultor.programs', { defaultValue: 'Programas' }), href: '/admin?tab=programs-setup', icon: GraduationCap },
     { name: t('nav.consultor.reports', { defaultValue: 'Relatórios' }), href: '/admin?tab=analytics', icon: BarChart3 },
     { name: t('nav.consultor.quickGuide', { defaultValue: 'Guia Rápido' }), href: '/guide', icon: BookOpenCheck },
+    { name: t('nav.founder.glossaryFaq', { defaultValue: 'Glossário & FAQ' }), href: '/help', icon: HelpCircle },
   ];
 
   // MENTOR COMPANION Navigation
