@@ -89,7 +89,7 @@ function BackofficeDashboardInner() {
         .select('*, space:office_spaces!floor_maps_space_id_fkey(building_id)')
         .order('name');
       if (error) throw error;
-      return data as (FloorMap & { space?: { building_id: string | null } | null })[];
+      return (data as unknown) as (FloorMap & { space?: { building_id: string | null } | null })[];
     },
   });
 
