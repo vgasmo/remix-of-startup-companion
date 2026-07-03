@@ -21,6 +21,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { ContractUploadDropzone, type AIExtractedData } from './contracts/ContractUploadDropzone';
 import { ContractReviewForm, type ContractFormValues } from './contracts/ContractReviewForm';
 import { BulkActionsBar } from './contracts/BulkActionsBar';
+import { BulkTerminateContractsDialog } from './contracts/BulkTerminateContractsDialog';
 import { ContractDetailDrawer } from './contracts/ContractDetailDrawer';
 import { ContractStatusBadge } from './contracts/ContractStatusBadge';
 import { ProvenanceBadge } from '@/components/shared/ProvenanceBadge';
