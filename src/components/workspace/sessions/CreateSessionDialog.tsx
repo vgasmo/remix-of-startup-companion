@@ -211,18 +211,18 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
 
     // 2) Mentor already booked at that time (across workspaces)
     if (meetingWith === 'mentor_externo' && participantId) {
+      const dayStr = new Date(startMs).toISOString().slice(0, 10);
       const { data: bookings } = await supabase
         .from('mentor_bookings')
-        .select('id, scheduled_at, duration_minutes, status')
-        .eq('mentor_user_id', participantId)
+        .select('id, requested_date, requested_start_time, requested_end_time, status')
+        .eq('mentor_id', participantId)
         .in('status', ['pending', 'confirmed'])
-        .gte('scheduled_at', windowStart)
-        .lt('scheduled_at', windowEnd);
+        .eq('requested_date', dayStr);
 
       for (const b of bookings || []) {
-        const bStart = new Date(b.scheduled_at).getTime();
-        const bEnd = bStart + ((b.duration_minutes ?? 60) * 60000);
-        if (bStart < endMs && bEnd > startMs) {
+        const bStart = new Date(`${b.requested_date}T${b.requested_start_time}`).getTime();
+        const bEnd = new Date(`${b.requested_date}T${b.requested_end_time}`).getTime();
+        if (Number.isFinite(bStart) && Number.isFinite(bEnd) && bStart < endMs && bEnd > startMs) {
           return t('sessions.conflictMentor', {
             defaultValue: 'O mentor já tem uma reserva neste horário.',
           });
