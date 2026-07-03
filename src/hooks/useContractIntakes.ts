@@ -330,6 +330,28 @@ export function useTransitionIntakeStatus() {
             'Complete os dados comerciais do contrato antes de aprovar para assinatura.'
           );
         }
+
+        // Copy frozen snapshot fields into the contract so the signing view and
+        // generated PDF have all fiscal/legal identity data even if the founder
+        // does not re-enter it at signing time.
+        try {
+          await supabase.from('startup_contracts')
+            .update({
+              organization_name: current.organization_name,
+              company_nif: current.company_nif,
+              company_address: current.company_address,
+              company_city: current.company_city,
+              company_postal_code: current.company_postal_code,
+              legal_representative_name: current.legal_representative_name,
+              legal_representative_email: current.legal_representative_email,
+              legal_representative_phone: current.legal_representative_phone,
+              billing_email: current.billing_email,
+              iban: current.iban,
+            } as any)
+            .eq('id', intakeFull.contract_id);
+        } catch (copyErr) {
+          logger.warn('intake_snapshot_copy_to_contract_failed', { error: String(copyErr) });
+        }
       }
       if (params.newStatus === 'changes_requested') {
         updateFields.changes_requested_notes = params.notes || null;

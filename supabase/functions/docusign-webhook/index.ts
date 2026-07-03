@@ -12,6 +12,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { syncIntakeOnSent, syncIntakeOnCompleted } from '../_shared/lifecycleSync.ts'
 import { handleLifecycleSyncResult } from '../_shared/lifecycleSyncResultHandler.ts'
+import { autoCreateFounderAccount as sharedCreateFounder, enqueueFounderInviteTask } from '../_shared/founderAccount.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -165,13 +166,6 @@ Deno.serve(async (req) => {
     }
 
     console.log(`DocuSign webhook: envelope=${envelopeId}, status=${status}, eventId=${eventId}`)
-
-    // Find the contract
-    const { data: contract, error: findError } = await supabase
-      .from('startup_contracts')
-      .select('id, workspace_id, status as contract_status, legal_representative_email, legal_representative_name, signature_status, provider_webhook_event_id, pricing_snapshot_json')
-      .eq('docusign_envelope_id', envelopeId)
-      .single()
 
     // Find the contract — use PostgREST alias syntax (SQL "as" is invalid here).
     const { data: contract, error: findError } = await supabase
@@ -336,10 +330,19 @@ Deno.serve(async (req) => {
 
     // === AUTO-REGISTRATION on completion ===
     if (status === 'completed' && contract.legal_representative_email) {
-      try {
-        await autoCreateFounderAccount(supabase, contract)
-      } catch (regErr) {
-        console.error('Auto-registration error (non-fatal):', regErr)
+      const acctRes = await sharedCreateFounder(supabase, {
+        id: contract.id,
+        workspace_id: contract.workspace_id,
+        legal_representative_email: contract.legal_representative_email,
+        legal_representative_name: contract.legal_representative_name,
+      })
+      if (!acctRes.ok) {
+        await enqueueFounderInviteTask(supabase, {
+          id: contract.id,
+          workspace_id: contract.workspace_id,
+          legal_representative_email: contract.legal_representative_email,
+          legal_representative_name: contract.legal_representative_name,
+        }, acctRes.reason || 'unknown')
       }
     }
 
@@ -416,75 +419,4 @@ Deno.serve(async (req) => {
   }
 })
 
-/**
- * Auto-create founder account after contract signing.
- */
-async function autoCreateFounderAccount(
-  supabase: any,
-  contract: { id: string; workspace_id: string; legal_representative_email: string; legal_representative_name: string | null }
-) {
-  const email = contract.legal_representative_email.toLowerCase().trim()
-  const fullName = contract.legal_representative_name || 'Founder'
-
-  const { data: existingUsers } = await supabase.auth.admin.listUsers()
-  const existingUser = existingUsers?.users?.find((u: any) => u.email?.toLowerCase() === email)
-
-  let userId: string
-
-  if (existingUser) {
-    userId = existingUser.id
-    console.log(`User already exists: ${userId}`)
-  } else {
-    const tempPassword = generateSecurePassword()
-    const { data: newUser, error: createErr } = await supabase.auth.admin.createUser({
-      email,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: {
-        full_name: fullName,
-        selected_role: 'founder',
-        auto_created: true,
-        contract_id: contract.id,
-      },
-    })
-
-    if (createErr) throw createErr
-    userId = newUser.user.id
-    console.log(`Created new user: ${userId}`)
-
-    await supabase.auth.admin.generateLink({
-      type: 'recovery',
-      email,
-      options: {
-        redirectTo: `${Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/reset-password`,
-      },
-    })
-  }
-
-  await supabase
-    .from('user_roles')
-    .upsert({ user_id: userId, role: 'founder' }, { onConflict: 'user_id,role' })
-
-  await supabase
-    .from('workspace_users')
-    .upsert(
-      { workspace_id: contract.workspace_id, user_id: userId, role: 'founder', active: true },
-      { onConflict: 'workspace_id,user_id' }
-    )
-
-  // Set workspace to claimed (not active — activation happens via canonical sync above)
-  const { data: ws } = await supabase
-    .from('workspaces')
-    .select('status')
-    .eq('id', contract.workspace_id)
-    .single()
-
-  if (ws && ['pending', 'imported_unclaimed', 'draft'].includes(ws.status)) {
-    await supabase
-      .from('workspaces')
-      .update({ status: 'claimed', updated_at: new Date().toISOString() })
-      .eq('id', contract.workspace_id)
-  }
-
-  console.log(`Founder ${email} linked to workspace ${contract.workspace_id}`)
-}
+// Founder account creation is now shared: see supabase/functions/_shared/founderAccount.ts

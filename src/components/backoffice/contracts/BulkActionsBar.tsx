@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { Archive, X } from 'lucide-react';
+import { Ban, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 interface BulkActionsBarProps {
   selectedCount: number;
+  /** Terminates selected contracts (status='terminated'). Historically mislabeled as "archive". */
   onArchive: () => void;
   onClearSelection: () => void;
   isArchiving: boolean;
@@ -24,12 +25,12 @@ export function BulkActionsBar({ selectedCount, onArchive, onClearSelection, isA
       <Button
         variant="outline"
         size="sm"
-        className="gap-2"
+        className="gap-2 border-destructive/40 text-destructive hover:bg-destructive/10"
         onClick={onArchive}
         disabled={isArchiving}
       >
-        <Archive className="h-4 w-4" />
-        {t('contracts.bulk.archiveSelected', { defaultValue: 'Archive Selected' })}
+        <Ban className="h-4 w-4" />
+        {t('contracts.bulk.terminateSelected', { defaultValue: 'Terminar selecionados' })}
       </Button>
       <Button
         variant="ghost"
