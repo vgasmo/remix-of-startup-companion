@@ -292,6 +292,28 @@ export default function CRM() {
   const tasksTotal = (tasksDue?.overdue.length || 0) + (tasksDue?.today.length || 0) + 
     (tasksDue?.upcoming.length || 0);
 
+  // Ordered sibling list for drawer triage — Follow-Up Inbox is the priority consumer.
+  // Priority order: overdue → today → upcoming → noNextAction → stale (matches column order).
+  const siblingIds = useMemo(() => {
+    if (focusMode) return focusItems.map(i => i.id);
+    if (!inbox) return [];
+    return [
+      ...(inbox.overdue || []),
+      ...(inbox.today || []),
+      ...(inbox.upcoming || []),
+      ...(inbox.noNextAction || []),
+      ...(inbox.stale || []),
+    ].map(i => i.id);
+  }, [inbox, focusMode, focusItems]);
+
+  const handleNavigateSibling = useCallback((id: string) => {
+    // Reuse the deep-link path so the drawer refetches the correct item cleanly.
+    const next = new URLSearchParams(searchParams);
+    next.set('open', id);
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+
   return (
     <AppLayout>
       <div className="container mx-auto py-6 space-y-6" data-testid="crm-page">
