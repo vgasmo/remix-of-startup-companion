@@ -237,11 +237,19 @@ Deno.serve(async (req) => {
       const recStatus = status.slice('recipient:'.length)
       const recipientEmail = ((rawPayload as any)?._recipientEmail || null) as string | null
       const recipientId = ((rawPayload as any)?._recipientId || null) as string | null
-      // Best-effort attribution: match on email against founder vs counter-signer.
+      // Attribution priority: (1) recipientId — deterministic from docusign-send-envelope
+      // (recipientId '1' = founder, '2' = counter-signer). (2) case-insensitive email as
+      // fallback for cases where recipientId is missing. Never mis-attribute on shared/re-cased emails.
       const founderEmail = (contract.legal_representative_email || '').toLowerCase()
       const counterEmail = (contract.counter_signer_email || '').toLowerCase()
-      const isFounder = recipientEmail && recipientEmail.toLowerCase() === founderEmail
-      const isCounter = recipientEmail && counterEmail && recipientEmail.toLowerCase() === counterEmail
+      const recIdStr = recipientId != null ? String(recipientId) : ''
+      let isFounder = recIdStr === '1'
+      let isCounter = recIdStr === '2'
+      if (!isFounder && !isCounter && recipientEmail) {
+        const lower = recipientEmail.toLowerCase()
+        isFounder = lower === founderEmail
+        isCounter = !isFounder && !!counterEmail && lower === counterEmail
+      }
       const patch: Record<string, unknown> = {
         provider_last_event: `recipient-${recStatus}`,
         provider_last_sync_at: new Date().toISOString(),
@@ -250,8 +258,8 @@ Deno.serve(async (req) => {
       }
       if (isFounder) patch.founder_signer_status = recStatus
       else if (isCounter) patch.counter_signer_status = recStatus
-      // If we could not attribute (missing email), fall back to first-signer = founder heuristic
-      else if (!recipientEmail && !contract.founder_signer_status) patch.founder_signer_status = recStatus
+      // If unattributable (missing id + missing email), fall back to first-signer = founder heuristic
+      else if (!recipientEmail && !recIdStr && !contract.founder_signer_status) patch.founder_signer_status = recStatus
       await supabase.from('startup_contracts').update(patch).eq('id', contract.id)
       return new Response(JSON.stringify({ ok: true, message: 'recipient event recorded', recipient: { id: recipientId, email: recipientEmail, status: recStatus } }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
