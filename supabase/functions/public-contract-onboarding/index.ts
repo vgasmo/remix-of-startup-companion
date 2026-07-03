@@ -944,9 +944,10 @@ Deno.serve(async (req) => {
         .update({ status: 'active' })
         .eq('id', contract.id)
 
-      const completedSync = await syncIntakeOnCompleted(supabase, contract.id, (contract as any).workspace_id, null, 'digital_sign_onboarding')
+      const wsId = (contract as any).workspace?.id ?? null
+      const completedSync = await syncIntakeOnCompleted(supabase, contract.id, wsId, null, 'digital_sign_onboarding')
       const syncOk = await handleLifecycleSyncResult(supabase, completedSync, {
-        contractId: contract.id, workspaceId: (contract as any).workspace_id ?? null,
+        contractId: contract.id, workspaceId: wsId,
         source: 'digital_sign_onboarding', operation: 'completed',
       })
       if (!syncOk) {
