@@ -207,86 +207,81 @@ export function InteractiveFloorMapViewer({
                   {roomsWithShapes.map(room => {
                     const allocation = room.current_allocation;
                     const isOccupied = !!allocation;
-                    const fillClass = isOccupied ? 'fill-primary/30' : 'fill-accent/30';
-                    const strokeClass = isOccupied ? 'stroke-primary' : 'stroke-accent-foreground';
-                    
+                    const occupantName = allocation?.workspace?.startup?.name ||
+                      allocation?.funnel_item?.organization_name ||
+                      allocation?.funnel_item?.contact_name;
+                    // Semantic tokens: occupied = info (matches the console), vacant = accent.
+                    const fillClass = isOccupied ? 'fill-info/25' : 'fill-accent/25';
+                    const strokeClass = isOccupied ? 'stroke-info' : 'stroke-accent-foreground';
+                    const labelFill = isOccupied ? 'fill-info' : 'fill-foreground';
+
+                    let cx = 0, cy = 0, boxHeight = 0;
                     if (room.shape_type === 'rect' && room.shape_json) {
                       const shape = room.shape_json as RoomShapeRect;
-                      return (
-                        <g key={room.id} className="pointer-events-auto cursor-pointer">
-                          <rect
-                            x={`${shape.x}%`}
-                            y={`${shape.y}%`}
-                            width={`${shape.w}%`}
-                            height={`${shape.h}%`}
-                            className={cn(
-                              fillClass,
-                              strokeClass,
-                              'stroke-2 transition-all hover:opacity-80'
-                            )}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!editMode && onRoomClick) {
-                                onRoomClick(room);
-                              }
-                            }}
-                          />
-                          <text
-                            x={`${shape.x + shape.w / 2}%`}
-                            y={`${shape.y + shape.h / 2}%`}
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                            className={cn(
-                              'text-xs font-medium pointer-events-none',
-                              isOccupied ? 'fill-primary' : 'fill-foreground'
-                            )}
-                          >
-                            {room.name}
-                          </text>
-                        </g>
-                      );
-                    }
-                    
-                    if (room.shape_type === 'polygon' && room.shape_json) {
+                      cx = shape.x + shape.w / 2;
+                      cy = shape.y + shape.h / 2;
+                      boxHeight = shape.h;
+                    } else if (room.shape_type === 'polygon' && room.shape_json) {
                       const shape = room.shape_json as RoomShapePolygon;
-                      const points = shape.points.map(p => `${p.x}%,${p.y}%`).join(' ');
-                      // Calculate centroid for label
-                      const cx = shape.points.reduce((sum, p) => sum + p.x, 0) / shape.points.length;
-                      const cy = shape.points.reduce((sum, p) => sum + p.y, 0) / shape.points.length;
-                      
-                      return (
-                        <g key={room.id} className="pointer-events-auto cursor-pointer">
-                          <polygon
-                            points={points}
-                            className={cn(
-                              fillClass,
-                              strokeClass,
-                              'stroke-2 transition-all hover:opacity-80'
-                            )}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!editMode && onRoomClick) {
-                                onRoomClick(room);
-                              }
-                            }}
-                          />
+                      cx = shape.points.reduce((s, p) => s + p.x, 0) / shape.points.length;
+                      cy = shape.points.reduce((s, p) => s + p.y, 0) / shape.points.length;
+                      boxHeight = 6; // heuristic — enough room for the occupant line
+                    }
+
+                    const showOccupant = isOccupied && occupantName && boxHeight >= 5;
+
+                    const shapeEl = room.shape_type === 'rect' && room.shape_json ? (
+                      <rect
+                        x={`${(room.shape_json as RoomShapeRect).x}%`}
+                        y={`${(room.shape_json as RoomShapeRect).y}%`}
+                        width={`${(room.shape_json as RoomShapeRect).w}%`}
+                        height={`${(room.shape_json as RoomShapeRect).h}%`}
+                        className={cn(fillClass, strokeClass, 'stroke-2 transition-all hover:opacity-80')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!editMode && onRoomClick) onRoomClick(room);
+                        }}
+                      />
+                    ) : room.shape_type === 'polygon' && room.shape_json ? (
+                      <polygon
+                        points={(room.shape_json as RoomShapePolygon).points.map(p => `${p.x}%,${p.y}%`).join(' ')}
+                        className={cn(fillClass, strokeClass, 'stroke-2 transition-all hover:opacity-80')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!editMode && onRoomClick) onRoomClick(room);
+                        }}
+                      />
+                    ) : null;
+
+                    if (!shapeEl) return null;
+
+                    return (
+                      <g key={room.id} className="pointer-events-auto cursor-pointer">
+                        {shapeEl}
+                        <text
+                          x={`${cx}%`}
+                          y={`${cy}%`}
+                          textAnchor="middle"
+                          dominantBaseline={showOccupant ? 'auto' : 'middle'}
+                          dy={showOccupant ? '-0.25em' : 0}
+                          className={cn('text-xs font-medium pointer-events-none', labelFill)}
+                        >
+                          {room.name}
+                        </text>
+                        {showOccupant && (
                           <text
                             x={`${cx}%`}
                             y={`${cy}%`}
                             textAnchor="middle"
-                            dominantBaseline="middle"
-                            className={cn(
-                              'text-xs font-medium pointer-events-none',
-                              isOccupied ? 'fill-primary' : 'fill-foreground'
-                            )}
+                            dominantBaseline="hanging"
+                            dy="0.35em"
+                            className="text-[10px] pointer-events-none fill-info opacity-90"
                           >
-                            {room.name}
+                            {occupantName!.length > 22 ? `${occupantName!.slice(0, 20)}…` : occupantName}
                           </text>
-                        </g>
-                      );
-                    }
-                    
-                    return null;
+                        )}
+                      </g>
+                    );
                   })}
                 </svg>
 
