@@ -842,7 +842,7 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
       {/* Bilateral Signing Status */}
       <div className="space-y-3">
         <Label className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-          Assinaturas Bilaterais
+          {t('admin.backoffice.contractSigners.bilateralSignatures', 'Assinaturas Bilaterais')}
         </Label>
 
         {/* Signer 1: Founder */}
