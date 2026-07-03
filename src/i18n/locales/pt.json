@@ -5283,6 +5283,7 @@
       "noEvents": "Sem eventos do ciclo nos próximos 90 dias",
       "noIntake": "Contrato sem processo de intake registado",
       "noticeDeadline": "Prazo de aviso prévio",
+      "openContractAria": "Abrir contrato de {{startup}}",
       "overdue": "Em atraso",
       "pending_signature": "Aguarda Assinatura",
       "phaseContract": "Contrato",
