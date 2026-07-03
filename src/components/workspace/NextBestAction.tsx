@@ -75,7 +75,7 @@ export function NextBestAction({ workspaceId, programId, stage, canWrite }: Next
     const today = new Date();
 
     const overdueActions = actions?.filter(a => 
-      a.due_date && new Date(a.due_date) < today && a.status !== 'completed'
+      a.due_date && new Date(a.due_date) < today && a.status !== 'completed' && a.status !== 'awaiting_validation' && a.status !== 'cancelled'
     ) || [];
     
     if (overdueActions.length > 0) {

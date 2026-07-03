@@ -3,6 +3,7 @@ import { clickableProps } from '@/lib/clickable';
 
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
+import { useDebounce } from '@/hooks/useDebounce';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -88,7 +89,10 @@ export default function CRM() {
   const programFilter = searchParams.get('program') || 'all';
   const stageFilter = searchParams.get('stage') || 'all';
   const assigneeFilter = searchParams.get('assignee') || 'all';
-  const searchQuery = searchParams.get('q') || '';
+  const urlSearchQuery = searchParams.get('q') || '';
+  // Local input state → debounce → URL, so we don't hit Supabase on every keystroke.
+  const [searchInput, setSearchInput] = useState(urlSearchQuery);
+  const searchQuery = useDebounce(searchInput, 300);
   const myItemsOnly = searchParams.get('mine') === '1';
   const focusMode = searchParams.get('focus') === '1';
 
@@ -104,9 +108,19 @@ export default function CRM() {
   const setProgramFilter = (v: string) => updateFilterParam('program', v, 'all');
   const setStageFilter = (v: string) => updateFilterParam('stage', v, 'all');
   const setAssigneeFilter = (v: string) => updateFilterParam('assignee', v, 'all');
-  const setSearchQuery = (v: string) => updateFilterParam('q', v, '');
+  const setSearchQuery = (v: string) => setSearchInput(v);
   const setMyItemsOnly = (v: boolean) => updateFilterParam('mine', v, false);
   const setFocusMode = (v: boolean) => updateFilterParam('focus', v, false);
+
+  // Push debounced search into the URL (survives refresh + shareable)
+  useEffect(() => {
+    if (searchQuery === urlSearchQuery) return;
+    const next = new URLSearchParams(searchParams);
+    if (searchQuery) next.set('q', searchQuery); else next.delete('q');
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
+
 
   const { data: programs } = usePrograms();
   const { data: consultors } = useConsultors();
@@ -330,8 +344,9 @@ export default function CRM() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={t('crm.searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+
               className="pl-9"
             />
           </div>
@@ -383,12 +398,22 @@ export default function CRM() {
                 focusMode,
               }}
               onApplyView={(filters) => {
-                if (filters.programFilter) setProgramFilter(filters.programFilter as string);
-                if (filters.stageFilter) setStageFilter(filters.stageFilter as string);
-                if (filters.assigneeFilter) setAssigneeFilter(filters.assigneeFilter as string);
-                if (typeof filters.myItemsOnly === 'boolean') setMyItemsOnly(filters.myItemsOnly);
-                if (typeof filters.focusMode === 'boolean') setFocusMode(filters.focusMode);
+                const next = new URLSearchParams(searchParams);
+                const setOrDel = (key: string, val: string | undefined, def = 'all') => {
+                  if (!val || val === def) next.delete(key); else next.set(key, val);
+                };
+                if ('programFilter' in filters) setOrDel('program', filters.programFilter as string | undefined);
+                if ('stageFilter' in filters) setOrDel('stage', filters.stageFilter as string | undefined);
+                if ('assigneeFilter' in filters) setOrDel('assignee', filters.assigneeFilter as string | undefined);
+                if (typeof filters.myItemsOnly === 'boolean') {
+                  if (filters.myItemsOnly) next.set('mine', '1'); else next.delete('mine');
+                }
+                if (typeof filters.focusMode === 'boolean') {
+                  if (filters.focusMode) next.set('focus', '1'); else next.delete('focus');
+                }
+                setSearchParams(next, { replace: true });
               }}
+
             />
             <div className="flex items-center gap-2">
               <Switch

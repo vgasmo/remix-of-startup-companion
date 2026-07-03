@@ -45,7 +45,7 @@ export function useSmartNudges(workspaceId: string | undefined) {
         .select('id', { count: 'exact', head: true })
         .eq('workspace_id', workspaceId!)
         .lt('due_date', today)
-        .neq('status', 'completed');
+        .not('status', 'in', '(completed,awaiting_validation,cancelled)');
       if (error) throw error;
       return { overdueCount: count || 0 };
     },

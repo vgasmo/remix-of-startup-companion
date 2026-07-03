@@ -264,6 +264,21 @@ export function lisbonWallClockToUtcIso(wallClock: string): string {
 }
 
 /**
+ * Inverse of `lisbonWallClockToUtcIso`: given a UTC ISO date-time, return the
+ * Europe/Lisbon wall-clock as a `YYYY-MM-DDTHH:mm` string suitable for
+ * <input type="datetime-local"> prefills, regardless of the browser TZ.
+ */
+export function utcIsoToLisbonWallClock(isoUtc: string | Date): string {
+  const d = typeof isoUtc === 'string' ? new Date(isoUtc) : isoUtc;
+  const offsetMin = getLisbonOffsetMinutes(d);
+  const shifted = new Date(d.getTime() + offsetMin * 60_000);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}T${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}`;
+}
+
+
+
+/**
  * Get the day of week name localized
  */
 export function getLocalizedDayName(dayIndex: number): string {

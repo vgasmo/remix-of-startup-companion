@@ -1,4 +1,5 @@
 import { memo, useMemo, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format, isPast, isToday, parseISO } from 'date-fns';
@@ -57,9 +58,11 @@ export const ActionItemCard = memo(function ActionItemCard({
 }: ActionItemCardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { workspaceId } = useParams<{ workspaceId: string }>();
-  const isOverdue = item.due_date && isPast(parseISO(item.due_date)) && !isToday(parseISO(item.due_date)) && item.status !== 'completed';
-  const isDueToday = item.due_date && isToday(parseISO(item.due_date)) && item.status !== 'completed';
+  const isTerminal = item.status === 'completed' || item.status === 'cancelled' || item.status === 'awaiting_validation';
+  const isOverdue = item.due_date && isPast(parseISO(item.due_date)) && !isToday(parseISO(item.due_date)) && !isTerminal;
+  const isDueToday = item.due_date && isToday(parseISO(item.due_date)) && !isTerminal;
   const priorityConfig = PRIORITY_CONFIG[item.priority || 'medium'] || PRIORITY_CONFIG.medium;
 
   const [addDeliverableOpen, setAddDeliverableOpen] = useState(false);
@@ -169,7 +172,7 @@ export const ActionItemCard = memo(function ActionItemCard({
         )}
 
         <div className="flex flex-wrap items-center gap-1.5">
-          {canWrite ? (
+          {canWrite && !(!isStaff && (item.status === 'completed' || item.status === 'cancelled')) ? (
             <Select value={item.status} onValueChange={handleStatusChange}>
               <SelectTrigger className="h-6 w-auto px-2 text-xs border-dashed"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -213,25 +216,27 @@ export const ActionItemCard = memo(function ActionItemCard({
           {isStaff && item.status === 'awaiting_validation' && canWrite && (
             <>
               <Button size="sm" variant="outline" className="h-6 px-2 text-xs gap-1"
-                onClick={() => onStatusChange(item, 'completed' as ActionStatus)}>
+                onClick={() => handleStatusChange('completed')}>
                 <Check className="h-3 w-3" />
                 {t('actions.validate', 'Validar')}
               </Button>
               <Button size="sm" variant="ghost" className="h-6 px-2 text-xs gap-1 text-muted-foreground"
-                onClick={() => onStatusChange(item, 'in_progress' as ActionStatus)}>
+                onClick={() => handleStatusChange('in_progress')}>
                 <Undo2 className="h-3 w-3" />
                 {t('actions.return', 'Devolver')}
               </Button>
             </>
           )}
 
-          {!isStaff && item.status === 'awaiting_validation' && canWrite && (
+          {!isStaff && item.status === 'awaiting_validation' && canWrite &&
+           (item.owner_user_id === user?.id || (item as any).created_by === user?.id) && (
             <Button size="sm" variant="ghost" className="h-6 px-2 text-xs gap-1 text-muted-foreground"
-              onClick={() => onStatusChange(item, 'in_progress' as ActionStatus)}>
+              onClick={() => handleStatusChange('in_progress')}>
               <Undo2 className="h-3 w-3" />
               {t('actions.revertToInProgress', 'Voltar para em curso')}
             </Button>
           )}
+
 
           {/* Deliverables count badge */}
           {totalDeliverables > 0 && (

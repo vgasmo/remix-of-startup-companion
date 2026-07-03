@@ -131,46 +131,17 @@ export function useUpdateActionItem(workspaceId: string) {
 
       if (error) throw error;
 
-      // Founder → Consultant: awaiting_validation notification
-      if (updates.status === 'awaiting_validation' && prevStatus !== 'awaiting_validation') {
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-          const { data: ws } = await supabase
-            .from('workspaces')
-            .select('assigned_consultor_id, startup:startups(name)')
-            .eq('id', workspaceId)
-            .maybeSingle();
-          const consultantId = (ws as any)?.assigned_consultor_id;
-          if (consultantId && consultantId !== user?.id) {
-            let founderName = 'O founder';
-            if (user?.id) {
-              const { data: p } = await supabase.from('profiles_safe').select('full_name').eq('id', user.id).maybeSingle();
-              founderName = p?.full_name || founderName;
-            }
-            await supabase.from('notifications').insert({
-              user_id: consultantId,
-              type: 'system',
-              title: t('notifications.actionAwaitingValidationTitle', 'Ação para validar'),
-              message: t('notifications.actionAwaitingValidationBody', {
-                founder: founderName, action: data.title,
-                defaultValue: `${founderName} concluiu «${data.title}»`,
-              }),
-              link: `/workspace/${workspaceId}?tab=milestones-actions&sub=actions&highlight=${data.id}`,
-              entity_type: 'action_item',
-              entity_id: data.id,
-              read: false,
-            });
-          }
-        } catch (e) {
-          logger.warn('awaiting_validation_notify_failed', { error: String(e) });
-        }
-      }
+      // Founder → Consultant awaiting_validation notification is now handled by
+      // the DB trigger `notify_action_awaiting_validation` (SECURITY DEFINER) so
+      // it bypasses the notifications INSERT RLS that blocked the client-side path.
 
       // Staff → Founder: completed validation notification
       if (updates.status === 'completed' && prevStatus === 'awaiting_validation') {
         try {
+          const { data: { user } } = await supabase.auth.getUser();
           const targetUserId = (prevRow as any)?.owner_user_id || (prevRow as any)?.created_by;
-          if (targetUserId) {
+          // Skip if the target IS the current user (avoid self-notify when staff is also the owner/creator)
+          if (targetUserId && targetUserId !== user?.id) {
             await supabase.from('notifications').insert({
               user_id: targetUserId,
               type: 'system',
@@ -189,6 +160,7 @@ export function useUpdateActionItem(workspaceId: string) {
           logger.warn('action_validated_notify_failed', { error: String(e) });
         }
       }
+
 
       // Track if owner was assigned for Teams notification
       const ownerAssigned = 'owner_user_id' in updates && updates.owner_user_id;
