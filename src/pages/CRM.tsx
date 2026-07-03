@@ -644,6 +644,8 @@ export default function CRM() {
               setSearchParams(next, { replace: true });
             }
           }}
+          siblingIds={siblingIds}
+          onNavigateSibling={handleNavigateSibling}
         />
       </div>
     </AppLayout>
