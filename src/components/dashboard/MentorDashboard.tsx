@@ -46,13 +46,23 @@ import { MentorPortfolioPulse } from '@/components/mentor/MentorPortfolioPulse';
 import { MomentumBadge } from '@/components/shared/MomentumBadge';
 import { computeMomentum } from '@/hooks/useWorkspaceMomentum';
 import { FirstStepsCard } from '@/components/dashboard/FirstStepsCard';
+import { FocusModeProvider, FocusModeToggle } from '@/components/ui/FocusModeToggle';
+import { FullViewOnly } from '@/components/dashboard/FocusGate';
 
 interface MentorDashboardProps {
   workspaces: WorkspaceWithDetails[];
   isLoading: boolean;
 }
 
-export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoading }: MentorDashboardProps) {
+export const MentorDashboard = memo(function MentorDashboard(props: MentorDashboardProps) {
+  return (
+    <FocusModeProvider persistKey="mentor" defaultFocused={true}>
+      <MentorDashboardInner {...props} />
+    </FocusModeProvider>
+  );
+});
+
+const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, isLoading }: MentorDashboardProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { profile } = useAuth();
@@ -233,29 +243,32 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
         intensity="hero"
         className="surface-hero rounded-2xl p-4 sm:p-7 overflow-hidden animate-fade-in-up stagger-1"
       >
-        <div className="space-y-2">
-          <p className="label-eyebrow">
-            {t('mentor.hero.eyebrow', { defaultValue: 'Painel do mentor' })}
-          </p>
-          <h1 className="text-display text-foreground break-words">
-            {t(greetingKey, { defaultValue: greetingDefault, name: firstName })}
-          </h1>
-          <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground">
-            <span>
-              {t('mentor.hero.subline', {
-                defaultValue: '{{count}} startups · {{sessions}} sessões esta semana',
-                count: workspaces.length,
-                sessions: sessionsThisWeek,
-              })}
-            </span>
-            <Badge
-              variant="outline"
-              className="gap-1.5 rounded-full border-border/60 bg-background/70 text-xs font-medium"
-            >
-              <span className={cn('h-2 w-2 rounded-full', statusColors[availabilityStatus])} />
-              {statusLabels[availabilityStatus]}
-            </Badge>
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-2 min-w-0">
+            <p className="label-eyebrow">
+              {t('mentor.hero.eyebrow', { defaultValue: 'Painel do mentor' })}
+            </p>
+            <h1 className="text-display text-foreground break-words">
+              {t(greetingKey, { defaultValue: greetingDefault, name: firstName })}
+            </h1>
+            <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground">
+              <span>
+                {t('mentor.hero.subline', {
+                  defaultValue: '{{count}} startups · {{sessions}} sessões esta semana',
+                  count: workspaces.length,
+                  sessions: sessionsThisWeek,
+                })}
+              </span>
+              <Badge
+                variant="outline"
+                className="gap-1.5 rounded-full border-border/60 bg-background/70 text-xs font-medium"
+              >
+                <span className={cn('h-2 w-2 rounded-full', statusColors[availabilityStatus])} />
+                {statusLabels[availabilityStatus]}
+              </Badge>
+            </div>
           </div>
+          <FocusModeToggle />
         </div>
 
         {slotsThisWeek === 0 && (
@@ -387,51 +400,55 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
         </Card>
       )}
 
-      {/* Quick Stats */}
-      <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
-        {[
-          { label: t('mentor.myStartups'), value: workspaces.length, icon: Briefcase, accent: false, onClick: () => document.getElementById('mentor-startups-section')?.scrollIntoView({ behavior: 'smooth' }) },
-          { label: t('mentor.upcomingMeetings'), value: upcomingMeetings.length, icon: Calendar, accent: false, 
-            extra: workspaces.filter(w => w.nextMeetingDate && isToday(new Date(w.nextMeetingDate))).length,
-            onClick: () => document.getElementById('mentor-calendar-section')?.scrollIntoView({ behavior: 'smooth' }) },
-          { label: t('mentor.startupsHealthy'), value: impactStats.healthyCount, icon: TrendingUp, accent: true },
-          { label: t('mentor.pendingActions'), value: impactStats.actionsCreated, icon: CheckCircle2, accent: false },
-        ].map((stat, i) => {
-          const Icon = stat.icon;
-          const isClickable = !!stat.onClick;
-          return (
-            <Card 
-              key={i} 
-              className={cn(
-                "p-4 rounded-2xl border-border/60 transition-all duration-200 hover:shadow-sm hover:border-border/80",
-                isClickable && "cursor-pointer hover:border-primary/30"
-              )}
-              onClick={stat.onClick}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{stat.label}</p>
-                  <p className={cn("text-3xl font-semibold", stat.accent && 'text-success')}>{stat.value}</p>
+      {/* Quick Stats — full view */}
+      <FullViewOnly>
+        <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
+          {[
+            { label: t('mentor.myStartups'), value: workspaces.length, icon: Briefcase, accent: false, onClick: () => document.getElementById('mentor-startups-section')?.scrollIntoView({ behavior: 'smooth' }) },
+            { label: t('mentor.upcomingMeetings'), value: upcomingMeetings.length, icon: Calendar, accent: false,
+              extra: workspaces.filter(w => w.nextMeetingDate && isToday(new Date(w.nextMeetingDate))).length,
+              onClick: () => document.getElementById('mentor-calendar-section')?.scrollIntoView({ behavior: 'smooth' }) },
+            { label: t('mentor.startupsHealthy'), value: impactStats.healthyCount, icon: TrendingUp, accent: true },
+            { label: t('mentor.pendingActions'), value: impactStats.actionsCreated, icon: CheckCircle2, accent: false },
+          ].map((stat, i) => {
+            const Icon = stat.icon;
+            const isClickable = !!stat.onClick;
+            return (
+              <Card
+                key={i}
+                className={cn(
+                  "p-4 rounded-2xl border-border/60 transition-all duration-200 hover:shadow-sm hover:border-border/80",
+                  isClickable && "cursor-pointer hover:border-primary/30"
+                )}
+                onClick={stat.onClick}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">{stat.label}</p>
+                    <p className={cn("text-3xl font-semibold", stat.accent && 'text-success')}>{stat.value}</p>
+                  </div>
+                  <div className="h-9 w-9 rounded-xl bg-muted/50 flex items-center justify-center">
+                    <Icon className={cn("h-4 w-4", stat.accent ? 'text-success' : 'text-muted-foreground/50')} />
+                  </div>
                 </div>
-                <div className="h-9 w-9 rounded-xl bg-muted/50 flex items-center justify-center">
-                  <Icon className={cn("h-4 w-4", stat.accent ? 'text-success' : 'text-muted-foreground/50')} />
-                </div>
-              </div>
-              {stat.extra !== undefined && stat.extra > 0 && (
-                <p className="text-xs text-primary mt-1 font-medium">
-                  {stat.extra} {t('common.today')}
-                </p>
-              )}
-            </Card>
-          );
-        })}
-      </div>
+                {stat.extra !== undefined && stat.extra > 0 && (
+                  <p className="text-xs text-primary mt-1 font-medium">
+                    {stat.extra} {t('common.today')}
+                  </p>
+                )}
+              </Card>
+            );
+          })}
+        </div>
 
-      {/* Cross-startup portfolio pulse */}
-      <MentorPortfolioPulse workspaces={workspaces} />
+        {/* Cross-startup portfolio pulse — full view */}
+        <MentorPortfolioPulse workspaces={workspaces} />
+      </FullViewOnly>
 
 
-      {/* Two-column layout: Startups + Calendar */}
+
+      {/* Two-column layout: Startups + Calendar — full view only */}
+      <FullViewOnly>
       <div className="grid gap-6 lg:grid-cols-3">
         <div id="mentor-startups-section" className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
@@ -599,6 +616,9 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
           </WidgetErrorBoundary>
         </div>
       </div>
+      </FullViewOnly>
+
+
 
       {/* Prep Sheet Dialog */}
       {prepSheetWorkspaceId && (

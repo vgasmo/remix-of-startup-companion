@@ -43,6 +43,13 @@ Deno.serve(async (req) => {
       const cronSecret = Deno.env.get('CRON_SECRET')
       
       if (token === cronSecret) {
+        // Invoicing has been retired from the product. Cron invocations must not
+        // create invoices. Manual/service-role paths are also disabled below.
+        console.log('[generate-invoices] invoicing disabled — cron invocation ignored')
+        return new Response(
+          JSON.stringify({ success: true, skipped: true, reason: 'invoicing_disabled' }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        )
         isCron = true
       } else {
         const { data: { user }, error } = await supabase.auth.getUser(token)
@@ -71,6 +78,14 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
+
+    // Invoicing has been retired from the product. Manual/service-role invocations
+    // are also disabled to keep the system in a single OFF state.
+    console.log('[generate-invoices] invoicing disabled — manual invocation ignored')
+    return new Response(
+      JSON.stringify({ success: true, skipped: true, reason: 'invoicing_disabled' }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    )
 
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {}
     const targetMonth = body.targetMonth || new Date().toISOString().slice(0, 7)

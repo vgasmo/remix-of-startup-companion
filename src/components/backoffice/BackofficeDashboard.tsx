@@ -26,6 +26,10 @@ import { InteractiveFloorMapViewer } from './InteractiveFloorMapViewer';
 import { SpaceDetailDrawer } from './SpaceDetailDrawer';
 import { useBuildings, useRoomsWithAllocations } from '@/hooks/useBackoffice';
 import type { Room, FloorMap } from '@/hooks/useBackoffice';
+import { FocusModeProvider, FocusModeToggle } from '@/components/ui/FocusModeToggle';
+import { FullViewOnly } from '@/components/dashboard/FocusGate';
+import { BrandSurface } from '@/components/ui/BrandSurface';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ContractWithDetails {
   id: string;
@@ -52,8 +56,21 @@ interface AnniversaryAlert {
 }
 
 export function BackofficeDashboard() {
+  return (
+    <FocusModeProvider persistKey="backoffice" defaultFocused={true}>
+      <BackofficeDashboardInner />
+    </FocusModeProvider>
+  );
+}
+
+function BackofficeDashboardInner() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  const hour = new Date().getHours();
+  const greetingKey = hour < 12 ? 'staff.hero.morning' : hour < 19 ? 'staff.hero.afternoon' : 'staff.hero.evening';
+  const greetingDefault = hour < 12 ? 'Bom dia{{name}}' : hour < 19 ? 'Boa tarde{{name}}' : 'Boa noite{{name}}';
+  const firstName = profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : '';
   const [mapViewerOpen, setMapViewerOpen] = useState(false);
   const [selectedFloorMap, setSelectedFloorMap] = useState<FloorMap | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
@@ -224,28 +241,58 @@ export function BackofficeDashboard() {
 
   return (
     <div className="space-y-6">
-      <BillingSnapshotCard />
+      {/* Greeting hero — visual parity with mentor/consultor dashboards */}
+      <BrandSurface
+        intensity="hero"
+        className="surface-hero rounded-2xl p-4 sm:p-7 overflow-hidden animate-fade-in-up stagger-1"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-2 min-w-0">
+            <p className="label-eyebrow">
+              {t('admin.backoffice.hero.eyebrow', { defaultValue: 'Painel de operações' })}
+            </p>
+            <h1 className="text-display text-foreground break-words">
+              {t(greetingKey, { defaultValue: greetingDefault, name: firstName })}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {t('admin.backoffice.hero.subline', {
+                defaultValue: '{{occ}}% ocupação · {{exp}} contratos a expirar',
+                occ: data.occupancyRate,
+                exp: data.expiringContractsCount,
+              })}
+            </p>
+          </div>
+          <FocusModeToggle />
+        </div>
+      </BrandSurface>
+
+      <FullViewOnly>
+        <BillingSnapshotCard />
+      </FullViewOnly>
       {/* ═══════════════════ HERO METRICS ═══════════════════ */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Occupancy Rate */}
-        <Card className={cn('rounded-2xl', data.occupancyRate < 70 && 'border-warning/50')}>
-          <CardContent className="pt-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold tracking-tight">{data.occupancyRate}%</div>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {t('admin.backoffice.dashboardPanel.occupancy')}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {data.occupiedRooms}/{data.totalRooms} {t('admin.backoffice.opsHub.rooms', { defaultValue: 'rooms' })}
-                </p>
+        {/* Occupancy Rate — full view only */}
+        <FullViewOnly>
+          <Card className={cn('rounded-2xl', data.occupancyRate < 70 && 'border-warning/50')}>
+            <CardContent className="pt-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-3xl font-bold tracking-tight">{data.occupancyRate}%</div>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {t('admin.backoffice.dashboardPanel.occupancy')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {data.occupiedRooms}/{data.totalRooms} {t('admin.backoffice.opsHub.rooms', { defaultValue: 'rooms' })}
+                  </p>
+                </div>
+                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Building2 className="h-6 w-6 text-primary" />
+                </div>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </FullViewOnly>
+
 
 
 
@@ -270,35 +317,38 @@ export function BackofficeDashboard() {
           </CardContent>
         </Card>
 
-        {/* Available Rooms */}
-        <Card className="rounded-2xl">
-          <CardContent className="pt-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold tracking-tight">{data.availableRooms}</div>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {t('admin.backoffice.opsHub.availableRooms', { defaultValue: 'Available Rooms' })}
-                </p>
-                {data.waitingListCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => navigate('/admin?tab=backoffice&subtab=waitlist')}
-                    className="text-xs text-warning hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-                  >
-                    {data.waitingListCount} {t('admin.backoffice.opsHub.inWaitlist', { defaultValue: 'in waitlist' })}
-                  </button>
-                )}
-
+        {/* Available Rooms — full view only */}
+        <FullViewOnly>
+          <Card className="rounded-2xl">
+            <CardContent className="pt-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-3xl font-bold tracking-tight">{data.availableRooms}</div>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {t('admin.backoffice.opsHub.availableRooms', { defaultValue: 'Available Rooms' })}
+                  </p>
+                  {data.waitingListCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => navigate('/admin?tab=backoffice&subtab=waitlist')}
+                      className="text-xs text-warning hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                    >
+                      {data.waitingListCount} {t('admin.backoffice.opsHub.inWaitlist', { defaultValue: 'in waitlist' })}
+                    </button>
+                  )}
+                </div>
+                <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center">
+                  <DoorOpen className="h-6 w-6 text-accent-foreground" />
+                </div>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center">
-                <DoorOpen className="h-6 w-6 text-accent-foreground" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </FullViewOnly>
       </div>
 
-      {/* ═══════════════════ THE PHYSICAL WORLD ═══════════════════ */}
+
+      {/* ═══════════════════ THE PHYSICAL WORLD — full view only ═══════════════════ */}
+      <FullViewOnly>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Building Occupancy Panel */}
         <WidgetErrorBoundary name={t('admin.backoffice.buildingOccupancy', 'Building Occupancy')}>
@@ -319,10 +369,10 @@ export function BackofficeDashboard() {
               {floorMaps && floorMaps.length > 0 ? (
                 <div className="grid grid-cols-2 gap-2">
                   {floorMaps.slice(0, 4).map(fm => {
-                    const building = buildings?.find(b => {
-                      // Match via space_id -> building
-                      return true; // Show all maps
-                    });
+                    // Match floor map to a building by name substring
+                    // (office_spaces has no building_id yet; do best-effort UI match).
+                    const fmName = (fm.name || '').toLowerCase();
+                    const building = buildings?.find(b => fmName.includes((b.name || '').toLowerCase()) || fmName.includes((b.code || '').toLowerCase()));
                     return (
                       <Button
                         key={fm.id}
@@ -334,9 +384,11 @@ export function BackofficeDashboard() {
                           <MapPin className="h-3.5 w-3.5 text-primary" />
                           {fm.name}
                         </span>
-                        {fm.floor && (
+                        {(building || fm.floor) && (
                           <span className="text-xs text-muted-foreground">
-                            {t('admin.backoffice.floorLabel', 'Floor')} {fm.floor}
+                            {building?.name}
+                            {building && fm.floor ? ' · ' : ''}
+                            {fm.floor && `${t('admin.backoffice.floorLabel', 'Floor')} ${fm.floor}`}
                           </span>
                         )}
                       </Button>
@@ -409,6 +461,8 @@ export function BackofficeDashboard() {
           </Card>
         </div>
       </div>
+      </FullViewOnly>
+
 
       {/* ═══════════════════ CONTRACTS HEALTH ═══════════════════ */}
       <div>
@@ -487,7 +541,8 @@ export function BackofficeDashboard() {
         </div>
       </div>
 
-      {/* ═══════════════════ TENURE BREAKDOWN ═══════════════════ */}
+      {/* ═══════════════════ TENURE BREAKDOWN — full view only ═══════════════════ */}
+      <FullViewOnly>
       <Card className="rounded-2xl">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
@@ -537,6 +592,7 @@ export function BackofficeDashboard() {
           )}
         </CardContent>
       </Card>
+      </FullViewOnly>
 
       {/* Interactive Floor Map Viewer (Dialog) */}
       {selectedFloorMap && (

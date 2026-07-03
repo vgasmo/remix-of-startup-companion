@@ -25,6 +25,8 @@ import { EcosystemInsights } from '@/components/dashboard/EcosystemInsights';
 import { EcosystemHeatmap } from '@/components/admin/EcosystemHeatmap';
 import { ExportAnalyticsModal } from '@/components/admin/ExportAnalyticsModal';
 import type { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
+import { FocusModeProvider, FocusModeToggle } from '@/components/ui/FocusModeToggle';
+import { FullViewOnly } from '@/components/dashboard/FocusGate';
 
 interface AdminDashboardProps {
   workspaces: WorkspaceWithDetails[];
@@ -35,7 +37,15 @@ interface AdminDashboardProps {
 
 import { memo, useMemo, useState } from 'react';
 
-export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoading: workspacesLoading, programsCount, onSwitchToPortfolio }: AdminDashboardProps) {
+export const AdminDashboard = memo(function AdminDashboard(props: AdminDashboardProps) {
+  return (
+    <FocusModeProvider persistKey="admin" defaultFocused={true}>
+      <AdminDashboardInner {...props} />
+    </FocusModeProvider>
+  );
+});
+
+const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLoading: workspacesLoading, programsCount, onSwitchToPortfolio }: AdminDashboardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { profile } = useAuth();
@@ -150,10 +160,13 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
               })}
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={onSwitchToPortfolio} className="gap-2 shrink-0">
-            <RefreshCw className="h-4 w-4" />
-            <span className="hidden sm:inline">{t('admin.portfolioView')}</span>
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <FocusModeToggle />
+            <Button variant="outline" size="sm" onClick={onSwitchToPortfolio} className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('admin.portfolioView')}</span>
+            </Button>
+          </div>
         </div>
       </BrandSurface>
 
@@ -197,12 +210,14 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
 
       {/* Signal cards removed — data already surfaced by ExceptionAlerts above (no fabricated sparklines). */}
 
-      {/* Smart Insights */}
-      <EcosystemInsights insights={insights} />
+      {/* Smart Insights — full view only */}
+      <FullViewOnly>
+        <EcosystemInsights insights={insights} />
 
-      {/* Ecosystem Heatmap */}
-      <EcosystemHeatmap workspaces={workspaces} onExport={() => setShowExport(true)} />
-      <ExportAnalyticsModal open={showExport} onOpenChange={setShowExport} />
+        {/* Ecosystem Heatmap */}
+        <EcosystemHeatmap workspaces={workspaces} onExport={() => setShowExport(true)} />
+        <ExportAnalyticsModal open={showExport} onOpenChange={setShowExport} />
+      </FullViewOnly>
 
       {/* Portfolio Health Summary */}
       <Card className="rounded-2xl">
@@ -301,32 +316,35 @@ export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoadi
         </CardContent>
       </Card>
 
-      {/* Quick Links */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
-        {[
-          { label: t('staffCockpit.navLabel', { defaultValue: 'Painel' }), href: '/staff-cockpit', icon: TrendingUp, desc: t('admin.commandCenterDesc', { defaultValue: 'Triage diária e visão operacional' }) },
-          { label: t('admin.crmPipeline'), href: '/crm', icon: Users, desc: t('admin.crmDesc', { defaultValue: 'Pipeline comercial' }) },
-          { label: t('admin.spaceOps', { defaultValue: 'Operações de Espaço' }), href: '/admin?tab=backoffice', icon: Building2, desc: t('admin.spaceOpsDesc', { defaultValue: 'Contratos, faturas e infra' }) },
-          { label: t('admin.programs'), href: '/admin?tab=programs-setup', icon: FileText, desc: t('admin.programsDesc', { defaultValue: 'Configuração de programas' }) },
-          { label: t('admin.reports'), href: '/admin?tab=analytics', icon: AlertTriangle, desc: t('admin.reportsDesc', { defaultValue: 'Relatórios e métricas' }) },
-        ].map((link) => {
-          const Icon = link.icon;
-          return (
-            <Button
-              key={link.href}
-              variant="outline"
-              className="h-auto py-3 px-3 flex-col items-start gap-1 rounded-xl hover:shadow-sm hover:scale-[1.01] transition-all duration-200 text-left"
-              onClick={() => navigate(link.href)}
-            >
-              <div className="flex items-center gap-2">
-                <Icon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">{link.label}</span>
-              </div>
-              <span className="text-[10px] text-muted-foreground font-normal">{link.desc}</span>
-            </Button>
-          );
-        })}
-      </div>
+      {/* Quick Links — full view only */}
+      <FullViewOnly>
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
+          {[
+            { label: t('staffCockpit.navLabel', { defaultValue: 'Painel' }), href: '/staff-cockpit', icon: TrendingUp, desc: t('admin.commandCenterDesc', { defaultValue: 'Triage diária e visão operacional' }) },
+            { label: t('admin.crmPipeline'), href: '/crm', icon: Users, desc: t('admin.crmDesc', { defaultValue: 'Pipeline comercial' }) },
+            { label: t('admin.spaceOps', { defaultValue: 'Operações de Espaço' }), href: '/admin?tab=backoffice', icon: Building2, desc: t('admin.spaceOpsDesc', { defaultValue: 'Contratos, faturas e infra' }) },
+            { label: t('admin.programs'), href: '/admin?tab=programs-setup', icon: FileText, desc: t('admin.programsDesc', { defaultValue: 'Configuração de programas' }) },
+            { label: t('admin.reports'), href: '/admin?tab=analytics', icon: AlertTriangle, desc: t('admin.reportsDesc', { defaultValue: 'Relatórios e métricas' }) },
+          ].map((link) => {
+            const Icon = link.icon;
+            return (
+              <Button
+                key={link.href}
+                variant="outline"
+                className="h-auto py-3 px-3 flex-col items-start gap-1 rounded-xl hover:shadow-sm hover:scale-[1.01] transition-all duration-200 text-left"
+                onClick={() => navigate(link.href)}
+              >
+                <div className="flex items-center gap-2">
+                  <Icon className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">{link.label}</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground font-normal">{link.desc}</span>
+              </Button>
+            );
+          })}
+        </div>
+      </FullViewOnly>
+
     </div>
   );
 });

@@ -1,11 +1,13 @@
 /**
  * OpsActionPrompts — CRM-style suggested actions (read-only, no mutations).
- * Computed from existing readable data. Local dismissal only.
+ * Computed from existing readable data. Dismissals persist per-user on
+ * `profiles.dismissed_prompts` (jsonb array of prompt ids).
  */
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,17 +33,7 @@ interface ActionPrompt {
   actions: Array<{ label: string; icon: typeof FileText; onClick: () => void }>;
 }
 
-const DISMISSED_KEY = 'ops_dismissed_prompts';
-
-function getDismissed(): Set<string> {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(DISMISSED_KEY) || '[]'));
-  } catch { return new Set(); }
-}
-
-function setDismissed(ids: Set<string>) {
-  localStorage.setItem(DISMISSED_KEY, JSON.stringify([...ids]));
-}
+// Local storage helpers removed — dismissals now persist on profiles.dismissed_prompts.
 
 const CONTRACT_EMAIL_TEMPLATE = `Assunto: Contrato de Incubação — Startup Leiria
 
@@ -67,7 +59,41 @@ const ACTIVATION_CHECKLIST = `✅ Checklist de Ativação:
 export function OpsActionPrompts() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [dismissed, setDismissedState] = useState<Set<string>>(getDismissed);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Persisted dismissals (per-user) from profiles.dismissed_prompts.
+  const { data: dismissedList } = useQuery({
+    queryKey: ['profile', 'dismissed_prompts', user?.id],
+    enabled: !!user?.id,
+    staleTime: 60_000,
+    queryFn: async (): Promise<string[]> => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('dismissed_prompts')
+        .eq('id', user!.id)
+        .maybeSingle();
+      const raw = (data?.dismissed_prompts ?? []) as unknown;
+      return Array.isArray(raw) ? raw.filter((v): v is string => typeof v === 'string') : [];
+    },
+  });
+  const dismissed = useMemo(() => new Set<string>(dismissedList ?? []), [dismissedList]);
+
+  const dismissMutation = useMutation({
+    mutationFn: async (id: string) => {
+      if (!user?.id) throw new Error('not authenticated');
+      const next = Array.from(new Set<string>([...(dismissedList ?? []), id]));
+      const { error } = await supabase
+        .from('profiles')
+        .update({ dismissed_prompts: next })
+        .eq('id', user.id);
+      if (error) throw error;
+      return next;
+    },
+    onSuccess: (next) => {
+      queryClient.setQueryData(['profile', 'dismissed_prompts', user?.id], next);
+    },
+  });
 
   const { data: prompts, isLoading } = useQuery({
     queryKey: ['ops-action-prompts'],
@@ -217,10 +243,7 @@ export function OpsActionPrompts() {
   }, [prompts, dismissed]);
 
   const handleDismiss = (id: string) => {
-    const next = new Set(dismissed);
-    next.add(id);
-    setDismissedState(next);
-    setDismissed(next);
+    dismissMutation.mutate(id);
   };
 
   const handleCopyTemplate = () => {

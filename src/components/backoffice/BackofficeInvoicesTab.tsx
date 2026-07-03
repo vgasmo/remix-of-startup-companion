@@ -1,3 +1,6 @@
+// Invoicing retired — re-enable by removing the early return in
+// supabase/functions/generate-invoices/index.ts and restoring the workflow entrypoints
+// that reach this tab. UI + hooks intentionally kept in the codebase for reference.
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

@@ -59,12 +59,15 @@ import { MessagingPanel } from '@/components/messaging/MessagingPanel';
 import { SidebarContactInfo } from './SidebarContactInfo';
 import { useConversations } from '@/hooks/useMessaging';
 
+import { useBackofficeSidebarBadges } from '@/hooks/backoffice/useBackofficeSidebarBadges';
+
 interface NavItem {
   name: string;
   href: string;
   icon: LucideIcon;
   exact?: boolean;
   children?: NavItem[];
+  badge?: number;
 }
 
 export function AppSidebar() {
@@ -155,12 +158,14 @@ export function AppSidebar() {
   ];
 
   // BACKOFFICE Navigation (focused on spaces, contracts, invoices)
+  const backofficeBadgesEnabled = isBackoffice || isAdmin;
+  const { data: bofBadges } = useBackofficeSidebarBadges(backofficeBadgesEnabled);
   const backofficeNavigation: NavItem[] = [
     { name: t('nav.backoffice.cockpit', { defaultValue: 'Painel' }), href: '/staff-cockpit', icon: Home, exact: true },
     { name: t('nav.backoffice.spaces', { defaultValue: 'Espaços' }), href: '/admin?tab=backoffice', icon: Building2 },
-    { name: t('nav.backoffice.contracts', { defaultValue: 'Contratos' }), href: '/admin?tab=backoffice&subtab=contracts', icon: FileText },
+    { name: t('nav.backoffice.contracts', { defaultValue: 'Contratos' }), href: '/admin?tab=backoffice&subtab=contracts', icon: FileText, badge: bofBadges?.expiringContracts },
     // Billing/Invoices removed from nav per user request
-    { name: t('nav.backoffice.approvals', { defaultValue: 'Aprovações' }), href: '/admin?tab=approvals', icon: Clock },
+    { name: t('nav.backoffice.approvals', { defaultValue: 'Aprovações' }), href: '/admin?tab=approvals', icon: Clock, badge: bofBadges?.pendingApprovals },
     { name: t('nav.backoffice.quickGuide', { defaultValue: 'Guia Rápido' }), href: '/guide', icon: BookOpenCheck },
     { name: t('nav.founder.glossaryFaq', { defaultValue: 'Glossário & FAQ' }), href: '/help', icon: HelpCircle },
   ];
@@ -317,6 +322,7 @@ export function AppSidebar() {
     }
 
     // Standard nav item (no children or collapsed)
+    const badgeValue = item.badge ?? 0;
     const NavLink = (
       <Link
         key={item.name}
@@ -331,7 +337,19 @@ export function AppSidebar() {
       >
         <item.icon className={cn("h-[18px] w-[18px] shrink-0", isActive && "text-sidebar-primary")} />
         {!collapsed && (
-          <span className="truncate">{item.name}</span>
+          <>
+            <span className="truncate flex-1">{item.name}</span>
+            {badgeValue > 0 && (
+              <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-warning/20 text-warning text-[10px] font-semibold flex items-center justify-center">
+                {badgeValue > 99 ? '99+' : badgeValue}
+              </span>
+            )}
+          </>
+        )}
+        {collapsed && badgeValue > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-warning text-warning-foreground text-[9px] font-semibold flex items-center justify-center">
+            {badgeValue > 9 ? '9+' : badgeValue}
+          </span>
         )}
       </Link>
     );
