@@ -258,7 +258,7 @@ export default function PublicBooking() {
               <div className="bg-muted rounded-lg p-4 mt-4">
                 <div className="flex items-center justify-center gap-2 text-sm text-foreground">
                   <Calendar className="h-4 w-4" />
-                  {format(new Date(selectedSlot.date), 'EEEE, MMMM d, yyyy')}
+                  {format(new Date(selectedSlot.date), 'EEEE, MMMM d, yyyy', { locale: dateLocale })}
                 </div>
                 <div className="flex items-center justify-center gap-2 text-sm text-foreground mt-1">
                   <Clock className="h-4 w-4" />
