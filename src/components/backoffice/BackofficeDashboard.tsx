@@ -66,6 +66,11 @@ export function BackofficeDashboard() {
 function BackofficeDashboardInner() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  const hour = new Date().getHours();
+  const greetingKey = hour < 12 ? 'staff.hero.morning' : hour < 19 ? 'staff.hero.afternoon' : 'staff.hero.evening';
+  const greetingDefault = hour < 12 ? 'Bom dia{{name}}' : hour < 19 ? 'Boa tarde{{name}}' : 'Boa noite{{name}}';
+  const firstName = profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : '';
   const [mapViewerOpen, setMapViewerOpen] = useState(false);
   const [selectedFloorMap, setSelectedFloorMap] = useState<FloorMap | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
