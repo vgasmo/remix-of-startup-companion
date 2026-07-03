@@ -333,14 +333,24 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
         <Table>
           <TableHeader sticky>
             <TableRow className="hover:bg-transparent border-border/70 bg-muted/30">
-              <TableHead className="w-[250px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.name', { defaultValue: 'Name' })}</TableHead>
+              <TableHead aria-sort={ariaSortFor('name')} className="w-[250px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium cursor-pointer select-none" onClick={() => toggleSort('name')}>
+                <span className="inline-flex items-center gap-1">{t('ecosystem.name', { defaultValue: 'Name' })} <SortIcon k="name" /></span>
+              </TableHead>
               <TableHead className="w-[80px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.type', { defaultValue: 'Type' })}</TableHead>
               <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.program', { defaultValue: 'Program' })}</TableHead>
-              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.stage', { defaultValue: 'Stage' })}</TableHead>
+              <TableHead aria-sort={ariaSortFor('stage')} className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium cursor-pointer select-none" onClick={() => toggleSort('stage')}>
+                <span className="inline-flex items-center gap-1">{t('workspace.stage', { defaultValue: 'Stage' })} <SortIcon k="stage" /></span>
+              </TableHead>
               <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.category', { defaultValue: 'Cat.' })}</TableHead>
-              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.healthScore', { defaultValue: 'Health' })}</TableHead>
-              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.owner', { defaultValue: 'Owner' })}</TableHead>
-              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.lastActivity', { defaultValue: 'Last Activity' })}</TableHead>
+              <TableHead aria-sort={ariaSortFor('health')} className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium cursor-pointer select-none" onClick={() => toggleSort('health')}>
+                <span className="inline-flex items-center gap-1">{t('workspace.healthScore', { defaultValue: 'Health' })} <SortIcon k="health" /></span>
+              </TableHead>
+              <TableHead aria-sort={ariaSortFor('consultant')} className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium cursor-pointer select-none" onClick={() => toggleSort('consultant')}>
+                <span className="inline-flex items-center gap-1">{t('ecosystem.owner', { defaultValue: 'Owner' })} <SortIcon k="consultant" /></span>
+              </TableHead>
+              <TableHead aria-sort={ariaSortFor('updated')} className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium cursor-pointer select-none" onClick={() => toggleSort('updated')}>
+                <span className="inline-flex items-center gap-1">{t('ecosystem.lastActivity', { defaultValue: 'Last Activity' })} <SortIcon k="updated" /></span>
+              </TableHead>
               <TableHead className="w-[50px] h-9"></TableHead>
             </TableRow>
           </TableHeader>
