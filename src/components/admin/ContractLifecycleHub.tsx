@@ -49,6 +49,8 @@ export function ContractLifecycleHub() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'alerts' | 'pipeline'>('overview');
   const [convertDialogItem, setConvertDialogItem] = useState<any>(null);
+  const [renewContract, setRenewContract] = useState<any>(null);
+
   
   const { data: contracts } = useContracts();
   const { data: funnelItems } = useFunnelItems();
