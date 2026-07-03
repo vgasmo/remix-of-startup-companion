@@ -199,7 +199,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {t('admin.backoffice.since', { defaultValue: 'Desde' })} {format(new Date(allocation.start_date), 'dd MMM yyyy')}
+                      {t('admin.backoffice.inSpaceSince', { defaultValue: 'No espaço desde' })} {format(new Date(allocation.start_date), 'dd MMM yyyy')}
                     </span>
                     {tenure && (
                       <span className="flex items-center gap-1">
