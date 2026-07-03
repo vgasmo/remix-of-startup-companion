@@ -2,7 +2,7 @@ import { memo, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format, isToday } from 'date-fns';
 import { pt as ptLocale, enUS } from 'date-fns/locale';
-import { Calendar, FileText, ExternalLink, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Calendar, FileText, ExternalLink, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, ArrowDown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
