@@ -2,7 +2,7 @@
  * ContractLifecycleEventsCard — Dashboard card showing upcoming lifecycle deadlines
  * Anniversaries, biennial price reviews, notice windows, incubation limits
  */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -11,12 +11,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { RenewContractDialog } from '@/components/backoffice/contracts/RenewContractDialog';
 import {
   CalendarClock, Cake, AlertTriangle, Clock, FileText,
   CheckCircle2, RefreshCw, Bell
 } from 'lucide-react';
 import { format, differenceInDays, addYears, subDays } from 'date-fns';
 import { cn } from '@/lib/utils';
+
 
 interface ContractForEvents {
   id: string;
