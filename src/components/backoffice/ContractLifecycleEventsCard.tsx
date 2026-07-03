@@ -211,11 +211,20 @@ export function ContractLifecycleEventsCard() {
         ) : (
           <ScrollArea className="h-[300px]">
             <div className="space-y-2">
-              {events.slice(0, 15).map((event, idx) => (
-                <div
+              {events.slice(0, 15).map((event, idx) => {
+                const goToContract = () =>
+                  navigate(`/admin?tab=backoffice&subtab=contracts&contract=${event.contractId}`);
+                return (
+                <button
+                  type="button"
                   key={`${event.contractId}-${event.eventType}-${idx}`}
+                  onClick={goToContract}
+                  aria-label={t('lifecycle.stepper.openContractAria', {
+                    defaultValue: 'Abrir contrato de {{startup}}',
+                    startup: event.startupName,
+                  })}
                   className={cn(
-                    'p-3 rounded-lg border flex items-start gap-3 text-sm',
+                    'w-full text-left p-3 rounded-lg border flex items-start gap-3 text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     event.severity === 'critical' && 'bg-destructive/50 border-destructive/30 dark:bg-destructive/10',
                     event.severity === 'warning' && 'bg-warning/50 border-warning/30 dark:bg-warning/10',
                     event.severity === 'info' && 'bg-info/50 border-info/30 dark:bg-info/10',
@@ -249,8 +258,9 @@ export function ContractLifecycleEventsCard() {
                       </span>
                     </div>
                   </div>
-                </div>
-              ))}
+                </button>
+                );
+              })}
             </div>
           </ScrollArea>
         )}
