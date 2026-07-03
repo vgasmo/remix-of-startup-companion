@@ -26,6 +26,10 @@ import { InteractiveFloorMapViewer } from './InteractiveFloorMapViewer';
 import { SpaceDetailDrawer } from './SpaceDetailDrawer';
 import { useBuildings, useRoomsWithAllocations } from '@/hooks/useBackoffice';
 import type { Room, FloorMap } from '@/hooks/useBackoffice';
+import { FocusModeProvider, FocusModeToggle } from '@/components/ui/FocusModeToggle';
+import { FullViewOnly } from '@/components/dashboard/FocusGate';
+import { BrandSurface } from '@/components/ui/BrandSurface';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ContractWithDetails {
   id: string;
