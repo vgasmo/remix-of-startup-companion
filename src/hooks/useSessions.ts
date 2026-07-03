@@ -24,6 +24,114 @@ async function logActivity(action: string, entityType: string, entityId: string,
   }
 }
 
+// Notify workspace participants (founder, consultor, mentors) on session
+// create/reschedule/cancel — inbox notification for everyone, email for
+// rescheduled/cancelled (create emails are triggered from CreateSessionDialog
+// when the organizer opts in via "sendInvites").
+type SessionEventKind = 'created' | 'rescheduled' | 'cancelled';
+
+async function notifySessionEvent(
+  kind: SessionEventKind,
+  session: { id: string; title: string; scheduled_at: string; duration: number | null; agenda?: string | null },
+  workspaceId: string,
+  opts: { sendEmail?: boolean } = {},
+): Promise<void> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Recipients: all active workspace members. Exclude the actor so they
+    // don't ping themselves. Fetch profile emails/preferred language too.
+    const { data: members } = await supabase
+      .from('workspace_users')
+      .select('user_id, role, active')
+      .eq('workspace_id', workspaceId)
+      .eq('active', true);
+
+    const memberIds = (members || []).map((m) => m.user_id).filter(Boolean);
+    if (memberIds.length === 0) return;
+
+    const { data: profiles } = await supabase
+      .from('profiles_safe')
+      .select('id, full_name, email')
+      .in('id', memberIds);
+
+    const workspaceInfo = await supabase
+      .from('workspaces')
+      .select('id, startup:startups(name)')
+      .eq('id', workspaceId)
+      .maybeSingle();
+    const startupName = ((workspaceInfo.data as { startup?: { name?: string } } | null)?.startup?.name) || 'Startup';
+
+    const scheduledDate = new Date(session.scheduled_at);
+    const dateStr = Number.isFinite(scheduledDate.getTime())
+      ? scheduledDate.toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' })
+      : session.scheduled_at;
+
+    const titleByKind: Record<SessionEventKind, string> = {
+      created: `Sessão agendada: ${session.title}`,
+      rescheduled: `Sessão reagendada: ${session.title}`,
+      cancelled: `Sessão cancelada: ${session.title}`,
+    };
+    const messageByKind: Record<SessionEventKind, string> = {
+      created: `Nova sessão em ${dateStr}.`,
+      rescheduled: `Nova data: ${dateStr}.`,
+      cancelled: `Prevista para ${dateStr}.`,
+    };
+    const typeByKind: Record<SessionEventKind, string> = {
+      created: 'session_scheduled',
+      rescheduled: 'session_rescheduled',
+      cancelled: 'session_cancelled',
+    };
+
+    const link = `/workspace/${workspaceId}?tab=agenda`;
+
+    // Inbox notifications — one per recipient (skip the actor).
+    const inboxRows = memberIds
+      .filter((id) => id !== user?.id)
+      .map((id) => ({
+        user_id: id,
+        type: typeByKind[kind],
+        title: titleByKind[kind],
+        message: messageByKind[kind],
+        link,
+        entity_type: 'session',
+        entity_id: session.id,
+        read: false,
+      }));
+
+    if (inboxRows.length > 0) {
+      await supabase.from('notifications').insert(inboxRows);
+    }
+
+    // Email invites — always for rescheduled/cancelled, opt-in for created
+    // (create is handled by CreateSessionDialog's sendInvites flow).
+    if (opts.sendEmail !== false && (kind === 'rescheduled' || kind === 'cancelled')) {
+      const recipientEmails = (profiles || [])
+        .filter((p) => p.id !== user?.id && !!p.email)
+        .map((p) => p.email as string);
+
+      if (recipientEmails.length > 0) {
+        const organizerProfile = (profiles || []).find((p) => p.id === user?.id);
+        await supabase.functions.invoke('send-session-invite', {
+          body: {
+            sessionId: session.id,
+            workspaceId,
+            title: session.title,
+            scheduledAt: session.scheduled_at,
+            duration: session.duration || 60,
+            agenda: session.agenda || undefined,
+            recipientEmails,
+            organizerName: organizerProfile?.full_name || organizerProfile?.email || 'Startup Leiria',
+            startupName,
+            eventType: kind,
+          },
+        });
+      }
+    }
+  } catch (e) {
+    logger.warn('session_event_notify_failed', { kind, error: String(e) });
+  }
+
 export interface Session {
   id: string;
   workspace_id: string;
