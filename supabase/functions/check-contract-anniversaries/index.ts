@@ -277,7 +277,7 @@ Deno.serve(async (req) => {
       const { data: staffUsers } = await supabase
         .from('user_roles')
         .select('user_id')
-        .in('role', ['admin', 'consultor'])
+        .in('role', ['admin', 'consultor', 'backoffice'])
 
       if (staffUsers?.length) {
         const notifications = alerts.map(alert => {
