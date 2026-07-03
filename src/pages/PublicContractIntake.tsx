@@ -712,15 +712,9 @@ export default function PublicContractIntake() {
           <Button
             size="lg"
             className="gap-2"
-            disabled={
-              submitMutation.isPending ||
-              !formData.organization_name ||
-              !formData.company_nif ||
-              !formData.legal_representative_name ||
-              !formData.legal_representative_email ||
-              !formData.legal_representative_phone
-            } loading={submitMutation.isPending}
-            onClick={async () => { await autosave.flush(); submitMutation.mutate(); }}
+            disabled={submitMutation.isPending}
+            loading={submitMutation.isPending}
+            onClick={handleSubmit}
           >
             {submitMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
