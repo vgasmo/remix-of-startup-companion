@@ -8970,9 +8970,11 @@
       "outreach": "Contacto",
       "overdue_actions": "Ações Atrasadas",
       "post_session_followup": "Follow-up",
+      "review_checkin": "Rever Check-in",
       "schedule_session": "Agendar Sessão",
       "stage_gate_review": "Revisão de Etapa",
-      "triage": "Triagem"
+      "triage": "Triagem",
+      "validate_actions": "Validar Ações"
     },
     "updateFailed": "Falha ao atualizar a fila",
     "updated": "Fila atualizada",
