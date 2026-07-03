@@ -57,6 +57,7 @@ interface MentorConnection {
    * prefer `workspace_id` and fall back to `founder_id` only when missing.
    */
   founder_id: string;
+  workspace_id: string | null;
   mentor_id: string;
   status: string;
   message: string | null;
