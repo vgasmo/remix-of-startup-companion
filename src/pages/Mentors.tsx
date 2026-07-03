@@ -401,6 +401,13 @@ export default function Mentors() {
       // reflects the change without waiting for realtime.
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       notify.success(`${t('mentorsPage.connection')} ${status === 'accepted' ? t('mentorsPage.accepted') : t('mentorsPage.declined')}`);
+      // Move focus to the section the mentor most likely wants to see next:
+      // accepted → the connected founders list; declined → the remaining
+      // pending requests. Wait a frame so the re-render finishes first.
+      requestAnimationFrame(() => {
+        const target = status === 'accepted' ? acceptedSectionRef.current : pendingSectionRef.current;
+        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     },
     onError: (error: any) => {
       notify.error(error.message || t('mentorsPage.failedToUpdate'));
