@@ -48,7 +48,7 @@ export interface Notification {
  * inbox should only surface the most recent one. Other notification types are
  * returned untouched.
  */
-function dedupePendingMentorConnections(rows: Notification[]): Notification[] {
+export function dedupePendingMentorConnections(rows: Notification[]): Notification[] {
   const seen = new Set<string>();
   const result: Notification[] = [];
   for (const n of rows) {
