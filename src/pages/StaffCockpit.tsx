@@ -48,6 +48,29 @@ export default function StaffCockpit() {
 
   const heroLoading = workspacesLoading || programsLoading;
 
+  const isBackoffice = roles?.includes('backoffice');
+  const isAdmin = roles?.includes('admin');
+
+  // Counts for NextBestActionStaff (backoffice branch)
+  const { data: backofficeCounts } = useQuery({
+    queryKey: ['staff-cockpit-nba-counts'],
+    enabled: !!(isBackoffice || isAdmin),
+    queryFn: async () => {
+      const [contractsRes, intakesRes, unassignedRes] = await Promise.all([
+        supabase.from('startup_contracts').select('id', { count: 'exact', head: true }).eq('status', 'pending_signature'),
+        supabase.from('contract_intakes').select('id', { count: 'exact', head: true }).in('status', ['review_pending', 'changes_requested']),
+        supabase.from('workspaces').select('id', { count: 'exact', head: true }).eq('status', 'active').is('primary_consultor_id', null),
+      ]);
+      return {
+        contractsAwaitingSignatureCount: contractsRes.count ?? 0,
+        intakesBlockedCount: intakesRes.count ?? 0,
+        unassignedActiveWorkspacesCount: unassignedRes.count ?? 0,
+      };
+    },
+    staleTime: 60_000,
+  });
+
+
   const isAdmin = roles?.includes('admin');
   const isConsultor = roles?.includes('consultor');
   const isBackoffice = roles?.includes('backoffice');
