@@ -160,10 +160,13 @@ const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLo
               })}
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={onSwitchToPortfolio} className="gap-2 shrink-0">
-            <RefreshCw className="h-4 w-4" />
-            <span className="hidden sm:inline">{t('admin.portfolioView')}</span>
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <FocusModeToggle />
+            <Button variant="outline" size="sm" onClick={onSwitchToPortfolio} className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('admin.portfolioView')}</span>
+            </Button>
+          </div>
         </div>
       </BrandSurface>
 
