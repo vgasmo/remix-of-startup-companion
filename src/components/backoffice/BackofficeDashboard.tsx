@@ -347,7 +347,8 @@ function BackofficeDashboardInner() {
       </div>
 
 
-      {/* ═══════════════════ THE PHYSICAL WORLD ═══════════════════ */}
+      {/* ═══════════════════ THE PHYSICAL WORLD — full view only ═══════════════════ */}
+      <FullViewOnly>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Building Occupancy Panel */}
         <WidgetErrorBoundary name={t('admin.backoffice.buildingOccupancy', 'Building Occupancy')}>
