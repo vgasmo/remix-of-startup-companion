@@ -50,7 +50,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
   const updateRoom = useUpdateRoom();
   const fulfillWaitlist = useFulfillWaitingListRequest();
   const { data: workspaces } = useWorkspaces({}, false, ALL_WORKSPACE_STATUSES);
-  const { data: waitingList } = useSpaceWaitingList({ status: 'pending' });
+  const { data: waitingList } = useSpaceWaitingList({ status: 'waiting' });
 
   if (!room) return null;
 
