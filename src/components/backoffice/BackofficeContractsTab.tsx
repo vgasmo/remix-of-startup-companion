@@ -10,7 +10,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, FileText, Search, Clock, AlertTriangle, Cake, Zap, Building2 } from 'lucide-react';
+import { Plus, FileText, Search, Clock, AlertTriangle, Cake, Zap, Building2, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useContractRoom, buildRoomDeepLink } from '@/hooks/useEntityRoom';
 import { useContracts, useIncubationTypes, useBuildings, useCreateContract, useUpdateContract, type StartupContract, type IncubationType } from '@/hooks/useBackoffice';
 import { useWorkspaces, ALL_WORKSPACE_STATUSES } from '@/hooks/useWorkspaces';
 import { format, differenceInMonths, addYears, differenceInDays } from 'date-fns';
