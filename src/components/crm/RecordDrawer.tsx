@@ -18,6 +18,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import {
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   FileText,
   CheckSquare,
   Sparkles,
@@ -30,6 +31,8 @@ import {
   ExternalLink,
   Copy,
   Send,
+  Phone,
+  Calendar,
 } from 'lucide-react';
 import { FunnelItem, FunnelStage, useUpdateFunnelItem } from '@/hooks/useFunnel';
 import { useActivityTimeline, useRelationshipRecap, useGenerateRecap, useSyncEmails, useAddActivity, ActivityType, ActivityEntry } from '@/hooks/useActivityTimeline';
