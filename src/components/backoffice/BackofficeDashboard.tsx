@@ -56,6 +56,14 @@ interface AnniversaryAlert {
 }
 
 export function BackofficeDashboard() {
+  return (
+    <FocusModeProvider persistKey="backoffice" defaultFocused={true}>
+      <BackofficeDashboardInner />
+    </FocusModeProvider>
+  );
+}
+
+function BackofficeDashboardInner() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [mapViewerOpen, setMapViewerOpen] = useState(false);
