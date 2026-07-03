@@ -94,17 +94,28 @@ export default function WorkspaceDetail() {
   // URL-synced tab state
   const currentTab = searchParams.get('tab') || 'overview';
   
-  // Redirect legacy tabs
+  // Redirect legacy tabs (old email/notification deep-links)
   useEffect(() => {
+    const sub = searchParams.get('sub');
+    const highlight = searchParams.get('highlight');
+    const extra: Record<string, string> = {};
+    if (sub) extra.sub = sub;
+    if (highlight) extra.highlight = highlight;
+
     if (currentTab === 'dataroom') {
-      setSearchParams({ tab: 'documents', sub: 'dataroom' }, { replace: true });
+      setSearchParams({ tab: 'documents', sub: sub || 'dataroom', ...(highlight ? { highlight } : {}) }, { replace: true });
     } else if (currentTab === 'sessions' || currentTab === 'calendar') {
-      setSearchParams({ tab: 'agenda' }, { replace: true });
+      setSearchParams({ tab: 'agenda', ...extra }, { replace: true });
+    } else if (currentTab === 'milestones' || currentTab === 'actions') {
+      setSearchParams({ tab: 'milestones-actions', sub: sub || (currentTab === 'actions' ? 'actions' : 'milestones'), ...(highlight ? { highlight } : {}) }, { replace: true });
+    } else if (currentTab === 'templates') {
+      setSearchParams({ tab: 'documents', sub: sub || 'tools', ...(highlight ? { highlight } : {}) }, { replace: true });
     } else if (currentTab === 'milestones-actions-actions') {
       // Legacy token from older links/emails — canonical is milestones-actions + sub=actions
       setSearchParams({ tab: 'milestones-actions', sub: 'actions' }, { replace: true });
     }
-  }, [currentTab, setSearchParams]);
+  }, [currentTab, searchParams, setSearchParams]);
+
   
   const activeTab = allVisibleIds.has(currentTab) ? currentTab : 'overview';
   

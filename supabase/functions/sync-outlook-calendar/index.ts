@@ -465,7 +465,7 @@ Deno.serve(async (req: Request) => {
 
     const startupName = typedSession.workspaces?.startups?.name || 'Session';
     const appUrl = Deno.env.get('APP_URL') || 'https://startupleiria.app';
-    const sessionLink = `${appUrl}/workspace/${typedSession.workspace_id}?tab=sessions`;
+    const sessionLink = `${appUrl}/workspace/${typedSession.workspace_id}?tab=agenda`;
 
     // ========== WEBHOOK MODE ==========
     if (outlookSettings.sync_mode === 'webhook') {

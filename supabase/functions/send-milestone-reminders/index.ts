@@ -168,7 +168,7 @@ serve(async (req) => {
                 </p>
               </div>
               <p>
-                <a href="${Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/workspace/${milestone.workspace_id}?tab=milestones"
+                <a href="${Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/workspace/${milestone.workspace_id}?tab=milestones-actions"
                    style="background: #6366f1; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block;">
                   ${s.cta}
                 </a>
@@ -225,7 +225,7 @@ serve(async (req) => {
             type: "milestone_reminder",
             title: s.notifTitle(daysUntilDue, dayWord),
             message: s.notifMessage(milestone.title, startupName, dateStr),
-            link: `/workspace/${milestone.workspace_id}?tab=milestones`,
+            link: `/workspace/${milestone.workspace_id}?tab=milestones-actions`,
             metadata: { milestone_id: milestone.id, days_until_due: daysUntilDue },
           });
           notificationsSent++;
