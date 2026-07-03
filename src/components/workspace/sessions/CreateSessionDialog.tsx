@@ -196,7 +196,8 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
       .select('id, title, scheduled_at, duration')
       .eq('workspace_id', workspaceId)
       .gte('scheduled_at', windowStart)
-      .lt('scheduled_at', windowEnd);
+      .lt('scheduled_at', windowEnd)
+      .returns<Array<{ id: string; title: string; scheduled_at: string; duration: number | null }>>();
 
     for (const s of wsSessions || []) {
       const sStart = new Date(s.scheduled_at).getTime();
