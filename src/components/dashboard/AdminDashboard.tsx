@@ -210,12 +210,14 @@ const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLo
 
       {/* Signal cards removed — data already surfaced by ExceptionAlerts above (no fabricated sparklines). */}
 
-      {/* Smart Insights */}
-      <EcosystemInsights insights={insights} />
+      {/* Smart Insights — full view only */}
+      <FullViewOnly>
+        <EcosystemInsights insights={insights} />
 
-      {/* Ecosystem Heatmap */}
-      <EcosystemHeatmap workspaces={workspaces} onExport={() => setShowExport(true)} />
-      <ExportAnalyticsModal open={showExport} onOpenChange={setShowExport} />
+        {/* Ecosystem Heatmap */}
+        <EcosystemHeatmap workspaces={workspaces} onExport={() => setShowExport(true)} />
+        <ExportAnalyticsModal open={showExport} onOpenChange={setShowExport} />
+      </FullViewOnly>
 
       {/* Portfolio Health Summary */}
       <Card className="rounded-2xl">
