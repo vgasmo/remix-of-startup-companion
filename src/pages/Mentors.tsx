@@ -344,7 +344,7 @@ export default function Mentors() {
   });
 
   const updateConnectionStatus = useMutation({
-    mutationFn: async ({ connectionId, status, founderId }: { connectionId: string; status: string; founderId: string }) => {
+    mutationFn: async ({ connectionId, status, workspaceId }: { connectionId: string; status: string; founderId: string; workspaceId: string | null }) => {
       const { error } = await supabase
         .from('mentor_connections')
         .update({
@@ -356,33 +356,24 @@ export default function Mentors() {
       if (error) throw error;
 
       if (status === 'accepted' && user) {
-        const { data: founderWorkspaces } = await supabase
-          .from('workspace_users')
-          .select('workspace_id')
-          .eq('user_id', founderId)
-          .eq('role', 'founder')
-          .eq('active', true);
-
-        if (founderWorkspaces && founderWorkspaces.length > 0) {
-          const workspaceInserts = founderWorkspaces.map(wu => ({
-            workspace_id: wu.workspace_id,
-            user_id: user.id,
-            role: 'mentor_externo' as const,
-            active: true,
-          }));
-
-          await supabase
-            .from('workspace_users')
-            .upsert(workspaceInserts, {
-              onConflict: 'workspace_id,user_id',
-              ignoreDuplicates: true,
-            });
+        // C2: scope mentor membership to the SINGLE workspace the connection is bound to.
+        // Legacy rows without workspace_id are refused — force an explicit error rather than silent no-op.
+        if (!workspaceId) {
+          throw new Error(t('mentorsPage.legacyConnectionRefused', { defaultValue: 'Esta ligação legada não está associada a um workspace específico. Peça ao staff para reatribuir.' }));
         }
+        const { error: upsertError } = await supabase
+          .from('workspace_users')
+          .upsert(
+            [{ workspace_id: workspaceId, user_id: user.id, role: 'mentor_externo' as const, active: true }],
+            { onConflict: 'workspace_id,user_id', ignoreDuplicates: true }
+          );
+        if (upsertError) throw upsertError;
       }
     },
     onSuccess: (_, { status }) => {
       queryClient.invalidateQueries({ queryKey: ['mentor-connections'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      // Founder notification is handled by DB trigger (notify_mentor_connection_change)
       notify.success(`${t('mentorsPage.connection')} ${status === 'accepted' ? t('mentorsPage.accepted') : t('mentorsPage.declined')}`);
     },
     onError: (error: any) => {
