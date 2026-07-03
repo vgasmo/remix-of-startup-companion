@@ -114,10 +114,17 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
             {t('sessions.export')}
           </Button>
           {canWrite && (
-            <Button onClick={() => setShowCreateDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t('sessions.createSession')}
-            </Button>
+            isFounderOnly ? (
+              <Button onClick={goToMentorBooking}>
+                <Plus className="h-4 w-4 mr-2" />
+                {t('sessions.bookWithMentor', { defaultValue: 'Marcar com mentor/consultor' })}
+              </Button>
+            ) : (
+              <Button onClick={() => setShowCreateDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                {t('sessions.createSession')}
+              </Button>
+            )
           )}
         </div>
       </div>
