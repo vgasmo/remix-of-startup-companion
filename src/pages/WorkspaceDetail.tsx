@@ -147,8 +147,28 @@ export default function WorkspaceDetail() {
   // without an explicit user click.
   const [highlightedTab, setHighlightedTab] = useState<string | null>(null);
   const userClickedTabRef = useRef(false);
+  const tablistRef = useRef<HTMLDivElement | null>(null);
   const tabButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const overflowTriggerRef = useRef<HTMLButtonElement | null>(null);
+
+  // Horizontally scroll the tablist so `el` is fully visible (centered when possible).
+  // Uses the tablist as the scroll container so the page itself never jumps.
+  const ensureTabVisible = useCallback((el: HTMLElement | null) => {
+    const list = tablistRef.current;
+    if (!list || !el) return;
+    const listRect = list.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const overflowsRight = elRect.right > listRect.right;
+    const overflowsLeft = elRect.left < listRect.left;
+    if (!overflowsLeft && !overflowsRight) return;
+    const targetLeft =
+      el.offsetLeft - list.clientWidth / 2 + el.offsetWidth / 2;
+    const maxLeft = list.scrollWidth - list.clientWidth;
+    list.scrollTo({
+      left: Math.max(0, Math.min(targetLeft, maxLeft)),
+      behavior: 'smooth',
+    });
+  }, []);
 
   useEffect(() => {
     if (userClickedTabRef.current) {
@@ -158,21 +178,40 @@ export default function WorkspaceDetail() {
     if (!activeTab || activeTab === 'overview') return;
     setHighlightedTab(activeTab);
 
-    // Move keyboard focus to the correct control so screen readers announce it
-    // and arrow-key navigation continues from the highlighted tab.
     const focusTarget =
       tabButtonRefs.current.get(activeTab) ??
       (overflowTabs.some(o => o.id === activeTab) ? overflowTriggerRef.current : null);
+
     if (focusTarget) {
+      // Move keyboard focus to the correct control so screen readers announce it
+      // and arrow-key navigation continues from the highlighted tab.
       window.requestAnimationFrame(() => {
         focusTarget.focus({ preventScroll: true });
-        focusTarget.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+        ensureTabVisible(focusTarget);
       });
+
+      // Re-check visibility on layout changes (resize, sidebar toggle, tab bar
+      // width shifts, keyboard/viewport changes on mobile) while the highlight
+      // is active.
+      const recheck = () => ensureTabVisible(focusTarget);
+      window.addEventListener('resize', recheck);
+      const ro =
+        typeof ResizeObserver !== 'undefined'
+          ? new ResizeObserver(recheck)
+          : null;
+      if (ro && tablistRef.current) ro.observe(tablistRef.current);
+
+      const timer = window.setTimeout(() => setHighlightedTab(null), 3000);
+      return () => {
+        window.clearTimeout(timer);
+        window.removeEventListener('resize', recheck);
+        ro?.disconnect();
+      };
     }
 
     const timer = window.setTimeout(() => setHighlightedTab(null), 3000);
     return () => window.clearTimeout(timer);
-  }, [activeTab, overflowTabs]);
+  }, [activeTab, overflowTabs, ensureTabVisible]);
 
   const handleTabChange = useCallback((value: string) => {
     userClickedTabRef.current = true;
@@ -306,10 +345,11 @@ export default function WorkspaceDetail() {
 
       {/* ── WAI-ARIA Tablist ── */}
       <div className="space-y-6">
-        <div 
+        <div
+          ref={tablistRef}
           role="tablist" 
           aria-label={t('workspace.tabs', { defaultValue: 'Workspace sections' })}
-          className="bg-muted/30 h-auto gap-0.5 p-1 flex items-center rounded-md overflow-x-auto scrollbar-thin"
+          className="bg-muted/30 h-auto gap-0.5 p-1 flex items-center rounded-md overflow-x-auto scrollbar-thin scroll-smooth"
         >
           {/* Primary tabs */}
           {primaryTabs.map(tab => (
