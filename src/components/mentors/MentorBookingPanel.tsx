@@ -58,9 +58,43 @@ export function MentorBookingPanel({
     return name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
   };
 
+  // Generate 60-min slots inside each availability window, excluding those
+  // that overlap with existing accepted bookings for this mentor.
+  const SLOT_MIN = 60;
   const getAvailableSlotsForDate = (date: Date) => {
     const dayOfWeek = date.getDay();
-    return availability?.filter(a => a.day_of_week === dayOfWeek) || [];
+    const windows = availability?.filter(a => a.day_of_week === dayOfWeek) || [];
+    if (!windows.length) return [] as { start: string; end: string; key: string }[];
+
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const busy = (bookings || [])
+      .filter(b =>
+        b.mentor_id === mentorId &&
+        b.requested_date === dateStr &&
+        (b.status === 'accepted' || b.status === 'pending'),
+      )
+      .map(b => ({
+        s: timeToMin(b.requested_start_time),
+        e: timeToMin(b.requested_end_time),
+      }));
+
+    const slots: { start: string; end: string; key: string }[] = [];
+    for (const w of windows) {
+      let cursor = timeToMin(w.start_time);
+      const end = timeToMin(w.end_time);
+      while (cursor + SLOT_MIN <= end) {
+        const slotStart = cursor;
+        const slotEnd = cursor + SLOT_MIN;
+        const clash = busy.some(b => slotStart < b.e && slotEnd > b.s);
+        if (!clash) {
+          const startStr = minToTime(slotStart);
+          const endStr = minToTime(slotEnd);
+          slots.push({ start: startStr, end: endStr, key: `${startStr}-${endStr}` });
+        }
+        cursor += SLOT_MIN;
+      }
+    }
+    return slots;
   };
 
   const isDateAvailable = (date: Date) => {
