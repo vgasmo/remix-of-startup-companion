@@ -2911,6 +2911,9 @@
       "archiveSuccess": "{{count}} contratos arquivados",
       "terminateSelected": "Terminar selecionados",
       "terminateSuccess": "{{count}} contratos terminados",
+      "terminateTitle": "Terminar contratos",
+      "terminateDescription": "Vai terminar {{count}} contratos. Liberta as salas alocadas e cria tarefas para cancelar sessões futuras.",
+      "terminateConfirm": "Terminar {{count}} contratos",
       "selected": "{{count}} selecionados"
     },
     "confirmAnalysis": "Confirmar Análise IA",
