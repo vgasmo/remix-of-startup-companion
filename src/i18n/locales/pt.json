@@ -6252,6 +6252,31 @@
     "updateKpis": "Atualizar os KPIs deste mês"
   },
   "ops": {
+    "state": {
+      "pending": "estado pendente",
+      "onboarding": "onboarding"
+    },
+    "onboardingNoContract": {
+      "title": "Contrato por enviar",
+      "desc": "{{name}} está em {{state}} sem contrato registado."
+    },
+    "readyActivation": {
+      "title": "Pronto para ativação manual",
+      "desc": "{{name}} tem contrato ativo mas workspace em estado \"{{status}}\"."
+    },
+    "pendingSignature": {
+      "title": "Aguarda assinatura",
+      "desc": "O contrato de {{name}} está pendente de assinatura."
+    },
+    "missingContract": {
+      "title": "Sem contrato",
+      "desc": "{{name}} tem workspace ativo sem contrato associado."
+    },
+    "missingAllocation": {
+      "title": "Sem espaço atribuído",
+      "desc": "{{name}} não tem sala/gabinete alocado."
+    },
+
     "checklistCopied": "Checklist copiada",
     "console": {
       "allStatuses": "Todos os estados",
