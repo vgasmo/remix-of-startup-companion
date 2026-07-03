@@ -42,6 +42,8 @@ interface LifecycleEvent {
 
 export function ContractLifecycleEventsCard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
 
   const { data: contracts, isLoading } = useQuery({
     queryKey: ['lifecycle-events-contracts'],
