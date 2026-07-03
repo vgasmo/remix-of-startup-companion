@@ -216,12 +216,34 @@ export const WorkspaceTable = memo(function WorkspaceTable({
                   <span className="sr-only">{t('common.select', { defaultValue: 'Select' })}</span>
                 </TableHead>
               )}
-              <TableHead className="w-[180px] sm:w-[200px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.startup', { defaultValue: 'Startup' })}</TableHead>
+              <SortHeader
+                className="w-[180px] sm:w-[200px]"
+                label={t('workspaceTable.startup', { defaultValue: 'Startup' })}
+                sortKey="name"
+                sortBy={sortBy}
+                onSortByChange={onSortByChange}
+              />
               <TableHead className="hidden sm:table-cell h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.program', { defaultValue: 'Program' })}</TableHead>
-              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.priority', { defaultValue: 'Priority' })}</TableHead>
-              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.healthScore', { defaultValue: 'Health' })}</TableHead>
+              <SortHeader
+                label={t('workspaceTable.priority', { defaultValue: 'Priority' })}
+                sortKey="priority"
+                sortBy={sortBy}
+                onSortByChange={onSortByChange}
+              />
+              <SortHeader
+                label={t('workspace.healthScore', { defaultValue: 'Health' })}
+                sortKey="urgency"
+                sortBy={sortBy}
+                onSortByChange={onSortByChange}
+              />
               <TableHead className="text-center h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.overdue', { defaultValue: 'Overdue' })}</TableHead>
-              <TableHead className="hidden md:table-cell h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.nextMeeting', { defaultValue: 'Next Meeting' })}</TableHead>
+              <SortHeader
+                className="hidden md:table-cell"
+                label={t('workspaceTable.nextMeeting', { defaultValue: 'Next Meeting' })}
+                sortKey="meeting"
+                sortBy={sortBy}
+                onSortByChange={onSortByChange}
+              />
               <TableHead className="hidden lg:table-cell w-[200px] h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspaceTable.lastSession', { defaultValue: 'Last Session' })}</TableHead>
             </TableRow>
           </TableHeader>
