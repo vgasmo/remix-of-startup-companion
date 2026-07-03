@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, KeyboardEvent } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, KeyboardEvent } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Copy, MoreHorizontal, ChevronDown } from 'lucide-react';
