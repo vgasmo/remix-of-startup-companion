@@ -305,7 +305,7 @@ Deno.serve(async (req) => {
             message,
             entity_type: 'contract',
             entity_id: alert.contractId,
-            link: `/admin?tab=backoffice&subtab=contracts`,
+            link: `/admin?tab=backoffice&subtab=contracts&contract=${alert.contractId}`,
           }))
         }).flat()
 
