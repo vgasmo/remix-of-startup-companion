@@ -387,7 +387,7 @@ export default function PublicBooking() {
                   {Object.entries(slotsByDate).slice(0, 5).map(([date, daySlots]) => (
                     <div key={date}>
                       <h3 className="font-medium mb-2 text-foreground">
-                        {format(new Date(date), 'EEEE, MMMM d')}
+                        {format(new Date(date), 'EEEE, MMMM d', { locale: dateLocale })}
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {daySlots.map((slot) => (
