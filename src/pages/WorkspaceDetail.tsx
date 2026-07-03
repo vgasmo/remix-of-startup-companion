@@ -335,7 +335,9 @@ export default function WorkspaceDetail() {
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1",
                     isOverflowTabActive
                       ? "bg-primary/10 text-primary shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                      : "text-muted-foreground hover:text-foreground hover:bg-background/50",
+                    highlightedTab && overflowTabs.some(o => o.id === highlightedTab) &&
+                      "ring-2 ring-primary/60 ring-offset-1 animate-pulse"
                   )}
                 >
                   <MoreHorizontal className="h-4 w-4" />
