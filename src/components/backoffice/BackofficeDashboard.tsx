@@ -271,25 +271,28 @@ function BackofficeDashboardInner() {
       </FullViewOnly>
       {/* ═══════════════════ HERO METRICS ═══════════════════ */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Occupancy Rate */}
-        <Card className={cn('rounded-2xl', data.occupancyRate < 70 && 'border-warning/50')}>
-          <CardContent className="pt-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold tracking-tight">{data.occupancyRate}%</div>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {t('admin.backoffice.dashboardPanel.occupancy')}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {data.occupiedRooms}/{data.totalRooms} {t('admin.backoffice.opsHub.rooms', { defaultValue: 'rooms' })}
-                </p>
+        {/* Occupancy Rate — full view only */}
+        <FullViewOnly>
+          <Card className={cn('rounded-2xl', data.occupancyRate < 70 && 'border-warning/50')}>
+            <CardContent className="pt-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-3xl font-bold tracking-tight">{data.occupancyRate}%</div>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {t('admin.backoffice.dashboardPanel.occupancy')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {data.occupiedRooms}/{data.totalRooms} {t('admin.backoffice.opsHub.rooms', { defaultValue: 'rooms' })}
+                  </p>
+                </div>
+                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Building2 className="h-6 w-6 text-primary" />
+                </div>
               </div>
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </FullViewOnly>
+
 
 
 
