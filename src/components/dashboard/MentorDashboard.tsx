@@ -272,13 +272,65 @@ export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoa
         )}
       </BrandSurface>
 
+      {/* Post-NDA one-time onboarding checklist */}
+      {showNdaChecklist && (
+        <Card className="rounded-2xl border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader className="pb-2 flex flex-row items-start justify-between gap-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              {t('mentor.postNdaChecklist.title', { defaultValue: 'Bem-vindo — 3 passos para começar' })}
+            </CardTitle>
+            <Button variant="ghost" size="sm" onClick={dismissNdaChecklist}>
+              {t('common.dismiss', { defaultValue: 'Dispensar' })}
+            </Button>
+          </CardHeader>
+          <CardContent className="pt-0 space-y-2">
+            <button
+              type="button"
+              onClick={() => navigate('/settings')}
+              className="w-full text-left flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/60 transition"
+            >
+              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">1</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{t('mentor.postNdaChecklist.profile.title', { defaultValue: 'Completa o teu perfil' })}</p>
+                <p className="text-[11px] text-muted-foreground">{t('mentor.postNdaChecklist.profile.why', { defaultValue: 'Bio e áreas de expertise ajudam o matching com founders.' })}</p>
+              </div>
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/mentors?tab=availability')}
+              className="w-full text-left flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/60 transition"
+            >
+              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">2</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{t('mentor.postNdaChecklist.availability.title', { defaultValue: 'Define a tua disponibilidade' })}</p>
+                <p className="text-[11px] text-muted-foreground">{t('mentor.postNdaChecklist.availability.why', { defaultValue: 'Sem horários, os founders não conseguem agendar.' })}</p>
+              </div>
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/guide')}
+              className="w-full text-left flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/60 transition"
+            >
+              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">3</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{t('mentor.postNdaChecklist.guide.title', { defaultValue: 'Conhece o Guia Rápido' })}</p>
+                <p className="text-[11px] text-muted-foreground">{t('mentor.postNdaChecklist.guide.why', { defaultValue: 'Como preparar sessões e registar notas em 3 minutos.' })}</p>
+              </div>
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Stream F: Next Best Action (read-only, derived from sessions/requests) */}
       <WidgetErrorBoundary name="NextBestActionMentor">
         <NextBestActionMentor
-          upcomingSessionsCount={(workspaces || []).reduce(
-            (acc, w: any) => acc + (w?.upcomingSessions?.length || 0),
-            0
-          )}
+          upcomingSessionsCount={upcomingCount}
+          pendingMentorRequestsCount={pendingRequestsCount}
+          ndaPending={needsNda}
         />
       </WidgetErrorBoundary>
 
