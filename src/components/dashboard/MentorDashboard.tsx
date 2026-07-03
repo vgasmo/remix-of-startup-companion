@@ -46,13 +46,23 @@ import { MentorPortfolioPulse } from '@/components/mentor/MentorPortfolioPulse';
 import { MomentumBadge } from '@/components/shared/MomentumBadge';
 import { computeMomentum } from '@/hooks/useWorkspaceMomentum';
 import { FirstStepsCard } from '@/components/dashboard/FirstStepsCard';
+import { FocusModeProvider, FocusModeToggle } from '@/components/ui/FocusModeToggle';
+import { FullViewOnly } from '@/components/dashboard/FocusGate';
 
 interface MentorDashboardProps {
   workspaces: WorkspaceWithDetails[];
   isLoading: boolean;
 }
 
-export const MentorDashboard = memo(function MentorDashboard({ workspaces, isLoading }: MentorDashboardProps) {
+export const MentorDashboard = memo(function MentorDashboard(props: MentorDashboardProps) {
+  return (
+    <FocusModeProvider persistKey="mentor" defaultFocused={true}>
+      <MentorDashboardInner {...props} />
+    </FocusModeProvider>
+  );
+});
+
+const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, isLoading }: MentorDashboardProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { profile } = useAuth();
