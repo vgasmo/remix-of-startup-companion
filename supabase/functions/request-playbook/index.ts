@@ -102,6 +102,55 @@ Deno.serve(async (req) => {
       return errorResponse(req, 'Failed to submit request', ErrorCode.INTERNAL_ERROR, 500);
     }
 
+    // Notify consultors/admins/backoffice assigned to this workspace (in-app bell)
+    try {
+      const { data: wsInfo } = await supabaseAdmin
+        .from('workspaces')
+        .select('startup:startups(name)')
+        .eq('id', workspaceId)
+        .maybeSingle();
+      const startupName = (wsInfo as any)?.startup?.name || 'Workspace';
+
+      const { data: requester } = await supabaseAdmin
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .maybeSingle();
+      const requesterName = requester?.full_name || 'A founder';
+
+      const { data: recipients } = await supabaseAdmin
+        .from('workspace_users')
+        .select('user_id, role')
+        .eq('workspace_id', workspaceId)
+        .eq('active', true)
+        .in('role', ['consultor', 'admin', 'backoffice']);
+
+      const rows = (recipients || [])
+        .filter((r) => r.user_id && r.user_id !== user.id)
+        .map((r) => ({
+          user_id: r.user_id as string,
+          type: 'playbook_requested',
+          title: `Novo pedido de playbook — ${startupName}`,
+          message: playbookTitle
+            ? `${requesterName} pediu ativação do playbook "${playbookTitle}".`
+            : `${requesterName} pediu um playbook personalizado.`,
+          link: `/workspace/${workspaceId}?tab=notes`,
+          entity_type: 'playbook_request',
+          entity_id: workspaceId,
+          event_key: `playbook_request:${workspaceId}:${user.id}:${Date.now()}:${r.user_id}`,
+          metadata: { workspace_id: workspaceId, playbook_id: playbookId ?? null, playbook_title: playbookTitle ?? null, urgency },
+        }));
+
+      if (rows.length) {
+        const { error: notifErr } = await supabaseAdmin
+          .from('notifications')
+          .upsert(rows, { onConflict: 'user_id,event_key', ignoreDuplicates: true });
+        if (notifErr) logger.warn('notifications insert failed', notifErr);
+      }
+    } catch (notifyErr) {
+      logger.warn('Playbook notification step failed', notifyErr);
+    }
+
     logger.info('Playbook request created', { userId: user.id, workspaceId, playbookId });
 
     return corsJsonResponse({ 
