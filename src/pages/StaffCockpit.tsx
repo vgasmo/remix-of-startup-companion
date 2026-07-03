@@ -138,8 +138,18 @@ export default function StaffCockpit() {
           <MomentumPanel workspaces={workspaces} />
         )}
 
-        {/* Backoffice-specific: Contracts expiring + Startup Portugal status */}
+        {/* Backoffice-specific: Next best action + Contracts expiring + Startup Portugal status */}
         {(isBackoffice || isAdmin) && (
+          <WidgetErrorBoundary name="NextBestActionStaff">
+            <NextBestActionStaff
+              contractsAwaitingSignatureCount={backofficeCounts?.contractsAwaitingSignatureCount ?? 0}
+              intakesBlockedCount={backofficeCounts?.intakesBlockedCount ?? 0}
+              unassignedActiveWorkspacesCount={backofficeCounts?.unassignedActiveWorkspacesCount ?? 0}
+            />
+          </WidgetErrorBoundary>
+        )}
+        {(isBackoffice || isAdmin) && (
+
           <div className="grid gap-4 lg:grid-cols-2">
             <WidgetErrorBoundary name="ContractsExpiring">
               <BackofficeContractsExpiringCard />
