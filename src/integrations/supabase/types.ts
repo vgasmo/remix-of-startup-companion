@@ -769,6 +769,8 @@ export type Database = {
           due_date: string
           id: string
           reminder_sent_at: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: string
           submitted_at: string | null
           submitted_by: string | null
@@ -783,6 +785,8 @@ export type Database = {
           due_date: string
           id?: string
           reminder_sent_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string
           submitted_at?: string | null
           submitted_by?: string | null
@@ -797,6 +801,8 @@ export type Database = {
           due_date?: string
           id?: string
           reminder_sent_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string
           submitted_at?: string | null
           submitted_by?: string | null
@@ -9336,7 +9342,12 @@ export type Database = {
     }
     Enums: {
       account_status: "pending" | "approved" | "suspended"
-      action_status: "pending" | "in_progress" | "completed" | "cancelled"
+      action_status:
+        | "pending"
+        | "in_progress"
+        | "awaiting_validation"
+        | "completed"
+        | "cancelled"
       app_role:
         | "admin"
         | "consultor"
@@ -9491,7 +9502,13 @@ export const Constants = {
   public: {
     Enums: {
       account_status: ["pending", "approved", "suspended"],
-      action_status: ["pending", "in_progress", "completed", "cancelled"],
+      action_status: [
+        "pending",
+        "in_progress",
+        "awaiting_validation",
+        "completed",
+        "cancelled",
+      ],
       app_role: [
         "admin",
         "consultor",

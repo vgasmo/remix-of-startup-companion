@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format, isPast } from 'date-fns';
+import { lisbonWallClockToUtcIso } from '@/lib/dateUtils';
+import { Input } from '@/components/ui/input';
 import {
   Plus,
   Download,
@@ -13,6 +15,7 @@ import {
   Copy,
   ExternalLink,
   ListChecks,
+  CalendarClock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -68,6 +71,9 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
   const [isResending, setIsResending] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [rescheduleValue, setRescheduleValue] = useState('');
+  const [isRescheduling, setIsRescheduling] = useState(false);
 
   const updateMutation = useUpdateSession(workspaceId);
   const createActionItem = useCreateActionItem(workspaceId);
@@ -244,6 +250,24 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                   title={t('sessions.exportIcs', { defaultValue: 'Exportar para calendário (.ics)' })}>
                   <Download className="h-4 w-4 mr-1" />.ics
                 </Button>
+                {canWrite && (
+                  <Button variant="outline" size="sm" type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      // Prefill with the current scheduled_at formatted as datetime-local (local wall-clock).
+                      try {
+                        const d = new Date(session.scheduled_at);
+                        const pad = (n: number) => String(n).padStart(2, '0');
+                        const val = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                        setRescheduleValue(val);
+                      } catch { /* ignore */ }
+                      setRescheduleOpen(true);
+                    }}>
+                    <CalendarClock className="h-4 w-4 mr-1" />
+                    {t('sessions.reschedule', { defaultValue: 'Reagendar' })}
+                  </Button>
+                )}
                 {canUseFacilitator && (
                   <Button variant="outline" size="sm" type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpenFacilitator(session); }}>
@@ -511,6 +535,49 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
         open={showActionDialog}
         onOpenChange={setShowActionDialog}
       />
+
+      <Dialog open={rescheduleOpen} onOpenChange={setRescheduleOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('sessions.reschedule', { defaultValue: 'Reagendar' })}</DialogTitle>
+            <DialogDescription>
+              {t('sessions.rescheduleDesc', { defaultValue: 'Escolha uma nova data e hora para esta sessão.' })}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="reschedule-dt">{t('sessions.dateTime', { defaultValue: 'Data e hora' })}</Label>
+            <Input
+              id="reschedule-dt"
+              type="datetime-local"
+              value={rescheduleValue}
+              onChange={(e) => setRescheduleValue(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRescheduleOpen(false)}>{t('common.cancel')}</Button>
+            <Button
+              disabled={!rescheduleValue || isRescheduling}
+              loading={isRescheduling}
+              onClick={async () => {
+                if (!rescheduleValue) return;
+                setIsRescheduling(true);
+                try {
+                  const iso = lisbonWallClockToUtcIso(rescheduleValue);
+                  await updateMutation.mutateAsync({ id: session.id, scheduled_at: iso });
+                  notify.success(t('sessions.rescheduled', { defaultValue: 'Sessão reagendada' }));
+                  setRescheduleOpen(false);
+                } catch {
+                  notify.error(t('sessions.failedToUpdateSession'));
+                } finally {
+                  setIsRescheduling(false);
+                }
+              }}
+            >
+              {t('sessions.reschedule', { defaultValue: 'Reagendar' })}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

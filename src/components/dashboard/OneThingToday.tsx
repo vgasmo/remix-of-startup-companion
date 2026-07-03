@@ -49,7 +49,7 @@ export function OneThingToday({ workspace, className, isFirstWeek = false }: One
     const candidates: RecommendedAction[] = [];
 
     const overdueActions = actions?.filter(
-      a => a.status !== 'completed' && a.due_date && isPast(new Date(a.due_date))
+      a => a.status !== 'completed' && a.status !== 'awaiting_validation' && a.due_date && isPast(new Date(a.due_date))
     ) || [];
     
     if (overdueActions.length > 0) {

@@ -29,7 +29,7 @@ export function FounderBookingCTA({ workspaceId, className, isFirstWeek = false 
   const nextSession = sessions?.[0];
 
   const handleBookSession = () => {
-    navigate(`/workspace/${workspaceId}?tab=agenda`);
+    navigate(`/workspace/${workspaceId}?tab=agenda&new=1`);
   };
 
   const formatSessionDate = (dateStr: string) => {

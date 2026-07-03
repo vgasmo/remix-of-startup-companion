@@ -2,7 +2,7 @@ import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format, isPast, isToday, parseISO } from 'date-fns';
-import { AlertTriangle, Calendar, Trash2, GripVertical, Paperclip, FileText, Plus, Check, ExternalLink } from 'lucide-react';
+import { AlertTriangle, Calendar, Trash2, GripVertical, Paperclip, FileText, Plus, Check, ExternalLink, Hourglass, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,7 @@ type ActionStatus = Database['public']['Enums']['action_status'];
 const STATUS_CONFIG: Record<ActionStatus, { labelKey: string; color: string }> = {
   pending: { labelKey: 'actions.statusOpen', color: 'bg-muted text-muted-foreground' },
   in_progress: { labelKey: 'actions.statusDoing', color: 'bg-primary/20 text-primary' },
+  awaiting_validation: { labelKey: 'actions.awaitingValidation', color: 'bg-info/10 text-info' },
   completed: { labelKey: 'actions.statusDone', color: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ' },
   cancelled: { labelKey: 'actions.statusCancelled', color: 'bg-muted text-muted-foreground line-through' },
 };
@@ -69,16 +70,18 @@ export const ActionItemCard = memo(function ActionItemCard({
   const completedDeliverables = deliverables.filter(d => d.completed_at).length;
   const allDeliverablesCompleted = totalDeliverables > 0 && completedDeliverables === totalDeliverables;
 
-  // Status options: founders can only set pending/in_progress; staff can also set completed
+  // Status options: founders can set pending/in_progress/awaiting_validation; only staff can set completed.
   const statusOptions = isStaff
     ? [
         { value: 'pending', label: t('status.open', 'Aberta') },
         { value: 'in_progress', label: t('status.doing', 'A Fazer') },
+        { value: 'awaiting_validation', label: t('actions.awaitingValidation', 'A aguardar validação') },
         { value: 'completed', label: t('status.done', 'Concluída') },
       ]
     : [
         { value: 'pending', label: t('status.open', 'Aberta') },
         { value: 'in_progress', label: t('status.doing', 'A Fazer') },
+        { value: 'awaiting_validation', label: t('actions.requestValidation', 'Concluído — pedir validação') },
       ];
 
   const handleStatusChange = (newStatus: string) => {
@@ -86,7 +89,7 @@ export const ActionItemCard = memo(function ActionItemCard({
       notify.error(t('actions.onlyStaffCanComplete', 'Apenas o consultor pode marcar como concluída'));
       return;
     }
-    if (newStatus === 'completed' && totalDeliverables > 0 && !allDeliverablesCompleted) {
+    if ((newStatus === 'completed' || newStatus === 'awaiting_validation') && totalDeliverables > 0 && !allDeliverablesCompleted) {
       notify.error(t('actions.deliverablesRequired', 'Todos os entregáveis devem estar concluídos antes de concluir a ação'));
       return;
     }
@@ -199,6 +202,36 @@ export const ActionItemCard = memo(function ActionItemCard({
           ) : null}
 
           <span className={`text-xs ${priorityConfig.color}`}>{t(priorityConfig.labelKey)}</span>
+
+          {item.status === 'awaiting_validation' && (
+            <Badge variant="outline" className="text-xs gap-1 bg-info/10 text-info border-info/30">
+              <Hourglass className="h-3 w-3" />
+              {t('actions.awaitingValidation', 'A aguardar validação')}
+            </Badge>
+          )}
+
+          {isStaff && item.status === 'awaiting_validation' && canWrite && (
+            <>
+              <Button size="sm" variant="outline" className="h-6 px-2 text-xs gap-1"
+                onClick={() => onStatusChange(item, 'completed' as ActionStatus)}>
+                <Check className="h-3 w-3" />
+                {t('actions.validate', 'Validar')}
+              </Button>
+              <Button size="sm" variant="ghost" className="h-6 px-2 text-xs gap-1 text-muted-foreground"
+                onClick={() => onStatusChange(item, 'in_progress' as ActionStatus)}>
+                <Undo2 className="h-3 w-3" />
+                {t('actions.return', 'Devolver')}
+              </Button>
+            </>
+          )}
+
+          {!isStaff && item.status === 'awaiting_validation' && canWrite && (
+            <Button size="sm" variant="ghost" className="h-6 px-2 text-xs gap-1 text-muted-foreground"
+              onClick={() => onStatusChange(item, 'in_progress' as ActionStatus)}>
+              <Undo2 className="h-3 w-3" />
+              {t('actions.revertToInProgress', 'Voltar para em curso')}
+            </Button>
+          )}
 
           {/* Deliverables count badge */}
           {totalDeliverables > 0 && (

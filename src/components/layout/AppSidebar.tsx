@@ -57,6 +57,7 @@ import {
 import startupLeiriaLogo from '@/assets/startup-leiria.svg';
 import { MessagingPanel } from '@/components/messaging/MessagingPanel';
 import { SidebarContactInfo } from './SidebarContactInfo';
+import { useConversations } from '@/hooks/useMessaging';
 
 interface NavItem {
   name: string;
@@ -73,6 +74,10 @@ export function AppSidebar() {
   const isFounder = roles.includes('founder');
   const [collapsed, setCollapsed] = useState(false);
   const [messagingOpen, setMessagingOpen] = useState(false);
+  const { data: conversations } = useConversations();
+  const totalUnread = (conversations || []).reduce((sum, c: any) => sum + (c.unread_count || 0), 0);
+  const unreadLabel = totalUnread > 9 ? '9+' : String(totalUnread);
+
 
   // Global "messaging:open" event so any deep-linked CTA can open the panel
   // without prop-drilling. Mirrors the existing `copilot:open` contract.
@@ -128,7 +133,7 @@ export function AppSidebar() {
   // CONSULTOR OS Navigation (Portfolio OS)
   const consultorNavigation: NavItem[] = [
     { name: t('nav.consultor.portfolio', { defaultValue: 'Portefólio' }), href: '/my-workspaces', icon: Briefcase, exact: true },
-    { name: t('nav.consultor.sessions', { defaultValue: 'Sessões' }), href: '/consultor-tools', icon: Calendar },
+    { name: t('nav.consultor.sessions', { defaultValue: 'Sessões' }), href: '/staff-cockpit', icon: Calendar },
     { name: t('nav.consultor.actionsFollowups', { defaultValue: 'Ações & Follow-ups' }), href: '/staff-cockpit', icon: CheckSquare },
     { name: t('nav.consultor.documents', { defaultValue: 'Documentos' }), href: '/documents', icon: FolderOpen },
     { name: t('nav.consultor.crmPipeline', { defaultValue: 'CRM & Pipeline' }), href: '/crm', icon: Contact },
@@ -462,9 +467,14 @@ export function AppSidebar() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setMessagingOpen(true)}
-                  className="h-10 w-10 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                  className="relative h-10 w-10 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                  aria-label={t('common._iconOpenChat')}>
                   <MessageCircle className="h-5 w-5" />
+                  {totalUnread > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center">
+                      {unreadLabel}
+                    </span>
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">{t('common.messages')}</TooltipContent>
@@ -476,7 +486,12 @@ export function AppSidebar() {
               className="w-full justify-start gap-3 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
             >
               <MessageCircle className="h-5 w-5" />
-              {t('common.messages')}
+              <span className="flex-1 text-left">{t('common.messages')}</span>
+              {totalUnread > 0 && (
+                <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center">
+                  {unreadLabel}
+                </span>
+              )}
             </Button>
           )}
         </div>

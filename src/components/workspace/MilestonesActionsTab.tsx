@@ -113,7 +113,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
       let passes = true;
       if (filters.priority !== 'all' && item.priority !== filters.priority) passes = false;
       if (filters.overdue) {
-        const isOverdue = item.due_date && isPast(parseISO(item.due_date)) && !isToday(parseISO(item.due_date)) && item.status !== 'completed';
+        const isOverdue = item.due_date && isPast(parseISO(item.due_date)) && !isToday(parseISO(item.due_date)) && item.status !== 'completed' && item.status !== 'awaiting_validation';
         if (!isOverdue) passes = false;
       }
       if (!passes) return;
@@ -503,6 +503,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
         statusOptions={[
           { value: 'pending', label: t('actions.open') },
           { value: 'in_progress', label: t('actions.doing') },
+          { value: 'awaiting_validation', label: t('actions.awaitingValidation', 'A aguardar validação') },
           { value: 'completed', label: t('actions.done') },
         ]}
         getItemId={(item) => item.id}

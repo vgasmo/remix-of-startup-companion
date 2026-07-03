@@ -84,6 +84,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
 
   const [meetingWith, setMeetingWith] = useState<'consultor' | 'mentor_externo'>('consultor');
   const [participantId, setParticipantId] = useState<string>('');
+  const [showMoreOptions, setShowMoreOptions] = useState(false);
 
   useEffect(() => {
     if (participantId) return;
@@ -95,6 +96,18 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
       setParticipantId(assignedMentors[0].user_id);
     }
   }, [participantId, meetingWith, assignedConsultant?.user_id, assignedMentors]);
+
+  // Auto-default title when opening with a consultant/mentor in context
+  useEffect(() => {
+    if (!open || title.trim()) return;
+    const participantName =
+      meetingWith === 'consultor'
+        ? assignedConsultant?.profile?.full_name || assignedConsultant?.profile?.email
+        : assignedMentors.find((m) => m.user_id === participantId)?.profile?.full_name;
+    if (participantName) {
+      setTitle(t('sessions.defaultTitleWith', { name: participantName, defaultValue: `Sessão com ${participantName}` }));
+    }
+  }, [open, meetingWith, assignedConsultant, assignedMentors, participantId, t, title]);
 
   const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined;
   const { data: consultantAvailability, isLoading: loadingConsultantAvailability } = useConsultantAvailability(
@@ -346,6 +359,19 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
             </div>
           </div>
 
+          <button
+            type="button"
+            onClick={() => setShowMoreOptions((v) => !v)}
+            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
+          >
+            {showMoreOptions
+              ? t('sessions.hideMoreOptions', 'Ocultar opções avançadas')
+              : t('sessions.showMoreOptions', 'Mais opções (título, participantes, agenda, ligação)')}
+          </button>
+
+          {showMoreOptions && (<>
+
+
           {sessionTemplates && sessionTemplates.length > 0 && (
             <div className="space-y-2">
               <Label>{t('sessions.useTemplateOptional', 'Use Template (optional)')}</Label>
@@ -431,6 +457,9 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
               </Select>
             </div>
           </div>
+          </>)}
+
+
 
           <div className="flex items-center gap-2 text-sm">
             <button
@@ -576,6 +605,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
             </>
           )}
 
+          {showMoreOptions && (
           <div className="space-y-2">
             <Label htmlFor="agenda">{t('sessions.agenda', 'Agenda')}</Label>
             <Textarea
@@ -586,6 +616,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
               rows={2}
             />
           </div>
+          )}
 
           {logPast && (
             <>
@@ -612,6 +643,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
             </>
           )}
 
+          {showMoreOptions && (<>
           <div className="space-y-2">
             <Label htmlFor="location">{t('sessions.location', 'Location')}</Label>
             <Input
@@ -633,6 +665,8 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
               placeholder="Optional - Teams link added automatically if synced"
             />
           </div>
+          </>)}
+
 
           {!logPast && (
             <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">

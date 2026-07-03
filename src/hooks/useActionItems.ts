@@ -114,6 +114,14 @@ export function useUpdateActionItem(workspaceId: string) {
         updateData.completed_at = null;
       }
 
+      // Capture previous status for notification routing
+      const { data: prevRow } = await supabase
+        .from('action_items')
+        .select('status, workspace_id, title, owner_user_id, created_by')
+        .eq('id', id)
+        .maybeSingle();
+      const prevStatus = prevRow?.status as ActionStatus | undefined;
+
       const { data, error } = await supabase
         .from('action_items')
         .update(updateData)
@@ -122,7 +130,66 @@ export function useUpdateActionItem(workspaceId: string) {
         .single();
 
       if (error) throw error;
-      
+
+      // Founder → Consultant: awaiting_validation notification
+      if (updates.status === 'awaiting_validation' && prevStatus !== 'awaiting_validation') {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          const { data: ws } = await supabase
+            .from('workspaces')
+            .select('assigned_consultor_id, startup:startups(name)')
+            .eq('id', workspaceId)
+            .maybeSingle();
+          const consultantId = (ws as any)?.assigned_consultor_id;
+          if (consultantId && consultantId !== user?.id) {
+            let founderName = 'O founder';
+            if (user?.id) {
+              const { data: p } = await supabase.from('profiles_safe').select('full_name').eq('id', user.id).maybeSingle();
+              founderName = p?.full_name || founderName;
+            }
+            await supabase.from('notifications').insert({
+              user_id: consultantId,
+              type: 'system',
+              title: t('notifications.actionAwaitingValidationTitle', 'Ação para validar'),
+              message: t('notifications.actionAwaitingValidationBody', {
+                founder: founderName, action: data.title,
+                defaultValue: `${founderName} concluiu «${data.title}»`,
+              }),
+              link: `/workspace/${workspaceId}?tab=milestones-actions&sub=actions&highlight=${data.id}`,
+              entity_type: 'action_item',
+              entity_id: data.id,
+              read: false,
+            });
+          }
+        } catch (e) {
+          logger.warn('awaiting_validation_notify_failed', { error: String(e) });
+        }
+      }
+
+      // Staff → Founder: completed validation notification
+      if (updates.status === 'completed' && prevStatus === 'awaiting_validation') {
+        try {
+          const targetUserId = (prevRow as any)?.owner_user_id || (prevRow as any)?.created_by;
+          if (targetUserId) {
+            await supabase.from('notifications').insert({
+              user_id: targetUserId,
+              type: 'system',
+              title: t('notifications.actionValidatedTitle', 'Ação validada'),
+              message: t('notifications.actionValidatedBody', {
+                action: data.title,
+                defaultValue: `«${data.title}» foi validada ✓`,
+              }),
+              link: `/workspace/${workspaceId}?tab=milestones-actions&sub=actions&highlight=${data.id}`,
+              entity_type: 'action_item',
+              entity_id: data.id,
+              read: false,
+            });
+          }
+        } catch (e) {
+          logger.warn('action_validated_notify_failed', { error: String(e) });
+        }
+      }
+
       // Track if owner was assigned for Teams notification
       const ownerAssigned = 'owner_user_id' in updates && updates.owner_user_id;
       return { data, ownerAssigned, title: data.title };
