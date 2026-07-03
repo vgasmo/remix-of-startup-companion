@@ -326,6 +326,7 @@
       "contractNumber": "Número do Contrato",
       "contractSigners": {
         "autoAssigned": "Será atribuído automaticamente ao enviar",
+        "bilateralSignatures": "Assinaturas Bilaterais",
         "firstParty": "Primeiro Outorgante",
         "secondParty": "Segundo Outorgante"
       },
@@ -7955,6 +7956,11 @@
     "viewActions": "Ver Ações"
   },
   "spaces": {
+    "allocation": "Alocação",
+    "noActiveAllocation": "Sem alocação ativa",
+    "workspaceStartup": "Workspace / Startup",
+    "openWorkspace": "Abrir Workspace",
+    "noWorkspaceAssociated": "Sem workspace associado",
     "allStatuses": "Todos os estados",
     "available": "Disponível",
     "clearError": "Erro ao limpar salas",
