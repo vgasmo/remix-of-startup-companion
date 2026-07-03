@@ -120,36 +120,36 @@ export default function StaffCockpit() {
         {isConsultor && !isAdmin && !isBackoffice && (
           <FirstStepsCard
             storageScope="consultor"
-            title={t('firstSteps.consultor.title', { defaultValue: 'Primeiros passos' })}
-            subtitle={t('firstSteps.consultor.subtitle', { defaultValue: 'Configure o essencial para começar com o seu portefólio.' })}
+            title={t('firstSteps.consultor.title')}
+            subtitle={t('firstSteps.consultor.subtitle')}
             items={[
-              { id: 'wq', label: t('firstSteps.consultor.workQueue', { defaultValue: 'Conheça o Work Queue' }), href: '/staff-cockpit', icon: ListTodo },
-              { id: 'avail', label: t('firstSteps.consultor.availability', { defaultValue: 'Configure a sua disponibilidade' }), href: '/consultor-tools', icon: CalendarIcon },
-              { id: 'portfolio', label: t('firstSteps.consultor.portfolio', { defaultValue: 'Veja o seu portefólio' }), href: '/my-workspaces', icon: Briefcase },
+              { id: 'wq', label: t('firstSteps.consultor.workQueue'), href: '/staff-cockpit', icon: ListTodo },
+              { id: 'avail', label: t('firstSteps.consultor.availability'), href: '/consultor-tools', icon: CalendarIcon },
+              { id: 'portfolio', label: t('firstSteps.consultor.portfolio'), href: '/my-workspaces', icon: Briefcase },
             ] satisfies FirstStepItem[]}
           />
         )}
         {isBackoffice && !isAdmin && (
           <FirstStepsCard
             storageScope="backoffice"
-            title={t('firstSteps.backoffice.title', { defaultValue: 'Primeiros passos' })}
-            subtitle={t('firstSteps.backoffice.subtitle', { defaultValue: 'O ciclo diário do backoffice em três paragens.' })}
+            title={t('firstSteps.backoffice.title')}
+            subtitle={t('firstSteps.backoffice.subtitle')}
             items={[
-              { id: 'contracts', label: t('firstSteps.backoffice.contracts', { defaultValue: 'Contratos a expirar' }), href: '/admin?tab=backoffice&subtab=contracts', icon: FileText },
-              { id: 'spaces', label: t('firstSteps.backoffice.spaces', { defaultValue: 'Espaços & ocupação' }), href: '/admin?tab=backoffice', icon: Building2 },
-              { id: 'approvals', label: t('firstSteps.backoffice.approvals', { defaultValue: 'Aprovações pendentes' }), href: '/admin?tab=approvals', icon: ClockIcon },
+              { id: 'contracts', label: t('firstSteps.backoffice.contracts'), href: '/admin?tab=backoffice&subtab=contracts', icon: FileText },
+              { id: 'spaces', label: t('firstSteps.backoffice.spaces'), href: '/admin?tab=backoffice', icon: Building2 },
+              { id: 'approvals', label: t('firstSteps.backoffice.approvals'), href: '/admin?tab=approvals', icon: ClockIcon },
             ] satisfies FirstStepItem[]}
           />
         )}
         {isAdmin && (
           <FirstStepsCard
             storageScope="admin"
-            title={t('firstSteps.admin.title', { defaultValue: 'Primeiros passos' })}
-            subtitle={t('firstSteps.admin.subtitle', { defaultValue: 'Os três painéis onde o admin passa mais tempo.' })}
+            title={t('firstSteps.admin.title')}
+            subtitle={t('firstSteps.admin.subtitle')}
             items={[
-              { id: 'approvals', label: t('firstSteps.admin.approvals', { defaultValue: 'Aprovações' }), href: '/admin?tab=approvals', icon: ShieldCheck },
-              { id: 'programs', label: t('firstSteps.admin.programs', { defaultValue: 'Programas & coortes' }), href: '/admin?tab=programs-setup', icon: GraduationCap },
-              { id: 'ecosystem', label: t('firstSteps.admin.ecosystem', { defaultValue: 'Saúde do ecossistema' }), href: '/ecosystem', icon: HeartPulse },
+              { id: 'approvals', label: t('firstSteps.admin.approvals'), href: '/admin?tab=approvals', icon: ShieldCheck },
+              { id: 'programs', label: t('firstSteps.admin.programs'), href: '/admin?tab=programs-setup', icon: GraduationCap },
+              { id: 'ecosystem', label: t('firstSteps.admin.ecosystem'), href: '/ecosystem', icon: HeartPulse },
             ] satisfies FirstStepItem[]}
           />
         )}
