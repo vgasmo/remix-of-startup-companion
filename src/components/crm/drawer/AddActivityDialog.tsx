@@ -12,6 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { ActivityType } from '@/hooks/useActivityTimeline';
+import { useEffect } from 'react';
+import { format } from 'date-fns';
 
 interface AddActivityDialogProps {
   type: ActivityType | null;
@@ -34,6 +36,27 @@ export function AddActivityDialog({
   const [subject, setSubject] = useState('');
   const [preview, setPreview] = useState('');
   const [shareWithFounder, setShareWithFounder] = useState(false);
+
+  // Prefill a sensible default subject when the dialog opens for a specific type
+  useEffect(() => {
+    if (open && type && !subject) {
+      const date = format(new Date(), 'dd/MM');
+      const defaults: Partial<Record<ActivityType, string>> = {
+        call: `${t('crm.call', { defaultValue: 'Chamada' })} — ${date}`,
+        note: `${t('crm.note', { defaultValue: 'Nota' })} — ${date}`,
+        meeting: `${t('crm.meeting', { defaultValue: 'Reunião' })} — ${date}`,
+        email: `${t('crm.email', { defaultValue: 'Email' })} — ${date}`,
+      };
+      const preset = defaults[type];
+      if (preset) setSubject(preset);
+    }
+    if (!open) {
+      setSubject('');
+      setPreview('');
+      setShareWithFounder(false);
+    }
+     
+  }, [open, type]);
 
   const handleSubmit = () => {
     if (!type || !subject.trim()) return;
