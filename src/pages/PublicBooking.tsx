@@ -495,6 +495,7 @@ export default function PublicBooking() {
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder={t('login.fullNamePlaceholder', { defaultValue: 'Your name' })}
                       required
+                      aria-invalid={invalidFields.has('name') || undefined}
                     />
                   </div>
                   <div className="space-y-2">
@@ -506,6 +507,7 @@ export default function PublicBooking() {
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="you@example.com"
                       required
+                      aria-invalid={invalidFields.has('email') || undefined}
                     />
                   </div>
                 </div>
@@ -530,6 +532,7 @@ export default function PublicBooking() {
                     placeholder={t('publicBooking.q1ProjectDescriptionPlaceholder')}
                     rows={3}
                     required
+                    aria-invalid={invalidFields.has('message') || undefined}
                   />
                 </div>
 
@@ -542,15 +545,16 @@ export default function PublicBooking() {
                     onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
                     placeholder={t('publicBooking.q2ProjectNamePlaceholder')}
                     required
+                    aria-invalid={invalidFields.has('organization') || undefined}
                   />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   {/* Q3 - Tech component */}
                   <div className="space-y-2">
-                    <Label>{t('publicBooking.q3HasTech')} *</Label>
+                    <Label htmlFor="has_tech">{t('publicBooking.q3HasTech')} *</Label>
                     <Select value={formData.has_tech} onValueChange={(v) => setFormData({ ...formData, has_tech: v })}>
-                      <SelectTrigger><SelectValue placeholder={t('publicBooking.selectPlaceholder')} /></SelectTrigger>
+                      <SelectTrigger id="has_tech" aria-invalid={invalidFields.has('has_tech') || undefined}><SelectValue placeholder={t('publicBooking.selectPlaceholder')} /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="yes">{t('common.yes', { defaultValue: 'Sim' })}</SelectItem>
                         <SelectItem value="no">{t('common.no', { defaultValue: 'Não' })}</SelectItem>
@@ -561,9 +565,9 @@ export default function PublicBooking() {
 
                   {/* Q4 - IIES */}
                   <div className="space-y-2">
-                    <Label>{t('publicBooking.q4IsIies')} *</Label>
+                    <Label htmlFor="is_iies">{t('publicBooking.q4IsIies')} *</Label>
                     <Select value={formData.is_iies} onValueChange={(v) => setFormData({ ...formData, is_iies: v })}>
-                      <SelectTrigger><SelectValue placeholder={t('publicBooking.selectPlaceholder')} /></SelectTrigger>
+                      <SelectTrigger id="is_iies" aria-invalid={invalidFields.has('is_iies') || undefined}><SelectValue placeholder={t('publicBooking.selectPlaceholder')} /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="yes">{t('common.yes', { defaultValue: 'Sim' })}</SelectItem>
                         <SelectItem value="no">{t('common.no', { defaultValue: 'Não' })}</SelectItem>
@@ -576,9 +580,9 @@ export default function PublicBooking() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   {/* Q5 - Vertical */}
                   <div className="space-y-2">
-                    <Label>{t('publicBooking.q5Vertical')} *</Label>
+                    <Label htmlFor="vertical">{t('publicBooking.q5Vertical')} *</Label>
                     <Select value={formData.vertical} onValueChange={(v) => setFormData({ ...formData, vertical: v })}>
-                      <SelectTrigger><SelectValue placeholder={t('publicBooking.selectPlaceholder')} /></SelectTrigger>
+                      <SelectTrigger id="vertical" aria-invalid={invalidFields.has('vertical') || undefined}><SelectValue placeholder={t('publicBooking.selectPlaceholder')} /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="cybersecurity">Cybersecurity</SelectItem>
                         <SelectItem value="engineering">Engineering</SelectItem>
@@ -598,9 +602,9 @@ export default function PublicBooking() {
 
                   {/* Q6 - Stage */}
                   <div className="space-y-2">
-                    <Label>{t('publicBooking.q6Stage')} *</Label>
+                    <Label htmlFor="stage">{t('publicBooking.q6Stage')} *</Label>
                     <Select value={formData.stage} onValueChange={(v) => setFormData({ ...formData, stage: v })}>
-                      <SelectTrigger><SelectValue placeholder={t('publicBooking.stagePlaceholder')} /></SelectTrigger>
+                      <SelectTrigger id="stage" aria-invalid={invalidFields.has('stage') || undefined}><SelectValue placeholder={t('publicBooking.stagePlaceholder')} /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="ideation">{t('publicBooking.stageIdeation')}</SelectItem>
                         <SelectItem value="validation">{t('publicBooking.stageValidation')}</SelectItem>
@@ -623,6 +627,7 @@ export default function PublicBooking() {
                     placeholder={t('publicBooking.q7HelpExpectationPlaceholder')}
                     rows={3}
                     required
+                    aria-invalid={invalidFields.has('help_expectation') || undefined}
                   />
                 </div>
 
@@ -636,14 +641,15 @@ export default function PublicBooking() {
                     placeholder={t('publicBooking.q8PersonalIntroPlaceholder')}
                     rows={3}
                     required
+                    aria-invalid={invalidFields.has('personal_intro') || undefined}
                   />
                 </div>
 
                 {/* Q9 - Referral source */}
                 <div className="space-y-2">
-                  <Label>{t('publicBooking.q9ReferralSource')} *</Label>
+                  <Label htmlFor="referral_source">{t('publicBooking.q9ReferralSource')} *</Label>
                   <Select value={formData.referral_source} onValueChange={(v) => setFormData({ ...formData, referral_source: v })}>
-                    <SelectTrigger><SelectValue placeholder={t('publicBooking.referralPlaceholder')} /></SelectTrigger>
+                    <SelectTrigger id="referral_source" aria-invalid={invalidFields.has('referral_source') || undefined}><SelectValue placeholder={t('publicBooking.referralPlaceholder')} /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="referral">{t('publicBooking.refReferral')}</SelectItem>
                       <SelectItem value="event">{t('publicBooking.refEvent')}</SelectItem>
