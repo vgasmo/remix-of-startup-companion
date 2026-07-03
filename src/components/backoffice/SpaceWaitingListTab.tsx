@@ -166,7 +166,7 @@ export function SpaceWaitingListTab() {
                     <TabsContent value="startup" className="mt-2">
                       <Select name="workspace_id">
                         <SelectTrigger>
-                          <SelectValue placeholder="Select startup..." />
+                          <SelectValue placeholder={t('waitingList.selectStartup', { defaultValue: 'Selecionar startup...' })} />
                         </SelectTrigger>
                         <SelectContent>
                           {workspaces?.map(w => (
