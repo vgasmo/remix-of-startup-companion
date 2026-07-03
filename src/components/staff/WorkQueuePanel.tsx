@@ -119,6 +119,40 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
 
   const handleMarkDone = async (itemId: string) => {
     try {
+      const item = workQueueItems?.find((i) => i.id === itemId);
+      // Special-case: review_checkin also stamps the check-in as reviewed and notifies the founder.
+      if (item?.type === 'review_checkin' && item.workspace_id) {
+        try {
+          const { supabase } = await import('@/lib/supabaseClient');
+          const { data: { user } } = await supabase.auth.getUser();
+          const { data: pendings } = await supabase
+            .from('checkin_instances')
+            .select('id, week_start, submitted_by')
+            .eq('workspace_id', item.workspace_id)
+            .eq('status', 'submitted')
+            .is('reviewed_at', null);
+          const nowIso = new Date().toISOString();
+          for (const inst of pendings || []) {
+            await supabase
+              .from('checkin_instances')
+              .update({ reviewed_at: nowIso, reviewed_by: user?.id ?? null })
+              .eq('id', inst.id);
+            if (inst.submitted_by) {
+              const monthLabel = inst.week_start ? new Date(inst.week_start).toLocaleDateString('pt-PT', { month: 'long' }) : '';
+              await supabase.from('notifications').insert({
+                user_id: inst.submitted_by,
+                type: 'system',
+                title: t('notifications.checkinReviewedTitle', 'Check-in visto'),
+                message: t('notifications.checkinReviewedBody', { month: monthLabel, defaultValue: `O seu check-in de ${monthLabel} foi visto ✓` }),
+                link: `/workspace/${item.workspace_id}?tab=overview`,
+                entity_type: 'checkin_instance',
+                entity_id: inst.id,
+                read: false,
+              });
+            }
+          }
+        } catch { /* non-fatal */ }
+      }
       await markAsDone.mutateAsync(itemId);
       notify.success(t('workQueue.markedDone'));
     } catch (error) {
