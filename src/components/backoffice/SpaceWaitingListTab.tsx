@@ -166,7 +166,7 @@ export function SpaceWaitingListTab() {
                     <TabsContent value="startup" className="mt-2">
                       <Select name="workspace_id">
                         <SelectTrigger>
-                          <SelectValue placeholder="Select startup..." />
+                          <SelectValue placeholder={t('waitingList.selectStartup', { defaultValue: 'Selecionar startup...' })} />
                         </SelectTrigger>
                         <SelectContent>
                           {workspaces?.map(w => (
@@ -180,7 +180,7 @@ export function SpaceWaitingListTab() {
                     <TabsContent value="lead" className="mt-2">
                       <Select name="funnel_item_id">
                         <SelectTrigger>
-                          <SelectValue placeholder="Select lead..." />
+                          <SelectValue placeholder={t('waitingList.selectLead', { defaultValue: 'Selecionar lead...' })} />
                         </SelectTrigger>
                         <SelectContent>
                           <ScrollArea className="h-[200px]">
@@ -213,7 +213,7 @@ export function SpaceWaitingListTab() {
 
                   <div className="space-y-2">
                     <Label>{t('admin.backoffice.preferredCapacity', 'Preferred Capacity')}</Label>
-                    <Input type="number" name="preferred_capacity" placeholder="Number of people" />
+                    <Input type="number" name="preferred_capacity" placeholder={t('waitingList.numberOfPeople', { defaultValue: 'Número de pessoas' })} />
                   </div>
                 </div>
 
@@ -221,7 +221,7 @@ export function SpaceWaitingListTab() {
                   <Label>{t('admin.backoffice.preferredBuilding', 'Preferred Building')}</Label>
                   <Select name="preferred_space_id">
                     <SelectTrigger>
-                      <SelectValue placeholder="Any building..." />
+                      <SelectValue placeholder={t('waitingList.anyBuilding', { defaultValue: 'Qualquer edifício...' })} />
                     </SelectTrigger>
                     <SelectContent>
                       {spaces?.map(space => (
@@ -409,14 +409,16 @@ export function SpaceWaitingListTab() {
                               }}
                               disabled={availableRooms.length === 0}
                             >
-                              Fulfill
+                              {t('waitingList.fulfill', { defaultValue: 'Atribuir' })}
+
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => updateRequest.mutate({ id: item.id, status: 'cancelled' })}
                             >
-                              Cancel
+                              {t('common.cancel')}
+
                             </Button>
                           </div>
                         )}
@@ -476,7 +478,7 @@ export function SpaceWaitingListTab() {
               <Label>{t('admin.backoffice.assignRoom', 'Assign Room')}</Label>
               <Select name="room_id" required>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select available room..." />
+                  <SelectValue placeholder={t('waitingList.selectAvailableRoom', { defaultValue: 'Selecionar sala disponível...' })} />
                 </SelectTrigger>
                 <SelectContent>
                   {availableRooms.map(room => (

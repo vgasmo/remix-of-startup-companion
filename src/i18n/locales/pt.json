@@ -617,6 +617,9 @@
       "space": "Espaço",
       "spaceAssigned": "Espaço atribuído com sucesso",
       "spaceName": "Nome do Espaço",
+      "spaceNamePlaceholder": "Mesa A1, Sala 101...",
+      "floorPlaceholder": "1, Piso térreo, Mezzanine...",
+
       "spaceTypes": {
         "desk": "Secretária",
         "hotDesk": "Hot Desk",
@@ -1872,6 +1875,15 @@
     "updatePassword": "Atualizar Palavra-passe"
   },
   "backoffice": {
+    "invoiceStatus": {
+      "draft": "Rascunho",
+      "sent": "Enviada",
+      "paid": "Paga",
+      "overdue": "Em atraso",
+      "cancelled": "Cancelada",
+      "refunded": "Reembolsada"
+    },
+
     "allocationEndError": "Erro ao terminar atribuição",
     "allocationEnded": "Atribuição terminada",
     "billing": {
@@ -9048,6 +9060,13 @@
     "whyAlternativesFail": "Porque falham essas alternativas?"
   },
   "waitingList": {
+    "fulfill": "Atribuir",
+    "selectStartup": "Selecionar startup...",
+    "selectLead": "Selecionar lead...",
+    "numberOfPeople": "Número de pessoas",
+    "anyBuilding": "Qualquer edifício...",
+    "selectAvailableRoom": "Selecionar sala disponível...",
+
     "allRequests": "Todos os Pedidos",
     "any": "Qualquer",
     "availableRooms": "Salas Disponíveis",

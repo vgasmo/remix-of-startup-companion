@@ -141,7 +141,7 @@ export function BackofficeSpacesTab() {
                 <Label>{t('admin.backoffice.spaceName')}</Label>
                 <Input
                   name="name"
-                  placeholder="Desk A1, Office 101..."
+                  placeholder={t('admin.backoffice.spaceNamePlaceholder', { defaultValue: 'Mesa A1, Sala 101...' })}
                   defaultValue={selectedSpace?.name || ''}
                   required
                 />
@@ -166,7 +166,7 @@ export function BackofficeSpacesTab() {
                   <Label>{t('admin.backoffice.floor')}</Label>
                   <Input
                     name="floor"
-                    placeholder="1, Ground, Mezzanine..."
+                    placeholder={t('admin.backoffice.floorPlaceholder', { defaultValue: '1, Piso térreo, Mezzanine...' })}
                     defaultValue={selectedSpace?.floor || ''}
                   />
                 </div>

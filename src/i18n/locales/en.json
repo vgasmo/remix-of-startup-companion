@@ -617,6 +617,9 @@
       "space": "Space",
       "spaceAssigned": "Space assigned successfully",
       "spaceName": "Space Name",
+      "spaceNamePlaceholder": "Desk A1, Office 101...",
+      "floorPlaceholder": "1, Ground, Mezzanine...",
+
       "spaceTypes": {
         "desk": "Desk",
         "hotDesk": "Hot Desk",
@@ -1872,6 +1875,15 @@
     "updatePassword": "Update Password"
   },
   "backoffice": {
+    "invoiceStatus": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded"
+    },
+
     "allocationEndError": "Failed to end allocation",
     "allocationEnded": "Allocation ended",
     "billing": {
@@ -9048,6 +9060,13 @@
     "whyAlternativesFail": "Why do these alternatives fail?"
   },
   "waitingList": {
+    "fulfill": "Fulfill",
+    "selectStartup": "Select startup...",
+    "selectLead": "Select lead...",
+    "numberOfPeople": "Number of people",
+    "anyBuilding": "Any building...",
+    "selectAvailableRoom": "Select available room...",
+
     "allRequests": "All Requests",
     "any": "Any",
     "availableRooms": "Available Rooms",

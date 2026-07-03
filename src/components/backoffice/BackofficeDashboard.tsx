@@ -280,10 +280,15 @@ export function BackofficeDashboard() {
                   {t('admin.backoffice.opsHub.availableRooms', { defaultValue: 'Available Rooms' })}
                 </p>
                 {data.waitingListCount > 0 && (
-                  <p className="text-xs text-warning">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/admin?tab=backoffice&subtab=waitlist')}
+                    className="text-xs text-warning hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                  >
                     {data.waitingListCount} {t('admin.backoffice.opsHub.inWaitlist', { defaultValue: 'in waitlist' })}
-                  </p>
+                  </button>
                 )}
+
               </div>
               <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center">
                 <DoorOpen className="h-6 w-6 text-accent-foreground" />
