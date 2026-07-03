@@ -192,11 +192,17 @@ export default function PublicBooking() {
 
     setUploading(true);
     try {
-      const pitchPath = await uploadPitchDeck();
-      if (pitchPath) {
-        setFormData(prev => ({ ...prev, pitch_deck_path: pitchPath } as any));
+      const upload = await uploadPitchDeck();
+      if (upload.path) {
+        setFormData(prev => ({ ...prev, pitch_deck_path: upload.path } as any));
+      } else if (upload.failed) {
+        notify.warning(
+          lang === 'pt'
+            ? 'A reserva vai ser criada, mas o ficheiro não foi carregado — pode enviá-lo por email.'
+            : 'Your booking will be created, but the file did not upload — you can send it by email.',
+        );
       }
-      bookMutation.mutate(pitchPath);
+      bookMutation.mutate(upload.path);
     } finally {
       setUploading(false);
     }
