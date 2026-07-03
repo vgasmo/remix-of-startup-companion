@@ -5283,6 +5283,7 @@
       "noEvents": "No lifecycle events in the next 90 days",
       "noIntake": "Contract without a recorded intake process",
       "noticeDeadline": "Notice deadline",
+      "openContractAria": "Open contract for {{startup}}",
       "overdue": "Overdue",
       "pending_signature": "Pending Signature",
       "phaseContract": "Contract",
