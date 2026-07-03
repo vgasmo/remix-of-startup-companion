@@ -45,6 +45,7 @@ import { StartupStage, HealthScore, WorkspacePriority } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFounderOnboardingState } from '@/hooks/useFounderOnboardingState';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useAttentionCount } from '@/hooks/useAttentionCount';
 
 const PAGE_SIZE = 15;
 
