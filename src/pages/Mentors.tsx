@@ -34,6 +34,7 @@ import { FounderMentorRequestPanel } from '@/components/mentors/FounderMentorReq
 import { PendingMentorRequestsPanel } from '@/components/mentors/PendingMentorRequestsPanel';
 import { AdminExternalMentorsManager } from '@/components/admin/AdminExternalMentorsManager';
 import { MentorProfileDialog } from '@/components/mentors/MentorProfileDialog';
+import { CreateSessionDialog } from '@/components/workspace/sessions/CreateSessionDialog';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -322,6 +323,7 @@ export default function Mentors() {
   const [mentorSearch, setMentorSearch] = useState('');
   const [selectedMentorForBooking, setSelectedMentorForBooking] = useState<string | null>(null);
   const [selectedGalleryMentor, setSelectedGalleryMentor] = useState<MentorProfile | null>(null);
+  const [showConsultantBooking, setShowConsultantBooking] = useState(false);
   // Post-action scroll targets: after the mentor accepts a pending request we
   // jump to the "connected founders" section; after declining we scroll back
   // to the top of the pending list so the shrunk queue is in view.
@@ -527,6 +529,16 @@ export default function Mentors() {
                       <Mail className="h-3.5 w-3.5" />
                       {t('mentorsPage.contact')}
                     </Button>
+                    {founderWorkspaceId && (
+                      <Button
+                        size="sm"
+                        className="h-8 text-xs gap-1"
+                        onClick={() => setShowConsultantBooking(true)}
+                      >
+                        <CalendarDays className="h-3.5 w-3.5" />
+                        {t('mentorsPage.bookSession', { defaultValue: 'Marcar sessão' })}
+                      </Button>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -776,6 +788,14 @@ export default function Mentors() {
           />
 
           <FounderMentorRequestPanel />
+
+          {founderWorkspaceId && (
+            <CreateSessionDialog
+              workspaceId={founderWorkspaceId}
+              open={showConsultantBooking}
+              onOpenChange={setShowConsultantBooking}
+            />
+          )}
         </div>
       ) : isMentor ? (
         <Tabs defaultValue={initialTab} className="space-y-6">
