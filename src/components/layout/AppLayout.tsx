@@ -179,7 +179,7 @@ function MobileBottomNav() {
     if (isExternalMentor && !isFounder) {
       return [
         { href: '/my-workspaces', icon: Building2, label: t('nav.mobile.startups', { defaultValue: 'Startups' }) },
-        { href: '/mentors/impact', icon: Calendar, label: t('nav.mobile.sessions', { defaultValue: 'Sessões' }) },
+        { href: '/my-workspaces#session-prep', icon: Calendar, label: t('nav.mobile.sessions', { defaultValue: 'Sessões' }) },
         { href: '/mentors', icon: BookOpen, label: t('nav.mobile.resources', { defaultValue: 'Recursos' }) },
         messagingItem,
         { href: '/settings', icon: Settings, label: t('nav.settings') },
