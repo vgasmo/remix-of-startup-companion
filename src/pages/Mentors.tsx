@@ -788,6 +788,14 @@ export default function Mentors() {
           />
 
           <FounderMentorRequestPanel />
+
+          {founderWorkspaceId && (
+            <CreateSessionDialog
+              workspaceId={founderWorkspaceId}
+              open={showConsultantBooking}
+              onOpenChange={setShowConsultantBooking}
+            />
+          )}
         </div>
       ) : isMentor ? (
         <Tabs defaultValue={initialTab} className="space-y-6">
