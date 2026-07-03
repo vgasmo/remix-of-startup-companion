@@ -99,6 +99,9 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
   const [deleteActionTarget, setDeleteActionTarget] = useState<ActionItem | null>(null);
   const [newMilestone, setNewMilestone] = useState({ title: '', description: '', target_date: '' });
   const [newAction, setNewAction] = useState({ title: '', description: '', due_date: '', priority: 'medium', milestone_id: '' });
+  // Inline quick-add on the actions section
+  const [quickAddTitle, setQuickAddTitle] = useState('');
+  const [quickAddMilestoneId, setQuickAddMilestoneId] = useState<string>('');
 
   // Bulk selection
   const { selectedIds, toggleItem, selectAll, deselectAll, isSelected } = useBulkSelection(
