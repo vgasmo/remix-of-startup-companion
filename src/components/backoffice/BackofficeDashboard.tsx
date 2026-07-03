@@ -79,16 +79,17 @@ function BackofficeDashboardInner() {
   const { data: buildings } = useBuildings();
   const { data: allRooms } = useRoomsWithAllocations();
 
-  // Fetch floor maps for quick access
+  // Fetch floor maps for quick access (include the parent space's building_id
+  // so we can match by building id — name/code matching silently breaks on rename).
   const { data: floorMaps } = useQuery({
     queryKey: ['floor-maps-all'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('floor_maps')
-        .select('*')
+        .select('*, space:office_spaces!floor_maps_space_id_fkey(building_id)')
         .order('name');
       if (error) throw error;
-      return data as FloorMap[];
+      return data as (FloorMap & { space?: { building_id: string | null } | null })[];
     },
   });
 
