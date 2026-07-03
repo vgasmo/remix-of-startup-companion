@@ -168,16 +168,19 @@ export default function PublicBooking() {
     return acc;
   }, {} as Record<string, TimeSlot[]>) || {};
 
-  const uploadPitchDeck = async (): Promise<string | null> => {
-    if (!pitchFile) return null;
+  const dateLocale = lang === 'pt' ? ptLocale : enUS;
+  const atConnector = lang === 'pt' ? ' às ' : ' at ';
+
+  const uploadPitchDeck = async (): Promise<{ path: string | null; failed: boolean }> => {
+    if (!pitchFile) return { path: null, failed: false };
     const ext = pitchFile.name.split('.').pop() || 'pdf';
     const path = `${crypto.randomUUID()}.${ext}`;
     const { error } = await supabase.storage.from('booking-uploads').upload(path, pitchFile);
     if (error) {
       logger.warn('booking_upload_failed', { error: error?.message });
-      return null;
+      return { path: null, failed: true };
     }
-    return path;
+    return { path, failed: false };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
