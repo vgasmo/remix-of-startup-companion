@@ -19,7 +19,7 @@ import { BuildingSelectorCards } from './BuildingSelectorCards';
 import { SpaceOccupancyChart } from './SpaceOccupancyChart';
 import { SpaceDetailDrawer } from './SpaceDetailDrawer';
 import { BackofficeBuildingsTab } from './BackofficeBuildingsTab';
-import { BackofficeSpacesTab } from './BackofficeSpacesTab';
+
 import { SpaceWaitingListTab } from './SpaceWaitingListTab';
 import { OccupancyDashboard } from './OccupancyDashboard';
 import { RoomShapeEditor } from './RoomShapeEditor';
