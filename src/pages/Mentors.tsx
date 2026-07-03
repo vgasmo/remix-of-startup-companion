@@ -351,6 +351,15 @@ export default function Mentors() {
     enabled: isFounder,
   });
 
+  // Auto-open the mentor profile dialog when arriving via a deep link from an
+  // inbox notification (e.g. `mentor_connection_pending` → `?mentor=<id>`).
+  useEffect(() => {
+    if (!isFounder || !deepLinkMentorId || !allMentors?.length) return;
+    if (selectedGalleryMentor?.id === deepLinkMentorId) return;
+    const target = allMentors.find(m => m.id === deepLinkMentorId);
+    if (target) setSelectedGalleryMentor(target);
+  }, [isFounder, deepLinkMentorId, allMentors, selectedGalleryMentor?.id]);
+
   const updateConnectionStatus = useMutation({
     mutationFn: async ({ connectionId, status, workspaceId }: { connectionId: string; status: string; founderId: string; workspaceId: string | null }) => {
       const { error } = await supabase
