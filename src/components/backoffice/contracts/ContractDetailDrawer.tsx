@@ -31,6 +31,7 @@ import { ContractLifecycleStepper } from '@/components/contracts/ContractLifecyc
 import { ContractReadinessChecklist } from '@/components/contracts/ContractReadinessChecklist';
 import { ProvenanceBadge } from '@/components/shared/ProvenanceBadge';
 import { calculateContractPricing, type PricingInput } from '@/lib/pricingEngine';
+import { nextAnniversary as computeNextAnniversary } from '@/lib/contractLifecycle';
 import { supabase } from '@/lib/supabaseClient';
 import { canonicalMarkAsSent, canonicalMarkAsSigned } from '@/lib/contractLifecycleSync';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
