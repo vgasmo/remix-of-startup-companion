@@ -112,12 +112,28 @@ Deno.serve(async (req) => {
 
 
     if (rows.length) {
-      const { error: insErr } = await admin
+      // Cannot use upsert onConflict here — the unique index on (user_id, event_key)
+      // is partial (WHERE event_key IS NOT NULL) and Postgres can't infer it for
+      // ON CONFLICT via supabase-js. Do a manual dedupe: fetch existing keys, then insert.
+      const eventKeys = rows.map((r) => r.event_key).filter(Boolean) as string[];
+      const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
+      const { data: existing, error: exErr } = await admin
         .from('notifications')
-        .upsert(rows, { onConflict: 'user_id,event_key', ignoreDuplicates: true });
-      if (insErr) {
-        console.error('[notify-document-uploaded] upsert failed', insErr);
-        return corsJsonResponse({ error: insErr.message }, req, 500);
+        .select('user_id,event_key')
+        .in('user_id', userIds)
+        .in('event_key', eventKeys);
+      if (exErr) {
+        console.error('[notify-document-uploaded] dedupe select failed', exErr);
+        return corsJsonResponse({ error: exErr.message }, req, 500);
+      }
+      const seen = new Set((existing ?? []).map((r: any) => `${r.user_id}|${r.event_key}`));
+      const toInsert = rows.filter((r) => !seen.has(`${r.user_id}|${r.event_key}`));
+      if (toInsert.length) {
+        const { error: insErr } = await admin.from('notifications').insert(toInsert);
+        if (insErr) {
+          console.error('[notify-document-uploaded] insert failed', insErr);
+          return corsJsonResponse({ error: insErr.message }, req, 500);
+        }
       }
     }
 
