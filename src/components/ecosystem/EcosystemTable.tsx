@@ -105,12 +105,39 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
   const handleArchiveWorkspace = async (item: EcosystemItem) => {
     if (!item.workspace_id) return;
     try {
+      // Snapshot previous status for undo
+      const { data: prev } = await supabase
+        .from('workspaces')
+        .select('status')
+        .eq('id', item.workspace_id)
+        .maybeSingle();
+      const prevStatus = (prev?.status as string) || 'active';
+
       const { error } = await supabase
         .from('workspaces')
         .update({ status: 'archived' })
         .eq('id', item.workspace_id);
       if (error) throw error;
-      notify.success(t('ecosystem.workspaceArchived', { defaultValue: 'Workspace arquivado' }));
+      notify.success(t('ecosystem.workspaceArchived', { defaultValue: 'Workspace arquivado' }), {
+        duration: 8000,
+        action: {
+          label: t('common.undo', { defaultValue: 'Anular' }),
+          onClick: async () => {
+            try {
+              const { error: restoreErr } = await supabase
+                .from('workspaces')
+                .update({ status: prevStatus })
+                .eq('id', item.workspace_id!);
+              if (restoreErr) throw restoreErr;
+              notify.success(t('ecosystem.workspaceRestored', { defaultValue: 'Workspace restaurado' }));
+            } catch {
+              notify.error(t('common.undoFailed', { defaultValue: 'Não foi possível anular' }));
+            } finally {
+              queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
+            }
+          },
+        },
+      });
       queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
     } catch (err: any) {
       notify.error(t('ecosystem.archiveError', { defaultValue: 'Erro ao arquivar workspace' }), {
@@ -141,6 +168,13 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
         return;
       }
 
+      // Snapshot full lead row for undo
+      const { data: snapshot } = await supabase
+        .from('funnel_items')
+        .select('*')
+        .eq('id', item.funnel_item_id)
+        .maybeSingle();
+
       // Detach intakes (FK is SET NULL but we make it explicit for clarity)
       if ((intakeCount || 0) > 0) {
         await supabase
@@ -154,7 +188,23 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
         .delete()
         .eq('id', item.funnel_item_id);
       if (error) throw error;
-      notify.success(t('ecosystem.leadDeleted', { defaultValue: 'Lead eliminada' }));
+      notify.success(t('ecosystem.leadDeleted', { defaultValue: 'Lead eliminada' }), {
+        duration: 8000,
+        action: snapshot ? {
+          label: t('common.undo', { defaultValue: 'Anular' }),
+          onClick: async () => {
+            try {
+              const { error: insErr } = await supabase.from('funnel_items').insert(snapshot as any);
+              if (insErr) throw insErr;
+              notify.success(t('ecosystem.leadRestored', { defaultValue: 'Lead restaurada' }));
+            } catch {
+              notify.error(t('common.undoFailed', { defaultValue: 'Não foi possível anular' }));
+            } finally {
+              queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
+            }
+          },
+        } : undefined,
+      });
       queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
     } catch (err: any) {
       const msg = err?.message || '';
