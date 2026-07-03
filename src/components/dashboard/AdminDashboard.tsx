@@ -37,7 +37,15 @@ interface AdminDashboardProps {
 
 import { memo, useMemo, useState } from 'react';
 
-export const AdminDashboard = memo(function AdminDashboard({ workspaces, isLoading: workspacesLoading, programsCount, onSwitchToPortfolio }: AdminDashboardProps) {
+export const AdminDashboard = memo(function AdminDashboard(props: AdminDashboardProps) {
+  return (
+    <FocusModeProvider persistKey="admin" defaultFocused={true}>
+      <AdminDashboardInner {...props} />
+    </FocusModeProvider>
+  );
+});
+
+const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLoading: workspacesLoading, programsCount, onSwitchToPortfolio }: AdminDashboardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { profile } = useAuth();
