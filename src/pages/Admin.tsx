@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -17,26 +17,33 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { AdminTemplatesManager } from '@/components/admin/AdminTemplatesManager';
-import { AdminTemplateRequestsManager } from '@/components/admin/AdminTemplateRequestsManager';
-import { AdminUsersManager } from '@/components/admin/AdminUsersManager';
-import { AdminKpisManager } from '@/components/admin/AdminKpisManager';
-import { AdminBackoffice } from '@/components/admin/AdminBackoffice';
-import { AdminAnnouncementsManager } from '@/components/admin/AdminAnnouncementsManager';
-import { PendingApprovalsManager } from '@/components/admin/PendingApprovalsManager';
-import { ComplianceDashboard } from '@/components/admin/ComplianceDashboard';
-import { CohortAnalytics } from '@/components/analytics/CohortAnalytics';
-import { BulkReportGenerator } from '@/components/analytics/BulkReportGenerator';
-import { HealthModelViewer } from '@/components/admin/HealthModelViewer';
-import { AdminExternalMentorsManager } from '@/components/admin/AdminExternalMentorsManager';
-import { AdminSupportMaterialsManager } from '@/components/admin/AdminSupportMaterialsManager';
-import { AdminSurveysManager } from '@/components/admin/AdminSurveysManager';
-import { DataQualityDashboard } from '@/components/admin/DataQualityDashboard';
-import { AdminProgramsManager } from '@/components/admin/AdminProgramsManager';
-import { AdminMissionControlDirectory } from '@/components/admin/AdminMissionControlDirectory';
-import { EnrollmentControlCenter } from '@/components/admin/EnrollmentControlCenter';
 import { EcosystemPulseCard } from '@/components/admin/EcosystemPulseCard';
-import { SystemHealthDashboard } from '@/components/admin/SystemHealthDashboard';
+import { AdminMissionControlDirectory } from '@/components/admin/AdminMissionControlDirectory';
+import { lazyWithRetry } from '@/lib/lazyWithRetry';
+
+// Heavy tab managers — lazy so Admin route chunk stays lean.
+const AdminTemplatesManager       = lazy(lazyWithRetry(() => import('@/components/admin/AdminTemplatesManager').then(m => ({ default: m.AdminTemplatesManager })), 'lazy:admin-templates'));
+const AdminTemplateRequestsManager= lazy(lazyWithRetry(() => import('@/components/admin/AdminTemplateRequestsManager').then(m => ({ default: m.AdminTemplateRequestsManager })), 'lazy:admin-template-requests'));
+const AdminUsersManager           = lazy(lazyWithRetry(() => import('@/components/admin/AdminUsersManager').then(m => ({ default: m.AdminUsersManager })), 'lazy:admin-users'));
+const AdminKpisManager            = lazy(lazyWithRetry(() => import('@/components/admin/AdminKpisManager').then(m => ({ default: m.AdminKpisManager })), 'lazy:admin-kpis'));
+const AdminBackoffice             = lazy(lazyWithRetry(() => import('@/components/admin/AdminBackoffice').then(m => ({ default: m.AdminBackoffice })), 'lazy:admin-backoffice'));
+const AdminAnnouncementsManager   = lazy(lazyWithRetry(() => import('@/components/admin/AdminAnnouncementsManager').then(m => ({ default: m.AdminAnnouncementsManager })), 'lazy:admin-announcements'));
+const PendingApprovalsManager     = lazy(lazyWithRetry(() => import('@/components/admin/PendingApprovalsManager').then(m => ({ default: m.PendingApprovalsManager })), 'lazy:admin-approvals'));
+const ComplianceDashboard         = lazy(lazyWithRetry(() => import('@/components/admin/ComplianceDashboard').then(m => ({ default: m.ComplianceDashboard })), 'lazy:admin-compliance'));
+const CohortAnalytics             = lazy(lazyWithRetry(() => import('@/components/analytics/CohortAnalytics').then(m => ({ default: m.CohortAnalytics })), 'lazy:analytics-cohort'));
+const BulkReportGenerator         = lazy(lazyWithRetry(() => import('@/components/analytics/BulkReportGenerator').then(m => ({ default: m.BulkReportGenerator })), 'lazy:analytics-bulk-report'));
+const HealthModelViewer           = lazy(lazyWithRetry(() => import('@/components/admin/HealthModelViewer').then(m => ({ default: m.HealthModelViewer })), 'lazy:admin-health'));
+const AdminExternalMentorsManager = lazy(lazyWithRetry(() => import('@/components/admin/AdminExternalMentorsManager').then(m => ({ default: m.AdminExternalMentorsManager })), 'lazy:admin-mentors'));
+const AdminSupportMaterialsManager= lazy(lazyWithRetry(() => import('@/components/admin/AdminSupportMaterialsManager').then(m => ({ default: m.AdminSupportMaterialsManager })), 'lazy:admin-support-materials'));
+const AdminSurveysManager         = lazy(lazyWithRetry(() => import('@/components/admin/AdminSurveysManager').then(m => ({ default: m.AdminSurveysManager })), 'lazy:admin-surveys'));
+const DataQualityDashboard        = lazy(lazyWithRetry(() => import('@/components/admin/DataQualityDashboard').then(m => ({ default: m.DataQualityDashboard })), 'lazy:admin-data-quality'));
+const AdminProgramsManager        = lazy(lazyWithRetry(() => import('@/components/admin/AdminProgramsManager').then(m => ({ default: m.AdminProgramsManager })), 'lazy:admin-programs'));
+const EnrollmentControlCenter     = lazy(lazyWithRetry(() => import('@/components/admin/EnrollmentControlCenter').then(m => ({ default: m.EnrollmentControlCenter })), 'lazy:admin-enrollment'));
+const SystemHealthDashboard       = lazy(lazyWithRetry(() => import('@/components/admin/SystemHealthDashboard').then(m => ({ default: m.SystemHealthDashboard })), 'lazy:admin-system-health'));
+
+const TabFallback = () => (
+  <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">…</div>
+);
 
 const ADMIN_ONLY_TABS = new Set(['users', 'data-quality', 'system-health']);
 
