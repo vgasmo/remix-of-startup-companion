@@ -9069,6 +9069,10 @@ export type Database = {
         Returns: undefined
       }
       approve_user_account: { Args: { p_user_id: string }; Returns: undefined }
+      assign_mentor_request: {
+        Args: { _mentor_id: string; _request_id: string }
+        Returns: Json
+      }
       block_workspace: {
         Args: { _reason?: string; _workspace_id: string }
         Returns: undefined
