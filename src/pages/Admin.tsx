@@ -209,78 +209,80 @@ export default function Admin() {
         </div>
 
         <TabsContent value="approvals">
-          <PendingApprovalsManager />
+          <Suspense fallback={<TabFallback />}><PendingApprovalsManager /></Suspense>
         </TabsContent>
 
         <TabsContent value="enrollment">
-          <EnrollmentControlCenter />
+          <Suspense fallback={<TabFallback />}><EnrollmentControlCenter /></Suspense>
         </TabsContent>
 
         <TabsContent value="compliance">
-          <ComplianceDashboard />
+          <Suspense fallback={<TabFallback />}><ComplianceDashboard /></Suspense>
         </TabsContent>
 
         <TabsContent value="backoffice">
-          <AdminBackoffice />
+          <Suspense fallback={<TabFallback />}><AdminBackoffice /></Suspense>
         </TabsContent>
 
         <TabsContent value="announcements">
-          <AdminAnnouncementsManager />
+          <Suspense fallback={<TabFallback />}><AdminAnnouncementsManager /></Suspense>
         </TabsContent>
 
         <TabsContent value="data-quality">
-          <DataQualityDashboard />
+          <Suspense fallback={<TabFallback />}><DataQualityDashboard /></Suspense>
         </TabsContent>
 
         <TabsContent value="users">
-          <AdminUsersManager />
+          <Suspense fallback={<TabFallback />}><AdminUsersManager /></Suspense>
         </TabsContent>
 
         <TabsContent value="mentors">
-          <AdminExternalMentorsManager />
+          <Suspense fallback={<TabFallback />}><AdminExternalMentorsManager /></Suspense>
         </TabsContent>
 
         <TabsContent value="programs-setup">
-          <AdminProgramsManager />
+          <Suspense fallback={<TabFallback />}><AdminProgramsManager /></Suspense>
         </TabsContent>
 
         <TabsContent value="kpis">
-          <AdminKpisManager />
+          <Suspense fallback={<TabFallback />}><AdminKpisManager /></Suspense>
         </TabsContent>
 
         <TabsContent value="templates">
-          <AdminTemplatesManager />
+          <Suspense fallback={<TabFallback />}><AdminTemplatesManager /></Suspense>
         </TabsContent>
 
         <TabsContent value="template-requests">
-          <AdminTemplateRequestsManager />
+          <Suspense fallback={<TabFallback />}><AdminTemplateRequestsManager /></Suspense>
         </TabsContent>
 
         <TabsContent value="support-materials">
-          <AdminSupportMaterialsManager />
+          <Suspense fallback={<TabFallback />}><AdminSupportMaterialsManager /></Suspense>
         </TabsContent>
 
         <TabsContent value="analytics">
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <CohortAnalytics />
+          <Suspense fallback={<TabFallback />}>
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-2">
+                <CohortAnalytics />
+              </div>
+              <div>
+                <BulkReportGenerator />
+              </div>
             </div>
-            <div>
-              <BulkReportGenerator />
-            </div>
-          </div>
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="health">
-          <HealthModelViewer />
+          <Suspense fallback={<TabFallback />}><HealthModelViewer /></Suspense>
         </TabsContent>
 
         <TabsContent value="surveys">
-          <AdminSurveysManager />
+          <Suspense fallback={<TabFallback />}><AdminSurveysManager /></Suspense>
         </TabsContent>
 
         <TabsContent value="system-health">
-          <SystemHealthDashboard />
+          <Suspense fallback={<TabFallback />}><SystemHealthDashboard /></Suspense>
         </TabsContent>
 
 
