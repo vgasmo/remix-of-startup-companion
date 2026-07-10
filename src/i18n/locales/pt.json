@@ -5767,7 +5767,9 @@
     "unknownFounder": "Fundador Desconhecido",
     "unnamedMentor": "Mentor",
     "whatNeedsHelp": "Em que precisa de ajuda?",
-    "responseTime": "Notificamos assim que o pedido for aceite."
+    "responseTime": "Notificamos assim que o pedido for aceite.",
+    "assignLegacyNeedsWorkspace": "Pedido antigo sem workspace. Contactar suporte.",
+    "assignAlreadyResolved": "Este pedido já foi resolvido."
   },
   "messaging": {
     "adjustSearch": "Tente ajustar a pesquisa ou verifique se o utilizador já está registado.",

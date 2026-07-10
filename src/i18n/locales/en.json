@@ -5767,7 +5767,9 @@
     "unknownFounder": "Unknown Founder",
     "unnamedMentor": "Mentor",
     "whatNeedsHelp": "What do you need help with?",
-    "responseTime": "We'll notify you as soon as the request is accepted."
+    "responseTime": "We'll notify you as soon as the request is accepted.",
+    "assignLegacyNeedsWorkspace": "Legacy request without workspace. Please contact support.",
+    "assignAlreadyResolved": "This request has already been resolved."
   },
   "messaging": {
     "adjustSearch": "Try adjusting search or check if user is registered.",

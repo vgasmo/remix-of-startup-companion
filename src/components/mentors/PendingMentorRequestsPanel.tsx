@@ -119,39 +119,20 @@ export function PendingMentorRequestsPanel() {
     },
   });
 
-  // Assign mentor mutation
+  // Assign mentor mutation — uses atomic RPC so workspace membership + request
+  // fulfilment either both succeed or both roll back.
   const assignMentor = useMutation({
-    mutationFn: async ({ requestId, mentorId, workspaceId }: { 
-      requestId: string; 
-      mentorId: string; 
+    mutationFn: async ({ requestId, mentorId }: {
+      requestId: string;
+      mentorId: string;
       workspaceId: string;
     }) => {
-      // Assign mentor to workspace
-      const { error: assignError } = await supabase
-        .from('workspace_users')
-        .upsert({
-          user_id: mentorId,
-          workspace_id: workspaceId,
-          role: 'mentor_externo',
-          active: true,
-        }, {
-          onConflict: 'workspace_id,user_id',
-        });
-      
-      if (assignError) throw assignError;
-
-      // Update request as fulfilled
-      const { error: updateError } = await supabase
-        .from('mentor_requests')
-        .update({
-          status: 'fulfilled',
-          fulfilled_by: user?.id,
-          fulfilled_at: new Date().toISOString(),
-          assigned_mentor_id: mentorId,
-        })
-        .eq('id', requestId);
-      
-      if (updateError) throw updateError;
+      const { data, error } = await supabase.rpc('assign_mentor_request', {
+        _request_id: requestId,
+        _mentor_id: mentorId,
+      });
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-mentor-requests'] });
@@ -160,10 +141,18 @@ export function PendingMentorRequestsPanel() {
       setAssignDialogRequest(null);
       setSelectedMentorId('');
     },
-    onError: () => {
-      notify.error(t('mentorsPage.assignmentFailed'));
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('legacy_request_needs_manual_workspace')) {
+        notify.error(t('mentorsPage.assignLegacyNeedsWorkspace', { defaultValue: 'Pedido antigo sem workspace. Contactar suporte.' }));
+      } else if (msg.includes('mentor_request_not_pending')) {
+        notify.error(t('mentorsPage.assignAlreadyResolved', { defaultValue: 'Este pedido já foi resolvido.' }));
+      } else {
+        notify.error(t('mentorsPage.assignmentFailed'));
+      }
     },
   });
+
 
   const getMatchingMentors = (request: MentorRequest) => {
     if (!mentors) return [];
