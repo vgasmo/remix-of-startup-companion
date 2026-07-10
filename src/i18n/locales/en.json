@@ -3535,8 +3535,8 @@
     "check2Desc": "Records will be created or updated in the CRM",
     "check3": "I confirm the configuration is correct",
     "confirmSafetyChecks": "Please confirm all safety checks",
-    "createDraftContracts": "Criar Contratos Rascunho",
-    "createDraftContractsDesc": "Create Draft Contracts Desc",
+    "createDraftContracts": "Create {{count}} draft contracts",
+    "createDraftContractsDesc": "Creates draft contracts for leads marked as \"contracted\" with a mapped building or service.",
     "defaultStage": "Default Stage",
     "dryRun": "Run Dry Run",
     "dryRunComplete": "Dry run complete",
@@ -5767,7 +5767,9 @@
     "unknownFounder": "Unknown Founder",
     "unnamedMentor": "Mentor",
     "whatNeedsHelp": "What do you need help with?",
-    "responseTime": "We'll notify you as soon as the request is accepted."
+    "responseTime": "We'll notify you as soon as the request is accepted.",
+    "assignLegacyNeedsWorkspace": "Legacy request without workspace. Please contact support.",
+    "assignAlreadyResolved": "This request has already been resolved."
   },
   "messaging": {
     "adjustSearch": "Try adjusting search or check if user is registered.",

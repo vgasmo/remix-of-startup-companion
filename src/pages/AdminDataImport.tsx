@@ -1286,9 +1286,9 @@ export default function AdminDataImport() {
                 {(stats.withBuilding > 0 || stats.withService > 0) && (
                   <div className="flex items-center justify-between p-3 rounded-lg bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/30">
                     <div>
-                      <Label className="text-[hsl(var(--success))]">{t('dataImport.createDraftContracts', 'Criar Contratos Rascunho')}</Label>
+                      <Label className="text-[hsl(var(--success))]">{t('dataImport.createDraftContracts', { defaultValue: 'Criar {{count}} contratos em rascunho', count: (stats.withBuilding || 0) + (stats.withService || 0) })}</Label>
                       <p className="text-xs text-muted-foreground">
-                        {t('dataImport.createDraftContractsDesc', 'Criar contratos draft para leads que virem "contracted" com edifício/serviço')}
+                        {t('dataImport.createDraftContractsDesc', { defaultValue: 'Cria contratos em rascunho para leads marcados como "contracted" com edifício ou serviço mapeado.' })}
                       </p>
                       <p className="text-xs text-[hsl(var(--success))] font-medium mt-1">
                         {stats.withBuilding} com edifício, {stats.withService} com serviço mapeado
