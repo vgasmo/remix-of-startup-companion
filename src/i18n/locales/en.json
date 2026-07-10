@@ -5383,7 +5383,11 @@
       "detail": "signature_provider is empty.",
       "title": "Contract in pending_signature without a defined provider"
     },
-    "title": "Lifecycle inconsistencies"
+    "title": "Lifecycle inconsistencies",
+    "activeNoWorkspace": {
+      "title": "Active founder without a workspace",
+      "detail": "This founder is marked active but has no workspace assigned. Assign one to unblock them."
+    }
   },
   "loading": {
     "almostThere": "Almost there...",
@@ -5532,7 +5536,22 @@
     "updateAvailability": "Update Availability",
     "viewConnectionRequests": "View Connection Requests",
     "welcomeTitle": "Welcome to the Mentor Panel",
-    "yourImpact": "Your Impact"
+    "yourImpact": "Your Impact",
+    "postNdaChecklist": {
+      "title": "Complete your mentor profile",
+      "profile": {
+        "title": "Fill in your profile",
+        "why": "Founders can find and pick you."
+      },
+      "availability": {
+        "title": "Set your availability",
+        "why": "Founders can only book slots you've opened."
+      },
+      "guide": {
+        "title": "Read the mentor guide",
+        "why": "Learn how sessions and confidentiality work."
+      }
+    }
   },
   "mentorFeedback": {
     "blockedPlaceholder": "Issues or blockers identified...",
@@ -5839,7 +5858,8 @@
       "quickGuide": "Quick Guide",
       "reports": "Reports",
       "systemConfig": "System Configuration",
-      "usersPermissions": "Users & Permissions"
+      "usersPermissions": "Users & Permissions",
+      "crmPipeline": "CRM pipeline"
     },
     "adminPanel": "Admin Panel",
     "backoffice": {
@@ -5891,7 +5911,8 @@
       "profile": "Profile",
       "quickGuide": "Quick Guide",
       "resources": "Resources",
-      "upcomingSessions": "Upcoming Sessions"
+      "upcomingSessions": "Upcoming Sessions",
+      "impact": "My impact"
     },
     "mentors": "Mentors",
     "mobile": {
@@ -7672,7 +7693,10 @@
     "withConsultant": "Consultor",
     "withMentor": "Mentor",
     "workspaceMembers": "workspace members",
-    "zoomDesc": "Auto-import meeting recordings and transcripts"
+    "zoomDesc": "Auto-import meeting recordings and transcripts",
+    "bookWithMentor": "Book with mentor",
+    "conflictWorkspace": "This workspace already has a session at this time.",
+    "conflictMentor": "The mentor already has a session at this time."
   },
   "sessionsEmpty": {
     "description": "Your consultant or program will schedule your first session soon.",
@@ -9367,7 +9391,8 @@
     "workspaceUpdated": "Workspace updated",
     "yourConsultant": "Your Consultant",
     "yourMentor": "Your Mentor",
-    "yourTeam": "Your Team"
+    "yourTeam": "Your Team",
+    "invalidTab": "That tab isn't available for this workspace."
   },
   "workspaceCard": {
     "actions": "Actions",

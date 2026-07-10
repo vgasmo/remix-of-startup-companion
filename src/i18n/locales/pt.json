@@ -684,7 +684,11 @@
       "waitlistSuggestions": "Sugestões da Lista de Espera",
       "workspaceBlocked": "Workspace bloqueado",
       "workspaceUnblocked": "Workspace desbloqueado",
-      "workspacesWithoutContracts": "Workspaces Sem Contratos"
+      "workspacesWithoutContracts": "Workspaces Sem Contratos",
+      "hero": {
+        "eyebrow": "Backoffice",
+        "subline": "Gestão integrada de espaços, contratos e operações."
+      }
     },
     "backofficeExtended": {
       "addSpace": "Adicionar Espaço",
@@ -2827,7 +2831,15 @@
     "step3MarkSent": "3. Já enviei no PandaDoc → Marcar como Enviado",
     "viewInCRM": "Ver no CRM",
     "viewInvoices": "Ver Faturas",
-    "viewWorkspace": "Ver Workspace"
+    "viewWorkspace": "Ver Workspace",
+    "declinedNotice": "Este contrato foi recusado pelo signatário.",
+    "voidedNotice": "Este contrato foi anulado.",
+    "resetOk": "Contrato reiniciado com sucesso.",
+    "resetFailed": "Não foi possível reiniciar o contrato.",
+    "resetAndResend": "Reiniciar e reenviar",
+    "renewNotifyTitle": "Renovação enviada",
+    "renewNotifyMsg": "A proposta de renovação foi enviada ao signatário.",
+    "renewInvalidStatus": "Só é possível renovar contratos ativos ou expirados."
   },
   "contractOnboarding": {
     "acceptContract": "Li e aceito os termos do Contrato de Incubação, incluindo as condições de prestação de serviços, obrigações e direitos das partes.",
@@ -5383,7 +5395,11 @@
       "detail": "signature_provider está vazio.",
       "title": "Contrato em pending_signature sem prestador definido"
     },
-    "title": "Inconsistências de ciclo de vida"
+    "title": "Inconsistências de ciclo de vida",
+    "activeNoWorkspace": {
+      "title": "Founder ativo sem workspace",
+      "detail": "Este founder está marcado como ativo mas não tem workspace atribuído. Atribua um para o desbloquear."
+    }
   },
   "loading": {
     "almostThere": "Quase lá...",
@@ -5532,7 +5548,22 @@
     "updateAvailability": "Atualizar Disponibilidade",
     "viewConnectionRequests": "Ver Pedidos de Ligação",
     "welcomeTitle": "Bem-vindo ao Painel de Mentor",
-    "yourImpact": "O Teu Impacto"
+    "yourImpact": "O Teu Impacto",
+    "postNdaChecklist": {
+      "title": "Complete o seu perfil de mentor",
+      "profile": {
+        "title": "Preencha o seu perfil",
+        "why": "Os founders podem encontrá-lo e escolhê-lo."
+      },
+      "availability": {
+        "title": "Defina a sua disponibilidade",
+        "why": "Os founders só podem marcar horários que abriu."
+      },
+      "guide": {
+        "title": "Leia o guia do mentor",
+        "why": "Perceba como funcionam as sessões e a confidencialidade."
+      }
+    }
   },
   "mentorFeedback": {
     "blockedPlaceholder": "Problemas ou bloqueios identificados...",
@@ -5839,7 +5870,8 @@
       "quickGuide": "Guia Rápido",
       "reports": "Relatórios",
       "systemConfig": "Configuração do Sistema",
-      "usersPermissions": "Utilizadores & Permissões"
+      "usersPermissions": "Utilizadores & Permissões",
+      "crmPipeline": "Pipeline CRM"
     },
     "adminPanel": "Painel de Admin",
     "backoffice": {
@@ -5891,7 +5923,8 @@
       "profile": "Perfil",
       "quickGuide": "Guia Rápido",
       "resources": "Recursos",
-      "upcomingSessions": "Próximas Sessões"
+      "upcomingSessions": "Próximas Sessões",
+      "impact": "O meu impacto"
     },
     "mentors": "Mentores",
     "mobile": {
@@ -7672,7 +7705,10 @@
     "withConsultant": "Consultor",
     "withMentor": "Mentor",
     "workspaceMembers": "membros do espaço",
-    "zoomDesc": "Importar gravações e transcrições automaticamente"
+    "zoomDesc": "Importar gravações e transcrições automaticamente",
+    "bookWithMentor": "Agendar com mentor",
+    "conflictWorkspace": "Este workspace já tem uma sessão a esta hora.",
+    "conflictMentor": "O mentor já tem uma sessão a esta hora."
   },
   "sessionsEmpty": {
     "description": "O seu consultor ou programa vai agendar a primeira sessão em breve.",
@@ -9367,7 +9403,8 @@
     "workspaceUpdated": "Workspace updated",
     "yourConsultant": "Seu Consultor",
     "yourMentor": "Seu Mentor",
-    "yourTeam": "A Sua Equipa"
+    "yourTeam": "A Sua Equipa",
+    "invalidTab": "Este separador não está disponível para este workspace."
   },
   "workspaceCard": {
     "actions": "Ações",
