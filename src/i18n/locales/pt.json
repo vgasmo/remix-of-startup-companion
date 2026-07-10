@@ -1782,7 +1782,7 @@
     "contactSupport": "Contacto: support@startupleiria.com",
     "pendingDescription": "A sua conta está pendente de aprovação pela equipa de gestão.",
     "pendingTitle": "Conta Pendente de Aprovação",
-    "responseTime": "Normalmente respondemos em 2-3 dias úteis.",
+    "responseTime": "Será notificado(a) por email assim que a sua conta for revista.",
     "step1": "A equipa vai analisar a sua candidatura",
     "step2": "Será notificado assim que for aprovada",
     "step3": "Acesso completo ao workspace após aprovação",
@@ -4348,7 +4348,7 @@
       "emptyTitle": "Ainda sem dados de progresso",
       "updateKpis": "Atualizar KPIs"
     },
-    "responseTime": "Response Hora",
+    "responseTime": "Tempo de resposta",
     "ring": {
       "actions": "Ações",
       "kpis": "KPIs",
