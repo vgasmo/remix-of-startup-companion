@@ -684,7 +684,11 @@
       "waitlistSuggestions": "Waitlist Suggestions",
       "workspaceBlocked": "Workspace blocked",
       "workspaceUnblocked": "Workspace unblocked",
-      "workspacesWithoutContracts": "Workspaces Without Contracts"
+      "workspacesWithoutContracts": "Workspaces Without Contracts",
+      "hero": {
+        "eyebrow": "Backoffice",
+        "subline": "Integrated management of spaces, contracts, and operations."
+      }
     },
     "backofficeExtended": {
       "addSpace": "Add Space",
@@ -2827,7 +2831,15 @@
     "step3MarkSent": "3. Already sent in PandaDoc → Mark as Sent",
     "viewInCRM": "View in CRM",
     "viewInvoices": "View Invoices",
-    "viewWorkspace": "View Workspace"
+    "viewWorkspace": "View Workspace",
+    "declinedNotice": "This contract was declined by the signer.",
+    "voidedNotice": "This contract has been voided.",
+    "resetOk": "Contract reset successfully.",
+    "resetFailed": "Unable to reset the contract.",
+    "resetAndResend": "Reset and resend",
+    "renewNotifyTitle": "Renewal sent",
+    "renewNotifyMsg": "The renewal proposal has been sent to the signer.",
+    "renewInvalidStatus": "Only active or expired contracts can be renewed."
   },
   "contractOnboarding": {
     "acceptContract": "I have read and accept the terms of the Incubation Contract, including the conditions of service, obligations and rights of the parties.",
