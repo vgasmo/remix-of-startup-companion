@@ -250,7 +250,7 @@ export default function ClaimStartup() {
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
-                <span>{t('claimStartup.pendingTiming', { defaultValue: 'Geralmente concluído em 1-3 dias úteis.' })}</span>
+                <span>{t('claimStartup.pendingTiming', { defaultValue: 'Receberá uma notificação por email assim que a equipa revir o seu pedido.' })}</span>
               </div>
               <p className="text-xs text-muted-foreground/60 max-w-xs">
                 {t('claimStartup.pendingReassurance', { defaultValue: 'Não precisa de fazer mais nada. Receberá acesso assim que a equipa confirmar.' })}
@@ -285,7 +285,7 @@ export default function ClaimStartup() {
               </p>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
-                <span>{t('claimStartup.pendingTiming', { defaultValue: 'Geralmente concluído em 1-3 dias úteis.' })}</span>
+                <span>{t('claimStartup.pendingTiming', { defaultValue: 'Receberá uma notificação por email assim que a equipa revir o seu pedido.' })}</span>
               </div>
             </div>
           )}

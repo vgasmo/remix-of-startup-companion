@@ -249,7 +249,7 @@ export function FounderMentorRequestPanel() {
               {t('mentorsPage.pendingRequests')}
             </CardTitle>
             <CardDescription>
-              {t('mentorsPage.expectedResponse', { defaultValue: 'A nossa equipa atribui mentores em 2-3 dias úteis.' })}
+              {t('mentorsPage.expectedResponse', { defaultValue: 'Receberá uma notificação assim que um mentor aceitar o pedido.' })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">

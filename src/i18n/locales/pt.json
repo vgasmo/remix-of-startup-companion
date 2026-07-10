@@ -684,7 +684,11 @@
       "waitlistSuggestions": "Sugestões da Lista de Espera",
       "workspaceBlocked": "Workspace bloqueado",
       "workspaceUnblocked": "Workspace desbloqueado",
-      "workspacesWithoutContracts": "Workspaces Sem Contratos"
+      "workspacesWithoutContracts": "Workspaces Sem Contratos",
+      "hero": {
+        "eyebrow": "Backoffice",
+        "subline": "Gestão integrada de espaços, contratos e operações."
+      }
     },
     "backofficeExtended": {
       "addSpace": "Adicionar Espaço",
@@ -1782,7 +1786,7 @@
     "contactSupport": "Contacto: support@startupleiria.com",
     "pendingDescription": "A sua conta está pendente de aprovação pela equipa de gestão.",
     "pendingTitle": "Conta Pendente de Aprovação",
-    "responseTime": "Normalmente respondemos em 2-3 dias úteis.",
+    "responseTime": "Será notificado(a) por email assim que a sua conta for revista.",
     "step1": "A equipa vai analisar a sua candidatura",
     "step2": "Será notificado assim que for aprovada",
     "step3": "Acesso completo ao workspace após aprovação",
@@ -2167,7 +2171,7 @@
     "orSubmitNew": "Ou, se preferir, pode submeter uma candidatura de nova startup:",
     "pendingDesc": "Não encontrámos uma correspondência automática, mas a sua equipa irá analisar e associá-lo manualmente. Isto é normal no modelo por convite.",
     "pendingReassurance": "Não precisa de fazer mais nada. Receberá acesso assim que a equipa confirmar.",
-    "pendingTiming": "A equipa irá analisar o seu pedido e contactá-lo(a) por email com o resultado.",
+    "pendingTiming": "Receberá uma notificação por email assim que a equipa revir o seu pedido.",
     "pendingTitle": "Pedido em Análise",
     "redirecting": "A redirecionar para o seu espaço de trabalho...",
     "rejected": "Pedido rejeitado",
@@ -2827,7 +2831,15 @@
     "step3MarkSent": "3. Já enviei no PandaDoc → Marcar como Enviado",
     "viewInCRM": "Ver no CRM",
     "viewInvoices": "Ver Faturas",
-    "viewWorkspace": "Ver Workspace"
+    "viewWorkspace": "Ver Workspace",
+    "declinedNotice": "Este contrato foi recusado pelo signatário.",
+    "voidedNotice": "Este contrato foi anulado.",
+    "resetOk": "Contrato reiniciado com sucesso.",
+    "resetFailed": "Não foi possível reiniciar o contrato.",
+    "resetAndResend": "Reiniciar e reenviar",
+    "renewNotifyTitle": "Renovação enviada",
+    "renewNotifyMsg": "A proposta de renovação foi enviada ao signatário.",
+    "renewInvalidStatus": "Só é possível renovar contratos ativos ou expirados."
   },
   "contractOnboarding": {
     "acceptContract": "Li e aceito os termos do Contrato de Incubação, incluindo as condições de prestação de serviços, obrigações e direitos das partes.",
@@ -4348,7 +4360,7 @@
       "emptyTitle": "Ainda sem dados de progresso",
       "updateKpis": "Atualizar KPIs"
     },
-    "responseTime": "Response Hora",
+    "responseTime": "Tempo de resposta",
     "ring": {
       "actions": "Ações",
       "kpis": "KPIs",
@@ -5383,7 +5395,11 @@
       "detail": "signature_provider está vazio.",
       "title": "Contrato em pending_signature sem prestador definido"
     },
-    "title": "Inconsistências de ciclo de vida"
+    "title": "Inconsistências de ciclo de vida",
+    "activeNoWorkspace": {
+      "title": "Founder ativo sem workspace",
+      "detail": "Este founder está marcado como ativo mas não tem workspace atribuído. Atribua um para o desbloquear."
+    }
   },
   "loading": {
     "almostThere": "Quase lá...",
@@ -5532,7 +5548,22 @@
     "updateAvailability": "Atualizar Disponibilidade",
     "viewConnectionRequests": "Ver Pedidos de Ligação",
     "welcomeTitle": "Bem-vindo ao Painel de Mentor",
-    "yourImpact": "O Teu Impacto"
+    "yourImpact": "O Teu Impacto",
+    "postNdaChecklist": {
+      "title": "Complete o seu perfil de mentor",
+      "profile": {
+        "title": "Preencha o seu perfil",
+        "why": "Os founders podem encontrá-lo e escolhê-lo."
+      },
+      "availability": {
+        "title": "Defina a sua disponibilidade",
+        "why": "Os founders só podem marcar horários que abriu."
+      },
+      "guide": {
+        "title": "Leia o guia do mentor",
+        "why": "Perceba como funcionam as sessões e a confidencialidade."
+      }
+    }
   },
   "mentorFeedback": {
     "blockedPlaceholder": "Problemas ou bloqueios identificados...",
@@ -5682,7 +5713,7 @@
     "declined": "recusada",
     "describeNeed": "Descreva a sua necessidade específica (opcional)",
     "describeNeedPlaceholder": "Ex: Preciso de ajuda com a minha estratégia go-to-market para o segmento B2B...",
-    "expectedResponse": "A nossa equipa atribui mentores em 2-3 dias úteis.",
+    "expectedResponse": "Receberá uma notificação assim que um mentor aceitar o pedido.",
     "expertise": "Áreas de especialidade",
     "failedToUpdate": "Falha ao atualizar conexão",
     "findAndAssign": "Encontrar e Atribuir Mentores",
@@ -5735,7 +5766,8 @@
     "thisContact": "este contacto",
     "unknownFounder": "Fundador Desconhecido",
     "unnamedMentor": "Mentor",
-    "whatNeedsHelp": "Em que precisa de ajuda?"
+    "whatNeedsHelp": "Em que precisa de ajuda?",
+    "responseTime": "Notificamos assim que o pedido for aceite."
   },
   "messaging": {
     "adjustSearch": "Tente ajustar a pesquisa ou verifique se o utilizador já está registado.",
@@ -5838,7 +5870,8 @@
       "quickGuide": "Guia Rápido",
       "reports": "Relatórios",
       "systemConfig": "Configuração do Sistema",
-      "usersPermissions": "Utilizadores & Permissões"
+      "usersPermissions": "Utilizadores & Permissões",
+      "crmPipeline": "Pipeline CRM"
     },
     "adminPanel": "Painel de Admin",
     "backoffice": {
@@ -5890,7 +5923,8 @@
       "profile": "Perfil",
       "quickGuide": "Guia Rápido",
       "resources": "Recursos",
-      "upcomingSessions": "Próximas Sessões"
+      "upcomingSessions": "Próximas Sessões",
+      "impact": "O meu impacto"
     },
     "mentors": "Mentores",
     "mobile": {
@@ -7671,7 +7705,10 @@
     "withConsultant": "Consultor",
     "withMentor": "Mentor",
     "workspaceMembers": "membros do espaço",
-    "zoomDesc": "Importar gravações e transcrições automaticamente"
+    "zoomDesc": "Importar gravações e transcrições automaticamente",
+    "bookWithMentor": "Agendar com mentor",
+    "conflictWorkspace": "Este workspace já tem uma sessão a esta hora.",
+    "conflictMentor": "O mentor já tem uma sessão a esta hora."
   },
   "sessionsEmpty": {
     "description": "O seu consultor ou programa vai agendar a primeira sessão em breve.",
@@ -9366,7 +9403,8 @@
     "workspaceUpdated": "Workspace updated",
     "yourConsultant": "Seu Consultor",
     "yourMentor": "Seu Mentor",
-    "yourTeam": "A Sua Equipa"
+    "yourTeam": "A Sua Equipa",
+    "invalidTab": "Este separador não está disponível para este workspace."
   },
   "workspaceCard": {
     "actions": "Ações",

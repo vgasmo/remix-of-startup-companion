@@ -684,7 +684,11 @@
       "waitlistSuggestions": "Waitlist Suggestions",
       "workspaceBlocked": "Workspace blocked",
       "workspaceUnblocked": "Workspace unblocked",
-      "workspacesWithoutContracts": "Workspaces Without Contracts"
+      "workspacesWithoutContracts": "Workspaces Without Contracts",
+      "hero": {
+        "eyebrow": "Backoffice",
+        "subline": "Integrated management of spaces, contracts, and operations."
+      }
     },
     "backofficeExtended": {
       "addSpace": "Add Space",
@@ -2167,7 +2171,7 @@
     "orSubmitNew": "Or, if you prefer, you can submit a new startup application:",
     "pendingDesc": "We couldn't find an automatic match, but our team will review and link you manually. This is normal for our invite-only model.",
     "pendingReassurance": "You don't need to do anything else. You'll get access as soon as the team confirms.",
-    "pendingTiming": "The team will review your request and contact you by email with the result.",
+    "pendingTiming": "You'll receive an email as soon as the team reviews your request.",
     "pendingTitle": "Request Under Review",
     "redirecting": "Redirecting to your workspace...",
     "rejected": "Request rejected",
@@ -2827,7 +2831,15 @@
     "step3MarkSent": "3. Already sent in PandaDoc → Mark as Sent",
     "viewInCRM": "View in CRM",
     "viewInvoices": "View Invoices",
-    "viewWorkspace": "View Workspace"
+    "viewWorkspace": "View Workspace",
+    "declinedNotice": "This contract was declined by the signer.",
+    "voidedNotice": "This contract has been voided.",
+    "resetOk": "Contract reset successfully.",
+    "resetFailed": "Unable to reset the contract.",
+    "resetAndResend": "Reset and resend",
+    "renewNotifyTitle": "Renewal sent",
+    "renewNotifyMsg": "The renewal proposal has been sent to the signer.",
+    "renewInvalidStatus": "Only active or expired contracts can be renewed."
   },
   "contractOnboarding": {
     "acceptContract": "I have read and accept the terms of the Incubation Contract, including the conditions of service, obligations and rights of the parties.",
@@ -5383,7 +5395,11 @@
       "detail": "signature_provider is empty.",
       "title": "Contract in pending_signature without a defined provider"
     },
-    "title": "Lifecycle inconsistencies"
+    "title": "Lifecycle inconsistencies",
+    "activeNoWorkspace": {
+      "title": "Active founder without a workspace",
+      "detail": "This founder is marked active but has no workspace assigned. Assign one to unblock them."
+    }
   },
   "loading": {
     "almostThere": "Almost there...",
@@ -5532,7 +5548,22 @@
     "updateAvailability": "Update Availability",
     "viewConnectionRequests": "View Connection Requests",
     "welcomeTitle": "Welcome to the Mentor Panel",
-    "yourImpact": "Your Impact"
+    "yourImpact": "Your Impact",
+    "postNdaChecklist": {
+      "title": "Complete your mentor profile",
+      "profile": {
+        "title": "Fill in your profile",
+        "why": "Founders can find and pick you."
+      },
+      "availability": {
+        "title": "Set your availability",
+        "why": "Founders can only book slots you've opened."
+      },
+      "guide": {
+        "title": "Read the mentor guide",
+        "why": "Learn how sessions and confidentiality work."
+      }
+    }
   },
   "mentorFeedback": {
     "blockedPlaceholder": "Issues or blockers identified...",
@@ -5682,7 +5713,7 @@
     "declined": "declined",
     "describeNeed": "Describe your specific need (optional)",
     "describeNeedPlaceholder": "E.g., I need help with my go-to-market strategy for the B2B segment...",
-    "expectedResponse": "Our team typically matches mentors within 2-3 business days.",
+    "expectedResponse": "You'll be notified as soon as a mentor accepts the request.",
     "expertise": "Areas of expertise",
     "failedToUpdate": "Failed to update connection",
     "findAndAssign": "Find & Assign Mentors",
@@ -5735,7 +5766,8 @@
     "thisContact": "este contacto",
     "unknownFounder": "Unknown Founder",
     "unnamedMentor": "Mentor",
-    "whatNeedsHelp": "What do you need help with?"
+    "whatNeedsHelp": "What do you need help with?",
+    "responseTime": "We'll notify you as soon as the request is accepted."
   },
   "messaging": {
     "adjustSearch": "Try adjusting search or check if user is registered.",
@@ -5838,7 +5870,8 @@
       "quickGuide": "Quick Guide",
       "reports": "Reports",
       "systemConfig": "System Configuration",
-      "usersPermissions": "Users & Permissions"
+      "usersPermissions": "Users & Permissions",
+      "crmPipeline": "CRM pipeline"
     },
     "adminPanel": "Admin Panel",
     "backoffice": {
@@ -5890,7 +5923,8 @@
       "profile": "Profile",
       "quickGuide": "Quick Guide",
       "resources": "Resources",
-      "upcomingSessions": "Upcoming Sessions"
+      "upcomingSessions": "Upcoming Sessions",
+      "impact": "My impact"
     },
     "mentors": "Mentors",
     "mobile": {
@@ -7671,7 +7705,10 @@
     "withConsultant": "Consultor",
     "withMentor": "Mentor",
     "workspaceMembers": "workspace members",
-    "zoomDesc": "Auto-import meeting recordings and transcripts"
+    "zoomDesc": "Auto-import meeting recordings and transcripts",
+    "bookWithMentor": "Book with mentor",
+    "conflictWorkspace": "This workspace already has a session at this time.",
+    "conflictMentor": "The mentor already has a session at this time."
   },
   "sessionsEmpty": {
     "description": "Your consultant or program will schedule your first session soon.",
@@ -9366,7 +9403,8 @@
     "workspaceUpdated": "Workspace updated",
     "yourConsultant": "Your Consultant",
     "yourMentor": "Your Mentor",
-    "yourTeam": "Your Team"
+    "yourTeam": "Your Team",
+    "invalidTab": "That tab isn't available for this workspace."
   },
   "workspaceCard": {
     "actions": "Actions",
