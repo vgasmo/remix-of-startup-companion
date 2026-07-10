@@ -2167,7 +2167,7 @@
     "orSubmitNew": "Or, if you prefer, you can submit a new startup application:",
     "pendingDesc": "We couldn't find an automatic match, but our team will review and link you manually. This is normal for our invite-only model.",
     "pendingReassurance": "You don't need to do anything else. You'll get access as soon as the team confirms.",
-    "pendingTiming": "The team will review your request and contact you by email with the result.",
+    "pendingTiming": "You'll receive an email as soon as the team reviews your request.",
     "pendingTitle": "Request Under Review",
     "redirecting": "Redirecting to your workspace...",
     "rejected": "Request rejected",
@@ -5682,7 +5682,7 @@
     "declined": "declined",
     "describeNeed": "Describe your specific need (optional)",
     "describeNeedPlaceholder": "E.g., I need help with my go-to-market strategy for the B2B segment...",
-    "expectedResponse": "Our team typically matches mentors within 2-3 business days.",
+    "expectedResponse": "You'll be notified as soon as a mentor accepts the request.",
     "expertise": "Areas of expertise",
     "failedToUpdate": "Failed to update connection",
     "findAndAssign": "Find & Assign Mentors",
@@ -5735,7 +5735,8 @@
     "thisContact": "este contacto",
     "unknownFounder": "Unknown Founder",
     "unnamedMentor": "Mentor",
-    "whatNeedsHelp": "What do you need help with?"
+    "whatNeedsHelp": "What do you need help with?",
+    "responseTime": "We'll notify you as soon as the request is accepted."
   },
   "messaging": {
     "adjustSearch": "Try adjusting search or check if user is registered.",
