@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { format } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Rocket, Flag, CheckCircle2, ArrowRight, Sparkles, Calendar, Video, Clock, Circle } from 'lucide-react';
@@ -61,7 +61,7 @@ export function ProgressTimeline({ workspaceId, className, programId, programTyp
     scale: t('stages.scale', { defaultValue: 'Escala' }),
   }), [t]);
 
-  const dateLocale = i18n.language === 'pt' ? pt : undefined;
+  const dateLocale = getDateLocale();
 
   const timelineEvents = useMemo(() => {
     const events: Array<{

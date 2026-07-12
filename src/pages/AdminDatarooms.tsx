@@ -18,7 +18,7 @@ import {
   CheckCircle, XCircle, Mail, Building, Eye, Copy, ExternalLink
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { AccessDenied } from '@/components/ui/AccessDenied';
@@ -242,7 +242,7 @@ export default function AdminDatarooms() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-muted-foreground text-sm">
-                            {formatDistanceToNow(new Date(dr.updated_at), { locale: pt, addSuffix: true })}
+                            {formatDistanceToNow(new Date(dr.updated_at), { locale: getDateLocale(), addSuffix: true })}
                           </TableCell>
                           <TableCell>
                             <Button variant="outline" size="sm" asChild>

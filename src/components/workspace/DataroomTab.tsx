@@ -20,7 +20,7 @@ import {
   Calendar, Download, XCircle, Clock, Users, Sparkles, BookTemplate, ExternalLink
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 import {
   useDataroom,
   useDataroomItems,
@@ -322,7 +322,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
                     )}
                     {item.investor_update && (
                       <p className="text-xs text-muted-foreground">
-                        {t('dataroom.updateMonth')}: {format(new Date(item.investor_update.month), 'MMMM yyyy', { locale: pt })}
+                        {t('dataroom.updateMonth')}: {format(new Date(item.investor_update.month), 'MMMM yyyy', { locale: getDateLocale() })}
                       </p>
                     )}
                   </div>
@@ -395,7 +395,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
                             {link.expires_at && (
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                {t('dataroom.expires')}: {formatDistanceToNow(new Date(link.expires_at), { locale: pt, addSuffix: true })}
+                                {t('dataroom.expires')}: {formatDistanceToNow(new Date(link.expires_at), { locale: getDateLocale(), addSuffix: true })}
                               </span>
                             )}
                           </div>
@@ -524,7 +524,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
                   <SelectContent>
                     {investorUpdates?.map((update: any) => (
                       <SelectItem key={update.id} value={update.id}>
-                        {format(new Date(update.month), 'MMMM yyyy', { locale: pt })}
+                        {format(new Date(update.month), 'MMMM yyyy', { locale: getDateLocale() })}
                       </SelectItem>
                     ))}
                   </SelectContent>

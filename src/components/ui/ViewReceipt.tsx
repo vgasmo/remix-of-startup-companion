@@ -9,7 +9,7 @@
 import { Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 import {
   Tooltip,
   TooltipContent,
@@ -33,7 +33,7 @@ export function ViewReceipt({ workspaceId, targetType, targetId, className }: Vi
   const lastView = views[0];
   const when = formatDistanceToNow(new Date(lastView.created_at), {
     addSuffix: true,
-    locale: i18n.language === 'pt' ? pt : undefined,
+    locale: getDateLocale(),
   });
 
   return (

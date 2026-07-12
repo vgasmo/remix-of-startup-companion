@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { format, Locale } from "date-fns";
-import { pt } from "date-fns/locale";
+import { getDateLocale } from "@/lib/dateLocale";
 import { ClipboardList, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,7 +16,7 @@ export function PendingSurveysBanner({ workspaceId, onOpenSurvey }: PendingSurve
   const { t, i18n } = useTranslation();
   const { data: surveys = [] } = useMyPendingSurveys();
 
-  const locale = i18n.language === "pt" ? pt : undefined;
+  const locale = getDateLocale();
 
   // Filter by workspace if provided
   const relevantSurveys = workspaceId

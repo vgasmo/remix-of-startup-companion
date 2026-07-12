@@ -25,7 +25,7 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { format, addDays, addWeeks } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 
 /* ─── Mock data (will be replaced by real queries) ─── */
 
@@ -281,7 +281,7 @@ function EventRow({ item }: { item: EcosystemEvent }) {
           {format(eventDate, 'd')}
         </div>
         <div className="text-[10px] font-medium text-muted-foreground uppercase mt-0.5">
-          {format(eventDate, 'MMM', { locale: pt })}
+          {format(eventDate, 'MMM', { locale: getDateLocale() })}
         </div>
       </div>
       <div className={`w-1 h-10 rounded-full ${cfg.color} shrink-0`} />

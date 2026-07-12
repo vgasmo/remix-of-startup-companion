@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { pt } from "date-fns/locale";
+import { getDateLocale } from "@/lib/dateLocale";
 import { Download, CheckCircle, Clock, AlertCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -43,7 +43,7 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
   const { data: instances = [], isLoading } = useCampaignInstances(campaignId);
   const [selectedInstance, setSelectedInstance] = useState<string | null>(null);
 
-  const locale = i18n.language === "pt" ? pt : undefined;
+  const locale = getDateLocale();
 
   const handleExportCSV = () => {
     // Basic CSV export

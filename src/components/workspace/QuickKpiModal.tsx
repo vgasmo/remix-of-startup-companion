@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { triggerKpiCelebration } from '@/lib/confetti';
 import { useTranslation } from 'react-i18next';
 import { format, startOfMonth, subMonths } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 import { TrendingUp, ChevronLeft, ChevronRight, Check, Loader2, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
@@ -34,7 +34,7 @@ export function QuickKpiModal({ open, onOpenChange, workspaceId, programId }: Qu
 
   const currentMonth = format(startOfMonth(new Date()), 'yyyy-MM-dd');
   const previousMonth = format(startOfMonth(subMonths(new Date(), 1)), 'yyyy-MM-dd');
-  const monthLabel = format(new Date(), 'MMMM yyyy', { locale: i18n.language === 'pt' ? pt : undefined });
+  const monthLabel = format(new Date(), 'MMMM yyyy', { locale: getDateLocale() });
 
   // KPIs missing values this month
   const kpisToShow = useMemo(() => {

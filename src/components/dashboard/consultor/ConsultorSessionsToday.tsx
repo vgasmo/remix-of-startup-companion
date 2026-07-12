@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Sparkles, Loader2, X } from 'lucide-react';
 import { format } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -65,7 +65,7 @@ export const ConsultorSessionsToday = memo(function ConsultorSessionsToday({ upc
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{w.startup?.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {format(new Date(w.nextMeetingDate!), "EEE, d MMM 'às' HH:mm", { locale: pt })}
+                    {format(new Date(w.nextMeetingDate!), "EEE, d MMM 'às' HH:mm", { locale: getDateLocale() })}
                   </p>
                 </div>
                 <AiBriefingButton workspaceId={w.id} />

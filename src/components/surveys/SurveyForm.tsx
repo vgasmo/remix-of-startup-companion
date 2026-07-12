@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { pt } from "date-fns/locale";
+import { getDateLocale } from "@/lib/dateLocale";
 import { Save, Send, ChevronLeft, ChevronRight, Check, AlertCircle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -42,7 +42,7 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
   const [answers, setAnswers] = useState<Record<string, string | string[] | number>>({});
   const [autoFilledKeys, setAutoFilledKeys] = useState<Set<string>>(new Set());
 
-  const locale = i18n.language === "pt" ? pt : undefined;
+  const locale = getDateLocale();
 
   const questions = useMemo(() => {
     return (data?.instance?.campaign?.survey_definition?.questions_json || []) as SurveyQuestion[];

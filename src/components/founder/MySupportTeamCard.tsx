@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 import { Users, Calendar, MessageSquare, Info } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,7 +27,7 @@ function initials(name?: string | null) {
 function MySupportTeamCardInner({ workspaceId, consultantId, mentorMember, lastSessionDate }: MySupportTeamCardProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const locale = i18n.language?.startsWith('pt') ? pt : undefined;
+  const locale = getDateLocale();
 
   const { data: consultant } = useQuery({
     queryKey: ['support-team-consultant', consultantId],

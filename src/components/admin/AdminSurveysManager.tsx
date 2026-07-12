@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { pt } from "date-fns/locale";
+import { getDateLocale } from "@/lib/dateLocale";
 import {
   ClipboardList,
   Plus,
@@ -217,7 +217,7 @@ function CampaignCard({
   const launchCampaign = useLaunchCampaign();
   const closeCampaign = useCloseCampaign();
 
-  const locale = i18n.language === "pt" ? pt : undefined;
+  const locale = getDateLocale();
 
   return (
     <Card>
