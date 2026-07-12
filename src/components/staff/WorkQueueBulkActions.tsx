@@ -45,7 +45,7 @@ export function WorkQueueBulkActions({
     try {
       const { error } = await supabase
         .from('staff_work_queue_items')
-        .update({ status: 'done', completed_at: new Date().toISOString() })
+        .update({ status: 'done' })
         .in('id', Array.from(selectedIds));
       if (error) throw error;
       notify.success(t('workQueue.bulkMarkedDone', { count: selectedCount }));
