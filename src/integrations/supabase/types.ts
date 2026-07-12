@@ -8320,6 +8320,7 @@ export type Database = {
           blocked_by: string | null
           blocked_reason: string | null
           created_at: string
+          created_by: string | null
           current_week: number | null
           external_id: string | null
           health_confidence: string | null
@@ -8360,6 +8361,7 @@ export type Database = {
           blocked_by?: string | null
           blocked_reason?: string | null
           created_at?: string
+          created_by?: string | null
           current_week?: number | null
           external_id?: string | null
           health_confidence?: string | null
@@ -8400,6 +8402,7 @@ export type Database = {
           blocked_by?: string | null
           blocked_reason?: string | null
           created_at?: string
+          created_by?: string | null
           current_week?: number | null
           external_id?: string | null
           health_confidence?: string | null
