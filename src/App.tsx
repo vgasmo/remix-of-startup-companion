@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -16,8 +16,10 @@ import { useVersionCheck } from "@/hooks/useVersionCheck";
 import { useFounderOnboardingState } from "@/hooks/useFounderOnboardingState";
 
 import { AccessDenied } from "@/components/ui/AccessDenied";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { queryClient } from "@/lib/queryClient";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
+import { notify } from "@/lib/notify";
 
 // Eager: lightweight / critical-path pages
 import Login from "./pages/Login";
@@ -65,23 +67,13 @@ const PublicContractIntake = lazy(lazyWithRetry(() => import("./pages/PublicCont
 const AppDiagnostics = lazy(lazyWithRetry(() => import("./pages/AppDiagnostics"), "lazy:app-diagnostics"));
 
 function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { children: React.ReactNode; adminOnly?: boolean; staffOnly?: boolean }) {
-  const { t } = useTranslation();
   const { user, isLoading, isAuthReady, isAdmin, isStaff, isAccountPending, isAccountSuspended } = useAuth();
   const { needsNda, isLoading: ndaLoading } = useMentorNdaStatus();
   const founderState = useFounderOnboardingState();
   const location = useLocation();
 
   if (isLoading || !isAuthReady || ndaLoading) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-          <p className="text-sm text-muted-foreground animate-pulse">{t('common.loading')}</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!user) {
@@ -138,24 +130,22 @@ function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { ch
   );
 }
 
-function SuspenseFallback() {
+function IntegrationsSetupRedirect() {
   const { t } = useTranslation();
-  return (
-    <div className="flex min-h-dvh items-center justify-center bg-background">
-      <div className="flex flex-col items-center gap-4">
-        <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        </div>
-        <p className="text-sm text-muted-foreground animate-pulse">{t('common.loading', { defaultValue: 'Loading...' })}</p>
-      </div>
-    </div>
-  );
+  useEffect(() => {
+    notify.info(
+      t('integrations.movedToSettings', {
+        defaultValue: 'Integrations now live in Settings → Integrations.',
+      }),
+    );
+  }, [t]);
+  return <Navigate to="/settings?tab=integrations" replace />;
 }
 
 function AppRoutes() {
   useVersionCheck();
   return (
-    <Suspense fallback={<SuspenseFallback />}>
+    <Suspense fallback={<LoadingScreen />}>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -181,7 +171,7 @@ function AppRoutes() {
         <Route path="/consultor-tools" element={<ProtectedRoute staffOnly><ConsultorTools /></ProtectedRoute>} />
         <Route path="/workspace/:workspaceId/value-prop" element={<ProtectedRoute><ValuePropWizardPage /></ProtectedRoute>} />
         <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
-        <Route path="/integrations-setup" element={<Navigate to="/settings" replace />} />
+        <Route path="/integrations-setup" element={<IntegrationsSetupRedirect />} />
         <Route path="/documents" element={<ProtectedRoute staffOnly><Documents /></ProtectedRoute>} />
         <Route path="/resources" element={<ProtectedRoute><Resources /></ProtectedRoute>} />
         <Route path="/resources/guide/:id" element={<ProtectedRoute><ResourceGuide /></ProtectedRoute>} />
