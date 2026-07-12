@@ -42,9 +42,13 @@ export default [
     },
   },
 
-  // ✅ React rules ONLY for TSX
+  // ✅ React hooks rules for BOTH .ts and .tsx (custom hooks live in .ts files
+  //    too — e.g. src/hooks/*.ts — and rules-of-hooks / exhaustive-deps must
+  //    apply there. Suppressions like `// eslint-disable-next-line
+  //    react-hooks/exhaustive-deps` in .ts files require the rule to be
+  //    registered even when it is disabled here.)
   {
-    files: ["**/*.tsx"],
+    files: ["**/*.{ts,tsx}"],
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,

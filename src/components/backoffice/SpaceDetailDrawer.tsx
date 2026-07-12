@@ -62,9 +62,13 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
   const { data: workspaces } = useWorkspaces({}, false, ALL_WORKSPACE_STATUSES);
   const { data: waitingList } = useSpaceWaitingList({ status: 'waiting' });
 
+  // Hooks always run in the same order — move `!room` early-return AFTER the
+  // last hook call. useBuildingOccupancy just returned early too; keeping it
+  // above the guard preserves stable order across renders.
+  const { data: occupancy } = useBuildingOccupancy();
+
   if (!room) return null;
 
-  const { data: occupancy } = useBuildingOccupancy();
   const occupancyRoom = occupancy?.rooms.find(r => r.id === room.id) ?? null;
   const contractSummary = occupancyRoom?.contract ?? null;
 
@@ -119,7 +123,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="w-[420px] sm:w-[480px] overflow-y-auto">
+        <SheetContent className="w-full sm:max-w-[480px] overflow-y-auto">
           <SheetHeader>
             <div className="flex items-center gap-3">
               <div className={cn('h-3 w-3 rounded-full', statusColor)} />

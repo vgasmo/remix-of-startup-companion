@@ -43,6 +43,19 @@ export function StageProgressCard({ workspace, className }: StageProgressCardPro
   const { t } = useTranslation();
   const { data: milestones } = useMilestones(workspace.id);
 
+  // Compute milestone stats unconditionally so hook order is stable when
+  // `workspace.stage` toggles between null and a real value.
+  const milestoneStats = useMemo(() => {
+    if (!milestones) return { completed: 0, total: 0, percent: 0 };
+    const total = milestones.length;
+    const completed = milestones.filter(m => m.status === 'completed').length;
+    return {
+      completed,
+      total,
+      percent: total > 0 ? Math.round((completed / total) * 100) : 0,
+    };
+  }, [milestones]);
+
   if (!workspace.stage) {
     return (
       <EmptyState
@@ -57,18 +70,6 @@ export function StageProgressCard({ workspace, className }: StageProgressCardPro
   const currentStageIndex = STAGE_ORDER.indexOf(workspace.stage);
   const progressPercent = ((currentStageIndex + 1) / STAGE_ORDER.length) * 100;
 
-
-  // Calculate milestone completion for current stage
-  const milestoneStats = useMemo(() => {
-    if (!milestones) return { completed: 0, total: 0, percent: 0 };
-    const total = milestones.length;
-    const completed = milestones.filter(m => m.status === 'completed').length;
-    return { 
-      completed, 
-      total, 
-      percent: total > 0 ? Math.round((completed / total) * 100) : 0 
-    };
-  }, [milestones]);
 
   const currentConfig = STAGE_CONFIG[workspace.stage];
   const CurrentIcon = currentConfig.icon;

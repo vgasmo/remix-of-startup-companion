@@ -21,19 +21,19 @@ export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
   const { isStaff } = useAuth();
 
-  if (!isStaff) return <Navigate to="/my-workspaces" replace />;
-  if (!userId) return <Navigate to="/admin?tab=users" replace />;
-
+  // Hooks first. Redirects come after — early-returning before useQuery would
+  // change hook order on the next render.
   const { data, isLoading } = useQuery({
-    queryKey: ['user-profile-page', userId],
+    queryKey: ['user-profile-page', userId ?? 'missing'],
+    enabled: !!userId && isStaff,
     queryFn: async () => {
       const [profileRes, rolesRes, wsRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
-        supabase.from('user_roles').select('role').eq('user_id', userId),
+        supabase.from('profiles').select('*').eq('id', userId!).maybeSingle(),
+        supabase.from('user_roles').select('role').eq('user_id', userId!),
         supabase
           .from('workspace_users')
           .select('role, active, workspace:workspaces(id, startup:startups(name))')
-          .eq('user_id', userId),
+          .eq('user_id', userId!),
       ]);
       return {
         profile: profileRes.data,
@@ -42,6 +42,10 @@ export default function UserProfile() {
       };
     },
   });
+
+  if (!isStaff) return <Navigate to="/my-workspaces" replace />;
+  if (!userId) return <Navigate to="/admin?tab=users" replace />;
+
 
   const profile = data?.profile;
   const fullName = profile?.full_name || profile?.email || t('common.unknown', { defaultValue: 'Unknown' });
