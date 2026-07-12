@@ -477,10 +477,17 @@ export function useCreatePlaybook() {
   const { t } = useTranslation();
 
   return useMutation({
-    mutationFn: async (playbook: Omit<Playbook, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (playbook: Omit<Playbook, 'id' | 'created_at' | 'updated_at' | 'items'>) => {
+      const payload: Database['public']['Tables']['playbooks']['Insert'] = {
+        program_id: playbook.program_id,
+        stage: playbook.stage,
+        title: playbook.title,
+        description: playbook.description,
+        is_active: playbook.is_active,
+      };
       const { data, error } = await supabase
         .from('playbooks')
-        .insert(playbook)
+        .insert(payload)
         .select()
         .single();
 
@@ -504,10 +511,17 @@ export function useUpdatePlaybook() {
   const { t } = useTranslation();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<Playbook> & { id: string }) => {
+    mutationFn: async ({ id, items: _items, ...updates }: Partial<Playbook> & { id: string }) => {
+      const payload: Database['public']['Tables']['playbooks']['Update'] = {};
+      if (updates.program_id !== undefined) payload.program_id = updates.program_id;
+      if (updates.stage !== undefined) payload.stage = updates.stage;
+      if (updates.title !== undefined) payload.title = updates.title;
+      if (updates.description !== undefined) payload.description = updates.description;
+      if (updates.is_active !== undefined) payload.is_active = updates.is_active;
+
       const { data, error } = await supabase
         .from('playbooks')
-        .update(updates)
+        .update(payload)
         .eq('id', id)
         .select()
         .single();
@@ -525,6 +539,7 @@ export function useUpdatePlaybook() {
     },
   });
 }
+
 
 // Admin: Create playbook item
 export function useCreatePlaybookItem() {
