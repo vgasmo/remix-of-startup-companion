@@ -8,7 +8,7 @@
  *   - Localized copy resolves correctly in both PT and EN.
  */
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { render, cleanup, screen, within } from '@testing-library/react';
+import { render, cleanup, screen, within, fireEvent } from '@testing-library/react';
 import type { Room } from '@/hooks/useBackoffice';
 
 // ── Locale strings kept in sync with src/i18n/locales/{pt,en}.json ──────────
