@@ -207,5 +207,32 @@ describe('SpaceDetailDrawer', () => {
       expect(within(dialog).getByText(STRINGS.en['admin.backoffice.spaceDetailsEmptyBody']))
         .toBeInTheDocument();
     });
+
+    it('closes the empty-state Sheet when the close control is clicked', () => {
+      const guard = collectHookErrors();
+      const onOpenChange = vi.fn();
+      const { rerender } = render(
+        <SpaceDetailDrawer open onOpenChange={onOpenChange} room={null} />,
+      );
+
+      const dialog = screen.getByRole('dialog', {
+        name: STRINGS.pt['admin.backoffice.spaceDetailsTitle'],
+      });
+      expect(dialog).toBeInTheDocument();
+
+      const closeButton = within(dialog).getByRole('button', { name: /close/i });
+      expect(closeButton).toBeInTheDocument();
+
+      fireEvent.click(closeButton);
+      expect(onOpenChange).toHaveBeenCalledTimes(1);
+      expect(onOpenChange).toHaveBeenLastCalledWith(false);
+
+      // Simulate the controlled parent closing the drawer.
+      rerender(<SpaceDetailDrawer open={false} onOpenChange={onOpenChange} room={null} />);
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+      expect(guard.hookErrors()).toHaveLength(0);
+      guard.restore();
+    });
   });
 });
