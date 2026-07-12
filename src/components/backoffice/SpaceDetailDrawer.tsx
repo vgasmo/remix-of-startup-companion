@@ -62,9 +62,13 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
   const { data: workspaces } = useWorkspaces({}, false, ALL_WORKSPACE_STATUSES);
   const { data: waitingList } = useSpaceWaitingList({ status: 'waiting' });
 
+  // Hooks always run in the same order — move `!room` early-return AFTER the
+  // last hook call. useBuildingOccupancy just returned early too; keeping it
+  // above the guard preserves stable order across renders.
+  const { data: occupancy } = useBuildingOccupancy();
+
   if (!room) return null;
 
-  const { data: occupancy } = useBuildingOccupancy();
   const occupancyRoom = occupancy?.rooms.find(r => r.id === room.id) ?? null;
   const contractSummary = occupancyRoom?.contract ?? null;
 
