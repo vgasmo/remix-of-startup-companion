@@ -280,7 +280,7 @@ export function useConvertToStartup() {
           main_contact_name: item.contact_name,
           main_contact_email: item.contact_email,
           main_contact_phone: item.contact_phone,
-          created_by: user.id,
+          // NOTE: startups has no `created_by` column — do not add one here.
         })
         .select()
         .single();
