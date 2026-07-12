@@ -283,14 +283,19 @@ export default function Login() {
         <div className={`w-full max-w-md transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
-            <img 
-              src={startupLeiriaLogo} 
-              alt="Startup Leiria" 
-              width={320}
-              height={64}
-              fetchPriority="high"
-              className="h-16 w-auto mx-auto mb-4"
-            />
+            {/* Wrap the white-fill SVG in the brand dark surface so it stays
+                visible on the light auth card. */}
+            <div className="mx-auto mb-4 inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 shadow-sm">
+              <img
+                src={startupLeiriaLogo}
+                alt="Startup Leiria"
+                width={280}
+                height={56}
+                loading="eager"
+                decoding="async"
+                className="h-10 w-auto max-w-[80vw]"
+              />
+            </div>
             <h1 className="font-heading text-2xl font-bold text-foreground">
               {t('login.platformTitle')}
             </h1>
