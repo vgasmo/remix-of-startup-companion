@@ -60,7 +60,6 @@ export function useTrackEngagement(workspaceId: string | undefined) {
         });
       if (error) {
         // Silent: engagement tracking is best-effort.
-        // eslint-disable-next-line no-console
         console.warn('[engagement] insert failed', error.message);
       }
       return null;

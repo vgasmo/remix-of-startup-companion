@@ -223,7 +223,6 @@ export default function PublicContractIntake() {
   useEffect(() => {
     if (!intake || isSubmitted) return;
     autosave.trackChange(formData as unknown as Record<string, unknown>);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
   // Submit form via edge function (no direct DB access)

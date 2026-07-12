@@ -31,7 +31,6 @@ async function scan(page: import('@playwright/test').Page, persona: Persona, rou
   };
 
   if (grouped.serious.length || grouped.critical.length) {
-    // eslint-disable-next-line no-console
     console.warn(
       `[a11y] ${persona} ${route} —`,
       JSON.stringify(
