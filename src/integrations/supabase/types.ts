@@ -9376,6 +9376,22 @@ export type Database = {
           workspace_id: string
         }[]
       }
+      staff_convert_funnel_item_to_startup: {
+        Args: {
+          p_building_id?: string
+          p_description?: string
+          p_funnel_item_id: string
+          p_health_notes?: string
+          p_incubation_type_id?: string
+          p_inferred_stage?: string
+          p_monthly_fee?: number
+          p_program_id: string
+          p_project_name?: string
+          p_square_meters?: number
+          p_stage: string
+        }
+        Returns: Json
+      }
       staff_create_workspace_for_claim: {
         Args: {
           p_claim_id: string
