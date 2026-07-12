@@ -43,37 +43,14 @@ export function KpiCard({
 }: KpiCardProps) {
   const { t } = useTranslation();
   const def = workspaceKpi.definition;
-  if (!def) return null;
-
-
-  const displayValue = editedValue?.value ?? currentValue?.value?.toString() ?? '';
-  const displayNotes = editedValue?.notes ?? currentValue?.notes ?? '';
-  
-  const isLocked = currentValue?.locked_by_source ?? false;
-  const sourceType = currentValue?.source_type ?? 'manual';
-  const isFromFinancialModel = sourceType === 'financial_model';
-  const effectiveCanEdit = canEdit && !isLocked;
-  
-  const hasChanges = editedValue !== undefined;
 
   const recentValues = chartData.filter(d => d.value !== null).slice(-2);
-  let trend: 'up' | 'down' | 'flat' = 'flat';
-  if (recentValues.length >= 2) {
-    const [prev, curr] = recentValues;
-    if (curr.value! > prev.value!) trend = 'up';
-    else if (curr.value! < prev.value!) trend = 'down';
-  }
 
-  const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
-  const trendColor = def.direction === 'up' 
-    ? (trend === 'up' ? 'text-[hsl(var(--success))]' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground')
-    : (trend === 'down' ? 'text-[hsl(var(--success))]' : trend === 'up' ? 'text-destructive' : 'text-muted-foreground');
-
-  const chartDataFiltered = chartData.map(d => ({ ...d, value: d.value }));
-
-  // P75 breakout: fires once per (kpi, month) when current crosses p75 from below.
+  // P75 breakout hook must run on every render (even when `def` is missing) so
+  // the hook order stays stable across re-renders. Guard the effect body on
+  // `def` and other inputs.
   const breakout = useMemo(() => {
-    if (p75 == null) return false;
+    if (!def || p75 == null) return false;
     if (recentValues.length < 2) return false;
     const [prev, curr] = recentValues;
     if (prev.value == null || curr.value == null) return false;
@@ -86,7 +63,33 @@ export function KpiCard({
     if (window.localStorage.getItem(key)) return false;
     window.localStorage.setItem(key, '1');
     return true;
-  }, [p75, recentValues, def.direction, workspaceKpi.id]);
+  }, [p75, recentValues, def, workspaceKpi.id]);
+
+  if (!def) return null;
+
+  const displayValue = editedValue?.value ?? currentValue?.value?.toString() ?? '';
+  const displayNotes = editedValue?.notes ?? currentValue?.notes ?? '';
+
+  const isLocked = currentValue?.locked_by_source ?? false;
+  const sourceType = currentValue?.source_type ?? 'manual';
+  const isFromFinancialModel = sourceType === 'financial_model';
+  const effectiveCanEdit = canEdit && !isLocked;
+
+  const hasChanges = editedValue !== undefined;
+
+  let trend: 'up' | 'down' | 'flat' = 'flat';
+  if (recentValues.length >= 2) {
+    const [prev, curr] = recentValues;
+    if (curr.value! > prev.value!) trend = 'up';
+    else if (curr.value! < prev.value!) trend = 'down';
+  }
+
+  const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
+  const trendColor = def.direction === 'up'
+    ? (trend === 'up' ? 'text-[hsl(var(--success))]' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground')
+    : (trend === 'down' ? 'text-[hsl(var(--success))]' : trend === 'up' ? 'text-destructive' : 'text-muted-foreground');
+
+  const chartDataFiltered = chartData.map(d => ({ ...d, value: d.value }));
 
   return (
     <Card className={cn(
