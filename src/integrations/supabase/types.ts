@@ -9309,6 +9309,43 @@ export type Database = {
           workspace_id: string
         }[]
       }
+      list_ecosystem_items_v2: {
+        Args: {
+          p_cursor_activity?: string
+          p_cursor_id?: string
+          p_has_startup_portugal?: boolean
+          p_health?: string
+          p_owner_id?: string
+          p_page_size?: number
+          p_program_id?: string
+          p_search?: string
+          p_stage?: string
+        }
+        Returns: {
+          created_at: string
+          funnel_item_id: string
+          has_startup_portugal_status: boolean
+          health_score: string
+          id: string
+          item_type: string
+          last_activity_at: string
+          name: string
+          next_cursor_activity: string
+          next_cursor_id: string
+          next_meeting_at: string
+          owner_id: string
+          owner_name: string
+          priority_level: string
+          program_id: string
+          program_name: string
+          stage: string
+          startup_category: string
+          startup_portugal_document_path: string
+          total_count: number
+          updated_at: string
+          workspace_id: string
+        }[]
+      }
       materialize_acceleration_deliverables: {
         Args: { p_program_id: string; p_workspace_id: string }
         Returns: Json
