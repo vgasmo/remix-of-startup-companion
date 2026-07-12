@@ -21,22 +21,23 @@ export default function MentorProfile() {
   const { mentorId } = useParams<{ mentorId: string }>();
   const { isStaff } = useAuth();
 
-  if (!mentorId) return <Navigate to="/mentors" replace />;
-
+  // Hooks must run unconditionally — gate the query with `enabled` and return
+  // <Navigate/> AFTER all hooks have executed to preserve hook order.
   const { data, isLoading } = useQuery({
-    queryKey: ['mentor-profile-page', mentorId],
+    queryKey: ['mentor-profile-page', mentorId ?? 'missing'],
+    enabled: !!mentorId,
     queryFn: async () => {
       const [profileRes, ndaRes, wsRes] = await Promise.all([
         supabase
           .from('profiles_safe')
           .select('id, full_name, email, avatar_url, bio, expertise, linkedin_url')
-          .eq('id', mentorId)
+          .eq('id', mentorId!)
           .maybeSingle(),
-        supabase.from('mentor_nda_acceptances').select('accepted_at').eq('user_id', mentorId).maybeSingle(),
+        supabase.from('mentor_nda_acceptances').select('accepted_at').eq('user_id', mentorId!).maybeSingle(),
         supabase
           .from('workspace_users')
           .select('active, workspace:workspaces(id, startup:startups(name))')
-          .eq('user_id', mentorId)
+          .eq('user_id', mentorId!)
           .eq('role', 'mentor_externo')
           .eq('active', true),
       ]);
@@ -47,6 +48,9 @@ export default function MentorProfile() {
       };
     },
   });
+
+  if (!mentorId) return <Navigate to="/mentors" replace />;
+
 
   const profile = data?.profile;
   const fullName = profile?.full_name || profile?.email || t('mentorsPage.unnamedMentor', { defaultValue: 'Mentor' });
