@@ -217,7 +217,7 @@ function CampaignCard({
   const launchCampaign = useLaunchCampaign();
   const closeCampaign = useCloseCampaign();
 
-  const locale = i18n.language === "pt" ? pt : undefined;
+  const locale = getDateLocale();
 
   return (
     <Card>

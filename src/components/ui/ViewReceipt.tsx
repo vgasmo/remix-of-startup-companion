@@ -33,7 +33,7 @@ export function ViewReceipt({ workspaceId, targetType, targetId, className }: Vi
   const lastView = views[0];
   const when = formatDistanceToNow(new Date(lastView.created_at), {
     addSuffix: true,
-    locale: i18n.language === 'pt' ? pt : undefined,
+    locale: getDateLocale(),
   });
 
   return (

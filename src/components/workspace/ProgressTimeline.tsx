@@ -61,7 +61,7 @@ export function ProgressTimeline({ workspaceId, className, programId, programTyp
     scale: t('stages.scale', { defaultValue: 'Escala' }),
   }), [t]);
 
-  const dateLocale = i18n.language === 'pt' ? pt : undefined;
+  const dateLocale = getDateLocale();
 
   const timelineEvents = useMemo(() => {
     const events: Array<{

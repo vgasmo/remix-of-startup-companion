@@ -43,7 +43,7 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
   const { data: instances = [], isLoading } = useCampaignInstances(campaignId);
   const [selectedInstance, setSelectedInstance] = useState<string | null>(null);
 
-  const locale = i18n.language === "pt" ? pt : undefined;
+  const locale = getDateLocale();
 
   const handleExportCSV = () => {
     // Basic CSV export

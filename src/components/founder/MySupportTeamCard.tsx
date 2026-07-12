@@ -27,7 +27,7 @@ function initials(name?: string | null) {
 function MySupportTeamCardInner({ workspaceId, consultantId, mentorMember, lastSessionDate }: MySupportTeamCardProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const locale = i18n.language?.startsWith('pt') ? pt : undefined;
+  const locale = getDateLocale();
 
   const { data: consultant } = useQuery({
     queryKey: ['support-team-consultant', consultantId],

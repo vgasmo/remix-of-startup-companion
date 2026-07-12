@@ -42,7 +42,7 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
   const [answers, setAnswers] = useState<Record<string, string | string[] | number>>({});
   const [autoFilledKeys, setAutoFilledKeys] = useState<Set<string>>(new Set());
 
-  const locale = i18n.language === "pt" ? pt : undefined;
+  const locale = getDateLocale();
 
   const questions = useMemo(() => {
     return (data?.instance?.campaign?.survey_definition?.questions_json || []) as SurveyQuestion[];

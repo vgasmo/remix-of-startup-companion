@@ -16,7 +16,7 @@ export function PendingSurveysBanner({ workspaceId, onOpenSurvey }: PendingSurve
   const { t, i18n } = useTranslation();
   const { data: surveys = [] } = useMyPendingSurveys();
 
-  const locale = i18n.language === "pt" ? pt : undefined;
+  const locale = getDateLocale();
 
   // Filter by workspace if provided
   const relevantSurveys = workspaceId

@@ -34,7 +34,7 @@ export function QuickKpiModal({ open, onOpenChange, workspaceId, programId }: Qu
 
   const currentMonth = format(startOfMonth(new Date()), 'yyyy-MM-dd');
   const previousMonth = format(startOfMonth(subMonths(new Date(), 1)), 'yyyy-MM-dd');
-  const monthLabel = format(new Date(), 'MMMM yyyy', { locale: i18n.language === 'pt' ? pt : undefined });
+  const monthLabel = format(new Date(), 'MMMM yyyy', { locale: getDateLocale() });
 
   // KPIs missing values this month
   const kpisToShow = useMemo(() => {
