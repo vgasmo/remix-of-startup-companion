@@ -123,7 +123,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="w-[420px] sm:w-[480px] overflow-y-auto">
+        <SheetContent className="w-full sm:max-w-[480px] overflow-y-auto">
           <SheetHeader>
             <div className="flex items-center gap-3">
               <div className={cn('h-3 w-3 rounded-full', statusColor)} />
