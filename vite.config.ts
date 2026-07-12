@@ -116,4 +116,30 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          if (id.includes('pdfjs-dist')) return 'vendor-pdfjs';
+          if (id.includes('react-joyride') || id.includes('react-floater')) return 'vendor-joyride';
+          if (id.includes('react-markdown') || id.includes('remark') || id.includes('rehype') || id.includes('micromark') || id.includes('mdast') || id.includes('hast')) return 'vendor-markdown';
+          if (id.includes('jszip')) return 'vendor-jszip';
+          if (id.includes('canvas-confetti')) return 'vendor-confetti';
+          if (id.includes('embla-carousel')) return 'vendor-embla';
+          if (id.includes('react-dom') || id.includes('/react/') || id.includes('scheduler')) return 'vendor-react';
+          if (id.includes('@radix-ui')) return 'vendor-radix';
+          if (id.includes('@supabase') || id.includes('@tanstack')) return 'vendor-data';
+          if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
+          if (id.includes('date-fns')) return 'vendor-date';
+          if (id.includes('lucide-react')) return 'vendor-icons';
+          if (id.includes('framer-motion') || id.includes('motion')) return 'vendor-motion';
+          if (id.includes('i18next')) return 'vendor-i18n';
+          if (id.includes('react-hook-form') || id.includes('@hookform')) return 'vendor-forms';
+          if (id.includes('@dnd-kit')) return 'vendor-dnd';
+          return 'vendor';
+        },
+      },
+    },
+  },
 }));
