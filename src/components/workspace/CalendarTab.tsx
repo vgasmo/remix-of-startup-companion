@@ -71,6 +71,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface CalendarTabProps {
   workspaceId: string;
@@ -180,7 +181,7 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
       const duration = session.duration || 60;
       const endsAt = new Date(new Date(session.scheduled_at).getTime() + duration * 60000).toISOString();
       
-      const { data, error } = await supabase.functions.invoke('send-session-invite', {
+      const { data, error } = await invokeWithAuth('send-session-invite', {
         body: {
           sessionId: session.id,
           workspaceId: session.workspace_id,

@@ -20,6 +20,7 @@ import { format } from 'date-fns';
 import { getDateLocale } from '@/lib/dateLocale';
 import { useBuildings } from '@/hooks/useBackoffice';
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 type AnnouncementCategory = 'mail' | 'package' | 'general' | 'urgent';
 
@@ -128,7 +129,7 @@ export function AdminAnnouncementsManager() {
       if (data.sendEmail && insertedAnnouncements && insertedAnnouncements.length > 0) {
         const announcementIds = insertedAnnouncements.map(a => a.id);
         
-        const { error: emailError } = await supabase.functions.invoke('send-announcement-email', {
+        const { error: emailError } = await invokeWithAuth('send-announcement-email', {
           body: { announcement_ids: announcementIds },
         });
 

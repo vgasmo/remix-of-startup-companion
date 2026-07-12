@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import startupLeiriaLogo from '@/assets/startup-leiria.svg';
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 const CURRENT_NDA_VERSION = 'PT-NDA-2026-01';
 const NDA_FORUM = 'Leiria';
@@ -95,7 +96,7 @@ export default function MentorNda() {
     setIsSubmitting(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('accept-mentor-nda', {
+      const { data, error } = await invokeWithAuth('accept-mentor-nda', {
         body: {}  // Explicit empty body for POST
       });
       

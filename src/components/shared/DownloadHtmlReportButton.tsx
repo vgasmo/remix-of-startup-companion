@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { FileDown, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from '@/lib/notify';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface DownloadHtmlReportButtonProps {
   functionName: 'generate-mentor-impact-report' | 'generate-board-pack';
@@ -27,7 +28,7 @@ export function DownloadHtmlReportButton({
   const handle = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke(functionName, { body: body ?? {} });
+      const { data, error } = await invokeWithAuth(functionName, { body: body ?? {} });
       if (error) throw error;
       if (!data?.html) throw new Error('No HTML returned');
       const blob = new Blob([data.html], { type: 'text/html' });

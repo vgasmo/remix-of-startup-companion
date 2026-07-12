@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 
 import i18n from '@/i18n';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 const t = i18n.t.bind(i18n);
 
 export interface OutlookCalendarSettings {
@@ -79,7 +80,7 @@ export function useSyncSessionToOutlook() {
   
   return useMutation({
     mutationFn: async ({ sessionId, action }: { sessionId: string; action: 'create' | 'update' | 'delete' }) => {
-      const { data, error } = await supabase.functions.invoke('sync-outlook-calendar', {
+      const { data, error } = await invokeWithAuth('sync-outlook-calendar', {
         body: { session_id: sessionId, action },
       });
       

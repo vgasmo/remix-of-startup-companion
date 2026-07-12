@@ -46,6 +46,7 @@ import {
 } from 'lucide-react';
 import { notify } from "@/lib/notify";
 import { useAuth } from '@/contexts/AuthContext';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface HealthModel {
   id: string;
@@ -165,7 +166,7 @@ export function HealthModelViewer() {
   // Recompute health scores
   const recompute = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.functions.invoke('recompute-health-scores');
+      const { error } = await invokeWithAuth('recompute-health-scores');
       if (error) throw error;
     },
     onSuccess: () => {

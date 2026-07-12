@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import i18n from '@/i18n';
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface ActionSuggestion {
   title: string;
@@ -35,7 +36,7 @@ export function useGenerateSessionSummary(workspaceId: string) {
 
   return useMutation({
     mutationFn: async ({ sessionId, transcript }: { sessionId: string; transcript?: string }): Promise<AIOutputs> => {
-      const { data, error } = await supabase.functions.invoke('generate-session-summary', {
+      const { data, error } = await invokeWithAuth('generate-session-summary', {
         body: { sessionId, transcript },
       });
 
@@ -81,7 +82,7 @@ export function useSendSessionFollowup(workspaceId: string) {
       includeActions?: boolean;
       includeKpis?: boolean;
     }) => {
-      const { data, error } = await supabase.functions.invoke('send-session-followup', {
+      const { data, error } = await invokeWithAuth('send-session-followup', {
         body: { sessionId, recipientEmails, includeActions, includeKpis },
       });
 

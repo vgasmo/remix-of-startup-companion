@@ -49,6 +49,7 @@ import { QualityGateCard } from '@/components/consultor/QualityGateCard';
 import { useAddTranscript } from '@/hooks/useSessionArtifacts';
 import { AddActionItemDialog } from './AddActionItemDialog';
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface SessionDetailDialogProps {
   workspaceId: string;
@@ -168,7 +169,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
         organizerName = profile?.full_name || profile?.email || 'Mentor';
       }
 
-      const { error } = await supabase.functions.invoke('send-session-invite', {
+      const { error } = await invokeWithAuth('send-session-invite', {
         body: {
           sessionId: session.id,
           workspaceId,

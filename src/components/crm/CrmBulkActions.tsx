@@ -42,6 +42,7 @@ import type { CrmInboxItem } from '@/hooks/useCrmInbox';
 import { PIPELINE_STAGES, type FunnelStage } from '@/constants/funnelStages';
 import { getFunnelStageLabel, getFunnelStageOptions } from '@/lib/stageLabels';
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface CrmBulkActionsProps {
   items: CrmInboxItem[];
@@ -147,7 +148,7 @@ export function CrmBulkActions({
             });
             
             if (oldStage && oldStage !== newStage) {
-              supabase.functions.invoke('send-crm-stage-transition-email', {
+              invokeWithAuth('send-crm-stage-transition-email', {
                 body: { funnel_item_id: id, from_stage: oldStage, to_stage: newStage },
               }).catch((err) => logger.warn('crm_email_trigger_failed_bulk', { error: String(err) }));
             }

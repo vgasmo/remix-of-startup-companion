@@ -5,6 +5,7 @@ import { notify } from "@/lib/notify";
 import type { Database } from '@/integrations/supabase/types';
 
 import i18n from '@/i18n';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 const t = i18n.t.bind(i18n);
 
 type HealthScore = Database['public']['Enums']['health_score'];
@@ -114,7 +115,7 @@ export function useRecomputeHealthScores() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('recompute-health-scores');
+      const { data, error } = await invokeWithAuth('recompute-health-scores');
       if (error) throw error;
       return data;
     },

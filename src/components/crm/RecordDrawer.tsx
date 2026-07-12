@@ -61,6 +61,7 @@ import {
   LinkedContextPanel,
   EmailHistoryPanel,
 } from './drawer';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 type TaskStatusFilter = 'open' | 'done' | 'canceled';
 
@@ -509,7 +510,7 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
                 }}
                 onSendContract={async (contractId) => {
                   try {
-                    const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
+                    const { data, error } = await invokeWithAuth('public-contract-onboarding', {
                       body: { action: 'generate_token', contractId },
                     });
                     if (error) throw error;
@@ -789,7 +790,7 @@ function IntakeActionsForDrawer({ item, user }: { item: FunnelItem; user: any })
                       label: t('crm.resend', 'Reenviar'),
                       onClick: async () => {
                         try {
-                          const { error } = await supabase.functions.invoke('send-intake-email', {
+                          const { error } = await invokeWithAuth('send-intake-email', {
                             body: {
                               type: 'intake_request',
                               intakeId: result.intake.id,

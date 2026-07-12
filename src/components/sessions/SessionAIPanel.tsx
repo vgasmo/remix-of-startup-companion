@@ -32,6 +32,7 @@ import {
 } from '@/hooks/useSessionAI';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface SessionAIPanelProps {
   workspaceId: string;
@@ -147,7 +148,7 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
   const handleFetchFromTeams = async () => {
     setIsFetchingTeams(true);
     try {
-      const { data, error } = await supabase.functions.invoke('import-teams-transcript', {
+      const { data, error } = await invokeWithAuth('import-teams-transcript', {
         body: { session_id: sessionId },
       });
 

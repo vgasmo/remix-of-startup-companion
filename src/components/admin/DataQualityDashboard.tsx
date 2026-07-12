@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AlertTriangle, Mail, Send, Users, Building2, Phone, Loader2, CheckCircle2 } from 'lucide-react';
 import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface DataIssue {
   id: string;
@@ -140,7 +141,7 @@ export function DataQualityDashboard() {
           await new Promise(resolve => setTimeout(resolve, 600));
         }
 
-        const { error } = await supabase.functions.invoke('send-workspace-invite', {
+        const { error } = await invokeWithAuth('send-workspace-invite', {
           body: {
             workspaceId: issue.workspaceId,
             email: issue.email,
@@ -358,7 +359,7 @@ export function DataQualityDashboard() {
                           size="sm"
                           onClick={async () => {
                             try {
-                              const { error } = await supabase.functions.invoke('send-workspace-invite', {
+                              const { error } = await invokeWithAuth('send-workspace-invite', {
                                 body: {
                                   workspaceId: issue.workspaceId,
                                   email: issue.email,

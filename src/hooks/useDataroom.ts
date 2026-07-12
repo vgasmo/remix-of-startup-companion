@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from '@/lib/notify';
 import i18n from '@/i18n';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 export interface DataroomItem {
   id: string;
@@ -207,7 +208,7 @@ export function useCreateShareLink() {
       expires_in_days?: number;
       allow_download?: boolean;
     }) => {
-      const { data, error } = await supabase.functions.invoke('dataroom-create-link', {
+      const { data, error } = await invokeWithAuth('dataroom-create-link', {
         body: params,
       });
       
@@ -227,7 +228,7 @@ export function useRevokeShareLink() {
   
   return useMutation({
     mutationFn: async (linkId: string) => {
-      const { data, error } = await supabase.functions.invoke('dataroom-revoke-link', {
+      const { data, error } = await invokeWithAuth('dataroom-revoke-link', {
         body: { link_id: linkId },
       });
       

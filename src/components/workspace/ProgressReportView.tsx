@@ -13,6 +13,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { HealthScore, StartupStage } from '@/types/database';
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface ProgressReportViewProps {
   workspaceId: string;
@@ -61,7 +62,7 @@ export function ProgressReportView({ workspaceId, workspace }: ProgressReportVie
   const handleExportPdf = async () => {
     setIsGeneratingPdf(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-progress-report-pdf', {
+      const { data, error } = await invokeWithAuth('generate-progress-report-pdf', {
         body: { workspaceId },
       });
 

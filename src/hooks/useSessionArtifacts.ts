@@ -2,6 +2,7 @@ import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import i18n from '@/i18n';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 const t = i18n.t.bind(i18n);
 
 export interface SessionArtifacts {
@@ -24,7 +25,7 @@ export function useGenerateSessionArtifacts() {
   
   return useMutation({
     mutationFn: async (sessionId: string) => {
-      const { data, error } = await supabase.functions.invoke('generate-session-artifacts', {
+      const { data, error } = await invokeWithAuth('generate-session-artifacts', {
         body: { session_id: sessionId }
       });
       

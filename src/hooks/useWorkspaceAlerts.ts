@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 
 import i18n from '@/i18n';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 const t = i18n.t.bind(i18n);
 
 export interface WorkspaceAlert {
@@ -241,7 +242,7 @@ export function useRecomputeAlerts() {
 
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('recompute-workspace-alerts');
+      const { data, error } = await invokeWithAuth('recompute-workspace-alerts');
       if (error) throw error;
       return data;
     },

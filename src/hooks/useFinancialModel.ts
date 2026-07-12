@@ -360,7 +360,7 @@ export function useSyncFinancialKpis(workspaceId: string) {
 
   return useMutation({
     mutationFn: async (versionId: string) => {
-      const { data, error } = await supabase.functions.invoke('sync-financial-kpis', {
+      const { data, error } = await invokeWithAuth('sync-financial-kpis', {
         body: { version_id: versionId },
       });
 
@@ -385,7 +385,7 @@ export function useGenerateFinancialModelReview() {
 
   return useMutation({
     mutationFn: async ({ versionId, mode = 'full' }: { versionId: string; mode?: 'full' | 'investor' | 'mentor_prep' }) => {
-      const { data, error } = await supabase.functions.invoke('generate-financial-model-coach', {
+      const { data, error } = await invokeWithAuth('generate-financial-model-coach', {
         body: { version_id: versionId, mode },
       });
 

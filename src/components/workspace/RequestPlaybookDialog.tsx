@@ -17,6 +17,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { useQueryClient } from '@tanstack/react-query';
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface RequestPlaybookDialogProps {
   workspaceId: string;
@@ -63,7 +64,7 @@ export function RequestPlaybookDialog({
       if (!session) throw new Error('Not authenticated');
 
       // Call edge function to create the request (bypasses RLS)
-      const response = await supabase.functions.invoke('request-playbook', {
+      const response = await invokeWithAuth('request-playbook', {
         body: {
           workspaceId,
           playbookId,
