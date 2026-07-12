@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { FolderLock, FileText, TrendingUp, Link2, Download, ExternalLink, Clock, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 
 interface DataroomItem {
   id: string;
@@ -177,7 +177,7 @@ export default function SharedDataroom() {
                       {item.type === 'investor_update' && item.investor_update && (
                         <div className="mt-3">
                           <Badge variant="secondary">
-                            {format(new Date(item.investor_update.month), 'MMMM yyyy', { locale: pt })}
+                            {format(new Date(item.investor_update.month), 'MMMM yyyy', { locale: getDateLocale() })}
                           </Badge>
                           {item.investor_update.content && (
                             <div className="mt-4 prose prose-sm max-w-none dark:prose-invert">

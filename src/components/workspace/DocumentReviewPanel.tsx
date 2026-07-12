@@ -19,7 +19,7 @@ import {
   AlertTriangle, Loader2, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 import { notify } from "@/lib/notify";
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -234,7 +234,7 @@ export function DocumentReviewPanel({ documentId, workspaceId, documentName, isS
 
                     <p className="text-xs text-muted-foreground">
                       {t('review.analyzedAt', { defaultValue: 'Analisado em' })}{' '}
-                      {aiReview.ai_analyzed_at ? format(new Date(aiReview.ai_analyzed_at), "dd MMM yyyy 'às' HH:mm", { locale: pt }) : '-'}
+                      {aiReview.ai_analyzed_at ? format(new Date(aiReview.ai_analyzed_at), "dd MMM yyyy 'às' HH:mm", { locale: getDateLocale() }) : '-'}
                     </p>
                   </div>
                 ) : (
@@ -342,7 +342,7 @@ export function DocumentReviewPanel({ documentId, workspaceId, documentName, isS
                               <AvatarFallback className="text-[10px]">{review.reviewer?.full_name?.charAt(0) || '?'}</AvatarFallback>
                             </Avatar>
                             <span className="text-sm font-medium">{review.reviewer?.full_name || 'Reviewer'}</span>
-                            <span className="text-xs text-muted-foreground">{format(new Date(review.created_at), "dd MMM yyyy", { locale: pt })}</span>
+                            <span className="text-xs text-muted-foreground">{format(new Date(review.created_at), "dd MMM yyyy", { locale: getDateLocale() })}</span>
                           </div>
                           <Badge variant={
                             review.approval_status === 'approved' ? 'default' :

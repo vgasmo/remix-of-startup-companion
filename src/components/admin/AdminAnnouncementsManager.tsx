@@ -17,7 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Mail, Package, AlertTriangle, Bell, Trash2, CheckCircle, Users, Send, MapPin, MessageSquare } from 'lucide-react';
 import { notify } from "@/lib/notify";
 import { format } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 import { useBuildings } from '@/hooks/useBackoffice';
 import { logger } from '@/lib/logger';
 
@@ -405,7 +405,7 @@ export function AdminAnnouncementsManager() {
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
-                      {format(new Date(ann.created_at), 'dd MMM yyyy HH:mm', { locale: pt })}
+                      {format(new Date(ann.created_at), 'dd MMM yyyy HH:mm', { locale: getDateLocale() })}
                     </TableCell>
                     <TableCell>
                       {ann.is_read ? (

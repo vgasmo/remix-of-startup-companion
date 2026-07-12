@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Building2, AlertTriangle, Calendar, ArrowRight, CheckCircle2, Clock, ShieldCheck, UserCog } from 'lucide-react';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { format, parseISO } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 
 interface CockpitPortfolioOverviewProps {
   workspaces: WorkspaceWithDetails[];
@@ -177,7 +177,7 @@ export function CockpitPortfolioOverview({ workspaces }: CockpitPortfolioOvervie
                       {ws.lastSession?.scheduled_at ? (
                         <span className="flex items-center gap-0.5" title={t('staffCockpit.lastSession', { defaultValue: 'Última sessão' })}>
                           <Clock className="h-2.5 w-2.5" />
-                          {format(parseISO(ws.lastSession.scheduled_at), 'dd MMM', { locale: pt })}
+                          {format(parseISO(ws.lastSession.scheduled_at), 'dd MMM', { locale: getDateLocale() })}
                         </span>
                       ) : (
                         <span className="flex items-center gap-0.5 text-muted-foreground/50 italic">
@@ -188,7 +188,7 @@ export function CockpitPortfolioOverview({ workspaces }: CockpitPortfolioOvervie
                       {ws.nextMeetingDate && (
                         <span className="flex items-center gap-0.5">
                           <Calendar className="h-2.5 w-2.5" />
-                          {format(parseISO(ws.nextMeetingDate), 'dd MMM', { locale: pt })}
+                          {format(parseISO(ws.nextMeetingDate), 'dd MMM', { locale: getDateLocale() })}
                         </span>
                       )}
                       {ws.overdueActionsCount > 0 && (

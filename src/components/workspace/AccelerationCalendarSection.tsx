@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO, isPast, isToday, isFuture, addDays } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 import { 
   Calendar, Video, ExternalLink, Clock, CheckCircle2, Circle, 
   Pencil, X, Save, Link2
@@ -217,7 +217,7 @@ export function AccelerationCalendarSection({ programId, isStaff, currentWeek }:
                         <div className="flex items-center gap-2 mt-0.5 ml-7">
                           <Calendar className="h-3 w-3 text-muted-foreground" />
                           <span className="text-xs text-muted-foreground">
-                            {format(scheduledDate!, 'dd MMM yyyy, HH:mm', { locale: pt })}
+                            {format(scheduledDate!, 'dd MMM yyyy, HH:mm', { locale: getDateLocale() })}
                           </span>
                         </div>
                       )}

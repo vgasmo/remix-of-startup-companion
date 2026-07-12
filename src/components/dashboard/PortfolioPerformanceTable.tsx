@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Table, Calendar, MessageSquare, Plus, ArrowUpDown, ArrowRight } from 'lucide-react';
 import { differenceInDays, format, parseISO } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { HealthScore } from '@/types/database';
 
@@ -189,7 +189,7 @@ export const PortfolioPerformanceTable = memo(function PortfolioPerformanceTable
                     <TooltipTrigger asChild>
                       <span className="text-xs text-muted-foreground">
                         {ws.lastSession?.scheduled_at
-                          ? format(parseISO(ws.lastSession.scheduled_at), 'dd MMM', { locale: pt })
+                          ? format(parseISO(ws.lastSession.scheduled_at), 'dd MMM', { locale: getDateLocale() })
                           : '—'}
                       </span>
                     </TooltipTrigger>
@@ -283,7 +283,7 @@ export const PortfolioPerformanceTable = memo(function PortfolioPerformanceTable
                       </Badge>
                       <span className="text-[11px] text-muted-foreground ml-auto">
                         {ws.lastSession?.scheduled_at
-                          ? format(parseISO(ws.lastSession.scheduled_at), 'dd MMM', { locale: pt })
+                          ? format(parseISO(ws.lastSession.scheduled_at), 'dd MMM', { locale: getDateLocale() })
                           : '—'}
                       </span>
                     </div>
