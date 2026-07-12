@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from '@/lib/notify';
 import i18n from '@/i18n';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 export interface InvestorUpdate {
   id: string;
@@ -61,7 +62,7 @@ export function useGenerateInvestorUpdate() {
 
   return useMutation({
     mutationFn: async ({ workspaceId, month }: { workspaceId: string; month: string }) => {
-      const { data, error } = await supabase.functions.invoke('generate-investor-update', {
+      const { data, error } = await invokeWithAuth('generate-investor-update', {
         body: { workspace_id: workspaceId, month: normalizeMonth(month) },
       });
 
@@ -161,7 +162,7 @@ export function useCreateShareLink() {
       expiresInDays: number;
     }) => {
       // Use the new dataroom share link system
-      const { data, error } = await supabase.functions.invoke('dataroom-create-link', {
+      const { data, error } = await invokeWithAuth('dataroom-create-link', {
         body: { 
           workspace_id: workspaceId, 
           expires_in_days: expiresInDays,
@@ -193,7 +194,7 @@ export function useRevokeShareLink() {
   return useMutation({
     mutationFn: async ({ id, workspaceId }: { id: string; workspaceId: string }) => {
       // Use the new dataroom revoke system
-      const { data, error } = await supabase.functions.invoke('dataroom-revoke-link', {
+      const { data, error } = await invokeWithAuth('dataroom-revoke-link', {
         body: { link_id: id },
       });
 

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface TimeSlot {
   start: string;
@@ -32,7 +33,7 @@ export function useConsultantAvailability(
       if (!workspaceId || !date) return null;
 
       // Always ask backend; it will gracefully degrade (and can return warnings/reasons)
-      const { data, error } = await supabase.functions.invoke('check-consultant-availability', {
+      const { data, error } = await invokeWithAuth('check-consultant-availability', {
         body: { workspaceId, date, durationMinutes },
       });
 
@@ -68,7 +69,7 @@ export function useValidateBookingSlot() {
     }): Promise<{ available: boolean; checked: boolean; conflict?: string; reason?: string }> => {
       try {
         const date = startTime.slice(0, 10);
-        const { data, error } = await supabase.functions.invoke('check-consultant-availability', {
+        const { data, error } = await invokeWithAuth('check-consultant-availability', {
           body: { workspaceId, date },
         });
 

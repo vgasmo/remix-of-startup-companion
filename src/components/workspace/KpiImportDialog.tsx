@@ -11,6 +11,7 @@ import { Download, Link2, AlertCircle, CheckCircle2, Loader2 } from 'lucide-reac
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { useWorkspaceKpiDefinitions } from '@/hooks/useKpis';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface KpiImportDialogProps {
   open: boolean;
@@ -42,7 +43,7 @@ export function KpiImportDialog({ open, onOpenChange, workspaceId }: KpiImportDi
     setPreviewData(null);
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('import-kpi-data', {
+      const { data, error: fnError } = await invokeWithAuth('import-kpi-data', {
         body: { workspace_id: workspaceId, source },
       });
 
@@ -67,7 +68,7 @@ export function KpiImportDialog({ open, onOpenChange, workspaceId }: KpiImportDi
     setError(null);
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('import-kpi-data', {
+      const { data, error: fnError } = await invokeWithAuth('import-kpi-data', {
         body: { workspace_id: workspaceId, source, kpi_mappings: mappings },
       });
 

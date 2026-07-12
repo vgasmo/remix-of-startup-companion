@@ -5,6 +5,7 @@ import type { Json } from '@/integrations/supabase/types';
 import { logger } from '@/lib/logger';
 import { notify } from '@/lib/notify';
 import i18n from '@/i18n';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 export interface StaffTask {
   id: string;
@@ -174,7 +175,7 @@ export function useCreateStaffTask() {
       
       // Send email notification to assignee (fire and forget)
       if (result && data.assignee_id !== user?.id) {
-        supabase.functions.invoke('send-task-notification', {
+        invokeWithAuth('send-task-notification', {
           body: { type: 'assigned', taskId: result.id }
         }).catch(err => logger.error('Failed to send task notification', {}, err));
       }

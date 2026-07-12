@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 type InviteStatus = 'loading' | 'needs_login' | 'processing' | 'success' | 'error';
 
@@ -48,7 +49,7 @@ export default function AcceptInvite() {
     setStatus('processing');
     
     try {
-      const { data, error } = await supabase.functions.invoke('accept-workspace-invite', {
+      const { data, error } = await invokeWithAuth('accept-workspace-invite', {
         body: { token: inviteToken }
       });
       

@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface ContractAnalysis {
   key_dates: Array<{ date: string; description: string; is_critical: boolean }>;
@@ -42,7 +43,7 @@ export function ContractIntelligenceCard({ contractId, contractLabel }: Contract
 
   const analyzeContract = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('analyze-contract', {
+      const { data, error } = await invokeWithAuth('analyze-contract', {
         body: { contractId },
       });
       if (error) throw error;

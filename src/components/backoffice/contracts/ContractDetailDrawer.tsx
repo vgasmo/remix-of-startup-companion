@@ -399,7 +399,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                 className="h-7 text-xs gap-1"
                 onClick={async () => {
                   try {
-                    const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
+                    const { data, error } = await invokeWithAuth('public-contract-onboarding', {
                       body: { action: 'generate_token', contractId: contract.id },
                     });
                     if (error) throw error;

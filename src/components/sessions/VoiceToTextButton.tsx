@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface VoiceToTextButtonProps {
   onTranscript: (text: string) => void;
@@ -139,7 +140,7 @@ export function VoiceToTextButton({ onTranscript, disabled = false }: VoiceToTex
       const base64Audio = await base64Promise;
 
       // Call edge function for transcription with mimeType hint
-      const { data, error } = await supabase.functions.invoke('transcribe-audio', {
+      const { data, error } = await invokeWithAuth('transcribe-audio', {
         body: { 
           audio: base64Audio,
           mimeType: mimeType,

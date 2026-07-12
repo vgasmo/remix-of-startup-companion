@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import i18n from '@/i18n';
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 export interface AICoachFeedback {
   summary: string;
@@ -41,7 +42,7 @@ export function useGenerateTemplateCoach() {
       templateInstanceId: string;
       mode?: 'review' | 'actions' | 'kpis';
     }): Promise<GenerateCoachResponse> => {
-      const { data, error } = await supabase.functions.invoke('generate-template-coach', {
+      const { data, error } = await invokeWithAuth('generate-template-coach', {
         body: { 
           template_instance_id: templateInstanceId,
           mode,

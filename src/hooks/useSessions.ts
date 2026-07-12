@@ -4,6 +4,7 @@ import { syncOutlookCalendar, sendTeamsNotification, getAppUrl } from '@/hooks/u
 import { Json } from '@/integrations/supabase/types';
 import { logger } from '@/lib/logger';
 import { track } from '@/lib/analytics';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 // P1.2: Helper to log activity
 async function logActivity(action: string, entityType: string, entityId: string, workspaceId: string, metadata?: Record<string, unknown>) {
@@ -112,7 +113,7 @@ async function notifySessionEvent(
 
       if (recipientEmails.length > 0) {
         const organizerProfile = (profiles || []).find((p) => p.id === user?.id);
-        await supabase.functions.invoke('send-session-invite', {
+        await invokeWithAuth('send-session-invite', {
           body: {
             sessionId: session.id,
             workspaceId,
@@ -381,7 +382,7 @@ export function useUpdateSession(workspaceId: string) {
       }
 
       // Auto-recompute health score after session update (fire-and-forget)
-      supabase.functions.invoke('recompute-health-scores', {
+      invokeWithAuth('recompute-health-scores', {
         body: { workspaceId },
       }).catch((err) => logger.warn('recompute_health_score_failed', { workspaceId, error: String(err) }));
 

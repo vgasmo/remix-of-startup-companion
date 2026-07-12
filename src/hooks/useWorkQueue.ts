@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 export interface WorkQueueItem {
   id: string;
@@ -146,7 +147,7 @@ export function useRecomputeWorkQueue() {
 
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('recompute-work-queue');
+      const { data, error } = await invokeWithAuth('recompute-work-queue');
       if (error) throw error;
       return data;
     },

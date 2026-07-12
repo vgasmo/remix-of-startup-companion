@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { notify } from "@/lib/notify";
 import i18n from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 const t = i18n.t.bind(i18n);
 
 export interface Conversation {
@@ -223,7 +224,7 @@ export function useSendMessage() {
 
       // Fire-and-forget email alert to other participants
       try {
-        void supabase.functions.invoke('send-message-email-alert', {
+        void invokeWithAuth('send-message-email-alert', {
           body: { messageId: data.id },
         });
       } catch {

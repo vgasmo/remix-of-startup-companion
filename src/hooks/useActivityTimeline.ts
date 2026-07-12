@@ -4,6 +4,7 @@ import { notify } from "@/lib/notify";
 import type { Json } from '@/integrations/supabase/types';
 
 import i18n from '@/i18n';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 const t = i18n.t.bind(i18n);
 
 export type ActivityType = 'note' | 'email' | 'call' | 'task' | 'meeting' | 'system';
@@ -133,7 +134,7 @@ export function useGenerateRecap() {
   
   return useMutation({
     mutationFn: async (params: { workspaceId?: string; funnelItemId?: string; language?: string }) => {
-      const { data, error } = await supabase.functions.invoke('generate-relationship-recap', {
+      const { data, error } = await invokeWithAuth('generate-relationship-recap', {
         body: {
           workspace_id: params.workspaceId,
           funnel_item_id: params.funnelItemId,
@@ -159,7 +160,7 @@ export function useSyncEmails() {
   return useMutation({
     mutationFn: async (params: { workspaceId?: string; funnelItemId?: string; consultantUserId?: string }) => {
       // Use the new canonical sync function
-      const { data, error } = await supabase.functions.invoke('sync-outlook-emails', {
+      const { data, error } = await invokeWithAuth('sync-outlook-emails', {
         body: {},
       });
       

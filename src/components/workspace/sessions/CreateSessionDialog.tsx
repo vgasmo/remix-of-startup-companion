@@ -42,6 +42,7 @@ import { useConsultantAvailability, useValidateBookingSlot } from '@/hooks/useCo
 import { useMentorAvailability } from '@/hooks/useMentorAvailability';
 import { logger } from '@/lib/logger';
 import { lisbonWallClockToUtcIso } from '@/lib/dateUtils';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 interface CreateSessionDialogProps {
   workspaceId: string;
@@ -329,7 +330,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
             .map(m => m.profile!.email);
 
           if (recipientEmails.length > 0) {
-            const { error } = await supabase.functions.invoke('send-session-invite', {
+            const { error } = await invokeWithAuth('send-session-invite', {
               body: {
                 sessionId: session.id,
                 workspaceId,

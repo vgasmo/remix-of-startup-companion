@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import type { Json } from '@/integrations/supabase/types';
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 export interface TemplateField {
   id: string;
@@ -323,7 +324,7 @@ export function useSubmitForReview(workspaceId: string) {
       if (error) throw error;
       
       // Send notification to reviewers (fire and forget)
-      supabase.functions.invoke('send-template-notification', {
+      invokeWithAuth('send-template-notification', {
         body: { type: 'submitted', instanceId }
       }).catch(err => logger.error('Failed to send template notification', {}, err));
       
@@ -368,7 +369,7 @@ export function useReviewTemplateInstance(workspaceId: string) {
       if (error) throw error;
       
       // Send notification to founder about review (fire and forget)
-      supabase.functions.invoke('send-template-notification', {
+      invokeWithAuth('send-template-notification', {
         body: { type: 'reviewed', instanceId, review_status, review_notes }
       }).catch(err => logger.error('Failed to send template notification', {}, err));
       

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 export interface DocumentReview {
   id: string;
@@ -126,7 +127,7 @@ export function useUpdateReview() {
 export function useAnalyzePitchDeck() {
   return useMutation({
     mutationFn: async ({ documentId, workspaceId }: { documentId: string; workspaceId: string }) => {
-      const { data, error } = await supabase.functions.invoke('analyze-pitch-deck', {
+      const { data, error } = await invokeWithAuth('analyze-pitch-deck', {
         body: { document_id: documentId, workspace_id: workspaceId },
       });
       if (error) throw error;

@@ -28,6 +28,7 @@ import {
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { AccessDenied } from '@/components/ui/AccessDenied';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 type TestStatus = 'idle' | 'running' | 'pass' | 'fail' | 'warn';
 
@@ -148,7 +149,7 @@ export default function CrmDiagnostics() {
     addLog('Calling generate-crm-notifications (dry_run=true)...');
     
     try {
-      const { data, error } = await supabase.functions.invoke('generate-crm-notifications', {
+      const { data, error } = await invokeWithAuth('generate-crm-notifications', {
         body: { dry_run: true },
       });
       
@@ -176,7 +177,7 @@ export default function CrmDiagnostics() {
     addLog('Calling generate-crm-notifications (LIVE mode - writes data!)...');
     
     try {
-      const { data, error } = await supabase.functions.invoke('generate-crm-notifications', {
+      const { data, error } = await invokeWithAuth('generate-crm-notifications', {
         body: {},
       });
       
@@ -205,7 +206,7 @@ export default function CrmDiagnostics() {
     addLog(`Calling sync-graph-email-history (dry_run) for ${funnelItemId}...`);
     
     try {
-      const { data, error } = await supabase.functions.invoke('sync-graph-email-history', {
+      const { data, error } = await invokeWithAuth('sync-graph-email-history', {
         body: { funnel_item_id: funnelItemId, dry_run: true },
       });
       

@@ -14,6 +14,7 @@ import {
   INTAKE_TO_CRM_STAGE,
   CUSTOMER_EDITABLE_STATES,
 } from '@/constants/intakeStates';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 export type { IntakeState };
 
@@ -204,7 +205,7 @@ export function useCreateIntake() {
       let emailError: string | null = null;
       if (params.contactEmail) {
         try {
-          const { error: emailErr } = await supabase.functions.invoke('send-intake-email', {
+          const { error: emailErr } = await invokeWithAuth('send-intake-email', {
             body: {
               type: 'intake_request',
               intakeId: data.id,
@@ -400,7 +401,7 @@ export function useTransitionIntakeStatus() {
             // Rotate token so the email link is fresh and the DB only stores the hash
             const { data: freshToken } = await supabase.rpc('staff_rotate_intake_token', { p_intake_id: params.intakeId });
             if (freshToken) {
-              await supabase.functions.invoke('send-intake-email', {
+              await invokeWithAuth('send-intake-email', {
                 body: {
                   type: 'changes_requested',
                   intakeId: params.intakeId,

@@ -5,6 +5,7 @@ import { type FunnelStage, type FunnelType } from '@/constants/funnelStages';
 import { logger } from '@/lib/logger';
 
 import i18n from '@/i18n';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 const t = i18n.t.bind(i18n);
 
 // Re-export for backward compatibility
@@ -149,7 +150,7 @@ export function useUpdateFunnelItem() {
         });
 
         // Trigger CRM stage transition email (fire-and-forget)
-        supabase.functions.invoke('send-crm-stage-transition-email', {
+        invokeWithAuth('send-crm-stage-transition-email', {
           body: {
             funnel_item_id: id,
             from_stage: current?.stage,

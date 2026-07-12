@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
 export interface AIExtractedData {
   title?: string;
@@ -62,7 +63,7 @@ export function ContractUploadDropzone({ workspaceId, onAIDataExtracted, onManua
 
       // Step 2: Trigger AI analysis
       setProcessingStep(t('contracts.upload.analyzing', { defaultValue: 'Analyzing with AI...' }));
-      const { data: aiResult, error: aiError } = await supabase.functions.invoke('analyze-contract-document', {
+      const { data: aiResult, error: aiError } = await invokeWithAuth('analyze-contract-document', {
         body: { filePath: fileName, workspaceId },
       });
 

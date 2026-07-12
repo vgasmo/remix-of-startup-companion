@@ -4,6 +4,7 @@ import { notify } from "@/lib/notify";
 import type { Database } from '@/integrations/supabase/types';
 
 import i18n from '@/i18n';
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 const t = i18n.t.bind(i18n);
 
 type StartupStage = Database['public']['Enums']['startup_stage'];
@@ -302,7 +303,7 @@ export function usePublishProgramDraft() {
 
   return useMutation({
     mutationFn: async (draftId: string) => {
-      const { data, error } = await supabase.functions.invoke('publish-program-setup', {
+      const { data, error } = await invokeWithAuth('publish-program-setup', {
         body: { draft_id: draftId },
       });
 
