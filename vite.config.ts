@@ -116,4 +116,23 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          if (id.includes('react-dom') || id.includes('/react/') || id.includes('scheduler')) return 'vendor-react';
+          if (id.includes('@radix-ui')) return 'vendor-radix';
+          if (id.includes('@supabase') || id.includes('@tanstack')) return 'vendor-data';
+          if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
+          if (id.includes('date-fns')) return 'vendor-date';
+          if (id.includes('lucide-react')) return 'vendor-icons';
+          if (id.includes('xlsx')) return 'vendor-xlsx';
+          if (id.includes('framer-motion') || id.includes('motion')) return 'vendor-motion';
+          if (id.includes('i18next')) return 'vendor-i18n';
+          return 'vendor';
+        },
+      },
+    },
+  },
 }));
