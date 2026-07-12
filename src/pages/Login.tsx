@@ -194,12 +194,13 @@ export default function Login() {
           <div className="mb-10 flex justify-center">
             <div className="relative group">
               <div className="absolute -inset-4 bg-accent/20 rounded-full blur-xl group-hover:bg-accent/30 transition-colors duration-500" />
-              <img 
-                src={startupLeiriaLogo} 
-                alt="Startup Leiria" 
+              <img
+                src={startupLeiriaLogo}
+                alt="Startup Leiria"
                 width={480}
                 height={96}
-                fetchPriority="high"
+                loading="eager"
+                decoding="async"
                 className="relative h-24 w-auto drop-shadow-2xl transition-transform duration-500 hover:scale-105"
               />
             </div>
