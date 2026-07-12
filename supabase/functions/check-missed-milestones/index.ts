@@ -12,7 +12,8 @@ async function sendTeamsNotification(
   supabaseKey: string,
   workspaceId: string,
   eventType: string,
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
+  log?: { warn: (msg: string, ctx?: unknown) => void },
 ) {
   try {
     const response = await fetch(`${supabaseUrl}/functions/v1/teams-notify`, {
@@ -28,8 +29,13 @@ async function sendTeamsNotification(
         payload,
       }),
     });
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      log?.warn('teams_notify_failed', { workspaceId, eventType, status: response.status, body });
+    }
     return response.ok;
-  } catch {
+  } catch (err) {
+    log?.warn('teams_notify_threw', { workspaceId, eventType, error: String(err) });
     return false;
   }
 }

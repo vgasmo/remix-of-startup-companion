@@ -54,11 +54,9 @@ const NotFound = () => {
               {t('notFound.backHome', 'Go back home')}
             </Link>
           </Button>
-          <Button asChild variant="outline" size="lg" onClick={() => window.history.back()}>
-            <button className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              {t('common.goBack', 'Go back')}
-            </button>
+          <Button variant="outline" size="lg" className="gap-2" onClick={() => window.history.back()}>
+            <ArrowLeft className="h-4 w-4" />
+            {t('common.goBack', 'Go back')}
           </Button>
         </div>
       </div>

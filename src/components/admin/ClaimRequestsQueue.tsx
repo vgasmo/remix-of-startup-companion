@@ -5,7 +5,8 @@ import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle2, XCircle, Clock, User, Mail } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { CheckCircle2, XCircle, Clock, User, Mail, AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface ClaimRequest {
@@ -30,7 +31,7 @@ export function ClaimRequestsQueue() {
   const queryClient = useQueryClient();
   const [selectedWorkspaces, setSelectedWorkspaces] = useState<Record<string, string>>({});
 
-  const { data: claims = [], isLoading } = useQuery({
+  const { data: claims = [], isLoading, isError, error: claimsError, refetch } = useQuery({
     queryKey: ['claim-requests-pending'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -101,13 +102,28 @@ export function ClaimRequestsQueue() {
   });
 
   if (isLoading) {
-    return <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground"><Clock className="h-4 w-4 animate-spin" /> {t('common.loading', { defaultValue: 'A carregar...' })}</div>;
+    return <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground"><Clock className="h-4 w-4 animate-spin" /> {t('common.loading', { defaultValue: 'Loading...' })}</div>;
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-between gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4" />
+          <span>{t('claimStartup.loadFailed', { defaultValue: 'Could not load claim requests.' })}</span>
+          {claimsError instanceof Error ? <span className="text-xs opacity-70">({claimsError.message})</span> : null}
+        </div>
+        <Button size="sm" variant="outline" onClick={() => refetch()}>
+          {t('common.retry', { defaultValue: 'Retry' })}
+        </Button>
+      </div>
+    );
   }
 
   if (claims.length === 0) {
     return (
       <div className="py-6 text-center text-sm text-muted-foreground">
-        {t('claimStartup.noRequests', { defaultValue: 'Sem pedidos de associação pendentes.' })}
+        {t('claimStartup.noRequests', { defaultValue: 'No pending claim requests.' })}
       </div>
     );
   }
@@ -159,15 +175,43 @@ export function ClaimRequestsQueue() {
               <CheckCircle2 className="h-3 w-3 mr-1" />
               {t('admin.approve', { defaultValue: 'Aprovar' })}
             </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-8 text-destructive"
-              disabled={rejectMutation.isPending} loading={rejectMutation.isPending}
-              onClick={() => rejectMutation.mutate(claim.id)}
-            >
-              <XCircle className="h-3 w-3" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 text-destructive"
+                  disabled={rejectMutation.isPending}
+                  loading={rejectMutation.isPending}
+                  aria-label={t('admin.reject', { defaultValue: 'Reject' })}
+                  title={t('admin.reject', { defaultValue: 'Reject' })}
+                >
+                  <XCircle className="h-3 w-3" />
+                  <span className="sr-only">{t('admin.reject', { defaultValue: 'Reject' })}</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {t('claimStartup.rejectConfirmTitle', { defaultValue: 'Reject this claim request?' })}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('claimStartup.rejectConfirmDesc', {
+                      defaultValue: 'The requester will be notified. This action cannot be undone.',
+                    })}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('common.cancel', { defaultValue: 'Cancel' })}</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => rejectMutation.mutate(claim.id)}
+                  >
+                    {t('admin.reject', { defaultValue: 'Reject' })}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       ))}

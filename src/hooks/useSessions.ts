@@ -383,7 +383,7 @@ export function useUpdateSession(workspaceId: string) {
       // Auto-recompute health score after session update (fire-and-forget)
       supabase.functions.invoke('recompute-health-scores', {
         body: { workspaceId },
-      }).catch(() => {});
+      }).catch((err) => logger.warn('recompute_health_score_failed', { workspaceId, error: String(err) }));
 
       // P0.1: Auto-trigger Outlook sync if date/time/duration changed
       if (result.needsSync) {
@@ -391,7 +391,7 @@ export function useUpdateSession(workspaceId: string) {
           sessionId: result.session.id,
           action: 'update',
           workspaceId,
-        }).catch(() => {}); // Silent fail - non-blocking
+        }).catch((err) => logger.warn('outlook_sync_update_failed', { workspaceId, sessionId: result.session.id, error: String(err) }));
 
         // Send reschedule notification
         (async () => {
@@ -413,8 +413,8 @@ export function useUpdateSession(workspaceId: string) {
                 .maybeSingle();
               ownerName = profile?.full_name || profile?.email || undefined;
             }
-          } catch {
-            // ignore
+          } catch (err) {
+            logger.warn('session_reschedule_lookup_failed', { workspaceId, error: String(err) });
           }
 
           sendTeamsNotification({
@@ -431,8 +431,8 @@ export function useUpdateSession(workspaceId: string) {
               link: `${getAppUrl()}/workspace/${workspaceId}?tab=agenda`,
               linkText: 'View Session',
             },
-          }).catch(() => {});
-        })().catch(() => {});
+          }).catch((err) => logger.warn('teams_notify_reschedule_failed', { workspaceId, error: String(err) }));
+        })().catch((err) => logger.warn('session_reschedule_notify_wrapper_failed', { workspaceId, error: String(err) }));
       }
     },
   });
@@ -457,7 +457,7 @@ export function useDeleteSession(workspaceId: string) {
         sessionId,
         action: 'delete',
         workspaceId,
-      }).catch(() => {}); // Silent fail - non-blocking
+      }).catch((err) => logger.warn('outlook_sync_delete_failed', { workspaceId, sessionId, error: String(err) }));
 
       // Inbox + email cancellation notice while session data is still available
       if (sessionSnapshot) {
