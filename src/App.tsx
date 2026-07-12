@@ -67,7 +67,6 @@ const PublicContractIntake = lazy(lazyWithRetry(() => import("./pages/PublicCont
 const AppDiagnostics = lazy(lazyWithRetry(() => import("./pages/AppDiagnostics"), "lazy:app-diagnostics"));
 
 function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { children: React.ReactNode; adminOnly?: boolean; staffOnly?: boolean }) {
-  const { t } = useTranslation();
   const { user, isLoading, isAuthReady, isAdmin, isStaff, isAccountPending, isAccountSuspended } = useAuth();
   const { needsNda, isLoading: ndaLoading } = useMentorNdaStatus();
   const founderState = useFounderOnboardingState();
