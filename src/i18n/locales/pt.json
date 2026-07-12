@@ -632,6 +632,9 @@
         "meetingRoom": "Sala de Reuniões",
         "privateOffice": "Gabinete Privado"
       },
+      "spaceDetailsEmpty": "Selecione um espaço para ver os detalhes.",
+      "spaceDetailsEmptyBody": "Nenhum espaço selecionado.",
+      "spaceDetailsTitle": "Detalhes do espaço",
       "spaceVacated": "Espaço desocupado com sucesso",
       "spaces": "Espaços",
       "spacesAndInfra": "Espaços & Infraestrutura",
