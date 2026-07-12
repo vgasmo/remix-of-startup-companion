@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -16,8 +16,10 @@ import { useVersionCheck } from "@/hooks/useVersionCheck";
 import { useFounderOnboardingState } from "@/hooks/useFounderOnboardingState";
 
 import { AccessDenied } from "@/components/ui/AccessDenied";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { queryClient } from "@/lib/queryClient";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
+import { notify } from "@/lib/notify";
 
 // Eager: lightweight / critical-path pages
 import Login from "./pages/Login";
@@ -72,16 +74,7 @@ function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { ch
   const location = useLocation();
 
   if (isLoading || !isAuthReady || ndaLoading) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-          <p className="text-sm text-muted-foreground animate-pulse">{t('common.loading')}</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!user) {
