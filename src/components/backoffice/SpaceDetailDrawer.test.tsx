@@ -1,15 +1,58 @@
 /**
- * Regression: SpaceDetailDrawer must not violate Rules of Hooks when `room`
- * transitions from null → a real room. Previously `useBuildingOccupancy` was
- * called AFTER `if (!room) return null`, causing "Rendered more hooks than
- * during the previous render" and crashing the drawer on first open.
+ * Regression + behaviour tests for SpaceDetailDrawer.
+ *
+ * Covers:
+ *   - Hook order stays stable across rapid room ↔ null transitions.
+ *   - The Sheet-based empty state renders when room is null (not `return null`).
+ *   - Empty state exposes the correct accessible name + role.
+ *   - Localized copy resolves correctly in both PT and EN.
  */
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import { render, cleanup, screen, within } from '@testing-library/react';
 import type { Room } from '@/hooks/useBackoffice';
 
-// ── Mock every hook the drawer calls, so no network / router / auth needed ──
-vi.mock('@/hooks/useBackoffice', async () => {
+// ── Locale strings kept in sync with src/i18n/locales/{pt,en}.json ──────────
+const STRINGS = {
+  pt: {
+    'admin.backoffice.spaceDetailsTitle': 'Detalhes do espaço',
+    'admin.backoffice.spaceDetailsEmpty': 'Selecione um espaço para ver os detalhes.',
+    'admin.backoffice.spaceDetailsEmptyBody': 'Nenhum espaço selecionado.',
+  },
+  en: {
+    'admin.backoffice.spaceDetailsTitle': 'Space details',
+    'admin.backoffice.spaceDetailsEmpty': 'Select a space to see the details.',
+    'admin.backoffice.spaceDetailsEmptyBody': 'No space selected.',
+  },
+} as const;
+
+// Hoisted mutable locale switch — vi.mock factories run before imports, so
+// they must reach the flag through vi.hoisted rather than a top-level `let`.
+const state = vi.hoisted(() => ({ locale: 'pt' as 'pt' | 'en' }));
+
+vi.mock('react-i18next', async () => {
+  const S = {
+    pt: {
+      'admin.backoffice.spaceDetailsTitle': 'Detalhes do espaço',
+      'admin.backoffice.spaceDetailsEmpty': 'Selecione um espaço para ver os detalhes.',
+      'admin.backoffice.spaceDetailsEmptyBody': 'Nenhum espaço selecionado.',
+    },
+    en: {
+      'admin.backoffice.spaceDetailsTitle': 'Space details',
+      'admin.backoffice.spaceDetailsEmpty': 'Select a space to see the details.',
+      'admin.backoffice.spaceDetailsEmptyBody': 'No space selected.',
+    },
+  } as const;
+  return {
+    useTranslation: () => ({
+      t: (key: string, opts?: { defaultValue?: string }) => {
+        const table = S[state.locale] as Record<string, string>;
+        return table[key] ?? opts?.defaultValue ?? key;
+      },
+    }),
+  };
+});
+
+vi.mock('@/hooks/useBackoffice', () => {
   const noopMutation = { mutateAsync: vi.fn(), isPending: false };
   return {
     useEndRoomAllocation: () => noopMutation,
@@ -37,12 +80,6 @@ vi.mock('react-router-dom', () => ({
   useNavigate: () => vi.fn(),
 }));
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (_key: string, opts?: { defaultValue?: string }) => opts?.defaultValue ?? _key,
-  }),
-}));
-
 vi.mock('./RoomAllocationHistory', () => ({
   RoomAllocationHistory: () => null,
 }));
@@ -67,55 +104,108 @@ const validRoom: Room = {
   current_allocation: null,
 } as unknown as Room;
 
-describe('SpaceDetailDrawer — hook order stability', () => {
+function collectHookErrors() {
+  const errors: string[] = [];
+  const spy = vi.spyOn(console, 'error').mockImplementation((...args) => {
+    errors.push(args.map(String).join(' '));
+  });
+  return {
+    hookErrors: () =>
+      errors.filter(e =>
+        /Rendered more hooks|Rendered fewer hooks|Rules of Hooks|change in the order of Hooks/i.test(
+          e,
+        ),
+      ),
+    restore: () => spy.mockRestore(),
+  };
+}
+
+describe('SpaceDetailDrawer', () => {
+  beforeEach(() => {
+    state.locale = 'pt';
+  });
   afterEach(() => cleanup());
 
-  it('does not crash when room transitions from null to a real room', () => {
-    const errors: unknown[] = [];
-    const errSpy = vi.spyOn(console, 'error').mockImplementation((...args) => {
-      errors.push(args.join(' '));
-    });
+  describe('hook order stability', () => {
+    it('survives rapid rerenders room → null → room → null → room', () => {
+      const guard = collectHookErrors();
 
-    const { rerender } = render(
-      <SpaceDetailDrawer open={false} onOpenChange={() => {}} room={null} />,
-    );
-
-    // The prior bug: switching room from null → object added a hook call and
-    // React threw "Rendered more hooks than during the previous render".
-    expect(() => {
-      rerender(
-        <SpaceDetailDrawer open onOpenChange={() => {}} room={validRoom} buildingName="B1" />,
+      const { rerender } = render(
+        <SpaceDetailDrawer open onOpenChange={() => {}} room={validRoom} />,
       );
-    }).not.toThrow();
+      expect(screen.getByRole('dialog', { name: /Sala Alpha/ })).toBeInTheDocument();
 
-    const hookErrors = errors.filter(e =>
-      /Rendered more hooks|Rendered fewer hooks|Rules of Hooks|change in the order of Hooks/i.test(
-        String(e),
-      ),
-    );
-    expect(hookErrors, `Unexpected hook errors:\n${hookErrors.join('\n')}`).toHaveLength(0);
+      expect(() => {
+        rerender(<SpaceDetailDrawer open onOpenChange={() => {}} room={null} />);
+      }).not.toThrow();
+      expect(screen.getByRole('dialog', { name: STRINGS.pt['admin.backoffice.spaceDetailsTitle'] }))
+        .toBeInTheDocument();
 
-    errSpy.mockRestore();
+      expect(() => {
+        rerender(<SpaceDetailDrawer open onOpenChange={() => {}} room={validRoom} />);
+      }).not.toThrow();
+      expect(screen.getByRole('dialog', { name: /Sala Alpha/ })).toBeInTheDocument();
+
+      expect(() => {
+        rerender(<SpaceDetailDrawer open onOpenChange={() => {}} room={null} />);
+      }).not.toThrow();
+
+      expect(() => {
+        rerender(<SpaceDetailDrawer open onOpenChange={() => {}} room={validRoom} />);
+      }).not.toThrow();
+
+      const errs = guard.hookErrors();
+      expect(errs, `Unexpected hook errors:\n${errs.join('\n')}`).toHaveLength(0);
+      guard.restore();
+    });
   });
 
-  it('also survives the reverse transition (room → null)', () => {
-    const errors: unknown[] = [];
-    const errSpy = vi.spyOn(console, 'error').mockImplementation((...args) => {
-      errors.push(args.join(' '));
+  describe('empty state (room = null)', () => {
+    it('renders the empty-state Sheet with an accessible name + status region', () => {
+      const guard = collectHookErrors();
+      render(<SpaceDetailDrawer open onOpenChange={() => {}} room={null} />);
+
+      const dialog = screen.getByRole('dialog', {
+        name: STRINGS.pt['admin.backoffice.spaceDetailsTitle'],
+      });
+      expect(dialog).toBeInTheDocument();
+
+      // aria-live status region announces the empty state to AT users.
+      const status = within(dialog).getByRole('status');
+      expect(status).toHaveAttribute('aria-live', 'polite');
+      expect(status).toHaveTextContent(STRINGS.pt['admin.backoffice.spaceDetailsEmptyBody']);
+
+      // Description copy is also present.
+      expect(
+        within(dialog).getByText(STRINGS.pt['admin.backoffice.spaceDetailsEmpty']),
+      ).toBeInTheDocument();
+
+      expect(guard.hookErrors()).toHaveLength(0);
+      guard.restore();
     });
 
-    const { rerender } = render(
-      <SpaceDetailDrawer open onOpenChange={() => {}} room={validRoom} />,
-    );
-    expect(() => {
-      rerender(<SpaceDetailDrawer open={false} onOpenChange={() => {}} room={null} />);
-    }).not.toThrow();
+    it('uses PT localized strings when locale is pt', () => {
+      state.locale = 'pt';
+      render(<SpaceDetailDrawer open onOpenChange={() => {}} room={null} />);
+      const dialog = screen.getByRole('dialog', {
+        name: STRINGS.pt['admin.backoffice.spaceDetailsTitle'],
+      });
+      expect(within(dialog).getByText(STRINGS.pt['admin.backoffice.spaceDetailsEmpty']))
+        .toBeInTheDocument();
+      expect(within(dialog).getByText(STRINGS.pt['admin.backoffice.spaceDetailsEmptyBody']))
+        .toBeInTheDocument();
+    });
 
-    const hookErrors = errors.filter(e =>
-      /Rendered more hooks|Rendered fewer hooks|Rules of Hooks/i.test(String(e)),
-    );
-    expect(hookErrors).toHaveLength(0);
-
-    errSpy.mockRestore();
+    it('uses EN localized strings when locale is en', () => {
+      state.locale = 'en';
+      render(<SpaceDetailDrawer open onOpenChange={() => {}} room={null} />);
+      const dialog = screen.getByRole('dialog', {
+        name: STRINGS.en['admin.backoffice.spaceDetailsTitle'],
+      });
+      expect(within(dialog).getByText(STRINGS.en['admin.backoffice.spaceDetailsEmpty']))
+        .toBeInTheDocument();
+      expect(within(dialog).getByText(STRINGS.en['admin.backoffice.spaceDetailsEmptyBody']))
+        .toBeInTheDocument();
+    });
   });
 });
