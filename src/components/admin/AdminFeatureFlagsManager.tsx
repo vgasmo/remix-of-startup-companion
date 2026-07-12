@@ -21,10 +21,6 @@ const FLAG_DESCRIPTIONS: Record<string, { label: string; description: string }> 
     label: 'Funnel Management UI',
     description: 'Enable leads/funnel management interface in admin panel',
   },
-  strict_calendar_validation: {
-    label: 'Strict Calendar Validation',
-    description: 'Require Microsoft Graph API validation before booking (fail-closed mode)',
-  },
   founder_gamification: {
     label: 'Founder Gamification',
     description: 'Enable XP, badges, and streak tracking for founders',

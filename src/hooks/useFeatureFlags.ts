@@ -5,7 +5,6 @@ import { logger } from '@/lib/logger';
 export type FeatureFlagKey =
   | 'public_first_contact_booking'
   | 'funnel_ui'
-  | 'strict_calendar_validation'
   | 'founder_gamification'
   | 'traction_stage'
   | 'crm_graph_email_sync'
