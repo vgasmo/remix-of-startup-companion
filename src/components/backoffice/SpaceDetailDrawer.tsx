@@ -62,12 +62,42 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
   const { data: workspaces } = useWorkspaces({}, false, ALL_WORKSPACE_STATUSES);
   const { data: waitingList } = useSpaceWaitingList({ status: 'waiting' });
 
-  // Hooks always run in the same order — move `!room` early-return AFTER the
-  // last hook call. useBuildingOccupancy just returned early too; keeping it
-  // above the guard preserves stable order across renders.
+  // Hooks always run in the same order — every hook above executes on every
+  // render regardless of `room`. The `!room` branch renders an empty Sheet
+  // (never `return null` mid-hook-list) so React never sees a changing hook
+  // count between renders.
   const { data: occupancy } = useBuildingOccupancy();
 
-  if (!room) return null;
+  if (!room) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent className="w-full sm:max-w-[480px] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="text-lg">
+              {t('admin.backoffice.spaceDetailsTitle', { defaultValue: 'Detalhes do espaço' })}
+            </SheetTitle>
+            <SheetDescription>
+              {t('admin.backoffice.spaceDetailsEmpty', {
+                defaultValue: 'Selecione um espaço para ver os detalhes.',
+              })}
+            </SheetDescription>
+          </SheetHeader>
+          <div
+            className="mt-8 flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground"
+            role="status"
+            aria-live="polite"
+          >
+            <Building2 className="h-8 w-8 opacity-50" />
+            <p>
+              {t('admin.backoffice.spaceDetailsEmptyBody', {
+                defaultValue: 'Nenhum espaço selecionado.',
+              })}
+            </p>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   const occupancyRoom = occupancy?.rooms.find(r => r.id === room.id) ?? null;
   const contractSummary = occupancyRoom?.contract ?? null;

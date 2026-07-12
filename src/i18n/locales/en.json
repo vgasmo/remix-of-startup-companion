@@ -632,6 +632,9 @@
         "meetingRoom": "Meeting Room",
         "privateOffice": "Private Office"
       },
+      "spaceDetailsEmpty": "Select a space to see the details.",
+      "spaceDetailsEmptyBody": "No space selected.",
+      "spaceDetailsTitle": "Space details",
       "spaceVacated": "Space vacated successfully",
       "spaces": "Spaces",
       "spacesAndInfra": "Spaces & Infrastructure",
