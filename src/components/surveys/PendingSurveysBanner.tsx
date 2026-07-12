@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { format, Locale } from "date-fns";
-import { pt } from "date-fns/locale";
+import { getDateLocale } from "@/lib/dateLocale";
 import { ClipboardList, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

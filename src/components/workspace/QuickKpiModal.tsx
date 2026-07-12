@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { triggerKpiCelebration } from '@/lib/confetti';
 import { useTranslation } from 'react-i18next';
 import { format, startOfMonth, subMonths } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 import { TrendingUp, ChevronLeft, ChevronRight, Check, Loader2, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';

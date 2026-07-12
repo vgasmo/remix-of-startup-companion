@@ -9,7 +9,7 @@
 import { Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { getDateLocale } from '@/lib/dateLocale';
 import {
   Tooltip,
   TooltipContent,
