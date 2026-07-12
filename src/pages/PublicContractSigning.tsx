@@ -324,7 +324,6 @@ export default function PublicContractSigning() {
     if ((currentStep === 'review_contract' || currentStep === 'signing') && !pdfUrl && !pdfLoading) {
       fetchPdf();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
 
@@ -409,7 +408,6 @@ export default function PublicContractSigning() {
   useEffect(() => {
     if (!contract || isSigned) return;
     autosave.trackChange(formData as unknown as Record<string, unknown>);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
   // Save company data (explicit, on "Next" button)

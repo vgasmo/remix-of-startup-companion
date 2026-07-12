@@ -153,7 +153,6 @@ export function useFounderStuckSignal({
       events.forEach(e => window.removeEventListener(e, onActivity));
       window.clearInterval(interval);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eligible, inactivityMs, initialGraceMs]);
 
   const dismiss = () => {

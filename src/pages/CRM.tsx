@@ -118,7 +118,6 @@ export default function CRM() {
     const next = new URLSearchParams(searchParams);
     if (searchQuery) next.set('q', searchQuery); else next.delete('q');
     setSearchParams(next, { replace: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
 

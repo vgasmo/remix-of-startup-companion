@@ -2160,6 +2160,9 @@
     "claimedTitle": "Startup verificada!",
     "error": "Ocorreu um erro na verificação. Por favor tente novamente.",
     "errorTitle": "Erro na verificação",
+    "loadFailed": "Não foi possível carregar os pedidos de associação.",
+    "rejectConfirmDesc": "O requerente será notificado. Esta ação não pode ser anulada.",
+    "rejectConfirmTitle": "Rejeitar este pedido de associação?",
     "found": "Startup verificada com sucesso!",
     "goToWorkspace": "Ir para o meu espaço de trabalho",
     "howItWorks": "Vamos verificar se existe uma startup associada ao seu email. Se encontrarmos, será associada automaticamente à sua conta.",
@@ -4939,6 +4942,7 @@
   },
   "integrations": {
     "accountId": "Account ID",
+    "movedToSettings": "As integrações estão agora em Definições → Integrações.",
     "advanced": "Avançado",
     "baseUrl": "Base URL",
     "connected": "Connected",

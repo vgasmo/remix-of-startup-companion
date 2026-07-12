@@ -255,7 +255,6 @@ export function useTemplateDraftAutosave({
         void doServerSave();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ─── Telemetry: log every status transition so production issues are

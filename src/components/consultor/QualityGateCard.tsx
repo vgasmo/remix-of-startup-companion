@@ -34,7 +34,6 @@ export function QualityGateCard({ entityType, entityId, entityData, workspaceId,
     if (!result && !isLoading && entityId && !computeMutation.isPending && !computeMutation.isError) {
       computeMutation.mutate({ entityType, entityId, entityData });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entityId, result, isLoading, computeMutation.isPending, computeMutation.isError]);
 
   // Fire score-computed only when the score itself changes.

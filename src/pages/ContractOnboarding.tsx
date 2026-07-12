@@ -162,7 +162,6 @@ export default function ContractOnboarding() {
   useEffect(() => {
     if (!contract) return;
     autosave.trackChange(buildPersistedPayload() as Record<string, unknown>);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
   const saveCompanyData = useMutation({

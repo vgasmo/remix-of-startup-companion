@@ -208,7 +208,6 @@ export function ChatTab({ workspaceId }: ChatTabProps) {
     if (conversation?.id && messages.length > 0) {
       markRead.mutate(conversation.id);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversation?.id, messages.length]);
 
 

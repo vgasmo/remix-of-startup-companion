@@ -2160,6 +2160,9 @@
     "claimedTitle": "Startup verified!",
     "error": "An error occurred during verification. Please try again.",
     "errorTitle": "Verification error",
+    "loadFailed": "Could not load claim requests.",
+    "rejectConfirmDesc": "The requester will be notified. This action cannot be undone.",
+    "rejectConfirmTitle": "Reject this claim request?",
     "found": "Startup verified successfully!",
     "goToWorkspace": "Go to my workspace",
     "howItWorks": "We'll check if there's a startup linked to your email. If we find one, it will be automatically linked to your account.",
@@ -4939,6 +4942,7 @@
   },
   "integrations": {
     "accountId": "Account ID",
+    "movedToSettings": "Integrations now live in Settings → Integrations.",
     "advanced": "Advanced",
     "baseUrl": "Base URL",
     "connected": "Connected",

@@ -245,7 +245,6 @@ export function useContractDraftAutosave<T extends Record<string, unknown>>({
       if (dataRef.current) persistLocal(dataRef.current);
       if (dirtyRef.current) void doServerSave();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {

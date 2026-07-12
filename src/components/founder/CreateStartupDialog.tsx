@@ -117,7 +117,6 @@ export function CreateStartupDialog({ open, onOpenChange }: CreateStartupDialogP
   // Reset values when dialog opens (hydrate draft if present)
   useEffect(() => {
     if (open) form.reset(initialValues);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   // Debounced autosave of draft
