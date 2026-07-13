@@ -41,15 +41,22 @@ async function readWorkbookSheetMap(
     throw new Error("Not a valid XLSX/XLSM: missing workbook.xml");
   }
   const relIdToTarget = new Map<string, string>();
-  for (const m of relsXml.matchAll(/<Relationship[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"/g)) {
-    relIdToTarget.set(m[1], m[2]);
+  for (const m of relsXml.matchAll(/<Relationship\b([^/>]*)\/?>/g)) {
+    const attrs = m[1];
+    const id = attrs.match(/\bId="([^"]+)"/)?.[1];
+    const target = attrs.match(/\bTarget="([^"]+)"/)?.[1];
+    if (id && target) relIdToTarget.set(id, target);
   }
   const map = new Map<string, string>();
-  for (const m of workbookXml.matchAll(/<sheet\s+[^>]*name="([^"]+)"[^>]*r:id="([^"]+)"/g)) {
-    const target = relIdToTarget.get(m[2]);
+  for (const m of workbookXml.matchAll(/<sheet\b([^/>]*)\/?>/g)) {
+    const attrs = m[1];
+    const name = attrs.match(/\bname="([^"]+)"/)?.[1];
+    const rid = attrs.match(/\br:id="([^"]+)"/)?.[1];
+    if (!name || !rid) continue;
+    const target = relIdToTarget.get(rid);
     if (!target) continue;
     const path = target.startsWith("/") ? target.slice(1) : `xl/${target}`;
-    map.set(m[1], path);
+    map.set(name, path);
   }
   return map;
 }
