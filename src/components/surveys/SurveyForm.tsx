@@ -223,7 +223,7 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
 
   const campaign = data.instance.campaign;
   const deadline = campaign?.ends_at ? new Date(campaign.ends_at) : null;
-  const isSubmitted = data.instance.status === "submitted";
+
 
   return (
     <div className="space-y-6">
