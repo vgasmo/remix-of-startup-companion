@@ -272,6 +272,12 @@ verify_jwt = false
 [functions.compute-cohort-benchmarks]
 verify_jwt = false
 
+# Cron/staff — daily contract lifecycle engine (anniversaries, biennial price
+# review notices, post-incubation transitions, renewal eligibility). Auth is
+# validated at runtime via x-cron-secret (cron) or staff JWT.
+[functions.check-contract-anniversaries]
+verify_jwt = false
+
 # User-facing PDF exports — JWT validated at runtime
 [functions.generate-mentor-impact-report]
 verify_jwt = false
