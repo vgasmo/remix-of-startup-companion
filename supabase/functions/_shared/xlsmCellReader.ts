@@ -31,14 +31,14 @@ async function loadSheetMap(zip: JSZip): Promise<Map<string, string>> {
   const relsXml = await zip.file("xl/_rels/workbook.xml.rels")?.async("string");
   if (!workbookXml || !relsXml) throw new Error("Invalid XLSX: missing workbook.xml");
   const rels = new Map<string, string>();
-  for (const m of relsXml.matchAll(/<Relationship\b([^/>]*)\/?>/g)) {
+  for (const m of relsXml.matchAll(/<Relationship\b([^>]*?)/?>/g)) {
     const attrs = m[1];
     const id = attrs.match(/\bId="([^"]+)"/)?.[1];
     const target = attrs.match(/\bTarget="([^"]+)"/)?.[1];
     if (id && target) rels.set(id, target);
   }
   const map = new Map<string, string>();
-  for (const m of workbookXml.matchAll(/<sheet\b([^/>]*)\/?>/g)) {
+  for (const m of workbookXml.matchAll(/<sheet\b([^>]*?)/?>/g)) {
     const attrs = m[1];
     const name = attrs.match(/\bname="([^"]+)"/)?.[1];
     const rid = attrs.match(/\br:id="([^"]+)"/)?.[1];

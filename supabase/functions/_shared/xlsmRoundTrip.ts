@@ -41,14 +41,14 @@ async function readWorkbookSheetMap(
     throw new Error("Not a valid XLSX/XLSM: missing workbook.xml");
   }
   const relIdToTarget = new Map<string, string>();
-  for (const m of relsXml.matchAll(/<Relationship\b([^/>]*)\/?>/g)) {
+  for (const m of relsXml.matchAll(/<Relationship\b([^>]*?)/?>/g)) {
     const attrs = m[1];
     const id = attrs.match(/\bId="([^"]+)"/)?.[1];
     const target = attrs.match(/\bTarget="([^"]+)"/)?.[1];
     if (id && target) relIdToTarget.set(id, target);
   }
   const map = new Map<string, string>();
-  for (const m of workbookXml.matchAll(/<sheet\b([^/>]*)\/?>/g)) {
+  for (const m of workbookXml.matchAll(/<sheet\b([^>]*?)/?>/g)) {
     const attrs = m[1];
     const name = attrs.match(/\bname="([^"]+)"/)?.[1];
     const rid = attrs.match(/\br:id="([^"]+)"/)?.[1];
