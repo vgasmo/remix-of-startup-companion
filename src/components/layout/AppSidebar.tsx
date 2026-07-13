@@ -123,7 +123,7 @@ export function AppSidebar() {
         icon: Building2,
       },
       {
-        name: t('nav.founder.documents', { defaultValue: 'Documentos' }),
+        name: t('nav.founder.documents', { defaultValue: 'Documentos e Ferramentas' }),
         href: `/workspace/${activeWorkspaceId}?tab=documents`,
         icon: FolderOpen,
       },
