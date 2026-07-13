@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { getDateLocale } from "@/lib/dateLocale";
-import { Save, Send, ChevronLeft, ChevronRight, Check, AlertCircle, Lock } from "lucide-react";
+import { Save, Send, ChevronLeft, ChevronRight, Check, AlertCircle, Lock, CloudOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,7 @@ import {
   SurveyQuestion,
   SurveyResponse,
 } from "@/hooks/useSurveys";
+import { useSingleFlightDraft } from "@/hooks/useSingleFlightDraft";
 import { Json } from "@/integrations/supabase/types";
 
 interface SurveyFormProps {
@@ -33,16 +34,21 @@ interface SurveyFormProps {
   onComplete?: () => void;
 }
 
+type AnswersMap = Record<string, string | string[] | number>;
+
 export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
   const { t, i18n } = useTranslation();
   const { data, isLoading } = useSurveyInstance(instanceId);
   const saveResponses = useSaveSurveyResponses();
 
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string | string[] | number>>({});
+  const [answers, setAnswers] = useState<AnswersMap>({});
   const [autoFilledKeys, setAutoFilledKeys] = useState<Set<string>>(new Set());
+  const autoFilledKeysRef = useRef<Set<string>>(new Set());
+  autoFilledKeysRef.current = autoFilledKeys;
 
   const locale = getDateLocale();
+
 
   const questions = useMemo(() => {
     // Prefer the campaign's copy-on-write snapshot when present. Falls back
@@ -95,9 +101,43 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
     setAutoFilledKeys(autoKeys);
   }, [data, questions]);
 
+  // ─── Autosave ────────────────────────────────────────────────────────────
+  // Wire the canonical single-flight draft engine so every answer keystroke
+  // survives tab close / offline / navigation. Server flush is debounced
+  // through the same `saveResponses` mutation used by the manual button —
+  // one code path, one status source of truth.
+  const isSubmitted = data?.instance?.status === "submitted";
+  const serverUpdatedAt = data?.instance?.updated_at ?? null;
+
+  const serverSave = useCallback(async (payload: AnswersMap) => {
+    const autoKeys = autoFilledKeysRef.current;
+    const responses = Object.entries(payload).map(([question_id, value]) => ({
+      question_id,
+      response_value: typeof value === "string" || typeof value === "number" ? String(value) : undefined,
+      response_json: Array.isArray(value) ? (value as unknown as Json) : undefined,
+      is_auto_filled: autoKeys.has(question_id),
+    }));
+    await saveResponses.mutateAsync({ instanceId, responses, submit: false });
+  }, [instanceId, saveResponses]);
+
+  const draft = useSingleFlightDraft<AnswersMap>({
+    scopeKey: instanceId,
+    namespace: "survey",
+    serverUpdatedAt,
+    serverSave,
+    debounceMs: 1500,
+    disabled: isSubmitted,
+  });
+
   const handleAnswerChange = (questionId: string, value: string | string[] | number) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
-    // Remove from auto-filled if user edits
+    setAnswers((prev) => {
+      const next = { ...prev, [questionId]: value };
+      // Track for autosave using the latest snapshot — do not rely on the
+      // async React state after setAnswers, because trackChange must see the
+      // just-edited value.
+      draft.trackChange(next);
+      return next;
+    });
     if (autoFilledKeys.has(questionId)) {
       setAutoFilledKeys((prev) => {
         const next = new Set(prev);
@@ -115,7 +155,7 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
     handleAnswerChange(questionId, updated);
   };
 
-  const handleSave = (submit = false) => {
+  const handleSave = async (submit = false) => {
     const responses = Object.entries(answers).map(([question_id, value]) => ({
       question_id,
       response_value: typeof value === "string" || typeof value === "number" ? String(value) : undefined,
@@ -123,17 +163,23 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
       is_auto_filled: autoFilledKeys.has(question_id),
     }));
 
+    // Ensure any pending debounced autosave finishes first, so the submit
+    // mutation runs after the latest snapshot has been persisted.
+    if (submit) await draft.flush();
+
     saveResponses.mutate(
       { instanceId, responses, submit },
       {
         onSuccess: () => {
-          if (submit && onComplete) {
-            onComplete();
+          if (submit) {
+            draft.clearDraft();
+            onComplete?.();
           }
         },
       }
     );
   };
+
 
   const calculateProgress = () => {
     const required = questions.filter((q) => q.required);
@@ -177,7 +223,7 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
 
   const campaign = data.instance.campaign;
   const deadline = campaign?.ends_at ? new Date(campaign.ends_at) : null;
-  const isSubmitted = data.instance.status === "submitted";
+
 
   return (
     <div className="space-y-6">
@@ -263,27 +309,44 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
         </CardContent>
       </Card>
 
-      {/* Navigation & Actions */}
-      <div className="flex items-center justify-between">
+      {/* Autosave status — visible above the sticky action bar on mobile. */}
+      {!isSubmitted && (
+        <div className="text-xs text-muted-foreground flex items-center gap-2 px-1">
+          {draft.status === "saving" && (
+            <><Loader2 className="h-3 w-3 animate-spin" />{t("surveys.autosaveSaving", "A guardar…")}</>
+          )}
+          {draft.status === "saved" && draft.lastSavedAt && (
+            <><Check className="h-3 w-3 text-[hsl(var(--success))]" />{t("surveys.autosaveSaved", "Guardado {{time}}", { time: format(draft.lastSavedAt, "HH:mm", { locale }) })}</>
+          )}
+          {draft.status === "local_only" && (
+            <><CloudOff className="h-3 w-3 text-amber-500" />{t("surveys.autosaveLocalOnly", "Guardado apenas no dispositivo — vamos tentar sincronizar novamente")}</>
+          )}
+        </div>
+      )}
+
+      {/* Navigation & Actions — sticky on mobile so users always see them. */}
+      <div className="sticky bottom-0 z-10 -mx-4 px-4 py-3 bg-background/95 backdrop-blur border-t sm:static sm:mx-0 sm:px-0 sm:py-0 sm:bg-transparent sm:backdrop-blur-none sm:border-0 flex items-center justify-between gap-2">
         <Button
           variant="outline"
+          size="sm"
           onClick={() => setCurrentSectionIndex((i) => Math.max(0, i - 1))}
           disabled={currentSectionIndex === 0}
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
-          {t("common.previous", "Previous")}
+          <span className="hidden sm:inline">{t("common.previous", "Previous")}</span>
         </Button>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-1 justify-center">
           {!isSubmitted && (
             <>
-              <Button variant="outline" onClick={() => handleSave(false)} disabled={saveResponses.isPending} loading={saveResponses.isPending}>
+              <Button variant="outline" size="sm" onClick={() => handleSave(false)} disabled={saveResponses.isPending} loading={saveResponses.isPending}>
                 <Save className="h-4 w-4 mr-2" />
                 {t("surveys.saveDraft", "Save Draft")}
               </Button>
 
               {currentSectionIndex === sections.length - 1 && (
                 <Button
+                  size="sm"
                   onClick={() => handleSave(true)}
                   disabled={!canSubmit() || saveResponses.isPending} loading={saveResponses.isPending}
                 >
@@ -297,13 +360,15 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
 
         <Button
           variant="outline"
+          size="sm"
           onClick={() => setCurrentSectionIndex((i) => Math.min(sections.length - 1, i + 1))}
           disabled={currentSectionIndex === sections.length - 1}
         >
-          {t("common.next", "Next")}
+          <span className="hidden sm:inline">{t("common.next", "Next")}</span>
           <ChevronRight className="h-4 w-4 ml-1" />
         </Button>
       </div>
+
     </div>
   );
 }
