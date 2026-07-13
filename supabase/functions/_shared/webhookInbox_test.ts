@@ -86,7 +86,7 @@ Deno.test("scrubWebhookPreview caps output length", () => {
 });
 
 Deno.test("scrubWebhookPreview tolerates non-JSON input", () => {
-  const out = scrubWebhookPreview("raw xml <Email>x@y.z</Email>", 2000);
+  const out = scrubWebhookPreview("raw xml <Email>alice@example.com</Email>", 2000);
   assertStringIncludes(out, "[email]");
 });
 
