@@ -39,6 +39,7 @@ import {
   useUpdateProgramDraft,
   useDiscardProgramDraft,
   usePublishProgramDraft,
+  ProgramDraftConflictError,
   type ProgramSetupDraft,
 } from '@/hooks/useProgramSetup';
 import { WizardBasicsStep } from '@/components/admin/wizard/WizardBasicsStep';
