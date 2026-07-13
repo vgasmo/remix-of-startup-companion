@@ -241,7 +241,13 @@ Deno.serve(async (req) => {
     }
 
     // Backfill contract_id on the inbox row (status stays 'received' until final processed).
-    await supabase.from('webhook_inbox').update({ contract_id: contract.id }).eq('id', claim.inboxId)
+    {
+      const { error: inboxBackfillErr } = await supabase
+        .from('webhook_inbox')
+        .update({ contract_id: contract.id })
+        .eq('id', claim.inboxId)
+      if (inboxBackfillErr) console.warn('docusign-webhook: inbox backfill failed', inboxBackfillErr.message)
+    }
 
     // ═══ TERMINAL-STATE GUARD ═══
     // Envelope-level events only (recipient events don't drive canonical state).
@@ -304,7 +310,8 @@ Deno.serve(async (req) => {
       else if (isCounter) patch.counter_signer_status = recStatus
       // If unattributable (missing id + missing email), fall back to first-signer = founder heuristic
       else if (!recipientEmail && !recIdStr && !contract.founder_signer_status) patch.founder_signer_status = recStatus
-      await supabase.from('startup_contracts').update(patch).eq('id', contract.id)
+      const { error: recipUpdErr } = await supabase.from('startup_contracts').update(patch).eq('id', contract.id)
+      if (recipUpdErr) console.warn('docusign-webhook: recipient patch failed', recipUpdErr.message)
       await markInboxProcessed(supabase, claim.inboxId, {
         status: 'processed', httpStatus: 200, contractId: contract.id,
       })
@@ -343,10 +350,19 @@ Deno.serve(async (req) => {
       updatePayload.canonical_signature_status = 'viewed'
     }
 
-    await supabase
+    const { error: contractUpdateErr } = await supabase
       .from('startup_contracts')
       .update(updatePayload)
       .eq('id', contract.id)
+    if (contractUpdateErr) {
+      console.error('docusign-webhook: contract update failed', contractUpdateErr.message)
+      await markInboxProcessed(supabase, claim.inboxId, {
+        status: 'failed', httpStatus: 500, errorMessage: `contract_update_failed:${contractUpdateErr.message}`, contractId: contract.id,
+      })
+      return new Response(JSON.stringify({ ok: false, error: 'contract_update_failed' }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     // === CANONICAL LIFECYCLE SYNC (shared helper) ===
     if (status === 'sent_for_signature') {

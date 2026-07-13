@@ -246,7 +246,13 @@ Deno.serve(async (req) => {
       }
 
       // Backfill contract_id on the inbox row for auditability (status stays 'received' until final processed).
-      await supabase.from('webhook_inbox').update({ contract_id: contract.id }).eq('id', claim.inboxId)
+      {
+        const { error: inboxBackfillErr } = await supabase
+          .from('webhook_inbox')
+          .update({ contract_id: contract.id })
+          .eq('id', claim.inboxId)
+        if (inboxBackfillErr) console.warn('pandadoc-webhook: inbox backfill failed', inboxBackfillErr.message)
+      }
 
       // Map to canonical status
       const canonicalStatus = PANDADOC_STATUS_MAP[eventName] || contract.signature_status || 'draft'
@@ -283,10 +289,17 @@ Deno.serve(async (req) => {
         updatePayload.onboarding_token_expires_at = null
       }
 
-      await supabase
+      const { error: contractUpdateErr } = await supabase
         .from('startup_contracts')
         .update(updatePayload)
         .eq('id', contract.id)
+      if (contractUpdateErr) {
+        console.error('pandadoc-webhook: contract update failed', contractUpdateErr.message)
+        await markInboxProcessed(supabase, claim.inboxId, {
+          status: 'failed', httpStatus: 500, errorMessage: `contract_update_failed:${contractUpdateErr.message}`, contractId: contract.id,
+        })
+        continue
+      }
 
       // === CANONICAL LIFECYCLE SYNC (shared helper) ===
       // Webhook always returns 200 to avoid PandaDoc retry storms, but failures
