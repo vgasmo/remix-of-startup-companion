@@ -52,6 +52,7 @@ import { WizardWeeksGatesStep } from '@/components/admin/wizard/WizardWeeksGates
 import { WizardStepTransition } from '@/components/ui/WizardStepTransition';
 import { WizardIllustration } from '@/components/ui/WizardIllustration';
 import { triggerConfetti } from '@/lib/confetti';
+import type { SaveState } from '@/lib/saveState';
 
 type WizardStep = 'basics' | 'stages' | 'weeksGates' | 'kpis' | 'playbooks' | 'alerts' | 'review';
 
