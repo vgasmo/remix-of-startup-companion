@@ -275,16 +275,17 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if public booking is enabled
-    const { data: flag } = await supabase
+    // Check if public booking is enabled + strict calendar validation flag
+    const { data: flags } = await supabase
       .from("feature_flags")
-      .select("enabled")
-      .eq("key", "public_first_contact_booking")
-      .maybeSingle();
+      .select("key, enabled")
+      .in("key", ["public_first_contact_booking", "strict_calendar_validation"]);
 
-    if (!flag?.enabled) {
+    const flagMap = new Map((flags ?? []).map((f: { key: string; enabled: boolean }) => [f.key, f.enabled]));
+    if (!flagMap.get("public_first_contact_booking")) {
       return corsJsonResponse({ success: false, error: "Public booking is not enabled" }, req, 403);
     }
+    const strictCalendarValidation = flagMap.get("strict_calendar_validation") === true;
 
     // Rate limiting - check if this email has booked recently (max 2 per 24h)
     const { data: recentBookings } = await supabase
