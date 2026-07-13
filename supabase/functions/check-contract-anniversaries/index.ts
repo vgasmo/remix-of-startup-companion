@@ -11,6 +11,7 @@
  * Source of truth: Minuta V9 Cláusula 6.ª/10.ª + Regulamento V11 Art. 9.º/10.º
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireCronOrStaff } from '../_shared/security.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,36 +24,20 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const authHeader = req.headers.get('Authorization')
-    const cronSecret = Deno.env.get('CRON_SECRET')
-    const cronHeader = req.headers.get('x-cron-secret')
-    const isCron = (!!cronSecret) && (
-      cronHeader === cronSecret || authHeader === `Bearer ${cronSecret}`
-    )
-
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    if (!isCron) {
-      const token = authHeader?.replace('Bearer ', '')
-      if (!token) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-      const { data: { user } } = await supabase.auth.getUser(token)
-      if (!user) {
-        return new Response(JSON.stringify({ error: 'Invalid token' }), {
-          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-      const { data: roles } = await supabase.from('user_roles').select('role').eq('user_id', user.id).in('role', ['admin', 'consultor', 'backoffice'])
-      if (!roles?.length) {
-        return new Response(JSON.stringify({ error: 'Staff only' }), {
-          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
+    // SECURITY: Fail-closed — timing-safe x-cron-secret OR staff JWT (admin/consultor/backoffice).
+    const supabaseUserClient = createClient(
+      supabaseUrl,
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } } }
+    )
+    const authCheck = await requireCronOrStaff(req, supabaseUserClient, supabase)
+    if ('error' in authCheck) {
+      console.error('[check-contract-anniversaries] Unauthorized invocation')
+      return authCheck.error
     }
 
     const today = new Date()

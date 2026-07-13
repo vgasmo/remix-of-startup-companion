@@ -10,10 +10,11 @@
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { normalizeLocale, pickLang, type Locale } from '../_shared/i18n.ts'
+import { requireCronOrStaff } from '../_shared/security.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
 }
 
 const VAT_RATE = 0.23
@@ -34,58 +35,25 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Auth: allow cron (with secret) or authenticated staff
-    const authHeader = req.headers.get('Authorization')
-    let isCron = false
-
-    if (authHeader?.startsWith('Bearer ')) {
-      const token = authHeader.replace('Bearer ', '')
-      const cronSecret = Deno.env.get('CRON_SECRET')
-      
-      if (token === cronSecret) {
-        // Invoicing has been retired from the product. Cron invocations must not
-        // create invoices. Manual/service-role paths are also disabled below.
-        console.log('[generate-invoices] invoicing disabled — cron invocation ignored')
-        return new Response(
-          JSON.stringify({ success: true, skipped: true, reason: 'invoicing_disabled' }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-        )
-        isCron = true
-      } else {
-        const { data: { user }, error } = await supabase.auth.getUser(token)
-        if (error || !user) {
-          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-            status: 401,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          })
-        }
-        const { data: roles } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .in('role', ['admin', 'consultor', 'backoffice'])
-        
-        if (!roles?.length) {
-          return new Response(JSON.stringify({ error: 'Staff only' }), {
-            status: 403,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          })
-        }
-      }
-    } else {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    // SECURITY: Fail-closed — timing-safe x-cron-secret OR staff JWT.
+    const supabaseUserClient = createClient(
+      supabaseUrl,
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } } }
+    )
+    const authCheck = await requireCronOrStaff(req, supabaseUserClient, supabase)
+    if ('error' in authCheck) {
+      console.error('[generate-invoices] Unauthorized invocation')
+      return authCheck.error
     }
 
-    // Invoicing has been retired from the product. Manual/service-role invocations
-    // are also disabled to keep the system in a single OFF state.
-    console.log('[generate-invoices] invoicing disabled — manual invocation ignored')
+    // Invoicing has been retired from the product. All invocations short-circuit.
+    console.log('[generate-invoices] invoicing disabled — invocation ignored')
     return new Response(
       JSON.stringify({ success: true, skipped: true, reason: 'invoicing_disabled' }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
+
 
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {}
     const targetMonth = body.targetMonth || new Date().toISOString().slice(0, 7)

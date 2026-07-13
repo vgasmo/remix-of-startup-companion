@@ -18,8 +18,10 @@ export const ErrorCode = {
 
 /**
  * Constant-time string comparison to prevent timing attacks on shared secrets.
+ * Exported for edge functions that need to combine cron auth with non-standard
+ * fallbacks (e.g. cron OR any authenticated user).
  */
-function timingSafeEqual(a: string, b: string): boolean {
+export function timingSafeEqual(a: string, b: string): boolean {
   const enc = new TextEncoder();
   const aBytes = enc.encode(a);
   const bBytes = enc.encode(b);
