@@ -184,11 +184,21 @@ export function useUpdateMilestone(workspaceId: string) {
         triggerMilestoneCelebration();
 
         // 🏆 First-milestone-ever celebration (idempotent via workspace_celebrations).
-        // Fire-and-forget — failures are non-critical.
+        // Use upsert with ignoreDuplicates so the second completion doesn't raise
+        // a 23505 unique_violation that would surface as a global mutation toast.
         void supabase
           .from('workspace_celebrations')
-          .insert({ workspace_id: workspaceId, event_key: 'first_milestone_completed' })
-          .then(() => {/* no-op; UI listener handled elsewhere if needed */});
+          .upsert(
+            { workspace_id: workspaceId, event_key: 'first_milestone_completed' },
+            { onConflict: 'workspace_id,event_key', ignoreDuplicates: true },
+          )
+          .then(({ error }) => {
+            if (error) {
+              // Non-critical — never surface to user.
+              // eslint-disable-next-line no-console
+              console.debug('first_milestone_celebration_skip', error.message);
+            }
+          });
       }
     },
   });
