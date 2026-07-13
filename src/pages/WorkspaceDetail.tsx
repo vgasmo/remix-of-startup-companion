@@ -569,6 +569,7 @@ export default function WorkspaceDetail() {
               />
             </div>
           )}
+          </Suspense>
         </div>
       </div>
       
