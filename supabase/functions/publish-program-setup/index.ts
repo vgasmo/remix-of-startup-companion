@@ -380,411 +380,75 @@ Deno.serve(async (req) => {
       console.log(`[publish-program-setup] Created program ${programId} (draft, will activate on success)`);
     }
 
-    // ===== Quarantine incompatible config when program_type changed =====
-    // If publishing as 'acceleration', wipe stage-only artifacts (stages,
-    // playbooks, stage_kpi_defaults). If publishing as 'incubation', wipe
-    // acceleration artifacts (gates, weeks). Prevents drift between modes.
-    if (isAccelerationFinal) {
-      const { data: pbRows } = await supabase.from('playbooks').select('id').eq('program_id', programId);
-      const pbIds = (pbRows || []).map((p: { id: string }) => p.id);
-      const stageWipes = await Promise.all([
-        supabase.from('stage_kpi_defaults').delete().eq('program_id', programId),
-        pbIds.length > 0
-          ? supabase.from('playbook_items').delete().in('playbook_id', pbIds)
-          : Promise.resolve({ error: null }),
-        supabase.from('playbooks').delete().eq('program_id', programId),
-        supabase.from('stages').delete().eq('program_id', programId),
-      ]);
-      const wipeErrs = stageWipes.map(r => (r as { error: unknown }).error).filter(Boolean);
-      if (wipeErrs.length) {
-        throw new Error(`Failed to quarantine stage-side artifacts: ${JSON.stringify(wipeErrs)}`);
+    // ===== KPI DEFINITIONS =====
+    // Resolve/create kpi_definitions BEFORE calling the atomic RPC so we can
+    // pass a stable {name → uuid} map into it. Runs only for incubation.
+    const kpiDefinitionMap: Record<string, string> = {};
+    if (!isAccelerationFinal) {
+      const seen = new Set<string>();
+      const kpiCandidates: Array<{ name: string; unit?: string; category?: string; description?: string; direction?: string; kpi_definition_id?: string }> = [];
+      for (const stageKpis of draftData.kpis || []) {
+        for (const kpi of stageKpis.kpis) {
+          if (seen.has(kpi.name)) continue;
+          seen.add(kpi.name);
+          kpiCandidates.push(kpi);
+        }
       }
-      // Also wipe existing weeks+gates for this acceleration program — we
-      // re-insert them below from the draft, so leftover rows would trigger
-      // the program_weeks (program_id, week_number) unique constraint.
-      const { error: weeksWipeErr } = await supabase
-        .from('program_weeks')
-        .delete()
-        .eq('program_id', programId);
-      if (weeksWipeErr) {
-        throw new Error(`Failed to quarantine program_weeks: ${weeksWipeErr.message}`);
+      for (const coreKpi of draftData.coreKpis || []) {
+        if (seen.has(coreKpi.name)) continue;
+        if (coreKpi.kpi_definition_id) {
+          kpiDefinitionMap[coreKpi.name] = coreKpi.kpi_definition_id;
+          seen.add(coreKpi.name);
+        }
       }
-      const { error: gatesWipeErr } = await supabase
-        .from('program_gates')
-        .delete()
-        .eq('program_id', programId);
-      if (gatesWipeErr) {
-        throw new Error(`Failed to quarantine program_gates: ${gatesWipeErr.message}`);
-      }
-      const [{ count: leftoverWeeks }, { count: leftoverGates }] = await Promise.all([
-        supabase.from('program_weeks').select('id', { count: 'exact', head: true }).eq('program_id', programId),
-        supabase.from('program_gates').select('id', { count: 'exact', head: true }).eq('program_id', programId),
-      ]);
-      if ((leftoverWeeks ?? 0) > 0 || (leftoverGates ?? 0) > 0) {
-        throw new Error(`Quarantine incomplete: ${leftoverWeeks} weeks / ${leftoverGates} gates still present for program ${programId}`);
-      }
-    } else {
-      // Sequential delete: weeks first (FK gate_id ON DELETE SET NULL), then gates.
-      // Running these in parallel via Promise.all has historically left orphan
-      // rows behind (manifesting as "duplicate key on program_weeks" on retry),
-      // so we now serialize and verify each delete.
-      const { error: weeksWipeErr } = await supabase
-        .from('program_weeks')
-        .delete()
-        .eq('program_id', programId);
-      if (weeksWipeErr) {
-        throw new Error(`Failed to quarantine program_weeks: ${weeksWipeErr.message}`);
-      }
-      const { error: gatesWipeErr } = await supabase
-        .from('program_gates')
-        .delete()
-        .eq('program_id', programId);
-      if (gatesWipeErr) {
-        throw new Error(`Failed to quarantine program_gates: ${gatesWipeErr.message}`);
-      }
-      // Defensive verification — if anything remained, surface it loudly so we
-      // never hit the unique-constraint trap silently.
-      const [{ count: leftoverWeeks }, { count: leftoverGates }] = await Promise.all([
-        supabase.from('program_weeks').select('id', { count: 'exact', head: true }).eq('program_id', programId),
-        supabase.from('program_gates').select('id', { count: 'exact', head: true }).eq('program_id', programId),
-      ]);
-      if ((leftoverWeeks ?? 0) > 0 || (leftoverGates ?? 0) > 0) {
-        throw new Error(`Quarantine incomplete: ${leftoverWeeks} weeks / ${leftoverGates} gates still present for program ${programId}`);
-      }
-    }
 
-    // 2. Upsert stages metadata (incubation only)
-    if (draftData.basics.program_type !== 'acceleration') {
-    for (const stage of draftData.stages || []) {
-      // Check if stage exists
-      const { data: existing } = await supabase
-        .from('stages')
-        .select('id')
-        .eq('program_id', programId)
-        .eq('stage_key', stage.stage_key)
-        .single();
-
-      if (existing) {
-        const { error: stageUpdErr } = await supabase
-          .from('stages')
-          .update({
-            name: stage.name,
-            description: stage.description,
-            position: stage.position,
-            is_active: stage.is_active,
-          })
-          .eq('id', existing.id);
-        if (stageUpdErr) throw new Error(`Failed to update stage "${stage.stage_key}": ${stageUpdErr.message}`);
-      } else {
-        const { error: stageInsErr } = await supabase.from('stages').insert({
-          program_id: programId,
-          stage_key: stage.stage_key,
-          name: stage.name,
-          description: stage.description,
-          position: stage.position,
-          is_active: stage.is_active,
-        });
-        if (stageInsErr) throw new Error(`Failed to insert stage "${stage.stage_key}": ${stageInsErr.message}`);
-      }
-    }
-    console.log(`[publish-program-setup] Upserted ${draftData.stages?.length || 0} stages`);
-    } // end incubation-only stages block
-
-    // 2b. Upsert gates and weeks (acceleration only).
-    // Note: gates/weeks were already wiped in the quarantine step above —
-    // do not re-delete here (would race with the inserts below).
-    if (draftData.basics.program_type === 'acceleration') {
-      // Insert gates and build a stable-id → real-id map.
-      // Accepts either persisted DB id, the wizard's __local_id, or (legacy) `gate-<sort_order>`.
-      const gateIdMap: Record<string, string> = {};
-      // Track gate ranges for fallback gate_id resolution by week_number.
-      const gateRanges: { id: string; start: number | null; end: number | null }[] = [];
-      for (const gate of draftData.gates || []) {
-        const { data: newGate, error: gateError } = await supabase
-          .from('program_gates')
+      for (const kpi of kpiCandidates) {
+        if (kpi.kpi_definition_id) {
+          kpiDefinitionMap[kpi.name] = kpi.kpi_definition_id;
+          continue;
+        }
+        const { data: existingDef } = await supabase
+          .from('kpi_definitions')
+          .select('id')
+          .eq('name', kpi.name)
+          .maybeSingle();
+        if (existingDef?.id) {
+          kpiDefinitionMap[kpi.name] = existingDef.id;
+          continue;
+        }
+        const { data: newDef, error: defError } = await supabase
+          .from('kpi_definitions')
           .insert({
+            name: kpi.name,
+            unit: kpi.unit || null,
+            category: kpi.category || null,
+            description: kpi.description || null,
+            direction: kpi.direction || 'up',
+            is_global: false,
             program_id: programId,
-            name: gate.name,
-            description: gate.description || null,
-            sort_order: gate.sort_order,
-            target_start_week: gate.target_start_week || null,
-            target_end_week: gate.target_end_week || null,
           })
           .select('id')
           .single();
-
-          if (gateError || !newGate) {
-            throw new Error(`Failed to create gate "${gate.name}": ${gateError?.message ?? 'unknown error'}`);
-          }
-        if (gate.id) gateIdMap[gate.id] = newGate.id;
-        if (gate.__local_id) gateIdMap[gate.__local_id] = newGate.id;
-        // Backwards-compat with older drafts created before stable IDs landed.
-        gateIdMap[`gate-${gate.sort_order}`] = newGate.id;
-        gateRanges.push({
-          id: newGate.id,
-          start: gate.target_start_week ?? null,
-          end: gate.target_end_week ?? null,
-        });
-      }
-      console.log(`[publish-program-setup] Created ${(draftData.gates || []).length} gates (id map keys=${Object.keys(gateIdMap).length})`);
-
-      // Insert weeks. Resolve gate_id in this order:
-      //   1. explicit week.gate_id mapped through gateIdMap
-      //   2. fallback: pick the gate whose target_start_week..target_end_week
-      //      contains week.week_number
-      //   3. null (week is orphaned — logged for visibility)
-      const orphanWeeks: number[] = [];
-      for (const week of draftData.weeks || []) {
-        let resolvedGateId: string | null = week.gate_id ? (gateIdMap[week.gate_id] ?? null) : null;
-        if (!resolvedGateId) {
-          const match = gateRanges.find(g =>
-            g.start !== null && g.end !== null &&
-            week.week_number >= g.start && week.week_number <= g.end,
-          );
-          resolvedGateId = match?.id ?? null;
+        if (defError || !newDef) {
+          throw new Error(`Failed to create KPI definition "${kpi.name}": ${defError?.message ?? 'unknown error'}`);
         }
-        if (!resolvedGateId) orphanWeeks.push(week.week_number);
-        const { error: weekError } = await supabase.from('program_weeks').insert({
-          program_id: programId,
-          gate_id: resolvedGateId,
-          week_number: week.week_number,
-          title: week.title,
-          description: week.description || null,
-          deliverables_json: week.deliverables_json || [],
-        });
-        if (weekError) {
-          throw new Error(`Failed to create week ${week.week_number} "${week.title}": ${weekError.message}`);
-        }
+        kpiDefinitionMap[kpi.name] = newDef.id;
       }
-      if (orphanWeeks.length) {
-        console.warn(`[publish-program-setup] Orphan weeks (no gate match): ${orphanWeeks.join(', ')}`);
-      }
-      console.log(`[publish-program-setup] Created ${draftData.weeks?.length || 0} weeks`);
+      console.log(`[publish-program-setup] Resolved ${Object.keys(kpiDefinitionMap).length} KPI definitions`);
     }
 
-    // 3-7. Stage-side artifacts (KPIs, core KPIs, playbooks, alerts, health)
-    // are only meaningful for incubation programs. Skip for acceleration so
-    // we don't reintroduce stage_kpi_defaults/playbooks we just quarantined.
-    const kpiDefinitionMap: Record<string, string> = {}; // name -> id
-    if (!isAccelerationFinal) {
-
-    // First pass: ensure all KPI definitions exist
-    for (const stageKpis of draftData.kpis || []) {
-      for (const kpi of stageKpis.kpis) {
-        if (kpi.kpi_definition_id) {
-          kpiDefinitionMap[kpi.name] = kpi.kpi_definition_id;
-        } else {
-          // Check if KPI definition exists by name
-          const { data: existingDef } = await supabase
-            .from('kpi_definitions')
-            .select('id')
-            .eq('name', kpi.name)
-            .single();
-
-          if (existingDef) {
-            kpiDefinitionMap[kpi.name] = existingDef.id;
-          } else {
-            // Create new KPI definition
-            const { data: newDef, error: defError } = await supabase
-              .from('kpi_definitions')
-              .insert({
-                name: kpi.name,
-                unit: kpi.unit || null,
-                category: kpi.category || null,
-                description: kpi.description || null,
-                direction: kpi.direction || 'up',
-                is_global: false,
-                program_id: programId,
-              })
-              .select()
-              .single();
-
-            if (defError || !newDef) {
-              console.error(`[publish-program-setup] Failed to create KPI definition: ${kpi.name}`, defError);
-              continue;
-            }
-            kpiDefinitionMap[kpi.name] = newDef.id;
-          }
-        }
-      }
-    }
-    console.log(`[publish-program-setup] Processed ${Object.keys(kpiDefinitionMap).length} KPI definitions`);
-
-    // Second pass: upsert stage_kpi_defaults
-    // First, remove existing defaults for this program
-    {
-      const { error: kpiDelErr } = await supabase
-        .from('stage_kpi_defaults')
-        .delete()
-        .eq('program_id', programId);
-      if (kpiDelErr) throw new Error(`Failed to clear stage_kpi_defaults: ${kpiDelErr.message}`);
-    }
-
-    for (const stageKpis of draftData.kpis || []) {
-      for (const kpi of stageKpis.kpis) {
-        const kpiDefId = kpiDefinitionMap[kpi.name];
-        if (!kpiDefId) continue;
-
-        const { error: kpiInsErr } = await supabase.from('stage_kpi_defaults').insert({
-          program_id: programId,
-          stage: stageKpis.stage_key,
-          kpi_definition_id: kpiDefId,
-          required: kpi.is_required,
-          order_index: kpi.order_index,
-          target_value: kpi.target_value || null,
-        });
-        if (kpiInsErr) throw new Error(`Failed to insert stage_kpi_default for "${kpi.name}": ${kpiInsErr.message}`);
-      }
-    }
-    console.log(`[publish-program-setup] Upserted stage KPI defaults`);
-
-    // 4. Upsert core KPIs
-    {
-      const { error: coreDelErr } = await supabase.from('program_core_kpis').delete().eq('program_id', programId);
-      if (coreDelErr) throw new Error(`Failed to clear program_core_kpis: ${coreDelErr.message}`);
-    }
-
-    for (const coreKpi of draftData.coreKpis || []) {
-      const kpiDefId = coreKpi.kpi_definition_id || kpiDefinitionMap[coreKpi.name];
-      if (!kpiDefId) continue;
-
-      const { error: coreInsErr } = await supabase.from('program_core_kpis').insert({
-        program_id: programId,
-        kpi_definition_id: kpiDefId,
-        order_index: coreKpi.order_index,
-      });
-      if (coreInsErr) throw new Error(`Failed to insert core KPI "${coreKpi.name}": ${coreInsErr.message}`);
-    }
-    console.log(`[publish-program-setup] Upserted ${draftData.coreKpis?.length || 0} core KPIs`);
-
-    // 5. Upsert playbooks
-    for (const playbook of draftData.playbooks || []) {
-      // Check if playbook exists for this stage
-      const { data: existingPlaybook } = await supabase
-        .from('playbooks')
-        .select('id')
-        .eq('program_id', programId)
-        .eq('stage', playbook.stage_key)
-        .single();
-
-      let playbookId: string;
-      if (existingPlaybook) {
-        const { error: pbUpdErr } = await supabase
-          .from('playbooks')
-          .update({
-            title: playbook.title,
-            description: playbook.description,
-            is_active: true,
-          })
-          .eq('id', existingPlaybook.id);
-        if (pbUpdErr) throw new Error(`Failed to update playbook "${playbook.stage_key}": ${pbUpdErr.message}`);
-        playbookId = existingPlaybook.id;
-
-        // Delete existing items (will recreate)
-        const { error: itemDelErr } = await supabase.from('playbook_items').delete().eq('playbook_id', playbookId);
-        if (itemDelErr) throw new Error(`Failed to clear playbook_items for ${playbookId}: ${itemDelErr.message}`);
-      } else {
-        const { data: newPlaybook, error: pbError } = await supabase
-          .from('playbooks')
-          .insert({
-            program_id: programId,
-            stage: playbook.stage_key,
-            title: playbook.title,
-            description: playbook.description,
-            is_active: true,
-          })
-          .select()
-          .single();
-
-        if (pbError || !newPlaybook) {
-          throw new Error(`Failed to create playbook "${playbook.stage_key}": ${pbError?.message ?? 'unknown error'}`);
-        }
-        playbookId = newPlaybook.id;
-      }
-
-      // Create playbook items
-      for (const item of playbook.items || []) {
-        const { error: itemInsErr } = await supabase.from('playbook_items').insert({
-          playbook_id: playbookId,
-          item_type: item.item_type,
-          title: item.title,
-          description: item.description,
-          relative_due_days: item.relative_due_days,
-          priority: item.priority,
-          order_index: item.order_index,
-          default_owner_role: item.default_owner_role,
-          metadata_json: item.metadata_json || {},
-        });
-        if (itemInsErr) throw new Error(`Failed to insert playbook_item "${item.title}": ${itemInsErr.message}`);
-      }
-    }
-    console.log(`[publish-program-setup] Upserted ${draftData.playbooks?.length || 0} playbooks`);
-
-    // 6. Upsert alert rules
-    {
-      const { error: alertDelErr } = await supabase.from('program_alert_rules').delete().eq('program_id', programId);
-      if (alertDelErr) throw new Error(`Failed to clear program_alert_rules: ${alertDelErr.message}`);
-    }
-
-    for (const rule of draftData.alertRules || []) {
-      const { error: alertInsErr } = await supabase.from('program_alert_rules').insert({
-        program_id: programId,
-        rule_type: rule.rule_type,
-        threshold: rule.threshold,
-        severity: rule.severity,
-        is_enabled: rule.is_enabled,
-      });
-      if (alertInsErr) throw new Error(`Failed to insert alert rule "${rule.rule_type}": ${alertInsErr.message}`);
-    }
-    console.log(`[publish-program-setup] Upserted ${draftData.alertRules?.length || 0} alert rules`);
-
-    // 7. Upsert health model
-    if (draftData.healthModel) {
-      const { data: existingModel } = await supabase
-        .from('program_health_model')
-        .select('id')
-        .eq('program_id', programId)
-        .single();
-
-      if (existingModel) {
-        const { error: hmUpdErr } = await supabase
-          .from('program_health_model')
-          .update({
-            weights_json: draftData.healthModel.weights_json,
-            thresholds_json: draftData.healthModel.thresholds_json,
-            is_enabled: draftData.healthModel.is_enabled,
-          })
-          .eq('id', existingModel.id);
-        if (hmUpdErr) throw new Error(`Failed to update program_health_model: ${hmUpdErr.message}`);
-      } else {
-        const { error: hmInsErr } = await supabase.from('program_health_model').insert({
-          program_id: programId,
-          weights_json: draftData.healthModel.weights_json,
-          thresholds_json: draftData.healthModel.thresholds_json,
-          is_enabled: draftData.healthModel.is_enabled,
-        });
-        if (hmInsErr) throw new Error(`Failed to insert program_health_model: ${hmInsErr.message}`);
-      }
-      console.log(`[publish-program-setup] Upserted health model`);
-    }
-    } // end !isAccelerationFinal stage-side block
-
-
-    // 8. FINAL STEP — flip program to active and mark draft published.
-    // This is intentionally last so a partial failure leaves the program in
-    // 'draft' status (not visible to founders) and the catch block can mark
-    // the wizard draft as 'publish_failed' for staff remediation.
-    const { error: activateErr } = await supabase
-      .from('programs')
-      .update({ status: 'active', is_active: true, updated_at: new Date().toISOString() })
-      .eq('id', programId);
-    if (activateErr) throw new Error(`Failed to activate program: ${activateErr.message}`);
-
-    const { error: draftErr } = await supabase
-      .from('program_setup_drafts')
-      .update({ status: 'published', program_id: programId, program_snapshot_json: null, last_publish_rollback_status: null })
-      .eq('id', draft_id);
-    if (draftErr) throw new Error(`Failed to mark draft published: ${draftErr.message}`);
+    // ===== ATOMIC APPLY via publish_program_setup RPC =====
+    // All destructive writes (stages, gates, weeks, KPI defaults, core KPIs,
+    // playbooks + items, alert rules, health model) run inside a single
+    // Postgres transaction. Any failure rolls back the whole publish.
+    const { data: rpcResult, error: rpcError } = await supabase.rpc('publish_program_setup', {
+      p_draft_id: draft_id,
+      p_program_id: programId,
+      p_draft_json: draftData as unknown as Record<string, unknown>,
+      p_kpi_definition_map: kpiDefinitionMap,
+    });
+    if (rpcError) throw new Error(`publish_program_setup failed: ${rpcError.message}`);
+    console.log(`[publish-program-setup] RPC applied:`, rpcResult);
 
     // Log activity with full audit metadata (program_type, gates/weeks/playbook/kpi counts)
     await supabase.from('activity_log').insert({
