@@ -115,7 +115,8 @@ export interface ProgramSetupDraft {
   id: string;
   program_id: string | null;
   created_by: string;
-  status: 'draft' | 'published' | 'discarded';
+  status: 'draft' | 'published' | 'discarded' | 'publish_failed';
+  revision: number;
   draft_json: {
     basics: DraftBasics;
     stages: DraftStage[];
@@ -129,6 +130,19 @@ export interface ProgramSetupDraft {
   };
   created_at: string;
   updated_at: string;
+}
+
+/** Thrown by useUpdateProgramDraft when the local revision is stale.
+ *  Wizard should refetch and re-apply the user's edits on top of the fresh draft. */
+export class ProgramDraftConflictError extends Error {
+  currentRevision: number;
+  currentDraftJson: ProgramSetupDraft['draft_json'];
+  constructor(currentRevision: number, currentDraftJson: ProgramSetupDraft['draft_json']) {
+    super('program-setup-draft revision conflict');
+    this.name = 'ProgramDraftConflictError';
+    this.currentRevision = currentRevision;
+    this.currentDraftJson = currentDraftJson;
+  }
 }
 
 function mapPlaybookToDraft(playbook: {
