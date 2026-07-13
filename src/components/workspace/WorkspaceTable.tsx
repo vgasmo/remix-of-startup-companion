@@ -1,3 +1,4 @@
+import { useDateLocale } from '@/lib/dateLocale';
 import { memo, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format, isToday } from 'date-fns';

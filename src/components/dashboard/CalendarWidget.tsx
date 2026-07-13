@@ -1,3 +1,4 @@
+import { useDateLocale } from '@/lib/dateLocale';
 import { useMemo, forwardRef } from 'react';
 import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';

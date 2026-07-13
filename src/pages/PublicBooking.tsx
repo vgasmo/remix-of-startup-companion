@@ -1,3 +1,4 @@
+import { useDateLocale } from '@/lib/dateLocale';
 import { useState, useEffect, useRef } from 'react';
 import { logger } from '@/lib/logger';
 import { useParams, useNavigate } from 'react-router-dom';
