@@ -4330,6 +4330,7 @@ export type Database = {
           has_seen_welcome_wizard: boolean
           id: string
           linkedin_url: string | null
+          mentor_monthly_target_hours: number
           phone: string | null
           preferred_language: string
           updated_at: string
@@ -4348,6 +4349,7 @@ export type Database = {
           has_seen_welcome_wizard?: boolean
           id: string
           linkedin_url?: string | null
+          mentor_monthly_target_hours?: number
           phone?: string | null
           preferred_language?: string
           updated_at?: string
@@ -4366,6 +4368,7 @@ export type Database = {
           has_seen_welcome_wizard?: boolean
           id?: string
           linkedin_url?: string | null
+          mentor_monthly_target_hours?: number
           phone?: string | null
           preferred_language?: string
           updated_at?: string
@@ -9198,6 +9201,10 @@ export type Database = {
           start_time: string
         }[]
       }
+      get_mentor_impact: {
+        Args: { p_from?: string; p_mentor_id: string; p_to?: string }
+        Returns: Json
+      }
       get_my_calendar_token_status: {
         Args: never
         Returns: {
@@ -9348,6 +9355,10 @@ export type Database = {
       }
       materialize_acceleration_deliverables: {
         Args: { p_program_id: string; p_workspace_id: string }
+        Returns: Json
+      }
+      publish_program_version: {
+        Args: { p_gates: Json; p_program_id: string; p_weeks: Json }
         Returns: Json
       }
       reject_startup_claim: {
