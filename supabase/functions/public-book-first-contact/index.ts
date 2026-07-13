@@ -438,17 +438,17 @@ serve(async (req) => {
     let calendarEventId: string | null = null;
 
     const credentials = await getGraphCredentials(supabase);
-    
+
     if (credentials && consultantEmail) {
       try {
         const accessToken = await getGraphAccessToken(credentials);
         const eventResult = await createCalendarEvent(accessToken, consultantEmail, slot, contact);
-        
+
         calendarEventId = eventResult.eventId;
         teamsLink = eventResult.teamsLink;
-        
+
         console.log("Created calendar event:", calendarEventId, "Teams link:", teamsLink);
-        
+
         if (teamsLink || calendarEventId) {
           await supabase
             .from("funnel_items")
@@ -458,8 +458,24 @@ serve(async (req) => {
             .eq("id", funnelItemId);
         }
       } catch (graphError) {
-        console.error("Graph API error (non-fatal):", graphError);
+        console.error("Graph API error:", graphError);
+        // Fail-closed: when strict_calendar_validation is on, a Graph failure
+        // rolls back the booking so we never confirm a slot the calendar didn't accept.
+        if (strictCalendarValidation) {
+          await supabase.from("funnel_items").delete().eq("id", funnelItemId);
+          return corsJsonResponse({
+            success: false,
+            error: "Calendar validation failed. Please try again or contact us directly.",
+          }, req, 502);
+        }
       }
+    } else if (strictCalendarValidation) {
+      // Flag on but Graph not configured → fail-closed (no silent bookings).
+      await supabase.from("funnel_items").delete().eq("id", funnelItemId);
+      return corsJsonResponse({
+        success: false,
+        error: "Calendar validation is required but not configured. Please contact us directly.",
+      }, req, 503);
     } else {
       console.log("Graph API not configured, skipping calendar event creation");
     }
