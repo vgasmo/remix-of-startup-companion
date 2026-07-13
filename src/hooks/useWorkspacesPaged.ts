@@ -11,6 +11,8 @@ export interface UseWorkspacesPagedArgs {
   stage?: StartupStage | 'all';
   health?: HealthScore | 'all';
   priority?: WorkspacePriority | 'all';
+  missingKpi?: boolean;
+  overdueActions?: boolean;
   sortBy?: SortOption;
   statuses?: WorkspaceStatus[];
   assignedOnly?: boolean;
