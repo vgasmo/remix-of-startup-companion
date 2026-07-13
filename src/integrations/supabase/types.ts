@@ -9276,6 +9276,10 @@ export type Database = {
         Args: { p_route_id: string }
         Returns: string
       }
+      get_or_create_workspace_conversation: {
+        Args: { _workspace_id: string }
+        Returns: string
+      }
       get_session_workspace_id: {
         Args: { _session_id: string }
         Returns: string
