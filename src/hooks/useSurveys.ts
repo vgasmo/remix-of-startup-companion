@@ -170,7 +170,17 @@ export function useDeleteSurveyDefinition() {
         .from("survey_definitions")
         .delete()
         .eq("id", id);
-      if (error) throw error;
+      if (error) {
+        // RESTRICT: FK from survey_campaigns blocks hard delete when any
+        // campaign was ever created from this template. Surface an actionable
+        // hint so callers can offer "Archive" instead.
+        if ((error as { code?: string }).code === '23503') {
+          const err = new Error(t('surveys.templateDeleteBlockedByCampaigns', 'Template has campaigns — archive it instead'));
+          (err as unknown as { code: string }).code = 'RESTRICT_CAMPAIGNS';
+          throw err;
+        }
+        throw error;
+      }
       return id;
     },
     onSuccess: () => {
@@ -178,7 +188,35 @@ export function useDeleteSurveyDefinition() {
       notify.success(t('surveys.templateDeleted', 'Template removido'));
     },
     onError: (error) => {
-      notify.error(t('surveys.templateDeleteFailed', 'Falha ao remover template'));
+      notify.error((error as Error)?.message || t('surveys.templateDeleteFailed', 'Falha ao remover template'));
+      logger.error('operation_error', {}, error);
+    },
+  });
+}
+
+/**
+ * Soft-archive a survey definition. Preferred over delete once any campaign
+ * has been launched from it (delete is blocked by RESTRICT FK).
+ */
+export function useArchiveSurveyDefinition() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, archive }: { id: string; archive: boolean }) => {
+      const { error } = await supabase
+        .from("survey_definitions")
+        .update({
+          archived_at: archive ? new Date().toISOString() : null,
+          is_active: archive ? false : true,
+        } as never)
+        .eq("id", id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["survey-definitions"] });
+    },
+    onError: (error) => {
+      notify.error(t('surveys.templateUpdateFailed'));
       logger.error('operation_error', {}, error);
     },
   });
