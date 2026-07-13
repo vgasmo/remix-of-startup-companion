@@ -1338,7 +1338,17 @@
       "templateEditor": "Modelos de Inquérito",
       "templates": "Templates",
       "title": "Inquéritos",
-      "viewResponses": "Ver Responses"
+      "viewResponses": "Ver Responses",
+      "options": "Opções",
+      "autoFillKey": "Preencher chave automaticamente",
+      "required": "Obrigatória",
+      "respondentMode": "Modo respondente",
+      "respondentNotice": "Está a responder como pré-visualização. As respostas não são guardadas.",
+      "previewNotice": "Pré-visualização do inquérito. Nenhuma resposta é guardada.",
+      "clearAnswers": "Limpar respostas",
+      "simulateSubmit": "Simular submissão",
+      "simulatedResponses": "Respostas simuladas",
+      "simulatedNotice": "Estas respostas não foram guardadas — apenas simulação."
     },
     "suspend": "Suspender",
     "suspendUser": "Suspend Utilizador",
@@ -3968,7 +3978,9 @@
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
     "workspaceRestored": "Workspace restaurado",
-    "workspaces": "workspaces"
+    "workspaces": "workspaces",
+    "showingCount": "A mostrar {{shown}} de {{total}}",
+    "loadMore": "Carregar mais"
   },
   "ecosystemHub": {
     "navLabel": "Hub de Gestão",
@@ -5570,7 +5582,13 @@
         "title": "Leia o guia do mentor",
         "why": "Perceba como funcionam as sessões e a confidencialidade."
       }
-    }
+    },
+    "timeEntryDescription": "Descrição da entrada de tempo",
+    "timeEntryFailed": "Falha ao registar tempo",
+    "logTimeOptional": "Registar tempo (opcional)",
+    "logTimeHelp": "Regista as horas dedicadas para acompanhar o impacto.",
+    "hours": "Horas",
+    "openFollowups": "Seguimentos abertos"
   },
   "mentorFeedback": {
     "blockedPlaceholder": "Problemas ou bloqueios identificados...",
@@ -8327,7 +8345,9 @@
     "typeSelect": "Seleção Única",
     "typeText": "Texto",
     "typeTextarea": "Texto Longo",
-    "viewResponses": "Ver Respostas"
+    "viewResponses": "Ver Respostas",
+    "templateDeleted": "Template removido",
+    "templateDeleteFailed": "Falha ao remover template"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",
