@@ -190,25 +190,36 @@ export default function ProgramSetupWizard() {
 
   // Flush any pending debounced autosave immediately. Used before
   // navigation/publish so we never lose the last few seconds of edits.
+  // On a revision conflict we keep the local pending payload so the next
+  // save (against the refreshed revision) re-applies the user's edits.
   const flushAutosave = useCallback(async () => {
     if (autosaveTimerRef.current) {
       clearTimeout(autosaveTimerRef.current);
       autosaveTimerRef.current = undefined;
     }
     const pending = pendingUpdatesRef.current;
-    pendingUpdatesRef.current = null;
     if (pending && activeDraftId) {
       setAutosaveStatus('saving');
       try {
-        await updateDraft.mutateAsync({ draftId: activeDraftId, draftJson: pending });
+        await updateDraft.mutateAsync({
+          draftId: activeDraftId,
+          draftJson: pending,
+          expectedRevision: draft?.revision ?? null,
+        });
+        pendingUpdatesRef.current = null;
         setAutosaveStatus('saved');
         if (localKey) { try { localStorage.removeItem(localKey); } catch { /* noop */ } }
         setTimeout(() => setAutosaveStatus('idle'), 1500);
-      } catch {
+      } catch (err) {
         setAutosaveStatus('idle');
+        if (err instanceof ProgramDraftConflictError) {
+          // Server-truth is now in the query cache; keep pending edits so the
+          // next debounced save re-applies them on top of the fresh revision.
+          notify.info(t('programSetup.conflictReconciled', 'A draft foi actualizada noutro separador. Recarregámos a versão mais recente — as tuas edições recentes serão re-guardadas.'));
+        }
       }
     }
-  }, [activeDraftId, updateDraft, localKey]);
+  }, [activeDraftId, updateDraft, localKey, draft?.revision, t]);
 
   const handleSaveAndContinue = async () => {
     await flushAutosave();
@@ -218,8 +229,20 @@ export default function ProgramSetupWizard() {
 
   const handleUpdateDraft = useCallback(async (updates: Partial<ProgramSetupDraft['draft_json']>) => {
     if (!activeDraftId) return;
-    await updateDraft.mutateAsync({ draftId: activeDraftId, draftJson: updates });
-  }, [activeDraftId, updateDraft]);
+    try {
+      await updateDraft.mutateAsync({
+        draftId: activeDraftId,
+        draftJson: updates,
+        expectedRevision: draft?.revision ?? null,
+      });
+    } catch (err) {
+      if (err instanceof ProgramDraftConflictError) {
+        notify.info(t('programSetup.conflictReconciled', 'A draft foi actualizada noutro separador. Recarregámos a versão mais recente.'));
+      } else {
+        throw err;
+      }
+    }
+  }, [activeDraftId, updateDraft, draft?.revision, t]);
 
   // Autosave: debounced save after 2s of inactivity. Pending updates are
   // MERGED (not replaced) so concurrent partial updates from different step
@@ -238,16 +261,25 @@ export default function ProgramSetupWizard() {
       const payload = pendingUpdatesRef.current;
       if (!payload) return;
       try {
-        await updateDraft.mutateAsync({ draftId: activeDraftId, draftJson: payload });
+        await updateDraft.mutateAsync({
+          draftId: activeDraftId,
+          draftJson: payload,
+          expectedRevision: draft?.revision ?? null,
+        });
         pendingUpdatesRef.current = null;
         if (localKey) { try { localStorage.removeItem(localKey); } catch { /* noop */ } }
         setAutosaveStatus('saved');
         setTimeout(() => setAutosaveStatus('idle'), 2000);
-      } catch {
+      } catch (err) {
         setAutosaveStatus('idle');
+        if (err instanceof ProgramDraftConflictError) {
+          // Cache was refreshed by the mutation; keep pending payload so a
+          // subsequent user edit re-flushes on top of the fresh revision.
+          notify.info(t('programSetup.conflictReconciled', 'A draft foi actualizada noutro separador. Recarregámos a versão mais recente — as tuas edições recentes serão re-guardadas.'));
+        }
       }
     }, 2000);
-  }, [activeDraftId, updateDraft, writeLocalBackup, localKey]);
+  }, [activeDraftId, updateDraft, writeLocalBackup, localKey, draft?.revision, t]);
 
   // Crash recovery: if a localStorage backup exists and is newer than the
   // server-side draft, replay it via debounced autosave so the user's last
