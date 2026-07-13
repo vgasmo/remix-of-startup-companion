@@ -240,8 +240,8 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Backfill contract_id on the inbox row.
-    await markInboxProcessed(supabase, claim.inboxId, { status: 'received', contractId: contract.id })
+    // Backfill contract_id on the inbox row (status stays 'received' until final processed).
+    await supabase.from('webhook_inbox').update({ contract_id: contract.id }).eq('id', claim.inboxId)
 
     // ═══ TERMINAL-STATE GUARD ═══
     // Envelope-level events only (recipient events don't drive canonical state).
@@ -450,7 +450,8 @@ Deno.serve(async (req) => {
 
   } catch (err) {
     console.error('DocuSign webhook error:', err)
-    return new Response(JSON.stringify({ error: err.message }), {
+    const message = err instanceof Error ? err.message : String(err)
+    return new Response(JSON.stringify({ error: message }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
