@@ -1338,7 +1338,33 @@
       "templateEditor": "Survey Templates",
       "templates": "Templates",
       "title": "Ecosystem Surveys",
-      "viewResponses": "View Responses"
+      "viewResponses": "View Responses",
+      "options": "Options",
+      "autoFillKey": "Auto-fill key",
+      "required": "Required",
+      "respondentMode": "Respondent mode",
+      "respondentNotice": "You are answering in preview mode. Responses are not saved.",
+      "previewNotice": "Survey preview. No responses are saved.",
+      "clearAnswers": "Clear answers",
+      "simulateSubmit": "Simulate submission",
+      "simulatedResponses": "Simulated responses",
+      "simulatedNotice": "These answers were not saved — simulation only.",
+      "addQuestion": "Add question",
+      "addToSection": "Add to section",
+      "confirmDeleteQuestion": "Delete this question?",
+      "confirmDeleteQuestionDesc": "This action cannot be undone.",
+      "confirmDeleteTemplate": "Delete this template?",
+      "confirmDeleteTemplateDesc": "All questions will be removed. Associated campaigns remain archived.",
+      "createBlank": "Create blank template",
+      "descriptionPlaceholder": "Survey description (optional)",
+      "editQuestion": "Edit question",
+      "emptyQuestions": "No questions in this section.",
+      "exitPreview": "Exit preview",
+      "preview": "Preview",
+      "questionText": "Question text",
+      "questions": "Questions",
+      "section": "Section",
+      "type": "Type"
     },
     "suspend": "Suspend",
     "suspendUser": "Suspend User",
@@ -3968,7 +3994,9 @@
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
     "workspaceRestored": "Workspace restaurado",
-    "workspaces": "workspaces"
+    "workspaces": "workspaces",
+    "showingCount": "Showing {{shown}} of {{total}}",
+    "loadMore": "Load more"
   },
   "ecosystemHub": {
     "navLabel": "Management Hub",
@@ -5570,7 +5598,13 @@
         "title": "Read the mentor guide",
         "why": "Learn how sessions and confidentiality work."
       }
-    }
+    },
+    "timeEntryDescription": "Time entry description",
+    "timeEntryFailed": "Failed to log time",
+    "logTimeOptional": "Log time (optional)",
+    "logTimeHelp": "Log hours to track your impact.",
+    "hours": "Hours",
+    "openFollowups": "Open follow-ups"
   },
   "mentorFeedback": {
     "blockedPlaceholder": "Issues or blockers identified...",
@@ -8327,7 +8361,9 @@
     "typeSelect": "Single Select",
     "typeText": "Text",
     "typeTextarea": "Long Text",
-    "viewResponses": "View Responses"
+    "viewResponses": "View Responses",
+    "templateDeleted": "Template deleted",
+    "templateDeleteFailed": "Failed to delete template"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",
