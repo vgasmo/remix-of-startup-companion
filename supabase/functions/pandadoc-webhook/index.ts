@@ -18,7 +18,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { syncIntakeOnSent, syncIntakeOnCompleted } from '../_shared/lifecycleSync.ts'
 import { handleLifecycleSyncResult } from '../_shared/lifecycleSyncResultHandler.ts'
 import { autoCreateFounderAccount as sharedCreateFounder, enqueueFounderInviteTask } from '../_shared/founderAccount.ts'
-import { sha256Hex, claimWebhookDelivery, markInboxProcessed, TERMINAL_SIGNATURE_STATUSES } from '../_shared/webhookInbox.ts'
+import { sha256Hex, claimWebhookDelivery, markInboxProcessed, TERMINAL_SIGNATURE_STATUSES, scrubWebhookPreview } from '../_shared/webhookInbox.ts'
 
 
 const corsHeaders = {
@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
         payloadHash: perEventPayloadHash,
         eventName,
         contractId: null,
-        rawBodyPreview: JSON.stringify(event).slice(0, 2000),
+        rawBodyPreview: scrubWebhookPreview(event, 2000),
       })
       if (!claim.ok) {
         // Transient DB error → 5xx so PandaDoc retries.
@@ -316,7 +316,7 @@ Deno.serve(async (req) => {
           event_id: eventId,
           canonical_status: canonicalStatus,
           pandadoc_document_id: pandadocDocId,
-          raw_payload_preview: JSON.stringify(event).slice(0, 1000),
+          raw_payload_preview: scrubWebhookPreview(event, 1000),
         },
       })
 
