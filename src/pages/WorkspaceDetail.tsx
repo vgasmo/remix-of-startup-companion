@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef, KeyboardEvent } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, KeyboardEvent, lazy, Suspense } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Copy, MoreHorizontal, ChevronDown } from 'lucide-react';
@@ -16,26 +16,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { WorkspaceOverview } from '@/components/workspace/WorkspaceOverview';
 import { WorkspaceRoomChip } from '@/components/workspace/WorkspaceRoomChip';
-import { AgendaTab } from '@/components/workspace/AgendaTab';
-import { MilestonesActionsTab } from '@/components/workspace/MilestonesActionsTab';
-import { KpisTab } from '@/components/workspace/KpisTab';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
-// TemplatesTab now rendered inside DocumentsTab as sub-tab
-import { DocumentsTab } from '@/components/workspace/DocumentsTab';
-import { StartupSettingsTab } from '@/components/workspace/StartupSettingsTab';
-import { FundingTrackerTab } from '@/components/workspace/FundingTrackerTab';
-import { NotesAndTasksTab } from '@/components/workspace/NotesAndTasksTab';
-import { TeamTab } from '@/components/workspace/TeamTab';
-// DataroomTab now rendered inside DocumentsTab as sub-tab
-import { TimeTrackingTab } from '@/components/workspace/TimeTrackingTab';
-import { PlaybooksTab } from '@/components/workspace/PlaybooksTab';
-import { ChatTab } from '@/components/workspace/ChatTab';
-import { GovernanceTab } from '@/components/workspace/GovernanceTab';
-import { BenchmarkDashboard } from '@/components/workspace/BenchmarkDashboard';
 import { RelationshipRecapCard } from '@/components/workspace/RelationshipRecapCard';
 import { WorkspaceEmailHistoryPanel } from '@/components/workspace/WorkspaceEmailHistoryPanel';
 import { PendingWorkspaceView } from '@/components/workspace/PendingWorkspaceView';
 import { WorkspaceOnboardingWizard } from '@/components/workspace/WorkspaceOnboardingWizard';
+import { lazyWithRetry } from '@/lib/lazyWithRetry';
 import { useWorkspace } from '@/hooks/useWorkspaces';
 import { useAuth } from '@/contexts/AuthContext';
 import { notify } from '@/lib/notify';
@@ -43,6 +29,31 @@ import { cn } from '@/lib/utils';
 import { getVisibleTabs, type WorkspaceTab } from '@/lib/workspaceTabs';
 import { useWorkspaceTabBadges } from '@/hooks/useWorkspaceTabBadges';
 import { useTrackEngagement, type EngagementTargetType } from '@/hooks/useEngagementEvents';
+
+// Lazy-loaded tab panels — each becomes its own async chunk so the initial
+// WorkspaceDetail bundle only ships Overview + shell. lazyWithRetry forces a
+// one-shot reload if a dynamic import fails (stale deploy / network blip).
+const AgendaTab = lazy(lazyWithRetry(() => import('@/components/workspace/AgendaTab').then(m => ({ default: m.AgendaTab })), 'ws-tab-agenda'));
+const MilestonesActionsTab = lazy(lazyWithRetry(() => import('@/components/workspace/MilestonesActionsTab').then(m => ({ default: m.MilestonesActionsTab })), 'ws-tab-milestones'));
+const KpisTab = lazy(lazyWithRetry(() => import('@/components/workspace/KpisTab').then(m => ({ default: m.KpisTab })), 'ws-tab-kpis'));
+const DocumentsTab = lazy(lazyWithRetry(() => import('@/components/workspace/DocumentsTab').then(m => ({ default: m.DocumentsTab })), 'ws-tab-documents'));
+const StartupSettingsTab = lazy(lazyWithRetry(() => import('@/components/workspace/StartupSettingsTab').then(m => ({ default: m.StartupSettingsTab })), 'ws-tab-settings'));
+const FundingTrackerTab = lazy(lazyWithRetry(() => import('@/components/workspace/FundingTrackerTab').then(m => ({ default: m.FundingTrackerTab })), 'ws-tab-funding'));
+const NotesAndTasksTab = lazy(lazyWithRetry(() => import('@/components/workspace/NotesAndTasksTab').then(m => ({ default: m.NotesAndTasksTab })), 'ws-tab-notes'));
+const TeamTab = lazy(lazyWithRetry(() => import('@/components/workspace/TeamTab').then(m => ({ default: m.TeamTab })), 'ws-tab-team'));
+const TimeTrackingTab = lazy(lazyWithRetry(() => import('@/components/workspace/TimeTrackingTab').then(m => ({ default: m.TimeTrackingTab })), 'ws-tab-time'));
+const PlaybooksTab = lazy(lazyWithRetry(() => import('@/components/workspace/PlaybooksTab').then(m => ({ default: m.PlaybooksTab })), 'ws-tab-playbooks'));
+const ChatTab = lazy(lazyWithRetry(() => import('@/components/workspace/ChatTab').then(m => ({ default: m.ChatTab })), 'ws-tab-chat'));
+const GovernanceTab = lazy(lazyWithRetry(() => import('@/components/workspace/GovernanceTab').then(m => ({ default: m.GovernanceTab })), 'ws-tab-governance'));
+const BenchmarkDashboard = lazy(lazyWithRetry(() => import('@/components/workspace/BenchmarkDashboard').then(m => ({ default: m.BenchmarkDashboard })), 'ws-tab-benchmark'));
+
+const TabFallback = () => (
+  <div className="space-y-4 py-6" aria-live="polite" aria-busy="true">
+    <Skeleton className="h-8 w-64 rounded-md" />
+    <Skeleton className="h-32 w-full rounded-lg" />
+    <Skeleton className="h-32 w-full rounded-lg" />
+  </div>
+);
 
 // Map workspace tab IDs → engagement target types (Phase 7D/7E)
 const TAB_TO_TARGET: Record<string, EngagementTargetType> = {
@@ -431,6 +442,7 @@ export default function WorkspaceDetail() {
 
         {/* ── Tab Panels ── */}
         <div className="animate-fade-in">
+          <Suspense fallback={<TabFallback />}>
           {activeTab === 'overview' && (
             <div role="tabpanel" id="tabpanel-overview" aria-labelledby="tab-overview">
               {/* AI Relationship Recap — visible to staff only */}
@@ -557,6 +569,7 @@ export default function WorkspaceDetail() {
               />
             </div>
           )}
+          </Suspense>
         </div>
       </div>
       
