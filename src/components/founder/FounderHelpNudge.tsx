@@ -5,8 +5,9 @@ import { LifeBuoy, Sparkles, Search, CalendarClock, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { logger } from '@/lib/logger';
+import { track, type AnalyticsEvent } from '@/lib/analytics';
 import { useFounderStuckSignal } from '@/hooks/useFounderStuckSignal';
+
 
 interface FounderHelpNudgeProps {
   /** Workspace id, used for "Book a session" deep-link. */
@@ -23,13 +24,13 @@ interface FounderHelpNudgeProps {
   pageLabel?: string;
 }
 
-function track(event: string, payload: Record<string, unknown> = {}) {
-  // Lightweight analytics: log + dispatch a custom event so any analytics layer can pick it up
-  logger.info(event, payload);
-  try {
-    window.dispatchEvent(new CustomEvent('analytics:event', { detail: { event, ...payload } }));
-  } catch { /* ignore */ }
+function fire(event: AnalyticsEvent, workspaceId?: string, page?: string) {
+  void track(event, {
+    workspaceId,
+    properties: page ? { page } : {},
+  });
 }
+
 
 /**
  * Calm, non-blocking help nudge for founders who appear stuck.
@@ -52,13 +53,13 @@ export function FounderHelpNudge({
 
   // Fire "shown" once per appearance
   useEffect(() => {
-    if (show) track('founder_help_nudge_shown', { page: pageLabel, workspaceId });
+    if (show) fire('founder_help_nudge_shown', workspaceId, pageLabel);
   }, [show, pageLabel, workspaceId]);
 
   if (!isFounder || !show) return null;
 
   const handleAskAI = () => {
-    track('founder_help_nudge_ask_ai', { page: pageLabel, workspaceId });
+    fire('founder_help_nudge_ask_ai', workspaceId, pageLabel);
     acknowledge();
     try {
       window.dispatchEvent(
@@ -76,7 +77,7 @@ export function FounderHelpNudge({
   };
 
   const handleSearch = () => {
-    track('founder_help_nudge_search', { page: pageLabel, workspaceId });
+    fire('founder_help_nudge_search', workspaceId, pageLabel);
     acknowledge();
     // Always navigate to the dedicated search page with a beginner-friendly
     // query. This is the guaranteed, useful experience — no fragile DOM or
@@ -88,7 +89,7 @@ export function FounderHelpNudge({
   };
 
   const handleBookSession = () => {
-    track('founder_help_nudge_book_session', { page: pageLabel, workspaceId });
+    fire('founder_help_nudge_book_session', workspaceId, pageLabel);
     acknowledge();
     if (workspaceId) {
       navigate(`/workspace/${workspaceId}?tab=agenda`);
@@ -98,7 +99,7 @@ export function FounderHelpNudge({
   };
 
   const handleDismiss = () => {
-    track('founder_help_nudge_dismissed', { page: pageLabel, workspaceId });
+    fire('founder_help_nudge_dismissed', workspaceId, pageLabel);
     dismiss();
   };
 
