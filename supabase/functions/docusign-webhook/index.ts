@@ -176,7 +176,7 @@ Deno.serve(async (req) => {
       payloadHash,
       eventName: typeof status === 'string' ? status : null,
       contractId: null,
-      rawBodyPreview: rawBody.slice(0, 2000),
+      rawBodyPreview: scrubWebhookPreview(rawBody, 2000),
     })
     if (!claim.ok) {
       console.error('[docusign-webhook] inbox claim failed:', claim.error)
