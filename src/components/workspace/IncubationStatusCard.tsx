@@ -1,3 +1,4 @@
+import { useDateLocale } from '@/lib/dateLocale';
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';

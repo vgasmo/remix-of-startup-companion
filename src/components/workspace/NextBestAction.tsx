@@ -1,3 +1,4 @@
+import { useDateLocale } from '@/lib/dateLocale';
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
