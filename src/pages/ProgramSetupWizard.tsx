@@ -52,6 +52,7 @@ import { WizardWeeksGatesStep } from '@/components/admin/wizard/WizardWeeksGates
 import { WizardStepTransition } from '@/components/ui/WizardStepTransition';
 import { WizardIllustration } from '@/components/ui/WizardIllustration';
 import { triggerConfetti } from '@/lib/confetti';
+import type { SaveState } from '@/lib/saveState';
 
 type WizardStep = 'basics' | 'stages' | 'weeksGates' | 'kpis' | 'playbooks' | 'alerts' | 'review';
 
@@ -74,7 +75,7 @@ export default function ProgramSetupWizard() {
   const [prevStep, setPrevStep] = useState<WizardStep>('basics');
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [activeDraftId, setActiveDraftId] = useState<string | null>(draftId || null);
-  const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [autosaveStatus, setAutosaveStatus] = useState<SaveState>('idle');
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout>>();
   // Holds the latest pending updates so Save/Publish can flush before navigating.
   const pendingUpdatesRef = useRef<Partial<ProgramSetupDraft['draft_json']> | null>(null);
@@ -211,11 +212,11 @@ export default function ProgramSetupWizard() {
         if (localKey) { try { localStorage.removeItem(localKey); } catch { /* noop */ } }
         setTimeout(() => setAutosaveStatus('idle'), 1500);
       } catch (err) {
-        setAutosaveStatus('idle');
         if (err instanceof ProgramDraftConflictError) {
-          // Server-truth is now in the query cache; keep pending edits so the
-          // next debounced save re-applies them on top of the fresh revision.
+          setAutosaveStatus('conflict');
           notify.info(t('programSetup.conflictReconciled', 'A draft foi actualizada noutro separador. Recarregámos a versão mais recente — as tuas edições recentes serão re-guardadas.'));
+        } else {
+          setAutosaveStatus('error');
         }
       }
     }
@@ -271,11 +272,11 @@ export default function ProgramSetupWizard() {
         setAutosaveStatus('saved');
         setTimeout(() => setAutosaveStatus('idle'), 2000);
       } catch (err) {
-        setAutosaveStatus('idle');
         if (err instanceof ProgramDraftConflictError) {
-          // Cache was refreshed by the mutation; keep pending payload so a
-          // subsequent user edit re-flushes on top of the fresh revision.
+          setAutosaveStatus('conflict');
           notify.info(t('programSetup.conflictReconciled', 'A draft foi actualizada noutro separador. Recarregámos a versão mais recente — as tuas edições recentes serão re-guardadas.'));
+        } else {
+          setAutosaveStatus('error');
         }
       }
     }, 2000);
@@ -424,6 +425,12 @@ export default function ProgramSetupWizard() {
               )}
               {autosaveStatus === 'saved' && (
                 <span className="text-xs text-muted-foreground">💾 {t('programSetup.autoSaved', { defaultValue: 'Guardado' })}</span>
+              )}
+              {autosaveStatus === 'conflict' && (
+                <span className="text-xs text-amber-600 dark:text-amber-400">↻ {t('programSetup.conflictBadge', { defaultValue: 'Sincronizando…' })}</span>
+              )}
+              {autosaveStatus === 'error' && (
+                <span className="text-xs text-destructive">⚠ {t('programSetup.saveError', { defaultValue: 'Erro ao guardar' })}</span>
               )}
             </div>
             </div>
