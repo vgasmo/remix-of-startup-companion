@@ -469,23 +469,33 @@ export function useSaveSurveyResponses() {
       submit?: boolean;
     }) => {
       // Atomic: upsert every response AND flip instance status in one
-      // transaction. Rejects submits on non-active campaigns and blocks
-      // re-submission of already-submitted instances.
-      const { error } = await (supabase as unknown as {
-        rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
+      // transaction. Rejects submits on non-active campaigns, blocks
+      // re-submission of already-submitted instances, and silently drops
+      // answers whose question_id is not in the campaign's launch-time
+      // snapshot (server-side validation).
+      const { data, error } = await (supabase as unknown as {
+        rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: Array<{ responses_saved: number }> | null; error: unknown }>;
       }).rpc('submit_survey_responses', {
         p_instance_id: instanceId,
         p_responses: responses as unknown as Json,
         p_submit: submit,
       });
       if (error) throw error;
+      const accepted = Array.isArray(data) && data[0]?.responses_saved != null ? data[0].responses_saved : responses.length;
+      const dropped = Math.max(0, responses.length - accepted);
+      return { accepted, dropped };
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (result, variables) => {
       queryClient.invalidateQueries({ queryKey: ["survey-instance", variables.instanceId] });
       queryClient.invalidateQueries({ queryKey: ["my-pending-surveys"] });
       queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
 
-      if (variables.submit) {
+      if (result.dropped > 0) {
+        // Snapshot drift: some answered questions no longer exist in the
+        // campaign's frozen question set. Tell the user honestly.
+        logger.warn('survey.snapshot_drift', { instanceId: variables.instanceId, accepted: result.accepted, dropped: result.dropped });
+        notify.warning(t('surveys.snapshotDrift', { accepted: result.accepted, dropped: result.dropped }));
+      } else if (variables.submit) {
         notify.success(t('surveys.submitted'));
       } else {
         notify.success(t('surveys.progressSaved'));
