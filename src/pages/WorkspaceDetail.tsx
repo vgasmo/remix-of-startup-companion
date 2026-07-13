@@ -442,6 +442,7 @@ export default function WorkspaceDetail() {
 
         {/* ── Tab Panels ── */}
         <div className="animate-fade-in">
+          <Suspense fallback={<TabFallback />}>
           {activeTab === 'overview' && (
             <div role="tabpanel" id="tabpanel-overview" aria-labelledby="tab-overview">
               {/* AI Relationship Recap — visible to staff only */}
