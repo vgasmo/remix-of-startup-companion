@@ -256,36 +256,78 @@ export function useCreateProgramDraft() {
   });
 }
 
-// Update draft
+// Update draft — revision-aware via patch_program_setup RPC.
+// Callers pass `expectedRevision` (usually the currently cached draft.revision).
+// On conflict the mutation throws ProgramDraftConflictError with the fresh
+// draft_json + revision so the wizard can reconcile and retry.
 export function useUpdateProgramDraft() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ draftId, draftJson }: { draftId: string; draftJson: Partial<ProgramSetupDraft['draft_json']> }) => {
-      // Fetch current draft first
-      const { data: current, error: fetchError } = await supabase
-        .from('program_setup_drafts')
-        .select('draft_json')
-        .eq('id', draftId)
-        .single();
+    mutationFn: async ({
+      draftId,
+      draftJson,
+      expectedRevision,
+    }: {
+      draftId: string;
+      draftJson: Partial<ProgramSetupDraft['draft_json']>;
+      expectedRevision?: number | null;
+    }) => {
+      // Resolve expected revision from cache when the caller doesn't pass one.
+      let expected = expectedRevision;
+      if (expected === undefined) {
+        const cached = queryClient.getQueryData<ProgramSetupDraft | null>(['program-setup-draft', draftId]);
+        expected = cached?.revision ?? null;
+      }
 
-      if (fetchError) throw fetchError;
-
-      const currentJson = current.draft_json as unknown as ProgramSetupDraft['draft_json'];
-      const updatedJson = { ...currentJson, ...draftJson };
-
-      const { data, error } = await supabase
-        .from('program_setup_drafts')
-        .update({ draft_json: JSON.parse(JSON.stringify(updatedJson)) })
-        .eq('id', draftId)
-        .select()
-        .single();
+      const { data, error } = await supabase.rpc('patch_program_setup', {
+        p_draft_id: draftId,
+        p_expected_revision: expected ?? null,
+        p_patch: draftJson as unknown as Record<string, unknown>,
+      });
 
       if (error) throw error;
-      return data as unknown as ProgramSetupDraft;
+
+      const result = (data ?? {}) as {
+        conflict?: boolean;
+        current_revision?: number;
+        current_draft_json?: ProgramSetupDraft['draft_json'];
+        revision?: number;
+      };
+
+      if (result.conflict) {
+        // Push the server-truth draft into cache so the UI can reflect it.
+        const cached = queryClient.getQueryData<ProgramSetupDraft | null>(['program-setup-draft', draftId]);
+        if (cached) {
+          queryClient.setQueryData<ProgramSetupDraft>(['program-setup-draft', draftId], {
+            ...cached,
+            draft_json: result.current_draft_json!,
+            revision: result.current_revision!,
+          });
+        } else {
+          queryClient.invalidateQueries({ queryKey: ['program-setup-draft', draftId] });
+        }
+        throw new ProgramDraftConflictError(
+          result.current_revision ?? 0,
+          result.current_draft_json ?? ({} as ProgramSetupDraft['draft_json']),
+        );
+      }
+
+      // Success: optimistically bump cached revision + merge patch.
+      const cached = queryClient.getQueryData<ProgramSetupDraft | null>(['program-setup-draft', draftId]);
+      if (cached && typeof result.revision === 'number') {
+        queryClient.setQueryData<ProgramSetupDraft>(['program-setup-draft', draftId], {
+          ...cached,
+          draft_json: { ...cached.draft_json, ...draftJson },
+          revision: result.revision,
+          updated_at: new Date().toISOString(),
+        });
+      }
+
+      return { draftId, revision: result.revision ?? (expected ?? 0) + 1 };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['program-setup-draft', data.id] });
+      // Keep list view fresh (updated_at ordering).
       queryClient.invalidateQueries({ queryKey: ['program-setup-drafts'] });
     },
   });
