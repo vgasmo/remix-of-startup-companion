@@ -125,17 +125,23 @@ async function notifyRequesterOfResolution(req: TemplateRequest) {
       req.status === 'fulfilled' ? 'Pedido de template resolvido'
       : req.status === 'rejected' ? 'Pedido de template rejeitado'
       : 'Pedido de template em curso';
-    await supabase.from('notifications').insert({
-      user_id: req.requested_by,
-      type: 'template_request',
-      title,
-      message: req.title,
-      link: req.workspace_id ? `/workspace/${req.workspace_id}?tab=documents&sub=tools` : null,
-      read: false,
-      entity_type: 'template_request',
-      entity_id: req.id,
-      metadata: { status: req.status, admin_note: req.admin_note },
-    });
+    await supabase.from('notifications').upsert(
+      {
+        user_id: req.requested_by,
+        type: 'template_request',
+        title,
+        message: req.title,
+        link: req.workspace_id ? `/workspace/${req.workspace_id}?tab=documents&sub=tools` : null,
+        read: false,
+        entity_type: 'template_request',
+        entity_id: req.id,
+        metadata: { status: req.status, admin_note: req.admin_note },
+        // Keyed by resolution status so a fulfilled→rejected correction still
+        // notifies once; re-firing the same status is a no-op.
+        event_key: templateRequestResolvedKey(req.id, req.status, req.requested_by),
+      },
+      { onConflict: 'user_id,event_key', ignoreDuplicates: true },
+    );
   } catch {
     // best-effort
   }
