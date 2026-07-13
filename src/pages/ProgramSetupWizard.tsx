@@ -212,11 +212,11 @@ export default function ProgramSetupWizard() {
         if (localKey) { try { localStorage.removeItem(localKey); } catch { /* noop */ } }
         setTimeout(() => setAutosaveStatus('idle'), 1500);
       } catch (err) {
-        setAutosaveStatus('idle');
         if (err instanceof ProgramDraftConflictError) {
-          // Server-truth is now in the query cache; keep pending edits so the
-          // next debounced save re-applies them on top of the fresh revision.
+          setAutosaveStatus('conflict');
           notify.info(t('programSetup.conflictReconciled', 'A draft foi actualizada noutro separador. Recarregámos a versão mais recente — as tuas edições recentes serão re-guardadas.'));
+        } else {
+          setAutosaveStatus('error');
         }
       }
     }
