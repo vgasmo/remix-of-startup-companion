@@ -45,7 +45,21 @@ export interface SurveyCampaign {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  // Copy-on-write snapshot taken at launch time. Preferred over
+  // survey_definition.questions_json for reads once a campaign is active,
+  // so subsequent template edits never mutate live questionnaires.
+  questions_snapshot: SurveyQuestion[] | null;
+  launched_at: string | null;
+  definition_version_at_launch: string | null;
   survey_definition?: SurveyDefinition;
+}
+
+/** Preferred accessor: snapshot if present (post-launch), else live definition. */
+export function getCampaignQuestions(c: Pick<SurveyCampaign, 'questions_snapshot' | 'survey_definition'>): SurveyQuestion[] {
+  if (Array.isArray(c.questions_snapshot) && c.questions_snapshot.length > 0) {
+    return c.questions_snapshot;
+  }
+  return (c.survey_definition?.questions_json ?? []) as SurveyQuestion[];
 }
 
 export interface SurveyInstance {
