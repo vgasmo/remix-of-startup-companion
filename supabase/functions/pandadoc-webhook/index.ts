@@ -316,7 +316,7 @@ Deno.serve(async (req) => {
           event_id: eventId,
           canonical_status: canonicalStatus,
           pandadoc_document_id: pandadocDocId,
-          raw_payload_preview: JSON.stringify(event).slice(0, 1000),
+          raw_payload_preview: scrubWebhookPreview(event, 1000),
         },
       })
 
