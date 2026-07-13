@@ -49,6 +49,18 @@ Docs:
 
 Gate: contract tests green; parser unit tests for both locales, stale cache, missing sheet, bad fingerprint.
 
+**Batch A progress (2026-07-13):**
+- ✅ Migration for `template_assets`, `financial_cell_map`, provenance columns on `financial_model_versions`.
+- ✅ Private storage bucket `template_assets` with three canonical assets uploaded and registered.
+- ✅ Seeded `financial_cell_map` (35 rows covering the Pressupostos input surface).
+- ✅ `xlsxLocale.ts` locale-safe parser (9/9 tests green).
+- ✅ `xlsxFingerprint.ts` with canonical sheet-set + broken-name registry.
+- ✅ `xlsmRoundTrip.ts` VBA-preserving patch helper (**6/6 contract tests green**, incl. byte-identity assertion).
+- ✅ `export-financial-model` edge function wired to cell-map + feature flag.
+- ⏳ Expand `financial_cell_map` seed to cover Demonstração/Balanço/Investimento/Tesouraria/Unit Economics (~215 more rows).
+- ⏳ Rewrite `import-financial-model` around explicit map (currently additive; legacy scanner still runs alongside).
+- ⏳ Contract test that round-trips the *real* canonical XLSM from storage (requires storage access from test runner).
+
 ### Batch B — Guided Financial Plan builder
 
 Extends `FinancialModelPanel` with a **Guided plan** tab. No new top-level product.
