@@ -8328,6 +8328,7 @@
     "pendingSurveysDesc": "Tem inquéritos à espera de serem preenchidos",
     "progress": "Progresso",
     "progressSaved": "Progresso guardado",
+    "snapshotDrift": "{{accepted}} respostas guardadas. {{dropped}} foram ignoradas porque a questão já não existe neste inquérito.",
     "questionOptions": "Opções",
     "questionRequired": "Obrigatória",
     "questionText": "Questão",
