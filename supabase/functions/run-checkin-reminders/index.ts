@@ -132,8 +132,12 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Step 4: Send reminders and create notifications
+    // Step 4: Send reminders and create notifications.
+    // Truthful-result rule (Batch A #6): reminder_sent_at is only stamped
+    // when at least one delivery channel confirmed success. If every channel
+    // failed the checkin stays retry-eligible on the next cron run.
     for (const checkin of pendingCheckins) {
+      let deliveredAny = false;
       try {
         const workspace = checkin.workspace as any;
         const definition = checkin.definition as any;
@@ -166,6 +170,8 @@ const handler = async (req: Request): Promise<Response> => {
 
           if (notifError) {
             console.error(`[run-checkin-reminders] Error creating notification for user ${founder.user_id}:`, notifError);
+          } else {
+            deliveredAny = true;
           }
         }
 
@@ -189,7 +195,7 @@ const handler = async (req: Request): Promise<Response> => {
                     <p><strong>Due date:</strong> ${new Date(checkin.due_date).toLocaleDateString("pt-PT", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
                     <p>This monthly check-in helps us track progress and provide better support.</p>
                     <div style="margin: 24px 0;">
-                      <a href="${Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/workspace/${checkin.workspace_id}?tab=overview" 
+                      <a href="${Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/workspace/${checkin.workspace_id}?tab=overview"
                          style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
                         Complete monthly check-in
                       </a>
@@ -216,12 +222,13 @@ const handler = async (req: Request): Promise<Response> => {
               });
 
               results.reminders_sent++;
+              deliveredAny = true;
 
               // Rate limiting: 600ms delay between emails
               await new Promise((resolve) => setTimeout(resolve, 600));
             } catch (emailError: any) {
               console.error(`[run-checkin-reminders] Error sending email to ${founderEmail}:`, emailError);
-              
+
               // Log failed email
               await supabase.from("email_log").insert({
                 workspace_id: checkin.workspace_id,
@@ -237,17 +244,22 @@ const handler = async (req: Request): Promise<Response> => {
           }
         }
 
-        // Mark reminder as sent
-        await supabase
-          .from("checkin_instances")
-          .update({ reminder_sent_at: new Date().toISOString() })
-          .eq("id", checkin.id);
+        // Only mark reminder_sent_at when at least one channel confirmed delivery.
+        if (deliveredAny) {
+          await supabase
+            .from("checkin_instances")
+            .update({ reminder_sent_at: new Date().toISOString() })
+            .eq("id", checkin.id);
+        } else {
+          console.warn(`[run-checkin-reminders] No delivery channel succeeded for checkin ${checkin.id} — leaving retry-eligible`);
+        }
 
       } catch (checkinError: any) {
         console.error(`[run-checkin-reminders] Error processing check-in ${checkin.id}:`, checkinError);
         results.errors.push(`Check-in ${checkin.id}: ${checkinError.message}`);
       }
     }
+
 
     console.log("[run-checkin-reminders] Completed", results);
 
