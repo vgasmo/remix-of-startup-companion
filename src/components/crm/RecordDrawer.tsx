@@ -4,7 +4,6 @@ import { notify } from "@/lib/notify";
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { format, isThisWeek, isThisMonth } from 'date-fns';
-import { pt, enUS } from 'date-fns/locale';
 import {
   Sheet,
   SheetContent,
@@ -80,8 +79,7 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
   const { user } = useAuth();
   const navigate = useNavigate();
   const language = i18n.language.startsWith('pt') ? 'pt' : 'en';
-  const dateLocale = language === 'pt' ? pt : enUS;
-  
+  const dateLocale = useDateLocale();
   const [recapExpanded, setRecapExpanded] = useState(false);
   const [addActivityDialog, setAddActivityDialog] = useState<ActivityType | null>(null);
   const [addTaskDialog, setAddTaskDialog] = useState(false);

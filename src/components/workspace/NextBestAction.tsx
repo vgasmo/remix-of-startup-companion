@@ -20,7 +20,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { triggerMiniCelebration } from '@/lib/confetti';
 import { format, isThisMonth, subDays } from 'date-fns';
-import { pt as ptLocale, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 interface NextBestActionProps {
@@ -44,7 +43,7 @@ interface ActionItem {
 
 export function NextBestAction({ workspaceId, programId, stage, canWrite }: NextBestActionProps) {
   const { t, i18n } = useTranslation();
-  const dateLocale = i18n.language.startsWith('pt') ? ptLocale : enUS;
+  const dateLocale = useDateLocale();
   const [, setSearchParams] = useSearchParams();
   const { data: actions } = useWorkspaceActions(workspaceId);
   const { data: kpiData } = useWorkspaceKpis(workspaceId);

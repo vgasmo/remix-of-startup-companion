@@ -14,7 +14,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Clock, CheckCircle, AlertCircle, Building2, ArrowLeft, Upload, FileText, X, Globe } from 'lucide-react';
 import { format } from 'date-fns';
-import { pt as ptLocale, enUS } from 'date-fns/locale';
 import { notify } from "@/lib/notify";
 
 interface TimeSlot {
@@ -174,8 +173,7 @@ export default function PublicBooking() {
     acc[slot.date].push(slot);
     return acc;
   }, {} as Record<string, TimeSlot[]>) || {};
-
-  const dateLocale = lang === 'pt' ? ptLocale : enUS;
+  const dateLocale = useDateLocale();
   const atConnector = lang === 'pt' ? ' às ' : ' at ';
 
   const uploadPitchDeck = async (): Promise<{ path: string | null; failed: boolean }> => {

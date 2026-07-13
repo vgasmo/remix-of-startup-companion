@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { pt as ptLocale, enUS } from 'date-fns/locale';
 import {
   FileText, File, FileImage, FileVideo, FileAudio, FileSpreadsheet,
   Presentation, Link as LinkIcon, ExternalLink, Download, Search,
@@ -53,7 +52,7 @@ function getFileIcon(documentType: string) {
 
 export default function Documents() {
   const { t, i18n } = useTranslation();
-  const dateLocale = i18n.language.startsWith('pt') ? ptLocale : enUS;
+  const dateLocale = useDateLocale();
   const { data: documents, isLoading: docsLoading } = useAllDocuments();
   const { data: templates, isLoading: templatesLoading } = useTemplates();
   const getDocumentUrl = useGetDocumentUrl();

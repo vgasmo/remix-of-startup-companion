@@ -2,7 +2,6 @@ import { useMemo, forwardRef } from 'react';
 import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isToday, addDays } from 'date-fns';
-import { pt, enUS } from 'date-fns/locale';
 import { Calendar, Clock, Video, MapPin, CalendarPlus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,9 +22,7 @@ export const CalendarWidget = forwardRef<HTMLDivElement, CalendarWidgetProps>(fu
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { data: sessions, isLoading } = useUpcomingSessions();
-
-  const dateLocale = i18n.language === 'pt' ? pt : enUS;
-
+  const dateLocale = useDateLocale();
   const today = new Date();
   const weekStart = startOfWeek(today, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(today, { weekStartsOn: 1 });

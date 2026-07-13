@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import { ClipboardList } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { format, isPast, isToday } from 'date-fns';
-import { pt as ptLocale, enUS } from 'date-fns/locale';
 import { 
   Calendar, CalendarDays, 
   CheckCircle2, 
