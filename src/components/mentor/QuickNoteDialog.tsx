@@ -62,8 +62,8 @@ export function QuickNoteDialog({ open, onOpenChange, workspaceId, startupName }
             description: t('mentor.timeEntryDescription', { defaultValue: 'Sessão de mentoria' }),
           });
           if (teErr) {
-            logger.warn('mentor_time_entry_failed', { workspaceId }, teErr);
-            notify.warning(t('mentor.timeEntryFailed', { defaultValue: 'Nota guardada, mas não foi possível registar o tempo.' }));
+            logger.warn('mentor_time_entry_failed', { workspaceId, err: teErr });
+            notify.warn(t('mentor.timeEntryFailed', { defaultValue: 'Nota guardada, mas não foi possível registar o tempo.' }));
           }
         }
       }
