@@ -494,7 +494,7 @@ export function useSaveSurveyResponses() {
         // Snapshot drift: some answered questions no longer exist in the
         // campaign's frozen question set. Tell the user honestly.
         logger.warn('survey.snapshot_drift', { instanceId: variables.instanceId, accepted: result.accepted, dropped: result.dropped });
-        notify.warning(t('surveys.snapshotDrift', { accepted: result.accepted, dropped: result.dropped }));
+        notify.warn(t('surveys.snapshotDrift', { accepted: result.accepted, dropped: result.dropped }));
       } else if (variables.submit) {
         notify.success(t('surveys.submitted'));
       } else {
