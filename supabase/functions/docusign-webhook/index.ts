@@ -13,6 +13,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { syncIntakeOnSent, syncIntakeOnCompleted } from '../_shared/lifecycleSync.ts'
 import { handleLifecycleSyncResult } from '../_shared/lifecycleSyncResultHandler.ts'
 import { autoCreateFounderAccount as sharedCreateFounder, enqueueFounderInviteTask } from '../_shared/founderAccount.ts'
+import { sha256Hex, claimWebhookDelivery, markInboxProcessed, TERMINAL_SIGNATURE_STATUSES } from '../_shared/webhookInbox.ts'
+
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -120,13 +122,10 @@ Deno.serve(async (req) => {
       rawPayload = body
       envelopeId = body.data?.envelopeId || body.envelopeId
       status = body.data?.envelopeSummary?.status || body.event
-      eventId = body.data?.eventId || `ds-${envelopeId}-${body.event || status}-${body.generatedDateTime || Date.now()}`
+      // Provider-issued id ONLY. No Date.now fallback — dedupe falls back to
+      // the payload hash inside the webhook inbox.
+      eventId = body.data?.eventId || null
 
-      // Envelope-level events drive canonical contract status.
-      // Recipient-level events are per-signer only and must NOT activate the
-      // contract on their own (bilateral: founder completing recipient-1 must
-      // not fire full activation before the counter-signer). We map recipient
-      // events to a distinct per-signer bucket handled below.
       const statusMap: Record<string, string> = {
         'envelope-sent': 'sent_for_signature',
         'envelope-delivered': 'viewed',
@@ -144,7 +143,6 @@ Deno.serve(async (req) => {
       if (body.event && statusMap[body.event]) {
         status = statusMap[body.event]
       } else if (body.event && recipientEventMap[body.event]) {
-        // Tag with a distinguishable prefix so downstream logic branches correctly
         status = `recipient:${recipientEventMap[body.event]}`
         ;(body as any)._recipientId = body.data?.recipientId || body.data?.envelopeSummary?.recipients?.signers?.[0]?.recipientId || null
         ;(body as any)._recipientEmail = body.data?.email || body.data?.envelopeSummary?.recipients?.signers?.[0]?.email || null
@@ -156,7 +154,8 @@ Deno.serve(async (req) => {
       const statusMatch = xmlText.match(/<Status>([^<]+)<\/Status>/i)
       envelopeId = envelopeIdMatch?.[1] || null
       status = statusMatch?.[1]?.toLowerCase() || null
-      eventId = `ds-xml-${envelopeId}-${status}-${Date.now()}`
+      // No synthetic eventId; the inbox dedupes on payload_hash.
+      eventId = null
     }
 
     if (!envelopeId) {
@@ -165,7 +164,33 @@ Deno.serve(async (req) => {
       })
     }
 
-    console.log(`DocuSign webhook: envelope=${envelopeId}, status=${status}, eventId=${eventId}`)
+    // Compute stable payload hash for inbox fallback dedupe.
+    const payloadHash = await sha256Hex(rawBody)
+
+    console.log(`DocuSign webhook: envelope=${envelopeId}, status=${status}, eventId=${eventId ?? '(null)'}, hash=${payloadHash.slice(0, 12)}…`)
+
+    // ═══ IDEMPOTENCY: Claim inbox row FIRST ═══
+    const claim = await claimWebhookDelivery(supabase, {
+      provider: 'docusign',
+      eventId,
+      payloadHash,
+      eventName: typeof status === 'string' ? status : null,
+      contractId: null,
+      rawBodyPreview: rawBody.slice(0, 2000),
+    })
+    if (!claim.ok) {
+      console.error('[docusign-webhook] inbox claim failed:', claim.error)
+      return new Response(JSON.stringify({ error: 'inbox_claim_failed', details: claim.error }), {
+        status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    if (claim.duplicate) {
+      console.log(`DocuSign webhook: duplicate delivery skipped (eventId=${eventId ?? '(null)'}, hash=${payloadHash.slice(0, 12)}…)`)
+      return new Response(JSON.stringify({ ok: true, duplicate: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
 
     // Find the contract — use PostgREST alias syntax (SQL "as" is invalid here).
     const { data: contract, error: findError } = await supabase
@@ -175,15 +200,17 @@ Deno.serve(async (req) => {
       .maybeSingle()
 
     if (findError) {
-      // Query error is different from "no match": log to lifecycle_events,
-      // notify staff, and return 5xx so DocuSign retries.
+      // Query error is different from "no match": log, notify, retry 5xx.
       console.error('[docusign-webhook] contract lookup failed:', findError)
+      await markInboxProcessed(supabase, claim.inboxId, {
+        status: 'failed', httpStatus: 503, errorMessage: `lookup_failed: ${findError.message}`,
+      })
       try {
         await supabase.from('contract_lifecycle_events').insert({
           contract_id: null,
           event_type: 'docusign_webhook_lookup_error',
           event_date: new Date().toISOString().split('T')[0],
-          details: { envelope_id: envelopeId, error: findError.message, event_id: eventId },
+          details: { envelope_id: envelopeId, error: findError.message, event_id: eventId, payload_hash: payloadHash },
         })
         const { data: staffUsers } = await supabase
           .from('user_roles').select('user_id').in('role', ['admin', 'consultor', 'backoffice'])
@@ -199,24 +226,40 @@ Deno.serve(async (req) => {
         }
       } catch (_) { /* best-effort */ }
       return new Response(JSON.stringify({ error: 'lookup_failed', envelope_id: envelopeId }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
     if (!contract) {
       console.warn('Contract not found for envelope:', envelopeId)
+      await markInboxProcessed(supabase, claim.inboxId, {
+        status: 'processed', httpStatus: 200, errorMessage: 'no_matching_contract',
+      })
       return new Response(JSON.stringify({ ok: true, message: 'No matching contract' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    // ═══ IDEMPOTENCY: Skip duplicate events ═══
-    if (eventId && contract.provider_webhook_event_id === eventId) {
-      console.log(`Duplicate event skipped: ${eventId}`)
-      return new Response(JSON.stringify({ ok: true, message: 'Duplicate event' }), {
+    // Backfill contract_id on the inbox row.
+    await markInboxProcessed(supabase, claim.inboxId, { status: 'received', contractId: contract.id })
+
+    // ═══ TERMINAL-STATE GUARD ═══
+    // Envelope-level events only (recipient events don't drive canonical state).
+    if (
+      typeof status === 'string' &&
+      !status.startsWith('recipient:') &&
+      TERMINAL_SIGNATURE_STATUSES.has(String(contract.signature_status)) &&
+      contract.signature_status !== status
+    ) {
+      console.log(`DocuSign webhook: ignoring ${status} — contract already in terminal state ${contract.signature_status}`)
+      await markInboxProcessed(supabase, claim.inboxId, {
+        status: 'processed', httpStatus: 200, errorMessage: `terminal_state_${contract.signature_status}`, contractId: contract.id,
+      })
+      return new Response(JSON.stringify({ ok: true, message: 'Terminal state; no regression applied' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
+
 
     // ═══ AUDIT: Log event to contract_lifecycle_events ═══
     await supabase.from('contract_lifecycle_events').insert({
@@ -254,16 +297,21 @@ Deno.serve(async (req) => {
         provider_last_event: `recipient-${recStatus}`,
         provider_last_sync_at: new Date().toISOString(),
         provider_last_error: null,
-        provider_webhook_event_id: eventId,
+        provider_webhook_event_id: eventId ?? `hash:${payloadHash.slice(0, 32)}`,
+
       }
       if (isFounder) patch.founder_signer_status = recStatus
       else if (isCounter) patch.counter_signer_status = recStatus
       // If unattributable (missing id + missing email), fall back to first-signer = founder heuristic
       else if (!recipientEmail && !recIdStr && !contract.founder_signer_status) patch.founder_signer_status = recStatus
       await supabase.from('startup_contracts').update(patch).eq('id', contract.id)
+      await markInboxProcessed(supabase, claim.inboxId, {
+        status: 'processed', httpStatus: 200, contractId: contract.id,
+      })
       return new Response(JSON.stringify({ ok: true, message: 'recipient event recorded', recipient: { id: recipientId, email: recipientEmail, status: recStatus } }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
+
     }
 
     // Update contract
@@ -272,7 +320,7 @@ Deno.serve(async (req) => {
       provider_last_event: status,
       provider_last_sync_at: new Date().toISOString(),
       provider_last_error: null,
-      provider_webhook_event_id: eventId,
+      provider_webhook_event_id: eventId ?? `hash:${payloadHash.slice(0, 32)}`,
     }
 
     if (status === 'completed') {
@@ -391,7 +439,12 @@ Deno.serve(async (req) => {
       })
     }
 
+    await markInboxProcessed(supabase, claim.inboxId, {
+      status: 'processed', httpStatus: 200, contractId: contract.id,
+    })
+
     return new Response(JSON.stringify({ ok: true }), {
+
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
 

@@ -18,6 +18,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { syncIntakeOnSent, syncIntakeOnCompleted } from '../_shared/lifecycleSync.ts'
 import { handleLifecycleSyncResult } from '../_shared/lifecycleSyncResultHandler.ts'
 import { autoCreateFounderAccount as sharedCreateFounder, enqueueFounderInviteTask } from '../_shared/founderAccount.ts'
+import { sha256Hex, claimWebhookDelivery, markInboxProcessed, TERMINAL_SIGNATURE_STATUSES } from '../_shared/webhookInbox.ts'
+
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -174,14 +176,38 @@ Deno.serve(async (req) => {
     for (const event of events) {
       const pandadocDocId = event.data?.id || event.uuid || null
       const eventName = event.event || event.data?.status || 'unknown'
-      const eventId = event.event_id || event.id || `${pandadocDocId}_${eventName}_${Date.now()}`
+      // Provider-issued id ONLY — no Date.now() fallback. When absent, the
+      // webhook inbox dedupes on the payload SHA-256 hash instead.
+      const eventId: string | null = event.event_id || event.id || null
+      const perEventPayloadHash = await sha256Hex(JSON.stringify(event))
 
       if (!pandadocDocId) {
         console.warn('PandaDoc webhook: no document ID found in payload', JSON.stringify(event).slice(0, 300))
         continue
       }
 
-      console.log(`PandaDoc webhook: doc=${pandadocDocId}, event=${eventName}, eventId=${eventId}`)
+      console.log(`PandaDoc webhook: doc=${pandadocDocId}, event=${eventName}, eventId=${eventId ?? '(null)'}`)
+
+      // ═══ IDEMPOTENCY: Claim inbox row FIRST (unique (provider,event_id) or (provider,payload_hash)) ═══
+      const claim = await claimWebhookDelivery(supabase, {
+        provider: 'pandadoc',
+        eventId,
+        payloadHash: perEventPayloadHash,
+        eventName,
+        contractId: null,
+        rawBodyPreview: JSON.stringify(event).slice(0, 2000),
+      })
+      if (!claim.ok) {
+        // Transient DB error → 5xx so PandaDoc retries.
+        console.error('[pandadoc-webhook] inbox claim failed:', claim.error)
+        return new Response(JSON.stringify({ error: 'inbox_claim_failed', details: claim.error }), {
+          status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      if (claim.duplicate) {
+        console.log(`PandaDoc webhook: duplicate delivery skipped (eventId=${eventId ?? '(null)'}, hash=${perEventPayloadHash.slice(0, 12)}…)`)
+        continue
+      }
 
       // Find contract by provider_document_id — PostgREST alias syntax.
       const { data: contract, error: findError } = await supabase
@@ -193,12 +219,15 @@ Deno.serve(async (req) => {
 
       if (findError) {
         console.error('[pandadoc-webhook] contract lookup failed:', findError)
+        await markInboxProcessed(supabase, claim.inboxId, {
+          status: 'failed', httpStatus: 500, errorMessage: `lookup_failed: ${findError.message}`,
+        })
         try {
           await supabase.from('contract_lifecycle_events').insert({
             contract_id: null,
             event_type: 'pandadoc_webhook_lookup_error',
             event_date: new Date().toISOString().split('T')[0],
-            details: { pandadoc_document_id: pandadocDocId, error: findError.message, event_id: eventId },
+            details: { pandadoc_document_id: pandadocDocId, error: findError.message, event_id: eventId, payload_hash: perEventPayloadHash },
           })
           const { data: staffUsers } = await supabase
             .from('user_roles').select('user_id').in('role', ['admin', 'consultor', 'backoffice'])
@@ -213,22 +242,38 @@ Deno.serve(async (req) => {
             })))
           }
         } catch (_) { /* best-effort */ }
-        // Return 500 for the whole batch so PandaDoc retries.
+        // Return 5xx for the whole batch so PandaDoc retries.
         return new Response(JSON.stringify({ error: 'lookup_failed', document_id: pandadocDocId }), {
-          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
 
       if (!contract) {
         console.warn('Contract not found for PandaDoc document:', pandadocDocId)
+        await markInboxProcessed(supabase, claim.inboxId, { status: 'processed', httpStatus: 200, errorMessage: 'no_matching_contract' })
         continue
       }
 
-      // ═══ IDEMPOTENCY: Skip duplicate events ═══
-      if (contract.provider_webhook_event_id === eventId) {
-        console.log(`Duplicate event skipped: ${eventId}`)
+      // Backfill contract_id on the inbox row for auditability.
+      await markInboxProcessed(supabase, claim.inboxId, { status: 'received', contractId: contract.id })
+
+      // Map to canonical status
+      const canonicalStatus = PANDADOC_STATUS_MAP[eventName] || contract.signature_status || 'draft'
+
+      // ═══ TERMINAL-STATE GUARD ═══
+      // Once a contract is completed / voided / declined, provider events must
+      // not regress it (protects against out-of-order deliveries).
+      if (
+        TERMINAL_SIGNATURE_STATUSES.has(String(contract.signature_status)) &&
+        contract.signature_status !== canonicalStatus
+      ) {
+        console.log(`PandaDoc webhook: ignoring ${canonicalStatus} — contract already in terminal state ${contract.signature_status}`)
+        await markInboxProcessed(supabase, claim.inboxId, {
+          status: 'processed', httpStatus: 200, errorMessage: `terminal_state_${contract.signature_status}`, contractId: contract.id,
+        })
         continue
       }
+
 
       // Map to canonical status
       const canonicalStatus = PANDADOC_STATUS_MAP[eventName] || contract.signature_status || 'draft'
@@ -238,7 +283,7 @@ Deno.serve(async (req) => {
         provider_last_event: eventName,
         provider_last_sync_at: new Date().toISOString(),
         provider_last_error: null,
-        provider_webhook_event_id: eventId,
+        provider_webhook_event_id: eventId ?? `hash:${perEventPayloadHash.slice(0, 32)}`,
       }
 
       if (canonicalStatus === 'completed') {
@@ -362,7 +407,13 @@ Deno.serve(async (req) => {
           )
         }
       }
+
+      // Mark inbox row processed on success.
+      await markInboxProcessed(supabase, claim.inboxId, {
+        status: 'processed', httpStatus: 200, contractId: contract.id,
+      })
     }
+
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
