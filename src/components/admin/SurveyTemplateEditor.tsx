@@ -87,6 +87,7 @@ export function SurveyTemplateEditor({ definitions }: SurveyTemplateEditorProps)
   const [editingDescription, setEditingDescription] = useState("");
   const [editingQuestions, setEditingQuestions] = useState<SurveyQuestion[]>([]);
   const [dirty, setDirty] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
 
   const [questionDialog, setQuestionDialog] = useState<{
     open: boolean;
