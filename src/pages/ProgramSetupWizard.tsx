@@ -272,11 +272,11 @@ export default function ProgramSetupWizard() {
         setAutosaveStatus('saved');
         setTimeout(() => setAutosaveStatus('idle'), 2000);
       } catch (err) {
-        setAutosaveStatus('idle');
         if (err instanceof ProgramDraftConflictError) {
-          // Cache was refreshed by the mutation; keep pending payload so a
-          // subsequent user edit re-flushes on top of the fresh revision.
+          setAutosaveStatus('conflict');
           notify.info(t('programSetup.conflictReconciled', 'A draft foi actualizada noutro separador. Recarregámos a versão mais recente — as tuas edições recentes serão re-guardadas.'));
+        } else {
+          setAutosaveStatus('error');
         }
       }
     }, 2000);
