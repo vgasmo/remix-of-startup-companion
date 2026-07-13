@@ -8,6 +8,7 @@
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { Resend } from 'npm:resend@4.0.0'
+import { requireCronOrStaff } from '../_shared/security.ts'
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
 
@@ -40,36 +41,20 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabase = createClient(supabaseUrl, serviceKey)
 
-    // Allow cron OR authenticated staff
-    const cronSecret = req.headers.get('x-cron-secret')
-    const isCron = cronSecret && cronSecret === Deno.env.get('CRON_SECRET')
-
-    if (!isCron) {
-      const authHeader = req.headers.get('Authorization')
-      if (!authHeader) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-      const supabase = createClient(supabaseUrl, serviceKey)
-      const jwt = authHeader.replace('Bearer ', '')
-      const { data: claims, error: claimsErr } = await supabase.auth.getUser(jwt)
-      if (claimsErr || !claims.user) {
-        return new Response(JSON.stringify({ error: 'Invalid token' }), {
-          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-      const { data: roles } = await supabase
-        .from('user_roles').select('role')
-        .eq('user_id', claims.user.id)
-        .in('role', ['admin', 'consultor', 'backoffice'])
-      if (!roles?.length) {
-        return new Response(JSON.stringify({ error: 'Staff only' }), {
-          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
+    // SECURITY: Fail-closed — timing-safe x-cron-secret OR staff JWT.
+    const supabaseUserClient = createClient(
+      supabaseUrl,
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } } }
+    )
+    const authCheck = await requireCronOrStaff(req, supabaseUserClient, supabase)
+    if ('error' in authCheck) {
+      console.error('[send-intake-email] Unauthorized invocation')
+      return authCheck.error
     }
+
 
     const body: EmailRequest = await req.json()
     const { type, recipientEmail, recipientName, organizationName, intakeToken, changesNotes, senderName } = body
