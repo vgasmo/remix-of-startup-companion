@@ -10,7 +10,7 @@
 
 import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { openXlsmReader } from "./xlsmCellReader.ts";
-import { patchXlsmCells } from "./xlsmRoundTrip.ts";
+import { patchXlsm } from "./xlsmRoundTrip.ts";
 import { parseLocalizedNumber } from "./xlsxLocale.ts";
 import JSZip from "https://esm.sh/jszip@3.10.1";
 
