@@ -9421,6 +9421,15 @@ export type Database = {
         Args: { p_program_id: string; p_workspace_id: string }
         Returns: Json
       }
+      publish_program_setup: {
+        Args: {
+          p_draft_id: string
+          p_draft_json: Json
+          p_kpi_definition_map?: Json
+          p_program_id: string
+        }
+        Returns: Json
+      }
       publish_program_version: {
         Args: { p_gates: Json; p_program_id: string; p_weeks: Json }
         Returns: Json
