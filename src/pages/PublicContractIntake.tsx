@@ -207,16 +207,23 @@ export default function PublicContractIntake() {
   const isSubmitted = intake?.status === 'intake_submitted' || intake?.status === 'review_pending';
   const hasChangesRequested = intake?.status === 'changes_requested';
 
-  // Autosave: localStorage-backed draft restoration so typed work survives
-  // tab/window switch, refresh, accidental close. No server draft endpoint
-  // exists for the intake yet — submit still goes through the existing
-  // intake_submit_by_token action.
+  // Autosave: localStorage-backed draft restoration plus server-side draft
+  // persistence via the `intake_save_draft` action so typed work survives
+  // device switches (not just tab close on the same device).
   const autosave = useContractDraftAutosave<Record<string, unknown>>({
     scopeKey: token ?? null,
     namespace: 'contract-intake',
     serverData: intake ? (intake as unknown as Record<string, unknown>) : null,
     serverUpdatedAt: intake?.updated_at ?? null,
     disabled: isSubmitted,
+    serverSave: async (payload) => {
+      if (!token) return;
+      const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
+        body: { action: 'intake_save_draft', token, formData: payload },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+    },
   });
 
   // Track every change against the autosave hook (localStorage every keystroke).
