@@ -4586,6 +4586,7 @@ export type Database = {
           last_publish_rollback_status: string | null
           program_id: string | null
           program_snapshot_json: Json | null
+          revision: number
           status: string
           updated_at: string
         }
@@ -4599,6 +4600,7 @@ export type Database = {
           last_publish_rollback_status?: string | null
           program_id?: string | null
           program_snapshot_json?: Json | null
+          revision?: number
           status?: string
           updated_at?: string
         }
@@ -4612,6 +4614,7 @@ export type Database = {
           last_publish_rollback_status?: string | null
           program_id?: string | null
           program_snapshot_json?: Json | null
+          revision?: number
           status?: string
           updated_at?: string
         }
@@ -9419,6 +9422,10 @@ export type Database = {
       }
       materialize_acceleration_deliverables: {
         Args: { p_program_id: string; p_workspace_id: string }
+        Returns: Json
+      }
+      patch_program_setup: {
+        Args: { p_draft_id: string; p_expected_revision: number; p_patch: Json }
         Returns: Json
       }
       publish_program_setup: {
