@@ -5,6 +5,7 @@ import { Json } from '@/integrations/supabase/types';
 import { logger } from '@/lib/logger';
 import { track } from '@/lib/analytics';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
+import { sessionEventKey } from "@/lib/notificationEventKey";
 
 // P1.2: Helper to log activity
 async function logActivity(action: string, entityType: string, entityId: string, workspaceId: string, metadata?: Record<string, unknown>) {
