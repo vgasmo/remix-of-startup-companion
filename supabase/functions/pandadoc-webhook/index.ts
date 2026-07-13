@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
         payloadHash: perEventPayloadHash,
         eventName,
         contractId: null,
-        rawBodyPreview: JSON.stringify(event).slice(0, 2000),
+        rawBodyPreview: scrubWebhookPreview(event, 2000),
       })
       if (!claim.ok) {
         // Transient DB error → 5xx so PandaDoc retries.
