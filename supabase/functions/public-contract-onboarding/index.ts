@@ -325,6 +325,107 @@ Deno.serve(async (req) => {
       })
     }
 
+    // === INTAKE: Save draft by token (public, no auth) ===
+    // Debounced autosave endpoint. Persists partial form data server-side so
+    // draft work survives device switches / cache clears (localStorage alone
+    // can't). Does NOT change status or submitted_at. Editable states only.
+    if (action === 'intake_save_draft') {
+      if (!token) {
+        return new Response(JSON.stringify({ error: 'Token required' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      const { formData: fd } = body
+      if (!fd || typeof fd !== 'object') {
+        return new Response(JSON.stringify({ error: 'formData required' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      const tokenHashDraft = await sha256Hex(token)
+      const { data: intakeDraft, error: dErr } = await supabase
+        .from('contract_intakes')
+        .select('id, status, intake_token_expires_at')
+        .eq('intake_token_hash', tokenHashDraft)
+        .maybeSingle()
+
+      if (dErr || !intakeDraft) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired link' }), {
+          status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      if (intakeDraft.intake_token_expires_at && new Date(intakeDraft.intake_token_expires_at) < new Date()) {
+        return new Response(JSON.stringify({ error: 'This link has expired' }), {
+          status: 410, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      const editableForDraft = ['intake_requested', 'intake_in_progress', 'changes_requested']
+      if (!editableForDraft.includes(intakeDraft.status)) {
+        // Not an error — client keeps localStorage. Silently ack so autosave
+        // status doesn't oscillate for already-submitted intakes.
+        return new Response(JSON.stringify({ success: true, ignored: 'not_editable' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      // Lenient validation: draft may be partial. Only reject clearly-bad
+      // sensitive fields (NIF, IBAN, postal, emails, phone). Non-provided
+      // fields pass through to the whitelist filter below.
+      const draftValidation = validateIntakeForm(fd)
+      if (!draftValidation.ok) {
+        return new Response(JSON.stringify({ error: draftValidation.error }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      // Whitelist — never let the client push arbitrary columns (status,
+      // submitted_at, intake_token_hash, contract_id, etc.).
+      const patch: Record<string, unknown> = {}
+      const put = (col: string, val: unknown) => { if (val !== undefined) patch[col] = val }
+      put('organization_name', fd.organization_name)
+      put('project_name', typeof fd.project_name === 'string' ? fd.project_name.trim().slice(0, 200) : fd.project_name)
+      put('company_nif', typeof fd.company_nif === 'string' && fd.company_nif ? fd.company_nif.replace(/\s|-/g, '') : fd.company_nif)
+      put('company_address', fd.company_address)
+      put('company_city', fd.company_city)
+      put('company_postal_code', fd.company_postal_code)
+      put('iban', typeof fd.iban === 'string' && fd.iban ? fd.iban.replace(/\s/g, '').toUpperCase() : fd.iban)
+      put('certidao_permanente_code', fd.certidao_permanente_code)
+      put('legal_representative_name', fd.legal_representative_name)
+      put('legal_representative_email', fd.legal_representative_email)
+      put('legal_representative_phone', fd.legal_representative_phone)
+      if (Array.isArray(fd.additional_representatives)) patch.additional_representatives = fd.additional_representatives
+      put('billing_email', fd.billing_email)
+      put('startup_description', fd.startup_description)
+      put('website', fd.website)
+
+      // First save transitions requested → in_progress so staff sees activity.
+      if (intakeDraft.status === 'intake_requested') {
+        patch.status = 'intake_in_progress'
+      }
+
+      if (Object.keys(patch).length === 0) {
+        return new Response(JSON.stringify({ success: true, ignored: 'empty_patch' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      const { error: dUpdErr } = await supabase
+        .from('contract_intakes')
+        .update(patch)
+        .eq('id', intakeDraft.id)
+
+      if (dUpdErr) {
+        return new Response(JSON.stringify({ error: 'Save failed' }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // === INTAKE: Submit by token (public, no auth) ===
     if (action === 'intake_submit_by_token') {
       if (!token) {
