@@ -1,12 +1,16 @@
 /**
- * PandaDoc Webhook Handler — Hardened V2 (Canonical Sync)
- * 
+ * PandaDoc Webhook Handler — Hardened V3 (HMAC-SHA256 verification)
+ *
  * Security:
  * 1. REJECTS requests when PANDADOC_WEBHOOK_KEY is missing (fail-closed)
- * 2. REJECTS requests with invalid signature
- * 3. Idempotency protection via provider_webhook_event_id
- * 4. Stores provider event payloads for auditability
- * 
+ * 2. Verifies PandaDoc HMAC-SHA256 signature over the RAW request body
+ *    (query param `signature`, computed with the shared key). This is
+ *    PandaDoc's documented mechanism — see:
+ *    https://developers.pandadoc.com/reference/on-premises-webhooks
+ * 3. Timing-safe comparison of computed vs provided signature
+ * 4. Idempotency protection via provider_webhook_event_id
+ * 5. Stores provider event payloads for auditability
+ *
  * Maps PandaDoc events → canonical internal signature states.
  * Uses shared lifecycleSync for intake/CRM/workspace orchestration.
  */
@@ -40,44 +44,85 @@ const PANDADOC_STATUS_MAP: Record<string, string> = {
 }
 
 /**
- * Constant-time string equality — prevents timing attacks that progressively
+ * Constant-time byte comparison — prevents timing attacks that progressively
  * reveal the secret by measuring early-exit comparison time.
  */
-function timingSafeEqual(a: string, b: string): boolean {
-  const enc = new TextEncoder()
-  const aBytes = enc.encode(a)
-  const bBytes = enc.encode(b)
-  const len = Math.max(aBytes.length, bBytes.length)
-  let diff = aBytes.length ^ bBytes.length
+function timingSafeEqualBytes(a: Uint8Array, b: Uint8Array): boolean {
+  const len = Math.max(a.length, b.length)
+  let diff = a.length ^ b.length
   for (let i = 0; i < len; i++) {
-    diff |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0)
+    diff |= (a[i] ?? 0) ^ (b[i] ?? 0)
   }
   return diff === 0
 }
 
+function hexToBytes(hex: string): Uint8Array | null {
+  const clean = hex.trim().toLowerCase()
+  if (!/^[0-9a-f]*$/.test(clean) || clean.length % 2 !== 0) return null
+  const out = new Uint8Array(clean.length / 2)
+  for (let i = 0; i < out.length; i++) {
+    out[i] = parseInt(clean.substr(i * 2, 2), 16)
+  }
+  return out
+}
+
 /**
- * Verify PandaDoc webhook authenticity — FAIL-CLOSED.
+ * Compute HMAC-SHA256(rawBody) using the shared PandaDoc key.
  */
-function verifyWebhookAuthenticity(body: any, req: Request): { ok: boolean; reason?: string } {
+async function computeHmacSha256Hex(key: string, rawBody: string): Promise<Uint8Array> {
+  const enc = new TextEncoder()
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(key),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  )
+  const sig = await crypto.subtle.sign('HMAC', cryptoKey, enc.encode(rawBody))
+  return new Uint8Array(sig)
+}
+
+/**
+ * Verify PandaDoc webhook authenticity via HMAC-SHA256 — FAIL-CLOSED.
+ *
+ * PandaDoc sends `?signature=<hex>` where hex = HMAC_SHA256(shared_key, raw_body).
+ */
+async function verifyWebhookAuthenticity(
+  rawBody: string,
+  req: Request,
+): Promise<{ ok: boolean; reason?: string }> {
   const webhookKey = Deno.env.get('PANDADOC_WEBHOOK_KEY')
-  
+
   if (!webhookKey) {
     console.error('PANDADOC_WEBHOOK_KEY not configured — REJECTING request (fail-closed policy)')
     return { ok: false, reason: 'Webhook secret not configured — cannot verify authenticity' }
   }
 
-  const payloadKey = body?.shared_key || null
-  const headerKey = req.headers.get('x-pandadoc-signature') || req.headers.get('authorization')?.replace('Bearer ', '') || null
+  const url = new URL(req.url)
+  const providedHex =
+    url.searchParams.get('signature') ||
+    req.headers.get('x-pandadoc-signature') ||
+    ''
 
-  if (
-    (payloadKey && timingSafeEqual(payloadKey, webhookKey)) ||
-    (headerKey && timingSafeEqual(headerKey, webhookKey))
-  ) {
-    return { ok: true }
+  if (!providedHex) {
+    console.error('PandaDoc webhook: missing signature (query param or x-pandadoc-signature header)')
+    return { ok: false, reason: 'Missing signature' }
   }
 
-  console.error('PandaDoc webhook authentication FAILED — invalid signature, rejecting event')
-  return { ok: false, reason: 'Invalid webhook signature' }
+  const providedBytes = hexToBytes(providedHex)
+  if (!providedBytes) {
+    console.error('PandaDoc webhook: signature is not valid hex')
+    return { ok: false, reason: 'Malformed signature' }
+  }
+
+  const computedBytes = await computeHmacSha256Hex(webhookKey, rawBody)
+
+  if (!timingSafeEqualBytes(computedBytes, providedBytes)) {
+    console.error('PandaDoc webhook: HMAC mismatch — rejecting event')
+    return { ok: false, reason: 'Invalid webhook signature' }
+  }
+
+  return { ok: true }
 }
 
 Deno.serve(async (req) => {
@@ -86,7 +131,30 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const body = await req.json()
+    // Read RAW body first — HMAC must be computed over the exact bytes
+    // PandaDoc signed, before any JSON parse/re-serialization.
+    const rawBody = await req.text()
+
+    // ═══ SECURITY: Verify HMAC-SHA256 signature (FAIL-CLOSED) ═══
+    const authResult = await verifyWebhookAuthenticity(rawBody, req)
+    if (!authResult.ok) {
+      return new Response(JSON.stringify({ error: `Unauthorized — ${authResult.reason}` }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    let body: any
+    try {
+      body = JSON.parse(rawBody)
+    } catch (_) {
+      return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+
 
     // ═══ SECURITY: Verify webhook authenticity (FAIL-CLOSED) ═══
     const authResult = verifyWebhookAuthenticity(body, req)
