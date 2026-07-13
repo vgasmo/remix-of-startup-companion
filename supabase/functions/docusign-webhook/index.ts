@@ -305,9 +305,13 @@ Deno.serve(async (req) => {
       // If unattributable (missing id + missing email), fall back to first-signer = founder heuristic
       else if (!recipientEmail && !recIdStr && !contract.founder_signer_status) patch.founder_signer_status = recStatus
       await supabase.from('startup_contracts').update(patch).eq('id', contract.id)
+      await markInboxProcessed(supabase, claim.inboxId, {
+        status: 'processed', httpStatus: 200, contractId: contract.id,
+      })
       return new Response(JSON.stringify({ ok: true, message: 'recipient event recorded', recipient: { id: recipientId, email: recipientEmail, status: recStatus } }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
+
     }
 
     // Update contract
