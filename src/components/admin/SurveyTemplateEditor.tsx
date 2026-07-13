@@ -620,3 +620,87 @@ function QuestionDialog({
     </Dialog>
   );
 }
+
+function SurveyPreview({
+  name,
+  description,
+  questions,
+}: {
+  name: string;
+  description: string;
+  questions: SurveyQuestion[];
+}) {
+  const { t } = useTranslation();
+  const sections = [...new Set(questions.map((q) => q.section))];
+
+  if (questions.length === 0) {
+    return (
+      <div className="text-center py-8 text-sm text-muted-foreground">
+        {t("admin.surveys.emptyQuestions", "Sem perguntas. Adicione a primeira.")}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 border rounded-md p-4 bg-background">
+      <div className="space-y-1 border-b pb-3">
+        <h3 className="text-lg font-semibold">{name}</h3>
+        {description && (
+          <p className="text-sm text-muted-foreground">{description}</p>
+        )}
+        <p className="text-xs text-muted-foreground italic">
+          {t("admin.surveys.previewNotice", "Pré-visualização — as respostas não são guardadas.")}
+        </p>
+      </div>
+
+      {sections.map((section) => (
+        <div key={section} className="space-y-4">
+          <h4 className="text-sm font-semibold text-primary">{section}</h4>
+          {questions
+            .filter((q) => q.section === section)
+            .map((q, idx) => (
+              <div key={q.id} className="space-y-2">
+                <Label className="text-sm">
+                  <span className="text-muted-foreground mr-2">{idx + 1}.</span>
+                  {q.question}
+                  {q.required && <span className="text-destructive ml-1">*</span>}
+                </Label>
+                {q.type === "text" && <Input disabled placeholder="..." />}
+                {q.type === "number" && <Input type="number" disabled placeholder="0" />}
+                {q.type === "textarea" && <Textarea disabled rows={3} placeholder="..." />}
+                {q.type === "rating" && (
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <Button key={n} type="button" size="sm" variant="outline" disabled>
+                        {n}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+                {q.type === "select" && (
+                  <RadioGroup disabled className="space-y-1">
+                    {(q.options || []).map((opt) => (
+                      <div key={opt} className="flex items-center gap-2">
+                        <RadioGroupItem value={opt} id={`${q.id}-${opt}`} disabled />
+                        <Label htmlFor={`${q.id}-${opt}`} className="font-normal">{opt}</Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                )}
+                {q.type === "multiselect" && (
+                  <div className="space-y-1">
+                    {(q.options || []).map((opt) => (
+                      <div key={opt} className="flex items-center gap-2">
+                        <Checkbox id={`${q.id}-${opt}`} disabled />
+                        <Label htmlFor={`${q.id}-${opt}`} className="font-normal">{opt}</Label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+        </div>
+      ))}
+    </div>
+  );
+}
