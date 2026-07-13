@@ -53,13 +53,13 @@ export function FounderHelpNudge({
 
   // Fire "shown" once per appearance
   useEffect(() => {
-    if (show) track('founder_help_nudge_shown', { page: pageLabel, workspaceId });
+    if (show) fire('founder_help_nudge_shown', workspaceId, pageLabel);
   }, [show, pageLabel, workspaceId]);
 
   if (!isFounder || !show) return null;
 
   const handleAskAI = () => {
-    track('founder_help_nudge_ask_ai', { page: pageLabel, workspaceId });
+    fire('founder_help_nudge_ask_ai', workspaceId, pageLabel);
     acknowledge();
     try {
       window.dispatchEvent(
@@ -77,7 +77,7 @@ export function FounderHelpNudge({
   };
 
   const handleSearch = () => {
-    track('founder_help_nudge_search', { page: pageLabel, workspaceId });
+    fire('founder_help_nudge_search', workspaceId, pageLabel);
     acknowledge();
     // Always navigate to the dedicated search page with a beginner-friendly
     // query. This is the guaranteed, useful experience — no fragile DOM or
@@ -89,7 +89,7 @@ export function FounderHelpNudge({
   };
 
   const handleBookSession = () => {
-    track('founder_help_nudge_book_session', { page: pageLabel, workspaceId });
+    fire('founder_help_nudge_book_session', workspaceId, pageLabel);
     acknowledge();
     if (workspaceId) {
       navigate(`/workspace/${workspaceId}?tab=agenda`);
@@ -99,7 +99,7 @@ export function FounderHelpNudge({
   };
 
   const handleDismiss = () => {
-    track('founder_help_nudge_dismissed', { page: pageLabel, workspaceId });
+    fire('founder_help_nudge_dismissed', workspaceId, pageLabel);
     dismiss();
   };
 
