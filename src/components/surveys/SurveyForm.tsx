@@ -309,27 +309,44 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
         </CardContent>
       </Card>
 
-      {/* Navigation & Actions */}
-      <div className="flex items-center justify-between">
+      {/* Autosave status — visible above the sticky action bar on mobile. */}
+      {!isSubmitted && (
+        <div className="text-xs text-muted-foreground flex items-center gap-2 px-1">
+          {draft.status === "saving" && (
+            <><Loader2 className="h-3 w-3 animate-spin" />{t("surveys.autosaveSaving", "A guardar…")}</>
+          )}
+          {draft.status === "saved" && draft.lastSavedAt && (
+            <><Check className="h-3 w-3 text-[hsl(var(--success))]" />{t("surveys.autosaveSaved", "Guardado {{time}}", { time: format(draft.lastSavedAt, "HH:mm", { locale }) })}</>
+          )}
+          {draft.status === "local_only" && (
+            <><CloudOff className="h-3 w-3 text-amber-500" />{t("surveys.autosaveLocalOnly", "Guardado apenas no dispositivo — vamos tentar sincronizar novamente")}</>
+          )}
+        </div>
+      )}
+
+      {/* Navigation & Actions — sticky on mobile so users always see them. */}
+      <div className="sticky bottom-0 z-10 -mx-4 px-4 py-3 bg-background/95 backdrop-blur border-t sm:static sm:mx-0 sm:px-0 sm:py-0 sm:bg-transparent sm:backdrop-blur-none sm:border-0 flex items-center justify-between gap-2">
         <Button
           variant="outline"
+          size="sm"
           onClick={() => setCurrentSectionIndex((i) => Math.max(0, i - 1))}
           disabled={currentSectionIndex === 0}
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
-          {t("common.previous", "Previous")}
+          <span className="hidden sm:inline">{t("common.previous", "Previous")}</span>
         </Button>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-1 justify-center">
           {!isSubmitted && (
             <>
-              <Button variant="outline" onClick={() => handleSave(false)} disabled={saveResponses.isPending} loading={saveResponses.isPending}>
+              <Button variant="outline" size="sm" onClick={() => handleSave(false)} disabled={saveResponses.isPending} loading={saveResponses.isPending}>
                 <Save className="h-4 w-4 mr-2" />
                 {t("surveys.saveDraft", "Save Draft")}
               </Button>
 
               {currentSectionIndex === sections.length - 1 && (
                 <Button
+                  size="sm"
                   onClick={() => handleSave(true)}
                   disabled={!canSubmit() || saveResponses.isPending} loading={saveResponses.isPending}
                 >
@@ -343,13 +360,15 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
 
         <Button
           variant="outline"
+          size="sm"
           onClick={() => setCurrentSectionIndex((i) => Math.min(sections.length - 1, i + 1))}
           disabled={currentSectionIndex === sections.length - 1}
         >
-          {t("common.next", "Next")}
+          <span className="hidden sm:inline">{t("common.next", "Next")}</span>
           <ChevronRight className="h-4 w-4 ml-1" />
         </Button>
       </div>
+
     </div>
   );
 }
