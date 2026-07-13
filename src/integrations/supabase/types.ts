@@ -7549,6 +7549,51 @@ export type Database = {
           },
         ]
       }
+      webhook_inbox: {
+        Row: {
+          contract_id: string | null
+          error_message: string | null
+          event_id: string | null
+          event_name: string | null
+          http_status: number | null
+          id: string
+          payload_hash: string
+          processed_at: string | null
+          provider: string
+          raw_body_preview: string | null
+          received_at: string
+          status: string
+        }
+        Insert: {
+          contract_id?: string | null
+          error_message?: string | null
+          event_id?: string | null
+          event_name?: string | null
+          http_status?: number | null
+          id?: string
+          payload_hash: string
+          processed_at?: string | null
+          provider: string
+          raw_body_preview?: string | null
+          received_at?: string
+          status?: string
+        }
+        Update: {
+          contract_id?: string | null
+          error_message?: string | null
+          event_id?: string | null
+          event_name?: string | null
+          http_status?: number | null
+          id?: string
+          payload_hash?: string
+          processed_at?: string | null
+          provider?: string
+          raw_body_preview?: string | null
+          received_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       workflow_executions: {
         Row: {
           created_at: string
