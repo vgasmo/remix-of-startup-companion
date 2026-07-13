@@ -439,7 +439,12 @@ Deno.serve(async (req) => {
       })
     }
 
+    await markInboxProcessed(supabase, claim.inboxId, {
+      status: 'processed', httpStatus: 200, contractId: contract.id,
+    })
+
     return new Response(JSON.stringify({ ok: true }), {
+
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
 
