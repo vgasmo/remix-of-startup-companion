@@ -310,7 +310,8 @@ Deno.serve(async (req) => {
       else if (isCounter) patch.counter_signer_status = recStatus
       // If unattributable (missing id + missing email), fall back to first-signer = founder heuristic
       else if (!recipientEmail && !recIdStr && !contract.founder_signer_status) patch.founder_signer_status = recStatus
-      await supabase.from('startup_contracts').update(patch).eq('id', contract.id)
+      const { error: recipUpdErr } = await supabase.from('startup_contracts').update(patch).eq('id', contract.id)
+      if (recipUpdErr) console.warn('docusign-webhook: recipient patch failed', recipUpdErr.message)
       await markInboxProcessed(supabase, claim.inboxId, {
         status: 'processed', httpStatus: 200, contractId: contract.id,
       })
