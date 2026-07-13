@@ -1,5 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import {
+  templateRequestCreatedKey,
+  templateRequestResolvedKey,
+} from '@/lib/notificationEventKey';
 
 export type TemplateRequestStatus = 'pending' | 'in_progress' | 'fulfilled' | 'rejected';
 
