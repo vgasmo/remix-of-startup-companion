@@ -2383,6 +2383,51 @@ export type Database = {
           },
         ]
       }
+      financial_cell_map: {
+        Row: {
+          address: string
+          created_at: string
+          direction: string
+          id: string
+          metric_key: string
+          notes: Json
+          period_index: number | null
+          period_kind: string | null
+          schema_version: number
+          sheet: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          direction: string
+          id?: string
+          metric_key: string
+          notes?: Json
+          period_index?: number | null
+          period_kind?: string | null
+          schema_version: number
+          sheet: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          metric_key?: string
+          notes?: Json
+          period_index?: number | null
+          period_kind?: string | null
+          schema_version?: number
+          sheet?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       financial_model_metric_map: {
         Row: {
           created_at: string
@@ -2433,14 +2478,21 @@ export type Database = {
           ai_review_generated_at: string | null
           ai_review_generated_by: string | null
           ai_review_json: Json | null
+          content_sha256: string | null
+          coverage_pct: number | null
           created_at: string
           document_id: string
+          formula_cache_stale: boolean
           id: string
           key_metrics_json: Json | null
           parse_error: string | null
+          parse_status: string | null
+          parse_warnings: Json
           scenario_name: string
           snapshot_json: Json | null
+          source_asset_id: string | null
           status: string
+          template_schema_version: number | null
           updated_at: string
           uploaded_at: string
           uploaded_by: string | null
@@ -2450,14 +2502,21 @@ export type Database = {
           ai_review_generated_at?: string | null
           ai_review_generated_by?: string | null
           ai_review_json?: Json | null
+          content_sha256?: string | null
+          coverage_pct?: number | null
           created_at?: string
           document_id: string
+          formula_cache_stale?: boolean
           id?: string
           key_metrics_json?: Json | null
           parse_error?: string | null
+          parse_status?: string | null
+          parse_warnings?: Json
           scenario_name?: string
           snapshot_json?: Json | null
+          source_asset_id?: string | null
           status?: string
+          template_schema_version?: number | null
           updated_at?: string
           uploaded_at?: string
           uploaded_by?: string | null
@@ -2467,14 +2526,21 @@ export type Database = {
           ai_review_generated_at?: string | null
           ai_review_generated_by?: string | null
           ai_review_json?: Json | null
+          content_sha256?: string | null
+          coverage_pct?: number | null
           created_at?: string
           document_id?: string
+          formula_cache_stale?: boolean
           id?: string
           key_metrics_json?: Json | null
           parse_error?: string | null
+          parse_status?: string | null
+          parse_warnings?: Json
           scenario_name?: string
           snapshot_json?: Json | null
+          source_asset_id?: string | null
           status?: string
+          template_schema_version?: number | null
           updated_at?: string
           uploaded_at?: string
           uploaded_by?: string | null
@@ -2486,6 +2552,13 @@ export type Database = {
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_model_versions_source_asset_id_fkey"
+            columns: ["source_asset_id"]
+            isOneToOne: false
+            referencedRelation: "template_assets"
             referencedColumns: ["id"]
           },
           {
@@ -7141,6 +7214,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      template_assets: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          kind: string
+          language: string
+          notes: Json
+          schema_version: number
+          sha256: string
+          storage_path: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          kind: string
+          language: string
+          notes?: Json
+          schema_version?: number
+          sha256: string
+          storage_path: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          kind?: string
+          language?: string
+          notes?: Json
+          schema_version?: number
+          sha256?: string
+          storage_path?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
       }
       template_instances: {
         Row: {
