@@ -161,39 +161,23 @@ export function useUpsertKpiValue(workspaceId: string) {
         if (error) throw error;
         return data;
       } else {
-        // Insert new - check for duplicates first
-        const { data: existing } = await supabase
-          .from('kpi_values')
-          .select('id')
-          .eq('workspace_id', workspaceId)
-          .eq('kpi_definition_id', kpi_definition_id)
-          .eq('period_month', normalizedMonth)
-          .maybeSingle();
-
-        if (existing) {
-          // Update instead
-          const { data, error } = await supabase
-            .from('kpi_values')
-            .update({ value, target_value, notes })
-            .eq('id', existing.id)
-            .select()
-            .single();
-
-          if (error) throw error;
-          return data;
-        }
-
+        // Atomic upsert on the (workspace_id, kpi_definition_id, period_month)
+        // unique constraint. Prevents the SELECT-then-INSERT race that duplicated
+        // rows on rapid double-submits, and stays a single round-trip.
         const { data, error } = await supabase
           .from('kpi_values')
-          .insert({
-            workspace_id: workspaceId,
-            kpi_definition_id,
-            period_month: normalizedMonth,
-            value,
-            target_value,
-            notes,
-            created_by: user?.id,
-          })
+          .upsert(
+            {
+              workspace_id: workspaceId,
+              kpi_definition_id,
+              period_month: normalizedMonth,
+              value,
+              target_value,
+              notes,
+              created_by: user?.id,
+            },
+            { onConflict: 'workspace_id,kpi_definition_id,period_month' },
+          )
           .select()
           .single();
 
