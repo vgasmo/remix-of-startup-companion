@@ -349,10 +349,19 @@ Deno.serve(async (req) => {
       updatePayload.canonical_signature_status = 'viewed'
     }
 
-    await supabase
+    const { error: contractUpdateErr } = await supabase
       .from('startup_contracts')
       .update(updatePayload)
       .eq('id', contract.id)
+    if (contractUpdateErr) {
+      console.error('docusign-webhook: contract update failed', contractUpdateErr.message)
+      await markInboxProcessed(supabase, claim.inboxId, {
+        status: 'failed', httpStatus: 500, errorMessage: `contract_update_failed:${contractUpdateErr.message}`, contractId: contract.id,
+      })
+      return new Response(JSON.stringify({ ok: false, error: 'contract_update_failed' }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     // === CANONICAL LIFECYCLE SYNC (shared helper) ===
     if (status === 'sent_for_signature') {
