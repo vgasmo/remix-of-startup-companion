@@ -47,47 +47,17 @@ export function ChatTab({ workspaceId }: ChatTabProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Get or create workspace conversation
+  // Atomic get-or-create — server RPC prevents duplicate workspace threads
+  // when two members open chat concurrently, and syncs active participants.
   const { data: conversation, isLoading: convLoading } = useQuery({
     queryKey: ['workspace-conversation', workspaceId],
     queryFn: async () => {
-      // Try to find existing workspace conversation
-      const { data: existing, error: findErr } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('workspace_id', workspaceId)
-        .limit(1)
-        .maybeSingle();
-
-      if (findErr) throw findErr;
-      if (existing) return existing;
-
-      // Create new conversation for this workspace
-      const { data: newConv, error: createErr } = await supabase.rpc('create_conversation', {
-        participant_ids: [],
-        _title: null,
-        _workspace_id: workspaceId,
-      });
-
-      if (createErr) throw createErr;
-
-      // Add all workspace members as participants
-      const { data: members } = await supabase
-        .from('workspace_users')
-        .select('user_id')
-        .eq('workspace_id', workspaceId)
-        .eq('active', true);
-
-      if (members) {
-        for (const member of members) {
-          await supabase
-            .from('conversation_participants')
-            .upsert({ conversation_id: newConv, user_id: member.user_id }, { onConflict: 'conversation_id,user_id' })
-            .select();
-        }
-      }
-
-      return { id: newConv as string };
+      const { data: convId, error } = await supabase.rpc(
+        'get_or_create_workspace_conversation',
+        { _workspace_id: workspaceId },
+      );
+      if (error) throw error;
+      return { id: convId as string };
     },
     enabled: !!workspaceId && !!user,
   });
