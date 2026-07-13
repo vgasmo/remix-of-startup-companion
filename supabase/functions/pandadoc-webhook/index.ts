@@ -268,31 +268,8 @@ Deno.serve(async (req) => {
           }
         }
 
-        // ═══ AUTO-GENERATE FIRST INVOICE on completion ═══
-        // Disabled per product decision (invoicing surface hidden, no payment tracking).
-        // Re-enable by setting INVOICING_ENABLED=true and re-mounting BackofficeInvoicesTab.
-        const invoicingEnabled = Deno.env.get('INVOICING_ENABLED') === 'true'
-        if (invoicingEnabled) {
-          try {
-            const targetMonth = new Date().toISOString().slice(0, 7)
-            console.log(`Triggering invoice generation for contract ${contract.id}, month ${targetMonth}`)
+        // Invoicing has been retired; no auto-invoice trigger runs on completion.
 
-            const functionUrl = `${supabaseUrl}/functions/v1/generate-invoices`
-            await fetch(functionUrl, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${supabaseKey}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                targetMonth,
-                contractId: contract.id,
-              }),
-            })
-          } catch (invoiceErr) {
-            console.error('Auto-invoice generation error (non-fatal):', invoiceErr)
-          }
-        }
 
       }
 
