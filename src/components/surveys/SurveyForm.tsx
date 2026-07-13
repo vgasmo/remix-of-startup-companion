@@ -101,9 +101,43 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
     setAutoFilledKeys(autoKeys);
   }, [data, questions]);
 
+  // ─── Autosave ────────────────────────────────────────────────────────────
+  // Wire the canonical single-flight draft engine so every answer keystroke
+  // survives tab close / offline / navigation. Server flush is debounced
+  // through the same `saveResponses` mutation used by the manual button —
+  // one code path, one status source of truth.
+  const isSubmitted = data?.instance?.status === "submitted";
+  const serverUpdatedAt = data?.instance?.updated_at ?? null;
+
+  const serverSave = useCallback(async (payload: AnswersMap) => {
+    const autoKeys = autoFilledKeysRef.current;
+    const responses = Object.entries(payload).map(([question_id, value]) => ({
+      question_id,
+      response_value: typeof value === "string" || typeof value === "number" ? String(value) : undefined,
+      response_json: Array.isArray(value) ? (value as unknown as Json) : undefined,
+      is_auto_filled: autoKeys.has(question_id),
+    }));
+    await saveResponses.mutateAsync({ instanceId, responses, submit: false });
+  }, [instanceId, saveResponses]);
+
+  const draft = useSingleFlightDraft<AnswersMap>({
+    scopeKey: instanceId,
+    namespace: "survey",
+    serverUpdatedAt,
+    serverSave,
+    debounceMs: 1500,
+    disabled: isSubmitted,
+  });
+
   const handleAnswerChange = (questionId: string, value: string | string[] | number) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
-    // Remove from auto-filled if user edits
+    setAnswers((prev) => {
+      const next = { ...prev, [questionId]: value };
+      // Track for autosave using the latest snapshot — do not rely on the
+      // async React state after setAnswers, because trackChange must see the
+      // just-edited value.
+      draft.trackChange(next);
+      return next;
+    });
     if (autoFilledKeys.has(questionId)) {
       setAutoFilledKeys((prev) => {
         const next = new Set(prev);
@@ -121,7 +155,7 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
     handleAnswerChange(questionId, updated);
   };
 
-  const handleSave = (submit = false) => {
+  const handleSave = async (submit = false) => {
     const responses = Object.entries(answers).map(([question_id, value]) => ({
       question_id,
       response_value: typeof value === "string" || typeof value === "number" ? String(value) : undefined,
@@ -129,17 +163,23 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
       is_auto_filled: autoFilledKeys.has(question_id),
     }));
 
+    // Ensure any pending debounced autosave finishes first, so the submit
+    // mutation runs after the latest snapshot has been persisted.
+    if (submit) await draft.flush();
+
     saveResponses.mutate(
       { instanceId, responses, submit },
       {
         onSuccess: () => {
-          if (submit && onComplete) {
-            onComplete();
+          if (submit) {
+            draft.clearDraft();
+            onComplete?.();
           }
         },
       }
     );
   };
+
 
   const calculateProgress = () => {
     const required = questions.filter((q) => q.required);
