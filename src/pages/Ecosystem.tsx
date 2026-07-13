@@ -11,7 +11,8 @@ import { useEcosystemItems } from '@/hooks/useEcosystemItems';
 import { ContentSkeleton } from '@/components/ui/ContentSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SavedViewsDropdown } from '@/components/crm/SavedViewsDropdown';
-import { Globe2, Users, Building2, UserCog } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Globe2, Users, Building2, UserCog, Loader2 } from 'lucide-react';
 
 export default function Ecosystem() {
   const { t } = useTranslation();
@@ -33,7 +34,20 @@ export default function Ecosystem() {
     hasStartupPortugal: false,
   });
 
-  const { data: items, isLoading } = useEcosystemItems(filters);
+  const {
+    items,
+    totalCount,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useEcosystemItems(filters);
+
+  const showingCountLabel = t('ecosystem.showingCount', {
+    defaultValue: 'A mostrar {{shown}} de {{total}}',
+    shown: items.length,
+    total: totalCount,
+  });
 
   return (
     <AppLayout>
@@ -72,16 +86,33 @@ export default function Ecosystem() {
             {isLoading ? (
               <ContentSkeleton type="list" count={10} />
             ) : (
-              <EcosystemTable
-                items={items || []}
-                onOpenItem={(item) => {
-                  if (item.item_type === 'workspace' && item.workspace_id) {
-                    navigate(`/workspace/${item.workspace_id}`);
-                  } else if (item.item_type === 'lead' && item.funnel_item_id) {
-                    navigate(`/crm?open=${item.funnel_item_id}`);
-                  }
-                }}
-              />
+              <>
+                <div className="text-xs text-muted-foreground" aria-live="polite">
+                  {showingCountLabel}
+                </div>
+                <EcosystemTable
+                  items={items}
+                  onOpenItem={(item) => {
+                    if (item.item_type === 'workspace' && item.workspace_id) {
+                      navigate(`/workspace/${item.workspace_id}`);
+                    } else if (item.item_type === 'lead' && item.funnel_item_id) {
+                      navigate(`/crm?open=${item.funnel_item_id}`);
+                    }
+                  }}
+                />
+                {hasNextPage && (
+                  <div className="flex justify-center pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => fetchNextPage()}
+                      disabled={isFetchingNextPage}
+                    >
+                      {isFetchingNextPage && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      {t('ecosystem.loadMore', { defaultValue: 'Carregar mais' })}
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </TabsContent>
 
@@ -90,7 +121,21 @@ export default function Ecosystem() {
             {isLoading ? (
               <ContentSkeleton type="list" count={6} />
             ) : (
-              <ConsultorPortfolioView items={items || []} />
+              <>
+                <ConsultorPortfolioView items={items} />
+                {hasNextPage && (
+                  <div className="flex justify-center pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => fetchNextPage()}
+                      disabled={isFetchingNextPage}
+                    >
+                      {isFetchingNextPage && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      {t('ecosystem.loadMore', { defaultValue: 'Carregar mais' })}
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </TabsContent>
 
@@ -102,3 +147,4 @@ export default function Ecosystem() {
     </AppLayout>
   );
 }
+
