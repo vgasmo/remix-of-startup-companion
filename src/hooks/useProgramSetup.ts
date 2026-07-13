@@ -283,7 +283,7 @@ export function useUpdateProgramDraft() {
       const { data, error } = await supabase.rpc('patch_program_setup', {
         p_draft_id: draftId,
         p_expected_revision: expected ?? null,
-        p_patch: draftJson as unknown as Record<string, unknown>,
+        p_patch: JSON.parse(JSON.stringify(draftJson)),
       });
 
       if (error) throw error;
