@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions } from "../_shared/cors.ts";
+import { requireCronOrStaff } from "../_shared/security.ts";
 
 /**
  * Helper to send Teams notification for health alerts (non-blocking)
@@ -92,57 +93,22 @@ serve(async (req) => {
 
   try {
     const corsHeaders = getCorsHeaders(req);
-    // SECURITY: Validate CRON_SECRET for system-initiated calls
-    const cronSecret = req.headers.get("x-cron-secret");
-    const expectedSecret = Deno.env.get("CRON_SECRET");
-    
-    // If CRON_SECRET is configured, require it for non-user calls
-    if (expectedSecret && cronSecret !== expectedSecret) {
-      // Check if there's a valid user auth instead (for manual triggers by admins)
-      const authHeader = req.headers.get("Authorization");
-      if (authHeader) {
-        const token = authHeader.replace("Bearer ", "");
-        const supabaseCheck = createClient(
-          Deno.env.get("SUPABASE_URL") ?? "",
-          Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-          { global: { headers: { Authorization: authHeader } } }
-        );
-        const { data: { user } } = await supabaseCheck.auth.getUser(token);
-        
-        if (!user) {
-          console.error("[recompute-health-scores] Unauthorized: Invalid token and no cron secret");
-          return new Response(JSON.stringify({ error: "Unauthorized" }), {
-            status: 401,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        
-        // Verify user is admin or consultor
-        const supabaseAdmin = createClient(
-          Deno.env.get("SUPABASE_URL") ?? "",
-          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-        );
-        const { data: roles } = await supabaseAdmin
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id);
-        
-        const isStaff = roles?.some(r => r.role === "admin" || r.role === "consultor");
-        if (!isStaff) {
-          console.error("[recompute-health-scores] Forbidden: User not staff");
-          return new Response(JSON.stringify({ error: "Forbidden" }), {
-            status: 403,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        console.log("[recompute-health-scores] Authorized via user:", user.id);
-      } else {
-        console.error("[recompute-health-scores] Unauthorized: No cron secret or auth header");
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+
+    // SECURITY: Fail-closed — accept valid CRON_SECRET (timing-safe) OR a staff user JWT.
+    // Requires CRON_SECRET to be configured server-side; missing config returns 500.
+    const supabaseUserClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } } }
+    );
+    const supabaseAdminClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    const authCheck = await requireCronOrStaff(req, supabaseUserClient, supabaseAdminClient);
+    if ("error" in authCheck) {
+      console.error("[recompute-health-scores] Unauthorized invocation");
+      return authCheck.error;
     }
 
     console.log("[recompute-health-scores] Starting health scores recomputation...");
