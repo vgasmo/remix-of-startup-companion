@@ -122,13 +122,10 @@ Deno.serve(async (req) => {
       rawPayload = body
       envelopeId = body.data?.envelopeId || body.envelopeId
       status = body.data?.envelopeSummary?.status || body.event
-      eventId = body.data?.eventId || `ds-${envelopeId}-${body.event || status}-${body.generatedDateTime || Date.now()}`
+      // Provider-issued id ONLY. No Date.now fallback — dedupe falls back to
+      // the payload hash inside the webhook inbox.
+      eventId = body.data?.eventId || null
 
-      // Envelope-level events drive canonical contract status.
-      // Recipient-level events are per-signer only and must NOT activate the
-      // contract on their own (bilateral: founder completing recipient-1 must
-      // not fire full activation before the counter-signer). We map recipient
-      // events to a distinct per-signer bucket handled below.
       const statusMap: Record<string, string> = {
         'envelope-sent': 'sent_for_signature',
         'envelope-delivered': 'viewed',
@@ -146,7 +143,6 @@ Deno.serve(async (req) => {
       if (body.event && statusMap[body.event]) {
         status = statusMap[body.event]
       } else if (body.event && recipientEventMap[body.event]) {
-        // Tag with a distinguishable prefix so downstream logic branches correctly
         status = `recipient:${recipientEventMap[body.event]}`
         ;(body as any)._recipientId = body.data?.recipientId || body.data?.envelopeSummary?.recipients?.signers?.[0]?.recipientId || null
         ;(body as any)._recipientEmail = body.data?.email || body.data?.envelopeSummary?.recipients?.signers?.[0]?.email || null
@@ -158,7 +154,8 @@ Deno.serve(async (req) => {
       const statusMatch = xmlText.match(/<Status>([^<]+)<\/Status>/i)
       envelopeId = envelopeIdMatch?.[1] || null
       status = statusMatch?.[1]?.toLowerCase() || null
-      eventId = `ds-xml-${envelopeId}-${status}-${Date.now()}`
+      // No synthetic eventId; the inbox dedupes on payload_hash.
+      eventId = null
     }
 
     if (!envelopeId) {
@@ -167,7 +164,33 @@ Deno.serve(async (req) => {
       })
     }
 
-    console.log(`DocuSign webhook: envelope=${envelopeId}, status=${status}, eventId=${eventId}`)
+    // Compute stable payload hash for inbox fallback dedupe.
+    const payloadHash = await sha256Hex(rawBody)
+
+    console.log(`DocuSign webhook: envelope=${envelopeId}, status=${status}, eventId=${eventId ?? '(null)'}, hash=${payloadHash.slice(0, 12)}…`)
+
+    // ═══ IDEMPOTENCY: Claim inbox row FIRST ═══
+    const claim = await claimWebhookDelivery(supabase, {
+      provider: 'docusign',
+      eventId,
+      payloadHash,
+      eventName: typeof status === 'string' ? status : null,
+      contractId: null,
+      rawBodyPreview: rawBody.slice(0, 2000),
+    })
+    if (!claim.ok) {
+      console.error('[docusign-webhook] inbox claim failed:', claim.error)
+      return new Response(JSON.stringify({ error: 'inbox_claim_failed', details: claim.error }), {
+        status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    if (claim.duplicate) {
+      console.log(`DocuSign webhook: duplicate delivery skipped (eventId=${eventId ?? '(null)'}, hash=${payloadHash.slice(0, 12)}…)`)
+      return new Response(JSON.stringify({ ok: true, duplicate: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
 
     // Find the contract — use PostgREST alias syntax (SQL "as" is invalid here).
     const { data: contract, error: findError } = await supabase
