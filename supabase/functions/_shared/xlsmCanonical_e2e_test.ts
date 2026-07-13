@@ -64,7 +64,7 @@ Deno.test("canonical XLSM: round-trip preserves vbaProject.bin byte-identity", a
   const origVba = await origZip.file("xl/vbaProject.bin")?.async("uint8array");
   assert(origVba && origVba.length > 0, "canonical template must contain vbaProject.bin");
 
-  const patched = await patchXlsmCells(original, [
+  const patched = await patchXlsm(original, [
     { sheet: "Pressupostos", address: "D18", value: 0.25 },   // change IRC 21% → 25%
   ]);
 
