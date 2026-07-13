@@ -283,7 +283,7 @@ Deno.serve(async (req) => {
         provider_last_event: eventName,
         provider_last_sync_at: new Date().toISOString(),
         provider_last_error: null,
-        provider_webhook_event_id: eventId,
+        provider_webhook_event_id: eventId ?? `hash:${perEventPayloadHash.slice(0, 32)}`,
       }
 
       if (canonicalStatus === 'completed') {
