@@ -4330,6 +4330,7 @@ export type Database = {
           has_seen_welcome_wizard: boolean
           id: string
           linkedin_url: string | null
+          mentor_monthly_target_hours: number
           phone: string | null
           preferred_language: string
           updated_at: string
@@ -4348,6 +4349,7 @@ export type Database = {
           has_seen_welcome_wizard?: boolean
           id: string
           linkedin_url?: string | null
+          mentor_monthly_target_hours?: number
           phone?: string | null
           preferred_language?: string
           updated_at?: string
@@ -4366,6 +4368,7 @@ export type Database = {
           has_seen_welcome_wizard?: boolean
           id?: string
           linkedin_url?: string | null
+          mentor_monthly_target_hours?: number
           phone?: string | null
           preferred_language?: string
           updated_at?: string
@@ -9197,6 +9200,10 @@ export type Database = {
           end_time: string
           start_time: string
         }[]
+      }
+      get_mentor_impact: {
+        Args: { p_from?: string; p_mentor_id: string; p_to?: string }
+        Returns: Json
       }
       get_my_calendar_token_status: {
         Args: never
