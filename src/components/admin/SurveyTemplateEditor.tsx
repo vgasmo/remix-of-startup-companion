@@ -241,6 +241,17 @@ export function SurveyTemplateEditor({ definitions }: SurveyTemplateEditorProps)
                         rows={2}
                       />
                     </div>
+                    <div className="flex flex-col gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setPreviewMode((v) => !v)}
+                    >
+                      {previewMode ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
+                      {previewMode
+                        ? t("admin.surveys.exitPreview", "Sair da pré-visualização")
+                        : t("admin.surveys.preview", "Pré-visualizar")}
+                    </Button>
                     <Button
                       size="sm"
                       onClick={handleSave}
@@ -250,9 +261,17 @@ export function SurveyTemplateEditor({ definitions }: SurveyTemplateEditorProps)
                       <Save className="h-4 w-4 mr-1" />
                       {t("common.save", "Guardar")}
                     </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  {previewMode ? (
+                    <SurveyPreview
+                      name={editingName}
+                      description={editingDescription}
+                      questions={editingQuestions}
+                    />
+                  ) : (<>
                   <div className="flex justify-end">
                     <Button
                       size="sm"
