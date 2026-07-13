@@ -106,8 +106,13 @@ async function notifyStaffOfNewRequest(req: TemplateRequest) {
       entity_type: 'template_request',
       entity_id: req.id,
       metadata: { workspace_id: req.workspace_id, context_type: req.context_type },
+      // Deterministic key — retries + double-submits collapse into one row
+      // via the `notifications_event_key_user_unique` partial unique index.
+      event_key: templateRequestCreatedKey(req.id, uid),
     }));
-    await supabase.from('notifications').insert(rows);
+    await supabase
+      .from('notifications')
+      .upsert(rows, { onConflict: 'user_id,event_key', ignoreDuplicates: true });
   } catch {
     // best-effort
   }
