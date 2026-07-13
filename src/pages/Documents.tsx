@@ -112,7 +112,7 @@ export default function Documents() {
 
   return (
     <AppLayout
-      title={t('documentsPage.title', { defaultValue: 'Repositório de Documentos' })}
+      title={t('documentsPage.title', { defaultValue: 'Documentos e Ferramentas' })}
       subtitle={t('documentsPage.subtitle', { defaultValue: 'Vista agregada dos documentos submetidos pelas startups e templates disponíveis para o programa.' })}
     >
       <div className="space-y-6">
