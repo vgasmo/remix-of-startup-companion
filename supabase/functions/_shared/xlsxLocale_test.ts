@@ -55,6 +55,8 @@ Deno.test("passthrough numbers and rejects garbage", () => {
 
 Deno.test("percent-aware parser", () => {
   assertEquals(parseLocalizedPercent("23%"), 0.23);
-  assertEquals(parseLocalizedPercent("2,375%"), 0.02375);
+  assertEquals(parseLocalizedPercent("23,75%"), 0.2375);
+  assertEquals(parseLocalizedPercent("23.75%"), 0.2375);
   assertEquals(parseLocalizedPercent("0.21"), 0.21);
+  assertEquals(parseLocalizedPercent(0.21), 0.21);
 });
