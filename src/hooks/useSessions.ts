@@ -5,6 +5,7 @@ import { Json } from '@/integrations/supabase/types';
 import { logger } from '@/lib/logger';
 import { track } from '@/lib/analytics';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
+import { sessionEventKey } from "@/lib/notificationEventKey";
 
 // P1.2: Helper to log activity
 async function logActivity(action: string, entityType: string, entityId: string, workspaceId: string, metadata?: Record<string, unknown>) {
@@ -87,6 +88,8 @@ async function notifySessionEvent(
     const link = `/workspace/${workspaceId}?tab=agenda`;
 
     // Inbox notifications — one per recipient (skip the actor).
+    // Keyed by (session, kind, recipient) so provider retries or a rapid
+    // reschedule→reschedule sequence never spams the inbox.
     const inboxRows = memberIds
       .filter((id) => id !== user?.id)
       .map((id) => ({
@@ -98,10 +101,13 @@ async function notifySessionEvent(
         entity_type: 'session',
         entity_id: session.id,
         read: false,
+        event_key: sessionEventKey(session.id, kind, id),
       }));
 
     if (inboxRows.length > 0) {
-      await supabase.from('notifications').insert(inboxRows);
+      await supabase
+        .from('notifications')
+        .upsert(inboxRows, { onConflict: 'user_id,event_key', ignoreDuplicates: true });
     }
 
     // Email invites — always for rescheduled/cancelled, opt-in for created
