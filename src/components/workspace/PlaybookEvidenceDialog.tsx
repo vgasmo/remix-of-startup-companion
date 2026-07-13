@@ -9,8 +9,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { usePlaybookEvidence, useSubmitEvidence, useReviewEvidence, PlaybookEvidence } from '@/hooks/usePlaybookEvidence';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
-import { pt, enUS } from 'date-fns/locale';
-
 interface PlaybookEvidenceDialogProps {
   workspaceId: string;
   playbookItemId: string;
@@ -35,8 +33,7 @@ export function PlaybookEvidenceDialog({ workspaceId, playbookItemId, playbookIt
   const evidence = allEvidence?.filter(e => e.playbook_item_id === playbookItemId) || [];
   const hasApproved = evidence.some(e => e.review_status === 'approved');
   const hasPending = evidence.some(e => e.review_status === 'pending');
-  const locale = i18n.language === 'pt' ? pt : enUS;
-
+  const locale = useDateLocale();
   const handleSubmit = async () => {
     if (!notes.trim() && !file) return;
     await submitEvidence.mutateAsync({

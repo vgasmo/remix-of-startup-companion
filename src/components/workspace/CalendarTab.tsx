@@ -13,7 +13,6 @@ import {
   endOfWeek,
   parseISO,
 } from 'date-fns';
-import { pt, enUS } from 'date-fns/locale';
 import {
   ChevronLeft,
   ChevronRight,
@@ -81,7 +80,7 @@ interface CalendarTabProps {
 
 export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabProps) {
   const { t, i18n } = useTranslation();
-  const dateFnsLocale = i18n.language === 'pt' ? pt : enUS;
+  const dateFnsLocale = useDateLocale();
   const { data: sessions = [], isLoading } = useCalendarSessions(workspaceId);
   const { data: workspaceMembers = [] } = useWorkspaceMembers(workspaceId);
   const { data: sessionTemplates } = useSessionTemplates();

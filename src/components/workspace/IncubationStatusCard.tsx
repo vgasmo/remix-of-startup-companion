@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabaseClient';
 import { differenceInMonths, addYears, format } from 'date-fns';
-import { pt as ptLocale, enUS } from 'date-fns/locale';
 import i18n from 'i18next';
 
 interface IncubationStatusCardProps {
@@ -19,8 +18,7 @@ export const IncubationStatusCard = memo(function IncubationStatusCard({
   workspaceId,
 }: IncubationStatusCardProps) {
   const { t } = useTranslation();
-  const locale = i18n.language === 'pt' ? ptLocale : enUS;
-
+  const locale = useDateLocale();
   // Fetch contract start date for this workspace
   const { data: contractData } = useQuery({
     queryKey: ['incubation-contract-start', workspaceId],
