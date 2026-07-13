@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { getDateLocale } from "@/lib/dateLocale";
-import { Save, Send, ChevronLeft, ChevronRight, Check, AlertCircle, Lock } from "lucide-react";
+import { Save, Send, ChevronLeft, ChevronRight, Check, AlertCircle, Lock, CloudOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,7 @@ import {
   SurveyQuestion,
   SurveyResponse,
 } from "@/hooks/useSurveys";
+import { useSingleFlightDraft } from "@/hooks/useSingleFlightDraft";
 import { Json } from "@/integrations/supabase/types";
 
 interface SurveyFormProps {
@@ -33,16 +34,21 @@ interface SurveyFormProps {
   onComplete?: () => void;
 }
 
+type AnswersMap = Record<string, string | string[] | number>;
+
 export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
   const { t, i18n } = useTranslation();
   const { data, isLoading } = useSurveyInstance(instanceId);
   const saveResponses = useSaveSurveyResponses();
 
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string | string[] | number>>({});
+  const [answers, setAnswers] = useState<AnswersMap>({});
   const [autoFilledKeys, setAutoFilledKeys] = useState<Set<string>>(new Set());
+  const autoFilledKeysRef = useRef<Set<string>>(new Set());
+  autoFilledKeysRef.current = autoFilledKeys;
 
   const locale = getDateLocale();
+
 
   const questions = useMemo(() => {
     // Prefer the campaign's copy-on-write snapshot when present. Falls back
