@@ -24,13 +24,13 @@ interface FounderHelpNudgeProps {
   pageLabel?: string;
 }
 
-function track(event: string, payload: Record<string, unknown> = {}) {
-  // Lightweight analytics: log + dispatch a custom event so any analytics layer can pick it up
-  logger.info(event, payload);
-  try {
-    window.dispatchEvent(new CustomEvent('analytics:event', { detail: { event, ...payload } }));
-  } catch { /* ignore */ }
+function fire(event: AnalyticsEvent, workspaceId?: string, page?: string) {
+  void track(event, {
+    workspaceId,
+    properties: page ? { page } : {},
+  });
 }
+
 
 /**
  * Calm, non-blocking help nudge for founders who appear stuck.
