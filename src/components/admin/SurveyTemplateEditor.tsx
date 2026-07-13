@@ -355,6 +355,7 @@ export function SurveyTemplateEditor({ definitions }: SurveyTemplateEditorProps)
                       ))}
                     </Accordion>
                   )}
+                  </>)}
                 </CardContent>
               </Card>
             ) : (
