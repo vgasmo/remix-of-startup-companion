@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from "../_shared/cors.ts";
+import { requireCronOrGovernance } from "../_shared/security.ts";
 
 /**
  * compute-cohort-benchmarks
@@ -25,28 +26,21 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return handleCorsOptions(req);
 
   try {
-    // Auth: accept either cron secret or admin JWT
-    const cronSecret = req.headers.get('x-cron-secret');
-    const expectedCronSecret = Deno.env.get('CRON_SECRET');
-    const isCron = !!(cronSecret && expectedCronSecret && cronSecret === expectedCronSecret);
-
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
+    const supabaseUserClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } } }
+    );
 
-    if (!isCron) {
-      const authHeader = req.headers.get('Authorization');
-      if (!authHeader) return corsJsonResponse({ error: 'Unauthorized' }, req, 401);
-      const { data: { user }, error: authError } = await supabase.auth.getUser(
-        authHeader.replace('Bearer ', ''),
-      );
-      if (authError || !user) return corsJsonResponse({ error: 'Unauthorized' }, req, 401);
-      const { data: isAdmin } = await supabase.rpc('has_role', {
-        _user_id: user.id,
-        _role: 'admin',
-      });
-      if (!isAdmin) return corsJsonResponse({ error: 'Forbidden' }, req, 403);
+    // SECURITY: Fail-closed — timing-safe cron secret OR governance JWT (admin/backoffice).
+    const authCheck = await requireCronOrGovernance(req, supabaseUserClient, supabase);
+    if ('error' in authCheck) {
+      console.error('[compute-cohort-benchmarks] Unauthorized invocation');
+      return authCheck.error;
     }
 
     console.log('[compute-cohort-benchmarks] starting aggregation');
