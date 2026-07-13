@@ -6,7 +6,7 @@
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { createLogger, generateRequestId, ErrorCode, safeErrorMessage } from '../_shared/security.ts';
+import { createLogger, generateRequestId, ErrorCode, safeErrorMessage, timingSafeEqual } from '../_shared/security.ts';
 
 const FUNCTION_NAME = 'sync-outlook-calendar';
 
@@ -373,9 +373,9 @@ Deno.serve(async (req: Request) => {
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Require either a valid cron secret OR an authenticated user.
+    // Require either a valid cron secret (timing-safe) OR an authenticated user.
     let userId: string | null = null;
-    const isSystemCall = !!cronSecret && !!expectedCronSecret && cronSecret === expectedCronSecret;
+    const isSystemCall = !!cronSecret && !!expectedCronSecret && timingSafeEqual(cronSecret, expectedCronSecret);
     const authHeader = req.headers.get('Authorization');
 
     if (!isSystemCall) {
