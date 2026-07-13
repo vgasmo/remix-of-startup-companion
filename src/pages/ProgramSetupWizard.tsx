@@ -74,7 +74,7 @@ export default function ProgramSetupWizard() {
   const [prevStep, setPrevStep] = useState<WizardStep>('basics');
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [activeDraftId, setActiveDraftId] = useState<string | null>(draftId || null);
-  const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [autosaveStatus, setAutosaveStatus] = useState<SaveState>('idle');
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout>>();
   // Holds the latest pending updates so Save/Publish can flush before navigating.
   const pendingUpdatesRef = useRef<Partial<ProgramSetupDraft['draft_json']> | null>(null);
