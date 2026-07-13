@@ -9350,6 +9350,10 @@ export type Database = {
         Args: { p_program_id: string; p_workspace_id: string }
         Returns: Json
       }
+      publish_program_version: {
+        Args: { p_gates: Json; p_program_id: string; p_weeks: Json }
+        Returns: Json
+      }
       reject_startup_claim: {
         Args: { p_claim_id: string; p_reason?: string }
         Returns: undefined
