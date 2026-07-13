@@ -289,10 +289,17 @@ Deno.serve(async (req) => {
         updatePayload.onboarding_token_expires_at = null
       }
 
-      await supabase
+      const { error: contractUpdateErr } = await supabase
         .from('startup_contracts')
         .update(updatePayload)
         .eq('id', contract.id)
+      if (contractUpdateErr) {
+        console.error('pandadoc-webhook: contract update failed', contractUpdateErr.message)
+        await markInboxProcessed(supabase, claim.inboxId, {
+          status: 'failed', httpStatus: 500, errorMessage: `contract_update_failed:${contractUpdateErr.message}`, contractId: contract.id,
+        })
+        continue
+      }
 
       // === CANONICAL LIFECYCLE SYNC (shared helper) ===
       // Webhook always returns 200 to avoid PandaDoc retry storms, but failures
