@@ -297,7 +297,8 @@ Deno.serve(async (req) => {
         provider_last_event: `recipient-${recStatus}`,
         provider_last_sync_at: new Date().toISOString(),
         provider_last_error: null,
-        provider_webhook_event_id: eventId,
+        provider_webhook_event_id: eventId ?? `hash:${payloadHash.slice(0, 32)}`,
+
       }
       if (isFounder) patch.founder_signer_status = recStatus
       else if (isCounter) patch.counter_signer_status = recStatus
