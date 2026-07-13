@@ -7,6 +7,7 @@
  * Stops automatically when submission/signature happens.
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireCronSecret } from '../_shared/security.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,17 +19,11 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
-  // Auth: only x-cron-secret is accepted. The previous Bearer <anon key> path
-  // was removed — anon-key acceptance is not a valid cron authorization.
-  const cronSecret = req.headers.get('x-cron-secret')
-  const cronSecretEnv = Deno.env.get('CRON_SECRET')
-
-  const isAuthedByCron = !!cronSecret && !!cronSecretEnv && cronSecret === cronSecretEnv
-
-  if (!isAuthedByCron) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+  // SECURITY: Fail-closed timing-safe x-cron-secret check (cron-only).
+  const authCheck = requireCronSecret(req)
+  if ('error' in authCheck) {
+    console.error('[run-intake-reminders] Unauthorized invocation')
+    return authCheck.error
   }
 
   try {
