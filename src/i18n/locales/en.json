@@ -8328,6 +8328,7 @@
     "pendingSurveysDesc": "You have surveys waiting to be completed",
     "progress": "Progress",
     "progressSaved": "Progress saved",
+    "snapshotDrift": "{{accepted}} answers saved. {{dropped}} were ignored because the question no longer exists in this survey.",
     "questionOptions": "Options",
     "questionRequired": "Required",
     "questionText": "Question",
