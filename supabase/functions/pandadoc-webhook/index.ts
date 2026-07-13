@@ -245,8 +245,8 @@ Deno.serve(async (req) => {
         continue
       }
 
-      // Backfill contract_id on the inbox row for auditability.
-      await markInboxProcessed(supabase, claim.inboxId, { status: 'received', contractId: contract.id })
+      // Backfill contract_id on the inbox row for auditability (status stays 'received' until final processed).
+      await supabase.from('webhook_inbox').update({ contract_id: contract.id }).eq('id', claim.inboxId)
 
       // Map to canonical status
       const canonicalStatus = PANDADOC_STATUS_MAP[eventName] || contract.signature_status || 'draft'
@@ -265,9 +265,6 @@ Deno.serve(async (req) => {
         continue
       }
 
-
-      // Map to canonical status
-      const canonicalStatus = PANDADOC_STATUS_MAP[eventName] || contract.signature_status || 'draft'
 
       const updatePayload: Record<string, unknown> = {
         signature_status: canonicalStatus,
