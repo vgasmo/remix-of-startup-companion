@@ -632,6 +632,28 @@ function SurveyPreview({
 }) {
   const { t } = useTranslation();
   const sections = [...new Set(questions.map((q) => q.section))];
+  const [interactive, setInteractive] = useState(true);
+  const [answers, setAnswers] = useState<Record<string, string | string[] | number>>({});
+  const [submittedOpen, setSubmittedOpen] = useState(false);
+
+  const setAnswer = (id: string, value: string | string[] | number) =>
+    setAnswers((prev) => ({ ...prev, [id]: value }));
+
+  const toggleMulti = (id: string, opt: string) => {
+    const current = (answers[id] as string[]) || [];
+    setAnswer(id, current.includes(opt) ? current.filter((o) => o !== opt) : [...current, opt]);
+  };
+
+  const requiredQs = questions.filter((q) => q.required);
+  const answeredRequired = requiredQs.filter((q) => {
+    const a = answers[q.id];
+    if (Array.isArray(a)) return a.length > 0;
+    return a !== undefined && a !== "";
+  }).length;
+  const progress = requiredQs.length
+    ? Math.round((answeredRequired / requiredQs.length) * 100)
+    : 100;
+  const canSubmit = answeredRequired === requiredQs.length;
 
   if (questions.length === 0) {
     return (
@@ -643,14 +665,52 @@ function SurveyPreview({
 
   return (
     <div className="space-y-6 border rounded-md p-4 bg-background">
-      <div className="space-y-1 border-b pb-3">
-        <h3 className="text-lg font-semibold">{name}</h3>
-        {description && (
-          <p className="text-sm text-muted-foreground">{description}</p>
-        )}
+      <div className="space-y-2 border-b pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="text-lg font-semibold">{name}</h3>
+            {description && (
+              <p className="text-sm text-muted-foreground">{description}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Label htmlFor="respondent-mode" className="text-xs whitespace-nowrap">
+              {t("admin.surveys.respondentMode", "Modo respondente")}
+            </Label>
+            <Switch
+              id="respondent-mode"
+              checked={interactive}
+              onCheckedChange={(v) => {
+                setInteractive(v);
+                if (!v) setAnswers({});
+              }}
+            />
+          </div>
+        </div>
         <p className="text-xs text-muted-foreground italic">
-          {t("admin.surveys.previewNotice", "Pré-visualização — as respostas não são guardadas.")}
+          {interactive
+            ? t(
+                "admin.surveys.respondentNotice",
+                "Modo respondente ativo — pode preencher para experimentar. Nada é guardado.",
+              )
+            : t("admin.surveys.previewNotice", "Pré-visualização — as respostas não são guardadas.")}
         </p>
+        {interactive && (
+          <div className="space-y-1 pt-1">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{t("surveys.progress", "Progresso")}</span>
+              <span>
+                {answeredRequired}/{requiredQs.length} · {progress}%
+              </span>
+            </div>
+            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {sections.map((section) => (
@@ -658,49 +718,137 @@ function SurveyPreview({
           <h4 className="text-sm font-semibold text-primary">{section}</h4>
           {questions
             .filter((q) => q.section === section)
-            .map((q, idx) => (
-              <div key={q.id} className="space-y-2">
-                <Label className="text-sm">
-                  <span className="text-muted-foreground mr-2">{idx + 1}.</span>
-                  {q.question}
-                  {q.required && <span className="text-destructive ml-1">*</span>}
-                </Label>
-                {q.type === "text" && <Input disabled placeholder="..." />}
-                {q.type === "number" && <Input type="number" disabled placeholder="0" />}
-                {q.type === "textarea" && <Textarea disabled rows={3} placeholder="..." />}
-                {q.type === "rating" && (
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <Button key={n} type="button" size="sm" variant="outline" disabled>
-                        {n}
-                      </Button>
-                    ))}
-                  </div>
-                )}
-                {q.type === "select" && (
-                  <RadioGroup disabled className="space-y-1">
-                    {(q.options || []).map((opt) => (
-                      <div key={opt} className="flex items-center gap-2">
-                        <RadioGroupItem value={opt} id={`${q.id}-${opt}`} disabled />
-                        <Label htmlFor={`${q.id}-${opt}`} className="font-normal">{opt}</Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                )}
-                {q.type === "multiselect" && (
-                  <div className="space-y-1">
-                    {(q.options || []).map((opt) => (
-                      <div key={opt} className="flex items-center gap-2">
-                        <Checkbox id={`${q.id}-${opt}`} disabled />
-                        <Label htmlFor={`${q.id}-${opt}`} className="font-normal">{opt}</Label>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+            .map((q, idx) => {
+              const val = answers[q.id];
+              const disabled = !interactive;
+              return (
+                <div key={q.id} className="space-y-2">
+                  <Label className="text-sm">
+                    <span className="text-muted-foreground mr-2">{idx + 1}.</span>
+                    {q.question}
+                    {q.required && <span className="text-destructive ml-1">*</span>}
+                  </Label>
+                  {q.type === "text" && (
+                    <Input
+                      disabled={disabled}
+                      value={(val as string) || ""}
+                      onChange={(e) => setAnswer(q.id, e.target.value)}
+                      placeholder="..."
+                    />
+                  )}
+                  {q.type === "number" && (
+                    <Input
+                      type="number"
+                      disabled={disabled}
+                      value={(val as string) ?? ""}
+                      onChange={(e) => setAnswer(q.id, e.target.value)}
+                      placeholder="0"
+                    />
+                  )}
+                  {q.type === "textarea" && (
+                    <Textarea
+                      disabled={disabled}
+                      rows={3}
+                      value={(val as string) || ""}
+                      onChange={(e) => setAnswer(q.id, e.target.value)}
+                      placeholder="..."
+                    />
+                  )}
+                  {q.type === "rating" && (
+                    <div className="flex gap-1">
+                      {Array.from({ length: (q.max ?? 5) - (q.min ?? 1) + 1 }, (_, i) => (q.min ?? 1) + i).map((n) => (
+                        <Button
+                          key={n}
+                          type="button"
+                          size="sm"
+                          variant={val === n ? "default" : "outline"}
+                          disabled={disabled}
+                          onClick={() => setAnswer(q.id, n)}
+                        >
+                          {n}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                  {q.type === "select" && (
+                    <RadioGroup
+                      disabled={disabled}
+                      className="space-y-1"
+                      value={(val as string) || ""}
+                      onValueChange={(v) => setAnswer(q.id, v)}
+                    >
+                      {(q.options || []).map((opt) => (
+                        <div key={opt} className="flex items-center gap-2">
+                          <RadioGroupItem value={opt} id={`${q.id}-${opt}`} disabled={disabled} />
+                          <Label htmlFor={`${q.id}-${opt}`} className="font-normal">{opt}</Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  )}
+                  {q.type === "multiselect" && (
+                    <div className="space-y-1">
+                      {(q.options || []).map((opt) => (
+                        <div key={opt} className="flex items-center gap-2">
+                          <Checkbox
+                            id={`${q.id}-${opt}`}
+                            disabled={disabled}
+                            checked={((val as string[]) || []).includes(opt)}
+                            onCheckedChange={() => toggleMulti(q.id, opt)}
+                          />
+                          <Label htmlFor={`${q.id}-${opt}`} className="font-normal">{opt}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
         </div>
       ))}
+
+      {interactive && (
+        <div className="flex items-center justify-end gap-2 pt-2 border-t">
+          <Button variant="outline" size="sm" onClick={() => setAnswers({})}>
+            {t("admin.surveys.clearAnswers", "Limpar respostas")}
+          </Button>
+          <Button size="sm" disabled={!canSubmit} onClick={() => setSubmittedOpen(true)}>
+            {t("admin.surveys.simulateSubmit", "Simular submissão")}
+          </Button>
+        </div>
+      )}
+
+      <Dialog open={submittedOpen} onOpenChange={setSubmittedOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {t("admin.surveys.simulatedResponses", "Respostas simuladas")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground italic">
+              {t(
+                "admin.surveys.simulatedNotice",
+                "Nada foi guardado. É apenas a pré-visualização do que o respondente enviaria.",
+              )}
+            </p>
+            {questions.map((q) => {
+              const a = answers[q.id];
+              const display = Array.isArray(a) ? a.join(", ") : a !== undefined && a !== "" ? String(a) : "—";
+              return (
+                <div key={q.id} className="grid grid-cols-2 gap-3 py-2 border-b border-border/50 text-sm">
+                  <div className="text-muted-foreground">{q.question}</div>
+                  <div className="font-medium">{display}</div>
+                </div>
+              );
+            })}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSubmittedOpen(false)}>
+              {t("common.close", "Fechar")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
