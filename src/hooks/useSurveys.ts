@@ -45,7 +45,21 @@ export interface SurveyCampaign {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  // Copy-on-write snapshot taken at launch time. Preferred over
+  // survey_definition.questions_json for reads once a campaign is active,
+  // so subsequent template edits never mutate live questionnaires.
+  questions_snapshot: SurveyQuestion[] | null;
+  launched_at: string | null;
+  definition_version_at_launch: string | null;
   survey_definition?: SurveyDefinition;
+}
+
+/** Preferred accessor: snapshot if present (post-launch), else live definition. */
+export function getCampaignQuestions(c: Pick<SurveyCampaign, 'questions_snapshot' | 'survey_definition'>): SurveyQuestion[] {
+  if (Array.isArray(c.questions_snapshot) && c.questions_snapshot.length > 0) {
+    return c.questions_snapshot;
+  }
+  return (c.survey_definition?.questions_json ?? []) as SurveyQuestion[];
 }
 
 export interface SurveyInstance {
@@ -170,7 +184,17 @@ export function useDeleteSurveyDefinition() {
         .from("survey_definitions")
         .delete()
         .eq("id", id);
-      if (error) throw error;
+      if (error) {
+        // RESTRICT: FK from survey_campaigns blocks hard delete when any
+        // campaign was ever created from this template. Surface an actionable
+        // hint so callers can offer "Archive" instead.
+        if ((error as { code?: string }).code === '23503') {
+          const err = new Error(t('surveys.templateDeleteBlockedByCampaigns', 'Template has campaigns — archive it instead'));
+          (err as unknown as { code: string }).code = 'RESTRICT_CAMPAIGNS';
+          throw err;
+        }
+        throw error;
+      }
       return id;
     },
     onSuccess: () => {
@@ -178,7 +202,35 @@ export function useDeleteSurveyDefinition() {
       notify.success(t('surveys.templateDeleted', 'Template removido'));
     },
     onError: (error) => {
-      notify.error(t('surveys.templateDeleteFailed', 'Falha ao remover template'));
+      notify.error((error as Error)?.message || t('surveys.templateDeleteFailed', 'Falha ao remover template'));
+      logger.error('operation_error', {}, error);
+    },
+  });
+}
+
+/**
+ * Soft-archive a survey definition. Preferred over delete once any campaign
+ * has been launched from it (delete is blocked by RESTRICT FK).
+ */
+export function useArchiveSurveyDefinition() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, archive }: { id: string; archive: boolean }) => {
+      const { error } = await supabase
+        .from("survey_definitions")
+        .update({
+          archived_at: archive ? new Date().toISOString() : null,
+          is_active: archive ? false : true,
+        } as never)
+        .eq("id", id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["survey-definitions"] });
+    },
+    onError: (error) => {
+      notify.error(t('surveys.templateUpdateFailed'));
       logger.error('operation_error', {}, error);
     },
   });
@@ -241,66 +293,19 @@ export function useLaunchCampaign() {
 
   return useMutation({
     mutationFn: async (campaignId: string) => {
-      // Get campaign details
-      const { data: campaign, error: campaignError } = await supabase
-        .from("survey_campaigns")
-        .select("*, survey_definition:survey_definitions(*)")
-        .eq("id", campaignId)
-        .single();
-
-      if (campaignError) throw campaignError;
-
-      // Get all active workspaces (optionally filtered by program)
-      let query = supabase
-        .from("workspaces")
-        .select("id, startup_id, stage, startups(name, founded_date, description)")
-        .eq("status", "active");
-
-      if (campaign.program_id) {
-        query = query.eq("program_id", campaign.program_id);
-      }
-
-      const { data: workspaces, error: workspacesError } = await query;
-      if (workspacesError) throw workspacesError;
-
-      // Create survey instances for each workspace with auto-filled data
-      const instances = workspaces.map((ws) => {
-        // Extract year from founded_date if available
-        const foundedYear = ws.startups?.founded_date 
-          ? new Date(ws.startups.founded_date).getFullYear() 
-          : null;
-
-        const autoFilledData: Json = {
-          stage: ws.stage,
-          startup_name: ws.startups?.name || null,
-          founded_year: foundedYear,
-        };
-
-        return {
-          campaign_id: campaignId,
-          workspace_id: ws.id,
-          auto_filled_data: autoFilledData,
-          status: "pending" as const,
-        };
+      // Atomic launch: snapshot questions_json into the campaign, create
+      // instances for every active workspace (optionally filtered by
+      // program), and flip status draft→active — all in one transaction.
+      // Rejects on archived template, empty questions, non-draft status.
+      const { data, error } = await (supabase as unknown as {
+        rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
+      }).rpc('launch_survey_campaign', {
+        p_campaign_id: campaignId,
+        p_workspace_ids: null,
       });
-
-      if (instances.length > 0) {
-        const { error: instancesError } = await supabase
-          .from("survey_instances")
-          .insert(instances);
-
-        if (instancesError) throw instancesError;
-      }
-
-      // Update campaign status to active
-      const { error: updateError } = await supabase
-        .from("survey_campaigns")
-        .update({ status: "active" })
-        .eq("id", campaignId);
-
-      if (updateError) throw updateError;
-
-      return { instancesCreated: instances.length };
+      if (error) throw error;
+      const row = Array.isArray(data) ? (data[0] as { instances_created?: number } | undefined) : (data as { instances_created?: number } | null);
+      return { instancesCreated: row?.instances_created ?? 0 };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
@@ -463,37 +468,17 @@ export function useSaveSurveyResponses() {
       }>;
       submit?: boolean;
     }) => {
-      // Upsert responses
-      for (const response of responses) {
-        const { error } = await supabase.from("survey_responses").upsert(
-          {
-            instance_id: instanceId,
-            question_id: response.question_id,
-            response_value: response.response_value,
-            response_json: response.response_json,
-            is_auto_filled: response.is_auto_filled || false,
-          },
-          { onConflict: "instance_id,question_id" }
-        );
-
-        if (error) throw error;
-      }
-
-      // Update instance status
-      const updateData: Record<string, unknown> = {
-        status: submit ? "submitted" : "in_progress",
-      };
-
-      if (submit) {
-        updateData.submitted_at = new Date().toISOString();
-      }
-
-      const { error: updateError } = await supabase
-        .from("survey_instances")
-        .update(updateData)
-        .eq("id", instanceId);
-
-      if (updateError) throw updateError;
+      // Atomic: upsert every response AND flip instance status in one
+      // transaction. Rejects submits on non-active campaigns and blocks
+      // re-submission of already-submitted instances.
+      const { error } = await (supabase as unknown as {
+        rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
+      }).rpc('submit_survey_responses', {
+        p_instance_id: instanceId,
+        p_responses: responses as unknown as Json,
+        p_submit: submit,
+      });
+      if (error) throw error;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["survey-instance", variables.instanceId] });

@@ -6740,11 +6740,14 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          definition_version_at_launch: string | null
           description: string | null
           ends_at: string
           id: string
+          launched_at: string | null
           name: string
           program_id: string | null
+          questions_snapshot: Json | null
           reminder_days: number[] | null
           starts_at: string
           status: string
@@ -6754,11 +6757,14 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          definition_version_at_launch?: string | null
           description?: string | null
           ends_at: string
           id?: string
+          launched_at?: string | null
           name: string
           program_id?: string | null
+          questions_snapshot?: Json | null
           reminder_days?: number[] | null
           starts_at?: string
           status?: string
@@ -6768,11 +6774,14 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          definition_version_at_launch?: string | null
           description?: string | null
           ends_at?: string
           id?: string
+          launched_at?: string | null
           name?: string
           program_id?: string | null
+          questions_snapshot?: Json | null
           reminder_days?: number[] | null
           starts_at?: string
           status?: string
@@ -6798,6 +6807,7 @@ export type Database = {
       }
       survey_definitions: {
         Row: {
+          archived_at: string | null
           auto_fill_mappings: Json | null
           created_at: string
           created_by: string | null
@@ -6809,6 +6819,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
           auto_fill_mappings?: Json | null
           created_at?: string
           created_by?: string | null
@@ -6820,6 +6831,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
           auto_fill_mappings?: Json | null
           created_at?: string
           created_by?: string | null
@@ -9329,6 +9341,13 @@ export type Database = {
         Args: { _startup_id: string }
         Returns: boolean
       }
+      launch_survey_campaign: {
+        Args: { p_campaign_id: string; p_workspace_ids?: string[] }
+        Returns: {
+          campaign_id: string
+          instances_created: number
+        }[]
+      }
       list_ecosystem_items: {
         Args: {
           p_has_startup_portugal?: boolean
@@ -9513,6 +9532,14 @@ export type Database = {
       submit_checkin: {
         Args: { p_instance_id: string; p_responses: Json }
         Returns: string
+      }
+      submit_survey_responses: {
+        Args: { p_instance_id: string; p_responses: Json; p_submit?: boolean }
+        Returns: {
+          instance_id: string
+          responses_saved: number
+          status: string
+        }[]
       }
       unblock_workspace: { Args: { _workspace_id: string }; Returns: undefined }
       validate_portuguese_nif: { Args: { nif: string }; Returns: boolean }

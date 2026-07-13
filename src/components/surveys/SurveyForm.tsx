@@ -45,7 +45,12 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
   const locale = getDateLocale();
 
   const questions = useMemo(() => {
-    return (data?.instance?.campaign?.survey_definition?.questions_json || []) as SurveyQuestion[];
+    // Prefer the campaign's copy-on-write snapshot when present. Falls back
+    // to the live definition for drafts / legacy campaigns without a snapshot.
+    const campaign = data?.instance?.campaign;
+    const snap = (campaign as unknown as { questions_snapshot?: SurveyQuestion[] | null })?.questions_snapshot;
+    if (Array.isArray(snap) && snap.length > 0) return snap;
+    return (campaign?.survey_definition?.questions_json || []) as SurveyQuestion[];
   }, [data]);
 
   const sections = useMemo(() => {
