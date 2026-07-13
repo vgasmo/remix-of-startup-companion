@@ -454,37 +454,17 @@ export function useSaveSurveyResponses() {
       }>;
       submit?: boolean;
     }) => {
-      // Upsert responses
-      for (const response of responses) {
-        const { error } = await supabase.from("survey_responses").upsert(
-          {
-            instance_id: instanceId,
-            question_id: response.question_id,
-            response_value: response.response_value,
-            response_json: response.response_json,
-            is_auto_filled: response.is_auto_filled || false,
-          },
-          { onConflict: "instance_id,question_id" }
-        );
-
-        if (error) throw error;
-      }
-
-      // Update instance status
-      const updateData: Record<string, unknown> = {
-        status: submit ? "submitted" : "in_progress",
-      };
-
-      if (submit) {
-        updateData.submitted_at = new Date().toISOString();
-      }
-
-      const { error: updateError } = await supabase
-        .from("survey_instances")
-        .update(updateData)
-        .eq("id", instanceId);
-
-      if (updateError) throw updateError;
+      // Atomic: upsert every response AND flip instance status in one
+      // transaction. Rejects submits on non-active campaigns and blocks
+      // re-submission of already-submitted instances.
+      const { error } = await (supabase as unknown as {
+        rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
+      }).rpc('submit_survey_responses', {
+        p_instance_id: instanceId,
+        p_responses: responses as unknown as Json,
+        p_submit: submit,
+      });
+      if (error) throw error;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["survey-instance", variables.instanceId] });
