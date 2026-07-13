@@ -5,8 +5,9 @@ import { LifeBuoy, Sparkles, Search, CalendarClock, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { logger } from '@/lib/logger';
+import { track, type AnalyticsEvent } from '@/lib/analytics';
 import { useFounderStuckSignal } from '@/hooks/useFounderStuckSignal';
+
 
 interface FounderHelpNudgeProps {
   /** Workspace id, used for "Book a session" deep-link. */
