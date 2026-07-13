@@ -1,5 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireCronSecret } from "../_shared/security.ts";
+
+
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -52,16 +55,11 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // SECURITY: Validate CRON_SECRET for system-initiated calls
-    const cronSecret = req.headers.get("x-cron-secret");
-    const expectedSecret = Deno.env.get("CRON_SECRET");
-    
-    if (expectedSecret && cronSecret !== expectedSecret) {
-      console.error("[run-checkin-reminders] Unauthorized: Invalid cron secret");
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // SECURITY: Fail-closed cron-secret validation (timing-safe, requires CRON_SECRET env).
+    const authCheck = requireCronSecret(req);
+    if ("error" in authCheck) {
+      console.error("[run-checkin-reminders] Unauthorized cron invocation");
+      return authCheck.error;
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
