@@ -43,8 +43,18 @@ interface UseContractDraftAutosaveOptions<T extends Record<string, unknown>> {
   disabled?: boolean;
 }
 
+/**
+ * Hashed storage key — the raw scopeKey is a signing token or contract id.
+ * We derive a short FNV-1a digest so DevTools never shows the token itself.
+ */
 function buildKey(namespace: string, scopeKey: string) {
-  return `${namespace}-draft:${scopeKey}`;
+  let h = 2166136261 >>> 0;
+  const input = `${namespace}:${scopeKey}`;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return `${namespace}-draft:${h.toString(36)}`;
 }
 
 function readLocal<T>(key: string): LocalDraft<T> | null {

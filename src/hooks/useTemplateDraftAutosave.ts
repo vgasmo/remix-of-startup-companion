@@ -36,8 +36,15 @@ interface UseTemplateDraftAutosaveOptions {
   disabled?: boolean;
 }
 
+/** Hashed storage key so raw workspace/template/user ids don't sit in DevTools. */
 function storageKey(workspaceId: string, templateId: string, userId: string) {
-  return `template-draft:${workspaceId}:${templateId}:${userId}`;
+  const input = `${workspaceId}:${templateId}:${userId}`;
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return `template-draft:${h.toString(36)}`;
 }
 
 function readLocal(key: string): LocalDraft | null {
