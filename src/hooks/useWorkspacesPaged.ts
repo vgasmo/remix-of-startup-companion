@@ -11,6 +11,8 @@ export interface UseWorkspacesPagedArgs {
   stage?: StartupStage | 'all';
   health?: HealthScore | 'all';
   priority?: WorkspacePriority | 'all';
+  missingKpi?: boolean;
+  overdueActions?: boolean;
   sortBy?: SortOption;
   statuses?: WorkspaceStatus[];
   assignedOnly?: boolean;
@@ -38,6 +40,8 @@ export function useWorkspacesPaged(args: UseWorkspacesPagedArgs) {
     stage = 'all',
     health = 'all',
     priority = 'all',
+    missingKpi = false,
+    overdueActions = false,
     sortBy = 'priority',
     statuses = ['active'],
     assignedOnly = false,
@@ -49,10 +53,13 @@ export function useWorkspacesPaged(args: UseWorkspacesPagedArgs) {
   return useQuery({
     enabled: enabled && !!userId,
     placeholderData: keepPreviousData,
+    // Cache paginated result briefly to keep filter toggling snappy for ~150 startups.
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
     queryKey: [
       'workspaces-paged',
       userId,
-      { search, programId, stage, health, priority, sortBy, statuses: statuses.slice().sort().join(','), assignedOnly, page, pageSize },
+      { search, programId, stage, health, priority, missingKpi, overdueActions, sortBy, statuses: statuses.slice().sort().join(','), assignedOnly, page, pageSize },
     ],
     queryFn: async (): Promise<UseWorkspacesPagedResult> => {
       const offset = Math.max(0, (page - 1) * pageSize);
@@ -67,6 +74,8 @@ export function useWorkspacesPaged(args: UseWorkspacesPagedArgs) {
         _sort_by: sortBy,
         _limit: pageSize,
         _offset: offset,
+        _missing_kpi_this_month: missingKpi,
+        _overdue_actions: overdueActions,
       });
       if (error) throw error;
 

@@ -204,11 +204,10 @@ export default function MyWorkspaces() {
   }, [workspaces, quickFilters]);
 
   // ── Server-side pagination path ────────────────────────────────────────────
-  // Use the server-paginated RPC for the heavy list render unless the user
-  // engaged client-only filters (quick chips, missingKpi, overdueActions),
-  // which require the in-memory dataset to compute correctly.
-  const hasClientOnlyFilters =
-    missingKpi || overdueActions || Object.values(quickFilters).some(Boolean);
+  // Stage, health, missing-KPI-this-month and overdue-actions all filter in the
+  // RPC now, so only the transient quick-chip filters (which read in-memory
+  // fields like nextMeetingDate) still force the client path.
+  const hasClientOnlyFilters = Object.values(quickFilters).some(Boolean);
   const useServer = showListView && !hasClientOnlyFilters;
   const debouncedSearch = useDebounce(search, 300);
   const { data: pagedData, isLoading: pagedLoading } = useWorkspacesPaged({
@@ -217,6 +216,8 @@ export default function MyWorkspaces() {
     stage: stageFilter,
     health: healthFilter,
     priority: priorityFilter,
+    missingKpi,
+    overdueActions,
     sortBy,
     statuses: workspaceStatuses,
     assignedOnly: showAssignedOnly,

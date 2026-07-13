@@ -9450,7 +9450,9 @@ export type Database = {
           _assigned_to?: string
           _health?: Database["public"]["Enums"]["health_score"]
           _limit?: number
+          _missing_kpi_this_month?: boolean
           _offset?: number
+          _overdue_actions?: boolean
           _priority?: Database["public"]["Enums"]["workspace_priority"]
           _program_id?: string
           _search?: string
