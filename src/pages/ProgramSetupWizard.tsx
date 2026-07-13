@@ -426,6 +426,12 @@ export default function ProgramSetupWizard() {
               {autosaveStatus === 'saved' && (
                 <span className="text-xs text-muted-foreground">💾 {t('programSetup.autoSaved', { defaultValue: 'Guardado' })}</span>
               )}
+              {autosaveStatus === 'conflict' && (
+                <span className="text-xs text-amber-600 dark:text-amber-400">↻ {t('programSetup.conflictBadge', { defaultValue: 'Sincronizando…' })}</span>
+              )}
+              {autosaveStatus === 'error' && (
+                <span className="text-xs text-destructive">⚠ {t('programSetup.saveError', { defaultValue: 'Erro ao guardar' })}</span>
+              )}
             </div>
             </div>
             <Progress value={progress} className="h-2" />
