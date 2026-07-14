@@ -20,7 +20,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import {
   Building2, FileText, PenTool, CheckCircle2, ArrowRight, ArrowLeft,
-  Shield, Loader2, AlertTriangle, Upload, X, Globe, FileUp, Mail, RotateCcw
+  Shield, Loader2, AlertTriangle, Upload, X, Globe, FileUp, Mail, RotateCcw, Download, Eye
 } from 'lucide-react';
 import { useContractDraftAutosave } from '@/hooks/useContractDraftAutosave';
 
@@ -980,13 +980,29 @@ export default function PublicContractSigning() {
             <CardContent className="space-y-5">
               {/* Contract Document */}
               <div className="border rounded-lg p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium">
-                      {t('publicContractSigning.incubationContractTemplate')}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{t('publicContractSigning.officialTemplate')} — 2026</p>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-medium">
+                        {t('publicContractSigning.incubationContractTemplate')}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{t('publicContractSigning.officialTemplate')} — 2026</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a href="/templates/V9_Minuta_Contrato_IF_e_IV_2026.docx" target="_blank" rel="noopener noreferrer">
+                      <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+                        <Eye className="h-3.5 w-3.5" />
+                        {lang === 'pt' ? 'Ver' : 'View'}
+                      </Button>
+                    </a>
+                    <a href="/templates/V9_Minuta_Contrato_IF_e_IV_2026.docx" download>
+                      <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+                        <Download className="h-3.5 w-3.5" />
+                        {lang === 'pt' ? 'Descarregar' : 'Download'}
+                      </Button>
+                    </a>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -1004,17 +1020,35 @@ export default function PublicContractSigning() {
                 </div>
               </div>
 
+
               {/* Regulation Document */}
               <div className="border rounded-lg p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-amber-600" />
-                  <div>
-                    <p className="text-sm font-medium">
-                      {t('publicContractSigning.startupLeiriaRegulation')}
-                    </p>
-                    <p className="text-xs text-muted-foreground">V11 — Anexo I — 2026</p>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-amber-600" />
+                    <div>
+                      <p className="text-sm font-medium">
+                        {t('publicContractSigning.startupLeiriaRegulation')}
+                      </p>
+                      <p className="text-xs text-muted-foreground">V11 — Anexo I — 2026</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a href="/templates/V11_Anexo_I_Regulamento_SUP_LRA_2026_2.pdf" target="_blank" rel="noopener noreferrer">
+                      <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+                        <Eye className="h-3.5 w-3.5" />
+                        {lang === 'pt' ? 'Ver' : 'View'}
+                      </Button>
+                    </a>
+                    <a href="/templates/V11_Anexo_I_Regulamento_SUP_LRA_2026_2.pdf" download>
+                      <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+                        <Download className="h-3.5 w-3.5" />
+                        {lang === 'pt' ? 'Descarregar' : 'Download'}
+                      </Button>
+                    </a>
                   </div>
                 </div>
+
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {t('publicContractSigning.theRegulationDefinesTheOperating')}
                 </p>
