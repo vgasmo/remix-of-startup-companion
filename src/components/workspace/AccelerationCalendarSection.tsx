@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO, isPast, isToday, isFuture, addDays } from 'date-fns';
 import { getDateLocale } from '@/lib/dateLocale';
-import { 
-  Calendar, Video, ExternalLink, Clock, CheckCircle2, Circle, 
-  Pencil, X, Save, Link2
+import {
+  Calendar, Video, ExternalLink, Clock, CheckCircle2, Circle,
+  Pencil, X, Save, Link2, Sparkles,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
