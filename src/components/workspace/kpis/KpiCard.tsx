@@ -140,7 +140,7 @@ export function KpiCard({
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">{t('kpis.value', 'Value')}</Label>
                 <div className="flex items-center gap-2">
-                  <Input type="number" value={displayValue} onChange={e => onValueChange('value', e.target.value)} placeholder={t('kpis.enterValue', 'Enter value')} className="h-9" />
+                  <Input type="number" value={displayValue} onChange={e => onValueChange('value', e.target.value)} onBlur={() => onBlurFlush?.()} placeholder={t('kpis.enterValue', 'Enter value')} className="h-9" />
                   {def.unit && <span className="text-sm text-muted-foreground shrink-0">{def.unit}</span>}
                 </div>
               </div>
