@@ -738,5 +738,6 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
         )}
       </CardContent>
     </Card>
+    </>
   );
 }
