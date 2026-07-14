@@ -401,6 +401,17 @@ export default function CRM() {
             </SelectContent>
           </Select>
 
+          <Select value={segmentFilter} onValueChange={setSegmentFilter}>
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder={t('crm.filterBySegment', { defaultValue: 'Segment' })} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('crm.segment.all', { defaultValue: 'All' })}</SelectItem>
+              <SelectItem value="commercial">{t('crm.segment.commercial', { defaultValue: 'Commercial pipeline' })}</SelectItem>
+              <SelectItem value="active_customers">{t('crm.segment.activeCustomers', { defaultValue: 'Active customers' })}</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Select value={stageFilter} onValueChange={setStageFilter}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder={t('crm.filterByStage')} />
