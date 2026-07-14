@@ -165,7 +165,7 @@ export function CrmBulkActions({
           }
 
           if (eventFailures > 0) {
-            notify.warning(t('crm.bulk.partialEventFailures', {
+            notify.warn(t('crm.bulk.partialEventFailures', {
               count: eventFailures,
               total: ids.length,
               defaultValue: `${eventFailures}/${ids.length} eventos não registados. O histórico pode estar incompleto.`,
