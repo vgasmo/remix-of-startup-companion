@@ -9716,7 +9716,7 @@
       "revenueY2": "Revenue Y2",
       "cogs": "COGS",
       "grossMargin": "Gross margin",
-      "payroll": "Payroll (14m)",
+      "payroll": "Payroll (14m + TSU)",
       "ebitdaProxy": "EBITDA proxy",
       "ltvCac": "LTV : CAC",
       "payback": "Payback (months)"
@@ -9741,6 +9741,8 @@
       "kpi": "KPI signals",
       "ai": "AI suggestions",
       "insert": "Saving proposals"
-    }
+    },
+    "idkRationale": "Skipped by founder — revisit later",
+    "skippedBadge": "Skipped"
   }
 }
