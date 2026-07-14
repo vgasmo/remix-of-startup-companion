@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { format, isPast } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import {
   FileText,
   Clock,
