@@ -392,7 +392,7 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
                 <div key={a.id} className="py-2 flex items-center justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium truncate">{a.key}</span>
+                      <span className="text-sm font-medium truncate">{assumptionLabel(t, a.key)}</span>
                       <SourceBadge source={a.source} />
                     </div>
                     {a.rationale && <p className="text-xs text-muted-foreground truncate">{a.rationale}</p>}
