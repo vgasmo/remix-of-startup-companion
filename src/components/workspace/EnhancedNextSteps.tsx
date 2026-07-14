@@ -110,7 +110,7 @@ export function EnhancedNextSteps({ workspaceId, programId, stage, canWrite }: E
         priority: 15,
         title: t('nextSteps.weeklyCheckin'),
         description: t('nextSteps.dueOn', {
-          date: format(new Date(pendingCheckin.due_date), 'EEEE'),
+          date: format(new Date(pendingCheckin.due_date), 'EEEE', { locale: dateLocale }),
         }),
         icon: <ClipboardList className="h-5 w-5" />,
         variant: 'warning',
