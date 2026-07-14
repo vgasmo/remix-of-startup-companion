@@ -3,18 +3,22 @@
  * Shows synced Outlook emails from communication_log for the funnel item or workspace
  * Includes AI-powered summary generation
  */
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mail, ArrowDownLeft, ArrowUpRight, RefreshCw, Sparkles, Loader2 } from 'lucide-react';
+import { Mail, ArrowDownLeft, ArrowUpRight, RefreshCw, Sparkles, Loader2, ChevronDown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { formatRelativeTime } from '@/lib/dateUtils';
 import { useRelationshipRecap, useGenerateRecap } from '@/hooks/useActivityTimeline';
 import { cn } from '@/lib/utils';
+
+const VISIBLE_EMAIL_COUNT = 5;
 
 interface EmailHistoryPanelProps {
   funnelItemId?: string;
@@ -27,6 +31,7 @@ interface EmailHistoryPanelProps {
 export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isSyncing, emailSyncEnabled }: EmailHistoryPanelProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language.startsWith('pt') ? 'pt' : 'en';
+  const [showAll, setShowAll] = useState(false);
 
   const { data: emails, isLoading } = useQuery({
     queryKey: ['crm-emails', funnelItemId, workspaceId],
@@ -186,35 +191,64 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
       ) : (
         <ScrollArea className="flex-1 min-h-[220px]">
           <div className="space-y-1">
-            {emails.map(email => (
-              <Card key={email.id} className="border-border/40 hover:bg-muted/40 transition-colors">
-                <CardContent className="p-2.5">
-                  <div className="flex items-start gap-2">
-                    <div className="mt-0.5">
-                      {email.direction === 'inbound' ? (
-                        <ArrowDownLeft className="h-3.5 w-3.5 text-[hsl(var(--info))]" />
-                      ) : (
-                        <ArrowUpRight className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-medium truncate">{email.subject || t('crm.noSubject', { defaultValue: '(sem assunto)' })}</p>
-                        <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                          {formatRelativeTime(email.occurred_at)}
-                        </span>
+            {(() => {
+              const visibleEmails = emails.slice(0, VISIBLE_EMAIL_COUNT);
+              const hiddenEmails = emails.slice(VISIBLE_EMAIL_COUNT);
+              const renderRow = (email: typeof emails[number]) => (
+                <Card key={email.id} className="border-border/40 hover:bg-muted/40 transition-colors">
+                  <CardContent className="p-2.5">
+                    <div className="flex items-start gap-2">
+                      <div className="mt-0.5">
+                        {email.direction === 'inbound' ? (
+                          <ArrowDownLeft className="h-3.5 w-3.5 text-[hsl(var(--info))]" />
+                        ) : (
+                          <ArrowUpRight className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
+                        )}
                       </div>
-                      {email.from_address && (
-                        <p className="text-[10px] text-muted-foreground truncate">{email.from_address}</p>
-                      )}
-                      {email.preview && (
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{email.preview}</p>
-                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs font-medium truncate">{email.subject || t('crm.noSubject', { defaultValue: '(sem assunto)' })}</p>
+                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                            {formatRelativeTime(email.occurred_at)}
+                          </span>
+                        </div>
+                        {email.from_address && (
+                          <p className="text-[10px] text-muted-foreground truncate">{email.from_address}</p>
+                        )}
+                        {email.preview && (
+                          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{email.preview}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+
+              return (
+                <>
+                  {visibleEmails.map(renderRow)}
+                  {hiddenEmails.length > 0 && (
+                    <Collapsible open={showAll} onOpenChange={setShowAll}>
+                      <CollapsibleContent className="space-y-1 pt-1 data-[state=open]:animate-in data-[state=closed]:animate-out">
+                        {hiddenEmails.map(renderRow)}
+                      </CollapsibleContent>
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full h-7 text-xs mt-1 justify-center gap-1 text-muted-foreground hover:text-foreground"
+                        >
+                          <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', showAll && 'rotate-180')} />
+                          {showAll
+                            ? t('crm.showLess', { defaultValue: 'Mostrar menos' })
+                            : t('crm.showMoreEmails', { count: hiddenEmails.length, defaultValue: 'Mostrar mais {{count}}' })}
+                        </Button>
+                      </CollapsibleTrigger>
+                    </Collapsible>
+                  )}
+                </>
+              );
+            })()}
           </div>
         </ScrollArea>
       )}

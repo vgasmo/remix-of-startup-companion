@@ -3483,6 +3483,8 @@
       "commercial": "Commercial pipeline",
       "activeCustomers": "Active customers"
     },
+    "showLess": "Show less",
+    "showMoreEmails": "Show {{count}} more",
     "startFirstSync": "Start first sync",
     "startupCategory": "Categoria",
     "suggestedNextSteps": "Suggested Next Steps",
