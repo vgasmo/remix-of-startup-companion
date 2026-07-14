@@ -30,6 +30,7 @@ interface OwnershipCardProps {
 
 export function OwnershipCard({ workspaceId, compact = false }: OwnershipCardProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { isConsultor, isAdmin } = useAuth();
   const canEdit = isConsultor || isAdmin;
 
