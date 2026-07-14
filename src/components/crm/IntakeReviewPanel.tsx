@@ -4,6 +4,9 @@
  * and the "Enviar para Assinatura" action when approved.
  */
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +23,7 @@ import {
 import {
   CheckCircle2, AlertTriangle, XCircle, Building2,
   User, Mail, Phone, Globe, CreditCard, Clock, Shield,
-  ClipboardCheck, RotateCcw, Loader2, Send,
+  ClipboardCheck, RotateCcw, Loader2, Send, FileText, PlusCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type ContractIntake, useTransitionIntakeStatus, useIntakeEvents } from '@/hooks/useContractIntakes';
@@ -45,12 +48,33 @@ const SIGNATURE_PROVIDERS = [
 ] as const;
 
 export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
+  const navigate = useNavigate();
   const [actionNotes, setActionNotes] = useState('');
   const [showNotes, setShowNotes] = useState<'approve' | 'changes' | 'cancel' | null>(null);
   const [sendingSignature, setSendingSignature] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string>('');
   const transition = useTransitionIntakeStatus();
   const { data: events } = useIntakeEvents(intake.id);
+
+  // Load linked contract completeness so we can warn staff and gate approval.
+  const { data: linkedContract } = useQuery({
+    queryKey: ['intake-linked-contract', intake.contract_id],
+    enabled: !!intake.contract_id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('startup_contracts')
+        .select('id, incubation_type_id, building_id, monthly_fee, archived_at')
+        .eq('id', intake.contract_id!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const contractMissing = !intake.contract_id || (!!intake.contract_id && linkedContract === null);
+  const contractArchived = !!linkedContract?.archived_at;
+  const contractIncomplete = !!linkedContract && !linkedContract.archived_at && !linkedContract.incubation_type_id;
+  const contractBlocksApproval = contractMissing || contractArchived || contractIncomplete;
 
   const canReview = REVIEWABLE_STATES.includes(intake.status as IntakeState);
   const isApproved = intake.status === 'approved_for_signature';
@@ -182,6 +206,54 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
           </div>
         )}
 
+        {/* Contract prerequisite for approval */}
+        {canReview && contractBlocksApproval && (
+          <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 space-y-2">
+            <p className="text-xs font-semibold text-destructive flex items-center gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              {contractMissing
+                ? 'Sem contrato associado'
+                : contractArchived
+                ? 'Contrato associado foi arquivado'
+                : 'Contrato incompleto'}
+            </p>
+            <p className="text-xs text-destructive/90">
+              {contractMissing
+                ? 'Para aprovar para assinatura é preciso um contrato com modalidade, edifício e mensalidade definidas.'
+                : contractArchived
+                ? 'O contrato ligado a este intake está arquivado. Crie um novo contrato ou reative-o.'
+                : 'Falta definir a modalidade de incubação no contrato ligado a este intake.'}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="default"
+                className="h-8 text-xs gap-1.5"
+                onClick={() => {
+                  const params = new URLSearchParams({
+                    tab: 'backoffice',
+                    subtab: 'contracts',
+                  });
+                  if (intake.contract_id && !contractMissing) {
+                    params.set('contract', intake.contract_id);
+                  } else {
+                    params.set('action', 'create');
+                    if (intake.funnel_item_id) params.set('funnel', intake.funnel_item_id);
+                    if (intake.organization_name) params.set('org', intake.organization_name);
+                    if (intake.legal_representative_email) params.set('email', intake.legal_representative_email);
+                    if (intake.legal_representative_name) params.set('contact', intake.legal_representative_name);
+                  }
+                  onClose?.();
+                  navigate(`/admin?${params.toString()}`);
+                }}
+              >
+                {contractMissing ? <PlusCircle className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
+                {contractMissing ? 'Criar contrato agora' : 'Completar contrato'}
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Timestamps */}
         <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground">
           {intake.submitted_at && (
@@ -222,7 +294,9 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
                       size="sm"
                       className="gap-1.5 bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]"
                       onClick={() => handleTransition('approved_for_signature')}
-                      disabled={transition.isPending} loading={transition.isPending}
+                      disabled={transition.isPending || contractBlocksApproval}
+                      loading={transition.isPending}
+                      title={contractBlocksApproval ? 'Contrato incompleto ou em falta' : undefined}
                     >
                       {transition.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
                       Confirmar Aprovação
@@ -263,6 +337,8 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
                   size="sm"
                   className="gap-1.5 bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]"
                   onClick={() => setShowNotes('approve')}
+                  disabled={contractBlocksApproval}
+                  title={contractBlocksApproval ? 'Contrato incompleto ou em falta — crie/complete o contrato primeiro' : undefined}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   Aprovar para Assinatura
