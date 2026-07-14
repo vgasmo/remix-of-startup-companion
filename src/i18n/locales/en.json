@@ -3475,7 +3475,8 @@
       "new": "New",
       "qualified": "Qualified"
     },
-    "stale": "Stale",
+    "stale": "Stale leads (>14 days)",
+    "staleTooltip": "Commercial opportunities with no recent activity and no scheduled next action. Active customers (incubating/accelerating) are not shown here.",
     "startFirstSync": "Start first sync",
     "startupCategory": "Categoria",
     "suggestedNextSteps": "Suggested Next Steps",
