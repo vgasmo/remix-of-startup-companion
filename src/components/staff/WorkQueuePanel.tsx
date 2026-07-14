@@ -121,42 +121,51 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
     try {
       const item = workQueueItems?.find((i) => i.id === itemId);
       // Special-case: review_checkin also stamps the check-in as reviewed and notifies the founder.
+      // G0: check EVERY supabase error. Previously the empty catch swallowed RLS
+      // failures (backoffice role wasn't in the UPDATE policy), the queue item
+      // was marked done, reviewed_at stayed null, and recompute resurrected it.
       if (item?.type === 'review_checkin' && item.workspace_id) {
-        try {
-          const { supabase } = await import('@/lib/supabaseClient');
-          const { data: { user } } = await supabase.auth.getUser();
-          const { data: pendings } = await supabase
+        const { supabase } = await import('@/lib/supabaseClient');
+        const { data: userData, error: userErr } = await supabase.auth.getUser();
+        if (userErr) throw userErr;
+        const user = userData.user;
+        const { data: pendings, error: pendErr } = await supabase
+          .from('checkin_instances')
+          .select('id, week_start, submitted_by')
+          .eq('workspace_id', item.workspace_id)
+          .eq('status', 'submitted')
+          .is('reviewed_at', null);
+        if (pendErr) throw pendErr;
+
+        const nowIso = new Date().toISOString();
+        for (const inst of pendings || []) {
+          const { error: updErr } = await supabase
             .from('checkin_instances')
-            .select('id, week_start, submitted_by')
-            .eq('workspace_id', item.workspace_id)
-            .eq('status', 'submitted')
-            .is('reviewed_at', null);
-          const nowIso = new Date().toISOString();
-          for (const inst of pendings || []) {
-            await supabase
-              .from('checkin_instances')
-              .update({ reviewed_at: nowIso, reviewed_by: user?.id ?? null })
-              .eq('id', inst.id);
-            if (inst.submitted_by) {
-              const monthLabel = inst.week_start ? new Date(inst.week_start).toLocaleDateString('pt-PT', { month: 'long' }) : '';
-              await supabase.from('notifications').insert({
-                user_id: inst.submitted_by,
-                type: 'system',
-                title: t('notifications.checkinReviewedTitle', 'Check-in visto'),
-                message: t('notifications.checkinReviewedBody', { month: monthLabel, defaultValue: `O seu check-in de ${monthLabel} foi visto ✓` }),
-                link: `/workspace/${item.workspace_id}?tab=overview`,
-                entity_type: 'checkin_instance',
-                entity_id: inst.id,
-                read: false,
-              });
-            }
+            .update({ reviewed_at: nowIso, reviewed_by: user?.id ?? null })
+            .eq('id', inst.id);
+          if (updErr) throw updErr;
+
+          if (inst.submitted_by) {
+            const monthLabel = inst.week_start ? new Date(inst.week_start).toLocaleDateString('pt-PT', { month: 'long' }) : '';
+            const { error: notifErr } = await supabase.from('notifications').insert({
+              user_id: inst.submitted_by,
+              type: 'system',
+              title: t('notifications.checkinReviewedTitle', 'Check-in visto'),
+              message: t('notifications.checkinReviewedBody', { month: monthLabel, defaultValue: `O seu check-in de ${monthLabel} foi visto ✓` }),
+              link: `/workspace/${item.workspace_id}?tab=overview`,
+              entity_type: 'checkin_instance',
+              entity_id: inst.id,
+              read: false,
+            });
+            if (notifErr) throw notifErr;
           }
-        } catch { /* non-fatal */ }
+        }
       }
       await markAsDone.mutateAsync(itemId);
       notify.success(t('workQueue.markedDone'));
-    } catch (error) {
-      notify.error(t('workQueue.updateFailed'));
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : t('workQueue.updateFailed');
+      notify.error(msg);
     }
   };
 
