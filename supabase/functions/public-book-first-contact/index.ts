@@ -592,7 +592,8 @@ serve(async (req) => {
               </table>
               ${contact.message ? `<blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid #d1d5db;background:#f9fafb;white-space:pre-wrap;font-size:14px;">${esc(contact.message)}</blockquote>` : ''}
               ${teamsBlock}
-              <p style="margin:16px 0 0;"><a href="${esc(APP_URL)}/crm" style="color:#111;">Abrir CRM</a></p>
+              <p style="margin:16px 0 0;"><a href="${esc(APP_URL)}/crm?open=${esc(funnelItemId)}" style="display:inline-block;padding:10px 18px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;">Abrir lead no CRM</a></p>
+              <p style="margin:12px 0 0;font-size:12px;color:#666;">Fuso horário: Europe/Lisbon</p>
             </div>
           </div>`;
         const resp = await fetch('https://api.resend.com/emails', {
