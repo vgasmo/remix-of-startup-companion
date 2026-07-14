@@ -29,6 +29,8 @@ interface Props {
   workspaceId: string;
   canWrite: boolean;
   assumptions: FinancialAssumption[];
+  /** Called after a "Save as…" persists deltas — parent should switch to that scenario. */
+  onScenarioSaved?: (scenario: ScenarioKey) => void;
 }
 
 function fmtEUR(n: number | null | undefined): string {
