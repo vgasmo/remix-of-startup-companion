@@ -349,6 +349,7 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
           assumptions={assumptions}
           onSave={(input) => saveAssumption.mutateAsync(input)}
           onSkip={() => markPackComplete(activePack.id)}
+          onSkipQuestion={(qKey, qLabel) => enqueueConsultorReview(workspaceId, qKey, qLabel, scenario, t)}
           onComplete={() => {
             markPackComplete(activePack.id);
             notify.success(t('financialPlan.packComplete', { defaultValue: 'Section saved' }));
