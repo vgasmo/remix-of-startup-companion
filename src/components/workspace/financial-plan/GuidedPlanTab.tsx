@@ -62,6 +62,8 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
   const saveAssumption = useSaveAssumption(workspaceId);
   const deleteAssumption = useDeleteAssumption(workspaceId);
   const resolveProposal = useResolvePrefillProposal(workspaceId);
+  const generatePrefill = useGeneratePrefill(workspaceId);
+  const exportXlsm = useExportGuidedPlanXlsm(workspaceId);
 
   const session = sessionQ.data;
   const assumptions = assumptionsQ.data ?? [];
