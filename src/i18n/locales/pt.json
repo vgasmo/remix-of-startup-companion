@@ -9588,6 +9588,7 @@
     "coverage": "Cobertura",
     "prefill": "Pré-preencher",
     "prefillCreated": "{{count}} sugestão(ões) prontas para rever",
+    "prefillPartial": "{{ok}} criadas, {{fail}} falharam — vê detalhes abaixo",
     "prefillEmpty": "Sem novas sugestões — está tudo coberto.",
     "prefillFailed": "Pré-preenchimento falhou",
     "exportXlsm": "Exportar XLSM",
@@ -9596,6 +9597,13 @@
     "pendingProposals": "Sugestões à tua espera",
     "pendingProposalsDesc": "Estes valores foram pré-preenchidos a partir do teu perfil, KPIs ou IA. Confirma cada um antes de se tornar um pressuposto.",
     "accept": "Aceitar",
+    "source": {
+      "founder": "Manual",
+      "prefill_profile": "Perfil",
+      "prefill_kpi": "KPI",
+      "prefill_ai": "IA",
+      "imported_xlsm": "Importado"
+    },
     "packComplete": "Secção guardada",
     "allDone": "Todas as secções capturadas",
     "allDoneDesc": "Podes rever qualquer pressuposto em baixo, ou exportar o livro para alimentar o XLSM canónico.",
