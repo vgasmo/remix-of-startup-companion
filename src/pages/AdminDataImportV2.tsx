@@ -199,7 +199,7 @@ export default function AdminDataImportV2() {
     setIsLoading(true);
     try {
       const { data, error } = await invokeWithAuth<{ success: boolean; summary: any }>(
-        'commit-hubspot-import',
+        'commit-crm-import',
         { body: { job_id: prepared.job_id } },
       );
       if (error) throw error;
