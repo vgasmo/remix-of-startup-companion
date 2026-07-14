@@ -38,6 +38,23 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Authorization: only staff may dispatch a contract for PandaDoc signing.
+    // Prevents any authenticated user from redirecting another startup's
+    // contract to an attacker-controlled email.
+    const { data: staffRoles } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+    const isStaff = (staffRoles ?? []).some((r: { role: string }) =>
+      r.role === 'admin' || r.role === 'consultor' || r.role === 'backoffice'
+    )
+    if (!isStaff) {
+      return new Response(JSON.stringify({ error: 'Staff access required' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+
     const body = await req.json().catch(() => ({}))
     const contractId = typeof body?.contractId === 'string' ? body.contractId.trim() : ''
     const requestedSignerEmail = typeof body?.signerEmail === 'string' ? body.signerEmail.trim() : ''
