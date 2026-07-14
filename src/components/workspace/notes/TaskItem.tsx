@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { format, isPast, isToday } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,7 @@ interface TaskItemProps {
 
 export function TaskItem({ task, canManage, onComplete, onDelete, isCompleted = false }: TaskItemProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date)) && !isCompleted;
   const isDueToday = task.due_date && isToday(new Date(task.due_date));
 
@@ -68,7 +70,7 @@ export function TaskItem({ task, canManage, onComplete, onDelete, isCompleted = 
               }`}
             >
               {isOverdue ? `${t('common.overdue')}: ` : isDueToday ? t('common.today') : ''}
-              {!isDueToday && format(new Date(task.due_date), 'MMM d')}
+              {!isDueToday && format(new Date(task.due_date), 'MMM d', { locale: dateLocale })}
             </span>
           )}
           {task.priority && task.priority !== 'medium' && (

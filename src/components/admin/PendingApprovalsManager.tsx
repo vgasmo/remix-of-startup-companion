@@ -5,6 +5,7 @@ import { Check, X, Clock, Building2, User, Calendar, ExternalLink, UserCheck, Ma
 
 const t = i18n.t.bind(i18n);
 import { format, formatDistanceToNow } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -237,6 +238,7 @@ function useRejectWorkspace() {
 
 export function PendingApprovalsManager() {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const queryClient = useQueryClient();
   const { data: pendingWorkspaces, isLoading: loadingWs } = usePendingWorkspaces();
   const { data: pendingUsers, isLoading: loadingUsers } = usePendingUsers();
@@ -604,7 +606,7 @@ export function PendingApprovalsManager() {
                       )}
                       <div className="flex items-center gap-1.5 text-muted-foreground">
                         <Calendar className="h-3.5 w-3.5" />
-                        {format(new Date(workspace.created_at), 'MMM d, yyyy')}
+                        {format(new Date(workspace.created_at), 'MMM d, yyyy', { locale: dateLocale })}
                       </div>
                     </div>
 

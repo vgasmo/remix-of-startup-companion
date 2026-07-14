@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { ClipboardList } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { format, isPast, isToday } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { 
   Calendar, CalendarDays, 
   CheckCircle2, 
@@ -93,6 +94,7 @@ interface WorkspaceOverviewProps {
 
 export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const [, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { roles, isConsultor, isAdmin } = useAuth();
@@ -421,7 +423,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
                 </CardTitle>
                 {kpiData?.currentMonth && (
                   <Badge variant="outline">
-                    {format(new Date(kpiData.currentMonth), 'MMM yyyy')}
+                    {format(new Date(kpiData.currentMonth), 'MMM yyyy', { locale: dateLocale })}
                   </Badge>
                 )}
               </div>
@@ -653,7 +655,7 @@ function ActionItem({ action }: { action: any }) {
           {action.due_date && (
             <span className={isOverdue ? 'text-destructive font-medium' : isDueToday ? 'text-[hsl(var(--warning))] font-medium' : ''}>
               {isOverdue ? t('workspaceOverview.overduePrefix', { defaultValue: 'Em atraso: ' }) : isDueToday ? t('workspaceOverview.today', { defaultValue: 'Hoje' }) : ''}
-              {!isDueToday && format(new Date(action.due_date), 'dd MMM')}
+              {!isDueToday && format(new Date(action.due_date), 'dd MMM', { locale: dateLocale })}
             </span>
           )}
           {action.priority && action.priority !== 'medium' && (
@@ -739,7 +741,7 @@ function SessionItem({ session }: { session: any }) {
       <div className="flex-1 min-w-0">
         <p className="font-medium truncate">{session.title}</p>
         <p className="text-sm text-muted-foreground">
-          {format(new Date(session.scheduled_at), 'dd MMM yyyy')}
+          {format(new Date(session.scheduled_at), 'dd MMM yyyy', { locale: dateLocale })}
           {session.duration && ` • ${session.duration} min`}
         </p>
       </div>

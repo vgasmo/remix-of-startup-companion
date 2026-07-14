@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { notify } from "@/lib/notify";
 import { Link2, Copy, Plus, Trash2, Calendar, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
@@ -30,6 +31,7 @@ interface BookingLink {
 
 export function BookingLinksManager() {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -262,12 +264,12 @@ export function BookingLinksManager() {
                   <TableCell>
                     <div className="flex items-center gap-1 text-sm">
                       <Calendar className="h-3 w-3 text-muted-foreground" />
-                      {format(new Date(link.created_at), 'MMM d, yyyy')}
+                      {format(new Date(link.created_at), 'MMM d, yyyy', { locale: dateLocale })}
                     </div>
                   </TableCell>
                   <TableCell>
                     {link.expires_at 
-                      ? format(new Date(link.expires_at), 'MMM d, yyyy')
+                      ? format(new Date(link.expires_at), 'MMM d, yyyy', { locale: dateLocale })
                       : t('common.never', 'Nunca')}
                   </TableCell>
                   <TableCell>

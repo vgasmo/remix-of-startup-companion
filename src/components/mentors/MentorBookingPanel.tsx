@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Clock, Check, X, Loader2, MessageSquare } from 'lucide-react';
 import { format, addDays, isBefore, startOfDay } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,7 @@ export function MentorBookingPanel({
   mode 
 }: MentorBookingPanelProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedSlot, setSelectedSlot] = useState<string>('');
@@ -233,7 +235,7 @@ export function MentorBookingPanel({
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start">
                       <Calendar className="h-4 w-4 mr-2" />
-                      {selectedDate ? format(selectedDate, 'PPP') : t('mentors.pickDate')}
+                      {selectedDate ? format(selectedDate, 'PPP', { locale: dateLocale }) : t('mentors.pickDate')}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -286,7 +288,7 @@ export function MentorBookingPanel({
                         variant="outline"
                         onClick={() => applySuggestion(s)}
                       >
-                        {format(s.date, 'MMM d')} · {s.start.slice(0, 5)}
+                        {format(s.date, 'MMM d', { locale: dateLocale })} · {s.start.slice(0, 5)}
                       </Button>
                     ))}
                   </div>
@@ -350,7 +352,7 @@ export function MentorBookingPanel({
                     {myMentorBookings.map(booking => (
                       <div key={booking.id} className="flex items-center justify-between p-2 bg-muted/50 rounded-lg text-sm">
                         <div>
-                          <span>{format(new Date(booking.requested_date), 'MMM d')}</span>
+                          <span>{format(new Date(booking.requested_date), 'MMM d', { locale: dateLocale })}</span>
                           <span className="text-muted-foreground ml-2">
                             {booking.requested_start_time.slice(0, 5)}
                           </span>
@@ -411,7 +413,7 @@ export function MentorBookingPanel({
                   <div className="flex-1 min-w-0">
                     <p className="font-medium">{booking.founder?.full_name || booking.founder?.email}</p>
                     <p className="text-sm text-muted-foreground">
-                      {format(new Date(booking.requested_date), 'EEEE, MMMM d')} {t('common.atTime', 'às')}{' '}
+                      {format(new Date(booking.requested_date), 'EEEE, MMMM d', { locale: dateLocale })} {t('common.atTime', 'às')}{' '}
                       {booking.requested_start_time.slice(0, 5)}
                     </p>
                     {booking.message && (
@@ -464,7 +466,7 @@ export function MentorBookingPanel({
                   <div className="flex-1">
                     <p className="text-sm font-medium">{booking.founder?.full_name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(booking.requested_date), 'MMM d')} {t('common.atTime', 'às')} {booking.requested_start_time.slice(0, 5)}
+                      {format(new Date(booking.requested_date), 'MMM d', { locale: dateLocale })} {t('common.atTime', 'às')} {booking.requested_start_time.slice(0, 5)}
                     </p>
                   </div>
                   <Badge variant="outline" className="text-primary">{t('mentors.confirmed')}</Badge>

@@ -27,6 +27,7 @@ import {
 import { useProgramSetupDrafts, useCreateProgramDraft } from '@/hooks/useProgramSetup';
 import { supabase } from '@/lib/supabaseClient';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 
 interface Program {
   id: string;
@@ -49,6 +50,7 @@ interface Stage {
 
 function StagesManager({ programId }: { programId: string }) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { data: stages, isLoading } = useStages(programId);
   const createStage = useCreateStage();
   const updateStage = useUpdateStage();
@@ -515,9 +517,9 @@ export function AdminProgramsManager() {
                       {program.description && <p className="text-sm text-muted-foreground truncate">{program.description}</p>}
                       {(program.start_date || program.end_date) && (
                         <p className="text-xs text-muted-foreground">
-                          {program.start_date && format(new Date(program.start_date), 'MMM d, yyyy')}
+                          {program.start_date && format(new Date(program.start_date), 'MMM d, yyyy', { locale: dateLocale })}
                           {program.start_date && program.end_date && ' – '}
-                          {program.end_date && format(new Date(program.end_date), 'MMM d, yyyy')}
+                          {program.end_date && format(new Date(program.end_date), 'MMM d, yyyy', { locale: dateLocale })}
                         </p>
                       )}
                     </div>
