@@ -28,7 +28,25 @@ type ContractRow = {
   document_url: string | null;
   contract_pdf_path: string | null;
   workspace_id: string | null;
-  workspaces?: { id: string; startup_id: string; startups?: { name: string | null } | null } | null;
+  legal_representative_phone?: string | null;
+  billing_email?: string | null;
+  company_address?: string | null;
+  company_city?: string | null;
+  company_postal_code?: string | null;
+  workspaces?: {
+    id: string;
+    startup_id: string;
+    startups?: {
+      name: string | null;
+      description: string | null;
+      website: string | null;
+      phone: string | null;
+      address: string | null;
+      main_contact_name: string | null;
+      main_contact_email: string | null;
+      main_contact_phone: string | null;
+    } | null;
+  } | null;
 };
 
 type StorageFile = {
