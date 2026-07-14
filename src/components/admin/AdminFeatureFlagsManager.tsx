@@ -267,8 +267,8 @@ export function AdminFeatureFlagsManager() {
             <Select value={newFlagKey} onValueChange={(v) => setNewFlagKey(v as FeatureFlagKey)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {Object.keys(FLAG_DESCRIPTIONS).concat(['financial_business_plan_coach_v1']).filter((v, i, a) => a.indexOf(v) === i).map((k) => (
-                  <SelectItem key={k} value={k}>{k}</SelectItem>
+                {FEATURE_FLAG_KEYS.map((k) => (
+                  <SelectItem key={k} value={k}>{FLAG_DESCRIPTIONS[k]?.label ?? k}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
