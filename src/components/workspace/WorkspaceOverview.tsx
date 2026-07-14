@@ -71,6 +71,7 @@ import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
 import { useWorkspaceMembers, useWorkspaceFounder } from '@/hooks/useWorkspaceMembers';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
+import { ProgramSwitcher } from '@/components/workspace/ProgramSwitcher';
 
 interface WorkspaceOverviewProps {
   workspace: {
