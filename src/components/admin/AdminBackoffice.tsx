@@ -19,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Search, Download, Building2, Calendar, User, X, Plus, 
   ChevronDown, Ban, CheckCircle, ExternalLink, Trash2, AlertTriangle, Star,
-  FileText, Receipt, MapPin, Package, Clock, Archive
+  FileText, Receipt, MapPin, Package, Clock, Archive, Inbox
 } from 'lucide-react';
 import { StageBadge } from '@/components/ui/StageBadge';
 import { useNavigate } from 'react-router-dom';
