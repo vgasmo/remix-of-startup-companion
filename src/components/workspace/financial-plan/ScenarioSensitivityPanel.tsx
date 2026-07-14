@@ -1,8 +1,9 @@
 // Scenario sensitivity panel.
-// Client-side "what-if" over the assumptions register. Pure presentation:
-// takes FinancialAssumption[] and re-computes headline KPIs against three
-// scenario columns (Conservative / Base / Optimistic) plus user-driven
-// sensitivity sliders. Nothing is persisted here — this is a projection layer.
+// Client-side "what-if" over the assumptions register. Takes
+// FinancialAssumption[] and re-computes headline KPIs against three scenario
+// columns (Conservative / Base / Optimistic) plus user-driven sensitivity
+// sliders. Math lives in ./scenarioMath so it is testable and reusable by the
+// "save as scenario" flow.
 
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,35 +12,23 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { RotateCcw, TrendingUp, TrendingDown, Minus, Save, Loader2 } from 'lucide-react';
+import { notify } from '@/lib/notify';
 import type { FinancialAssumption } from '@/hooks/useFinancialPlan';
+import { useSaveAssumption } from '@/hooks/useFinancialPlan';
+import {
+  computeKpis, sensitivityToDeltas,
+  DEFAULT_SENSITIVITY, SCENARIO_BIAS,
+  type Sensitivity, type ScenarioKey,
+} from './scenarioMath';
 
 interface Props {
+  workspaceId: string;
+  canWrite: boolean;
   assumptions: FinancialAssumption[];
-}
-
-type ScenarioKey = 'conservative' | 'base' | 'optimistic';
-
-interface Sensitivity {
-  revenueGrowth: number;   // percentage-points added to YoY growth (e.g. -20..+20)
-  cmvmcDelta: number;      // percentage-points added to CMVMC ratio
-  payrollDelta: number;    // percentage multiplier on total payroll (-50..+50)
-}
-
-const DEFAULT_SENSITIVITY: Sensitivity = { revenueGrowth: 0, cmvmcDelta: 0, payrollDelta: 0 };
-
-// Per-scenario multipliers applied on top of user sliders. Conservative
-// dampens revenue, inflates costs; optimistic does the opposite.
-const SCENARIO_BIAS: Record<ScenarioKey, Sensitivity> = {
-  conservative: { revenueGrowth: -10, cmvmcDelta: +5, payrollDelta: +5 },
-  base:         { revenueGrowth: 0,   cmvmcDelta: 0,  payrollDelta: 0 },
-  optimistic:   { revenueGrowth: +10, cmvmcDelta: -5, payrollDelta: -5 },
-};
-
-function num(assumptions: FinancialAssumption[], key: string, fallback = 0): number {
-  const a = assumptions.find(x => x.key === key);
-  const v = a?.value_numeric;
-  return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
 }
 
 function fmtEUR(n: number | null | undefined): string {
@@ -57,64 +46,6 @@ function fmtNum(n: number | null | undefined, digits = 2): string {
   return n.toFixed(digits);
 }
 
-interface Kpis {
-  revenueY1: number;
-  revenueY2: number;
-  cogs: number;
-  grossProfit: number;
-  grossMarginPct: number;
-  payrollYear: number;
-  ebitdaProxy: number;
-  ltv: number | null;
-  cac: number | null;
-  ltvCac: number | null;
-  paybackMonths: number | null;
-}
-
-function computeKpis(a: FinancialAssumption[], s: Sensitivity, bias: Sensitivity): Kpis {
-  const qty = num(a, 'revenue.item1.qty_y1');
-  const price = num(a, 'revenue.item1.price');
-  const growthPct = num(a, 'revenue.item1.growth') + s.revenueGrowth + bias.revenueGrowth;
-  const cmvmcPct = Math.max(0, num(a, 'cost.cmvmc_pct') + s.cmvmcDelta + bias.cmvmcDelta);
-  const headcount = num(a, 'team.headcount_y1');
-  const avgSalary = num(a, 'team.avg_salary_month');
-  const payrollMult = 1 + (s.payrollDelta + bias.payrollDelta) / 100;
-
-  const revenueY1 = qty * price;
-  const revenueY2 = revenueY1 * (1 + growthPct / 100);
-  const cogs = revenueY1 * (cmvmcPct / 100);
-  const grossProfit = revenueY1 - cogs;
-  const grossMarginPct = revenueY1 > 0 ? (grossProfit / revenueY1) * 100 : 0;
-  // 14 months in PT payroll (12 + holiday + Xmas subsidies) as a rough proxy.
-  const payrollYear = headcount * avgSalary * 14 * payrollMult;
-  const ebitdaProxy = grossProfit - payrollYear;
-
-  // Unit economics — only if the founder supplied them.
-  const cacRaw = a.find(x => x.key === 'ue.cac')?.value_numeric ?? null;
-  const arpu = a.find(x => x.key === 'ue.arpu_month')?.value_numeric ?? null;
-  const gmPct = a.find(x => x.key === 'ue.gross_margin_pct')?.value_numeric ?? null;
-  const churnPct = a.find(x => x.key === 'ue.churn_monthly_pct')?.value_numeric ?? null;
-
-  let ltv: number | null = null;
-  let ltvCac: number | null = null;
-  let paybackMonths: number | null = null;
-  if (arpu != null && gmPct != null && churnPct != null && churnPct > 0) {
-    const lifetimeMonths = 1 / (churnPct / 100);
-    ltv = arpu * lifetimeMonths * (gmPct / 100);
-    if (cacRaw != null && cacRaw > 0) {
-      ltvCac = ltv / cacRaw;
-      const monthlyContribution = arpu * (gmPct / 100);
-      paybackMonths = monthlyContribution > 0 ? cacRaw / monthlyContribution : null;
-    }
-  }
-
-  return {
-    revenueY1, revenueY2, cogs, grossProfit, grossMarginPct,
-    payrollYear, ebitdaProxy,
-    ltv, cac: cacRaw, ltvCac, paybackMonths,
-  };
-}
-
 function DeltaIcon({ delta }: { delta: number }) {
   if (Math.abs(delta) < 0.01) return <Minus className="h-3 w-3 text-muted-foreground" />;
   return delta > 0
@@ -122,9 +53,11 @@ function DeltaIcon({ delta }: { delta: number }) {
     : <TrendingDown className="h-3 w-3 text-destructive" />;
 }
 
-export function ScenarioSensitivityPanel({ assumptions }: Props) {
+export function ScenarioSensitivityPanel({ workspaceId, canWrite, assumptions }: Props) {
   const { t } = useTranslation();
   const [sens, setSens] = useState<Sensitivity>(DEFAULT_SENSITIVITY);
+  const saveAssumption = useSaveAssumption(workspaceId);
+  const [savingScenario, setSavingScenario] = useState<ScenarioKey | null>(null);
 
   const scenarios = useMemo(() => {
     return (['conservative', 'base', 'optimistic'] as ScenarioKey[]).map(key => ({
@@ -140,6 +73,40 @@ export function ScenarioSensitivityPanel({ assumptions }: Props) {
   const reset = () => setSens(DEFAULT_SENSITIVITY);
   const isDirty = sens.revenueGrowth !== 0 || sens.cmvmcDelta !== 0 || sens.payrollDelta !== 0;
 
+  const handleSaveAsScenario = async (target: ScenarioKey) => {
+    const rows = sensitivityToDeltas(assumptions, sens, target);
+    if (rows.length === 0) {
+      notify.info(t('financialPlan.sensitivity.noDeltas', {
+        defaultValue: 'No changes to save — sliders and scenario bias match the base.',
+      }));
+      return;
+    }
+    setSavingScenario(target);
+    try {
+      for (const r of rows) {
+        await saveAssumption.mutateAsync({
+          key: r.key,
+          scenario: target,
+          value_numeric: r.value_numeric,
+          unit: r.unit,
+          source: 'founder',
+          rationale: r.rationale,
+        });
+      }
+      notify.success(t('financialPlan.sensitivity.savedAs', {
+        defaultValue: 'Saved as {{scenario}} ({{n}} value(s))',
+        scenario: t(`financialPlan.scenario.${target}`, { defaultValue: target }),
+        n: rows.length,
+      }));
+    } catch (e: any) {
+      notify.error(e?.message ?? t('financialPlan.sensitivity.saveFailed', { defaultValue: 'Save failed' }));
+    } finally {
+      setSavingScenario(null);
+    }
+  };
+
+
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -154,12 +121,40 @@ export function ScenarioSensitivityPanel({ assumptions }: Props) {
               })}
             </CardDescription>
           </div>
-          {isDirty && (
-            <Button variant="ghost" size="sm" onClick={reset} className="h-7 text-xs">
-              <RotateCcw className="h-3 w-3 mr-1" />
-              {t('common.reset', { defaultValue: 'Reset' })}
-            </Button>
-          )}
+          <div className="flex items-center gap-1">
+            {isDirty && (
+              <Button variant="ghost" size="sm" onClick={reset} className="h-7 text-xs">
+                <RotateCcw className="h-3 w-3 mr-1" />
+                {t('common.reset', { defaultValue: 'Reset' })}
+              </Button>
+            )}
+            {canWrite && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline" size="sm" className="h-7 text-xs"
+                    disabled={!hasAnyRevenue || savingScenario !== null}
+                  >
+                    {savingScenario
+                      ? <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      : <Save className="h-3 w-3 mr-1" />}
+                    {t('financialPlan.sensitivity.saveAs', { defaultValue: 'Save as…' })}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleSaveAsScenario('conservative')}>
+                    {t('financialPlan.scenario.conservative', { defaultValue: 'Conservative' })}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleSaveAsScenario('base')}>
+                    {t('financialPlan.scenario.base', { defaultValue: 'Base' })}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleSaveAsScenario('optimistic')}>
+                    {t('financialPlan.scenario.optimistic', { defaultValue: 'Optimistic' })}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
