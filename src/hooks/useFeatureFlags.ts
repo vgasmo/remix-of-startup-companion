@@ -10,7 +10,8 @@ export type FeatureFlagKey =
   | 'crm_graph_email_sync'
   | 'crm_ai_recap'
   | 'open_registration'
-  | 'financial_business_plan_coach_v1';
+  | 'financial_business_plan_coach_v1'
+  | 'hubspot_importer_v2';
 
 interface FeatureFlag {
   id: string;
