@@ -19,6 +19,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
 import { notify } from "@/lib/notify";
 import { useIncubationTypes } from '@/hooks/backoffice/useIncubationTypes';
+import { usePrograms } from '@/hooks/useAdminData';
 
 interface OverviewTabProps {
   item: FunnelItem;
@@ -51,6 +52,7 @@ export function OverviewTab({
   const stageLabel = getFunnelStageLabel(t, item.stage);
   const updateItem = useUpdateFunnelItem();
   const { data: incubationTypes } = useIncubationTypes();
+  const { data: programs } = usePrograms();
 
   const [editingDeal, setEditingDeal] = useState(false);
   const [dealValue, setDealValue] = useState(item.deal_value?.toString() || '');
@@ -321,6 +323,36 @@ export function OverviewTab({
             </Select>
           ) : (
             <span>{item.owner?.full_name || t('crm.unassigned')}</span>
+          )}
+        </div>
+        <div className="flex items-center justify-between text-sm gap-2">
+          <span className="text-muted-foreground">{t('crm.program', { defaultValue: 'Programa' })}</span>
+          {programs && programs.length > 0 ? (
+            <Select
+              value={item.program_id || '__none__'}
+              onValueChange={async (value) => {
+                const nextProgram = value === '__none__' ? null : value;
+                if (nextProgram === (item.program_id || null)) return;
+                try {
+                  await updateItem.mutateAsync({ id: item.id, program_id: nextProgram } as any);
+                  notify.success(t('crm.programUpdated', { defaultValue: 'Programa atualizado' }));
+                } catch {
+                  notify.error(t('crm.programUpdateFailed', { defaultValue: 'Falha ao atualizar programa' }));
+                }
+              }}
+            >
+              <SelectTrigger className="h-7 w-52 text-xs">
+                <SelectValue placeholder={t('crm.selectProgram', { defaultValue: 'Sem programa' })} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">{t('crm.noProgram', { defaultValue: 'Sem programa' })}</SelectItem>
+                {programs.map((p: any) => (
+                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <span>{(item as any).program?.name || t('crm.noProgram', { defaultValue: 'Sem programa' })}</span>
           )}
         </div>
         <div className="flex justify-between text-sm">
