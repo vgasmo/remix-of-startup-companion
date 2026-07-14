@@ -130,6 +130,8 @@ export function useCompleteTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
+      // G1: the CRM Tarefas tab reads ['crm-tasks-due', filters] — invalidate it too.
+      queryClient.invalidateQueries({ queryKey: ['crm-tasks-due'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
       notify.success(t('crm.taskCompleted'));
