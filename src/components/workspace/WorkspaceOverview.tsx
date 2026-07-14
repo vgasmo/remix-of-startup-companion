@@ -175,18 +175,18 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
               <div>
                 <h2 className="font-heading text-2xl font-bold">{workspace.startup?.name}</h2>
                 <p className="text-muted-foreground">{workspace.program?.name}</p>
-                {workspaceFounder?.profile && (
+                {founderProfile && (
                   <div className="flex items-center gap-2 mt-1.5">
                     <span className="text-xs text-muted-foreground">{t('workspaceOverview.founder', { defaultValue: 'Fundador' })}:</span>
                     <div className="flex items-center gap-1.5">
                       <Avatar className="h-5 w-5">
-                        <AvatarImage src={workspaceFounder.profile.avatar_url || undefined} className="object-cover" />
+                        <AvatarImage src={founderProfile.avatar_url || undefined} className="object-cover" />
                         <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
-                          {workspaceFounder.profile.full_name?.slice(0, 2).toUpperCase() || workspaceFounder.profile.email?.slice(0, 2).toUpperCase() || '?'}
+                          {founderProfile.full_name?.slice(0, 2).toUpperCase() || founderProfile.email?.slice(0, 2).toUpperCase() || '?'}
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-sm font-medium">
-                        {workspaceFounder.profile.full_name || workspaceFounder.profile.email}
+                        {founderProfile.full_name || founderProfile.email}
                       </span>
                     </div>
                   </div>
