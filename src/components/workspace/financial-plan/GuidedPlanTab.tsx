@@ -576,15 +576,20 @@ function PackRunner({
       if (q.kind === 'text') {
         json = { text: value };
       } else {
-        // Locale-safe: accept "1.234,56" and "1,234.56"
-        const cleaned = value.replace(/[€\s]/g, '');
-        const lastComma = cleaned.lastIndexOf(',');
-        const lastDot = cleaned.lastIndexOf('.');
-        let normalized = cleaned;
-        if (lastComma > lastDot) normalized = cleaned.replace(/\./g, '').replace(',', '.');
-        else if (lastDot > lastComma) normalized = cleaned.replace(/,/g, '');
-        const n = Number(normalized);
-        if (!Number.isFinite(n)) { notify.error(t('financialPlan.invalidNumber', { defaultValue: 'Enter a valid number' })); setSaving(false); return; }
+        const n = parseLocalizedNumber(value);
+        if (n === null) {
+          notify.error(t('financialPlan.invalidNumber', { defaultValue: 'Enter a valid number' }));
+          setSaving(false); return;
+        }
+        // Clamp to declared bounds if present (min/max/step from questionPacks).
+        if (typeof q.min === 'number' && n < q.min) {
+          notify.error(t('financialPlan.belowMin', { defaultValue: 'Value below the minimum ({{min}})', min: q.min }));
+          setSaving(false); return;
+        }
+        if (typeof q.max === 'number' && n > q.max) {
+          notify.error(t('financialPlan.aboveMax', { defaultValue: 'Value above the maximum ({{max}})', max: q.max }));
+          setSaving(false); return;
+        }
         numeric = n;
       }
       await onSave({
@@ -597,10 +602,21 @@ function PackRunner({
         rationale: rationale.trim() || null,
       });
       setValue(''); setRationale('');
+    } catch (e: any) {
+      notify.error(e?.message ?? t('financialPlan.saveFailed', { defaultValue: 'Save failed' }));
     } finally {
       setSaving(false);
     }
   };
+
+  // Live preview of the parsed value so the founder catches "1.500" → 1 500.
+  const parsedPreview = useMemo(() => {
+    if (q.kind === 'text' || !value.trim()) return null;
+    const n = parseLocalizedNumber(value);
+    if (n === null) return null;
+    const isCurrency = q.unit === '€' || q.kind === 'currency';
+    return isCurrency ? formatLocalizedNumber(n, { currency: true }) : `${formatLocalizedNumber(n)}${q.unit ? ` ${q.unit}` : ''}`;
+  }, [value, q.kind, q.unit]);
 
   return (
     <Card>
