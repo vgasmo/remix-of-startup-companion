@@ -40,6 +40,7 @@ export function KpiCard({
   p75,
   onValueChange,
   onSave,
+  onBlurFlush,
   onUnlock,
 }: KpiCardProps) {
   const { t } = useTranslation();
