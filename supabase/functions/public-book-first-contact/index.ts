@@ -304,6 +304,7 @@ serve(async (req) => {
     // Get consultant info for calendar event
     let consultantEmail: string | null = null;
     let consultantId: string | null = null;
+    let consultantName: string | null = null;
     
     if (token !== 'demo') {
       try {
@@ -321,11 +322,12 @@ serve(async (req) => {
           consultantId = linkData.owner_consultant_id;
           const { data: profile } = await supabase
             .from("profiles")
-            .select("email")
+            .select("email, full_name")
             .eq("id", consultantId)
             .maybeSingle();
           
           consultantEmail = profile?.email || null;
+          consultantName = profile?.full_name || null;
         }
       } catch {
         // Table might not exist
@@ -344,13 +346,15 @@ serve(async (req) => {
         consultantId = consultants[0].user_id;
         const { data: profile } = await supabase
           .from("profiles")
-          .select("email")
+          .select("email, full_name")
           .eq("id", consultantId)
           .maybeSingle();
         
         consultantEmail = profile?.email || null;
+        consultantName = profile?.full_name || null;
       }
     }
+    
 
     // Get the first program for the funnel item
     const { data: programs } = await supabase.from("programs").select("id").limit(1);
@@ -479,6 +483,73 @@ serve(async (req) => {
     } else {
       console.log("Graph API not configured, skipping calendar event creation");
     }
+
+    // === Send alert email to consultant (fire-and-forget) ===
+    try {
+      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+      const APP_URL = Deno.env.get("APP_URL") || "https://fb.startupleiria.com";
+      if (RESEND_API_KEY && consultantEmail) {
+        const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]!));
+        const displayName = consultantName || 'Consultor';
+        const dt = `${slot.date} ${slot.time}`;
+        const teamsBlock = teamsLink
+          ? `<p><a href="${esc(teamsLink)}" style="display:inline-block;padding:10px 18px;background:#111;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;">Abrir reunião no Teams</a></p>`
+          : '';
+        const html = `
+          <div style="font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 560px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+            <div style="padding: 20px 24px; background: #111; color: #fff;">
+              <h1 style="margin:0;font-size:18px;">Nova marcação de Primeiro Contacto</h1>
+            </div>
+            <div style="padding: 20px 24px;">
+              <p style="margin:0 0 12px;">Olá ${esc(displayName)},</p>
+              <p style="margin:0 0 16px;">Recebeste uma nova marcação através do formulário público.</p>
+              <table style="width:100%;font-size:14px;border-collapse:collapse;">
+                <tr><td style="padding:6px 0;color:#666;">Data</td><td style="padding:6px 0;"><strong>${esc(dt)} (Europe/Lisbon)</strong></td></tr>
+                <tr><td style="padding:6px 0;color:#666;">Contacto</td><td style="padding:6px 0;">${esc(contact.name)}</td></tr>
+                <tr><td style="padding:6px 0;color:#666;">Email</td><td style="padding:6px 0;">${esc(contact.email)}</td></tr>
+                ${contact.phone ? `<tr><td style="padding:6px 0;color:#666;">Telefone</td><td style="padding:6px 0;">${esc(contact.phone)}</td></tr>` : ''}
+                ${contact.organization ? `<tr><td style="padding:6px 0;color:#666;">Organização</td><td style="padding:6px 0;">${esc(contact.organization)}</td></tr>` : ''}
+              </table>
+              ${contact.message ? `<blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid #d1d5db;background:#f9fafb;white-space:pre-wrap;font-size:14px;">${esc(contact.message)}</blockquote>` : ''}
+              ${teamsBlock}
+              <p style="margin:16px 0 0;"><a href="${esc(APP_URL)}/crm" style="color:#111;">Abrir CRM</a></p>
+            </div>
+          </div>`;
+        const resp = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'Startup Leiria <noreply@startupleiria.com>',
+            to: [consultantEmail],
+            reply_to: contact.email,
+            subject: `Nova marcação: ${contact.name} — ${slot.date} ${slot.time}`,
+            html,
+          }),
+        });
+        if (!resp.ok) {
+          const errText = await resp.text();
+          console.warn('Consultant alert email failed', resp.status, errText.slice(0, 200));
+        } else {
+          try {
+            await supabase.from('email_log').insert({
+              email_type: 'first_contact_booking_alert',
+              recipients: [{ email: consultantEmail, user_id: consultantId }],
+              subject: `Nova marcação: ${contact.name} — ${slot.date} ${slot.time}`,
+              status: 'sent',
+              sent_at: new Date().toISOString(),
+            });
+          } catch { /* email_log optional */ }
+        }
+      } else if (!RESEND_API_KEY) {
+        console.warn('RESEND_API_KEY not configured; skipping consultant alert email');
+      }
+    } catch (mailErr) {
+      console.error('Consultant alert email error:', mailErr);
+    }
+
 
     return corsJsonResponse({ 
       success: true,
