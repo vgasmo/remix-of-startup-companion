@@ -253,6 +253,58 @@ export function ContractReviewForm({
                 )}
               />
 
+              <FormField
+                control={form.control}
+                name="room_id"
+                render={({ field }) => {
+                  const availableRooms = rooms || [];
+                  const disabled = !selectedBuildingId;
+                  return (
+                    <FormItem>
+                      <FormLabel>
+                        {t('admin.backoffice.room', { defaultValue: 'Sala' })}
+                        <span className="text-muted-foreground font-normal ml-1">
+                          ({t('common.optional', { defaultValue: 'opcional' })})
+                        </span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={(val) => field.onChange(val === '__none__' ? '' : val)}
+                        value={field.value || ''}
+                        disabled={disabled}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={
+                              disabled
+                                ? t('admin.backoffice.selectBuildingFirst', { defaultValue: 'Escolher edifício primeiro' })
+                                : availableRooms.length === 0
+                                  ? t('admin.backoffice.noRoomsInBuilding', { defaultValue: 'Sem salas neste edifício' })
+                                  : t('admin.backoffice.selectRoom', { defaultValue: 'Selecionar sala' })
+                            } />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="__none__">
+                            <span className="text-muted-foreground italic">
+                              {t('admin.backoffice.noRoom', { defaultValue: 'Sem sala específica' })}
+                            </span>
+                          </SelectItem>
+                          {availableRooms.map(r => (
+                            <SelectItem key={r.id} value={r.id}>
+                              {r.name}
+                              {r.room_number ? ` · ${r.room_number}` : ''}
+                              {r.floor ? ` · ${t('admin.backoffice.floor', { defaultValue: 'Piso' })} ${r.floor}` : ''}
+                              {r.status && r.status !== 'available' ? ` (${r.status})` : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+
               <FormItem>
                 <FormLabel>
                   {t('admin.backoffice.contractNumber', { defaultValue: 'Contract Number' })}
