@@ -65,6 +65,7 @@ const MILESTONE_STATUS_ICONS = {
 
 export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId, programType, currentWeek }: MilestonesActionsTabProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const queryClient = useQueryClient();
   const { data: milestones, isLoading: milestonesLoading } = useMilestones(workspaceId);
   const { data: actionItems, isLoading: actionsLoading } = useActionItems(workspaceId);
