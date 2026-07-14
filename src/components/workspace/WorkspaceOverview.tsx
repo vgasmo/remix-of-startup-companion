@@ -564,6 +564,13 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
           </div>
         )}
 
+        {/* Plan Assistants — Business Plan + Financial Model wizards */}
+        {(isFounder || isConsultor || isAdmin) && (
+          <div className="lg:col-span-2">
+            <PlanAssistantsCard />
+          </div>
+        )}
+
         {/* Founder advanced widgets — progressively disclosed */}
         {isFounder && (
           <div className="lg:col-span-2">
