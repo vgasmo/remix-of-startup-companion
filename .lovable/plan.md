@@ -1,148 +1,104 @@
+# Release Remediation Plan
 
-# PHC + HubSpot CRM Reconciliation Import — Plan
+This is a large, multi-day release-engineering effort against a **live** application. Before I start editing code, I need to align on scope and sequencing, because several items in the brief conflict with existing product memory and cannot all be done safely in a single pass.
 
-## Scope
+## Reality check vs. the brief
 
-CRM-only import. Extends the existing v2 importer infrastructure (`data_import_jobs`, `data_import_rows`, `external_entity_refs`, `prepare-hubspot-import`, `commit-hubspot-import`, `AdminDataImportV2`) to accept the PHC "Clientes por Tipologia" XLSX as a second source alongside HubSpot, using the same staged dry-run → approve → commit pipeline. No workspace / contract / user / invite / notification / automation / playbook / programme side-effects.
+A few items need explicit confirmation before I touch code:
 
-## Audit of what exists today
+1. **Scope size.** Batches 1–3 span ~17 numbered workstreams, new migrations, new RLS, new RPCs, importer rewrite, 18 TS errors, 8 failing tests, 12 i18n keys, dep audit, and a full acceptance-test matrix (fresh DB replay, canary, rollback, 5-role smoke tests). Realistically this is multiple focused sessions, not one. I'd like to land it as a sequence of reviewable migrations + PR-sized changes rather than one mega-change that is impossible to review or roll back.
 
-- `data_import_jobs` supports arbitrary `source` (text) — reusable for `'phc'`.
-- `data_import_rows` already holds `raw_json`, `normalized_json`, `row_hash`, `proposed_action`, `match_*`, `approval_state`, `commit_result_json`. Idempotency infra is in place.
-- `external_entity_refs` unique on `(provider, object_type, external_id)` — reusable for `phc/customer`, `hubspot/deal`, `hubspot/company`.
-- `commit_import_funnel_item` RPC upserts funnel items keyed by external refs. Currently HubSpot-specific in shape (writes `hubspot_*` under `metadata_json`); must be widened for PHC identifiers.
-- `funnel_items` stores structured IDs only inside `metadata_json`. Per spec these must become first-class columns.
-- `prepare-hubspot-import` is HubSpot-only (headers, stage mapping, matcher).
-- No PHC parsing or matcher exists.
-- No formula-injection sanitisation on preview exports.
+2. **"Replay every migration on a fresh local Supabase database."** The sandbox here does not run a local Supabase stack — it only has managed psql access to the live project (select/insert only; schema changes go through the `supabase--migration` approval flow). I can't spin up a throwaway Postgres and replay the full migration history end-to-end from this environment. I can:
+   - Lint the migration set (`supabase--linter`).
+   - Dry-run new corrective migrations via the approval flow.
+   - Run structural checks against the live DB read-only.
+   
+   A true fresh-DB replay needs to happen in CI or on your machine. I'll produce the exact commands and a checklist; I won't fake a green result.
 
-## Deliverables
+3. **"bun audit / bun test / bun run build / typecheck / lint / i18n scripts."** Build and typecheck are run automatically by the harness after edits; I will not run them manually. The other scripts (`bun test`, `bun audit`, `node scripts/i18n-*`, `node scripts/secret-scan.cjs`) I will run via exec and paste real output. If a script doesn't exist in the repo, I'll say so instead of inventing results.
 
-### 1. Schema (single migration)
+4. **Existing product memory constraints.** Several rules in project memory bear directly on this work and I will honor them over the brief where they conflict:
+   - Contract immutability + `startup_contracts` as source of truth.
+   - CRM Contract Decoupling and Contract Lead Identity Mapping (workspace_id nullable on contracts for pre-onboarding leads).
+   - Workspace data isolation, PII masking via `profiles_safe`, integration credential RLS.
+   - Zero hardcoded strings, PT/EN parity.
+   
+   None of these appear to conflict with the brief, but I'll flag it if I hit one.
 
-Add first-class structured identifiers + partial unique indexes on `funnel_items`:
+5. **"Never claim GO based only on a successful Vite build."** Agreed. My final verdict will be **NO-GO** unless the full acceptance matrix (including fresh-DB replay + canary that I can't run from here) has been executed. I expect to hand you a **NO-GO with an exact blocker list** at the end of my work, plus everything you need to close those blockers in CI / on your machine.
 
-- `phc_customer_id text`
-- `hubspot_company_id text`
-- `hubspot_deal_id text`
-- `nif_normalized text`
-- `source_system text` (values: `phc`, `hubspot`, `manual`, `mixed`)
-- `source_updated_at timestamptz`
-- `verified_fields_json jsonb default '{}'` — records which fields are staff-verified and must not be overwritten.
+## Proposed execution order
 
-Partial unique indexes (all `WHERE ... IS NOT NULL`):
+I want to do this in the order below, because later batches depend on earlier fixes being stable. Each numbered step lands as its own commit / migration so it is individually reviewable and revertible.
 
-- `funnel_items(phc_customer_id)`
-- `funnel_items(hubspot_deal_id)`
-- `funnel_items(hubspot_company_id)`
-- `funnel_items(nif_normalized)`
+### Phase 0 — Freeze and inventory (read-only)
+- Confirm `hubspot_importer_v2` flag is OFF and legacy import mutations are gated.
+- Inventory current importer surface: `commit-crm-import` edge function, `admin_commit_crm_import_job` RPC, `data_import_jobs`, `data_import_rows`, `external_entity_refs`, related hooks and UI (Admin > Import).
+- Inventory current RLS on `data_import_jobs`, `data_import_rows`, `external_entity_refs`.
+- Snapshot counts: rows in `funnel_items` by stage/type, `external_entity_refs` by source, existing `data_import_jobs`.
+- Read the failing tests and TS errors to get exact file list.
+- **Output:** short written inventory in chat, no code changes.
 
-Backfill: copy existing `metadata_json->>'hubspot_deal_id'`, `->>'hubspot_company_id'`, `->>'nif'` into the new columns; conflicts logged into `import_backfill_conflicts` (temp table dropped after review — reported in migration output).
+### Phase 1 — Release-gate hygiene (Batch 3, items 13–17)
+Do these first because they're independent, small, and unblock CI:
+- **13.** Fix conditional `useMemo` in `GuidedPlanTab` (hoist to top-level, guard inside).
+- **14.** Fix 18 TS errors properly (no `any` / `ts-ignore`).
+- **15.** Fix 8 failing tests at the root cause; add importer regression tests as a placeholder file with `.skip` until Phase 2 code lands, then flip them on.
+- **16.** Add the 12 missing EN/PT keys reported by `i18n-lint`.
+- **17.** Remove tracked `.env` files (keep `.env.example`), fix secret-scan repo-root resolution, run `bun audit` and address only clearly-safe high-severity prod findings (no forced breaking upgrades).
 
-RLS/GRANT unchanged (columns inherit table policies).
+### Phase 2 — CRM importer repair (Batch 1, items 1–10)
+Land as a single feature branch composed of small commits:
+- **1 + 10.** New RPC `public.commit_crm_import_job_v2(job_id, mode)` = single canonical transactional commit path. `commit-crm-import` edge function becomes a thin auth wrapper that delegates. `admin_commit_crm_import_job` is deprecated (kept as a shim that calls v2 to avoid breaking any live callers, but marked deprecated and logs a warning).
+- **2.** Canonical enums: introduce `crm_type` (`lead|contract|startup_candidate|startup_active`) and reuse the shared funnel-stage model. Reject `customer` / `startup`. Preserve explicit row values.
+- **3.** New parser module `supabase/functions/_shared/spreadsheetParser.ts` with header auto-detect (score across first 25 rows), title/blank tolerance, shared-strings + rich-text handling, CSV delimiter sniff, accent-insensitive normalization, original source-row-number preservation.
+- **4.** Alias map covering all PHC + classified headers listed in the brief; accent-insensitive matching, original display value preserved.
+- **5.** Server-side persisted mapping on `data_import_jobs.column_mapping_json`; re-run prepare/reconciliation whenever it changes. Remove UI controls that don't persist.
+- **6.** Real per-row review UI: approve / reject / remap / pick target, before-after diff, match reason. Auto-approval limited to deterministic matches only.
+- **7.** Deterministic matching cascade with strict uniqueness checks (`count(*) = 1`, never `LIMIT 1`).
+- **8.** External-ref conflict detection: reject reassignment; `ON CONFLICT` restricted to timestamp/metadata when target is unchanged.
+- **9.** Idempotency: `file_sha256` + per-row `normalized_row_hash`, unique constraint, stale-write guard via `updated_at`/`version`, transactional row commit, audit rows written before mutation.
+- **10.** In PHC CRM-only mode: hard-code no workspace/contract/user/membership/task/automation/notification writes. Assert this in the RPC and in tests.
 
-### 2. RPC changes
+### Phase 3 — Production data protection (Batch 2, items 11–12)
+- **11.** Corrective additive RLS migration (new policies, no drops of existing product policies):
+  - `data_import_jobs`, `data_import_rows`: admin/backoffice only.
+  - `external_entity_refs`: admin/backoffice + tightly scoped staff read for their assigned workspaces.
+  - Founders/mentors: no access to PHC/HubSpot IDs. Where such IDs surface in views, mask via existing `profiles_safe` pattern.
+  - Positive + negative RLS tests per role in `supabase/tests/rls/`.
+- **12.** New `identity_conflicts_audit` table capturing every duplicate + all candidate records. Verification query for whatever the old destructive dedupe already cleared, output preserved as a downloadable CSV in `/mnt/documents/`. No further destructive correction until you review.
 
-Replace `commit_import_funnel_item` with a source-agnostic `commit_import_funnel_item_v2(source, payload, external_ids, verified_fields, expected_updated_at, …)` that:
+### Phase 4 — Acceptance testing (what I can run here)
+- `bun install --frozen-lockfile`
+- `bun test` (with new importer regression tests enabled)
+- `node scripts/i18n-check.cjs`, `node scripts/i18n-lint.mjs`, `node scripts/secret-scan.cjs`
+- `bun audit`
+- Importer unit tests against fixture PHC workbook (header row 6, title/blank rows) and classified CSV. Assert expected dry-run counts (202/187/15/191/11).
+- Second identical dry run: assert 0 inserts / 0 duplicates.
+- `supabase--linter` after each migration.
+- Typecheck + build (auto-run by harness).
 
-- Never overwrites a non-empty column listed in `verified_fields_json` unless the approved row diff explicitly sets `override: true`.
-- Writes structured `phc_customer_id` / `hubspot_*_id` / `nif_normalized` / `source_system` / `source_updated_at`.
-- Upserts one `external_entity_refs` row per supplied external ID inside the same transaction.
-- Returns `{action: insert|update|noop, before, after, diff}`.
-- Raises `P0003` on stale `expected_updated_at`.
+### Phase 5 — What must happen outside this sandbox (blockers for GO)
+I will spell these out explicitly in the final report:
+- Fresh local Supabase migration replay.
+- 10-row canary against production with rollback evidence.
+- Authenticated smoke tests for the 5 roles + public intake + booking (I can script Playwright for a subset via the localhost preview, but production canary is yours).
+- Enabling `hubspot_importer_v2` and unlocking legacy import mutations after all gates pass.
 
-Legacy RPC kept as a thin wrapper for one release cycle.
+## Technical details
 
-### 3. Normalisation library
+- **New migrations (additive only):** `crm_import_canonical_enums`, `data_import_jobs_hashes_and_mapping`, `external_entity_refs_conflict_guards`, `commit_crm_import_job_v2_rpc`, `import_rls_hardening`, `identity_conflicts_audit`.
+- **New edge function behavior:** `commit-crm-import` = auth + delegate to `commit_crm_import_job_v2`. No payload logic.
+- **Deprecations:** `admin_commit_crm_import_job` becomes a shim; slated for removal after one release with zero call-site hits (logged).
+- **Feature flag:** `hubspot_importer_v2` stays OFF; legacy import mutation guards added at the RPC layer (double gate).
+- **Tests:** `src/__tests__/importer/*` unit tests for parser + matcher + commit RPC via `pgtap`-style SQL fixtures.
+- **i18n:** add the 12 missing keys under existing namespaces; no new namespaces.
 
-`src/lib/phcNormalize.ts` + mirror in `supabase/functions/_shared/phcImport.ts`:
+## What I need from you before I start executing
 
-- `normNifPT` — 9-digit Portuguese NIF with checksum. Foreign identifiers (non-PT country) bypass checksum but are still trimmed/uppercased and stored in `nif_normalized` with a `foreign:` prefix so they can't collide with PT NIFs.
-- `normPhone`, `normEmail`, `normCompany` (reuse existing).
-- `parsePhcRow` — maps the 15 PHC columns to a canonical payload; preserves original values in `raw_json`; never invents defaults.
-- `sanitizePreviewCell` — prefix `'` on any string starting with `= + - @ TAB CR` before writing to XLSX/CSV export (formula-injection guard).
+1. **Confirm the phased approach** — Phase 1 (release-gate hygiene) first, then Phase 2 importer, then Phase 3 RLS/audit. If you want the importer first, say so and I'll reorder.
+2. **Confirm the sandbox limitation** on fresh-DB replay and 5-role production smoke tests — I will produce commands + evidence for what I *can* run here, and a runbook for the rest. Final verdict from me will be **NO-GO** with those items listed as blockers unless you tell me they've been executed elsewhere.
+3. **Point me at the PHC workbook + classified CSV fixtures.** The brief cites exact expected counts (202/187/15/191/11) — I need the actual files (or representative fixtures with the same shape) checked into `test/fixtures/` or uploaded, otherwise I can only test structural correctness, not those specific numbers.
+4. **Confirm zero-behavior-change tolerance on `admin_commit_crm_import_job`.** I want to keep it as a thin shim for one release rather than delete it — safer for anything already calling it. OK?
 
-Stage/programme heuristics from PHC are explicitly **not** inferred:
-
-- `Departamento` stored as `phc_department` string tag only.
-- `Edifício` stored as `phc_building_hint` string; no mapping to `buildings` table.
-- `Serviço` stored as `phc_service_hint` string.
-- `Preço a usar em documentos` stored as `phc_price_list_id` — never treated as monthly fee.
-
-### 4. Matching engine (shared, deterministic, stop-on-first)
-
-1. `phc_customer_id` exact → `auto` (confidence 1.0).
-2. `nif_normalized` exact → `auto` if exactly one candidate, else `conflict`.
-3. `hubspot_deal_id` exact via `external_entity_refs` → `auto`.
-4. `hubspot_company_id` exact → `auto` if exactly one candidate.
-5. `contact_email` exact normalised → `suggested` (needs approval).
-6. `organization_name` normalised exact → `suggested` only, never auto.
-
-Multiple deterministic candidates → `proposed_action = 'conflict'`. Row records match target's `updated_at` for stale-check at commit.
-
-### 5. Edge functions
-
-- **`prepare-phc-import`** — new. Staff/admin/backoffice only (`has_role admin` OR `backoffice`). Accepts XLSX/CSV upload + column mapping + `import_mode` (default `crm_only`, only value accepted for now — other modes rejected 400). Parses PHC sheet, normalises, matches, writes one `data_import_rows` per PHC customer. Rejects rows with duplicate PHC ID inside the same file. **Never** writes to `funnel_items`.
-- **`prepare-hubspot-import`** — extended: adopts the new matching engine + widened normalised payload (writes structured IDs), same `crm_only` guard.
-- **`commit-hubspot-import`** → renamed logically to **`commit-crm-import`** (kept as an alias route for the HubSpot path). Guards:
-  - Reject if `job.config_json.import_mode !== 'crm_only'`.
-  - Reject any row whose `commit_result_json.side_effects` is non-empty.
-  - Uses `commit_import_funnel_item_v2`; only touches `funnel_items` + `external_entity_refs`.
-  - Never enqueues notifications / automations / playbooks / workspace creation.
-- **`export-import-exceptions`** — reused, with `sanitizePreviewCell` applied.
-
-All edge functions: admin/backoffice role check via `has_role`; return 403 otherwise. `verify_jwt=false` already the project standard, in-code `getClaims()` validation.
-
-### 6. UI (`AdminDataImportV2`)
-
-- Source picker: **HubSpot** | **PHC (Clientes por Tipologia)**.
-- Explicit non-negotiable defaults panel (read-only, shows `crm_only`, all side-effect toggles off, `overwrite_verified_fields=false`). Toggles hidden entirely — spec forbids them.
-- Column-mapping step with a preset for the 15 PHC headers.
-- Dry-run table with filters: `insert / update / no-change / ambiguous / conflict / invalid`, field-level before/after diff, provenance chip (`phc` / `hubspot`).
-- Per-row approve; bulk approve only within a single filter view.
-- "Convert validated CRM record to workspace" is a **separate later action** — surfaced as a link that opens a placeholder page explicitly out of scope for this ticket.
-- Preview/export CSV/XLSX pass through `sanitizePreviewCell`.
-
-### 7. Tests
-
-- `src/lib/phcNormalize.test.ts` — NIF PT checksum, foreign identifier passthrough, phone/email/whitespace, formula-injection sanitiser, PHC row parser (nulls preserved).
-- `src/lib/hubspotNormalize.test.ts` — extended for structured IDs.
-- `supabase/functions/_shared/matchEngine.test.ts` (Deno) — priority order, ambiguity → conflict, single-candidate auto, stale detection.
-- Idempotency: re-run prepare on same file hash → same row set, zero net changes at commit.
-- RLS test: non-admin/non-backoffice call to `prepare-phc-import` returns 403; call to `commit-crm-import` with `import_mode != crm_only` returns 400.
-- Side-effect assertion test: after full commit of a sample file, assert `select count(*)` on `workspaces`, `startup_contracts`, `auth.users`, `notifications`, `workspace_invitations`, `staff_tasks`, `workflow_executions`, `workspace_playbook_instances` unchanged versus pre-run snapshot.
-- Blank source values do not overwrite non-empty funnel_items columns.
-- Partial row failure: one row raises inside the RPC; other rows in batch still commit; failed row marked `failed`.
-
-### 8. Reporting at completion
-
-- Files/migrations changed list.
-- Architecture diagram (ASCII) of prepare → dry-run → approve → commit.
-- Source-to-field mapping table (PHC column → `funnel_items` column / metadata).
-- Dry-run totals by action for a sample of the provided XLSX (run against a scratch job — no commit).
-- Conflicts requiring human review, exported as CSV.
-- `bun test`, `tsgo`, `vitest`, i18n parity, RLS regression results.
-- Explicit statement: zero rows written outside `data_import_jobs`, `data_import_rows`, `external_entity_refs`, `funnel_items` (committed rows only).
-
-## Technical notes
-
-- File hash = SHA-256 of upload; reject re-upload of the same hash in a non-terminal job unless `force=true`.
-- Row hash = SHA-256 of canonical JSON of normalised payload; used for idempotency and stale detection.
-- All prepare/commit writes via service role inside edge functions; no client-side supabase mutations for import.
-- i18n keys under `dataImport.v2.phc.*` in `en.json` + `pt.json` with parity, enforced by existing parity test.
-- Feature flag `hubspot_importer_v2` already gates the UI; PHC lives under the same flag (no separate flag).
-
-## Explicit non-goals in this ticket
-
-- No workspace creation, no `startup_contracts` writes, no user provisioning, no invites, no notifications, no automations, no playbook seeding, no programme enrolment.
-- No mapping of PHC `Edifício` → `buildings`.
-- No interpretation of `Preço a usar em documentos` as fee.
-- No fuzzy company-name auto-merge.
-- No legacy XLS binary support.
-
-## Rollout
-
-1. Ship migration + edge functions + UI behind existing `hubspot_importer_v2` flag.
-2. Run a dry-run against the provided PHC XLSX in a scratch job; export reconciliation report; **do not commit**.
-3. Human review of dry-run and conflict CSV.
-4. Only after explicit GO from the user, admin approves rows and commits. Even then the commit only touches `funnel_items` + `external_entity_refs`.
+Once you approve (or adjust) the plan and drop the fixtures, I'll start executing Phase 0 → Phase 4 in this session and hand you a Phase 5 runbook + honest GO/NO-GO at the end.
