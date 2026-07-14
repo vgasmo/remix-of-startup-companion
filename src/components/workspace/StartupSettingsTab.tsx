@@ -515,6 +515,11 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
       emailAlias={`workspace-${workspaceId.slice(0, 8)}@capture.startupleiria.com`}
       canEdit={canEdit}
     />
+
+    <Separator className="my-6" />
+
+    {/* Founder → Staff requests */}
+    <FounderRequestsPanel workspaceId={workspaceId} />
   </>
   );
 }
