@@ -112,7 +112,8 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
   const { data: workspaceOwner } = useWorkspaceOwner(workspace.id);
   const { data: workspaceMembersData } = useWorkspaceMembers(workspace.id);
   const { data: workspaceFounder } = useWorkspaceFounder(workspace.id);
-  console.log('workspaceFounder', workspaceFounder, 'members', workspaceMembersData);
+  const isCurrentUserFounder = workspaceMembersData?.some(m => m.user_id === user?.id && m.role === 'founder');
+  const founderProfile = workspaceFounder?.profile || (isCurrentUserFounder ? authProfile : undefined);
   const hasConsultant = Boolean(workspaceOwner?.assigned_consultor_id)
     || Boolean(workspaceMembersData?.some(m => m.role === 'consultor'));
   const [founderAdvancedOpen, setFounderAdvancedOpen] = useState(false);
