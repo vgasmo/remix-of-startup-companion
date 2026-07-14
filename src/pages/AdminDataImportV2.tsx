@@ -273,10 +273,20 @@ export default function AdminDataImportV2() {
         {step === 'upload' && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t('dataImportV2.upload.title', 'Upload HubSpot export')}</CardTitle>
+              <CardTitle className="text-base">{t('dataImportV2.upload.title', 'Upload CRM export')}</CardTitle>
               <CardDescription>{t('dataImportV2.upload.desc', 'CSV or XLSX/XLSM only. Legacy .xls is not supported.')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
+              <div className="grid gap-2 max-w-sm">
+                <Label className="text-xs">{t('dataImportV2.source', 'Source system')}</Label>
+                <Select value={source} onValueChange={v => setSource(v as ImportSource)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hubspot">HubSpot</SelectItem>
+                    <SelectItem value="phc">PHC — Clientes por Tipologia</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Input type="file" accept=".csv,.xlsx,.xlsm" onChange={e => onFile(e.target.files?.[0] ?? null)} />
               <div className="grid gap-2 max-w-sm">
                 <Label className="text-xs">{t('common.program', 'Program')}</Label>
@@ -288,6 +298,14 @@ export default function AdminDataImportV2() {
                   </SelectContent>
                 </Select>
               </div>
+              {source === 'phc' && (
+                <Alert>
+                  <ShieldAlert className="h-4 w-4" />
+                  <AlertDescription className="text-xs">
+                    {t('dataImportV2.phc.notice', 'PHC import is strict CRM-only. Building, service and price-list fields are stored as hints — never as fees or buildings. Column mapping is derived automatically from the PHC headers.')}
+                  </AlertDescription>
+                </Alert>
+              )}
               <Button disabled={!file || isLoading} onClick={onPrepare}>
                 {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
                 {t('dataImportV2.analyze', 'Analyze file')}
