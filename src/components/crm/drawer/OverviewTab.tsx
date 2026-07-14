@@ -414,12 +414,13 @@ export function OverviewTab({
                 <span className="font-medium">{linkedContract.contract_number}</span>
               </div>
             )}
-            {linkedContract.incubation_type?.name && (
+            {(linkedContract.incubation_type as any)?.name && (
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">{t('crm.incubationType', { defaultValue: 'Tipo de incubação' })}</span>
-                <span className="font-medium">{linkedContract.incubation_type.name}</span>
+                <span className="font-medium">{(linkedContract.incubation_type as any).name}</span>
               </div>
             )}
+
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">{t('crm.monthlyFee', { defaultValue: 'Mensalidade' })}</span>
               <span className="font-medium">
