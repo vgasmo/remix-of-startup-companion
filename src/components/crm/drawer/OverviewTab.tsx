@@ -52,6 +52,7 @@ export function OverviewTab({
   const stageLabel = getFunnelStageLabel(t, item.stage);
   const updateItem = useUpdateFunnelItem();
   const { data: incubationTypes } = useIncubationTypes();
+  const { data: programs } = usePrograms();
 
   const [editingDeal, setEditingDeal] = useState(false);
   const [dealValue, setDealValue] = useState(item.deal_value?.toString() || '');
