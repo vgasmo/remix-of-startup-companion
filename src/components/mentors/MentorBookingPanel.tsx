@@ -58,6 +58,9 @@ export function MentorBookingPanel({
   const [selectedSlot, setSelectedSlot] = useState<string>('');
   const [message, setMessage] = useState('');
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [suggestedSlots, setSuggestedSlots] = useState<
+    { date: Date; start: string; end: string; key: string }[]
+  >([]);
 
   const { data: availability, isLoading: loadingAvailability } = useMentorAvailability(mentorId);
   const { data: bookings, isLoading: loadingBookings } = useMyBookings();
@@ -144,11 +147,35 @@ export function MentorBookingPanel({
           notify.error(t('mentors.slotAlreadyTaken', {
             defaultValue: 'That slot was just booked by someone else — please pick another one.',
           }));
+          // Compute up to 5 next available slots across the next 14 days.
+          const suggestions: { date: Date; start: string; end: string; key: string }[] = [];
+          const startFrom = selectedDate ?? new Date();
+          for (let i = 0; i < 14 && suggestions.length < 5; i++) {
+            const d = addDays(startFrom, i);
+            if (isBefore(d, startOfDay(new Date()))) continue;
+            const slots = getAvailableSlotsForDate(d);
+            for (const s of slots) {
+              // Skip the exact slot the founder just tried.
+              if (
+                format(d, 'yyyy-MM-dd') === format(selectedDate ?? d, 'yyyy-MM-dd') &&
+                s.key === selectedSlot
+              ) continue;
+              suggestions.push({ date: d, ...s });
+              if (suggestions.length >= 5) break;
+            }
+          }
+          setSuggestedSlots(suggestions);
         } else {
           notify.error(msg || t('mentors.failedToCreateBooking', 'Failed to create booking'));
         }
       },
     });
+  };
+
+  const applySuggestion = (s: { date: Date; start: string; end: string; key: string }) => {
+    setSelectedDate(s.date);
+    setSelectedSlot(s.key);
+    setSuggestedSlots([]);
   };
 
   const handleUpdateStatus = (booking: MentorBooking, status: 'accepted' | 'declined') => {
@@ -237,6 +264,32 @@ export function MentorBookingPanel({
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+              )}
+
+              {suggestedSlots.length > 0 && (
+                <div
+                  className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3"
+                  data-testid="mentor-booking-suggestions"
+                  role="region"
+                  aria-label={t('mentors.nextAvailableSlots', 'Next available slots')}
+                >
+                  <p className="text-sm font-medium">
+                    {t('mentors.nextAvailableSlots', 'Next available slots')}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestedSlots.map((s, i) => (
+                      <Button
+                        key={`${format(s.date, 'yyyy-MM-dd')}-${s.key}-${i}`}
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => applySuggestion(s)}
+                      >
+                        {format(s.date, 'MMM d')} · {s.start.slice(0, 5)}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               )}
 

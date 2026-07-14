@@ -827,6 +827,51 @@ export type Database = {
           },
         ]
       }
+      checkin_response_audit: {
+        Row: {
+          action: string
+          changed_at: string
+          changed_by: string | null
+          id: string
+          instance_id: string | null
+          kpi_definition_id: string | null
+          new_number: number | null
+          new_value: string | null
+          old_number: number | null
+          old_value: string | null
+          question_id: string | null
+          response_id: string | null
+        }
+        Insert: {
+          action: string
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          instance_id?: string | null
+          kpi_definition_id?: string | null
+          new_number?: number | null
+          new_value?: string | null
+          old_number?: number | null
+          old_value?: string | null
+          question_id?: string | null
+          response_id?: string | null
+        }
+        Update: {
+          action?: string
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          instance_id?: string | null
+          kpi_definition_id?: string | null
+          new_number?: number | null
+          new_value?: string | null
+          old_number?: number | null
+          old_value?: string | null
+          question_id?: string | null
+          response_id?: string | null
+        }
+        Relationships: []
+      }
       checkin_responses: {
         Row: {
           created_at: string
