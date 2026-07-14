@@ -85,6 +85,7 @@ export default function ValuePropWizardPage() {
 
 function ArtifactCard({ artifact }: { artifact: ValuePropArtifact }) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -93,7 +94,7 @@ function ArtifactCard({ artifact }: { artifact: ValuePropArtifact }) {
             Value Proposition v{artifact.version}
           </CardTitle>
           <span className="text-xs text-muted-foreground">
-            {format(new Date(artifact.created_at), 'MMM d, yyyy')}
+            {format(new Date(artifact.created_at), 'd MMM yyyy', { locale: dateLocale })}
           </span>
         </div>
       </CardHeader>
