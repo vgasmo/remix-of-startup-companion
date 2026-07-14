@@ -53,6 +53,9 @@ export function FocusModeProvider({ children, defaultFocused = true, persistKey 
 export function FocusModeToggle({ className }: { className?: string }) {
   const { t } = useTranslation();
   const { isFocused, toggle } = useFocusMode();
+  const targetLabel = isFocused
+    ? t('dashboard.fullView', 'Full View')
+    : t('dashboard.focusView', 'Focus View');
 
   return (
     <Tooltip>
@@ -63,16 +66,17 @@ export function FocusModeToggle({ className }: { className?: string }) {
           onClick={toggle}
           className={cn('gap-2 h-8', className)}
           data-testid="focus-mode-toggle"
+          aria-label={targetLabel}
         >
           {isFocused ? (
             <>
-              <Eye className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline text-xs">{t('dashboard.focusMode', 'Focus')}</span>
+              <EyeOff className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline text-xs">{targetLabel}</span>
             </>
           ) : (
             <>
-              <EyeOff className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline text-xs">{t('dashboard.fullView', 'Full View')}</span>
+              <Eye className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline text-xs">{targetLabel}</span>
             </>
           )}
         </Button>
