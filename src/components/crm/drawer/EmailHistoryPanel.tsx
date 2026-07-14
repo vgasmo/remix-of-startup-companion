@@ -3,18 +3,22 @@
  * Shows synced Outlook emails from communication_log for the funnel item or workspace
  * Includes AI-powered summary generation
  */
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mail, ArrowDownLeft, ArrowUpRight, RefreshCw, Sparkles, Loader2 } from 'lucide-react';
+import { Mail, ArrowDownLeft, ArrowUpRight, RefreshCw, Sparkles, Loader2, ChevronDown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { formatRelativeTime } from '@/lib/dateUtils';
 import { useRelationshipRecap, useGenerateRecap } from '@/hooks/useActivityTimeline';
 import { cn } from '@/lib/utils';
+
+const VISIBLE_EMAIL_COUNT = 5;
 
 interface EmailHistoryPanelProps {
   funnelItemId?: string;
