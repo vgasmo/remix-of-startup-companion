@@ -289,7 +289,7 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
     return <Skeleton className="h-64" />;
   }
 
-  const guidedPlanEnabled = useFeatureFlag('financial_business_plan_coach_v1');
+  const guidedPlanEnabled = useFeatureFlag('financial_business_plan_coach_v1', undefined, workspaceId);
 
   return (
     <>

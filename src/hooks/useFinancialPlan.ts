@@ -263,16 +263,28 @@ export function useResolvePrefillProposal(workspaceId: string) {
 // Calls the `generate-financial-prefill` edge function. Never writes directly
 // to `financial_assumptions` — it inserts *pending* proposals that the founder
 // must accept, preserving the "no silent AI writes" contract.
+export type PrefillSource = 'prefill_profile' | 'prefill_kpi' | 'prefill_ai';
+export interface PrefillSourceStat {
+  created: number;
+  skipped: number;
+  failed: number;
+  error: string | null;
+}
+export interface PrefillResult {
+  success: boolean;
+  proposals_created: number;
+  by_source: Record<PrefillSource, PrefillSourceStat>;
+  skipped_keys: string[];
+  warnings: string[];
+}
 export function useGeneratePrefill(workspaceId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (scenario: PlanScenario = 'base') => {
-      const { data, error } = await invokeWithAuth<{
-        success: boolean;
-        proposals_created: number;
-        skipped_keys: string[];
-        warnings: string[];
-      }>('generate-financial-prefill', { body: { workspace_id: workspaceId, scenario } });
+      const { data, error } = await invokeWithAuth<PrefillResult>(
+        'generate-financial-prefill',
+        { body: { workspace_id: workspaceId, scenario } },
+      );
       if (error) throw error;
       return data!;
     },

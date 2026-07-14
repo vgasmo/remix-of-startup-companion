@@ -3,13 +3,21 @@
  * Controls which new features are enabled globally or per-program
  */
 
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Flag, Globe, Building2 } from 'lucide-react';
-import { useFeatureFlags, useUpdateFeatureFlag } from '@/hooks/useFeatureFlags';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Flag, Globe, Building2, Layers, X, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  useFeatureFlags, useUpdateFeatureFlag,
+  useDeleteWorkspaceFlag, useUpsertWorkspaceFlag,
+  type FeatureFlagKey,
+} from '@/hooks/useFeatureFlags';
 import { notify } from "@/lib/notify";
 
 const FLAG_DESCRIPTIONS: Record<string, { label: string; description: string }> = {
@@ -35,6 +43,31 @@ export function AdminFeatureFlagsManager() {
   const { t } = useTranslation();
   const { data: flags, isLoading } = useFeatureFlags();
   const updateFlag = useUpdateFeatureFlag();
+  const deleteWorkspaceFlag = useDeleteWorkspaceFlag();
+  const upsertWorkspaceFlag = useUpsertWorkspaceFlag();
+
+  // Local form state for creating a workspace override
+  const [newFlagKey, setNewFlagKey] = useState<FeatureFlagKey>('financial_business_plan_coach_v1');
+  const [newFlagWorkspaceId, setNewFlagWorkspaceId] = useState('');
+  const [newFlagEnabled, setNewFlagEnabled] = useState(true);
+
+  const handleCreateWorkspaceOverride = () => {
+    const wsId = newFlagWorkspaceId.trim();
+    if (!wsId) {
+      notify.error(t('admin.featureFlags.workspaceIdRequired', 'ID do workspace obrigatório'));
+      return;
+    }
+    upsertWorkspaceFlag.mutate(
+      { key: newFlagKey, workspaceId: wsId, enabled: newFlagEnabled },
+      {
+        onSuccess: () => {
+          notify.success(t('admin.featureFlags.overrideCreated', 'Override criado para este workspace.'));
+          setNewFlagWorkspaceId('');
+        },
+        onError: (err: any) => notify.error(err?.message ?? 'Erro'),
+      },
+    );
+  };
 
   const handleToggle = (flagId: string, currentEnabled: boolean) => {
     updateFlag.mutate(
@@ -69,6 +102,7 @@ export function AdminFeatureFlagsManager() {
   // Group flags by scope
   const globalFlags = flags?.filter((f) => f.scope === 'global') ?? [];
   const programFlags = flags?.filter((f) => f.scope === 'program') ?? [];
+  const workspaceFlags = flags?.filter((f) => f.scope === 'workspace') ?? [];
 
   return (
     <Card>
@@ -161,6 +195,100 @@ export function AdminFeatureFlagsManager() {
             </div>
           </div>
         )}
+
+        {/* Workspace-scoped overrides (admin-only pilots) */}
+        {workspaceFlags.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Layers className="h-4 w-4" />
+              {t('admin.featureFlags.workspaceOverrides', 'Overrides de Workspace (piloto)')}
+            </div>
+            <div className="space-y-3">
+              {workspaceFlags.map((flag) => {
+                const meta = FLAG_DESCRIPTIONS[flag.key] ?? {
+                  label: flag.key,
+                  description: flag.description ?? '',
+                };
+                return (
+                  <div
+                    key={flag.id}
+                    className="flex items-center justify-between rounded-lg border p-4"
+                  >
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium">{meta.label}</span>
+                        <Badge variant="outline" className="text-xs">{flag.key}</Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          WS: {flag.workspace_id?.slice(0, 8)}…
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{meta.description}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={flag.enabled}
+                        onCheckedChange={() => handleToggle(flag.id, flag.enabled)}
+                        disabled={updateFlag.isPending}
+                      />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8"
+                        aria-label={t('common.remove', 'Remover') as string}
+                        onClick={() => {
+                          deleteWorkspaceFlag.mutate(flag.id, {
+                            onSuccess: () => notify.success(t('admin.featureFlags.overrideRemoved', 'Override removido — workspace volta ao default global.')),
+                            onError: (err: any) => notify.error(err?.message ?? 'Erro'),
+                          });
+                        }}
+                        disabled={deleteWorkspaceFlag.isPending}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Create a new workspace override — admin pilots */}
+        <div className="space-y-3 rounded-lg border border-dashed p-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <Plus className="h-4 w-4" />
+            {t('admin.featureFlags.newWorkspaceOverride', 'Nova override de workspace')}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t('admin.featureFlags.newWorkspaceOverrideDesc', 'Ativa uma feature apenas para um workspace piloto sem afetar os restantes.')}
+          </p>
+          <div className="grid gap-2 md:grid-cols-[minmax(180px,220px)_1fr_120px_auto]">
+            <Select value={newFlagKey} onValueChange={(v) => setNewFlagKey(v as FeatureFlagKey)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {Object.keys(FLAG_DESCRIPTIONS).concat(['financial_business_plan_coach_v1']).filter((v, i, a) => a.indexOf(v) === i).map((k) => (
+                  <SelectItem key={k} value={k}>{k}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              placeholder={t('admin.featureFlags.workspaceIdPlaceholder', 'Workspace ID (UUID)') as string}
+              value={newFlagWorkspaceId}
+              onChange={(e) => setNewFlagWorkspaceId(e.target.value)}
+            />
+            <div className="flex items-center gap-2">
+              <Switch checked={newFlagEnabled} onCheckedChange={setNewFlagEnabled} />
+              <span className="text-xs">{newFlagEnabled ? t('common.enabled', 'ativada') : t('common.disabled', 'desativada')}</span>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleCreateWorkspaceOverride}
+              disabled={upsertWorkspaceFlag.isPending}
+            >
+              {t('admin.featureFlags.addOverride', 'Adicionar')}
+            </Button>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
