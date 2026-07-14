@@ -64,7 +64,15 @@ export function OverviewTab({
   const [proposedIncubationTypeId, setProposedIncubationTypeId] = useState('');
   const [commercialNotes, setCommercialNotes] = useState('');
 
+  // G0 fix: reset ALL edited fields when switching leads via next/prev triage —
+  // was only resetting metadata fields, so deal fields from lead A were saved onto B.
   useEffect(() => {
+    setDealValue(item.deal_value?.toString() || '');
+    setDealCurrency(item.deal_currency || 'EUR');
+    setExpectedClose(item.expected_close_date || '');
+    setWinProb((item.win_probability ?? DEFAULT_WIN_PROBABILITY[item.stage] ?? 0).toString());
+    setEditingDeal(false);
+
     const metadata = ((item as any).metadata_json && typeof (item as any).metadata_json === 'object')
       ? (item as any).metadata_json
       : {};
@@ -86,9 +94,23 @@ export function OverviewTab({
     setEditingDeal(false);
   };
 
-  const handleSaveCommercialProposal = () => {
-    const baseMetadata = ((item as any).metadata_json && typeof (item as any).metadata_json === 'object')
-      ? (item as any).metadata_json
+  const handleSaveCommercialProposal = async () => {
+    // G0 fix: never merge onto (item as any).metadata_json — several openDrawer
+    // paths omit that column, so base was {} and the whole JSON got wiped out
+    // (booking questionnaire fields disappeared). Fetch the fresh row first.
+    const { data: fresh, error: fetchErr } = await supabase
+      .from('funnel_items')
+      .select('metadata_json')
+      .eq('id', item.id)
+      .maybeSingle();
+
+    if (fetchErr) {
+      notify.error(fetchErr.message);
+      return;
+    }
+
+    const baseMetadata = (fresh?.metadata_json && typeof fresh.metadata_json === 'object' && !Array.isArray(fresh.metadata_json))
+      ? (fresh.metadata_json as Record<string, unknown>)
       : {};
 
     const nextMetadata = {

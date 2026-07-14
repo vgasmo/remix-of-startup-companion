@@ -196,9 +196,11 @@ export function useAddActivity() {
       visibility?: VisibilityType;
       metadata_json?: Json;
     }) => {
-      // For funnel items without workspace, we need a placeholder workspace_id
-      // The DB schema requires workspace_id, so we use the linked_workspace_id if available
-      // or fall back to a system placeholder
+      // G0 fix: workspace_id on communication_log is nullable (migration
+      // 20260415001509 dropped the NOT NULL). Insert into communication_log
+      // directly for unconverted leads so the Timeline (which only reads
+      // communication_log) surfaces the entry and the last_activity_at
+      // trigger refreshes the lead.
       const insertData: Record<string, unknown> = {
         activity_type: entry.activity_type,
         subject: entry.subject,
@@ -208,51 +210,35 @@ export function useAddActivity() {
         visibility: entry.visibility ?? 'staff',
         metadata_json: entry.metadata_json,
       };
-      
+
       if (entry.workspace_id) {
         insertData.workspace_id = entry.workspace_id;
       }
       if (entry.funnel_item_id) {
         insertData.funnel_item_id = entry.funnel_item_id;
-        // If no workspace_id but we have funnel_item_id, get linked workspace
         if (!entry.workspace_id) {
-          const { data: funnelItem } = await supabase
+          const { data: funnelItem, error: fiError } = await supabase
             .from('funnel_items')
             .select('linked_workspace_id')
             .eq('id', entry.funnel_item_id)
-            .single();
-          
+            .maybeSingle();
+          if (fiError) throw fiError;
           if (funnelItem?.linked_workspace_id) {
             insertData.workspace_id = funnelItem.linked_workspace_id;
           }
         }
       }
-      
-      // If no workspace_id available, log as funnel_event instead
-      if (!insertData.workspace_id) {
-        if (insertData.funnel_item_id) {
-          const { error: feError } = await supabase.from('funnel_events').insert([{
-            funnel_item_id: insertData.funnel_item_id as string,
-            event_type: (insertData.activity_type as string) || 'note',
-            metadata: {
-              subject: insertData.subject,
-              preview: insertData.preview,
-              body: insertData.body,
-              direction: insertData.direction,
-            } as any,
-          }]);
-          if (feError) throw feError;
-          return { id: 'funnel-event', ...insertData } as any;
-        }
+
+      if (!insertData.workspace_id && !insertData.funnel_item_id) {
         throw new Error('workspace_id or funnel_item_id is required');
       }
-      
+
       const { data, error } = await supabase
         .from('communication_log')
-        .insert(insertData as { workspace_id: string; [key: string]: unknown })
+        .insert(insertData as { [key: string]: unknown })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -260,6 +246,8 @@ export function useAddActivity() {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline', variables.workspace_id, variables.funnel_item_id] });
       if (variables.funnel_item_id) {
         queryClient.invalidateQueries({ queryKey: ['funnel-events', variables.funnel_item_id] });
+        // G0: refresh the CRM inbox so the lead leaves "stale" after logging.
+        queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       }
     },
     onError: (e: Error) => notify.error(e.message),

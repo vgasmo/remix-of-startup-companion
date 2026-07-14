@@ -24,6 +24,7 @@ interface KpiCardProps {
   p75?: number | null;
   onValueChange: (field: 'value' | 'notes', val: string) => void;
   onSave: () => void;
+  onBlurFlush?: () => void;
   onUnlock?: (kpiValueId: string) => void;
 }
 
@@ -39,6 +40,7 @@ export function KpiCard({
   p75,
   onValueChange,
   onSave,
+  onBlurFlush,
   onUnlock,
 }: KpiCardProps) {
   const { t } = useTranslation();
@@ -138,7 +140,7 @@ export function KpiCard({
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">{t('kpis.value', 'Value')}</Label>
                 <div className="flex items-center gap-2">
-                  <Input type="number" value={displayValue} onChange={e => onValueChange('value', e.target.value)} placeholder={t('kpis.enterValue', 'Enter value')} className="h-9" />
+                  <Input type="number" value={displayValue} onChange={e => onValueChange('value', e.target.value)} onBlur={() => onBlurFlush?.()} placeholder={t('kpis.enterValue', 'Enter value')} className="h-9" />
                   {def.unit && <span className="text-sm text-muted-foreground shrink-0">{def.unit}</span>}
                 </div>
               </div>
@@ -175,7 +177,7 @@ export function KpiCard({
         {effectiveCanEdit ? (
           <div className="space-y-1">
             <Label className="text-xs text-muted-foreground">{t('kpis.notesOptional', 'Notes (optional)')}</Label>
-            <Textarea value={displayNotes} onChange={e => onValueChange('notes', e.target.value)} placeholder={t('kpis.addContext', 'Add context...')} rows={2} className="text-sm" />
+            <Textarea value={displayNotes} onChange={e => onValueChange('notes', e.target.value)} onBlur={() => onBlurFlush?.()} placeholder={t('kpis.addContext', 'Add context...')} rows={2} className="text-sm" />
           </div>
         ) : currentValue?.notes ? (
           <div className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">{currentValue.notes}</div>

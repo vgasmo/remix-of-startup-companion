@@ -53,6 +53,8 @@ interface KpisTabProps {
 }
 
 // ── Autosave hook ──────────────────────────────────────────────
+// G0 fix: reads latest edited value/month/wk via refs — the previous closure
+// captured stale editedValues and lost the last keystroke ("150" saved as "15").
 function useAutosave(
   editedValues: Record<string, { value: string; notes: string }>,
   monthValues: Record<string, KpiValue>,
@@ -65,16 +67,30 @@ function useAutosave(
   const [savingKpis, setSavingKpis] = useState<Set<string>>(new Set());
   const timerRefs = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
-  const saveKpi = useCallback(async (kpiId: string) => {
-    const edited = editedValues[kpiId];
-    if (!edited || !canEdit) return;
+  // Keep the freshest snapshot readable synchronously from any closure.
+  const editedRef = useRef(editedValues);
+  const monthRef = useRef(monthValues);
+  const wksRef = useRef(workspaceKpis);
+  const monthStrRef = useRef(selectedMonthStr);
+  const upsertRef = useRef(upsertKpi);
+  const canEditRef = useRef(canEdit);
+  editedRef.current = editedValues;
+  monthRef.current = monthValues;
+  wksRef.current = workspaceKpis;
+  monthStrRef.current = selectedMonthStr;
+  upsertRef.current = upsertKpi;
+  canEditRef.current = canEdit;
 
-    const existing = monthValues[kpiId];
-    const wk = workspaceKpis?.find(w => w.kpi_definition_id === kpiId);
+  const saveKpi = useCallback(async (kpiId: string) => {
+    if (!canEditRef.current) return;
+    const edited = editedRef.current[kpiId];
+    const existing = monthRef.current[kpiId];
+    const wk = wksRef.current?.find(w => w.kpi_definition_id === kpiId);
     if (!wk) return;
 
-    const valueStr = edited.value;
-    const notes = edited.notes;
+    // Fall back to existing value if the row was never edited (e.g. blur flush).
+    const valueStr = edited?.value ?? existing?.value?.toString() ?? '';
+    const notes = edited?.notes ?? existing?.notes ?? '';
     const value = valueStr === '' ? null : parseFloat(valueStr);
 
     if (valueStr !== '' && isNaN(value as number)) return;
@@ -82,9 +98,9 @@ function useAutosave(
     setSavingKpis(prev => new Set(prev).add(kpiId));
 
     try {
-      await upsertKpi.mutateAsync({
+      await upsertRef.current.mutateAsync({
         kpi_definition_id: kpiId,
-        period_month: selectedMonthStr,
+        period_month: monthStrRef.current,
         value,
         target_value: wk.target_value,
         notes: notes || null,
@@ -92,7 +108,6 @@ function useAutosave(
       });
 
       setSavedKpis(prev => new Set(prev).add(kpiId));
-      // Clear the "saved" indicator after 2s
       setTimeout(() => {
         setSavedKpis(prev => {
           const next = new Set(prev);
@@ -109,27 +124,32 @@ function useAutosave(
         return next;
       });
     }
-  }, [editedValues, monthValues, workspaceKpis, selectedMonthStr, upsertKpi, canEdit]);
+  }, []);
 
-  // Debounce: schedule save 1.5s after last edit
   const scheduleAutosave = useCallback((kpiId: string) => {
-    if (timerRefs.current[kpiId]) {
-      clearTimeout(timerRefs.current[kpiId]);
-    }
+    if (timerRefs.current[kpiId]) clearTimeout(timerRefs.current[kpiId]);
     timerRefs.current[kpiId] = setTimeout(() => {
       saveKpi(kpiId);
       delete timerRefs.current[kpiId];
     }, 1500);
   }, [saveKpi]);
 
-  // Cleanup timers on unmount
+  // Flush pending debounce immediately (used on blur / view switch).
+  const flushAutosave = useCallback((kpiId: string) => {
+    if (timerRefs.current[kpiId]) {
+      clearTimeout(timerRefs.current[kpiId]);
+      delete timerRefs.current[kpiId];
+    }
+    return saveKpi(kpiId);
+  }, [saveKpi]);
+
   useEffect(() => {
     return () => {
       Object.values(timerRefs.current).forEach(clearTimeout);
     };
   }, []);
 
-  return { savedKpis, savingKpis, scheduleAutosave, saveKpi };
+  return { savedKpis, savingKpis, scheduleAutosave, flushAutosave, saveKpi };
 }
 
 export function KpisTab({ workspaceId }: KpisTabProps) {
@@ -192,7 +212,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
   }, [kpiValues, selectedMonthStr]);
 
   // ── Autosave integration ──
-  const { savedKpis, savingKpis, scheduleAutosave, saveKpi } = useAutosave(
+  const { savedKpis, savingKpis, scheduleAutosave, flushAutosave, saveKpi } = useAutosave(
     editedValues,
     monthValues,
     workspaceKpis,
@@ -687,6 +707,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
                         inputMode="numeric"
                         value={displayValue}
                         onChange={(e) => handleValueChange(kpiId, 'value', e.target.value)}
+                        onBlur={() => flushAutosave(kpiId)}
                         placeholder="—"
                         disabled={isLocked}
                         className="h-9 w-32 text-sm font-medium tabular-nums"
@@ -724,6 +745,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
               isSaved={savedKpis.has(wk.kpi_definition_id)}
               onValueChange={(field, val) => handleValueChange(wk.kpi_definition_id, field, val)}
               onSave={() => handleSaveKpi(wk)}
+              onBlurFlush={() => flushAutosave(wk.kpi_definition_id)}
               onUnlock={async (kpiValueId) => {
                 await unlockKpi.mutateAsync(kpiValueId);
                 notify.success(t('kpis.unlocked', 'KPI unlocked for manual editing'));

@@ -20,6 +20,12 @@ interface WorkQueueBulkActionsProps {
   totalCount: number;
   onDeselectAll: () => void;
   onSelectAll: () => void;
+  /**
+   * G0: route bulk "mark done" through the same per-item handler used by
+   * WorkQueuePanel so review_checkin side-effects (stamp reviewed_at, notify
+   * founder) are not bypassed by a raw update.
+   */
+  onMarkDoneItem?: (id: string) => Promise<void>;
 }
 
 export function WorkQueueBulkActions({
@@ -27,6 +33,7 @@ export function WorkQueueBulkActions({
   totalCount,
   onDeselectAll,
   onSelectAll,
+  onMarkDoneItem,
 }: WorkQueueBulkActionsProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -43,16 +50,25 @@ export function WorkQueueBulkActions({
   const handleMarkDone = async () => {
     setIsLoading(true);
     try {
-      const { error } = await supabase
-        .from('staff_work_queue_items')
-        .update({ status: 'done' })
-        .in('id', Array.from(selectedIds));
-      if (error) throw error;
+      if (onMarkDoneItem) {
+        // Sequential to keep side-effects (notifications) ordered and
+        // to preserve partial-failure semantics.
+        for (const id of Array.from(selectedIds)) {
+          await onMarkDoneItem(id);
+        }
+      } else {
+        const { error } = await supabase
+          .from('staff_work_queue_items')
+          .update({ status: 'done' })
+          .in('id', Array.from(selectedIds));
+        if (error) throw error;
+      }
       notify.success(t('workQueue.bulkMarkedDone', { count: selectedCount }));
       onDeselectAll();
       invalidate();
     } catch (e) {
-      notify.error(t('workQueue.updateFailed'));
+      const msg = e instanceof Error ? e.message : t('workQueue.updateFailed');
+      notify.error(msg);
     } finally {
       setIsLoading(false);
     }

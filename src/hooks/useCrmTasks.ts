@@ -38,25 +38,28 @@ export function useAddTask() {
       priority?: TaskPriority;
       visibility?: VisibilityType;
     }) => {
-      // Resolve workspace_id from funnel_item if needed
+      // G0 fix: workspace_id is nullable on communication_log, so tasks can be
+      // added to unconverted leads. Previously threw on the "workspace_id is
+      // required" guard even though the column allows null.
       let workspaceId = params.workspace_id;
       if (!workspaceId && params.funnel_item_id) {
-        const { data: funnelItem } = await supabase
+        const { data: funnelItem, error: fiError } = await supabase
           .from('funnel_items')
           .select('linked_workspace_id')
           .eq('id', params.funnel_item_id)
-          .single();
+          .maybeSingle();
+        if (fiError) throw fiError;
         workspaceId = funnelItem?.linked_workspace_id || undefined;
       }
 
-      if (!workspaceId) {
-        throw new Error('workspace_id is required for task entries');
+      if (!workspaceId && !params.funnel_item_id) {
+        throw new Error('workspace_id or funnel_item_id is required for task entries');
       }
 
       const { data, error } = await supabase
         .from('communication_log')
         .insert({
-          workspace_id: workspaceId,
+          workspace_id: workspaceId ?? null,
           funnel_item_id: params.funnel_item_id,
           activity_type: 'task',
           subject: params.subject,
@@ -88,6 +91,7 @@ export function useAddTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-tasks-due'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
       notify.success(t('crm.taskAdded'));
@@ -127,6 +131,9 @@ export function useCompleteTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-tasks-due'] });
+      // G1: the CRM Tarefas tab reads ['crm-tasks-due', filters] — invalidate it too.
+      queryClient.invalidateQueries({ queryKey: ['crm-tasks-due'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
       notify.success(t('crm.taskCompleted'));
@@ -157,6 +164,7 @@ export function useReopenTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-tasks-due'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       notify.success(t('crm.taskReopened'));
     },
@@ -186,6 +194,7 @@ export function useCancelTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-tasks-due'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       notify.success(t('crm.taskCanceled'));
     },
@@ -221,6 +230,7 @@ export function useUpdateTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-tasks-due'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       notify.success(t('crm.taskUpdated'));
     },
