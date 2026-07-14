@@ -135,6 +135,9 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
   const daysUntilAnniversary = differenceInDays(nextAnniversary, now);
   const endDate = contract?.end_date ? new Date(contract.end_date) : null;
   const daysUntilEnd = endDate ? differenceInDays(endDate, now) : null;
+  const discountEndDate = (contract as any)?.discount_end_date ? new Date((contract as any).discount_end_date) : null;
+  const daysUntilDiscountEnd = discountEndDate ? differenceInDays(discountEndDate, now) : null;
+  const hasActiveDiscount = Number(contract?.discount_percentage || 0) > 0;
 
   // Calculate pricing using the canonical engine with pricing lines
   const pricing = useMemo(() => {
