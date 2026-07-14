@@ -17,7 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { notify } from '@/lib/notify';
 import {
   ArrowRight, CheckCircle2, ChevronRight, HelpCircle, Sparkles, ThumbsDown, ThumbsUp,
-  FileSpreadsheet, Save, SkipForward, Trash2, Wand2, Download, Loader2,
+  FileSpreadsheet, Save, SkipForward, Trash2, Wand2, Download, Loader2, Pencil, X,
 } from 'lucide-react';
 import {
   useFinancialPlanSession, useUpsertFinancialPlanSession,
