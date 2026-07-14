@@ -9640,6 +9640,19 @@ export type Database = {
       check_signup_allowed: { Args: { p_email: string }; Returns: boolean }
       claim_startup: { Args: never; Returns: Json }
       cleanup_old_rate_limits: { Args: never; Returns: number }
+      commit_import_funnel_item: {
+        Args: {
+          p_expected_updated_at: string
+          p_external_ids: Json
+          p_final_stage: string
+          p_job_id: string
+          p_match_entity_id: string
+          p_payload: Json
+          p_row_id: string
+          p_tags: string[]
+        }
+        Returns: Json
+      }
       create_conversation: {
         Args: {
           _title?: string
@@ -9917,6 +9930,7 @@ export type Database = {
         Args: { p_claim_id: string; p_reason?: string }
         Returns: undefined
       }
+      revert_import_row: { Args: { p_row_id: string }; Returns: Json }
       search_workspaces_paged: {
         Args: {
           _assigned_to?: string
