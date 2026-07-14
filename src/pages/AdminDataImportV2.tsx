@@ -93,6 +93,23 @@ export default function AdminDataImportV2() {
     setPrepared(null); setRows([]); setCommitSummary(null);
   }, []);
 
+  const loadRows = useCallback(async (jobId: string) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('data_import_rows')
+        .select('*')
+        .eq('job_id', jobId)
+        .order('row_number', { ascending: true });
+      if (error) throw error;
+      setRows((data ?? []) as any);
+    } catch (e: any) {
+      notify.error(e?.message ?? 'Load rows failed');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const onPrepare = useCallback(async () => {
     if (!file) return;
     setIsLoading(true);
@@ -124,23 +141,6 @@ export default function AdminDataImportV2() {
       setIsLoading(false);
     }
   }, [file, source, programId, stageMap, t, loadRows]);
-
-  const loadRows = useCallback(async (jobId: string) => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('data_import_rows')
-        .select('*')
-        .eq('job_id', jobId)
-        .order('row_number', { ascending: true });
-      if (error) throw error;
-      setRows((data ?? []) as any);
-    } catch (e: any) {
-      notify.error(e?.message ?? 'Load rows failed');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
 
   const goReconcile = useCallback(async () => {
     if (!prepared) return;
