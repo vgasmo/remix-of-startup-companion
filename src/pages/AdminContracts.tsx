@@ -369,6 +369,54 @@ function ContractDocumentsDialog({
           </DialogDescription>
         </DialogHeader>
 
+        {contract && (() => {
+          const s = contract.workspaces?.startups || null;
+          const name = s?.name || contract.organization_name;
+          const description = s?.description;
+          const website = s?.website;
+          const contactName = s?.main_contact_name || contract.legal_representative_name;
+          const contactEmail = s?.main_contact_email || contract.legal_representative_email;
+          const contactPhone = s?.main_contact_phone || s?.phone || contract.legal_representative_phone;
+          const address = [contract.company_address || s?.address, contract.company_city, contract.company_postal_code]
+            .filter(Boolean).join(', ');
+          const hasAny = name || description || website || contactName || contactEmail || contactPhone || address || contract.company_nif;
+          if (!hasAny) return null;
+          return (
+            <div className="rounded-md border bg-muted/30 p-3 text-sm space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-semibold">{name || '—'}</div>
+                {contract.company_nif && (
+                  <Badge variant="outline" className="text-[10px]">NIF {contract.company_nif}</Badge>
+                )}
+              </div>
+              {description && (
+                <p className="text-xs text-muted-foreground whitespace-pre-wrap">{description}</p>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                {contactName && (
+                  <div><span className="text-muted-foreground">Contacto:</span> {contactName}</div>
+                )}
+                {contactEmail && (
+                  <div><span className="text-muted-foreground">Email:</span> {contactEmail}</div>
+                )}
+                {contactPhone && (
+                  <div><span className="text-muted-foreground">Telefone:</span> {contactPhone}</div>
+                )}
+                {website && (
+                  <div className="truncate"><span className="text-muted-foreground">Website:</span>{' '}
+                    <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="underline">{website}</a>
+                  </div>
+                )}
+                {address && (
+                  <div className="sm:col-span-2"><span className="text-muted-foreground">Morada:</span> {address}</div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
+
+
         {loading ? (
           <div className="flex items-center justify-center py-10">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
