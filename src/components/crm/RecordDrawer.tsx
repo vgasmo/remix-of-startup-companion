@@ -513,12 +513,13 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
                       body: { action: 'generate_token', contractId },
                     });
                     if (error) throw error;
-                    if (data?.error) throw new Error(data.error);
+                    if (data?.error) throw new Error(data.message || data.error);
+                    if (!data?.token) throw new Error(t('crm.contractLinkMissing', { defaultValue: 'O servidor não devolveu um link válido.' }));
                     const url = data.url || `${window.location.origin}/contract-signing/${data.token}`;
                     await navigator.clipboard.writeText(url);
                     notify.success(t('crm.contractLinkCopied', { defaultValue: 'Link público do contrato copiado! Envie ao founder por email.' }));
                   } catch (err: any) {
-                    notify.error(err?.message || 'Erro ao gerar link');
+                    notify.error(err?.message || t('crm.contractLinkError', { defaultValue: 'Erro ao gerar link do contrato' }));
                   }
                 }}
               />
