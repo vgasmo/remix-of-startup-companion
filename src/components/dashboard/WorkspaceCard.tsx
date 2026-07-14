@@ -13,6 +13,8 @@ import { Sparkline } from '@/components/ui/Sparkline';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { HealthScore } from '@/types/database';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { ProgramSwitcher } from '@/components/workspace/ProgramSwitcher';
 
 interface WorkspaceCardProps {
   workspace: WorkspaceWithDetails;
@@ -23,6 +25,8 @@ interface WorkspaceCardProps {
 export const WorkspaceCard = memo(function WorkspaceCard({ workspace, onClick, kpiTrend }: WorkspaceCardProps) {
   const { t } = useTranslation();
   const dateLocale = useDateLocale();
+  const { isAdmin, isConsultor } = useAuth();
+  const isStaff = isAdmin || isConsultor;
   const effectiveHealth = workspace.health_score_override || workspace.health_score;
   const hasOverdue = workspace.overdueActionsCount > 0;
 
@@ -55,6 +59,20 @@ export const WorkspaceCard = memo(function WorkspaceCard({ workspace, onClick, k
             <p className="text-sm text-muted-foreground truncate">
               {workspace.program?.name}
             </p>
+            {isStaff && workspace.program_id && (
+              <div
+                className="mt-1.5"
+                onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+                <ProgramSwitcher
+                  workspaceId={workspace.id}
+                  currentProgramId={workspace.program_id}
+                  size="sm"
+                  className="h-7 w-full text-xs"
+                />
+              </div>
+            )}
           </div>
           <div className="flex flex-col items-end gap-1" data-tour="health-badge">
             <HealthBadge score={effectiveHealth as HealthScore | null} size="sm" />
