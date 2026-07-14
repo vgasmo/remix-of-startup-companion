@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { ClipboardList } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { format, isPast, isToday } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { 
   Calendar, CalendarDays, 
   CheckCircle2, 
@@ -93,6 +94,7 @@ interface WorkspaceOverviewProps {
 
 export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const [, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { roles, isConsultor, isAdmin } = useAuth();
@@ -421,7 +423,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
                 </CardTitle>
                 {kpiData?.currentMonth && (
                   <Badge variant="outline">
-                    {format(new Date(kpiData.currentMonth), 'MMM yyyy')}
+                    {format(new Date(kpiData.currentMonth), 'MMM yyyy', { locale: dateLocale })}
                   </Badge>
                 )}
               </div>
@@ -637,6 +639,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
 
 function ActionItem({ action }: { action: any }) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const isOverdue = action.due_date && isPast(new Date(action.due_date)) && !isToday(new Date(action.due_date));
   const isDueToday = action.due_date && isToday(new Date(action.due_date));
 
@@ -653,7 +656,7 @@ function ActionItem({ action }: { action: any }) {
           {action.due_date && (
             <span className={isOverdue ? 'text-destructive font-medium' : isDueToday ? 'text-[hsl(var(--warning))] font-medium' : ''}>
               {isOverdue ? t('workspaceOverview.overduePrefix', { defaultValue: 'Em atraso: ' }) : isDueToday ? t('workspaceOverview.today', { defaultValue: 'Hoje' }) : ''}
-              {!isDueToday && format(new Date(action.due_date), 'dd MMM')}
+              {!isDueToday && format(new Date(action.due_date), 'dd MMM', { locale: dateLocale })}
             </span>
           )}
           {action.priority && action.priority !== 'medium' && (
@@ -731,6 +734,7 @@ function MilestoneCount({ label, count, color }: { label: string; count: number;
 
 function SessionItem({ session }: { session: any }) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   return (
     <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
       <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -739,7 +743,7 @@ function SessionItem({ session }: { session: any }) {
       <div className="flex-1 min-w-0">
         <p className="font-medium truncate">{session.title}</p>
         <p className="text-sm text-muted-foreground">
-          {format(new Date(session.scheduled_at), 'dd MMM yyyy')}
+          {format(new Date(session.scheduled_at), 'dd MMM yyyy', { locale: dateLocale })}
           {session.duration && ` • ${session.duration} min`}
         </p>
       </div>

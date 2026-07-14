@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { format, isPast, isToday } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import {
   CheckCircle2,
   Clock,
@@ -46,6 +47,7 @@ interface StaffTasksPanelProps {
 export function StaffTasksPanel({ compact = false }: StaffTasksPanelProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { data: tasks, isLoading } = useMyStaffTasks();
 
   if (isLoading) {
@@ -121,6 +123,7 @@ function TaskItem({
   task: StaffTask;
   onClick: () => void;
 }) {
+  const dateLocale = useDateLocale();
   const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date));
   const isDueToday = task.due_date && isToday(new Date(task.due_date));
 
@@ -149,7 +152,7 @@ function TaskItem({
               }`}
             >
               {isOverdue ? 'Overdue: ' : isDueToday ? 'Today' : ''}
-              {!isDueToday && format(new Date(task.due_date), 'MMM d')}
+              {!isDueToday && format(new Date(task.due_date), 'MMM d', { locale: dateLocale })}
             </span>
           )}
           {task.priority && task.priority !== 'medium' && (

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { useTranslation } from 'react-i18next';
 import { FileText, Download, Share2, Printer, TrendingUp, Target, CheckCircle2, Calendar, Loader2, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ interface ProgressReportViewProps {
 
 export function ProgressReportView({ workspaceId, workspace }: ProgressReportViewProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const [open, setOpen] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const { data: actions } = useWorkspaceActions(workspaceId);
@@ -142,7 +144,7 @@ export function ProgressReportView({ workspaceId, workspace }: ProgressReportVie
             <h1 className="text-2xl font-bold">{workspace.startup?.name}</h1>
             <p className="text-muted-foreground">{workspace.program?.name}</p>
             <p className="text-sm text-muted-foreground mt-2">
-              {t('progressReport.generatedBy')} • {format(new Date(), 'PPP')}
+              {t('progressReport.generatedBy')} • {format(new Date(), 'PPP', { locale: dateLocale })}
             </p>
           </div>
 
@@ -183,7 +185,7 @@ export function ProgressReportView({ workspaceId, workspace }: ProgressReportVie
               </CardTitle>
               {kpiData?.currentMonth && (
                 <CardDescription>
-                  {format(new Date(kpiData.currentMonth), 'MMMM yyyy')}
+                  {format(new Date(kpiData.currentMonth), 'MMMM yyyy', { locale: dateLocale })}
                 </CardDescription>
               )}
             </CardHeader>
@@ -267,7 +269,7 @@ export function ProgressReportView({ workspaceId, workspace }: ProgressReportVie
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">{session.title}</span>
                         <span className="text-xs text-muted-foreground">
-                          {format(new Date(session.scheduled_at), 'MMM d, yyyy')}
+                          {format(new Date(session.scheduled_at), 'MMM d, yyyy', { locale: dateLocale })}
                         </span>
                       </div>
                       {session.notes && (
@@ -284,7 +286,7 @@ export function ProgressReportView({ workspaceId, workspace }: ProgressReportVie
 
           {/* Footer */}
           <div className="text-center text-xs text-muted-foreground pt-4 border-t">
-            <p>{t('progressReport.generatedBy')} • {format(new Date(), 'PPP')}</p>
+            <p>{t('progressReport.generatedBy')} • {format(new Date(), 'PPP', { locale: dateLocale })}</p>
           </div>
         </div>
       </DialogContent>

@@ -19,6 +19,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { format, formatDistanceToNow, isToday } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -65,6 +66,7 @@ export const MentorDashboard = memo(function MentorDashboard(props: MentorDashbo
 const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, isLoading }: MentorDashboardProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { profile } = useAuth();
   const [prepSheetWorkspaceId, setPrepSheetWorkspaceId] = useState<string | null>(null);
   const [quickNoteWorkspaceId, setQuickNoteWorkspaceId] = useState<string | null>(null);
@@ -548,7 +550,7 @@ const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, is
                               <Calendar className="h-3.5 w-3.5" />
                               {hasUpcomingMeeting
                                 ? format(new Date(workspace.nextMeetingDate), 'HH:mm')
-                                : format(new Date(workspace.nextMeetingDate), 'dd MMM')
+                                : format(new Date(workspace.nextMeetingDate), 'dd MMM', { locale: dateLocale })
                               }
                             </div>
                             {hasUpcomingMeeting && (

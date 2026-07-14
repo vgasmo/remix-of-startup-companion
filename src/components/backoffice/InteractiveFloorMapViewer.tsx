@@ -12,6 +12,7 @@ import { type Room, type FloorMap, type RoomShapeRect, type RoomShapePolygon, us
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { renderPdfToImage, isPdfFile } from '@/lib/pdfRenderer';
 import { logger } from '@/lib/logger';
 
@@ -32,6 +33,7 @@ export function InteractiveFloorMapViewer({
   onRoomClick,
 }: InteractiveFloorMapViewerProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const [signedUrl, setSignedUrl] = useState<string>('');
   const [displayImageUrl, setDisplayImageUrl] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -352,7 +354,7 @@ export function InteractiveFloorMapViewer({
                                 {occupantName}
                                 {allocation?.start_date && (
                                   <span className="block text-muted-foreground">
-                                    {t('admin.backoffice.sinceShort', { defaultValue: 'Desde' })} {format(new Date(allocation.start_date), 'MMM yyyy')}
+                                    {t('admin.backoffice.sinceShort', { defaultValue: 'Desde' })} {format(new Date(allocation.start_date), 'MMM yyyy', { locale: dateLocale })}
                                   </span>
                                 )}
                               </div>

@@ -14,6 +14,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { Clock, Plus, Trash2, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 
 interface TimeTrackingTabProps {
   workspaceId: string;
@@ -23,6 +24,7 @@ const CATEGORIES = ['mentoring', 'review', 'planning', 'admin', 'other'] as cons
 
 export function TimeTrackingTab({ workspaceId }: TimeTrackingTabProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { data: entries, isLoading } = useWorkspaceTimeEntries(workspaceId);
   const { data: summary } = useTimeEntrySummary();
   const createEntry = useCreateTimeEntry();
@@ -147,7 +149,7 @@ export function TimeTrackingTab({ workspaceId }: TimeTrackingTabProps) {
                   <Calendar className="h-5 w-5 text-muted-foreground" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{format(new Date(entry.date), 'MMM d, yyyy')}</span>
+                      <span className="font-medium">{format(new Date(entry.date), 'MMM d, yyyy', { locale: dateLocale })}</span>
                       <span className="text-primary font-semibold">{Number(entry.hours).toFixed(1)}h</span>
                       <span className="text-xs px-2 py-0.5 rounded bg-muted capitalize">{getCategoryLabel(entry.category || 'other')}</span>
                     </div>

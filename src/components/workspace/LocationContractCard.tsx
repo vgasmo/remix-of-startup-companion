@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, FileText, Building2, Ruler, Calendar, Euro } from 'lucide-react';
 import { useContracts } from '@/hooks/useBackoffice';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 
 interface LocationContractCardProps {
   workspaceId: string;
@@ -12,6 +13,7 @@ interface LocationContractCardProps {
 
 export function LocationContractCard({ workspaceId }: LocationContractCardProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { data: contracts, isLoading } = useContracts({ workspaceId });
   
   // Get the active or most recent contract
@@ -123,8 +125,8 @@ export function LocationContractCard({ workspaceId }: LocationContractCardProps)
         <div className="flex items-center gap-3">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm">
-            {format(new Date(contract.start_date), 'MMM yyyy')}
-            {contract.end_date && ` - ${format(new Date(contract.end_date), 'MMM yyyy')}`}
+            {format(new Date(contract.start_date), 'MMM yyyy', { locale: dateLocale })}
+            {contract.end_date && ` - ${format(new Date(contract.end_date), 'MMM yyyy', { locale: dateLocale })}`}
           </span>
         </div>
       </CardContent>

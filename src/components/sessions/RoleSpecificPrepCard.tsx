@@ -18,6 +18,7 @@ import { useWorkspaceAlerts } from '@/hooks/useWorkspaceAlerts';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 
 interface RoleSpecificPrepCardProps {
   sessionId: string;
@@ -31,6 +32,7 @@ interface RoleSpecificPrepCardProps {
  */
 export function RoleSpecificPrepCard({ sessionId, workspaceId }: RoleSpecificPrepCardProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { isAdmin, isConsultor } = useAuth();
   const { data: prepData, isLoading: prepLoading } = useSessionPrep(sessionId, workspaceId);
   const { data: healthData, isLoading: healthLoading } = useWorkspaceHealth(workspaceId);
@@ -183,7 +185,7 @@ export function RoleSpecificPrepCard({ sessionId, workspaceId }: RoleSpecificPre
               </h4>
               <div className="p-2 rounded bg-muted/30 text-xs">
                 <div className="font-medium mb-1">
-                  {prepData.previousSessions[0].title} ({format(new Date(prepData.previousSessions[0].scheduled_at), 'MMM d')})
+                  {prepData.previousSessions[0].title} ({format(new Date(prepData.previousSessions[0].scheduled_at), 'MMM d', { locale: dateLocale })})
                 </div>
                 {prepData.previousSessions[0].ai_summary ? (
                   <p className="text-muted-foreground line-clamp-3">{prepData.previousSessions[0].ai_summary}</p>
@@ -289,7 +291,7 @@ export function RoleSpecificPrepCard({ sessionId, workspaceId }: RoleSpecificPre
                       "text-muted-foreground",
                       milestone.isOverdue && "text-destructive"
                     )}>
-                      {format(new Date(milestone.target_date), 'MMM d')}
+                      {format(new Date(milestone.target_date), 'MMM d', { locale: dateLocale })}
                     </span>
                   )}
                 </div>

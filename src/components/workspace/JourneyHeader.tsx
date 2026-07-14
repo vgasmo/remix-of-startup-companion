@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import {
   Info,
   Calendar,
@@ -88,6 +89,7 @@ export function JourneyHeader({
   canWrite,
 }: JourneyHeaderProps) {
   const { t, i18n } = useTranslation();
+  const dateLocale = useDateLocale();
   const [, setSearchParams] = useSearchParams();
   const [healthSheetOpen, setHealthSheetOpen] = useState(false);
 
@@ -167,7 +169,7 @@ export function JourneyHeader({
                 <Video className="h-4 w-4 text-primary" />
                 <span className="hidden sm:inline">{t('journey.nextSession')}:</span>
                 <span className="font-medium">
-                  {format(new Date(nextSession.starts_at), 'MMM d, HH:mm')}
+                  {format(new Date(nextSession.starts_at), 'MMM d, HH:mm', { locale: dateLocale })}
                 </span>
               </Button>
             ) : canWrite ? (

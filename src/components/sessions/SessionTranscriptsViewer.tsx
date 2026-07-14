@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { FileText, Mic, Video, Loader2, ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,7 @@ const SOURCE_CONFIG: Record<string, { label: string; icon: typeof FileText; colo
 
 export function SessionTranscriptsViewer({ sessionId, showEmpty = true }: SessionTranscriptsViewerProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { data: transcripts, isLoading } = useSessionTranscripts(sessionId);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
@@ -92,6 +94,7 @@ function TranscriptItem({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
+  const dateLocale = useDateLocale();
   const config = SOURCE_CONFIG[transcript.source] || SOURCE_CONFIG.manual;
   const Icon = config.icon;
   const previewText = transcript.transcript_text?.slice(0, 150) || '';
@@ -114,7 +117,7 @@ function TranscriptItem({
                     </Badge>
                     {transcript.created_at && (
                       <span className="text-xs text-muted-foreground">
-                        {format(new Date(transcript.created_at), 'MMM d, h:mm a')}
+                        {format(new Date(transcript.created_at), 'MMM d, h:mm a', { locale: dateLocale })}
                       </span>
                     )}
                   </div>

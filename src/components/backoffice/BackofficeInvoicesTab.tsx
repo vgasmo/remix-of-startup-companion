@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Receipt, Search, Plus, CreditCard, AlertTriangle } from 'lucide-react';
 import { useInvoices, useUpdateInvoice, useRecordPayment, type Invoice } from '@/hooks/useBackoffice';
 import { format, differenceInDays } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -29,6 +30,7 @@ const STATUS_CONFIG: Record<string, { labelKey: string; className: string }> = {
 
 export function BackofficeInvoicesTab() {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { user } = useAuth();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -188,7 +190,7 @@ export function BackofficeInvoicesTab() {
                       </TableCell>
                       <TableCell>
                         <span className={cn(isOverdue && 'text-warning font-medium')}>
-                          {format(dueDate, 'dd MMM yyyy')}
+                          {format(dueDate, 'dd MMM yyyy', { locale: dateLocale })}
                           {isOverdue && ` (${daysOverdue}d)`}
                         </span>
                       </TableCell>

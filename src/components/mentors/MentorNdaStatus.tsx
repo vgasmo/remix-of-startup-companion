@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { ShieldCheck, ShieldAlert, FileText } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +15,7 @@ const CURRENT_NDA_VERSION = 'PT-NDA-2026-01';
 
 export function MentorNdaStatus() {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { user, roles } = useAuth();
   const navigate = useNavigate();
   const isMentor = roles.includes('mentor_externo');
@@ -81,7 +83,7 @@ export function MentorNdaStatus() {
               <span>{t('mentorNda.version')}: {ndaAcceptance.nda_version}</span>
             </div>
             <div className="text-muted-foreground">
-              {t('mentorNda.acceptedOn')}: {format(new Date(ndaAcceptance.accepted_at), 'PPP')}
+              {t('mentorNda.acceptedOn')}: {format(new Date(ndaAcceptance.accepted_at), 'PPP', { locale: dateLocale })}
             </div>
           </div>
         ) : (

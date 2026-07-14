@@ -24,6 +24,7 @@ import {
 import { StageBadge } from '@/components/ui/StageBadge';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { notify } from "@/lib/notify";
 import type { StartupStage, WorkspacePriority } from '@/types/database';
 
@@ -63,6 +64,7 @@ interface BackofficeItem {
 
 export function AdminBackoffice() {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { isAdmin, isBackoffice } = useAuth();
@@ -699,7 +701,7 @@ export function AdminBackoffice() {
                         {item.next_session_date ? (
                           <div className="flex items-center gap-1 text-sm">
                             <Calendar className="h-3 w-3 text-muted-foreground" />
-                            {format(new Date(item.next_session_date), 'MMM d')}
+                            {format(new Date(item.next_session_date), 'MMM d', { locale: dateLocale })}
                           </div>
                         ) : (
                           <span className="text-muted-foreground">—</span>

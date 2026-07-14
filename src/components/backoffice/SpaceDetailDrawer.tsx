@@ -31,6 +31,7 @@ import { useNavigate } from 'react-router-dom';
 import { RoomAllocationHistory } from './RoomAllocationHistory';
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { notify } from "@/lib/notify";
 
 const fmtEUR = new Intl.NumberFormat('pt-PT', {
@@ -49,6 +50,7 @@ interface SpaceDetailDrawerProps {
 
 export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: SpaceDetailDrawerProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
@@ -233,7 +235,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {t('admin.backoffice.inSpaceSince', { defaultValue: 'No espaço desde' })} {format(new Date(allocation.start_date), 'dd MMM yyyy')}
+                      {t('admin.backoffice.inSpaceSince', { defaultValue: 'No espaço desde' })} {format(new Date(allocation.start_date), 'dd MMM yyyy', { locale: dateLocale })}
                     </span>
                     {tenure && (
                       <span className="flex items-center gap-1">
@@ -244,7 +246,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
                   </div>
                   {allocation.end_date && (
                     <div className="text-sm text-muted-foreground">
-                      {t('admin.backoffice.endDate', { defaultValue: 'Data de Fim' })}: {format(new Date(allocation.end_date), 'dd MMM yyyy')}
+                      {t('admin.backoffice.endDate', { defaultValue: 'Data de Fim' })}: {format(new Date(allocation.end_date), 'dd MMM yyyy', { locale: dateLocale })}
                     </div>
                   )}
                   {allocation.notes && (
@@ -315,13 +317,13 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
                           {t('admin.backoffice.contractSince', { defaultValue: 'Contrato desde' })}
                         </div>
                         <div className="font-medium">
-                          {format(new Date(contractSummary.contractStart), 'dd MMM yyyy')}
+                          {format(new Date(contractSummary.contractStart), 'dd MMM yyyy', { locale: dateLocale })}
                         </div>
                       </div>
                       {contractSummary.contractEnd && (
                         <div>
                           <div className="text-muted-foreground">{t('common.endDate', { defaultValue: 'Fim' })}</div>
-                          <div className="font-medium">{format(new Date(contractSummary.contractEnd), 'dd MMM yyyy')}</div>
+                          <div className="font-medium">{format(new Date(contractSummary.contractEnd), 'dd MMM yyyy', { locale: dateLocale })}</div>
                         </div>
                       )}
                     </div>
@@ -341,7 +343,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
                           <div>
                             {t('admin.backoffice.anniversaryLine', {
                               years: contractSummary.anniversaryYearsCompleted + 1,
-                              date: format(contractSummary.anniversary, 'dd MMM yyyy'),
+                              date: format(contractSummary.anniversary, 'dd MMM yyyy', { locale: dateLocale }),
                               days: contractSummary.anniversaryDaysUntil,
                               defaultValue: 'Faz {{years}} ano(s) a {{date}} ({{days}} dias)',
                             })}

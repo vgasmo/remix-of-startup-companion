@@ -4,6 +4,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { format, isPast, isToday, addDays } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { 
   ListTodo, 
   Clock, 
@@ -85,6 +86,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const [statusFilter, setStatusFilter] = useState<string>('open');
   const [typeFilter, setTypeFilter] = useState<string>('all');
 
@@ -418,7 +420,7 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
                               'text-muted-foreground'
                             }`}>
                               {isOverdue ? `${t('workQueue.overdueLabel')}: ` : isDueToday ? t('common.today') : ''}
-                              {!isDueToday && format(new Date(item.due_at), 'MMM d')}
+                              {!isDueToday && format(new Date(item.due_at), 'MMM d', { locale: dateLocale })}
                             </span>
                           )}
                         </div>

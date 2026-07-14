@@ -18,6 +18,7 @@ import {
   GitBranch
 } from 'lucide-react';
 import { format, differenceInMonths, differenceInDays, addYears, subDays } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { useUpdateContract, type StartupContract } from '@/hooks/useBackoffice';
 import { useCurrentPricingTable, findMatchingPricingLine, getIncubationYear } from '@/hooks/backoffice/usePricingLines';
 import { ContractDiscountsPanel } from '@/components/contracts/ContractDiscountsPanel';
@@ -60,6 +61,7 @@ interface ContractDetailDrawerProps {
 
 export function ContractDetailDrawer({ contract, incubationTypes, buildings, open, onOpenChange }: ContractDetailDrawerProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const navigate = useNavigate();
   const contractId = contract?.id ?? '';
   const updateContract = useUpdateContract();
@@ -314,7 +316,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                 }
               </span>
               <span className="text-xs ml-2 opacity-70">
-                {t('admin.backoffice.startedOn')}: {format(startDate, 'dd MMM yyyy')}
+                {t('admin.backoffice.startedOn')}: {format(startDate, 'dd MMM yyyy', { locale: dateLocale })}
               </span>
             </div>
             {years >= 3 && <AlertTriangle className="h-4 w-4 shrink-0" />}
@@ -552,7 +554,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                   {isEditing ? (
                     <Input type="date" value={editValues.start_date} onChange={e => setEditValues(p => ({ ...p, start_date: e.target.value }))} className="h-8 text-sm" />
                   ) : (
-                    <span className="text-sm font-medium">{format(startDate, 'dd MMM yyyy')}</span>
+                    <span className="text-sm font-medium">{format(startDate, 'dd MMM yyyy', { locale: dateLocale })}</span>
                   )}
                 </FieldDisplay>
 
@@ -563,7 +565,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                   {isEditing ? (
                     <Input type="date" value={editValues.end_date} onChange={e => setEditValues(p => ({ ...p, end_date: e.target.value }))} className="h-8 text-sm" />
                   ) : (
-                    <span className="text-sm font-medium">{contract.end_date ? format(new Date(contract.end_date), 'dd MMM yyyy') : '—'}</span>
+                    <span className="text-sm font-medium">{contract.end_date ? format(new Date(contract.end_date), 'dd MMM yyyy', { locale: dateLocale }) : '—'}</span>
                   )}
                 </FieldDisplay>
               </div>
@@ -727,6 +729,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
 /** Signature Provider Panel — shows provider status, allows selection for unsent drafts, retry */
 function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const [sending, setSending] = useState(false);
   const queryClient = useQueryClient();
 
@@ -954,15 +957,15 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
         </div>
         <div className="space-y-1">
           <Label className="text-[10px] text-muted-foreground uppercase">{t('contractDetail.sentAt', { defaultValue: 'Enviado em' })}</Label>
-          <p className="text-xs">{contract.provider_sent_at ? format(new Date(contract.provider_sent_at), 'dd MMM yyyy HH:mm') : contract.signature_requested_at ? format(new Date(contract.signature_requested_at), 'dd MMM yyyy HH:mm') : '—'}</p>
+          <p className="text-xs">{contract.provider_sent_at ? format(new Date(contract.provider_sent_at), 'dd MMM yyyy HH:mm', { locale: dateLocale }) : contract.signature_requested_at ? format(new Date(contract.signature_requested_at), 'dd MMM yyyy HH:mm', { locale: dateLocale }) : '—'}</p>
         </div>
         <div className="space-y-1">
           <Label className="text-[10px] text-muted-foreground uppercase">{t('contractDetail.completedAt', { defaultValue: 'Concluído em' })}</Label>
-          <p className="text-xs">{contract.provider_completed_at ? format(new Date(contract.provider_completed_at), 'dd MMM yyyy HH:mm') : contract.signed_at ? format(new Date(contract.signed_at), 'dd MMM yyyy HH:mm') : '—'}</p>
+          <p className="text-xs">{contract.provider_completed_at ? format(new Date(contract.provider_completed_at), 'dd MMM yyyy HH:mm', { locale: dateLocale }) : contract.signed_at ? format(new Date(contract.signed_at), 'dd MMM yyyy HH:mm', { locale: dateLocale }) : '—'}</p>
         </div>
         <div className="space-y-1 col-span-2">
           <Label className="text-[10px] text-muted-foreground uppercase">{t('contractDetail.lastSync', { defaultValue: 'Última Sincronização' })}</Label>
-          <p className="text-xs">{contract.provider_last_sync_at ? format(new Date(contract.provider_last_sync_at), 'dd MMM yyyy HH:mm') : '—'}</p>
+          <p className="text-xs">{contract.provider_last_sync_at ? format(new Date(contract.provider_last_sync_at), 'dd MMM yyyy HH:mm', { locale: dateLocale }) : '—'}</p>
         </div>
       </div>
 

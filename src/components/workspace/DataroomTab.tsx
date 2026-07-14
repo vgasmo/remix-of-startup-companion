@@ -20,6 +20,7 @@ import {
   Calendar, Download, XCircle, Clock, Users, Sparkles, BookTemplate, ExternalLink
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { getDateLocale } from '@/lib/dateLocale';
 import {
   useDataroom,
@@ -45,6 +46,7 @@ interface DataroomTabProps {
 
 export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, isMentor = false }: DataroomTabProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { confirm, dialogProps } = useConfirmDialog();
   const { data: dataroom, isLoading: loadingDataroom } = useDataroom(workspaceId);
   const { data: items, isLoading: loadingItems } = useDataroomItems(dataroom?.id);
@@ -98,7 +100,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
         await createItem.mutateAsync({
           dataroom_id: dataroom.id,
           type: 'investor_update',
-          title: `Investor Update - ${format(new Date(selectedMonth + '-01'), 'MMM yyyy')}`,
+          title: `Investor Update - ${format(new Date(selectedMonth + '-01'), 'MMM yyyy', { locale: dateLocale })}`,
           investor_update_id: result.id,
           visibility: 'investors',
         });
@@ -517,7 +519,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
                   setItemForm(f => ({ 
                     ...f, 
                     investor_update_id: v, 
-                    title: update ? `Investor Update - ${format(new Date(update.month), 'MMM yyyy')}` : f.title 
+                    title: update ? `Investor Update - ${format(new Date(update.month), 'MMM yyyy', { locale: dateLocale })}` : f.title 
                   }));
                 }}>
                   <SelectTrigger><SelectValue placeholder={t('dataroom.selectUpdatePlaceholder')} /></SelectTrigger>
