@@ -16,8 +16,9 @@ interface FeatureFlag {
   id: string;
   key: string;
   enabled: boolean;
-  scope: 'global' | 'program';
+  scope: 'global' | 'program' | 'workspace';
   program_id: string | null;
+  workspace_id: string | null;
   description: string | null;
   created_at: string;
   updated_at: string;
@@ -25,21 +26,35 @@ interface FeatureFlag {
 
 /**
  * Hook to check if a feature flag is enabled.
- * Optionally scoped to a program.
+ * Precedence: workspace override → program override → global.
  */
-export function useFeatureFlag(key: FeatureFlagKey, programId?: string): boolean {
+export function useFeatureFlag(
+  key: FeatureFlagKey,
+  programId?: string,
+  workspaceId?: string,
+): boolean {
   const { data: flags } = useFeatureFlags();
-  
+
   if (!flags) return false;
-  
-  // Check program-scoped flag first if programId provided
+
+  // Workspace-scoped override wins (used for admin-driven pilots).
+  if (workspaceId) {
+    const wsFlag = flags.find(
+      (f) => f.key === key && f.scope === 'workspace' && f.workspace_id === workspaceId,
+    );
+    if (wsFlag) return wsFlag.enabled;
+  }
+
+  // Program override next.
   if (programId) {
-    const programFlag = flags.find(f => f.key === key && f.scope === 'program' && f.program_id === programId);
+    const programFlag = flags.find(
+      (f) => f.key === key && f.scope === 'program' && f.program_id === programId,
+    );
     if (programFlag) return programFlag.enabled;
   }
-  
-  // Fall back to global flag
-  const globalFlag = flags.find(f => f.key === key && f.scope === 'global');
+
+  // Global fallback.
+  const globalFlag = flags.find((f) => f.key === key && f.scope === 'global');
   return globalFlag?.enabled ?? false;
 }
 
