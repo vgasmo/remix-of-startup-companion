@@ -641,7 +641,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
                                         </div>
                                       )}
                                       <span className="text-muted-foreground/40">•</span>
-                                      <span>{format(new Date(doc.created_at), 'dd MMM yyyy')}</span>
+                                      <span>{format(new Date(doc.created_at), 'dd MMM yyyy', { locale: dateLocale })}</span>
                                       {isLink && (
                                         <>
                                           <span className="text-muted-foreground/40">•</span>
