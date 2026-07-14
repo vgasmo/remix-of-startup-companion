@@ -54,6 +54,8 @@ function scenarioLabel(t: (k: string, opts?: any) => string, s: PlanScenario) {
 export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
   const { t } = useTranslation();
   const [scenario, setScenario] = useState<PlanScenario>('base');
+  const [prefillStage, setPrefillStage] = useState<null | 'profile' | 'kpi' | 'ai' | 'insert' | 'done'>(null);
+  const [prefillResult, setPrefillResult] = useState<PrefillResult | null>(null);
 
   const sessionQ = useFinancialPlanSession(workspaceId, scenario);
   const assumptionsQ = useFinancialAssumptions(workspaceId, scenario);
