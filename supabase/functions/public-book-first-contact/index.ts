@@ -492,6 +492,40 @@ serve(async (req) => {
       console.log("Graph API not configured, skipping calendar event creation");
     }
 
+    // === Internal in-app notification for the consultant (visible in CRM) ===
+    try {
+      if (consultantId) {
+        const dt = `${slot.date} ${slot.time}`;
+        const orgLabel = contact.organization ? ` (${contact.organization})` : '';
+        await supabase.from('notifications').insert({
+          user_id: consultantId,
+          type: 'first_contact_booked',
+          title: `Nova marcação de Primeiro Contacto — ${contact.name}${orgLabel}`,
+          message: `Agendado para ${dt} (Europe/Lisbon). Lead já visível no pipeline do CRM.`,
+          link: `/crm?open=${funnelItemId}`,
+          entity_type: 'funnel_item',
+          entity_id: funnelItemId,
+          event_key: `first_contact_booked:${funnelItemId}:${slot.date}T${slot.time}`,
+          read: false,
+          metadata: {
+            funnel_item_id: funnelItemId,
+            contact_name: contact.name,
+            contact_email: contact.email,
+            organization: contact.organization || null,
+            booking_date: slot.date,
+            booking_time: slot.time,
+            timezone: 'Europe/Lisbon',
+            teams_link: teamsLink,
+            calendar_event_id: calendarEventId,
+            source: 'public_booking',
+          },
+        });
+      }
+    } catch (notifErr) {
+      console.warn('Failed to create CRM notification:', notifErr);
+    }
+
+
     // === Send alert email to consultant (fire-and-forget) ===
     try {
       const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
