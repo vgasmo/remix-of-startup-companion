@@ -264,23 +264,38 @@ export function LinkedContextPanel({
         ) : linkedWorkspaceId ? (
           <div className="border-t pt-2 space-y-2">
             <p className="text-xs text-muted-foreground italic">
-              {t('crm.noContractsAvailable', { defaultValue: 'Sem contratos neste workspace' })}
+              {contractMissing
+                ? t('crm.contractMissingNotice', { defaultValue: 'O contrato vinculado já não existe (foi eliminado ou arquivado).' })
+                : contractArchived
+                ? t('crm.contractArchivedNotice', { defaultValue: 'O contrato vinculado foi arquivado.' })
+                : t('crm.noContractsAvailable', { defaultValue: 'Sem contratos neste workspace' })}
             </p>
           </div>
         ) : null}
 
         {/* Clear contract actions */}
-        {(onInitiateContract || (onSendContract && primaryContractId)) && (
+        {(onInitiateContract || (onSendContract && primaryContractId) || (onCreateAndSendContract && noUsableContract)) && (
           <div className="border-t pt-2 flex flex-wrap gap-2">
             {onInitiateContract && (
               <Button
                 size="sm"
-                variant="default"
+                variant={noUsableContract ? 'outline' : 'default'}
                 className="h-8 text-xs gap-1.5"
                 onClick={onInitiateContract}
               >
                 <PlusCircle className="h-3.5 w-3.5" />
                 {t('crm.initiateContract', { defaultValue: 'Iniciar Contrato' })}
+              </Button>
+            )}
+            {onCreateAndSendContract && noUsableContract && (
+              <Button
+                size="sm"
+                variant="default"
+                className="h-8 text-xs gap-1.5"
+                onClick={onCreateAndSendContract}
+              >
+                <Zap className="h-3.5 w-3.5" />
+                {t('crm.createAndSendContract', { defaultValue: 'Criar contrato e enviar' })}
               </Button>
             )}
             {onSendContract && primaryContractId && (
