@@ -345,6 +345,7 @@ function GatesWeeksManager({ programId }: { programId: string }) {
 
 export function AdminProgramsManager() {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const navigate = useNavigate();
   const { data: programs, isLoading } = usePrograms();
   const { data: drafts } = useProgramSetupDrafts();
