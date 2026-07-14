@@ -225,7 +225,7 @@ export default function AdminDataImport() {
     if (stage.includes('onboarding')) return 'met';
     if (stage.includes('first contact') || stage.includes('primeiro contacto')) return 'first_contact_booked';
     if (stage.includes('new') || stage.includes('novo')) return 'new';
-    if (stage.includes('lost') || stage.includes('perdido')) return 'lost';
+    if (stage.includes('lost') || stage.includes('perdido')) return 'rejected';
     if (stage.includes('contracted') || stage.includes('contratado')) return 'contracted';
     return null;
   };
