@@ -599,6 +599,19 @@ function PackRunner({
   const [rationale, setRationale] = useState<string>('');
   const [saving, setSaving] = useState(false);
 
+  // Hooks must run unconditionally on every render. Compute the parsed preview
+  // ABOVE the early `!q` return so hook order stays stable when the pack
+  // finishes and `q` flips from a question to undefined.
+  const parsedPreview = useMemo(() => {
+    if (!q || q.kind === 'text' || !value.trim()) return null;
+    const n = parseLocalizedNumber(value);
+    if (n === null) return null;
+    const isCurrency = q.unit === '€' || q.kind === 'currency';
+    return isCurrency
+      ? formatLocalizedNumber(n, { currency: true })
+      : `${formatLocalizedNumber(n)}${q.unit ? ` ${q.unit}` : ''}`;
+  }, [value, q]);
+
   if (!q) {
     return (
       <Card>
@@ -659,15 +672,6 @@ function PackRunner({
       setSaving(false);
     }
   };
-
-  // Live preview of the parsed value so the founder catches "1.500" → 1 500.
-  const parsedPreview = useMemo(() => {
-    if (q.kind === 'text' || !value.trim()) return null;
-    const n = parseLocalizedNumber(value);
-    if (n === null) return null;
-    const isCurrency = q.unit === '€' || q.kind === 'currency';
-    return isCurrency ? formatLocalizedNumber(n, { currency: true }) : `${formatLocalizedNumber(n)}${q.unit ? ` ${q.unit}` : ''}`;
-  }, [value, q.kind, q.unit]);
 
   return (
     <Card>

@@ -70,9 +70,10 @@ describe('hubspotNormalize', () => {
       expect(mapStage('Won')).toBe('contracted');
       expect(mapStage('closedwon')).toBe('contracted');
       expect(mapStage('Ganho')).toBe('contracted');
-      expect(mapStage('lost')).toBe('lost');
-      expect(mapStage('discovery')).toBe('discovery');
-      expect(mapStage('proposta')).toBe('proposal');
+      // Canonical funnel stages: lost → rejected, discovery → new, proposta → proposal_sent.
+      expect(mapStage('lost')).toBe('rejected');
+      expect(mapStage('discovery')).toBe('new');
+      expect(mapStage('proposta')).toBe('proposal_sent');
     });
     it('does NOT auto-map Tier A/B/C to contracted', () => {
       // Regression guard for the legacy defect.

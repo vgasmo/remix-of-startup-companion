@@ -42,13 +42,21 @@ vi.mock('react-i18next', async () => {
       'admin.backoffice.spaceDetailsEmptyBody': 'No space selected.',
     },
   } as const;
+  const changeLanguage = async (lng: string) => {
+    if (lng === 'pt' || lng === 'en') state.locale = lng;
+  };
   return {
     useTranslation: () => ({
       t: (key: string, opts?: { defaultValue?: string }) => {
         const table = S[state.locale] as Record<string, string>;
         return table[key] ?? opts?.defaultValue ?? key;
       },
+      i18n: { language: state.locale, changeLanguage },
     }),
+    // Some modules read the initReactI18next / Trans exports even if unused at
+    // runtime; return no-ops so importing them from mocked module doesn't throw.
+    initReactI18next: { type: '3rdParty', init: () => {} },
+    Trans: ({ children }: { children?: unknown }) => children ?? null,
   };
 });
 
