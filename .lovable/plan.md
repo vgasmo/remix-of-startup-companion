@@ -81,6 +81,18 @@ Question packs cover: revenues/pricing/volumes, CMVMC/COGS, FSE, staff, working 
 
 Gate: autosave race test, prefill-never-silent test, scenario recompute snapshot, RLS per role.
 
+**Batch B progress (2026-07-14):**
+- ✅ Migration for `financial_plan_sessions`, `financial_assumptions`, `financial_prefill_proposals` + enums + RLS + GRANTs.
+- ✅ Feature flag row `financial_business_plan_coach_v1` seeded (off by default).
+- ✅ Hooks `useFinancialPlan.ts` (session upsert, assumptions CRUD, proposal accept/reject that materializes into `financial_assumptions`).
+- ✅ `GuidedPlanTab` mounted in `FinancialModelPanel` behind the flag: scenario switcher, coverage bar, pending-proposals inbox, 7-field diagnostic, one-at-a-time question runner (Save / Skip / IDK, locale-safe number parsing, per-assumption rationale, Excel-cell hint chip), full assumptions register with source badges.
+- ✅ Question packs seeded: company, revenue, costs, team, capex & financing, unit economics. Cell hints reference `Pressupostos!*` from the canonical map.
+- ⏳ Sensitivity slider / client-side derived KPI recompute (Base/Conservative/Optimistic drivers).
+- ⏳ Autosave via `useSingleFlightDraft` — current runner is single-flight per question via mutation; wire the shared draft hook for multi-field forms next.
+- ⏳ Prefill population (edge function that scans profile/KPI/AI signals and inserts `financial_prefill_proposals` rows).
+- ⏳ Full i18n PT/EN parity for `financialPlan.*` keys (defaultValues in place; extraction pending).
+
+
 ### Batch C — Business Plan builder + DOCX round-trip
 
 Schema derived from the two Word templates: bilingual 16-chapter tree + annexes. Represented as `business_plan_schema(schema_version, node jsonb)`.

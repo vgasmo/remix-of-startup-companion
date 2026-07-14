@@ -38,6 +38,8 @@ import {
   FinancialInsight,
 } from '@/hooks/useFinancialModel';
 import { logger } from '@/lib/logger';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
+import { GuidedPlanTab } from './financial-plan/GuidedPlanTab';
 
 interface FinancialModelPanelProps {
   workspaceId: string;
@@ -287,7 +289,15 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
     return <Skeleton className="h-64" />;
   }
 
+  const guidedPlanEnabled = useFeatureFlag('financial_business_plan_coach_v1');
+
   return (
+    <>
+    {guidedPlanEnabled && (
+      <div className="mb-4">
+        <GuidedPlanTab workspaceId={workspaceId} canWrite={canWrite} />
+      </div>
+    )}
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -728,5 +738,6 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
         )}
       </CardContent>
     </Card>
+    </>
   );
 }

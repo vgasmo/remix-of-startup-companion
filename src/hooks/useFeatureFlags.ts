@@ -9,7 +9,8 @@ export type FeatureFlagKey =
   | 'traction_stage'
   | 'crm_graph_email_sync'
   | 'crm_ai_recap'
-  | 'open_registration';
+  | 'open_registration'
+  | 'financial_business_plan_coach_v1';
 
 interface FeatureFlag {
   id: string;

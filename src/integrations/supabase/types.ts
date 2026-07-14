@@ -2383,6 +2383,78 @@ export type Database = {
           },
         ]
       }
+      financial_assumptions: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          id: string
+          key: string
+          last_validated_at: string | null
+          owner_user_id: string | null
+          period_index: number | null
+          rationale: string | null
+          scenario: Database["public"]["Enums"]["financial_plan_scenario"]
+          source: Database["public"]["Enums"]["financial_assumption_source"]
+          unit: string | null
+          updated_at: string
+          value_json: Json | null
+          value_numeric: number | null
+          version_id: string | null
+          workspace_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          key: string
+          last_validated_at?: string | null
+          owner_user_id?: string | null
+          period_index?: number | null
+          rationale?: string | null
+          scenario?: Database["public"]["Enums"]["financial_plan_scenario"]
+          source?: Database["public"]["Enums"]["financial_assumption_source"]
+          unit?: string | null
+          updated_at?: string
+          value_json?: Json | null
+          value_numeric?: number | null
+          version_id?: string | null
+          workspace_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          key?: string
+          last_validated_at?: string | null
+          owner_user_id?: string | null
+          period_index?: number | null
+          rationale?: string | null
+          scenario?: Database["public"]["Enums"]["financial_plan_scenario"]
+          source?: Database["public"]["Enums"]["financial_assumption_source"]
+          unit?: string | null
+          updated_at?: string
+          value_json?: Json | null
+          value_numeric?: number | null
+          version_id?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_assumptions_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "financial_model_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_assumptions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_cell_map: {
         Row: {
           address: string
@@ -2563,6 +2635,122 @@ export type Database = {
           },
           {
             foreignKeyName: "financial_model_versions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_plan_sessions: {
+        Row: {
+          active_version_id: string | null
+          completed_packs: string[]
+          created_at: string
+          created_by: string | null
+          current_step: string
+          diagnostic_json: Json
+          id: string
+          scenario: Database["public"]["Enums"]["financial_plan_scenario"]
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          active_version_id?: string | null
+          completed_packs?: string[]
+          created_at?: string
+          created_by?: string | null
+          current_step?: string
+          diagnostic_json?: Json
+          id?: string
+          scenario?: Database["public"]["Enums"]["financial_plan_scenario"]
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          active_version_id?: string | null
+          completed_packs?: string[]
+          created_at?: string
+          created_by?: string | null
+          current_step?: string
+          diagnostic_json?: Json
+          id?: string
+          scenario?: Database["public"]["Enums"]["financial_plan_scenario"]
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_plan_sessions_active_version_id_fkey"
+            columns: ["active_version_id"]
+            isOneToOne: false
+            referencedRelation: "financial_model_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_plan_sessions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_prefill_proposals: {
+        Row: {
+          created_at: string
+          evidence: Json
+          id: string
+          key: string
+          period_index: number | null
+          proposed_value_json: Json | null
+          proposed_value_numeric: number | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          scenario: Database["public"]["Enums"]["financial_plan_scenario"]
+          source: Database["public"]["Enums"]["financial_assumption_source"]
+          status: Database["public"]["Enums"]["financial_prefill_status"]
+          unit: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          evidence?: Json
+          id?: string
+          key: string
+          period_index?: number | null
+          proposed_value_json?: Json | null
+          proposed_value_numeric?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scenario?: Database["public"]["Enums"]["financial_plan_scenario"]
+          source: Database["public"]["Enums"]["financial_assumption_source"]
+          status?: Database["public"]["Enums"]["financial_prefill_status"]
+          unit?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          evidence?: Json
+          id?: string
+          key?: string
+          period_index?: number | null
+          proposed_value_json?: Json | null
+          proposed_value_numeric?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scenario?: Database["public"]["Enums"]["financial_plan_scenario"]
+          source?: Database["public"]["Enums"]["financial_assumption_source"]
+          status?: Database["public"]["Enums"]["financial_prefill_status"]
+          unit?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_prefill_proposals_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -9697,6 +9885,14 @@ export type Database = {
         | "team_member"
         | "backoffice"
       compliance_status: "on_track" | "needs_update" | "overdue"
+      financial_assumption_source:
+        | "founder"
+        | "prefill_profile"
+        | "prefill_kpi"
+        | "prefill_ai"
+        | "imported_xlsm"
+      financial_plan_scenario: "base" | "conservative" | "optimistic"
+      financial_prefill_status: "pending" | "accepted" | "rejected"
       health_score: "critical" | "at_risk" | "stable" | "healthy" | "thriving"
       intake_status:
         | "intake_requested"
@@ -9859,6 +10055,15 @@ export const Constants = {
         "backoffice",
       ],
       compliance_status: ["on_track", "needs_update", "overdue"],
+      financial_assumption_source: [
+        "founder",
+        "prefill_profile",
+        "prefill_kpi",
+        "prefill_ai",
+        "imported_xlsm",
+      ],
+      financial_plan_scenario: ["base", "conservative", "optimistic"],
+      financial_prefill_status: ["pending", "accepted", "rejected"],
       health_score: ["critical", "at_risk", "stable", "healthy", "thriving"],
       intake_status: [
         "intake_requested",
