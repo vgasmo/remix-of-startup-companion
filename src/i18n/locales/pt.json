@@ -9375,6 +9375,7 @@
     "snooze7Days": "Adiar 7 dias",
     "snoozeFailed": "Falha ao adiar",
     "snoozedForDays": "Adiado por {{days}} dias",
+    "stillPendingValidation": "Ainda há {{count}} ações por validar.",
     "statusAll": "Todas",
     "statusDone": "Concluídas",
     "statusInProgress": "Em Progresso",
