@@ -365,6 +365,7 @@ export default function AdminDataImportV2() {
                   <div className="flex gap-1 text-xs">
                     <Badge variant="outline">insert: {counts.insert}</Badge>
                     <Badge variant="outline">update: {counts.update}</Badge>
+                    {counts.suggested != null && <Badge variant="secondary">suggested: {counts.suggested}</Badge>}
                     <Badge variant="destructive">conflict: {counts.conflict}</Badge>
                     <Badge variant="secondary">invalid: {counts.invalid}</Badge>
                   </div>
@@ -374,7 +375,7 @@ export default function AdminDataImportV2() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
-                {(['all', 'insert', 'update', 'conflict', 'invalid'] as const).map(f => (
+                {(['all', 'insert', 'update', 'suggested', 'conflict', 'invalid'] as const).map(f => (
                   <Button key={f} variant={filter === f ? 'default' : 'outline'} size="sm" onClick={() => setFilter(f)}>{f}</Button>
                 ))}
                 <div className="ml-auto flex gap-2 flex-wrap">
