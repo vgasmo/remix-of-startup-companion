@@ -522,6 +522,50 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
                     notify.error(err?.message || t('crm.contractLinkError', { defaultValue: 'Erro ao gerar link do contrato' }));
                   }
                 }}
+                onCreateAndSendContract={async () => {
+                  try {
+                    const today = new Date().toISOString().slice(0, 10);
+                    const insertPayload: Record<string, unknown> = {
+                      status: 'draft',
+                      start_date: today,
+                      monthly_fee: 0,
+                      currency: 'EUR',
+                      funnel_item_id: item.id,
+                      organization_name: item.organization_name || item.contact_name || null,
+                      legal_representative_name: item.contact_name || null,
+                      legal_representative_email: item.contact_email || null,
+                      workspace_id: item.linked_workspace_id || null,
+                    };
+                    const { data: newContract, error: createErr } = await supabase
+                      .from('startup_contracts')
+                      .insert(insertPayload as any)
+                      .select('id')
+                      .single();
+                    if (createErr) throw createErr;
+                    if (!newContract?.id) throw new Error('contract_id_missing');
+
+                    await supabase
+                      .from('funnel_items')
+                      .update({ linked_contract_id: newContract.id })
+                      .eq('id', item.id);
+
+                    const { data, error } = await invokeWithAuth('public-contract-onboarding', {
+                      body: { action: 'generate_token', contractId: newContract.id },
+                    });
+                    if (error) throw error;
+                    if (data?.error) throw new Error(data.message || data.error);
+                    if (!data?.token) throw new Error(t('crm.contractLinkMissing', { defaultValue: 'O servidor não devolveu um link válido.' }));
+                    const url = data.url || `${window.location.origin}/contract-signing/${data.token}`;
+                    await navigator.clipboard.writeText(url);
+                    notify.success(t('crm.contractCreatedAndLinkCopied', {
+                      defaultValue: 'Contrato rascunho criado e link copiado. Envie ao founder por email.',
+                    }));
+                  } catch (err: any) {
+                    notify.error(err?.message || t('crm.contractCreateAndSendError', {
+                      defaultValue: 'Erro ao criar e enviar contrato',
+                    }));
+                  }
+                }}
               />
 
               {!item.linked_workspace_id && !item.linked_startup_id && !item.linked_contract_id && (

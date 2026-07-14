@@ -5,7 +5,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Building2, FileText, Briefcase, ExternalLink, MapPin, Calendar, Euro, Users, PlusCircle, Send } from 'lucide-react';
+import { Building2, FileText, Briefcase, ExternalLink, MapPin, Calendar, Euro, Users, PlusCircle, Send, Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ interface LinkedContextPanelProps {
   funnelItemId: string;
   onInitiateContract?: () => void;
   onSendContract?: (contractId: string) => void;
+  onCreateAndSendContract?: () => void;
 }
 
 const CONTRACT_STATUS_COLORS: Record<string, string> = {
@@ -86,6 +87,7 @@ export function LinkedContextPanel({
   funnelItemId,
   onInitiateContract,
   onSendContract,
+  onCreateAndSendContract,
 }: LinkedContextPanelProps) {
   const { t } = useTranslation();
 
@@ -111,7 +113,7 @@ export function LinkedContextPanel({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('startup_contracts')
-        .select('id, contract_number, status, start_date, end_date, monthly_fee, currency, square_meters, incubation_type:incubation_types(name), building:buildings(name, code)')
+        .select('id, contract_number, status, archived_at, start_date, end_date, monthly_fee, currency, square_meters, incubation_type:incubation_types(name), building:buildings(name, code)')
         .eq('id', linkedContractId!)
         .maybeSingle();
       if (error) throw error;
@@ -119,15 +121,16 @@ export function LinkedContextPanel({
     },
   });
 
-  // Always fetch workspace contracts when workspace is linked
+  // Always fetch workspace contracts when workspace is linked (exclude archived)
   const { data: workspaceContracts, isLoading: loadingWsContracts } = useQuery({
     queryKey: ['crm-workspace-contracts', linkedWorkspaceId],
     enabled: !!linkedWorkspaceId && !linkedContractId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('startup_contracts')
-        .select('id, contract_number, status, start_date, end_date, monthly_fee, currency, square_meters, incubation_type:incubation_types(name), building:buildings(name, code)')
+        .select('id, contract_number, status, archived_at, start_date, end_date, monthly_fee, currency, square_meters, incubation_type:incubation_types(name), building:buildings(name, code)')
         .eq('workspace_id', linkedWorkspaceId!)
+        .is('archived_at', null)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
@@ -150,7 +153,16 @@ export function LinkedContextPanel({
     );
   }
 
-  // Links present but referenced rows were deleted / RLS-hidden → degrade gracefully
+  // Treat archived contracts as "no usable contract"
+  const contractUsable = contract && !(contract as any).archived_at;
+  const primaryContractId = contractUsable ? contract!.id : (workspaceContracts?.[0]?.id || null);
+  const contractMissing = !!linkedContractId && !contract;
+  const contractArchived = !!contract && !!(contract as any).archived_at;
+  const noUsableContract = !primaryContractId && (contractMissing || contractArchived || linkedWorkspaceId || linkedStartupId);
+
+  // Links present but referenced rows were deleted / RLS-hidden and there is
+  // nothing else to render → degrade gracefully. Still expose the create+send
+  // button when the caller provided it so staff can recover.
   const nothingToShow =
     !workspace &&
     !contract &&
@@ -158,20 +170,32 @@ export function LinkedContextPanel({
   if (nothingToShow) {
     return (
       <Card className="flex-1 border-border/60 bg-muted/30">
-        <CardContent className="p-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-1.5">
+        <CardContent className="p-3 space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
             <Briefcase className="h-3.5 w-3.5" />
             {t('crm.linkedContext', { defaultValue: 'Contexto Vinculado' })}
           </p>
           <p className="text-xs text-muted-foreground">
-            {t('crm.noLinkedContext', { defaultValue: 'Sem contexto associado.' })}
+            {contractMissing
+              ? t('crm.contractMissingNotice', { defaultValue: 'O contrato vinculado já não existe (foi eliminado ou arquivado).' })
+              : t('crm.noLinkedContext', { defaultValue: 'Sem contexto associado.' })}
           </p>
+          {onCreateAndSendContract && (
+            <Button
+              size="sm"
+              variant="default"
+              className="h-8 text-xs gap-1.5"
+              onClick={onCreateAndSendContract}
+            >
+              <Zap className="h-3.5 w-3.5" />
+              {t('crm.createAndSendContract', { defaultValue: 'Criar contrato e enviar' })}
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
   }
 
-  const primaryContractId = contract?.id || workspaceContracts?.[0]?.id || null;
 
   return (
     <Card className="flex-1 border-border/60 bg-muted/30">
@@ -240,23 +264,38 @@ export function LinkedContextPanel({
         ) : linkedWorkspaceId ? (
           <div className="border-t pt-2 space-y-2">
             <p className="text-xs text-muted-foreground italic">
-              {t('crm.noContractsAvailable', { defaultValue: 'Sem contratos neste workspace' })}
+              {contractMissing
+                ? t('crm.contractMissingNotice', { defaultValue: 'O contrato vinculado já não existe (foi eliminado ou arquivado).' })
+                : contractArchived
+                ? t('crm.contractArchivedNotice', { defaultValue: 'O contrato vinculado foi arquivado.' })
+                : t('crm.noContractsAvailable', { defaultValue: 'Sem contratos neste workspace' })}
             </p>
           </div>
         ) : null}
 
         {/* Clear contract actions */}
-        {(onInitiateContract || (onSendContract && primaryContractId)) && (
+        {(onInitiateContract || (onSendContract && primaryContractId) || (onCreateAndSendContract && noUsableContract)) && (
           <div className="border-t pt-2 flex flex-wrap gap-2">
             {onInitiateContract && (
               <Button
                 size="sm"
-                variant="default"
+                variant={noUsableContract ? 'outline' : 'default'}
                 className="h-8 text-xs gap-1.5"
                 onClick={onInitiateContract}
               >
                 <PlusCircle className="h-3.5 w-3.5" />
                 {t('crm.initiateContract', { defaultValue: 'Iniciar Contrato' })}
+              </Button>
+            )}
+            {onCreateAndSendContract && noUsableContract && (
+              <Button
+                size="sm"
+                variant="default"
+                className="h-8 text-xs gap-1.5"
+                onClick={onCreateAndSendContract}
+              >
+                <Zap className="h-3.5 w-3.5" />
+                {t('crm.createAndSendContract', { defaultValue: 'Criar contrato e enviar' })}
               </Button>
             )}
             {onSendContract && primaryContractId && (
