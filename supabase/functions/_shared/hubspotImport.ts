@@ -79,23 +79,23 @@ export function extractEmailFromText(text: string): string | null {
 
 // ---- Stage mapping (configurable) ----------------------------------------
 export const DEFAULT_STAGE_MAP: Record<string, string> = {
-  // ONLY safe, deterministic mappings. Tier A/B/C stay in review.
+  // ONLY canonical FUNNEL_STAGES targets. Tier A/B/C stay in review (no mapping).
   'won': 'contracted',
   'ganho': 'contracted',
   'closed won': 'contracted',
   'closedwon': 'contracted',
-  'lost': 'lost',
-  'perdido': 'lost',
-  'closed lost': 'lost',
-  'closedlost': 'lost',
-  'discovery': 'discovery',
+  'lost': 'rejected',
+  'perdido': 'rejected',
+  'closed lost': 'rejected',
+  'closedlost': 'rejected',
+  'discovery': 'new',
   'qualification': 'qualified',
   'qualified': 'qualified',
-  'meeting': 'meeting',
-  'proposal': 'proposal',
-  'proposta': 'proposal',
-  'negotiation': 'negotiation',
-  'negociação': 'negotiation',
+  'meeting': 'met',
+  'proposal': 'proposal_sent',
+  'proposta': 'proposal_sent',
+  'negotiation': 'negotiating',
+  'negociação': 'negotiating',
 };
 
 export function mapStage(hs: string | null | undefined, custom: Record<string, string> = {}): string | null {
