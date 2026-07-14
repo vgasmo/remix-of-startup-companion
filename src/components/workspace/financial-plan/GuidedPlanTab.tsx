@@ -77,11 +77,60 @@ function scenarioLabel(t: (k: string, opts?: any) => string, s: PlanScenario) {
   return t(`financialPlan.scenario.${s}`, { defaultValue: s.charAt(0).toUpperCase() + s.slice(1) });
 }
 
+/**
+ * When a founder skips a financial assumption ("I don't know yet"), enqueue a
+ * consultor review item so staff can follow up. Fire-and-forget, idempotent —
+ * we only enqueue one open item per (workspace, assumption key). RLS lets
+ * founders insert workspace-scoped rows; consultors receive it via the shared
+ * work queue view.
+ */
+async function enqueueConsultorReview(
+  workspaceId: string,
+  assumptionKey: string,
+  assumptionLabelText: string,
+  scenario: PlanScenario,
+  t: (k: string, opts?: any) => string,
+) {
+  try {
+    const { supabase } = await import('@/lib/supabaseClient');
+    const evidenceMatch = `${assumptionKey}::${scenario}`;
+    const { data: existing } = await supabase
+      .from('staff_work_queue_items')
+      .select('id')
+      .eq('workspace_id', workspaceId)
+      .eq('type', 'financial_assumption_skipped')
+      .eq('status', 'pending')
+      .contains('evidence_json', { assumption_key: assumptionKey, scenario })
+      .limit(1)
+      .maybeSingle();
+    if (existing?.id) return;
+    await supabase.from('staff_work_queue_items').insert({
+      workspace_id: workspaceId,
+      type: 'financial_assumption_skipped',
+      title: t('financialPlan.queue.skippedTitle', {
+        defaultValue: 'Review skipped assumption: {{label}}',
+        label: assumptionLabelText,
+      }),
+      description: t('financialPlan.queue.skippedDesc', {
+        defaultValue: 'The founder marked "{{label}}" as unknown in the {{scenario}} scenario — help them find a defensible value.',
+        label: assumptionLabelText,
+        scenario,
+      }),
+      priority: 'medium',
+      status: 'pending',
+      evidence_json: { assumption_key: assumptionKey, scenario, source: 'guided_financial_plan' },
+    });
+  } catch {
+    /* best-effort — never block the founder's flow on queue insertion */
+  }
+}
+
 export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
   const { t } = useTranslation();
   const [scenario, setScenario] = useState<PlanScenario>('base');
   const [prefillStage, setPrefillStage] = useState<null | 'profile' | 'kpi' | 'ai' | 'insert' | 'done'>(null);
   const [prefillResult, setPrefillResult] = useState<PrefillResult | null>(null);
+
 
   const sessionQ = useFinancialPlanSession(workspaceId, scenario);
   const assumptionsQ = useFinancialAssumptions(workspaceId, scenario);
@@ -349,6 +398,7 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
           assumptions={assumptions}
           onSave={(input) => saveAssumption.mutateAsync(input)}
           onSkip={() => markPackComplete(activePack.id)}
+          onSkipQuestion={(qKey, qLabel) => enqueueConsultorReview(workspaceId, qKey, qLabel, scenario, t)}
           onComplete={() => {
             markPackComplete(activePack.id);
             notify.success(t('financialPlan.packComplete', { defaultValue: 'Section saved' }));
@@ -525,7 +575,7 @@ function DiagnosticSection({
 // -------- Question pack runner ---------------------------------------------
 
 function PackRunner({
-  pack, canWrite, scenario, assumptions, onSave, onSkip, onComplete,
+  pack, canWrite, scenario, assumptions, onSave, onSkip, onSkipQuestion, onComplete,
 }: {
   pack: ReturnType<typeof packById> & object;
   canWrite: boolean;
@@ -533,6 +583,7 @@ function PackRunner({
   assumptions: ReturnType<typeof useFinancialAssumptions>['data'];
   onSave: (input: any) => Promise<any>;
   onSkip: () => void;
+  onSkipQuestion?: (qKey: string, qLabel: string) => void | Promise<void>;
   onComplete: () => void;
 }) {
   const { t } = useTranslation();
@@ -688,6 +739,11 @@ function PackRunner({
                   source: 'founder' as AssumptionSource,
                   rationale: t('financialPlan.idkRationale', { defaultValue: 'Skipped by founder — revisit later' }) as string,
                 });
+                // Fire-and-forget: enqueue a consultor review item so staff
+                // knows the founder is stuck on this specific assumption.
+                if (onSkipQuestion) {
+                  void onSkipQuestion(q.key, assumptionLabel(t, q.key));
+                }
                 setValue(''); setRationale('');
               } catch (e: any) {
                 notify.error(e?.message ?? t('financialPlan.saveFailed', { defaultValue: 'Save failed' }));

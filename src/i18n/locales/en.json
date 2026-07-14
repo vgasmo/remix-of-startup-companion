@@ -3600,7 +3600,9 @@
     "commitNow": "Commit now",
     "download": "Download report",
     "noRows": "No rows in this filter.",
-    "toReconcile": "Continue to reconciliation"
+    "toReconcile": "Continue to reconciliation",
+    "noneConfident": "No rows clear the {{pct}}% confidence bar — review each match manually.",
+    "approvedHeld": "Approved {{n}} rows · {{held}} held for manual review (< {{pct}}% match)"
   },
   "dataImport": {
     "adminOnly": "Only administrators and consultants can access this page.",
@@ -5763,7 +5765,8 @@
     "sessions": "sessions",
     "startTime": "Hora de início",
     "whatToDiscuss": "What would you like to discuss?",
-    "yourBookings": "Your Bookings"
+    "yourBookings": "Your Bookings",
+    "slotAlreadyTaken": "That slot was just booked by someone else — please pick another one."
   },
   "mentorsPage": {
     "accept": "Accept",
@@ -9743,6 +9746,10 @@
       "insert": "Saving proposals"
     },
     "idkRationale": "Skipped by founder — revisit later",
-    "skippedBadge": "Skipped"
+    "skippedBadge": "Skipped",
+    "queue": {
+      "skippedTitle": "Review skipped assumption: {{label}}",
+      "skippedDesc": "The founder marked \"{{label}}\" as unknown in the {{scenario}} scenario — help them find a defensible value."
+    }
   }
 }

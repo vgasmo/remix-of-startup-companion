@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import {
   useFeatureFlags, useUpdateFeatureFlag,
   useDeleteWorkspaceFlag, useUpsertWorkspaceFlag,
+  FEATURE_FLAG_KEYS,
   type FeatureFlagKey,
 } from '@/hooks/useFeatureFlags';
 import { notify } from "@/lib/notify";
@@ -36,6 +37,26 @@ const FLAG_DESCRIPTIONS: Record<string, { label: string; description: string }> 
   traction_stage: {
     label: 'Traction Stage',
     description: 'Enable traction stage between MVP and growth stages',
+  },
+  crm_graph_email_sync: {
+    label: 'CRM · Outlook email sync',
+    description: 'Auto-match Outlook conversations onto CRM leads and route unmatched ones to the review queue.',
+  },
+  crm_ai_recap: {
+    label: 'CRM · AI relationship recap',
+    description: 'On-demand AI summary of the last 30 days of activity for a lead.',
+  },
+  open_registration: {
+    label: 'Open registration',
+    description: 'Allow anyone with a public link to sign up without an invite. Off by default.',
+  },
+  financial_business_plan_coach_v1: {
+    label: 'Financial · Guided business plan coach',
+    description: 'Enable the guided financial plan wizard (question packs, prefill, scenarios) inside the workspace.',
+  },
+  hubspot_importer_v2: {
+    label: 'HubSpot importer v2 (staged)',
+    description: 'Use the new staged importer with per-row reconciliation and confidence-aware auto-approve.',
   },
 };
 
@@ -266,8 +287,8 @@ export function AdminFeatureFlagsManager() {
             <Select value={newFlagKey} onValueChange={(v) => setNewFlagKey(v as FeatureFlagKey)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {Object.keys(FLAG_DESCRIPTIONS).concat(['financial_business_plan_coach_v1']).filter((v, i, a) => a.indexOf(v) === i).map((k) => (
-                  <SelectItem key={k} value={k}>{k}</SelectItem>
+                {FEATURE_FLAG_KEYS.map((k) => (
+                  <SelectItem key={k} value={k}>{FLAG_DESCRIPTIONS[k]?.label ?? k}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

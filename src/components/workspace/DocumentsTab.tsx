@@ -423,7 +423,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
       {activeSubTab === 'financial' && (
         <div role="tabpanel" id="doc-panel-financial" aria-labelledby="doc-tab-financial">
           <WidgetErrorBoundary name="Financial Model">
-            <FinancialModelPanel workspaceId={workspaceId} canWrite={canWrite} />
+            <FinancialModelPanel workspaceId={workspaceId} canWrite={canWrite} isMentor={isMentor} />
           </WidgetErrorBoundary>
         </div>
       )}
@@ -452,7 +452,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
       {activeSubTab === 'all' && (
         <div role="tabpanel" id="doc-panel-all" aria-labelledby="doc-tab-all">
           {/* Pinned Financial Model summary */}
-          <FinancialModelPanel workspaceId={workspaceId} canWrite={canWrite} />
+          <FinancialModelPanel workspaceId={workspaceId} canWrite={canWrite} isMentor={isMentor} />
 
           {/* Upload Actions */}
           {canWrite && (

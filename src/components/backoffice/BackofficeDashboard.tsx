@@ -161,7 +161,10 @@ function BackofficeDashboardInner() {
           alerts.push({ id: contract.id, startupName, startDate: contract.start_date, yearsIncubated: 3, monthsIncubated, daysUntilAnniversary: differenceInDays(addYears(startDate, 3), today), alertType: 'year3', severity: 'critical' });
         } else if (yearsIncubated >= 3) {
           alerts.push({ id: contract.id, startupName, startDate: contract.start_date, yearsIncubated, monthsIncubated, daysUntilAnniversary, alertType: 'year3', severity: 'critical' });
-        } else if (daysUntilAnniversary <= 30 && daysUntilAnniversary > 0) {
+        } else if (daysUntilAnniversary <= 30 && daysUntilAnniversary >= -3) {
+          // Include same-day anniversaries (=0) and a small grace window (-3d)
+          // so a contract that hit its date over the weekend still lights up
+          // the console when staff review on Monday.
           alerts.push({ id: contract.id, startupName, startDate: contract.start_date, yearsIncubated: yearsIncubated + 1, monthsIncubated, daysUntilAnniversary, alertType: 'anniversary', severity: yearsIncubated >= 2 ? 'warning' : 'info' });
         }
         

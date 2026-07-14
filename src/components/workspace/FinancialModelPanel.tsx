@@ -44,6 +44,9 @@ import { GuidedPlanTab } from './financial-plan/GuidedPlanTab';
 interface FinancialModelPanelProps {
   workspaceId: string;
   canWrite: boolean;
+  /** Mentors have read-only access to the financial plan — they can review
+   *  scenarios and insights but must not edit assumptions. */
+  isMentor?: boolean;
 }
 
 const SCENARIOS = ['Base', 'Conservative', 'Optimistic', 'Custom'];
@@ -120,7 +123,7 @@ function InsightCard({ insight, onCreateAction, createActionLabel }: { insight: 
   );
 }
 
-export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPanelProps) {
+export function FinancialModelPanel({ workspaceId, canWrite, isMentor = false }: FinancialModelPanelProps) {
   const { t } = useTranslation();
   const { data: versions, isLoading } = useFinancialModelVersions(workspaceId);
   const uploadMutation = useUploadDocument();
@@ -297,7 +300,7 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
     <>
     {guidedPlanEnabled && (
       <div className="mb-4">
-        <GuidedPlanTab workspaceId={workspaceId} canWrite={canWrite} />
+        <GuidedPlanTab workspaceId={workspaceId} canWrite={canWrite && !isMentor} />
       </div>
     )}
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
