@@ -613,3 +613,114 @@ function PackRunner({
     </Card>
   );
 }
+
+// -------- Prefill progress & per-source result card ------------------------
+
+type PrefillStage = null | 'profile' | 'kpi' | 'ai' | 'insert' | 'done';
+
+function PrefillProgressCard({
+  stage, isPending, result, onDismiss,
+}: {
+  stage: PrefillStage;
+  isPending: boolean;
+  result: import('@/hooks/useFinancialPlan').PrefillResult | null;
+  onDismiss: () => void;
+}) {
+  const { t } = useTranslation();
+  const steps: Array<{ id: Exclude<PrefillStage, null | 'done'>; label: string }> = [
+    { id: 'profile', label: t('financialPlan.prefillStep.profile', { defaultValue: 'Profile defaults' }) },
+    { id: 'kpi',     label: t('financialPlan.prefillStep.kpi',     { defaultValue: 'KPI signals' }) },
+    { id: 'ai',      label: t('financialPlan.prefillStep.ai',      { defaultValue: 'AI suggestions' }) },
+    { id: 'insert',  label: t('financialPlan.prefillStep.insert',  { defaultValue: 'Saving proposals' }) },
+  ];
+  const activeIdx = stage === 'done' ? steps.length : steps.findIndex(s => s.id === stage);
+  const progressPct = stage === 'done'
+    ? 100
+    : activeIdx < 0 ? 0 : Math.min(100, Math.round(((activeIdx + 0.5) / steps.length) * 100));
+
+  const sourceRow = (label: string, key: 'prefill_profile' | 'prefill_kpi' | 'prefill_ai') => {
+    const s = result?.by_source?.[key];
+    if (!s) return null;
+    const failed = s.failed > 0;
+    return (
+      <div key={key} className="flex items-center justify-between text-xs py-1">
+        <span className="flex items-center gap-2">
+          {failed
+            ? <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
+            : s.created > 0
+              ? <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--success))]" />
+              : <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />}
+          {label}
+        </span>
+        <span className="tabular-nums text-muted-foreground">
+          {t('financialPlan.prefillStats', {
+            defaultValue: '{{c}} new · {{s}} skipped{{fail}}',
+            c: s.created,
+            s: s.skipped,
+            fail: failed
+              ? ` · ${t('financialPlan.prefillFailedN', { defaultValue: '{{n}} failed', n: s.failed })}`
+              : '',
+          })}
+        </span>
+      </div>
+    );
+  };
+
+  const hasFailure = !!result && Object.values(result.by_source ?? {}).some((v) => (v?.failed ?? 0) > 0);
+
+  return (
+    <Card className={hasFailure ? 'border-destructive/40' : 'border-primary/40'}>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Wand2 className="h-3.5 w-3.5 text-primary" />
+            {isPending
+              ? t('financialPlan.prefillRunning', { defaultValue: 'Prefill running…' })
+              : t('financialPlan.prefillResult', { defaultValue: 'Prefill result' })}
+          </CardTitle>
+          {!isPending && (
+            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onDismiss}>
+              {t('common.dismiss', { defaultValue: 'Dismiss' })}
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0 space-y-3">
+        {isPending && (
+          <>
+            <Progress value={progressPct} className="h-1.5" />
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+              {steps.map((s, i) => {
+                const done = activeIdx > i;
+                const active = activeIdx === i;
+                return (
+                  <span key={s.id} className={`inline-flex items-center gap-1 ${done ? 'text-[hsl(var(--success))]' : active ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    {done
+                      ? <CheckCircle2 className="h-3 w-3" />
+                      : active
+                        ? <Loader2 className="h-3 w-3 animate-spin" />
+                        : <span className="h-3 w-3 rounded-full border" />}
+                    {s.label}
+                  </span>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {result && (
+          <div className="space-y-0.5">
+            {sourceRow(t('financialPlan.prefillStep.profile', { defaultValue: 'Profile defaults' }), 'prefill_profile')}
+            {sourceRow(t('financialPlan.prefillStep.kpi', { defaultValue: 'KPI signals' }), 'prefill_kpi')}
+            {sourceRow(t('financialPlan.prefillStep.ai', { defaultValue: 'AI suggestions' }), 'prefill_ai')}
+            {result.warnings?.length > 0 && (
+              <p className="text-[11px] text-muted-foreground pt-1 border-t mt-1">
+                {result.warnings.join(' · ')}
+              </p>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
