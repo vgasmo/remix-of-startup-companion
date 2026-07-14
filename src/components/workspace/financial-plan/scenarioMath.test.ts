@@ -63,9 +63,9 @@ describe('computeKpis — base scenario, no sensitivity', () => {
     expect(kpis.grossMarginPct).toBeCloseTo(60, 6);
   });
 
-  it('uses the PT 14-month payroll multiplier', () => {
-    // 2 heads × 1500 × 14 = 42_000
-    expect(kpis.payrollYear).toBe(42_000);
+  it('uses the PT 14-month payroll multiplier grossed up by TSU (23.75%)', () => {
+    // 2 heads × 1500 × 14 × 1.2375 = 51_975
+    expect(kpis.payrollYear).toBeCloseTo(51_975, 4);
   });
 
   it('returns null unit economics when the assumptions are missing', () => {
@@ -96,10 +96,11 @@ describe('computeKpis — scenario bias shifts revenue & costs', () => {
 
     expect(optimistic.revenueY2).toBeGreaterThan(base.revenueY2);
     expect(optimistic.cogs).toBeLessThan(base.cogs);
-    // Payroll bias -5% → 42_000 * 0.95 = 39_900
-    expect(optimistic.payrollYear).toBeCloseTo(39_900, 6);
+    // Payroll bias -5% → 51_975 * 0.95 = 49_376.25
+    expect(optimistic.payrollYear).toBeCloseTo(49_376.25, 4);
   });
 });
+
 
 describe('computeKpis — user slider stacks on top of scenario bias', () => {
   it('adds slider revenueGrowth pp to the growth rate before bias', () => {
