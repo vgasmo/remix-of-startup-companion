@@ -272,6 +272,18 @@ export function AccelerationCalendarSection({ programId, isStaff, currentWeek }:
                       </div>
                     ) : (
                       <div className="flex items-center gap-1 shrink-0">
+                        {isPlanWeek(pw.title, pw.description) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs gap-1 text-primary"
+                            onClick={() => setSearchParams({ tab: 'documents', sub: 'financial' })}
+                            title={t('accelerationCalendar.openAssistant', { defaultValue: 'Abrir assistente de plano' })}
+                          >
+                            <Sparkles className="h-3.5 w-3.5" />
+                            {t('accelerationCalendar.assistant', { defaultValue: 'Assistente' })}
+                          </Button>
+                        )}
                         {hasUrl && (
                           <Button
                             variant="ghost"
