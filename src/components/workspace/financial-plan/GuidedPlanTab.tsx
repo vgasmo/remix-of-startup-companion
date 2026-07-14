@@ -302,7 +302,11 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
 
       {/* Scenario sensitivity — live projection from the assumptions register */}
       {diagnosticDone && assumptions.length > 0 && (
-        <ScenarioSensitivityPanel assumptions={assumptions} />
+        <ScenarioSensitivityPanel
+          workspaceId={workspaceId}
+          canWrite={canWrite}
+          assumptions={assumptions}
+        />
       )}
 
       {/* Assumptions register */}
