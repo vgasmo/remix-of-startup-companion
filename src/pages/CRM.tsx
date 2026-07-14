@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { PipelineView } from '@/components/crm/PipelineView';
 import { useCrmInbox, useCrmTasksDue, CrmInboxItem } from '@/hooks/useCrmInbox';
+import { useCrmPipeline } from '@/hooks/useCrmPipeline';
 import { usePrograms } from '@/hooks/useWorkspaces';
 import { notify } from "@/lib/notify";
 import { useConsultors } from '@/hooks/useWorkspaceOwner';
@@ -133,6 +134,16 @@ export default function CRM() {
   });
   const { data: tasksDue, isLoading: loadingTasks } = useCrmTasksDue({
     assigneeId: assigneeFilter !== 'all' ? assigneeFilter : undefined,
+    myItemsOnly: focusMode ? true : myItemsOnly,
+    currentUserId: user?.id,
+  });
+  // Forecast needs deals grouped by pipeline stage (new/qualified/…), not by
+  // inbox bucket (overdue/today/…). Previously we cast the inbox groups to the
+  // pipeline shape, so no stage ever matched and the forecast was empty.
+  const { data: pipelineForForecast } = useCrmPipeline({
+    programId: programFilter !== 'all' ? programFilter : undefined,
+    assigneeId: assigneeFilter !== 'all' ? assigneeFilter : undefined,
+    search: searchQuery || undefined,
     myItemsOnly: focusMode ? true : myItemsOnly,
     currentUserId: user?.id,
   });
@@ -654,7 +665,7 @@ export default function CRM() {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-4">
-            <PipelineForecastCard pipeline={inbox as unknown as Record<string, CrmInboxItem[]>} />
+            <PipelineForecastCard pipeline={pipelineForForecast} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <EmailSyncHealthPanel />
               <EmailReviewQueue />
