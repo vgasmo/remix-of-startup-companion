@@ -290,8 +290,8 @@ export function useGeneratePrefill(workspaceId: string) {
       if (error) throw error;
       return data!;
     },
-    onSuccess: (_r, scenario) => {
-      qc.invalidateQueries({ queryKey: ['financial-prefill-proposals', workspaceId, scenario] });
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['financial-prefill-proposals', workspaceId, 'all'] });
     },
   });
 }
