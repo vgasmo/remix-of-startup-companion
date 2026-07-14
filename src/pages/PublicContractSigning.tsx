@@ -340,9 +340,7 @@ export default function PublicContractSigning() {
   };
 
   const handleOpenPdf = async () => {
-    const res = await fetchPdf();
-    if (!res) return;
-    window.open(res.url, '_blank', 'noopener,noreferrer');
+    await fetchPdf();
   };
 
   useEffect(() => {
@@ -1011,6 +1009,32 @@ export default function PublicContractSigning() {
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {t('publicContractSigning.theContractWillBeAutomatically')}
                 </p>
+                {pdfError && (
+                  <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive flex items-center justify-between gap-3">
+                    <span>{t('publicContractSigning.couldNotLoadThePdfPreview')}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => {
+                        setPdfUrl(null);
+                        void fetchPdf();
+                      }}
+                    >
+                      {t('publicContractSigning.tryAgain')}
+                    </Button>
+                  </div>
+                )}
+                {pdfUrl && (
+                  <div className="rounded-md overflow-hidden border bg-background">
+                    <iframe
+                      src={pdfUrl}
+                      title={t('publicContractSigning.contractPreview')}
+                      className="w-full h-[420px]"
+                      onError={() => setPdfError(true)}
+                    />
+                  </div>
+                )}
                 <div className="flex items-start gap-2">
                   <Checkbox
                     id="accept-contract"
