@@ -554,7 +554,7 @@ function PackRunner({
         <CardContent className="py-4 flex items-center justify-between">
           <p className="text-sm">
             <CheckCircle2 className="h-4 w-4 text-primary inline mr-1.5 align-[-2px]" />
-            {t('financialPlan.packAllAnswered', { defaultValue: 'Section complete' })}: <b>{pack.defaultLabel}</b>
+            {t('financialPlan.packAllAnswered', { defaultValue: 'Section complete' })}: <b>{t(pack.labelKey, { defaultValue: pack.defaultLabel })}</b>
           </p>
           <Button size="sm" onClick={onComplete}>
             {t('financialPlan.continue', { defaultValue: 'Continue' })}
