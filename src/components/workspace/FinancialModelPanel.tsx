@@ -285,11 +285,13 @@ export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPan
     notify.success(t('workspace.copiedToClipboard'));
   };
 
+  // Hooks must run before any conditional return (Rules of Hooks).
+  const guidedPlanEnabled = useFeatureFlag('financial_business_plan_coach_v1', undefined, workspaceId);
+
   if (isLoading) {
     return <Skeleton className="h-64" />;
   }
 
-  const guidedPlanEnabled = useFeatureFlag('financial_business_plan_coach_v1', undefined, workspaceId);
 
   return (
     <>
