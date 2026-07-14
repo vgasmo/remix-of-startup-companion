@@ -360,13 +360,21 @@ serve(async (req) => {
     const { data: programs } = await supabase.from("programs").select("id").limit(1);
     const programId = programs?.[0]?.id || null;
 
-    // === DUPLICATE CHECK: Prevent duplicate leads from same email ===
+    // === DUPLICATE CHECK ===
+    // Only reuse an existing lead when it's still in the early commercial
+    // stages (new / first_contact_booked). If the previous journey already
+    // advanced beyond first contact, treat this booking as a fresh lead so it
+    // is visible to the consultant instead of being silently attached to an
+    // old row already deep in the pipeline.
+    const EARLY_STAGES = ['new', 'first_contact_booked'];
     const { data: existingLead } = await supabase
       .from("funnel_items")
       .select("id, stage, contact_name")
       .eq("contact_email", contact.email)
-      .not("stage", "in", '("rejected","archived")')
+      .in("stage", EARLY_STAGES)
+      .order("created_at", { ascending: false })
       .limit(1);
+
 
     let funnelItemId: string;
 

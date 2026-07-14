@@ -318,10 +318,24 @@ export default function PublicBooking() {
             <Button
               variant="outline"
               className="mt-4"
-              onClick={() => window.location.href = 'https://startupleiria.com'}
+              onClick={() => {
+                // Return to the founders' booking page (fresh state)
+                setStep(routingOptions.length > 1 ? 'program_select' : 'slots');
+                setSelectedSlot(null);
+                setBookingHasInvite(false);
+                setFormData({
+                  name: '', email: '', phone: '', organization: '', sector: '',
+                  stage: '', referral_source: '', has_team: '', message: '',
+                  has_tech: '', is_iies: '', vertical: '', help_expectation: '',
+                  personal_intro: '',
+                });
+                setPitchFile(null);
+                if (token) navigate(`/book/${token}`, { replace: true });
+              }}
             >
-              {t('publicBooking.backToSite', 'Voltar ao site')}
+              {t('publicBooking.backToBook', { defaultValue: lang === 'pt' ? 'Voltar ao Founders Book' : 'Back to Founders Book' })}
             </Button>
+
           </CardContent>
         </Card>
       </div>
