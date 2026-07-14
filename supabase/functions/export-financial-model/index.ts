@@ -168,7 +168,7 @@ serve(async (req) => {
       warnings.push(`Skipped ${s.patch.sheet}!${s.patch.address}: ${s.reason}`);
     }
 
-    const outPath = `exports/${version.workspace_id}/${versionId}-${Date.now()}.xlsm`;
+    const outPath = `exports/${workspaceIdResolved}/${exportRefId}-${Date.now()}.xlsm`;
     const { error: upErr } = await supabase.storage
       .from("template_assets")
       .upload(outPath, result.bytes, {
@@ -185,18 +185,20 @@ serve(async (req) => {
     }
 
     await supabase.from("activity_log").insert({
-      workspace_id: version.workspace_id,
+      workspace_id: workspaceIdResolved,
       user_id: user.id,
       entity_type: "financial_model",
-      entity_id: versionId,
-      action: "financial_model_exported",
+      entity_id: exportRefId,
+      action: versionId ? "financial_model_exported" : "financial_model_exported_from_guided_plan",
       metadata: {
         source_asset_id: asset.id,
         patched_sheets: result.patchedSheets,
         patch_count: patches.length,
         warnings_count: warnings.length,
+        scenario: versionId ? null : bodyScenario,
       },
     });
+
 
     return corsJsonResponse(
       {
