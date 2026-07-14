@@ -65,14 +65,21 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    const { data: flag } = await supabase
-      .from("feature_flags").select("enabled").eq("key", FEATURE_FLAG).maybeSingle();
-    if (!flag?.enabled) return corsJsonResponse({ error: "Feature not enabled" }, req, 403);
-
     const body = await req.json().catch(() => ({}));
     const workspaceId: string | undefined = body?.workspace_id;
     const scenario: Scenario = (body?.scenario as Scenario) ?? "base";
     if (!workspaceId) return corsJsonResponse({ error: "workspace_id is required" }, req, 400);
+
+    // Feature-flag check honours the workspace override precedence:
+    // workspace-scoped row wins over the global row.
+    const { data: flagRows } = await supabase
+      .from("feature_flags")
+      .select("enabled, scope, workspace_id")
+      .eq("key", FEATURE_FLAG);
+    const wsFlag = (flagRows ?? []).find((r) => r.scope === "workspace" && r.workspace_id === workspaceId);
+    const globalFlag = (flagRows ?? []).find((r) => r.scope === "global");
+    const flagEnabled = wsFlag ? wsFlag.enabled : (globalFlag?.enabled ?? false);
+    if (!flagEnabled) return corsJsonResponse({ error: "Feature not enabled" }, req, 403);
 
     const { data: hasAccess } = await supabase.rpc("has_workspace_access", {
       _user_id: user.id, _workspace_id: workspaceId,
