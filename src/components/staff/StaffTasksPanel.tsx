@@ -123,6 +123,7 @@ function TaskItem({
   task: StaffTask;
   onClick: () => void;
 }) {
+  const dateLocale = useDateLocale();
   const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date));
   const isDueToday = task.due_date && isToday(new Date(task.due_date));
 
