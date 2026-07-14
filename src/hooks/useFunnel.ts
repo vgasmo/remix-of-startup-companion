@@ -203,7 +203,14 @@ export function useUpdateFunnelItem() {
       
       // E1: Auto-suggest workspace creation when lead reaches "contracted"
       if (updates.stage === 'contracted') {
-        const current = queryClient.getQueryData<FunnelItem[]>(['funnel-items'])?.find(i => i.id === id);
+        // G1: caches are keyed ['funnel-items', filters] — exact getQueryData
+        // never hit and the event never fired. Scan all matching caches.
+        const caches = queryClient.getQueriesData<FunnelItem[]>({ queryKey: ['funnel-items'] });
+        let current: FunnelItem | undefined;
+        for (const [, data] of caches) {
+          current = data?.find(i => i.id === id);
+          if (current) break;
+        }
         if (current && !current.linked_workspace_id) {
           window.dispatchEvent(new CustomEvent('crm:lead-contracted', {
             detail: { itemId: id, name: current.organization_name || current.contact_name || '' }
