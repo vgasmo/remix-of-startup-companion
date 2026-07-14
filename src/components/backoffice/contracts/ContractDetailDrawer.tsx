@@ -430,11 +430,23 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                     if (data?.error) throw new Error(data.error);
                     const url = data.url || `${window.location.origin}/contract-signing/${data.token}`;
                     await navigator.clipboard.writeText(url);
-                    notify.success(t('contractDetail.linkGenerated', { defaultValue: 'Link público gerado e copiado! Envie ao founder.' }));
+                    if (data?.emailSent) {
+                      notify.success(t('contractDetail.linkGeneratedAndEmailed', {
+                        email: data.emailRecipient,
+                        defaultValue: 'Link público copiado e enviado por email para {{email}}.',
+                      }));
+                    } else if (data?.emailRecipient) {
+                      notify.warn(t('contractDetail.linkGeneratedEmailFailed', {
+                        defaultValue: 'Link copiado, mas falhou o envio por email. Envie manualmente ao founder.',
+                      }));
+                    } else {
+                      notify.success(t('contractDetail.linkGenerated', { defaultValue: 'Link público gerado e copiado! Envie ao founder.' }));
+                    }
                   } catch (err: any) {
                     notify.error(err?.message || 'Erro ao gerar link');
                   }
                 }}
+
               >
                 <ExternalLink className="h-3 w-3" />
                 {t('contractDetail.generatePublicLink', { defaultValue: 'Gerar Link Público' })}

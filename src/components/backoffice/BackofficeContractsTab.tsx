@@ -302,6 +302,26 @@ export function BackofficeContractsTab() {
     };
     const newContract = await createContract.mutateAsync(payload);
 
+    // === Coordinate sources of truth ===
+    // Mirror the header-level discount (kept on startup_contracts for legacy
+    // pricing/lifecycle logic) into contract_discounts so the "Descontos" tab
+    // in the drawer and any downstream consumer show a single unified view.
+    const discountPct = Number(values.discount_percentage || 0);
+    if (newContract?.id && discountPct > 0 && discount_start_date) {
+      try {
+        await supabase.from('contract_discounts').insert({
+          contract_id: newContract.id,
+          discount_percentage: discountPct,
+          start_date: discount_start_date,
+          end_date: discount_end_date || null,
+          reason: discount_reason || null,
+          approved_by: user?.id || null,
+        } as any);
+      } catch (err) {
+        console.warn('[contracts] Failed to mirror discount into contract_discounts', err);
+      }
+    }
+
     // Link the funnel item back to this contract
     if (crmFunnelId && newContract?.id) {
       await supabase
@@ -317,6 +337,7 @@ export function BackofficeContractsTab() {
         .eq('funnel_item_id', crmFunnelId)
         .is('contract_id', null);
     }
+
 
     setFlowState('idle');
     setAiData({});
