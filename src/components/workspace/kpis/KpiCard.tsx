@@ -177,7 +177,7 @@ export function KpiCard({
         {effectiveCanEdit ? (
           <div className="space-y-1">
             <Label className="text-xs text-muted-foreground">{t('kpis.notesOptional', 'Notes (optional)')}</Label>
-            <Textarea value={displayNotes} onChange={e => onValueChange('notes', e.target.value)} placeholder={t('kpis.addContext', 'Add context...')} rows={2} className="text-sm" />
+            <Textarea value={displayNotes} onChange={e => onValueChange('notes', e.target.value)} onBlur={() => onBlurFlush?.()} placeholder={t('kpis.addContext', 'Add context...')} rows={2} className="text-sm" />
           </div>
         ) : currentValue?.notes ? (
           <div className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">{currentValue.notes}</div>
