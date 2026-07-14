@@ -77,6 +77,7 @@ export default function WorkspaceDetail() {
   const shouldShowOnboarding = searchParams.get('onboarding') === 'true';
   const canWrite = isAdmin || isConsultor || isMentor || isFounder;
   const tabBadges = useWorkspaceTabBadges(id);
+  const { data: workspaceTags = [] } = useWorkspaceTags(id);
 
   // Auto-materialize acceleration deliverables at page level (not tab-dependent)
   const programType = workspace?.program ? (workspace.program as { program_type?: string }).program_type : undefined;
