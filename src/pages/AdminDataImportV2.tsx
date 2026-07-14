@@ -27,14 +27,16 @@ import { notify } from '@/lib/notify';
 import { cn } from '@/lib/utils';
 
 type Step = 'upload' | 'mapping' | 'reconcile' | 'commit' | 'results';
+type ImportSource = 'hubspot' | 'phc';
 
 interface PrepareResponse {
   success: boolean;
   job_id: string;
-  counts: { insert: number; update: number; conflict: number; invalid: number };
+  counts: { insert: number; update: number; conflict: number; invalid: number; suggested?: number };
   total_rows: number;
   detected_headers: string[];
-  column_mapping: Record<string, string | null>;
+  column_mapping?: Record<string, string | null>;
+  header_map?: Record<string, string>;
   available_sheets: string[];
 }
 
@@ -42,8 +44,8 @@ interface ImportRow {
   id: string;
   row_number: number;
   raw_json: Record<string, string>;
-  normalized_json: Record<string, string | null>;
-  proposed_action: 'insert' | 'update' | 'conflict' | 'invalid' | 'skip';
+  normalized_json: Record<string, any>;
+  proposed_action: 'insert' | 'update' | 'suggested' | 'conflict' | 'invalid' | 'skip';
   match_method: string | null;
   match_confidence: number | null;
   approval_state: string;
@@ -74,6 +76,7 @@ export default function AdminDataImportV2() {
   const { data: programs } = usePrograms();
 
   const [step, setStep] = useState<Step>('upload');
+  const [source, setSource] = useState<ImportSource>('hubspot');
   const [file, setFile] = useState<File | null>(null);
   const [programId, setProgramId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -81,7 +84,7 @@ export default function AdminDataImportV2() {
   const [mapping, setMapping] = useState<Record<string, string | null>>({});
   const [stageMap, setStageMap] = useState<Record<string, string>>({});
   const [rows, setRows] = useState<ImportRow[]>([]);
-  const [filter, setFilter] = useState<'all' | 'insert' | 'update' | 'conflict' | 'invalid'>('all');
+  const [filter, setFilter] = useState<'all' | 'insert' | 'update' | 'suggested' | 'conflict' | 'invalid'>('all');
   const [commitSummary, setCommitSummary] = useState<any | null>(null);
   const [globalToggles, setGlobalToggles] = useState({ crm: true, startup: false, workspace: false, contract_proposal: false });
 
@@ -89,33 +92,6 @@ export default function AdminDataImportV2() {
     setFile(f);
     setPrepared(null); setRows([]); setCommitSummary(null);
   }, []);
-
-  const onPrepare = useCallback(async () => {
-    if (!file) return;
-    setIsLoading(true);
-    try {
-      const content_base64 = await fileToBase64(file);
-      const { data, error } = await invokeWithAuth<PrepareResponse>('prepare-hubspot-import', {
-        body: {
-          filename: file.name,
-          content_base64,
-          mime_type: file.type,
-          program_id: programId,
-          stage_map: stageMap,
-          config: { default_stage: 'new' },
-        },
-      });
-      if (error) throw error;
-      setPrepared(data!);
-      setMapping(data!.column_mapping);
-      setStep('mapping');
-      notify.success(t('dataImportV2.prepared', 'File analyzed: {{n}} rows', { n: data!.total_rows }));
-    } catch (e: any) {
-      notify.error(e?.message ?? 'Prepare failed');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [file, programId, stageMap, t]);
 
   const loadRows = useCallback(async (jobId: string) => {
     setIsLoading(true);
@@ -133,6 +109,38 @@ export default function AdminDataImportV2() {
       setIsLoading(false);
     }
   }, []);
+
+  const onPrepare = useCallback(async () => {
+    if (!file) return;
+    setIsLoading(true);
+    try {
+      const content_base64 = await fileToBase64(file);
+      const fn = source === 'phc' ? 'prepare-phc-import' : 'prepare-hubspot-import';
+      const body: any = {
+        filename: file.name,
+        content_base64,
+        mime_type: file.type,
+        program_id: programId,
+      };
+      if (source === 'hubspot') {
+        body.stage_map = stageMap;
+        body.config = { default_stage: 'new' };
+      } else {
+        body.config = { default_stage: 'customer' };
+      }
+      const { data, error } = await invokeWithAuth<PrepareResponse>(fn, { body });
+      if (error) throw error;
+      setPrepared(data!);
+      setMapping(data!.column_mapping ?? {});
+      setStep(source === 'phc' ? 'reconcile' : 'mapping');
+      if (source === 'phc') await loadRows(data!.job_id);
+      notify.success(t('dataImportV2.prepared', 'File analyzed: {{n}} rows', { n: data!.total_rows }));
+    } catch (e: any) {
+      notify.error(e?.message ?? 'Prepare failed');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [file, source, programId, stageMap, t, loadRows]);
 
   const goReconcile = useCallback(async () => {
     if (!prepared) return;
@@ -191,7 +199,7 @@ export default function AdminDataImportV2() {
     setIsLoading(true);
     try {
       const { data, error } = await invokeWithAuth<{ success: boolean; summary: any }>(
-        'commit-hubspot-import',
+        'commit-crm-import',
         { body: { job_id: prepared.job_id } },
       );
       if (error) throw error;
@@ -265,10 +273,20 @@ export default function AdminDataImportV2() {
         {step === 'upload' && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t('dataImportV2.upload.title', 'Upload HubSpot export')}</CardTitle>
+              <CardTitle className="text-base">{t('dataImportV2.upload.title', 'Upload CRM export')}</CardTitle>
               <CardDescription>{t('dataImportV2.upload.desc', 'CSV or XLSX/XLSM only. Legacy .xls is not supported.')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
+              <div className="grid gap-2 max-w-sm">
+                <Label className="text-xs">{t('dataImportV2.source', 'Source system')}</Label>
+                <Select value={source} onValueChange={v => setSource(v as ImportSource)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hubspot">HubSpot</SelectItem>
+                    <SelectItem value="phc">PHC — Clientes por Tipologia</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Input type="file" accept=".csv,.xlsx,.xlsm" onChange={e => onFile(e.target.files?.[0] ?? null)} />
               <div className="grid gap-2 max-w-sm">
                 <Label className="text-xs">{t('common.program', 'Program')}</Label>
@@ -280,6 +298,14 @@ export default function AdminDataImportV2() {
                   </SelectContent>
                 </Select>
               </div>
+              {source === 'phc' && (
+                <Alert>
+                  <ShieldAlert className="h-4 w-4" />
+                  <AlertDescription className="text-xs">
+                    {t('dataImportV2.phc.notice', 'PHC import is strict CRM-only. Building, service and price-list fields are stored as hints — never as fees or buildings. Column mapping is derived automatically from the PHC headers.')}
+                  </AlertDescription>
+                </Alert>
+              )}
               <Button disabled={!file || isLoading} onClick={onPrepare}>
                 {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
                 {t('dataImportV2.analyze', 'Analyze file')}
@@ -339,6 +365,7 @@ export default function AdminDataImportV2() {
                   <div className="flex gap-1 text-xs">
                     <Badge variant="outline">insert: {counts.insert}</Badge>
                     <Badge variant="outline">update: {counts.update}</Badge>
+                    {counts.suggested != null && <Badge variant="secondary">suggested: {counts.suggested}</Badge>}
                     <Badge variant="destructive">conflict: {counts.conflict}</Badge>
                     <Badge variant="secondary">invalid: {counts.invalid}</Badge>
                   </div>
@@ -348,7 +375,7 @@ export default function AdminDataImportV2() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
-                {(['all', 'insert', 'update', 'conflict', 'invalid'] as const).map(f => (
+                {(['all', 'insert', 'update', 'suggested', 'conflict', 'invalid'] as const).map(f => (
                   <Button key={f} variant={filter === f ? 'default' : 'outline'} size="sm" onClick={() => setFilter(f)}>{f}</Button>
                 ))}
                 <div className="ml-auto flex gap-2 flex-wrap">
@@ -387,7 +414,7 @@ export default function AdminDataImportV2() {
                 </div>
               </ScrollArea>
               <div className="flex justify-between gap-2 flex-wrap">
-                <Button variant="outline" onClick={() => setStep('mapping')}><ArrowLeft className="h-4 w-4 mr-2" />{t('common.back', 'Back')}</Button>
+                <Button variant="outline" onClick={() => setStep(source === 'phc' ? 'upload' : 'mapping')}><ArrowLeft className="h-4 w-4 mr-2" />{t('common.back', 'Back')}</Button>
                 <div className="flex gap-2">
                   <Button variant="outline" onClick={downloadExceptions}><Download className="h-4 w-4 mr-2" />{t('dataImportV2.download', 'Download report')}</Button>
                   <Button variant="outline" onClick={approveAllValid} disabled={isLoading}>{t('dataImportV2.approveAll', 'Approve valid rows')}</Button>
