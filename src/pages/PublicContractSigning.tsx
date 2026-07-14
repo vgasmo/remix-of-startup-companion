@@ -20,7 +20,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import {
   Building2, FileText, PenTool, CheckCircle2, ArrowRight, ArrowLeft,
-  Shield, Loader2, AlertTriangle, Upload, X, Globe, FileUp, Mail, RotateCcw
+  Shield, Loader2, AlertTriangle, Upload, X, Globe, FileUp, Mail, RotateCcw, Download, Eye
 } from 'lucide-react';
 import { useContractDraftAutosave } from '@/hooks/useContractDraftAutosave';
 
