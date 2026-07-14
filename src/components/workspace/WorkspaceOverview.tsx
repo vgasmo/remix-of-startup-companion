@@ -222,6 +222,13 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
                 workspaceId={workspace.id} 
                 workspace={workspace}
               />
+              {canSetPriority && (
+                <ProgramSwitcher
+                  workspaceId={workspace.id}
+                  currentProgramId={workspace.program_id}
+                  size="sm"
+                />
+              )}
               {canWrite ? (
                 <Select value={workspace.stage} onValueChange={(v) => handleStageChange(v as StartupStage)}>
                   <SelectTrigger className="w-[140px]">
