@@ -304,6 +304,7 @@ serve(async (req) => {
     // Get consultant info for calendar event
     let consultantEmail: string | null = null;
     let consultantId: string | null = null;
+    let consultantName: string | null = null;
     
     if (token !== 'demo') {
       try {
@@ -321,11 +322,12 @@ serve(async (req) => {
           consultantId = linkData.owner_consultant_id;
           const { data: profile } = await supabase
             .from("profiles")
-            .select("email")
+            .select("email, full_name")
             .eq("id", consultantId)
             .maybeSingle();
           
           consultantEmail = profile?.email || null;
+          consultantName = profile?.full_name || null;
         }
       } catch {
         // Table might not exist
@@ -344,13 +346,15 @@ serve(async (req) => {
         consultantId = consultants[0].user_id;
         const { data: profile } = await supabase
           .from("profiles")
-          .select("email")
+          .select("email, full_name")
           .eq("id", consultantId)
           .maybeSingle();
         
         consultantEmail = profile?.email || null;
+        consultantName = profile?.full_name || null;
       }
     }
+    
 
     // Get the first program for the funnel item
     const { data: programs } = await supabase.from("programs").select("id").limit(1);
