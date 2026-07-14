@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { notify } from "@/lib/notify";
 import { format } from 'date-fns';
-import { useMarkConversationRead } from '@/hooks/useMessaging';
+import { useMarkConversationRead, useSendMessage } from '@/hooks/useMessaging';
 
 
 interface ChatTabProps {
