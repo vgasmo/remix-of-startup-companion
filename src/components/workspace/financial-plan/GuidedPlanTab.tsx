@@ -34,17 +34,42 @@ interface Props {
   canWrite: boolean;
 }
 
-const SOURCE_LABEL: Record<AssumptionSource, string> = {
-  founder: 'Founder',
-  prefill_profile: 'Profile',
+const SOURCE_LABEL_KEY: Record<AssumptionSource, string> = {
+  founder: 'financialPlan.source.founder',
+  prefill_profile: 'financialPlan.source.prefill_profile',
+  prefill_kpi: 'financialPlan.source.prefill_kpi',
+  prefill_ai: 'financialPlan.source.prefill_ai',
+  imported_xlsm: 'financialPlan.source.imported_xlsm',
+};
+const SOURCE_FALLBACK: Record<AssumptionSource, string> = {
+  founder: 'Manual',
+  prefill_profile: 'Perfil',
   prefill_kpi: 'KPI',
-  prefill_ai: 'AI',
-  imported_xlsm: 'Imported',
+  prefill_ai: 'IA',
+  imported_xlsm: 'Importado',
 };
 
 function SourceBadge({ source }: { source: AssumptionSource }) {
+  const { t } = useTranslation();
   const variant = source === 'founder' ? 'default' : source === 'imported_xlsm' ? 'secondary' : 'outline';
-  return <Badge variant={variant} className="text-[10px] uppercase tracking-wide">{SOURCE_LABEL[source]}</Badge>;
+  return (
+    <Badge variant={variant} className="text-[10px] uppercase tracking-wide">
+      {t(SOURCE_LABEL_KEY[source], { defaultValue: SOURCE_FALLBACK[source] })}
+    </Badge>
+  );
+}
+
+// Build assumption-key → i18n label map from the question packs so proposals
+// and the register show human-friendly labels instead of raw dotted keys.
+const ASSUMPTION_LABEL_INDEX: Record<string, { labelKey: string; defaultLabel: string }> =
+  Object.fromEntries(
+    QUESTION_PACKS.flatMap(p => p.questions.map(q => [q.key, { labelKey: q.labelKey, defaultLabel: q.defaultLabel }])),
+  );
+
+function assumptionLabel(t: (k: string, opts?: any) => string, key: string): string {
+  const entry = ASSUMPTION_LABEL_INDEX[key];
+  if (entry) return t(entry.labelKey, { defaultValue: entry.defaultLabel });
+  return t(`financialPlan.assumption.${key}`, { defaultValue: key });
 }
 
 function scenarioLabel(t: (k: string, opts?: any) => string, s: PlanScenario) {
@@ -257,7 +282,7 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
               <div key={p.id} className="flex items-center justify-between gap-3 p-2 border rounded-md">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium truncate">{p.key}</span>
+                    <span className="text-sm font-medium truncate">{assumptionLabel(t, p.key)}</span>
                     <SourceBadge source={p.source} />
                     <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
                       {scenarioLabel(t, p.scenario)}
@@ -367,7 +392,7 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
                 <div key={a.id} className="py-2 flex items-center justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium truncate">{a.key}</span>
+                      <span className="text-sm font-medium truncate">{assumptionLabel(t, a.key)}</span>
                       <SourceBadge source={a.source} />
                     </div>
                     {a.rationale && <p className="text-xs text-muted-foreground truncate">{a.rationale}</p>}

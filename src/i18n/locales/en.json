@@ -9588,6 +9588,7 @@
     "coverage": "Coverage",
     "prefill": "Prefill",
     "prefillCreated": "{{count}} suggestion(s) ready to review",
+    "prefillPartial": "{{ok}} created, {{fail}} failed — see details below",
     "prefillEmpty": "No new suggestions — everything already covered.",
     "prefillFailed": "Prefill failed",
     "exportXlsm": "Export XLSM",
@@ -9596,6 +9597,13 @@
     "pendingProposals": "Suggestions waiting for you",
     "pendingProposalsDesc": "These values were prefilled from your profile, KPIs, or the AI. Confirm each before it becomes an assumption.",
     "accept": "Accept",
+    "source": {
+      "founder": "Manual",
+      "prefill_profile": "Profile",
+      "prefill_kpi": "KPI",
+      "prefill_ai": "AI",
+      "imported_xlsm": "Imported"
+    },
     "packComplete": "Section saved",
     "allDone": "All sections captured",
     "allDoneDesc": "You can revisit any assumption below, or export the workbook to feed the canonical XLSM.",
@@ -9676,7 +9684,7 @@
       "empty": "Fill in revenue and cost assumptions to see the projection.",
       "footnote": "Illustrative — computed live from your assumptions register. Not a substitute for the canonical XLSM model.",
       "saveAs": "Save as…",
-      "savedAs": "Saved as {{scenario}} ({{n}} value(s))",
+      "savedAs": "Saved as {{scenario}} ({{n}} value(s)) — showing updated plan",
       "noDeltas": "No changes to save — sliders and scenario bias match the base.",
       "saveFailed": "Save failed"
     },
