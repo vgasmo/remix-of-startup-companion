@@ -22,6 +22,7 @@ interface FounderBookingCTAProps {
 export function FounderBookingCTA({ workspaceId, className, isFirstWeek = false }: FounderBookingCTAProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { data: ownership } = useWorkspaceOwner(workspaceId);
   const { data: sessions } = useUpcomingSessions();
   const publicBookingEnabled = useFeatureFlag('public_first_contact_booking');
