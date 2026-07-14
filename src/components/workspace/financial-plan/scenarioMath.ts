@@ -38,7 +38,46 @@ export const SCENARIO_BIAS: Record<ScenarioKey, Sensitivity> = {
   base:         { revenueGrowth: 0,   cmvmcDelta: 0,  payrollDelta: 0,  churnDelta: 0 },
   optimistic:   { revenueGrowth: +10, cmvmcDelta: -5, payrollDelta: -5, churnDelta: -1 },
 };
-...
+
+export interface Kpis {
+  revenueY1: number;
+  revenueY2: number;
+  cogs: number;
+  grossProfit: number;
+  grossMarginPct: number;
+  payrollYear: number;
+  ebitdaProxy: number;
+  ltv: number | null;
+  cac: number | null;
+  ltvCac: number | null;
+  paybackMonths: number | null;
+}
+
+function num(assumptions: FinancialAssumption[], key: string, fallback = 0): number {
+  // Defensive: on legacy duplicate rows for the same key, prefer the latest
+  // updated_at so a correction always wins over the stale original.
+  let picked: FinancialAssumption | undefined;
+  for (const x of assumptions) {
+    if (x.key !== key) continue;
+    if (!picked || (x.updated_at ?? '') > (picked.updated_at ?? '')) picked = x;
+  }
+  const v = picked?.value_numeric;
+  return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+}
+
+export function computeKpis(
+  a: FinancialAssumption[],
+  s: Sensitivity,
+  bias: Sensitivity = SCENARIO_BIAS.base,
+): Kpis {
+  const qty = num(a, 'revenue.item1.qty_y1');
+  const price = num(a, 'revenue.item1.price');
+  const growthPct = num(a, 'revenue.item1.growth') + s.revenueGrowth + bias.revenueGrowth;
+  const cmvmcPct = Math.max(0, num(a, 'cost.cmvmc_pct') + s.cmvmcDelta + bias.cmvmcDelta);
+  const headcount = num(a, 'team.headcount_y1');
+  const avgSalary = num(a, 'team.avg_salary_month');
+  const payrollMult = 1 + (s.payrollDelta + bias.payrollDelta) / 100;
+
   const revenueY1 = qty * price;
   const revenueY2 = revenueY1 * (1 + growthPct / 100);
   const cogs = revenueY1 * (cmvmcPct / 100);
