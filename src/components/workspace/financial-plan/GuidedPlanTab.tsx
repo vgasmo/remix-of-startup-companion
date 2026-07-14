@@ -151,9 +151,25 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
                   size="sm" variant="outline" className="h-8"
                   disabled={generatePrefill.isPending}
                   onClick={async () => {
+                    setPrefillResult(null);
+                    setPrefillStage('profile');
+                    // Optimistic staged progress — the edge function runs the
+                    // three sources sequentially, so we mirror that timing
+                    // client-side so the founder sees which layer is running.
+                    const tProfile = window.setTimeout(() => setPrefillStage('kpi'), 400);
+                    const tKpi = window.setTimeout(() => setPrefillStage('ai'), 1200);
+                    const tAi = window.setTimeout(() => setPrefillStage('insert'), 2400);
                     try {
                       const res = await generatePrefill.mutateAsync(scenario);
-                      if (res.proposals_created > 0) {
+                      setPrefillResult(res);
+                      setPrefillStage('done');
+                      const failed = Object.values(res.by_source ?? {}).reduce((a, s) => a + (s?.failed ?? 0), 0);
+                      if (failed > 0) {
+                        notify.error(t('financialPlan.prefillPartial', {
+                          defaultValue: '{{ok}} created, {{fail}} failed — see details below',
+                          ok: res.proposals_created, fail: failed,
+                        }));
+                      } else if (res.proposals_created > 0) {
                         notify.success(t('financialPlan.prefillCreated', {
                           defaultValue: '{{count}} suggestion(s) ready to review',
                           count: res.proposals_created,
@@ -163,12 +179,11 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
                           defaultValue: 'No new suggestions — everything already covered.',
                         }));
                       }
-                      if (res.warnings?.length) {
-                        // Non-fatal: surface as info toast for transparency.
-                        notify.info(res.warnings.join(' · '));
-                      }
                     } catch (e: any) {
+                      setPrefillStage(null);
                       notify.error(e?.message ?? t('financialPlan.prefillFailed', { defaultValue: 'Prefill failed' }));
+                    } finally {
+                      clearTimeout(tProfile); clearTimeout(tKpi); clearTimeout(tAi);
                     }
                   }}
                 >
