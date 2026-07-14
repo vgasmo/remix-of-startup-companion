@@ -631,6 +631,7 @@ export default function CRM() {
                   icon={Ghost}
                   iconColor="text-[hsl(var(--warning))]"
                   onOpenDrawer={handleOpenDrawer}
+                  tooltip={t('crm.staleTooltip', { defaultValue: 'Commercial opportunities with no recent activity and no scheduled next action.' })}
                 />
               </div>
               )
