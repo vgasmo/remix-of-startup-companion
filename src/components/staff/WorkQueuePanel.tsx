@@ -460,6 +460,7 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
           totalCount={displayItems.length}
           onDeselectAll={() => setSelectedIds(new Set())}
           onSelectAll={() => setSelectedIds(new Set(displayItems.map((i) => i.id)))}
+          onMarkDoneItem={handleMarkDone}
         />
       )}
     </Card>
