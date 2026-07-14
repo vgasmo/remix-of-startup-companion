@@ -38,6 +38,7 @@ import { DocumentFeedbackButton } from './DocumentFeedbackButton';
 import { DocumentReviewPanel, DocumentReviewBadge } from './DocumentReviewPanel';
 import { useQuickWinToast } from '@/hooks/useQuickWinToast';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { 
   useDocuments, 
   useUploadDocument, 
