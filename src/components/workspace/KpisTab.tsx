@@ -745,6 +745,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
               isSaved={savedKpis.has(wk.kpi_definition_id)}
               onValueChange={(field, val) => handleValueChange(wk.kpi_definition_id, field, val)}
               onSave={() => handleSaveKpi(wk)}
+              onBlurFlush={() => flushAutosave(wk.kpi_definition_id)}
               onUnlock={async (kpiValueId) => {
                 await unlockKpi.mutateAsync(kpiValueId);
                 notify.success(t('kpis.unlocked', 'KPI unlocked for manual editing'));
