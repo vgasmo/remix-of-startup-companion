@@ -85,6 +85,10 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
 
   const sessionQ = useFinancialPlanSession(workspaceId, scenario);
   const assumptionsQ = useFinancialAssumptions(workspaceId, scenario);
+  // Base scenario is the anchor for the sensitivity panel — otherwise browsing
+  // "conservative" then saving-as-conservative would apply the −10pp bias on
+  // top of already-biased values (compounding). Always fetched separately.
+  const baseAssumptionsQ = useFinancialAssumptions(workspaceId, 'base');
   const proposalsQ = usePrefillProposals(workspaceId, scenario);
   const upsertSession = useUpsertFinancialPlanSession(workspaceId);
   const saveAssumption = useSaveAssumption(workspaceId);
@@ -92,9 +96,11 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
   const resolveProposal = useResolvePrefillProposal(workspaceId);
   const generatePrefill = useGeneratePrefill(workspaceId);
   const exportXlsm = useExportGuidedPlanXlsm(workspaceId);
+  const saveScenarioFromBase = useSaveScenarioFromBase(workspaceId);
 
   const session = sessionQ.data;
   const assumptions = assumptionsQ.data ?? [];
+  const baseAssumptions = baseAssumptionsQ.data ?? [];
   const proposals = proposalsQ.data ?? [];
 
   const diagnostic = (session?.diagnostic_json ?? {}) as Record<string, string>;
