@@ -59,7 +59,9 @@ export const ActionItemCard = memo(function ActionItemCard({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { workspaceId } = useParams<{ workspaceId: string }>();
+  // G0 fix: use item.workspace_id — route param is `:id`, not `:workspaceId`,
+  // so useParams<{workspaceId}>() was always undefined → orphaned template requests.
+  const workspaceId = item.workspace_id;
   const isTerminal = item.status === 'completed' || item.status === 'cancelled' || item.status === 'awaiting_validation';
   const isOverdue = item.due_date && isPast(parseISO(item.due_date)) && !isToday(parseISO(item.due_date)) && !isTerminal;
   const isDueToday = item.due_date && isToday(parseISO(item.due_date)) && !isTerminal;
