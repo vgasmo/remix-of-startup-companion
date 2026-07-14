@@ -4,6 +4,8 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { invokeWithAuth } from '@/lib/invokeWithAuth';
+
 
 export type PlanScenario = 'base' | 'conservative' | 'optimistic';
 export type AssumptionSource =
@@ -256,3 +258,48 @@ export function useResolvePrefillProposal(workspaceId: string) {
     },
   });
 }
+
+// -------- Prefill generation (server-side) --------------------------------
+// Calls the `generate-financial-prefill` edge function. Never writes directly
+// to `financial_assumptions` — it inserts *pending* proposals that the founder
+// must accept, preserving the "no silent AI writes" contract.
+export function useGeneratePrefill(workspaceId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (scenario: PlanScenario = 'base') => {
+      const { data, error } = await invokeWithAuth<{
+        success: boolean;
+        proposals_created: number;
+        skipped_keys: string[];
+        warnings: string[];
+      }>('generate-financial-prefill', { body: { workspace_id: workspaceId, scenario } });
+      if (error) throw error;
+      return data!;
+    },
+    onSuccess: (_r, scenario) => {
+      qc.invalidateQueries({ queryKey: ['financial-prefill-proposals', workspaceId, scenario] });
+    },
+  });
+}
+
+// -------- XLSM export from guided plan ------------------------------------
+// Reuses `export-financial-model` in its assumptions-driven branch: pass
+// { workspace_id, scenario } and it fills the canonical XLSM from
+// financial_assumptions (VBA byte-preserved).
+export function useExportGuidedPlanXlsm(workspaceId: string) {
+  return useMutation({
+    mutationFn: async (scenario: PlanScenario = 'base') => {
+      const { data, error } = await invokeWithAuth<{
+        success: boolean;
+        download_url: string;
+        expires_in: number;
+        patched_sheets: string[];
+        patch_count: number;
+        warnings: string[];
+      }>('export-financial-model', { body: { workspace_id: workspaceId, scenario } });
+      if (error) throw error;
+      return data!;
+    },
+  });
+}
+
