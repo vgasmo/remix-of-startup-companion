@@ -13,19 +13,30 @@ export interface Sensitivity {
   cmvmcDelta: number;
   /** Percentage multiplier applied on top of total payroll (-50..+50). */
   payrollDelta: number;
+  /** Percentage-points added to monthly churn. Not exposed as a user slider —
+   *  driven by scenario bias only so pessimism/optimism moves LTV:CAC. */
+  churnDelta: number;
 }
 
 export const DEFAULT_SENSITIVITY: Sensitivity = {
   revenueGrowth: 0,
   cmvmcDelta: 0,
   payrollDelta: 0,
+  churnDelta: 0,
 };
+
+/**
+ * PT employer social-security ("Taxa Social Única") on gross salary.
+ * Standard TSU is 23.75% for private employers (Segurança Social).
+ * Applied as a fixed uplift on top of the 14-month gross payroll.
+ */
+export const TSU_RATE = 0.2375;
 
 /** Per-scenario bias applied on top of user sliders. */
 export const SCENARIO_BIAS: Record<ScenarioKey, Sensitivity> = {
-  conservative: { revenueGrowth: -10, cmvmcDelta: +5, payrollDelta: +5 },
-  base:         { revenueGrowth: 0,   cmvmcDelta: 0,  payrollDelta: 0 },
-  optimistic:   { revenueGrowth: +10, cmvmcDelta: -5, payrollDelta: -5 },
+  conservative: { revenueGrowth: -10, cmvmcDelta: +5, payrollDelta: +5, churnDelta: +1 },
+  base:         { revenueGrowth: 0,   cmvmcDelta: 0,  payrollDelta: 0,  churnDelta: 0 },
+  optimistic:   { revenueGrowth: +10, cmvmcDelta: -5, payrollDelta: -5, churnDelta: -1 },
 };
 
 export interface Kpis {
@@ -72,14 +83,21 @@ export function computeKpis(
   const cogs = revenueY1 * (cmvmcPct / 100);
   const grossProfit = revenueY1 - cogs;
   const grossMarginPct = revenueY1 > 0 ? (grossProfit / revenueY1) * 100 : 0;
-  // 14 months in PT payroll (12 + holiday + Xmas subsidies) as a rough proxy.
-  const payrollYear = headcount * avgSalary * 14 * payrollMult;
+  // 14 months in PT payroll (12 + holiday + Xmas subsidies) grossed up by the
+  // employer TSU contribution (23.75%) — this is the number a founder actually
+  // pays out, not just the salary line.
+  const payrollYear = headcount * avgSalary * 14 * (1 + TSU_RATE) * payrollMult;
   const ebitdaProxy = grossProfit - payrollYear;
 
   const cacRaw = a.find(x => x.key === 'ue.cac')?.value_numeric ?? null;
   const arpu = a.find(x => x.key === 'ue.arpu_month')?.value_numeric ?? null;
   const gmPct = a.find(x => x.key === 'ue.gross_margin_pct')?.value_numeric ?? null;
-  const churnPct = a.find(x => x.key === 'ue.churn_monthly_pct')?.value_numeric ?? null;
+  const churnRaw = a.find(x => x.key === 'ue.churn_monthly_pct')?.value_numeric ?? null;
+  // Conservative bumps churn (worsens LTV:CAC); optimistic trims it.
+  // Clamp to (0, 100] so lifetime stays defined.
+  const churnPct = churnRaw == null
+    ? null
+    : Math.min(100, Math.max(0, churnRaw + bias.churnDelta));
 
   let ltv: number | null = null;
   let ltvCac: number | null = null;
@@ -159,5 +177,22 @@ export function sensitivityToDeltas(
     });
   }
 
+  // Churn shifts LTV:CAC — only materialized when the founder has a base
+  // churn number and the target scenario carries a non-zero churn bias.
+  const churnBaseRow = baseAssumptions.find(x => x.key === 'ue.churn_monthly_pct');
+  const churnBase = churnBaseRow?.value_numeric;
+  if (typeof churnBase === 'number' && Number.isFinite(churnBase) && bias.churnDelta !== 0) {
+    const derivedChurn = Math.min(100, Math.max(0, churnBase + bias.churnDelta));
+    if (Math.abs(derivedChurn - churnBase) > 1e-6) {
+      out.push({
+        key: 'ue.churn_monthly_pct',
+        value_numeric: Number(derivedChurn.toFixed(4)),
+        unit: '%',
+        rationale: `Derived from base + ${target} bias (${bias.churnDelta > 0 ? '+' : ''}${bias.churnDelta}pp churn)`,
+      });
+    }
+  }
+
   return out;
 }
+

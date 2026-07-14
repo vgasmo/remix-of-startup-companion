@@ -9716,7 +9716,7 @@
       "revenueY2": "Receita Ano 2",
       "cogs": "CMVMC",
       "grossMargin": "Margem bruta",
-      "payroll": "Salários (14m)",
+      "payroll": "Salários (14m + TSU)",
       "ebitdaProxy": "EBITDA (proxy)",
       "ltvCac": "LTV : CAC",
       "payback": "Payback (meses)"
@@ -9741,6 +9741,8 @@
       "kpi": "Sinais de KPI",
       "ai": "Sugestões da IA",
       "insert": "A guardar propostas"
-    }
+    },
+    "idkRationale": "Ignorado pelo fundador — a revisitar",
+    "skippedBadge": "Ignorado"
   }
 }

@@ -212,7 +212,7 @@ export function ScenarioSensitivityPanel({ canWrite, baseAssumptions, onSaveAsSc
                 <KpiRow label={t('financialPlan.kpi.grossMargin', { defaultValue: 'Gross margin' })}
                         values={scenarios.map(s => fmtPct(s.kpis.grossMarginPct))}
                         deltas={scenarios.map(s => s.kpis.grossMarginPct - base.grossMarginPct)} />
-                <KpiRow label={t('financialPlan.kpi.payroll', { defaultValue: 'Payroll (14m)' })}
+                <KpiRow label={t('financialPlan.kpi.payroll', { defaultValue: 'Payroll (14m + TSU)' })}
                         values={scenarios.map(s => fmtEUR(s.kpis.payrollYear))}
                         deltas={scenarios.map(s => -(s.kpis.payrollYear - base.payrollYear))} />
                 <KpiRow label={t('financialPlan.kpi.ebitdaProxy', { defaultValue: 'EBITDA proxy' })}

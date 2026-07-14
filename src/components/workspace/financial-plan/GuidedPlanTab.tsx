@@ -17,7 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { notify } from '@/lib/notify';
 import {
   ArrowRight, CheckCircle2, ChevronRight, HelpCircle, Sparkles, ThumbsDown, ThumbsUp,
-  FileSpreadsheet, Save, SkipForward, Trash2, Wand2, Download, Loader2,
+  FileSpreadsheet, Save, SkipForward, Trash2, Wand2, Download, Loader2, Pencil, X,
 } from 'lucide-react';
 import {
   useFinancialPlanSession, useUpsertFinancialPlanSession,
@@ -107,16 +107,27 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
   const completedPacks = session?.completed_packs ?? [];
   const diagnosticDone = DIAGNOSTIC_KEYS.every(k => diagnostic[k]);
 
-  // First pack that isn't complete
+  // Filter packs the founder actually has to answer, based on diagnostic answers.
+  // Example: a bakery (revenue_model=one_off) skips the SaaS unit-economics pack.
+  const applicablePacks = useMemo(() => {
+    return QUESTION_PACKS.filter(p => {
+      if (!p.showWhen) return true;
+      return Object.entries(p.showWhen).every(([k, allowed]) =>
+        !allowed || allowed.length === 0 || allowed.includes(diagnostic[k] ?? ''),
+      );
+    });
+  }, [diagnostic]);
+
+  // First applicable pack that isn't complete
   const activePackId = useMemo(() => {
-    return QUESTION_PACKS.find(p => !completedPacks.includes(p.id))?.id ?? null;
-  }, [completedPacks]);
+    return applicablePacks.find(p => !completedPacks.includes(p.id))?.id ?? null;
+  }, [applicablePacks, completedPacks]);
   const activePack = activePackId ? packById(activePackId) : null;
 
-  // Coverage %
-  const totalQuestions = QUESTION_PACKS.reduce((a, p) => a + p.questions.length, 0);
+  // Coverage % — over applicable packs only
+  const totalQuestions = applicablePacks.reduce((a, p) => a + p.questions.length, 0);
   const answered = new Set(assumptions.map(a => a.key));
-  const answeredCount = QUESTION_PACKS.reduce((a, p) => a + p.questions.filter(q => answered.has(q.key)).length, 0);
+  const answeredCount = applicablePacks.reduce((a, p) => a + p.questions.filter(q => answered.has(q.key)).length, 0);
   const coverage = totalQuestions ? Math.round((answeredCount / totalQuestions) * 100) : 0;
 
   const saveDiagnostic = async (key: string, value: string) => {
@@ -405,25 +416,14 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
           ) : (
             <div className="divide-y">
               {assumptions.map(a => (
-                <div key={a.id} className="py-2 flex items-center justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium truncate">{assumptionLabel(t, a.key)}</span>
-                      <SourceBadge source={a.source} />
-                    </div>
-                    {a.rationale && <p className="text-xs text-muted-foreground truncate">{a.rationale}</p>}
-                  </div>
-                  <div className="text-sm tabular-nums whitespace-nowrap">
-                    {a.value_numeric ?? '—'}{a.unit ? ` ${a.unit}` : ''}
-                  </div>
-                  {canWrite && (
-                    <Button size="icon" variant="ghost" className="h-7 w-7"
-                      onClick={() => deleteAssumption.mutate(a.id)}
-                      aria-label={t('common.delete', { defaultValue: 'Delete' }) as string}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                </div>
+                <AssumptionRegisterRow
+                  key={a.id}
+                  assumption={a}
+                  scenario={scenario}
+                  canWrite={canWrite}
+                  onSave={(input) => saveAssumption.mutateAsync(input)}
+                  onDelete={() => deleteAssumption.mutate(a.id)}
+                />
               ))}
             </div>
           )}
@@ -670,8 +670,34 @@ function PackRunner({
             <SkipForward className="h-4 w-4 mr-1" />
             {t('financialPlan.skipSection', { defaultValue: 'Skip section' })}
           </Button>
-          <Button size="sm" variant="outline" onClick={() => setValue('')} disabled={!canWrite || saving}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!canWrite || saving}
+            onClick={async () => {
+              // "Não sei" advances past this question by persisting a skip
+              // marker so `map.has(q.key)` becomes true and the runner moves on.
+              setSaving(true);
+              try {
+                await onSave({
+                  key: q.key,
+                  scenario,
+                  value_numeric: null,
+                  value_json: { skipped: true },
+                  unit: q.unit ?? null,
+                  source: 'founder' as AssumptionSource,
+                  rationale: t('financialPlan.idkRationale', { defaultValue: 'Skipped by founder — revisit later' }) as string,
+                });
+                setValue(''); setRationale('');
+              } catch (e: any) {
+                notify.error(e?.message ?? t('financialPlan.saveFailed', { defaultValue: 'Save failed' }));
+              } finally {
+                setSaving(false);
+              }
+            }}
+          >
             {t('financialPlan.idk', { defaultValue: "I don't know yet" })}
+            <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
           <Button size="sm" onClick={() => submit(false)} disabled={!canWrite || saving || !value.trim()}>
             <Save className="h-4 w-4 mr-1" />
@@ -792,5 +818,129 @@ function PrefillProgressCard({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+// -------- Inline-editable register row ------------------------------------
+
+function AssumptionRegisterRow({
+  assumption, scenario, canWrite, onSave, onDelete,
+}: {
+  assumption: import('@/hooks/useFinancialPlan').FinancialAssumption;
+  scenario: PlanScenario;
+  canWrite: boolean;
+  onSave: (input: import('@/hooks/useFinancialPlan').SaveAssumptionInput) => Promise<any>;
+  onDelete: () => void;
+}) {
+  const { t } = useTranslation();
+  const a = assumption;
+  const isSkipped = !!(a.value_json as any)?.skipped;
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState<string>(
+    a.value_numeric != null ? String(a.value_numeric) : '',
+  );
+  const [rationale, setRationale] = useState<string>(a.rationale ?? '');
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    if (!canWrite) return;
+    const n = parseLocalizedNumber(value);
+    if (n === null && value.trim() !== '') {
+      notify.error(t('financialPlan.invalidNumber', { defaultValue: 'Enter a valid number' }));
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSave({
+        key: a.key,
+        scenario,
+        value_numeric: n,
+        value_json: n === null ? { skipped: true } : null,
+        unit: a.unit ?? null,
+        source: 'founder',
+        rationale: rationale.trim() || null,
+      });
+      setEditing(false);
+    } catch (e: any) {
+      notify.error(e?.message ?? t('financialPlan.saveFailed', { defaultValue: 'Save failed' }));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (editing) {
+    return (
+      <div className="py-2 space-y-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium truncate flex-1">{assumptionLabel(t, a.key)}</span>
+          <SourceBadge source={a.source} />
+        </div>
+        <div className="flex gap-2">
+          <Input
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            placeholder={a.unit ?? '0'}
+            disabled={saving}
+            inputMode="decimal"
+            className="h-8 text-sm"
+          />
+          {a.unit && <span className="self-center text-xs text-muted-foreground">{a.unit}</span>}
+        </div>
+        <Textarea
+          value={rationale}
+          onChange={e => setRationale(e.target.value)}
+          placeholder={t('financialPlan.rationalePlaceholder', {
+            defaultValue: 'Why this value? Cite source, benchmark, or reasoning (optional).',
+          }) as string}
+          rows={2}
+          disabled={saving}
+          className="text-xs"
+        />
+        <div className="flex justify-end gap-2">
+          <Button size="sm" variant="ghost" onClick={() => setEditing(false)} disabled={saving}>
+            <X className="h-3.5 w-3.5 mr-1" />
+            {t('common.cancel', { defaultValue: 'Cancel' })}
+          </Button>
+          <Button size="sm" onClick={save} disabled={saving}>
+            {saving ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}
+            {t('common.save', { defaultValue: 'Save' })}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-2 flex items-center justify-between gap-2">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium truncate">{assumptionLabel(t, a.key)}</span>
+          <SourceBadge source={a.source} />
+          {isSkipped && (
+            <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
+              {t('financialPlan.skippedBadge', { defaultValue: 'Skipped' })}
+            </Badge>
+          )}
+        </div>
+        {a.rationale && <p className="text-xs text-muted-foreground truncate">{a.rationale}</p>}
+      </div>
+      <div className="text-sm tabular-nums whitespace-nowrap">
+        {isSkipped ? '—' : (a.value_numeric ?? '—')}{!isSkipped && a.unit ? ` ${a.unit}` : ''}
+      </div>
+      {canWrite && (
+        <>
+          <Button size="icon" variant="ghost" className="h-7 w-7"
+            onClick={() => setEditing(true)}
+            aria-label={t('common.edit', { defaultValue: 'Edit' }) as string}>
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+          <Button size="icon" variant="ghost" className="h-7 w-7"
+            onClick={onDelete}
+            aria-label={t('common.delete', { defaultValue: 'Delete' }) as string}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </>
+      )}
+    </div>
   );
 }

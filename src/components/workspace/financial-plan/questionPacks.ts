@@ -27,8 +27,14 @@ export interface QuestionPack {
   descriptionKey: string;
   defaultDescription: string;
   questions: QuestionDef[];
-  // If any of these diagnostic answers are truthy the pack is required. Empty = always required.
-  requiresDiagnostic?: string[];
+  /**
+   * When present, this pack is only shown if the founder's diagnostic answer
+   * for the given key matches one of the listed values. Example: SaaS unit
+   * economics only runs when `revenue_model` is `subscription` or `mixed`,
+   * so a bakery (one_off / transactional) skips it entirely.
+   * Missing/empty ⇒ always shown.
+   */
+  showWhen?: Partial<Record<string, string[]>>;
 }
 
 export const DIAGNOSTIC_KEYS = [
@@ -109,7 +115,7 @@ export const QUESTION_PACKS: QuestionPack[] = [
     defaultLabel: 'Unit economics',
     descriptionKey: 'financialPlan.pack.unitEconomicsDesc',
     defaultDescription: 'CAC, LTV, churn — SaaS founders should fill this pack.',
-    requiresDiagnostic: ['revenue_model'],
+    showWhen: { revenue_model: ['subscription', 'mixed'] },
     questions: [
       { key: 'ue.cac', defaultLabel: 'CAC — customer acquisition cost (€)', labelKey: 'financialPlan.q.cac', kind: 'currency', unit: '€', min: 0, step: 1 },
       { key: 'ue.arpu_month', defaultLabel: 'ARPU (€ / month)', labelKey: 'financialPlan.q.arpu', kind: 'currency', unit: '€', min: 0, step: 1 },
