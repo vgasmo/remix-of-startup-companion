@@ -416,25 +416,14 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
           ) : (
             <div className="divide-y">
               {assumptions.map(a => (
-                <div key={a.id} className="py-2 flex items-center justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium truncate">{assumptionLabel(t, a.key)}</span>
-                      <SourceBadge source={a.source} />
-                    </div>
-                    {a.rationale && <p className="text-xs text-muted-foreground truncate">{a.rationale}</p>}
-                  </div>
-                  <div className="text-sm tabular-nums whitespace-nowrap">
-                    {a.value_numeric ?? '—'}{a.unit ? ` ${a.unit}` : ''}
-                  </div>
-                  {canWrite && (
-                    <Button size="icon" variant="ghost" className="h-7 w-7"
-                      onClick={() => deleteAssumption.mutate(a.id)}
-                      aria-label={t('common.delete', { defaultValue: 'Delete' }) as string}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                </div>
+                <AssumptionRegisterRow
+                  key={a.id}
+                  assumption={a}
+                  scenario={scenario}
+                  canWrite={canWrite}
+                  onSave={(input) => saveAssumption.mutateAsync(input)}
+                  onDelete={() => deleteAssumption.mutate(a.id)}
+                />
               ))}
             </div>
           )}
