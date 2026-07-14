@@ -115,10 +115,17 @@ describe('useSaveAssumption', () => {
     });
 
     await waitFor(() => expect(calls.length).toBeGreaterThan(0));
-    const upsert = calls.find(c => c.op === 'upsert' && c.table === 'financial_assumptions');
-    expect(upsert, 'should have upserted into financial_assumptions').toBeDefined();
+    // useSaveAssumption does find-then-update-or-insert (NULL period_index can't
+    // participate in a native ON CONFLICT), so a brand-new row shows up as an
+    // INSERT — not an upsert.
+    const write = calls.find(
+      c => (c.op === 'insert' || c.op === 'upsert') && c.table === 'financial_assumptions',
+    );
+    expect(write, 'should have written to financial_assumptions').toBeDefined();
 
-    const payload = (upsert!.payload as any[])[0];
+    const payload = Array.isArray(write!.payload)
+      ? (write!.payload as any[])[0]
+      : (write!.payload as any);
     expect(payload).toMatchObject({
       workspace_id: 'ws-1',
       scenario: 'conservative',
@@ -137,8 +144,13 @@ describe('useSaveAssumption', () => {
     const { result } = renderHook(() => useSaveAssumption('ws-2'), { wrapper });
     await result.current.mutateAsync({ key: 'macro.growth_rate', value_numeric: 8 });
 
-    const upsert = calls.find(c => c.op === 'upsert' && c.table === 'financial_assumptions');
-    const payload = (upsert!.payload as any[])[0];
+    const write = calls.find(
+      c => (c.op === 'insert' || c.op === 'upsert') && c.table === 'financial_assumptions',
+    );
+    expect(write, 'should have written to financial_assumptions').toBeDefined();
+    const payload = Array.isArray(write!.payload)
+      ? (write!.payload as any[])[0]
+      : (write!.payload as any);
     expect(payload.scenario).toBe('base');
     expect(payload.source).toBe('founder');
   });
