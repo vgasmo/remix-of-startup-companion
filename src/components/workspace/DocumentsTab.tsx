@@ -104,6 +104,7 @@ function getFileIcon(documentType: string) {
 
 export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff = false, isMentor = false }: DocumentsTabProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: documents, isLoading } = useDocuments(workspaceId);
   const { data: templateInstances = [] } = useTemplateInstances(workspaceId);
