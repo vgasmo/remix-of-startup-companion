@@ -23,6 +23,7 @@ import {
   useFinancialPlanSession, useUpsertFinancialPlanSession,
   useFinancialAssumptions, useSaveAssumption, useDeleteAssumption,
   usePrefillProposals, useResolvePrefillProposal,
+  useGeneratePrefill, useExportGuidedPlanXlsm,
   PlanScenario, AssumptionSource,
 } from '@/hooks/useFinancialPlan';
 import { QUESTION_PACKS, packById, QuestionDef, DIAGNOSTIC_KEYS } from './questionPacks';
