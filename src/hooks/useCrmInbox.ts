@@ -40,6 +40,8 @@ export interface CrmInboxGroups {
 interface UseCrmInboxFilters {
   programId?: string;
   stage?: FunnelStage;
+  /** Optional multi-stage filter (segment). Applied when set; overrides single `stage`. */
+  stages?: FunnelStage[];
   assigneeId?: string;
   search?: string;
   myItemsOnly?: boolean;
