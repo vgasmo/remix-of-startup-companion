@@ -112,6 +112,7 @@ interface SessionInsightCardProps {
 
 function SessionInsightCard({ session, canManage, onSaveAsNote, onCreateTask }: SessionInsightCardProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
