@@ -243,6 +243,11 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
         </Card>
       )}
 
+      {/* Scenario sensitivity — live projection from the assumptions register */}
+      {diagnosticDone && assumptions.length > 0 && (
+        <ScenarioSensitivityPanel assumptions={assumptions} />
+      )}
+
       {/* Assumptions register */}
       <Card>
         <CardHeader className="pb-2">
