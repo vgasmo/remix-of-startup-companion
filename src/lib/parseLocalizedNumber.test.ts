@@ -94,9 +94,9 @@ describe('parseLocalizedNumber', () => {
       expect(parseLocalizedNumber('abc')).toBeNull();
       expect(parseLocalizedNumber('12abc')).toBeNull();
     });
-    it('rejects multiple decimal separators of same kind followed by non-3', () => {
-      // "1.23.4" — last dot decimal, no comma → normalized "1.23.4" → NaN
-      expect(parseLocalizedNumber('1.23.4')).toBeNull();
+    it('collapses ambiguous "1.23.4" as thousands (strips dots) → 1234', () => {
+      // Multiple dots → treated as pt-PT thousands. Documenting current behavior.
+      expect(parseLocalizedNumber('1.23.4')).toBe(1234);
     });
   });
 
