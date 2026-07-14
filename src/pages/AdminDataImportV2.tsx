@@ -76,6 +76,7 @@ export default function AdminDataImportV2() {
   const { data: programs } = usePrograms();
 
   const [step, setStep] = useState<Step>('upload');
+  const [source, setSource] = useState<ImportSource>('hubspot');
   const [file, setFile] = useState<File | null>(null);
   const [programId, setProgramId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -83,7 +84,7 @@ export default function AdminDataImportV2() {
   const [mapping, setMapping] = useState<Record<string, string | null>>({});
   const [stageMap, setStageMap] = useState<Record<string, string>>({});
   const [rows, setRows] = useState<ImportRow[]>([]);
-  const [filter, setFilter] = useState<'all' | 'insert' | 'update' | 'conflict' | 'invalid'>('all');
+  const [filter, setFilter] = useState<'all' | 'insert' | 'update' | 'suggested' | 'conflict' | 'invalid'>('all');
   const [commitSummary, setCommitSummary] = useState<any | null>(null);
   const [globalToggles, setGlobalToggles] = useState({ crm: true, startup: false, workspace: false, contract_proposal: false });
 
