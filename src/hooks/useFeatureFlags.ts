@@ -2,16 +2,23 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { logger } from '@/lib/logger';
 
-export type FeatureFlagKey =
-  | 'public_first_contact_booking'
-  | 'funnel_ui'
-  | 'founder_gamification'
-  | 'traction_stage'
-  | 'crm_graph_email_sync'
-  | 'crm_ai_recap'
-  | 'open_registration'
-  | 'financial_business_plan_coach_v1'
-  | 'hubspot_importer_v2';
+/**
+ * All feature flag keys, in one place. The `FeatureFlagKey` union is derived
+ * from this array so the admin picker and the type stay in sync.
+ */
+export const FEATURE_FLAG_KEYS = [
+  'public_first_contact_booking',
+  'funnel_ui',
+  'founder_gamification',
+  'traction_stage',
+  'crm_graph_email_sync',
+  'crm_ai_recap',
+  'open_registration',
+  'financial_business_plan_coach_v1',
+  'hubspot_importer_v2',
+] as const;
+
+export type FeatureFlagKey = typeof FEATURE_FLAG_KEYS[number];
 
 interface FeatureFlag {
   id: string;
