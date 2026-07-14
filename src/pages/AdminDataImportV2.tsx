@@ -140,20 +140,45 @@ export default function AdminDataImportV2() {
     setStep('reconcile');
   }, [prepared, loadRows]);
 
+  // Auto-approve only rows whose match confidence clears the safety threshold.
+  // Anything below stays 'pending' so a human explicitly reviews the fuzzy /
+  // name-only matches (which are the ones that historically corrupted data).
+  const MIN_AUTO_APPROVE_CONFIDENCE = 0.9;
+
   const approveAllValid = useCallback(async () => {
     if (!prepared) return;
     setIsLoading(true);
     try {
-      const target = rows.filter(r => r.proposed_action === 'insert' || r.proposed_action === 'update');
-      const ids = target.map(r => r.id);
-      // Batch update state + toggles
+      const eligible = rows.filter(r => r.proposed_action === 'insert' || r.proposed_action === 'update');
+      const confident = eligible.filter(r =>
+        // Inserts have no match to score — trust them (no clobber risk).
+        // Updates must clear the confidence gate.
+        r.proposed_action === 'insert'
+        || (typeof r.match_confidence === 'number' && r.match_confidence >= MIN_AUTO_APPROVE_CONFIDENCE),
+      );
+      const held = eligible.length - confident.length;
+      const ids = confident.map(r => r.id);
+      if (ids.length === 0) {
+        notify.info(t('dataImportV2.noneConfident', {
+          defaultValue: 'No rows clear the {{pct}}% confidence bar — review each match manually.',
+          pct: Math.round(MIN_AUTO_APPROVE_CONFIDENCE * 100),
+        }));
+        return;
+      }
       const { error } = await supabase
         .from('data_import_rows')
         .update({ approval_state: 'approved', approve_toggles_json: globalToggles })
         .in('id', ids);
       if (error) throw error;
       await loadRows(prepared.job_id);
-      notify.success(t('dataImportV2.approved', 'Approved {{n}} rows', { n: ids.length }));
+      if (held > 0) {
+        notify.success(t('dataImportV2.approvedHeld', {
+          defaultValue: 'Approved {{n}} rows · {{held}} held for manual review (< {{pct}}% match)',
+          n: ids.length, held, pct: Math.round(MIN_AUTO_APPROVE_CONFIDENCE * 100),
+        }));
+      } else {
+        notify.success(t('dataImportV2.approved', { defaultValue: 'Approved {{n}} rows', n: ids.length }));
+      }
     } catch (e: any) {
       notify.error(e?.message ?? 'Approve failed');
     } finally {
