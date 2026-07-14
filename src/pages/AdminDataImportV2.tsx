@@ -27,14 +27,16 @@ import { notify } from '@/lib/notify';
 import { cn } from '@/lib/utils';
 
 type Step = 'upload' | 'mapping' | 'reconcile' | 'commit' | 'results';
+type ImportSource = 'hubspot' | 'phc';
 
 interface PrepareResponse {
   success: boolean;
   job_id: string;
-  counts: { insert: number; update: number; conflict: number; invalid: number };
+  counts: { insert: number; update: number; conflict: number; invalid: number; suggested?: number };
   total_rows: number;
   detected_headers: string[];
-  column_mapping: Record<string, string | null>;
+  column_mapping?: Record<string, string | null>;
+  header_map?: Record<string, string>;
   available_sheets: string[];
 }
 
@@ -42,8 +44,8 @@ interface ImportRow {
   id: string;
   row_number: number;
   raw_json: Record<string, string>;
-  normalized_json: Record<string, string | null>;
-  proposed_action: 'insert' | 'update' | 'conflict' | 'invalid' | 'skip';
+  normalized_json: Record<string, any>;
+  proposed_action: 'insert' | 'update' | 'suggested' | 'conflict' | 'invalid' | 'skip';
   match_method: string | null;
   match_confidence: number | null;
   approval_state: string;
