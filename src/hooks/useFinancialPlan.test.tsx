@@ -21,52 +21,61 @@ interface Call {
   payload?: unknown;
   filters: Record<string, unknown>;
 }
-const calls: Call[] = [];
 
-function makeChain(table: string) {
-  const current: Call = { table, op: 'select', filters: {} };
+// vi.mock is hoisted, so any state referenced inside a factory must be created
+// via vi.hoisted() so it too is hoisted alongside the mock.
+const state = vi.hoisted(() => {
+  const calls: any[] = [];
+  return { calls };
+});
 
-  const chain: any = {
-    select: vi.fn(() => chain),
-    order: vi.fn(() => chain),
-    eq: vi.fn((k: string, v: unknown) => { current.filters[k] = v; return chain; }),
-    upsert: vi.fn((rows: unknown, _opts?: unknown) => {
-      current.op = 'upsert'; current.payload = rows; return chain;
-    }),
-    update: vi.fn((patch: unknown) => { current.op = 'update'; current.payload = patch; return chain; }),
-    insert: vi.fn((rows: unknown) => { current.op = 'insert'; current.payload = rows; return chain; }),
-    delete: vi.fn(() => { current.op = 'delete'; return chain; }),
-    single: vi.fn(() => {
-      calls.push(current);
-      const row = Array.isArray(current.payload) ? (current.payload as any[])[0] : current.payload;
-      return Promise.resolve({ data: row ?? null, error: null });
-    }),
-    maybeSingle: vi.fn(() => {
-      calls.push(current);
-      return Promise.resolve({ data: null, error: null });
-    }),
-    then: (resolve: (v: { data: null; error: null }) => void) => {
-      calls.push(current);
-      resolve({ data: null, error: null });
+vi.mock('@/lib/supabaseClient', () => {
+  function makeChain(table: string) {
+    const current = { table, op: 'select' as const, filters: {} as Record<string, unknown> } as any;
+    const chain: any = {
+      select: () => chain,
+      order: () => chain,
+      eq: (k: string, v: unknown) => { current.filters[k] = v; return chain; },
+      upsert: (rows: unknown) => { current.op = 'upsert'; current.payload = rows; return chain; },
+      update: (patch: unknown) => { current.op = 'update'; current.payload = patch; return chain; },
+      insert: (rows: unknown) => { current.op = 'insert'; current.payload = rows; return chain; },
+      delete: () => { current.op = 'delete'; return chain; },
+      single: () => {
+        state.calls.push(current);
+        const row = Array.isArray(current.payload) ? (current.payload as any[])[0] : current.payload;
+        return Promise.resolve({ data: row ?? null, error: null });
+      },
+      maybeSingle: () => {
+        state.calls.push(current);
+        return Promise.resolve({ data: null, error: null });
+      },
+      then: (resolve: (v: { data: null; error: null }) => void) => {
+        state.calls.push(current);
+        resolve({ data: null, error: null });
+      },
+    };
+    return chain;
+  }
+  const supabase = {
+    auth: {
+      getUser: () => Promise.resolve({ data: { user: { id: 'user-1' } }, error: null }),
+      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
     },
+    from: (table: string) => makeChain(table),
   };
-  return chain;
-}
-
-const supabaseMock = {
-  auth: {
-    getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-1' } }, error: null }),
-    getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
-    onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }),
-  },
-  from: vi.fn((table: string) => makeChain(table)),
-};
-
-vi.mock('@/lib/supabaseClient', () => ({ supabase: supabaseMock, supabaseClient: supabaseMock }));
-vi.mock('@/integrations/supabase/client', () => ({ supabase: supabaseMock }));
+  return { supabase, supabaseClient: supabase };
+});
+vi.mock('@/integrations/supabase/client', async () => {
+  const mod = await import('@/lib/supabaseClient');
+  return { supabase: (mod as any).supabase };
+});
 vi.mock('@/lib/invokeWithAuth', () => ({
   invokeWithAuth: vi.fn().mockResolvedValue({ data: { success: true }, error: null }),
 }));
+
+const calls: Call[] = state.calls as Call[];
+
 
 // Import AFTER the mocks so the hook binds to the mocked client.
 import { useSaveAssumption, useResolvePrefillProposal, FinancialPrefillProposal } from '@/hooks/useFinancialPlan';
