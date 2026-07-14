@@ -139,7 +139,7 @@ Deno.test('parsePhcRow reports invalid_nif when PT checksum fails', () => {
   const parsed = parsePhcRow({
     'N.º Cliente': '10002',
     'Nome do cliente': 'Broken NIF, Lda.',
-    'Número de contribuinte': '123456789',
+    'Número de contribuinte': '501442699',
     'Nome do País': 'Portugal',
   }, map);
   assertEquals(parsed.nif_normalized, null);
