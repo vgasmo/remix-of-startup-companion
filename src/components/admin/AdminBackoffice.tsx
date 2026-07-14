@@ -19,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Search, Download, Building2, Calendar, User, X, Plus, 
   ChevronDown, Ban, CheckCircle, ExternalLink, Trash2, AlertTriangle, Star,
-  FileText, Receipt, MapPin, Package, Clock, Archive
+  FileText, Receipt, MapPin, Package, Clock, Archive, Inbox
 } from 'lucide-react';
 import { StageBadge } from '@/components/ui/StageBadge';
 import { useNavigate } from 'react-router-dom';
@@ -39,6 +39,7 @@ import { SpaceOperationsConsole } from '@/components/backoffice/SpaceOperationsC
 import { OpsActionPrompts } from '@/components/backoffice/OpsActionPrompts';
 import { ContractLifecycleHub } from '@/components/admin/ContractLifecycleHub';
 import { AdminArchiveBackupTab } from '@/components/admin/AdminArchiveBackupTab';
+import { FounderRequestsInbox } from '@/components/staff/FounderRequestsInbox';
 
 const STAGES: StartupStage[] = ['ideation', 'validation', 'mvp', 'growth', 'scale'];
 const PRIORITY_LEVELS: WorkspacePriority[] = ['star', 'high', 'standard', 'maintenance'];
@@ -398,6 +399,10 @@ export function AdminBackoffice() {
           <TabsTrigger value="incubation" className="gap-1.5">
             <Package className="h-4 w-4" />
             {t('admin.backoffice.incubationTypes', { defaultValue: 'Tipos de Incubação' })}
+          </TabsTrigger>
+          <TabsTrigger value="founder-requests" className="gap-1.5">
+            <Inbox className="h-4 w-4" />
+            {t('admin.backoffice.founderRequests', { defaultValue: 'Pedidos Founders' })}
           </TabsTrigger>
           {isGovernance && (
             <TabsTrigger value="archive" className="gap-1.5">
@@ -816,6 +821,10 @@ export function AdminBackoffice() {
         {/* Incubation Types Tab */}
         <TabsContent value="incubation">
           <BackofficeIncubationTypesTab />
+        </TabsContent>
+
+        <TabsContent value="founder-requests">
+          <FounderRequestsInbox />
         </TabsContent>
 
         {/* Archive & Backups Tab — governance roles only */}
