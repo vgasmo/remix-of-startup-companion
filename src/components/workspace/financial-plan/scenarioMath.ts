@@ -43,8 +43,14 @@ export interface Kpis {
 }
 
 function num(assumptions: FinancialAssumption[], key: string, fallback = 0): number {
-  const a = assumptions.find(x => x.key === key);
-  const v = a?.value_numeric;
+  // Defensive: on legacy duplicate rows for the same key, prefer the latest
+  // updated_at so a correction always wins over the stale original.
+  let picked: FinancialAssumption | undefined;
+  for (const x of assumptions) {
+    if (x.key !== key) continue;
+    if (!picked || (x.updated_at ?? '') > (picked.updated_at ?? '')) picked = x;
+  }
+  const v = picked?.value_numeric;
   return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
 }
 

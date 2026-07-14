@@ -23,11 +23,12 @@ import {
   useFinancialPlanSession, useUpsertFinancialPlanSession,
   useFinancialAssumptions, useSaveAssumption, useDeleteAssumption,
   usePrefillProposals, useResolvePrefillProposal,
-  useGeneratePrefill, useExportGuidedPlanXlsm,
+  useGeneratePrefill, useExportGuidedPlanXlsm, useSaveScenarioFromBase,
   PlanScenario, AssumptionSource, PrefillResult,
 } from '@/hooks/useFinancialPlan';
 import { QUESTION_PACKS, packById, QuestionDef, DIAGNOSTIC_KEYS } from './questionPacks';
 import { ScenarioSensitivityPanel } from './ScenarioSensitivityPanel';
+import { parseLocalizedNumber, formatLocalizedNumber } from '@/lib/parseLocalizedNumber';
 
 interface Props {
   workspaceId: string;
@@ -84,6 +85,10 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
 
   const sessionQ = useFinancialPlanSession(workspaceId, scenario);
   const assumptionsQ = useFinancialAssumptions(workspaceId, scenario);
+  // Base scenario is the anchor for the sensitivity panel — otherwise browsing
+  // "conservative" then saving-as-conservative would apply the −10pp bias on
+  // top of already-biased values (compounding). Always fetched separately.
+  const baseAssumptionsQ = useFinancialAssumptions(workspaceId, 'base');
   const proposalsQ = usePrefillProposals(workspaceId, scenario);
   const upsertSession = useUpsertFinancialPlanSession(workspaceId);
   const saveAssumption = useSaveAssumption(workspaceId);
@@ -91,9 +96,11 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
   const resolveProposal = useResolvePrefillProposal(workspaceId);
   const generatePrefill = useGeneratePrefill(workspaceId);
   const exportXlsm = useExportGuidedPlanXlsm(workspaceId);
+  const saveScenarioFromBase = useSaveScenarioFromBase(workspaceId);
 
   const session = sessionQ.data;
   const assumptions = assumptionsQ.data ?? [];
+  const baseAssumptions = baseAssumptionsQ.data ?? [];
   const proposals = proposalsQ.data ?? [];
 
   const diagnostic = (session?.diagnostic_json ?? {}) as Record<string, string>;
@@ -355,16 +362,25 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
         </Card>
       )}
 
-      {/* Scenario sensitivity — live projection from the assumptions register */}
-      {diagnosticDone && assumptions.length > 0 && (
+      {/* Scenario sensitivity — always anchored to BASE assumptions so bias
+          never compounds when browsing an already-biased scenario. */}
+      {diagnosticDone && baseAssumptions.length > 0 && (
         <ScenarioSensitivityPanel
           workspaceId={workspaceId}
           canWrite={canWrite}
-          assumptions={assumptions}
-          onScenarioSaved={(target) => {
-            // Switch to the just-saved scenario so the assumptions register,
-            // KPI columns and any downstream model recompute immediately.
-            setScenario(target);
+          baseAssumptions={baseAssumptions}
+          onSaveAsScenario={async (target, deltas) => {
+            try {
+              const res = await saveScenarioFromBase.mutateAsync({ target, deltas });
+              notify.success(t('financialPlan.sensitivity.savedAs', {
+                defaultValue: 'Saved as {{scenario}} ({{n}} value(s)) — showing updated plan',
+                scenario: t(`financialPlan.scenario.${target}`, { defaultValue: target }),
+                n: res.applied,
+              }));
+              setScenario(target);
+            } catch (e: any) {
+              notify.error(e?.message ?? t('financialPlan.sensitivity.saveFailed', { defaultValue: 'Save failed' }));
+            }
           }}
         />
       )}
@@ -538,7 +554,7 @@ function PackRunner({
         <CardContent className="py-4 flex items-center justify-between">
           <p className="text-sm">
             <CheckCircle2 className="h-4 w-4 text-primary inline mr-1.5 align-[-2px]" />
-            {t('financialPlan.packAllAnswered', { defaultValue: 'Section complete' })}: <b>{pack.defaultLabel}</b>
+            {t('financialPlan.packAllAnswered', { defaultValue: 'Section complete' })}: <b>{t(pack.labelKey, { defaultValue: pack.defaultLabel })}</b>
           </p>
           <Button size="sm" onClick={onComplete}>
             {t('financialPlan.continue', { defaultValue: 'Continue' })}
@@ -560,15 +576,20 @@ function PackRunner({
       if (q.kind === 'text') {
         json = { text: value };
       } else {
-        // Locale-safe: accept "1.234,56" and "1,234.56"
-        const cleaned = value.replace(/[€\s]/g, '');
-        const lastComma = cleaned.lastIndexOf(',');
-        const lastDot = cleaned.lastIndexOf('.');
-        let normalized = cleaned;
-        if (lastComma > lastDot) normalized = cleaned.replace(/\./g, '').replace(',', '.');
-        else if (lastDot > lastComma) normalized = cleaned.replace(/,/g, '');
-        const n = Number(normalized);
-        if (!Number.isFinite(n)) { notify.error(t('financialPlan.invalidNumber', { defaultValue: 'Enter a valid number' })); setSaving(false); return; }
+        const n = parseLocalizedNumber(value);
+        if (n === null) {
+          notify.error(t('financialPlan.invalidNumber', { defaultValue: 'Enter a valid number' }));
+          setSaving(false); return;
+        }
+        // Clamp to declared bounds if present (min/max/step from questionPacks).
+        if (typeof q.min === 'number' && n < q.min) {
+          notify.error(t('financialPlan.belowMin', { defaultValue: 'Value below the minimum ({{min}})', min: q.min }));
+          setSaving(false); return;
+        }
+        if (typeof q.max === 'number' && n > q.max) {
+          notify.error(t('financialPlan.aboveMax', { defaultValue: 'Value above the maximum ({{max}})', max: q.max }));
+          setSaving(false); return;
+        }
         numeric = n;
       }
       await onSave({
@@ -581,18 +602,29 @@ function PackRunner({
         rationale: rationale.trim() || null,
       });
       setValue(''); setRationale('');
+    } catch (e: any) {
+      notify.error(e?.message ?? t('financialPlan.saveFailed', { defaultValue: 'Save failed' }));
     } finally {
       setSaving(false);
     }
   };
+
+  // Live preview of the parsed value so the founder catches "1.500" → 1 500.
+  const parsedPreview = useMemo(() => {
+    if (q.kind === 'text' || !value.trim()) return null;
+    const n = parseLocalizedNumber(value);
+    if (n === null) return null;
+    const isCurrency = q.unit === '€' || q.kind === 'currency';
+    return isCurrency ? formatLocalizedNumber(n, { currency: true }) : `${formatLocalizedNumber(n)}${q.unit ? ` ${q.unit}` : ''}`;
+  }, [value, q.kind, q.unit]);
 
   return (
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <CardTitle className="text-sm">{pack.defaultLabel}</CardTitle>
-            <CardDescription className="text-xs">{pack.defaultDescription}</CardDescription>
+            <CardTitle className="text-sm">{t(pack.labelKey, { defaultValue: pack.defaultLabel })}</CardTitle>
+            <CardDescription className="text-xs">{t(pack.descriptionKey, { defaultValue: pack.defaultDescription })}</CardDescription>
           </div>
           <Badge variant="outline" className="text-[10px]">
             {Math.max(0, doneCount)}/{pack.questions.length}
@@ -601,7 +633,7 @@ function PackRunner({
       </CardHeader>
       <CardContent className="pt-0 space-y-3">
         <div>
-          <Label className="text-sm font-medium">{q.defaultLabel}</Label>
+          <Label className="text-sm font-medium">{t(q.labelKey, { defaultValue: q.defaultLabel })}</Label>
           {q.excelHint && (
             <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
               <FileSpreadsheet className="h-3 w-3" />
@@ -618,6 +650,11 @@ function PackRunner({
             inputMode={q.kind === 'text' ? undefined : 'decimal'}
           />
         </div>
+        {parsedPreview && (
+          <p className="text-[11px] text-muted-foreground -mt-1">
+            {t('financialPlan.parsedAs', { defaultValue: 'Interpreted as {{value}}', value: parsedPreview })}
+          </p>
+        )}
         <Textarea
           value={rationale}
           onChange={e => setRationale(e.target.value)}

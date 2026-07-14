@@ -36,14 +36,30 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    // Feature flag check — enabled roles only.
-    const { data: flag } = await supabase
-      .from("feature_flags")
-      .select("enabled, enabled_for_roles")
-      .eq("key", FEATURE_FLAG)
-      .maybeSingle();
-    if (!flag?.enabled) {
-      return corsJsonResponse({ error: "Feature not enabled" }, req, 403);
+    // Feature flag — workspace override wins over global.
+    // (We only know workspace_id after parsing the body — compute it below and
+    // enforce here for both entrypoints.)
+    const bodyEarly = await req.clone().json().catch(() => ({}));
+    const wsForFlag: string | undefined = bodyEarly?.workspace_id;
+    let flagWorkspaceId = wsForFlag;
+    if (!flagWorkspaceId && bodyEarly?.version_id) {
+      const { data: v } = await supabase
+        .from('financial_model_versions')
+        .select('workspace_id')
+        .eq('id', bodyEarly.version_id)
+        .maybeSingle();
+      flagWorkspaceId = v?.workspace_id ?? undefined;
+    }
+    const { data: flagRows, error: flagErr } = await supabase
+      .from('feature_flags')
+      .select('enabled, scope, workspace_id')
+      .eq('key', FEATURE_FLAG);
+    if (flagErr) return corsJsonResponse({ error: `Flag lookup failed: ${flagErr.message}` }, req, 500);
+    const wsFlag = (flagRows ?? []).find((r) => r.scope === 'workspace' && r.workspace_id === flagWorkspaceId);
+    const globalFlag = (flagRows ?? []).find((r) => r.scope === 'global');
+    const flagEnabled = wsFlag ? wsFlag.enabled : (globalFlag?.enabled ?? false);
+    if (!flagEnabled) {
+      return corsJsonResponse({ error: 'Feature not enabled' }, req, 403);
     }
 
     const body = await req.json().catch(() => ({}));

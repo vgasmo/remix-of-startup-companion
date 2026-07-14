@@ -65,12 +65,11 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
   }
 
   if (archiveWorkspace && contract.workspace_id) {
-    try {
-      await (supabase as any)
-        .from('workspaces')
-        .update({ status: 'archived', archived_at: nowIso })
-        .eq('id', contract.workspace_id);
-    } catch { /* non-fatal */ }
+    const { error: archErr } = await (supabase as any)
+      .from('workspaces')
+      .update({ status: 'archived', archived_at: nowIso })
+      .eq('id', contract.workspace_id);
+    if (archErr) throw new Error(`Failed to archive workspace: ${archErr.message}`);
   }
 
   try {

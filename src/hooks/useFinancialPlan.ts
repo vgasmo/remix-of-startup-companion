@@ -147,17 +147,18 @@ export interface SaveAssumptionInput {
   version_id?: string | null;
 }
 
+// Find-then-update-or-insert. Native ON CONFLICT can't match NULL period_index
+// (SQL treats NULLs as distinct), so we lookup the existing row explicitly and
+// UPDATE it if present, INSERT otherwise. Migration 2026-07-14 added partial
+// unique indexes and deduped legacy rows.
 export function useSaveAssumption(workspaceId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: SaveAssumptionInput) => {
       const { data: userRes } = await supabase.auth.getUser();
       const scenario = input.scenario ?? 'base';
-      const payload = {
-        workspace_id: workspaceId,
-        scenario,
-        key: input.key,
-        period_index: input.period_index ?? null,
+      const period = input.period_index ?? null;
+      const base = {
         value_numeric: input.value_numeric ?? null,
         value_json: input.value_json ?? null,
         unit: input.unit ?? null,
@@ -168,9 +169,39 @@ export function useSaveAssumption(workspaceId: string) {
         owner_user_id: userRes.user?.id ?? null,
         last_validated_at: new Date().toISOString(),
       };
+
+      // Try to find an existing row (handles NULL period_index too).
+      let findQ = supabase.from('financial_assumptions')
+        .select('id')
+        .eq('workspace_id', workspaceId)
+        .eq('scenario', scenario)
+        .eq('key', input.key);
+      findQ = period === null ? findQ.is('period_index', null) : findQ.eq('period_index', period);
+      const { data: existing, error: findErr } = await findQ
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (findErr) throw findErr;
+
+      if (existing?.id) {
+        const { data, error } = await supabase
+          .from('financial_assumptions')
+          .update(base as any)
+          .eq('id', existing.id)
+          .select()
+          .single();
+        if (error) throw error;
+        return data as FinancialAssumption;
+      }
       const { data, error } = await supabase
         .from('financial_assumptions')
-        .upsert([payload as any], { onConflict: 'workspace_id,scenario,key,period_index' })
+        .insert([{
+          workspace_id: workspaceId,
+          scenario,
+          key: input.key,
+          period_index: period,
+          ...base,
+        } as any])
         .select()
         .single();
       if (error) throw error;
@@ -178,6 +209,115 @@ export function useSaveAssumption(workspaceId: string) {
     },
     onSuccess: (row) => {
       qc.invalidateQueries({ queryKey: ['financial-assumptions', workspaceId, row.scenario] });
+    },
+  });
+}
+
+// Save-as-scenario: copies the FULL base register into the target scenario,
+// applies the derived deltas on top, and mirrors the base session
+// (diagnostic/completed_packs) so the founder doesn't lose their plan.
+export interface ScenarioDelta {
+  key: string;
+  value_numeric: number;
+  unit: string | null;
+  rationale: string;
+}
+
+export function useSaveScenarioFromBase(workspaceId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ target, deltas }: { target: PlanScenario; deltas: ScenarioDelta[] }) => {
+      if (target === 'base') {
+        // Persist deltas straight onto base — no copy needed.
+        for (const d of deltas) {
+          await supabase.from('financial_assumptions').upsert([{
+            workspace_id: workspaceId, scenario: 'base', key: d.key,
+            value_numeric: d.value_numeric, unit: d.unit, source: 'founder',
+            rationale: d.rationale, last_validated_at: new Date().toISOString(),
+          } as any]);
+        }
+        return { copied: 0, applied: deltas.length };
+      }
+
+      const { data: userRes } = await supabase.auth.getUser();
+      const uid = userRes.user?.id ?? null;
+
+      // 1. Full base register.
+      const { data: baseRows, error: baseErr } = await supabase
+        .from('financial_assumptions')
+        .select('*')
+        .eq('workspace_id', workspaceId)
+        .eq('scenario', 'base');
+      if (baseErr) throw baseErr;
+
+      // 2. Existing target rows — keyed for quick lookup so we UPDATE not INSERT.
+      const { data: targetRows, error: tErr } = await supabase
+        .from('financial_assumptions')
+        .select('id, key, period_index')
+        .eq('workspace_id', workspaceId)
+        .eq('scenario', target);
+      if (tErr) throw tErr;
+      const targetIndex = new Map<string, string>();
+      for (const r of targetRows ?? []) {
+        targetIndex.set(`${r.key}::${r.period_index ?? 'null'}`, r.id as string);
+      }
+
+      // 3. Apply deltas over base copy.
+      const deltaByKey = new Map(deltas.map(d => [d.key, d] as const));
+      let copied = 0, applied = 0;
+      for (const r of baseRows ?? []) {
+        const d = deltaByKey.get(r.key as string);
+        const value_numeric = d ? d.value_numeric : (r.value_numeric as number | null);
+        const unit = d ? d.unit : (r.unit as string | null);
+        const rationale = d ? d.rationale : (r.rationale as string | null);
+        const source = d ? 'founder' : (r.source as AssumptionSource);
+        const payload = {
+          value_numeric, value_json: r.value_json as any, unit, source,
+          confidence: r.confidence as number | null,
+          rationale,
+          version_id: r.version_id as string | null,
+          owner_user_id: uid,
+          last_validated_at: new Date().toISOString(),
+        };
+        const idxKey = `${r.key}::${r.period_index ?? 'null'}`;
+        const existingId = targetIndex.get(idxKey);
+        if (existingId) {
+          const { error } = await supabase.from('financial_assumptions').update(payload as any).eq('id', existingId);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('financial_assumptions').insert([{
+            workspace_id: workspaceId, scenario: target, key: r.key,
+            period_index: r.period_index, ...payload,
+          } as any]);
+          if (error) throw error;
+        }
+        copied++;
+        if (d) applied++;
+      }
+
+      // 4. Mirror base session (diagnostic + completed_packs) into target scenario.
+      const { data: baseSession } = await supabase
+        .from('financial_plan_sessions')
+        .select('*')
+        .eq('workspace_id', workspaceId)
+        .eq('scenario', 'base')
+        .maybeSingle();
+      if (baseSession) {
+        await supabase.from('financial_plan_sessions').upsert([{
+          workspace_id: workspaceId,
+          scenario: target,
+          current_step: baseSession.current_step ?? 'diagnostic',
+          diagnostic_json: baseSession.diagnostic_json ?? {},
+          completed_packs: baseSession.completed_packs ?? [],
+          active_version_id: baseSession.active_version_id ?? null,
+          created_by: uid,
+        } as any], { onConflict: 'workspace_id,scenario' });
+      }
+      return { copied, applied };
+    },
+    onSuccess: (_r, vars) => {
+      qc.invalidateQueries({ queryKey: ['financial-assumptions', workspaceId, vars.target] });
+      qc.invalidateQueries({ queryKey: ['financial-plan-session', workspaceId, vars.target] });
     },
   });
 }

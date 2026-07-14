@@ -3562,14 +3562,36 @@
     "subtitle": "Importação faseada, do lado do servidor, idempotente e com trilho de auditoria",
     "contractBannerTitle": "Nenhum contrato é ativado ou assinado por esta importação.",
     "contractBannerDesc": "Startups, workspaces e propostas de contrato são opcionais por linha. Dados commit ficam reversíveis pela auditoria.",
-    "step": { "upload": "Upload", "mapping": "Mapeamento", "reconcile": "Reconciliação", "commit": "Commit", "results": "Resultados" },
-    "upload": { "title": "Carregar exportação HubSpot", "desc": "Apenas CSV ou XLSX/XLSM. O formato legado .xls não é suportado." },
+    "step": {
+      "upload": "Upload",
+      "mapping": "Mapeamento",
+      "reconcile": "Reconciliação",
+      "commit": "Commit",
+      "results": "Resultados"
+    },
+    "upload": {
+      "title": "Carregar exportação HubSpot",
+      "desc": "Apenas CSV ou XLSX/XLSM. O formato legado .xls não é suportado."
+    },
     "analyze": "Analisar ficheiro",
     "selectProgram": "Selecionar programa (opcional)",
-    "mapping": { "title": "Mapeamento de colunas", "desc": "Confirme que coluna do ficheiro alimenta cada campo interno. Deixe vazio para ignorar." },
-    "reconcile": { "title": "Pré-visualização de reconciliação", "desc": "Cada método de correspondência e confiança é mostrado. Nada é escrito até aprovar e fazer commit." },
-    "commit": { "title": "Fazer commit das linhas aprovadas", "desc": "Apenas administradores podem fazer commit. As linhas são processadas atomicamente; falhas ficam registadas por linha e são retomáveis.", "warning": "Contratos, ocupação de gabinetes e atribuição de consultores exigem revisão manual — nunca inferidos do HubSpot." },
-    "results": { "title": "Importação concluída", "desc": "Resumo e relatório de exceções descarregável." },
+    "mapping": {
+      "title": "Mapeamento de colunas",
+      "desc": "Confirme que coluna do ficheiro alimenta cada campo interno. Deixe vazio para ignorar."
+    },
+    "reconcile": {
+      "title": "Pré-visualização de reconciliação",
+      "desc": "Cada método de correspondência e confiança é mostrado. Nada é escrito até aprovar e fazer commit."
+    },
+    "commit": {
+      "title": "Fazer commit das linhas aprovadas",
+      "desc": "Apenas administradores podem fazer commit. As linhas são processadas atomicamente; falhas ficam registadas por linha e são retomáveis.",
+      "warning": "Contratos, ocupação de gabinetes e atribuição de consultores exigem revisão manual — nunca inferidos do HubSpot."
+    },
+    "results": {
+      "title": "Importação concluída",
+      "desc": "Resumo e relatório de exceções descarregável."
+    },
     "prepared": "Ficheiro analisado: {{n}} linhas",
     "approved": "Aprovadas {{n}} linhas",
     "commitDone": "Importação concluída",
@@ -3577,7 +3599,8 @@
     "toCommit": "Continuar para commit",
     "commitNow": "Fazer commit agora",
     "download": "Descarregar relatório",
-    "noRows": "Sem linhas neste filtro."
+    "noRows": "Sem linhas neste filtro.",
+    "toReconcile": "Continuar para reconciliação"
   },
   "dataImport": {
     "adminOnly": "Only administrators e consultants can access this page.",
@@ -9697,6 +9720,27 @@
       "ebitdaProxy": "EBITDA (proxy)",
       "ltvCac": "LTV : CAC",
       "payback": "Payback (meses)"
+    },
+    "saveNext": "Guardar e seguinte",
+    "skipSection": "Saltar secção",
+    "idk": "Ainda não sei",
+    "continue": "Continuar",
+    "packAllAnswered": "Secção concluída",
+    "rationalePlaceholder": "Porquê este valor? Cite fonte, benchmark ou raciocínio (opcional).",
+    "invalidNumber": "Introduza um número válido",
+    "parsedAs": "Interpretado como {{value}}",
+    "belowMin": "Valor abaixo do mínimo ({{min}})",
+    "aboveMax": "Valor acima do máximo ({{max}})",
+    "saveFailed": "Falha ao guardar",
+    "prefillRunning": "A executar prefill…",
+    "prefillResult": "Resultado do prefill",
+    "prefillStats": "{{ok}} criados · {{skipped}} ignorados · {{failed}} falhados",
+    "prefillFailedN": "{{n}} falhados",
+    "prefillStep": {
+      "profile": "Predefinições do perfil",
+      "kpi": "Sinais de KPI",
+      "ai": "Sugestões da IA",
+      "insert": "A guardar propostas"
     }
   }
 }

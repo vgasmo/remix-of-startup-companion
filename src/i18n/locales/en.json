@@ -3562,14 +3562,36 @@
     "subtitle": "Staged, server-side, idempotent import with full audit trail",
     "contractBannerTitle": "No contracts are activated or signed by this import.",
     "contractBannerDesc": "Startups, workspaces and contract proposals are opt-in per row. Committed data can be reverted from the audit.",
-    "step": { "upload": "Upload", "mapping": "Mapping", "reconcile": "Reconcile", "commit": "Commit", "results": "Results" },
-    "upload": { "title": "Upload HubSpot export", "desc": "CSV or XLSX/XLSM only. Legacy .xls is not supported." },
+    "step": {
+      "upload": "Upload",
+      "mapping": "Mapping",
+      "reconcile": "Reconcile",
+      "commit": "Commit",
+      "results": "Results"
+    },
+    "upload": {
+      "title": "Upload HubSpot export",
+      "desc": "CSV or XLSX/XLSM only. Legacy .xls is not supported."
+    },
     "analyze": "Analyze file",
     "selectProgram": "Select program (optional)",
-    "mapping": { "title": "Column mapping", "desc": "Confirm which upload column feeds each internal field. Leave empty to ignore." },
-    "reconcile": { "title": "Reconciliation preview", "desc": "Every match method and confidence is shown. Nothing is written until you approve and commit." },
-    "commit": { "title": "Commit approved rows", "desc": "Only admins can commit. Rows are processed atomically; failures are recorded per row and safe to resume.", "warning": "Contracts, occupied offices and consultant assignments require a separate staff review — never inferred from HubSpot." },
-    "results": { "title": "Import committed", "desc": "Summary and downloadable exception report." },
+    "mapping": {
+      "title": "Column mapping",
+      "desc": "Confirm which upload column feeds each internal field. Leave empty to ignore."
+    },
+    "reconcile": {
+      "title": "Reconciliation preview",
+      "desc": "Every match method and confidence is shown. Nothing is written until you approve and commit."
+    },
+    "commit": {
+      "title": "Commit approved rows",
+      "desc": "Only admins can commit. Rows are processed atomically; failures are recorded per row and safe to resume.",
+      "warning": "Contracts, occupied offices and consultant assignments require a separate staff review — never inferred from HubSpot."
+    },
+    "results": {
+      "title": "Import committed",
+      "desc": "Summary and downloadable exception report."
+    },
     "prepared": "File analyzed: {{n}} rows",
     "approved": "Approved {{n}} rows",
     "commitDone": "Import committed",
@@ -3577,7 +3599,8 @@
     "toCommit": "Continue to commit",
     "commitNow": "Commit now",
     "download": "Download report",
-    "noRows": "No rows in this filter."
+    "noRows": "No rows in this filter.",
+    "toReconcile": "Continue to reconciliation"
   },
   "dataImport": {
     "adminOnly": "Only administrators and consultants can access this page.",
@@ -9697,6 +9720,27 @@
       "ebitdaProxy": "EBITDA proxy",
       "ltvCac": "LTV : CAC",
       "payback": "Payback (months)"
+    },
+    "saveNext": "Save & next",
+    "skipSection": "Skip section",
+    "idk": "I don't know yet",
+    "continue": "Continue",
+    "packAllAnswered": "Section complete",
+    "rationalePlaceholder": "Why this value? Cite source, benchmark, or reasoning (optional).",
+    "invalidNumber": "Enter a valid number",
+    "parsedAs": "Interpreted as {{value}}",
+    "belowMin": "Value below the minimum ({{min}})",
+    "aboveMax": "Value above the maximum ({{max}})",
+    "saveFailed": "Save failed",
+    "prefillRunning": "Running prefill…",
+    "prefillResult": "Prefill result",
+    "prefillStats": "{{ok}} created · {{skipped}} skipped · {{failed}} failed",
+    "prefillFailedN": "{{n}} failed",
+    "prefillStep": {
+      "profile": "Profile defaults",
+      "kpi": "KPI signals",
+      "ai": "AI suggestions",
+      "insert": "Saving proposals"
     }
   }
 }
