@@ -18,7 +18,6 @@ import {
 import { RotateCcw, TrendingUp, TrendingDown, Minus, Save, Loader2 } from 'lucide-react';
 import { notify } from '@/lib/notify';
 import type { FinancialAssumption } from '@/hooks/useFinancialPlan';
-import { useSaveAssumption } from '@/hooks/useFinancialPlan';
 import {
   computeKpis, sensitivityToDeltas,
   DEFAULT_SENSITIVITY, SCENARIO_BIAS,
@@ -28,9 +27,12 @@ import {
 interface Props {
   workspaceId: string;
   canWrite: boolean;
-  assumptions: FinancialAssumption[];
-  /** Called after a "Save as…" persists deltas — parent should switch to that scenario. */
-  onScenarioSaved?: (scenario: ScenarioKey) => void;
+  /** Always the BASE-scenario register — the anchor for math. Prevents bias
+   *  from compounding when the founder is browsing a non-base scenario. */
+  baseAssumptions: FinancialAssumption[];
+  /** Parent handles persistence — it copies the full base register into the
+   *  target scenario and applies these deltas on top (see useSaveScenarioFromBase). */
+  onSaveAsScenario?: (target: ScenarioKey, deltas: ReturnType<typeof sensitivityToDeltas>) => Promise<void> | void;
 }
 
 function fmtEUR(n: number | null | undefined): string {
@@ -55,18 +57,17 @@ function DeltaIcon({ delta }: { delta: number }) {
     : <TrendingDown className="h-3 w-3 text-destructive" />;
 }
 
-export function ScenarioSensitivityPanel({ workspaceId, canWrite, assumptions, onScenarioSaved }: Props) {
+export function ScenarioSensitivityPanel({ canWrite, baseAssumptions, onSaveAsScenario }: Props) {
   const { t } = useTranslation();
   const [sens, setSens] = useState<Sensitivity>(DEFAULT_SENSITIVITY);
-  const saveAssumption = useSaveAssumption(workspaceId);
   const [savingScenario, setSavingScenario] = useState<ScenarioKey | null>(null);
 
   const scenarios = useMemo(() => {
     return (['conservative', 'base', 'optimistic'] as ScenarioKey[]).map(key => ({
       key,
-      kpis: computeKpis(assumptions, sens, SCENARIO_BIAS[key]),
+      kpis: computeKpis(baseAssumptions, sens, SCENARIO_BIAS[key]),
     }));
-  }, [assumptions, sens]);
+  }, [baseAssumptions, sens]);
 
   const base = scenarios.find(s => s.key === 'base')!.kpis;
   const hasAnyRevenue = base.revenueY1 > 0;
@@ -76,39 +77,19 @@ export function ScenarioSensitivityPanel({ workspaceId, canWrite, assumptions, o
   const isDirty = sens.revenueGrowth !== 0 || sens.cmvmcDelta !== 0 || sens.payrollDelta !== 0;
 
   const handleSaveAsScenario = async (target: ScenarioKey) => {
-    const rows = sensitivityToDeltas(assumptions, sens, target);
-    if (rows.length === 0) {
+    const rows = sensitivityToDeltas(baseAssumptions, sens, target);
+    if (rows.length === 0 && target !== 'base') {
+      // Even with zero slider movement the scenario bias produces deltas; the
+      // only way to reach this branch is target='base' with no sliders. Warn.
       notify.info(t('financialPlan.sensitivity.noDeltas', {
-        defaultValue: 'No changes to save — sliders and scenario bias match the base.',
+        defaultValue: 'No changes to save — sliders match the base.',
       }));
       return;
     }
     setSavingScenario(target);
     try {
-      for (const r of rows) {
-        await saveAssumption.mutateAsync({
-          key: r.key,
-          scenario: target,
-          value_numeric: r.value_numeric,
-          unit: r.unit,
-          source: 'founder',
-          rationale: r.rationale,
-        });
-      }
-      notify.success(t('financialPlan.sensitivity.savedAs', {
-        defaultValue: 'Saved as {{scenario}} ({{n}} value(s)) — showing updated plan',
-        scenario: t(`financialPlan.scenario.${target}`, { defaultValue: target }),
-        n: rows.length,
-      }));
-      // Reset sliders so the recomputed table reflects the persisted values
-      // (deltas are now baked into the assumptions themselves).
+      await onSaveAsScenario?.(target, rows);
       setSens(DEFAULT_SENSITIVITY);
-      // Ask parent to switch the active scenario so the whole panel — including
-      // the assumptions register and KPI columns — refreshes to the just-saved
-      // scenario without needing a page reload.
-      onScenarioSaved?.(target);
-    } catch (e: any) {
-      notify.error(e?.message ?? t('financialPlan.sensitivity.saveFailed', { defaultValue: 'Save failed' }));
     } finally {
       setSavingScenario(null);
     }
