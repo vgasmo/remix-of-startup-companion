@@ -58,23 +58,8 @@ const FUNNEL_ITEM_FIELDS = `
   created_at, updated_at
 `;
 
-/**
- * Operational (post-contracting) customer records must not appear in the
- * commercial "stale" / "no next action" buckets merely because historical
- * CRM activity is missing. They are only surfaced when they carry an
- * explicit next_action_at (overdue / today / upcoming).
- *
- * Commercial follow-up applies to opportunities still moving through the
- * pipeline (new … sent_for_signature).
- */
-const FUNNEL_ITEM_FIELDS = `
-  id, stage, type, owner_consultant_id, program_id,
-  contact_name, contact_email, organization_name,
-  next_action_at, next_action_description, last_activity_at,
-  linked_workspace_id, metadata_json, notes, contact_phone, source, first_contact_at,
-  deal_value, deal_currency, expected_close_date, win_probability,
-  created_at, updated_at
-`;
+
+
 
 /**
  * Operational (post-contracting) customer records must not appear in the
