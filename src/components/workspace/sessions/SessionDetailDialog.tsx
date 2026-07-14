@@ -244,7 +244,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
               <div>
                 <DialogTitle>{session.title}</DialogTitle>
                 <DialogDescription>
-                  {format(new Date(session.scheduled_at), 'EEEE, MMMM d, yyyy')} at {format(new Date(session.scheduled_at), 'h:mm a')}
+                  {format(new Date(session.scheduled_at), 'EEEE, d MMMM yyyy', { locale })} · {format(new Date(session.scheduled_at), 'HH:mm', { locale })}
                   {session.duration && ` • ${session.duration} min`}
                 </DialogDescription>
               </div>
