@@ -704,13 +704,15 @@ function InboxGroup({
   items, 
   icon: Icon, 
   iconColor,
-  onOpenDrawer 
+  onOpenDrawer,
+  tooltip,
 }: { 
   title: string; 
   items: CrmInboxItem[];
   icon: typeof AlertTriangle;
   iconColor: string;
   onOpenDrawer: (item: CrmInboxItem) => void;
+  tooltip?: string;
 }) {
   const { t } = useTranslation();
 
@@ -719,7 +721,7 @@ function InboxGroup({
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Icon className={cn('h-4 w-4', iconColor)} />
-          {title}
+          <span title={tooltip} className={tooltip ? 'cursor-help' : undefined}>{title}</span>
           <Badge variant="secondary" className="ml-auto">{items.length}</Badge>
         </CardTitle>
       </CardHeader>
