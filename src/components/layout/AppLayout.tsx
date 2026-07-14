@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 interface AppLayoutProps {
   children: ReactNode;
   title?: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   actions?: ReactNode;
 }
 
@@ -86,7 +86,7 @@ export const AppLayout = forwardRef<HTMLDivElement, AppLayoutProps>(function App
                 </h1>
               )}
               {subtitle && (
-                <p className="text-xs lg:text-sm text-muted-foreground truncate" title={subtitle}>{subtitle}</p>
+                <div className="text-xs lg:text-sm text-muted-foreground truncate">{subtitle}</div>
               )}
             </div>
             <div className={cn(

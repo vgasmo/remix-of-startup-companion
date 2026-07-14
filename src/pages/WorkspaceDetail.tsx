@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef, KeyboardEvent, lazy, Suspense } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Copy, MoreHorizontal, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Copy, MoreHorizontal, ChevronDown, Mail, Tag } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useAutoMaterializeDeliverables } from '@/hooks/useAutoMaterializeDeliverables';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { getVisibleTabs, type WorkspaceTab } from '@/lib/workspaceTabs';
 import { useWorkspaceTabBadges } from '@/hooks/useWorkspaceTabBadges';
 import { useTrackEngagement, type EngagementTargetType } from '@/hooks/useEngagementEvents';
+import { useWorkspaceTags } from '@/hooks/useGlobalSearch';
 
 // Lazy-loaded tab panels — each becomes its own async chunk so the initial
 // WorkspaceDetail bundle only ships Overview + shell. lazyWithRetry forces a
@@ -76,6 +77,7 @@ export default function WorkspaceDetail() {
   const shouldShowOnboarding = searchParams.get('onboarding') === 'true';
   const canWrite = isAdmin || isConsultor || isMentor || isFounder;
   const tabBadges = useWorkspaceTabBadges(id);
+  const { data: workspaceTags = [] } = useWorkspaceTags(id);
 
   // Auto-materialize acceleration deliverables at page level (not tab-dependent)
   const programType = workspace?.program ? (workspace.program as { program_type?: string }).program_type : undefined;
@@ -332,10 +334,35 @@ export default function WorkspaceDetail() {
 
   const isOverflowTabActive = overflowTabs.some(tab => tab.id === activeTab);
 
+  const mainContact = startup?.main_contact_name || startup?.main_contact_email;
+  const subtitleNode = (isConsultor || isAdmin || isBackoffice) && startup ? (
+    <div className="flex items-center gap-1.5 text-xs lg:text-sm text-muted-foreground overflow-hidden">
+      {program?.name && <span className="truncate shrink-0">{program.name}</span>}
+      {startup.description && program?.name && <span className="text-border shrink-0">•</span>}
+      {startup.description && <span className="truncate max-w-[200px] lg:max-w-xs" title={startup.description}>{startup.description}</span>}
+      {mainContact && (startup.description || program?.name) && <span className="text-border shrink-0">•</span>}
+      {mainContact && (
+        <span className="flex items-center gap-1 truncate shrink-0" title={startup.main_contact_email || undefined}>
+          <Mail className="h-3 w-3" />
+          <span className="hidden sm:inline">{startup.main_contact_name || startup.main_contact_email}</span>
+          <span className="sm:hidden">{startup.main_contact_name || startup.main_contact_email}</span>
+        </span>
+      )}
+      {workspaceTags.length > 0 && (mainContact || startup.description || program?.name) && <span className="text-border shrink-0">•</span>}
+      {workspaceTags.length > 0 && (
+        <span className="flex items-center gap-1 truncate shrink-0" title={workspaceTags.map(t => t.name).join(', ')}>
+          <Tag className="h-3 w-3" />
+          <span className="hidden sm:inline">{workspaceTags.map(t => t.name).join(', ')}</span>
+          <span className="sm:hidden">{workspaceTags[0].name}{workspaceTags.length > 1 ? ` +${workspaceTags.length - 1}` : ''}</span>
+        </span>
+      )}
+    </div>
+  ) : program?.name;
+
   return (
     <AppLayout
       title={startup?.name || 'Workspace'}
-      subtitle={program?.name}
+      subtitle={subtitleNode}
       actions={
         <div className="flex gap-1 sm:gap-2">
           <Button variant="outline" size="sm" onClick={copyWorkspaceLink} className="px-2 sm:px-3">
