@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { 
   TrendingUp, 
   Target, 
@@ -52,6 +53,7 @@ interface SharedData {
 export default function SharedWorkspace() {
   const { token } = useParams<{ token: string }>();
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['shared-workspace', token],
@@ -128,7 +130,7 @@ export default function SharedWorkspace() {
           {/* Shared link notice */}
           <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
             <Lock className="h-3 w-3" />
-            <span>{t('shared.readOnly', 'Vista apenas de leitura')} • {t('shared.expires', 'Expira')} {format(new Date(expires_at), 'MMM d, yyyy')}</span>
+            <span>{t('shared.readOnly', 'Vista apenas de leitura')} • {t('shared.expires', 'Expira')} {format(new Date(expires_at), 'd MMM yyyy', { locale: dateLocale })}</span>
             <Badge variant="outline" className="text-xs">{scope.replace('_', ' ')}</Badge>
           </div>
         </div>
@@ -202,7 +204,7 @@ export default function SharedWorkspace() {
                       <Badge variant="outline" className="capitalize">{milestone.status.replace('_', ' ')}</Badge>
                       {milestone.target_date && (
                         <span className="text-sm text-muted-foreground">
-                          {format(new Date(milestone.target_date), 'MMM d')}
+                          {format(new Date(milestone.target_date), 'd MMM', { locale: dateLocale })}
                         </span>
                       )}
                     </div>
@@ -219,7 +221,7 @@ export default function SharedWorkspace() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-primary" />
-                {t('shared.latestUpdate', 'Última Atualização')} - {format(new Date(updates[0].month), 'MMMM yyyy')}
+                {t('shared.latestUpdate', 'Última Atualização')} - {format(new Date(updates[0].month), 'MMMM yyyy', { locale: dateLocale })}
               </CardTitle>
             </CardHeader>
             <CardContent>
