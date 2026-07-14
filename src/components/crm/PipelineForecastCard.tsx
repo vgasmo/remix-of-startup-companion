@@ -18,7 +18,7 @@ interface PipelineForecastCardProps {
 }
 
 export function PipelineForecastCard({ pipeline }: PipelineForecastCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const forecast = useMemo(() => {
     if (!pipeline) return null;
