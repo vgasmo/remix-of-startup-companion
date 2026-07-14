@@ -229,6 +229,16 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
         </CardContent>
       </Card>
 
+      {/* Prefill progress & per-source result */}
+      {(generatePrefill.isPending || prefillResult) && (
+        <PrefillProgressCard
+          stage={prefillStage}
+          isPending={generatePrefill.isPending}
+          result={prefillResult}
+          onDismiss={() => { setPrefillResult(null); setPrefillStage(null); }}
+        />
+      )}
+
       {/* Pending prefill proposals */}
       {proposals.length > 0 && (
         <Card className="border-primary/40">
