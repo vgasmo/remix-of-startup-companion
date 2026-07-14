@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { format, differenceInDays, isThisMonth } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import {
   Zap,
   TrendingUp,
@@ -44,6 +45,7 @@ interface StepItem {
 
 export function EnhancedNextSteps({ workspaceId, programId, stage, canWrite }: EnhancedNextStepsProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const [, setSearchParams] = useSearchParams();
   const [showQuickKpi, setShowQuickKpi] = useState(false);
 
@@ -92,7 +94,7 @@ export function EnhancedNextSteps({ workspaceId, programId, stage, canWrite }: E
         type: 'kpi',
         priority: 10,
         title: t('nextSteps.updateKpis'),
-        description: t('nextSteps.kpisForMonth', { month: format(today, 'MMMM') }),
+        description: t('nextSteps.kpisForMonth', { month: format(today, 'MMMM', { locale: dateLocale }) }),
         icon: <TrendingUp className="h-5 w-5" />,
         variant: 'warning',
         actionLabel: t('nextSteps.addNow'),

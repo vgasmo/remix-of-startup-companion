@@ -18,6 +18,7 @@ import {
   GitBranch
 } from 'lucide-react';
 import { format, differenceInMonths, differenceInDays, addYears, subDays } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { useUpdateContract, type StartupContract } from '@/hooks/useBackoffice';
 import { useCurrentPricingTable, findMatchingPricingLine, getIncubationYear } from '@/hooks/backoffice/usePricingLines';
 import { ContractDiscountsPanel } from '@/components/contracts/ContractDiscountsPanel';
@@ -60,6 +61,7 @@ interface ContractDetailDrawerProps {
 
 export function ContractDetailDrawer({ contract, incubationTypes, buildings, open, onOpenChange }: ContractDetailDrawerProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const navigate = useNavigate();
   const contractId = contract?.id ?? '';
   const updateContract = useUpdateContract();
@@ -314,7 +316,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                 }
               </span>
               <span className="text-xs ml-2 opacity-70">
-                {t('admin.backoffice.startedOn')}: {format(startDate, 'dd MMM yyyy')}
+                {t('admin.backoffice.startedOn')}: {format(startDate, 'dd MMM yyyy', { locale: dateLocale })}
               </span>
             </div>
             {years >= 3 && <AlertTriangle className="h-4 w-4 shrink-0" />}
@@ -552,7 +554,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                   {isEditing ? (
                     <Input type="date" value={editValues.start_date} onChange={e => setEditValues(p => ({ ...p, start_date: e.target.value }))} className="h-8 text-sm" />
                   ) : (
-                    <span className="text-sm font-medium">{format(startDate, 'dd MMM yyyy')}</span>
+                    <span className="text-sm font-medium">{format(startDate, 'dd MMM yyyy', { locale: dateLocale })}</span>
                   )}
                 </FieldDisplay>
 

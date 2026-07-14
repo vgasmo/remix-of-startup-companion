@@ -31,6 +31,7 @@ import { useNavigate } from 'react-router-dom';
 import { RoomAllocationHistory } from './RoomAllocationHistory';
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { notify } from "@/lib/notify";
 
 const fmtEUR = new Intl.NumberFormat('pt-PT', {
@@ -49,6 +50,7 @@ interface SpaceDetailDrawerProps {
 
 export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: SpaceDetailDrawerProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
@@ -341,7 +343,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
                           <div>
                             {t('admin.backoffice.anniversaryLine', {
                               years: contractSummary.anniversaryYearsCompleted + 1,
-                              date: format(contractSummary.anniversary, 'dd MMM yyyy'),
+                              date: format(contractSummary.anniversary, 'dd MMM yyyy', { locale: dateLocale }),
                               days: contractSummary.anniversaryDaysUntil,
                               defaultValue: 'Faz {{years}} ano(s) a {{date}} ({{days}} dias)',
                             })}
