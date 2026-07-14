@@ -546,6 +546,11 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
           <LocationContractCard workspaceId={workspace.id} />
         )}
 
+        {/* Private Documents (CC, IBAN, signatures) — staff only */}
+        {(isConsultor || isAdmin) && (
+          <PrivateDocumentsPanel workspaceId={workspace.id} />
+        )}
+
         {/* Workspace Alerts — staff */}
         {(isConsultor || isAdmin) && (
           <WorkspaceAlertsSection workspaceId={workspace.id} canManage={canWrite} />
