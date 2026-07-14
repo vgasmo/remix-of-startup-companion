@@ -336,6 +336,11 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
           workspaceId={workspaceId}
           canWrite={canWrite}
           assumptions={assumptions}
+          onScenarioSaved={(target) => {
+            // Switch to the just-saved scenario so the assumptions register,
+            // KPI columns and any downstream model recompute immediately.
+            setScenario(target);
+          }}
         />
       )}
 
