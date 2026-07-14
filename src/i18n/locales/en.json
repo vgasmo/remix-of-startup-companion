@@ -9684,7 +9684,7 @@
       "empty": "Fill in revenue and cost assumptions to see the projection.",
       "footnote": "Illustrative — computed live from your assumptions register. Not a substitute for the canonical XLSM model.",
       "saveAs": "Save as…",
-      "savedAs": "Saved as {{scenario}} ({{n}} value(s))",
+      "savedAs": "Saved as {{scenario}} ({{n}} value(s)) — showing updated plan",
       "noDeltas": "No changes to save — sliders and scenario bias match the base.",
       "saveFailed": "Save failed"
     },
