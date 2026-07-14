@@ -9667,6 +9667,7 @@ export type Database = {
       }
     }
     Functions: {
+      admin_commit_crm_import_job: { Args: { p_job_id: string }; Returns: Json }
       approve_startup_claim: {
         Args: { p_claim_id: string; p_workspace_id: string }
         Returns: undefined
