@@ -77,7 +77,7 @@ const STAGE_COLORS: Record<FunnelStage, string> = {
   archived: 'bg-muted-foreground',
 };
 
-const ACTIVE_STAGES: FunnelStage[] = ['new', 'first_contact_booked', 'met', 'qualified', 'proposal_sent', 'negotiating', 'intake_requested', 'intake_filling', 'intake_submitted', 'intake_review', 'approved_for_signature', 'sent_for_signature', 'contracted'];
+const ACTIVE_STAGES: FunnelStage[] = ['new', 'first_contact_booked', 'met', 'qualified', 'proposal_sent', 'negotiating', 'intake_requested', 'intake_filling', 'intake_submitted', 'intake_review', 'intake_changes_requested', 'approved_for_signature', 'sent_for_signature', 'contracted', 'incubating', 'accelerating'];
 
 export default function CRM() {
   const { t } = useTranslation();
