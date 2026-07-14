@@ -68,7 +68,7 @@ import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
 import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
-import { useWorkspaceMembers } from '@/hooks/useWorkspaceMembers';
+import { useWorkspaceMembers, useWorkspaceFounder } from '@/hooks/useWorkspaceMembers';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 
@@ -111,6 +111,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
   const removeWorkspaceTag = useRemoveWorkspaceTag();
   const { data: workspaceOwner } = useWorkspaceOwner(workspace.id);
   const { data: workspaceMembersData } = useWorkspaceMembers(workspace.id);
+  const { data: workspaceFounder } = useWorkspaceFounder(workspace.id);
   const hasConsultant = Boolean(workspaceOwner?.assigned_consultor_id)
     || Boolean(workspaceMembersData?.some(m => m.role === 'consultor'));
   const [founderAdvancedOpen, setFounderAdvancedOpen] = useState(false);
@@ -158,6 +159,102 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <Card>
+        <CardContent className="py-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <Avatar className="h-14 w-14 rounded-xl">
+                <AvatarImage src={workspace.startup?.logo_url || undefined} className="object-cover" />
+                <AvatarFallback className="rounded-xl bg-primary/10 text-primary text-lg font-semibold">
+                  {workspace.startup?.name?.slice(0, 2).toUpperCase() || '?'}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h2 className="font-heading text-2xl font-bold">{workspace.startup?.name}</h2>
+                <p className="text-muted-foreground">{workspace.program?.name}</p>
+                {workspaceFounder?.profile && (
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <span className="text-xs text-muted-foreground">{t('workspaceOverview.founder', { defaultValue: 'Fundador' })}:</span>
+                    <div className="flex items-center gap-1.5">
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage src={workspaceFounder.profile.avatar_url || undefined} className="object-cover" />
+                        <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
+                          {workspaceFounder.profile.full_name?.slice(0, 2).toUpperCase() || workspaceFounder.profile.email?.slice(0, 2).toUpperCase() || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm font-medium">
+                        {workspaceFounder.profile.full_name || workspaceFounder.profile.email}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {workspace.startup?.description && (
+                  <p className="text-sm text-muted-foreground mt-1 max-w-xl line-clamp-2">
+                    {workspace.startup.description}
+                  </p>
+                )}
+                {/* Workspace Tags */}
+                <div className="mt-2">
+                  <TagPicker
+                    selectedTags={workspaceTags}
+                    onAddTag={(tagId) => addWorkspaceTag.mutate({ workspaceId: workspace.id, tagId })}
+                    onRemoveTag={(tagId) => removeWorkspaceTag.mutate({ workspaceId: workspace.id, tagId })}
+                    disabled={!canWrite}
+                    placeholder={t('workspaceOverview.addTags', { defaultValue: 'Adicionar etiquetas...' })}
+                    size="sm"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Prep Sheet Button — Consultant/Admin only */}
+              {(isConsultor || isAdmin) && (
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowPrepSheet(true)}>
+                  <ClipboardList className="h-3.5 w-3.5" />
+                  {t('workspaceOverview.prepSheet', { defaultValue: 'Preparar Reunião' })}
+                </Button>
+              )}
+              {/* Progress Report Button */}
+              <ProgressReportView 
+                workspaceId={workspace.id} 
+                workspace={workspace}
+              />
+              {canWrite ? (
+                <Select value={workspace.stage} onValueChange={(v) => handleStageChange(v as StartupStage)}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(stages && stages.length > 0 ? stages : [
+                      { stage_key: 'ideation', name: t('stages.ideation', { defaultValue: 'Ideation' }) },
+                      { stage_key: 'validation', name: t('stages.validation', { defaultValue: 'Validation' }) },
+                      { stage_key: 'mvp', name: t('stages.mvp', { defaultValue: 'MVP' }) },
+                      { stage_key: 'growth', name: t('stages.growth', { defaultValue: 'Growth' }) },
+                      { stage_key: 'scale', name: t('stages.scale', { defaultValue: 'Scale' }) },
+                    ]).map(stage => (
+                      <SelectItem key={stage.stage_key} value={stage.stage_key}>
+                        {stage.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <StageBadge stage={workspace.stage} />
+              )}
+              <HealthBadge score={effectiveHealth as HealthScore | null} size="lg" />
+              {canSetPriority && (
+                <PrioritySelector
+                  workspaceId={workspace.id}
+                  currentPriority={workspace.priority_level || 'standard'}
+                  currentNotes={workspace.priority_notes}
+                />
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Journey Header - Stage + Health + Progress */}
       <JourneyHeader
         workspace={{
@@ -291,86 +388,6 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
           </CardContent>
         </Card>
       )}
-      
-      {/* Header */}
-      <Card>
-        <CardContent className="py-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <Avatar className="h-14 w-14 rounded-xl">
-                <AvatarImage src={workspace.startup?.logo_url || undefined} className="object-cover" />
-                <AvatarFallback className="rounded-xl bg-primary/10 text-primary text-lg font-semibold">
-                  {workspace.startup?.name?.slice(0, 2).toUpperCase() || '?'}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h2 className="font-heading text-2xl font-bold">{workspace.startup?.name}</h2>
-                <p className="text-muted-foreground">{workspace.program?.name}</p>
-                {workspace.startup?.description && (
-                  <p className="text-sm text-muted-foreground mt-1 max-w-xl line-clamp-2">
-                    {workspace.startup.description}
-                  </p>
-                )}
-                {/* Workspace Tags */}
-                <div className="mt-2">
-                  <TagPicker
-                    selectedTags={workspaceTags}
-                    onAddTag={(tagId) => addWorkspaceTag.mutate({ workspaceId: workspace.id, tagId })}
-                    onRemoveTag={(tagId) => removeWorkspaceTag.mutate({ workspaceId: workspace.id, tagId })}
-                    disabled={!canWrite}
-                    placeholder={t('workspaceOverview.addTags', { defaultValue: 'Adicionar etiquetas...' })}
-                    size="sm"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Prep Sheet Button — Consultant/Admin only */}
-              {(isConsultor || isAdmin) && (
-                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowPrepSheet(true)}>
-                  <ClipboardList className="h-3.5 w-3.5" />
-                  {t('workspaceOverview.prepSheet', { defaultValue: 'Preparar Reunião' })}
-                </Button>
-              )}
-              {/* Progress Report Button */}
-              <ProgressReportView 
-                workspaceId={workspace.id} 
-                workspace={workspace}
-              />
-              {canWrite ? (
-                <Select value={workspace.stage} onValueChange={(v) => handleStageChange(v as StartupStage)}>
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(stages && stages.length > 0 ? stages : [
-                      { stage_key: 'ideation', name: t('stages.ideation', { defaultValue: 'Ideation' }) },
-                      { stage_key: 'validation', name: t('stages.validation', { defaultValue: 'Validation' }) },
-                      { stage_key: 'mvp', name: t('stages.mvp', { defaultValue: 'MVP' }) },
-                      { stage_key: 'growth', name: t('stages.growth', { defaultValue: 'Growth' }) },
-                      { stage_key: 'scale', name: t('stages.scale', { defaultValue: 'Scale' }) },
-                    ]).map(stage => (
-                      <SelectItem key={stage.stage_key} value={stage.stage_key}>
-                        {stage.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <StageBadge stage={workspace.stage} />
-              )}
-              <HealthBadge score={effectiveHealth as HealthScore | null} size="lg" />
-              {canSetPriority && (
-                <PrioritySelector
-                  workspaceId={workspace.id}
-                  currentPriority={workspace.priority_level || 'standard'}
-                  currentNotes={workspace.priority_notes}
-                />
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Main Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
