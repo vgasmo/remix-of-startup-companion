@@ -177,5 +177,22 @@ export function sensitivityToDeltas(
     });
   }
 
+  // Churn shifts LTV:CAC — only materialized when the founder has a base
+  // churn number and the target scenario carries a non-zero churn bias.
+  const churnBaseRow = baseAssumptions.find(x => x.key === 'ue.churn_monthly_pct');
+  const churnBase = churnBaseRow?.value_numeric;
+  if (typeof churnBase === 'number' && Number.isFinite(churnBase) && bias.churnDelta !== 0) {
+    const derivedChurn = Math.min(100, Math.max(0, churnBase + bias.churnDelta));
+    if (Math.abs(derivedChurn - churnBase) > 1e-6) {
+      out.push({
+        key: 'ue.churn_monthly_pct',
+        value_numeric: Number(derivedChurn.toFixed(4)),
+        unit: '%',
+        rationale: `Derived from base + ${target} bias (${bias.churnDelta > 0 ? '+' : ''}${bias.churnDelta}pp churn)`,
+      });
+    }
+  }
+
   return out;
 }
+
