@@ -115,7 +115,7 @@ export const QUESTION_PACKS: QuestionPack[] = [
     defaultLabel: 'Unit economics',
     descriptionKey: 'financialPlan.pack.unitEconomicsDesc',
     defaultDescription: 'CAC, LTV, churn — SaaS founders should fill this pack.',
-    requiresDiagnostic: ['revenue_model'],
+    showWhen: { revenue_model: ['subscription', 'mixed'] },
     questions: [
       { key: 'ue.cac', defaultLabel: 'CAC — customer acquisition cost (€)', labelKey: 'financialPlan.q.cac', kind: 'currency', unit: '€', min: 0, step: 1 },
       { key: 'ue.arpu_month', defaultLabel: 'ARPU (€ / month)', labelKey: 'financialPlan.q.arpu', kind: 'currency', unit: '€', min: 0, step: 1 },
