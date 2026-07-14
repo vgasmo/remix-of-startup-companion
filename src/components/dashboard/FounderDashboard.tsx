@@ -188,10 +188,20 @@ export const FounderDashboard = memo(function FounderDashboard({
     );
   }
 
-  // ProtectedRoute enforces claim-first gate — founders without an active workspace
-  // are redirected to /claim-startup before reaching this component.
-  // This fallback handles the brief render before redirect completes.
+  // G1: MyWorkspaces filters `useWorkspaces` to statuses ['active','claimed'],
+  // so a founder whose claim was flipped to 'pending' by staff has no matching
+  // row and used to see an endless skeleton. Fall back to `pendingWorkspaces`
+  // and render the transitional view so they're not stranded.
   if (!workspace) {
+    const pending = pendingWorkspaces?.[0] as unknown as WorkspaceWithDetails | undefined;
+    if (pending) {
+      return (
+        <TransitionalFounderDashboard
+          workspace={pending}
+          workspaceStatus={(pending as any).needs_onboarding ? 'onboarding' : 'pending'}
+        />
+      );
+    }
     return (
       <div className="space-y-6 max-w-5xl">
         <ContentSkeleton type="stats" count={3} />
