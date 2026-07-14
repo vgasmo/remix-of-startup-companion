@@ -414,7 +414,7 @@ export default function AdminDataImportV2() {
                 </div>
               </ScrollArea>
               <div className="flex justify-between gap-2 flex-wrap">
-                <Button variant="outline" onClick={() => setStep('mapping')}><ArrowLeft className="h-4 w-4 mr-2" />{t('common.back', 'Back')}</Button>
+                <Button variant="outline" onClick={() => setStep(source === 'phc' ? 'upload' : 'mapping')}><ArrowLeft className="h-4 w-4 mr-2" />{t('common.back', 'Back')}</Button>
                 <div className="flex gap-2">
                   <Button variant="outline" onClick={downloadExceptions}><Download className="h-4 w-4 mr-2" />{t('dataImportV2.download', 'Download report')}</Button>
                   <Button variant="outline" onClick={approveAllValid} disabled={isLoading}>{t('dataImportV2.approveAll', 'Approve valid rows')}</Button>
