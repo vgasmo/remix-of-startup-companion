@@ -112,6 +112,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
   const { data: workspaceOwner } = useWorkspaceOwner(workspace.id);
   const { data: workspaceMembersData } = useWorkspaceMembers(workspace.id);
   const { data: workspaceFounder } = useWorkspaceFounder(workspace.id);
+  console.log('workspaceFounder', workspaceFounder, 'members', workspaceMembersData);
   const hasConsultant = Boolean(workspaceOwner?.assigned_consultor_id)
     || Boolean(workspaceMembersData?.some(m => m.role === 'consultor'));
   const [founderAdvancedOpen, setFounderAdvancedOpen] = useState(false);
