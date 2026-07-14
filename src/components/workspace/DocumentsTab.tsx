@@ -38,6 +38,7 @@ import { DocumentFeedbackButton } from './DocumentFeedbackButton';
 import { DocumentReviewPanel, DocumentReviewBadge } from './DocumentReviewPanel';
 import { useQuickWinToast } from '@/hooks/useQuickWinToast';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { 
   useDocuments, 
   useUploadDocument, 
@@ -103,6 +104,7 @@ function getFileIcon(documentType: string) {
 
 export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff = false, isMentor = false }: DocumentsTabProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: documents, isLoading } = useDocuments(workspaceId);
   const { data: templateInstances = [] } = useTemplateInstances(workspaceId);
@@ -639,7 +641,7 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
                                         </div>
                                       )}
                                       <span className="text-muted-foreground/40">•</span>
-                                      <span>{format(new Date(doc.created_at), 'dd MMM yyyy')}</span>
+                                      <span>{format(new Date(doc.created_at), 'dd MMM yyyy', { locale: dateLocale })}</span>
                                       {isLink && (
                                         <>
                                           <span className="text-muted-foreground/40">•</span>

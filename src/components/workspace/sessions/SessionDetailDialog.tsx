@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format, isPast } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { lisbonWallClockToUtcIso, utcIsoToLisbonWallClock } from '@/lib/dateUtils';
 import { Input } from '@/components/ui/input';
 import {
@@ -62,6 +63,7 @@ interface SessionDetailDialogProps {
 
 export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOpenChange, onOpenFacilitator }: SessionDetailDialogProps) {
   const { t } = useTranslation();
+  const locale = useDateLocale();
   const { isAdmin, isConsultor, isFounder } = useAuth();
   const isStaff = isAdmin || isConsultor;
   const canUseFacilitator = isStaff;
@@ -242,7 +244,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
               <div>
                 <DialogTitle>{session.title}</DialogTitle>
                 <DialogDescription>
-                  {format(new Date(session.scheduled_at), 'EEEE, MMMM d, yyyy')} at {format(new Date(session.scheduled_at), 'h:mm a')}
+                  {format(new Date(session.scheduled_at), 'EEEE, d MMMM yyyy', { locale })} · {format(new Date(session.scheduled_at), 'HH:mm', { locale })}
                   {session.duration && ` • ${session.duration} min`}
                 </DialogDescription>
               </div>
@@ -475,7 +477,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                           <p className="font-medium text-sm truncate">{item.title}</p>
                           {item.due_date && (
                             <p className="text-xs text-muted-foreground">
-                              {t('sessions.dueDate', 'Due')}: {format(new Date(item.due_date), 'MMM d, yyyy')}
+                              {t('sessions.dueDate', 'Due')}: {format(new Date(item.due_date), 'd MMM yyyy', { locale })}
                             </p>
                           )}
                         </div>

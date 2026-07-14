@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { format, isPast, isToday, parseISO } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { 
   Plus, AlertTriangle, Calendar, Trash2, Target, Download, 
   GripVertical, Clock, CheckCircle2, Circle, ChevronDown, ChevronRight,
@@ -64,6 +65,7 @@ const MILESTONE_STATUS_ICONS = {
 
 export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId, programType, currentWeek }: MilestonesActionsTabProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const queryClient = useQueryClient();
   const { data: milestones, isLoading: milestonesLoading } = useMilestones(workspaceId);
   const { data: actionItems, isLoading: actionsLoading } = useActionItems(workspaceId);
@@ -619,7 +621,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
                             {milestone.target_date && (
                               <Badge variant="outline" className={`text-xs shrink-0 ${isOverdue ? 'text-destructive border-destructive' : ''}`}>
                                 <Calendar className="h-3 w-3 mr-1" />
-                                {format(parseISO(milestone.target_date), 'dd MMM')}
+                                {format(parseISO(milestone.target_date), 'dd MMM', { locale: dateLocale })}
                               </Badge>
                             )}
                             <ViewReceipt workspaceId={workspaceId} targetType="milestone" targetId={milestone.id} />
