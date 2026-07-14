@@ -204,7 +204,7 @@ export default function SharedWorkspace() {
                       <Badge variant="outline" className="capitalize">{milestone.status.replace('_', ' ')}</Badge>
                       {milestone.target_date && (
                         <span className="text-sm text-muted-foreground">
-                          {format(new Date(milestone.target_date), 'MMM d')}
+                          {format(new Date(milestone.target_date), 'd MMM', { locale: dateLocale })}
                         </span>
                       )}
                     </div>
