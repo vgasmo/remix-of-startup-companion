@@ -90,8 +90,15 @@ function useUpdateProgramWeek(programId: string) {
   });
 }
 
+const PLAN_KEYWORDS = /plan|neg[óo]cio|business|model|modelo|financ|receita|revenue|budget|or[çc]amento|cash|burn|runway|unit econom/i;
+
+function isPlanWeek(title: string, description: string | null): boolean {
+  return PLAN_KEYWORDS.test(title) || (!!description && PLAN_KEYWORDS.test(description));
+}
+
 export function AccelerationCalendarSection({ programId, isStaff, currentWeek }: AccelerationCalendarSectionProps) {
   const { t } = useTranslation();
+  const [, setSearchParams] = useSearchParams();
   const { data, isLoading } = useAccelerationCalendar(programId);
   const updateWeek = useUpdateProgramWeek(programId);
   const [editingWeekId, setEditingWeekId] = useState<string | null>(null);
