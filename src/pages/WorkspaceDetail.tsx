@@ -334,6 +334,31 @@ export default function WorkspaceDetail() {
 
   const isOverflowTabActive = overflowTabs.some(tab => tab.id === activeTab);
 
+  const mainContact = startup?.main_contact_name || startup?.main_contact_email;
+  const subtitleNode = (isConsultor || isAdmin || isBackoffice) && startup ? (
+    <div className="flex items-center gap-1.5 text-xs lg:text-sm text-muted-foreground overflow-hidden">
+      {program?.name && <span className="truncate shrink-0">{program.name}</span>}
+      {startup.description && program?.name && <span className="text-border shrink-0">•</span>}
+      {startup.description && <span className="truncate max-w-[200px] lg:max-w-xs" title={startup.description}>{startup.description}</span>}
+      {mainContact && (startup.description || program?.name) && <span className="text-border shrink-0">•</span>}
+      {mainContact && (
+        <span className="flex items-center gap-1 truncate shrink-0" title={startup.main_contact_email || undefined}>
+          <Mail className="h-3 w-3" />
+          <span className="hidden sm:inline">{startup.main_contact_name || startup.main_contact_email}</span>
+          <span className="sm:hidden">{startup.main_contact_name || startup.main_contact_email}</span>
+        </span>
+      )}
+      {workspaceTags.length > 0 && (mainContact || startup.description || program?.name) && <span className="text-border shrink-0">•</span>}
+      {workspaceTags.length > 0 && (
+        <span className="flex items-center gap-1 truncate shrink-0" title={workspaceTags.map(t => t.name).join(', ')}>
+          <Tag className="h-3 w-3" />
+          <span className="hidden sm:inline">{workspaceTags.map(t => t.name).join(', ')}</span>
+          <span className="sm:hidden">{workspaceTags[0].name}{workspaceTags.length > 1 ? ` +${workspaceTags.length - 1}` : ''}</span>
+        </span>
+      )}
+    </div>
+  ) : program?.name;
+
   return (
     <AppLayout
       title={startup?.name || 'Workspace'}
