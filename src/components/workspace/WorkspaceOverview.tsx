@@ -72,6 +72,7 @@ import { useWorkspaceMembers, useWorkspaceFounder } from '@/hooks/useWorkspaceMe
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 import { ProgramSwitcher } from '@/components/workspace/ProgramSwitcher';
+import { PrivateDocumentsPanel } from '@/components/workspace/PrivateDocumentsPanel';
 
 interface WorkspaceOverviewProps {
   workspace: {
@@ -543,6 +544,11 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
         {/* Location & Contract — staff */}
         {(isConsultor || isAdmin) && (
           <LocationContractCard workspaceId={workspace.id} />
+        )}
+
+        {/* Private Documents (CC, IBAN, signatures) — staff only */}
+        {(isConsultor || isAdmin) && (
+          <PrivateDocumentsPanel workspaceId={workspace.id} />
         )}
 
         {/* Workspace Alerts — staff */}
