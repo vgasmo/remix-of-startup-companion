@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useQuery } from '@tanstack/react-query';
 import { Sparkles, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { supabase } from '@/lib/supabaseClient';
 import type { AIExtractedData } from './ContractUploadDropzone';
 import type { IncubationType } from '@/hooks/backoffice/useIncubationTypes';
 
@@ -21,6 +23,7 @@ const contractSchemaBase = {
   workspace_id: z.string().optional(),
   incubation_type_id: z.string().optional(),
   building_id: z.string().optional(),
+  room_id: z.string().optional(),
   contract_number: z.string().optional(),
   status: z.enum(STATUS_OPTIONS),
   start_date: z.string().min(1, 'Required'),
@@ -28,6 +31,8 @@ const contractSchemaBase = {
   monthly_fee: z.coerce.number().min(0),
   discount_percentage: z.coerce.number().min(0).max(100),
   discount_reason: z.string().optional(),
+  discount_start_date: z.string().optional(),
+  discount_end_date: z.string().optional(),
   equity_percentage: z.coerce.number().min(0).max(100).optional(),
   square_meters: z.coerce.number().min(0).optional(),
   notes: z.string().optional(),
@@ -39,6 +44,7 @@ const contractSchema = z.object({
 });
 
 const contractSchemaCRM = z.object(contractSchemaBase);
+
 
 export type ContractFormValues = z.infer<typeof contractSchema>;
 
