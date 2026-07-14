@@ -220,7 +220,7 @@ export function OwnershipCard({ workspaceId, compact = false }: OwnershipCardPro
               <>
                 <p className="text-sm">
                   {ownership?.next_followup_at
-                    ? format(new Date(ownership.next_followup_at), 'MMM d, yyyy')
+                    ? format(new Date(ownership.next_followup_at), 'd MMM yyyy', { locale: dateLocale })
                     : t('ownership.notSet')}
                 </p>
                 {canEdit && (
