@@ -16,6 +16,8 @@ interface UseCrmPipelineFilters {
   search?: string;
   myItemsOnly?: boolean;
   currentUserId?: string;
+  /** Optional multi-stage filter (segment). Applied when set; defaults to PIPELINE_STAGES. */
+  stages?: FunnelStage[];
 }
 
 // Explicit select for funnel_items (P1.2 optimization)
