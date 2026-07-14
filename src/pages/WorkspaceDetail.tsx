@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { getVisibleTabs, type WorkspaceTab } from '@/lib/workspaceTabs';
 import { useWorkspaceTabBadges } from '@/hooks/useWorkspaceTabBadges';
 import { useTrackEngagement, type EngagementTargetType } from '@/hooks/useEngagementEvents';
+import { useWorkspaceTags } from '@/hooks/useGlobalSearch';
 
 // Lazy-loaded tab panels — each becomes its own async chunk so the initial
 // WorkspaceDetail bundle only ships Overview + shell. lazyWithRetry forces a
