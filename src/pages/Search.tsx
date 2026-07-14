@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, FileText, CheckSquare, MessageSquare, File, Calendar, Target, Save, Loader2, X, Sparkles, Send, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
