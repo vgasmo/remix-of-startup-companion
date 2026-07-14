@@ -221,7 +221,7 @@ export default function SharedWorkspace() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-primary" />
-                {t('shared.latestUpdate', 'Última Atualização')} - {format(new Date(updates[0].month), 'MMMM yyyy')}
+                {t('shared.latestUpdate', 'Última Atualização')} - {format(new Date(updates[0].month), 'MMMM yyyy', { locale: dateLocale })}
               </CardTitle>
             </CardHeader>
             <CardContent>
