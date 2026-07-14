@@ -8846,6 +8846,7 @@ export type Database = {
       workspaces: {
         Row: {
           active_financial_model_version_id: string | null
+          archived_at: string | null
           assigned_consultor_id: string | null
           blocked_at: string | null
           blocked_by: string | null
@@ -8887,6 +8888,7 @@ export type Database = {
         }
         Insert: {
           active_financial_model_version_id?: string | null
+          archived_at?: string | null
           assigned_consultor_id?: string | null
           blocked_at?: string | null
           blocked_by?: string | null
@@ -8928,6 +8930,7 @@ export type Database = {
         }
         Update: {
           active_financial_model_version_id?: string | null
+          archived_at?: string | null
           assigned_consultor_id?: string | null
           blocked_at?: string | null
           blocked_by?: string | null
