@@ -526,7 +526,7 @@ function DiagnosticSection({
 // -------- Question pack runner ---------------------------------------------
 
 function PackRunner({
-  pack, canWrite, scenario, assumptions, onSave, onSkip, onComplete,
+  pack, canWrite, scenario, assumptions, onSave, onSkip, onSkipQuestion, onComplete,
 }: {
   pack: ReturnType<typeof packById> & object;
   canWrite: boolean;
@@ -534,6 +534,7 @@ function PackRunner({
   assumptions: ReturnType<typeof useFinancialAssumptions>['data'];
   onSave: (input: any) => Promise<any>;
   onSkip: () => void;
+  onSkipQuestion?: (qKey: string, qLabel: string) => void | Promise<void>;
   onComplete: () => void;
 }) {
   const { t } = useTranslation();
