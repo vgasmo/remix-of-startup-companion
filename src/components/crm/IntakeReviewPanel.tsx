@@ -48,12 +48,33 @@ const SIGNATURE_PROVIDERS = [
 ] as const;
 
 export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
+  const navigate = useNavigate();
   const [actionNotes, setActionNotes] = useState('');
   const [showNotes, setShowNotes] = useState<'approve' | 'changes' | 'cancel' | null>(null);
   const [sendingSignature, setSendingSignature] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string>('');
   const transition = useTransitionIntakeStatus();
   const { data: events } = useIntakeEvents(intake.id);
+
+  // Load linked contract completeness so we can warn staff and gate approval.
+  const { data: linkedContract } = useQuery({
+    queryKey: ['intake-linked-contract', intake.contract_id],
+    enabled: !!intake.contract_id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('startup_contracts')
+        .select('id, incubation_type_id, building_id, monthly_fee, archived_at')
+        .eq('id', intake.contract_id!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const contractMissing = !intake.contract_id || (!!intake.contract_id && linkedContract === null);
+  const contractArchived = !!linkedContract?.archived_at;
+  const contractIncomplete = !!linkedContract && !linkedContract.archived_at && !linkedContract.incubation_type_id;
+  const contractBlocksApproval = contractMissing || contractArchived || contractIncomplete;
 
   const canReview = REVIEWABLE_STATES.includes(intake.status as IntakeState);
   const isApproved = intake.status === 'approved_for_signature';
