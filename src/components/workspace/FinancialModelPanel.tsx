@@ -44,6 +44,9 @@ import { GuidedPlanTab } from './financial-plan/GuidedPlanTab';
 interface FinancialModelPanelProps {
   workspaceId: string;
   canWrite: boolean;
+  /** Mentors have read-only access to the financial plan — they can review
+   *  scenarios and insights but must not edit assumptions. */
+  isMentor?: boolean;
 }
 
 const SCENARIOS = ['Base', 'Conservative', 'Optimistic', 'Custom'];
