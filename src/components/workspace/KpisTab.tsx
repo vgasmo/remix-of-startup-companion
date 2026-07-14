@@ -707,6 +707,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
                         inputMode="numeric"
                         value={displayValue}
                         onChange={(e) => handleValueChange(kpiId, 'value', e.target.value)}
+                        onBlur={() => flushAutosave(kpiId)}
                         placeholder="—"
                         disabled={isLocked}
                         className="h-9 w-32 text-sm font-medium tabular-nums"
