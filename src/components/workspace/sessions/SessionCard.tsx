@@ -43,10 +43,10 @@ export function SessionCard({ session, workspaceId, canWrite, onEdit, onDelete }
           <div className="flex items-start gap-4 flex-1 min-w-0">
             <div className="h-12 w-12 rounded-lg bg-primary/10 flex flex-col items-center justify-center flex-shrink-0">
               <span className="text-xs text-primary font-medium">
-                {format(new Date(session.scheduled_at), 'MMM')}
+                {format(new Date(session.scheduled_at), 'MMM', { locale })}
               </span>
               <span className="text-lg font-bold text-primary leading-none">
-                {format(new Date(session.scheduled_at), 'd')}
+                {format(new Date(session.scheduled_at), 'd', { locale })}
               </span>
             </div>
             <div className="flex-1 min-w-0">
@@ -61,7 +61,7 @@ export function SessionCard({ session, workspaceId, canWrite, onEdit, onDelete }
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5" />
-                  {format(new Date(session.scheduled_at), 'h:mm a')}
+                  {format(new Date(session.scheduled_at), 'HH:mm', { locale })}
                 </span>
                 {session.duration && <span>{session.duration} min</span>}
               </div>
