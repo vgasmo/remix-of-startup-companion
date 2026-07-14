@@ -1,7 +1,7 @@
 import { memo, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { format, isPast, isToday, parseISO } from 'date-fns';
 import { AlertTriangle, Calendar, Trash2, GripVertical, Paperclip, FileText, Plus, Check, ExternalLink, Hourglass, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
