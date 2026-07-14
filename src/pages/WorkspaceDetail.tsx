@@ -335,7 +335,7 @@ export default function WorkspaceDetail() {
   const isOverflowTabActive = overflowTabs.some(tab => tab.id === activeTab);
 
   const mainContact = startup?.main_contact_name || startup?.main_contact_email;
-  const subtitleNode = (true) && startup ? (
+  const subtitleNode = (isConsultor || isAdmin || isBackoffice) && startup ? (
     <div className="flex items-center gap-1.5 text-xs lg:text-sm text-muted-foreground overflow-hidden">
       {program?.name && <span className="truncate shrink-0">{program.name}</span>}
       {startup.description && program?.name && <span className="text-border shrink-0">•</span>}
