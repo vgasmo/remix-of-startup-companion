@@ -112,7 +112,7 @@ export function FounderBookingCTA({ workspaceId, className, isFirstWeek = false 
                     </Badge>
                     <span className="text-sm text-muted-foreground flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {format(new Date(nextSession.scheduled_at), 'h:mm a')}
+                      {format(new Date(nextSession.scheduled_at), 'HH:mm', { locale: dateLocale })}
                     </span>
                     {nextSession.join_url && (
                       <Badge variant="outline" className="text-xs gap-1">
