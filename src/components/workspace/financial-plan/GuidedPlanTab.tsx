@@ -623,8 +623,8 @@ function PackRunner({
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <CardTitle className="text-sm">{pack.defaultLabel}</CardTitle>
-            <CardDescription className="text-xs">{pack.defaultDescription}</CardDescription>
+            <CardTitle className="text-sm">{t(pack.labelKey, { defaultValue: pack.defaultLabel })}</CardTitle>
+            <CardDescription className="text-xs">{t(pack.descriptionKey, { defaultValue: pack.defaultDescription })}</CardDescription>
           </div>
           <Badge variant="outline" className="text-[10px]">
             {Math.max(0, doneCount)}/{pack.questions.length}
@@ -633,7 +633,7 @@ function PackRunner({
       </CardHeader>
       <CardContent className="pt-0 space-y-3">
         <div>
-          <Label className="text-sm font-medium">{q.defaultLabel}</Label>
+          <Label className="text-sm font-medium">{t(q.labelKey, { defaultValue: q.defaultLabel })}</Label>
           {q.excelHint && (
             <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
               <FileSpreadsheet className="h-3 w-3" />
@@ -650,6 +650,11 @@ function PackRunner({
             inputMode={q.kind === 'text' ? undefined : 'decimal'}
           />
         </div>
+        {parsedPreview && (
+          <p className="text-[11px] text-muted-foreground -mt-1">
+            {t('financialPlan.parsedAs', { defaultValue: 'Interpreted as {{value}}', value: parsedPreview })}
+          </p>
+        )}
         <Textarea
           value={rationale}
           onChange={e => setRationale(e.target.value)}
