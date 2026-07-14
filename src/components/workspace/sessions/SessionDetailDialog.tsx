@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format, isPast } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { lisbonWallClockToUtcIso, utcIsoToLisbonWallClock } from '@/lib/dateUtils';
 import { Input } from '@/components/ui/input';
 import {
