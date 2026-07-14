@@ -31,6 +31,7 @@ interface SessionCardProps {
 
 export function SessionCard({ session, workspaceId, canWrite, onEdit, onDelete }: SessionCardProps) {
   const { t } = useTranslation();
+  const locale = useDateLocale();
   const isPastSession = isPast(new Date(session.scheduled_at));
   const hasNotes = !!session.notes;
   const hasDecisions = !!session.decisions;
