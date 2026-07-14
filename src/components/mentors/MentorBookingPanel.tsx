@@ -58,6 +58,9 @@ export function MentorBookingPanel({
   const [selectedSlot, setSelectedSlot] = useState<string>('');
   const [message, setMessage] = useState('');
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [suggestedSlots, setSuggestedSlots] = useState<
+    { date: Date; start: string; end: string; key: string }[]
+  >([]);
 
   const { data: availability, isLoading: loadingAvailability } = useMentorAvailability(mentorId);
   const { data: bookings, isLoading: loadingBookings } = useMyBookings();
