@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef, KeyboardEvent, lazy, Suspense } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Copy, MoreHorizontal, ChevronDown, Mail, Tag, Briefcase } from 'lucide-react';
+import { ArrowLeft, Copy, MoreHorizontal, ChevronDown, Mail, Tag } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useAutoMaterializeDeliverables } from '@/hooks/useAutoMaterializeDeliverables';
 import { Button } from '@/components/ui/button';
