@@ -279,16 +279,19 @@ export function BackofficeContractsTab() {
     setFlowState('review');
   }, []);
 
-  const handleReviewSubmit = useCallback(async (values: ContractFormValues & { document_url?: string }) => {
-    const { document_url, incubation_type_id, building_id, discount_reason, equity_percentage, square_meters, notes, end_date, contract_number, workspace_id, ...rest } = values;
+  const handleReviewSubmit = useCallback(async (values: ContractFormValues & { document_url?: string; room_id?: string; discount_start_date?: string; discount_end_date?: string }) => {
+    const { document_url, incubation_type_id, building_id, room_id, discount_reason, discount_start_date, discount_end_date, equity_percentage, square_meters, notes, end_date, contract_number, workspace_id, ...rest } = values;
     const payload: Record<string, unknown> = {
       ...rest,
       workspace_id: workspace_id || null,
       incubation_type_id: incubation_type_id || null,
       building_id: building_id || null,
+      room_id: room_id || null,
       contract_number: contract_number || null,
       end_date: end_date || null,
       discount_reason: discount_reason || null,
+      discount_start_date: discount_start_date || null,
+      discount_end_date: discount_end_date || null,
       equity_percentage: equity_percentage || null,
       square_meters: square_meters || null,
       notes: notes || null,
