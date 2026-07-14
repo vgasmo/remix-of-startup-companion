@@ -64,7 +64,7 @@ export function PipelineForecastCard({ pipeline }: PipelineForecastCardProps) {
         <CardContent className="py-6 text-center">
           <DollarSign className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">
-            {t('crm.forecast.noData', { defaultValue: 'Adicione valores aos deals para ver o forecast' })}
+            {t('crm.forecast.noData')}
           </p>
         </CardContent>
       </Card>
