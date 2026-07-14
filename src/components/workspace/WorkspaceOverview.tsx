@@ -73,6 +73,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown } from 'lucide-react';
 import { ProgramSwitcher } from '@/components/workspace/ProgramSwitcher';
 import { PrivateDocumentsPanel } from '@/components/workspace/PrivateDocumentsPanel';
+import { PlanAssistantsCard } from '@/components/workspace/PlanAssistantsCard';
 
 interface WorkspaceOverviewProps {
   workspace: {
@@ -560,6 +561,13 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
         {isFounder && (
           <div className="lg:col-span-2">
             <ResponsibleConsultantCard workspaceId={workspace.id} />
+          </div>
+        )}
+
+        {/* Plan Assistants — Business Plan + Financial Model wizards */}
+        {(isFounder || isConsultor || isAdmin) && (
+          <div className="lg:col-span-2">
+            <PlanAssistantsCard />
           </div>
         )}
 

@@ -1,0 +1,94 @@
+import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Sparkles, Calculator, ArrowRight, ClipboardList } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+
+/**
+ * Surfaces the guided Business Plan / Financial Model assistants
+ * from the Workspace Overview. Deep-links into
+ * Documents → Financial sub-tab where the Guided Plan Tab and the
+ * Financial Model panel render (both live under the same section).
+ */
+export function PlanAssistantsCard() {
+  const { t } = useTranslation();
+  const [, setSearchParams] = useSearchParams();
+
+  const openAssistants = () => {
+    setSearchParams({ tab: 'documents', sub: 'financial' });
+  };
+
+  return (
+    <Card className="rounded-2xl border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5">
+      <CardHeader className="pb-3">
+        <div className="flex items-start gap-3">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Sparkles className="h-5 w-5 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <CardTitle className="text-base">
+              {t('planAssistants.title', { defaultValue: 'Assistentes de Plano' })}
+            </CardTitle>
+            <CardDescription>
+              {t('planAssistants.description', {
+                defaultValue: 'Wizards guiados de Plano de Negócios e Modelo Financeiro com apoio de IA.',
+              })}
+            </CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="grid gap-3 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={openAssistants}
+          className="group text-left rounded-xl border border-border/60 bg-background/60 p-4 hover:border-primary/40 hover:bg-primary/5 transition-colors"
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <ClipboardList className="h-4 w-4 text-primary" />
+            <span className="font-semibold text-sm">
+              {t('planAssistants.businessPlan.title', { defaultValue: 'Plano de Negócios' })}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            {t('planAssistants.businessPlan.description', {
+              defaultValue: 'Perguntas passo-a-passo para estruturar proposta de valor, mercado e go-to-market.',
+            })}
+          </p>
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-primary group-hover:gap-2 transition-all">
+            {t('planAssistants.open', { defaultValue: 'Abrir assistente' })}
+            <ArrowRight className="h-3 w-3" />
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={openAssistants}
+          className="group text-left rounded-xl border border-border/60 bg-background/60 p-4 hover:border-primary/40 hover:bg-primary/5 transition-colors"
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <Calculator className="h-4 w-4 text-primary" />
+            <span className="font-semibold text-sm">
+              {t('planAssistants.financial.title', { defaultValue: 'Modelo Financeiro' })}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            {t('planAssistants.financial.description', {
+              defaultValue: 'Cenários, burn, runway, LTV/CAC e revisão automática das projeções.',
+            })}
+          </p>
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-primary group-hover:gap-2 transition-all">
+            {t('planAssistants.open', { defaultValue: 'Abrir assistente' })}
+            <ArrowRight className="h-3 w-3" />
+          </span>
+        </button>
+
+        <div className="sm:col-span-2 flex justify-end">
+          <Button size="sm" variant="ghost" onClick={openAssistants} className="gap-1.5">
+            {t('planAssistants.goToSection', { defaultValue: 'Ir para Documentos → Financeiro' })}
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

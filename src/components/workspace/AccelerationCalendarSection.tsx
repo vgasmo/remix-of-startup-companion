@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO, isPast, isToday, isFuture, addDays } from 'date-fns';
 import { getDateLocale } from '@/lib/dateLocale';
-import { 
-  Calendar, Video, ExternalLink, Clock, CheckCircle2, Circle, 
-  Pencil, X, Save, Link2
+import {
+  Calendar, Video, ExternalLink, Clock, CheckCircle2, Circle,
+  Pencil, X, Save, Link2, Sparkles,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -89,8 +90,15 @@ function useUpdateProgramWeek(programId: string) {
   });
 }
 
+const PLAN_KEYWORDS = /plan|neg[óo]cio|business|model|modelo|financ|receita|revenue|budget|or[çc]amento|cash|burn|runway|unit econom/i;
+
+function isPlanWeek(title: string, description: string | null): boolean {
+  return PLAN_KEYWORDS.test(title) || (!!description && PLAN_KEYWORDS.test(description));
+}
+
 export function AccelerationCalendarSection({ programId, isStaff, currentWeek }: AccelerationCalendarSectionProps) {
   const { t } = useTranslation();
+  const [, setSearchParams] = useSearchParams();
   const { data, isLoading } = useAccelerationCalendar(programId);
   const updateWeek = useUpdateProgramWeek(programId);
   const [editingWeekId, setEditingWeekId] = useState<string | null>(null);
@@ -264,6 +272,18 @@ export function AccelerationCalendarSection({ programId, isStaff, currentWeek }:
                       </div>
                     ) : (
                       <div className="flex items-center gap-1 shrink-0">
+                        {isPlanWeek(pw.title, pw.description) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs gap-1 text-primary"
+                            onClick={() => setSearchParams({ tab: 'documents', sub: 'financial' })}
+                            title={t('accelerationCalendar.openAssistant', { defaultValue: 'Abrir assistente de plano' })}
+                          >
+                            <Sparkles className="h-3.5 w-3.5" />
+                            {t('accelerationCalendar.assistant', { defaultValue: 'Assistente' })}
+                          </Button>
+                        )}
                         {hasUrl && (
                           <Button
                             variant="ghost"
