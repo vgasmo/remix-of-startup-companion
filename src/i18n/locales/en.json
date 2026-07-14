@@ -3156,6 +3156,7 @@
       "moveSuccess": "{{count}} leads moved to {{stage}}",
       "moveTo": "Move to",
       "moveUndone": "Move reverted",
+      "partialEventFailures": "{{count}}/{{total}} events not recorded. History may be incomplete.",
       "nextActionConfirmDesc": "This will set the next action date to tomorrow ({{date}}) for all selected leads without a next action.",
       "nextActionConfirmTitle": "Set next action for {{count}} leads?",
       "nextActionFailed": "Failed to set next actions",
