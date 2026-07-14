@@ -53,6 +53,7 @@ interface SharedData {
 export default function SharedWorkspace() {
   const { token } = useParams<{ token: string }>();
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['shared-workspace', token],
