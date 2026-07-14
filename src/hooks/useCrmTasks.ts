@@ -38,19 +38,22 @@ export function useAddTask() {
       priority?: TaskPriority;
       visibility?: VisibilityType;
     }) => {
-      // Resolve workspace_id from funnel_item if needed
+      // G0 fix: workspace_id is nullable on communication_log, so tasks can be
+      // added to unconverted leads. Previously threw on the "workspace_id is
+      // required" guard even though the column allows null.
       let workspaceId = params.workspace_id;
       if (!workspaceId && params.funnel_item_id) {
-        const { data: funnelItem } = await supabase
+        const { data: funnelItem, error: fiError } = await supabase
           .from('funnel_items')
           .select('linked_workspace_id')
           .eq('id', params.funnel_item_id)
-          .single();
+          .maybeSingle();
+        if (fiError) throw fiError;
         workspaceId = funnelItem?.linked_workspace_id || undefined;
       }
 
-      if (!workspaceId) {
-        throw new Error('workspace_id is required for task entries');
+      if (!workspaceId && !params.funnel_item_id) {
+        throw new Error('workspace_id or funnel_item_id is required for task entries');
       }
 
       const { data, error } = await supabase
