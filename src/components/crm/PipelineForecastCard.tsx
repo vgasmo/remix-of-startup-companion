@@ -94,7 +94,7 @@ export function PipelineForecastCard({ pipeline }: PipelineForecastCardProps) {
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-foreground">{forecast.dealsWithValue}/{forecast.totalDeals}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('crm.forecast.deals', { defaultValue: 'Deals c/ valor' })}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('crm.forecast.deals')}</p>
           </div>
         </div>
 
