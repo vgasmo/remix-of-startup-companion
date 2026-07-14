@@ -120,6 +120,26 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
   const handleMarkDone = async (itemId: string) => {
     try {
       const item = workQueueItems?.find((i) => i.id === itemId);
+      // G1: validate_actions is a review shortcut, not a closable task.
+      // Marking it "done" without acting on the underlying awaiting actions
+      // caused an infinite recompute loop. Deep-link to the workspace's
+      // awaiting-validation queue instead, and only allow closure when nothing
+      // remains awaiting.
+      if (item?.type === 'validate_actions' && item.workspace_id) {
+        const { supabase } = await import('@/lib/supabaseClient');
+        const { count, error: countErr } = await supabase
+          .from('action_items')
+          .select('id', { count: 'exact', head: true })
+          .eq('workspace_id', item.workspace_id)
+          .eq('status', 'awaiting_validation');
+        if (countErr) throw countErr;
+
+        if ((count ?? 0) > 0) {
+          notify.info(t('workQueue.stillPendingValidation', { count, defaultValue: `Ainda há ${count} ações por validar.` }));
+          navigate(`/workspace/${item.workspace_id}?tab=milestones-actions&sub=actions&status=awaiting_validation`);
+          return;
+        }
+      }
       // Special-case: review_checkin also stamps the check-in as reviewed and notifies the founder.
       // G0: check EVERY supabase error. Previously the empty catch swallowed RLS
       // failures (backoffice role wasn't in the UPDATE policy), the queue item

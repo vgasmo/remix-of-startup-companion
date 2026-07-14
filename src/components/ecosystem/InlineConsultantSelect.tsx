@@ -35,7 +35,7 @@ export function InlineConsultantSelect({
           defaultValue: 'Consultor atribuído com sucesso',
         }),
       );
-      queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
+      queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
       onAssigned?.();
     } catch (err) {
       logger.error('consultant_assign_failed', {}, err);

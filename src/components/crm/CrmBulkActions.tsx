@@ -122,13 +122,14 @@ export function CrmBulkActions({
         try {
           const ids = Array.from(selectedIds);
           
-          const { data: currentItems } = await supabase
+          const { data: currentItems, error: fetchErr } = await supabase
             .from('funnel_items')
             .select('id, stage')
             .in('id', ids);
-          
+          if (fetchErr) throw fetchErr;
+
           const stageMap = new Map<string, unknown>(currentItems?.map(i => [i.id, i.stage]) || []);
-          
+
           const { error } = await supabase
             .from('funnel_items')
             .update({ stage: newStage, updated_at: new Date().toISOString() })
@@ -136,22 +137,39 @@ export function CrmBulkActions({
 
           if (error) throw error;
 
+          // G1: check every funnel_events insert and record who did the change.
+          const { data: authData } = await supabase.auth.getUser();
+          const performedBy = authData.user?.id ?? null;
+          let eventFailures = 0;
           for (const id of ids) {
             const oldStage = stageMap.get(id) as string | undefined;
-            
-            await supabase.from('funnel_events').insert({
+
+            const { error: evErr } = await supabase.from('funnel_events').insert({
               funnel_item_id: id,
               event_type: 'stage_changed',
               from_stage: oldStage,
               to_stage: newStage,
+              performed_by: performedBy,
               metadata: { bulk_action: true },
             });
-            
+            if (evErr) {
+              eventFailures += 1;
+              logger.warn('crm_bulk_event_insert_failed', { id, error: evErr.message });
+            }
+
             if (oldStage && oldStage !== newStage) {
               invokeWithAuth('send-crm-stage-transition-email', {
                 body: { funnel_item_id: id, from_stage: oldStage, to_stage: newStage },
               }).catch((err) => logger.warn('crm_email_trigger_failed_bulk', { error: String(err) }));
             }
+          }
+
+          if (eventFailures > 0) {
+            notify.warn(t('crm.bulk.partialEventFailures', {
+              count: eventFailures,
+              total: ids.length,
+              defaultValue: `${eventFailures}/${ids.length} eventos não registados. O histórico pode estar incompleto.`,
+            }));
           }
 
           notify.success(t('crm.bulk.moveSuccess', { count: selectedCount, stage: stageLabel }), {

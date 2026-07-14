@@ -188,6 +188,9 @@ export function useUpsertKpiValue(workspaceId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kpi-values', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-kpis', workspaceId] });
+      // G1: refresh workspaces so OneThingToday's hasCurrentMonthKpi flips off
+      // after the founder saves — was still nagging "Atualizar KPIs".
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       void track('kpi_submitted', { workspaceId });
     },
   });

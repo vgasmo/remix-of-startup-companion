@@ -142,12 +142,12 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
             } catch {
               notify.error(t('common.undoFailed', { defaultValue: 'Não foi possível anular' }));
             } finally {
-              queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
+              queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
             }
           },
         },
       });
-      queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
+      queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
     } catch (err: any) {
       notify.error(t('ecosystem.archiveError', { defaultValue: 'Erro ao arquivar workspace' }), {
         description: err?.message,
@@ -228,13 +228,13 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
             } catch {
               notify.error(t('common.undoFailed', { defaultValue: 'Não foi possível anular' }));
             } finally {
-              queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
+              queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
             }
           },
         } : undefined,
       });
 
-      queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
+      queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
     } catch (err: any) {
       const msg = err?.message || '';
       const friendly = msg.includes('foreign key') || msg.includes('violates')

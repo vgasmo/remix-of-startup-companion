@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { notify } from "@/lib/notify";
 import { format } from 'date-fns';
-import { useMarkConversationRead } from '@/hooks/useMessaging';
+import { useMarkConversationRead, useSendMessage } from '@/hooks/useMessaging';
 
 
 interface ChatTabProps {
@@ -181,31 +181,21 @@ export function ChatTab({ workspaceId }: ChatTabProps) {
   }, [conversation?.id, messages.length]);
 
 
-  // Send message
-  const sendMutation = useMutation({
-    mutationFn: async (content: string) => {
-      if (!conversation?.id || !user?.id) throw new Error('Not ready');
-      const { error } = await supabase.from('messages').insert({
-        conversation_id: conversation.id,
-        sender_id: user.id,
-        content,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      setNewMessage('');
-      queryClient.invalidateQueries({ queryKey: ['chat-messages', conversation?.id] });
-    },
-    onError: () => {
-      notify.error(t('chat.sendError', 'Failed to send message'));
-    },
-  });
+  // G1: reuse the shared pipeline so conversations.updated_at bumps (chat rises
+  // in the global list) and the consultant gets the email alert.
+  const sendMutation = useSendMessage();
 
   const handleSend = useCallback(() => {
     const trimmed = newMessage.trim();
-    if (!trimmed) return;
-    sendMutation.mutate(trimmed);
-  }, [newMessage, sendMutation]);
+    if (!trimmed || !conversation?.id) return;
+    sendMutation.mutate(
+      { conversationId: conversation.id, content: trimmed },
+      {
+        onSuccess: () => setNewMessage(''),
+        onError: () => notify.error(t('chat.sendError', 'Failed to send message')),
+      },
+    );
+  }, [newMessage, sendMutation, conversation?.id, t]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

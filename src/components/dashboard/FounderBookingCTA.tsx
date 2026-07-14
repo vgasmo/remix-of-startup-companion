@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Clock, Video, ChevronRight, Sparkles } from 'lucide-react';
 import { format, isToday, isTomorrow } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,12 +22,15 @@ interface FounderBookingCTAProps {
 export function FounderBookingCTA({ workspaceId, className, isFirstWeek = false }: FounderBookingCTAProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { data: ownership } = useWorkspaceOwner(workspaceId);
   const { data: sessions } = useUpcomingSessions();
   const publicBookingEnabled = useFeatureFlag('public_first_contact_booking');
 
   const hasConsultant = Boolean(ownership?.assigned_consultor_id);
-  const nextSession = sessions?.[0];
+  // G1: pick the next session for THIS workspace only — otherwise a founder
+  // with two startups sees the other startup's session on this card.
+  const nextSession = sessions?.find((s) => s.workspace_id === workspaceId);
 
   const handleBookSession = () => {
     navigate(`/workspace/${workspaceId}?tab=agenda&new=1`);
@@ -35,8 +39,8 @@ export function FounderBookingCTA({ workspaceId, className, isFirstWeek = false 
   const formatSessionDate = (dateStr: string) => {
     const date = new Date(dateStr);
     if (isToday(date)) return t('common.today');
-    if (isTomorrow(date)) return 'Tomorrow';
-    return format(date, 'EEE, MMM d');
+    if (isTomorrow(date)) return t('common.tomorrow', { defaultValue: 'Amanhã' });
+    return format(date, 'EEE, d MMM', { locale: dateLocale });
   };
 
   // No consultant assigned - show first contact CTA
@@ -108,7 +112,7 @@ export function FounderBookingCTA({ workspaceId, className, isFirstWeek = false 
                     </Badge>
                     <span className="text-sm text-muted-foreground flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {format(new Date(nextSession.scheduled_at), 'h:mm a')}
+                      {format(new Date(nextSession.scheduled_at), 'HH:mm', { locale: dateLocale })}
                     </span>
                     {nextSession.join_url && (
                       <Badge variant="outline" className="text-xs gap-1">
