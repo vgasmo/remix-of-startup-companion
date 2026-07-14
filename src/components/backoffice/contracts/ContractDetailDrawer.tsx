@@ -135,6 +135,9 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
   const daysUntilAnniversary = differenceInDays(nextAnniversary, now);
   const endDate = contract?.end_date ? new Date(contract.end_date) : null;
   const daysUntilEnd = endDate ? differenceInDays(endDate, now) : null;
+  const discountEndDate = (contract as any)?.discount_end_date ? new Date((contract as any).discount_end_date) : null;
+  const daysUntilDiscountEnd = discountEndDate ? differenceInDays(discountEndDate, now) : null;
+  const hasActiveDiscount = Number(contract?.discount_percentage || 0) > 0;
 
   // Calculate pricing using the canonical engine with pricing lines
   const pricing = useMemo(() => {
@@ -333,6 +336,25 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
             <div className="mt-2 flex items-center gap-2 text-xs text-info bg-info/10 rounded-lg px-3 py-1.5">
               <Info className="h-3.5 w-3.5" />
               {t('lifecycle.anniversary', { year: years + 1 })} — {daysUntilAnniversary} {t('lifecycle.daysRemaining', { count: daysUntilAnniversary })}
+            </div>
+          )}
+          {hasActiveDiscount && daysUntilDiscountEnd !== null && daysUntilDiscountEnd <= 30 && daysUntilDiscountEnd > 0 && (
+            <div className="mt-2 flex items-center gap-2 text-xs text-warning bg-warning/10 rounded-lg px-3 py-1.5">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              {t('lifecycle.discountEndingSoon', {
+                days: daysUntilDiscountEnd,
+                pct: contract.discount_percentage,
+                defaultValue: 'Desconto de {{pct}}% termina em {{days}} dias — mensalidade voltará ao valor cheio.',
+              })}
+            </div>
+          )}
+          {hasActiveDiscount && daysUntilDiscountEnd !== null && daysUntilDiscountEnd <= 0 && (
+            <div className="mt-2 flex items-center gap-2 text-xs text-destructive bg-destructive/10 rounded-lg px-3 py-1.5">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              {t('lifecycle.discountEnded', {
+                pct: contract.discount_percentage,
+                defaultValue: 'O período de desconto de {{pct}}% terminou. Reveja a mensalidade e atualize o contrato.',
+              })}
             </div>
           )}
 

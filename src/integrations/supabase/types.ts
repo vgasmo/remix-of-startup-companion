@@ -6830,8 +6830,10 @@ export type Database = {
           created_by: string | null
           currency: string | null
           discount_applied_by: string | null
+          discount_end_date: string | null
           discount_percentage: number | null
           discount_reason: string | null
+          discount_start_date: string | null
           document_url: string | null
           docusign_envelope_id: string | null
           end_date: string | null
@@ -6872,6 +6874,7 @@ export type Database = {
           provider_webhook_event_id: string | null
           regulation_accepted_at: string | null
           regulation_version: string | null
+          room_id: string | null
           signature_proof_json: Json | null
           signature_provider: string | null
           signature_requested_at: string | null
@@ -6915,8 +6918,10 @@ export type Database = {
           created_by?: string | null
           currency?: string | null
           discount_applied_by?: string | null
+          discount_end_date?: string | null
           discount_percentage?: number | null
           discount_reason?: string | null
+          discount_start_date?: string | null
           document_url?: string | null
           docusign_envelope_id?: string | null
           end_date?: string | null
@@ -6957,6 +6962,7 @@ export type Database = {
           provider_webhook_event_id?: string | null
           regulation_accepted_at?: string | null
           regulation_version?: string | null
+          room_id?: string | null
           signature_proof_json?: Json | null
           signature_provider?: string | null
           signature_requested_at?: string | null
@@ -7000,8 +7006,10 @@ export type Database = {
           created_by?: string | null
           currency?: string | null
           discount_applied_by?: string | null
+          discount_end_date?: string | null
           discount_percentage?: number | null
           discount_reason?: string | null
+          discount_start_date?: string | null
           document_url?: string | null
           docusign_envelope_id?: string | null
           end_date?: string | null
@@ -7042,6 +7050,7 @@ export type Database = {
           provider_webhook_event_id?: string | null
           regulation_accepted_at?: string | null
           regulation_version?: string | null
+          room_id?: string | null
           signature_proof_json?: Json | null
           signature_provider?: string | null
           signature_requested_at?: string | null
@@ -7092,6 +7101,13 @@ export type Database = {
             columns: ["pricing_version_id"]
             isOneToOne: false
             referencedRelation: "pricing_table_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_contracts_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
           {

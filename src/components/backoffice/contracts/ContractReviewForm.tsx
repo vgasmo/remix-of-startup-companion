@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useQuery } from '@tanstack/react-query';
 import { Sparkles, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { supabase } from '@/lib/supabaseClient';
 import type { AIExtractedData } from './ContractUploadDropzone';
 import type { IncubationType } from '@/hooks/backoffice/useIncubationTypes';
 
@@ -21,6 +23,7 @@ const contractSchemaBase = {
   workspace_id: z.string().optional(),
   incubation_type_id: z.string().optional(),
   building_id: z.string().optional(),
+  room_id: z.string().optional(),
   contract_number: z.string().optional(),
   status: z.enum(STATUS_OPTIONS),
   start_date: z.string().min(1, 'Required'),
@@ -28,6 +31,8 @@ const contractSchemaBase = {
   monthly_fee: z.coerce.number().min(0),
   discount_percentage: z.coerce.number().min(0).max(100),
   discount_reason: z.string().optional(),
+  discount_start_date: z.string().optional(),
+  discount_end_date: z.string().optional(),
   equity_percentage: z.coerce.number().min(0).max(100).optional(),
   square_meters: z.coerce.number().min(0).optional(),
   notes: z.string().optional(),
@@ -39,6 +44,7 @@ const contractSchema = z.object({
 });
 
 const contractSchemaCRM = z.object(contractSchemaBase);
+
 
 export type ContractFormValues = z.infer<typeof contractSchema>;
 
@@ -84,12 +90,36 @@ export function ContractReviewForm({
       end_date: aiData?.endDate || '',
       monthly_fee: aiData?.monthlyFee || 0,
       discount_percentage: 0,
+      discount_start_date: '',
+      discount_end_date: '',
       notes: aiData?.notes || '',
       contract_number: '',
+      room_id: '',
       square_meters: undefined,
       equity_percentage: undefined,
     },
   });
+
+  const selectedBuildingId = form.watch('building_id');
+  const { data: rooms } = useQuery({
+    queryKey: ['rooms-by-building', selectedBuildingId],
+    enabled: !!selectedBuildingId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('rooms')
+        .select('id, name, room_number, floor, status, building_id')
+        .eq('building_id', selectedBuildingId!)
+        .order('name', { ascending: true });
+      if (error) throw error;
+      return data as Array<{ id: string; name: string; room_number: string | null; floor: string | null; status: string | null }>;
+    },
+  });
+
+  // Reset room when building changes
+  useEffect(() => {
+    form.setValue('room_id', '');
+  }, [selectedBuildingId]);
+
 
   const handleFormSubmit = (values: ContractFormValues) => {
     const cleanValues = {
@@ -221,6 +251,58 @@ export function ContractReviewForm({
                     <FormMessage />
                   </FormItem>
                 )}
+              />
+
+              <FormField
+                control={form.control}
+                name="room_id"
+                render={({ field }) => {
+                  const availableRooms = rooms || [];
+                  const disabled = !selectedBuildingId;
+                  return (
+                    <FormItem>
+                      <FormLabel>
+                        {t('admin.backoffice.room', { defaultValue: 'Sala' })}
+                        <span className="text-muted-foreground font-normal ml-1">
+                          ({t('common.optional', { defaultValue: 'opcional' })})
+                        </span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={(val) => field.onChange(val === '__none__' ? '' : val)}
+                        value={field.value || ''}
+                        disabled={disabled}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={
+                              disabled
+                                ? t('admin.backoffice.selectBuildingFirst', { defaultValue: 'Escolher edifício primeiro' })
+                                : availableRooms.length === 0
+                                  ? t('admin.backoffice.noRoomsInBuilding', { defaultValue: 'Sem salas neste edifício' })
+                                  : t('admin.backoffice.selectRoom', { defaultValue: 'Selecionar sala' })
+                            } />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="__none__">
+                            <span className="text-muted-foreground italic">
+                              {t('admin.backoffice.noRoom', { defaultValue: 'Sem sala específica' })}
+                            </span>
+                          </SelectItem>
+                          {availableRooms.map(r => (
+                            <SelectItem key={r.id} value={r.id}>
+                              {r.name}
+                              {r.room_number ? ` · ${r.room_number}` : ''}
+                              {r.floor ? ` · ${t('admin.backoffice.floor', { defaultValue: 'Piso' })} ${r.floor}` : ''}
+                              {r.status && r.status !== 'available' ? ` (${r.status})` : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <FormItem>
@@ -355,6 +437,50 @@ export function ContractReviewForm({
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="discount_start_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t('admin.backoffice.discountStartDate', { defaultValue: 'Início do Desconto' })}
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="discount_end_date"
+                render={({ field }) => {
+                  const discountPct = Number(form.watch('discount_percentage') || 0);
+                  return (
+                    <FormItem>
+                      <FormLabel>
+                        {t('admin.backoffice.discountEndDate', { defaultValue: 'Fim do Desconto' })}
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} value={field.value || ''} />
+                      </FormControl>
+                      {discountPct > 0 && !field.value && (
+                        <p className="text-xs text-warning mt-1">
+                          {t('contracts.review.noDiscountEndNudge', {
+                            defaultValue: 'Sem data de fim, o desconto será permanente e não gera aviso.',
+                          })}
+                        </p>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+
+
 
               <FormField
                 control={form.control}
