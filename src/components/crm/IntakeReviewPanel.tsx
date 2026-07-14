@@ -4,6 +4,9 @@
  * and the "Enviar para Assinatura" action when approved.
  */
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +23,7 @@ import {
 import {
   CheckCircle2, AlertTriangle, XCircle, Building2,
   User, Mail, Phone, Globe, CreditCard, Clock, Shield,
-  ClipboardCheck, RotateCcw, Loader2, Send,
+  ClipboardCheck, RotateCcw, Loader2, Send, FileText, PlusCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type ContractIntake, useTransitionIntakeStatus, useIntakeEvents } from '@/hooks/useContractIntakes';
