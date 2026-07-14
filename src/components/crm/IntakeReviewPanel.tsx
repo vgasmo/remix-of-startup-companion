@@ -206,6 +206,54 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
           </div>
         )}
 
+        {/* Contract prerequisite for approval */}
+        {canReview && contractBlocksApproval && (
+          <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 space-y-2">
+            <p className="text-xs font-semibold text-destructive flex items-center gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              {contractMissing
+                ? 'Sem contrato associado'
+                : contractArchived
+                ? 'Contrato associado foi arquivado'
+                : 'Contrato incompleto'}
+            </p>
+            <p className="text-xs text-destructive/90">
+              {contractMissing
+                ? 'Para aprovar para assinatura é preciso um contrato com modalidade, edifício e mensalidade definidas.'
+                : contractArchived
+                ? 'O contrato ligado a este intake está arquivado. Crie um novo contrato ou reative-o.'
+                : 'Falta definir a modalidade de incubação no contrato ligado a este intake.'}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="default"
+                className="h-8 text-xs gap-1.5"
+                onClick={() => {
+                  const params = new URLSearchParams({
+                    tab: 'backoffice',
+                    subtab: 'contracts',
+                  });
+                  if (intake.contract_id && !contractMissing) {
+                    params.set('contract', intake.contract_id);
+                  } else {
+                    params.set('action', 'create');
+                    if (intake.funnel_item_id) params.set('funnel', intake.funnel_item_id);
+                    if (intake.organization_name) params.set('org', intake.organization_name);
+                    if (intake.legal_representative_email) params.set('email', intake.legal_representative_email);
+                    if (intake.legal_representative_name) params.set('contact', intake.legal_representative_name);
+                  }
+                  onClose?.();
+                  navigate(`/admin?${params.toString()}`);
+                }}
+              >
+                {contractMissing ? <PlusCircle className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
+                {contractMissing ? 'Criar contrato agora' : 'Completar contrato'}
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Timestamps */}
         <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground">
           {intake.submitted_at && (
