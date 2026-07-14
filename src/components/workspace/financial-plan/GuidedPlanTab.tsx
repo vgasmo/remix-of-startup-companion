@@ -681,8 +681,34 @@ function PackRunner({
             <SkipForward className="h-4 w-4 mr-1" />
             {t('financialPlan.skipSection', { defaultValue: 'Skip section' })}
           </Button>
-          <Button size="sm" variant="outline" onClick={() => setValue('')} disabled={!canWrite || saving}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!canWrite || saving}
+            onClick={async () => {
+              // "Não sei" advances past this question by persisting a skip
+              // marker so `map.has(q.key)` becomes true and the runner moves on.
+              setSaving(true);
+              try {
+                await onSave({
+                  key: q.key,
+                  scenario,
+                  value_numeric: null,
+                  value_json: { skipped: true },
+                  unit: q.unit ?? null,
+                  source: 'founder' as AssumptionSource,
+                  rationale: t('financialPlan.idkRationale', { defaultValue: 'Skipped by founder — revisit later' }) as string,
+                });
+                setValue(''); setRationale('');
+              } catch (e: any) {
+                notify.error(e?.message ?? t('financialPlan.saveFailed', { defaultValue: 'Save failed' }));
+              } finally {
+                setSaving(false);
+              }
+            }}
+          >
             {t('financialPlan.idk', { defaultValue: "I don't know yet" })}
+            <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
           <Button size="sm" onClick={() => submit(false)} disabled={!canWrite || saving || !value.trim()}>
             <Save className="h-4 w-4 mr-1" />
