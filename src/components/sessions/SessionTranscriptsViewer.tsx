@@ -94,6 +94,7 @@ function TranscriptItem({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
+  const dateLocale = useDateLocale();
   const config = SOURCE_CONFIG[transcript.source] || SOURCE_CONFIG.manual;
   const Icon = config.icon;
   const previewText = transcript.transcript_text?.slice(0, 150) || '';
