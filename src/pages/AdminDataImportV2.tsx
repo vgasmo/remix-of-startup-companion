@@ -123,7 +123,7 @@ export default function AdminDataImportV2() {
     } finally {
       setIsLoading(false);
     }
-  }, [file, source, programId, stageMap, t]);
+  }, [file, source, programId, stageMap, t, loadRows]);
 
   const loadRows = useCallback(async (jobId: string) => {
     setIsLoading(true);
