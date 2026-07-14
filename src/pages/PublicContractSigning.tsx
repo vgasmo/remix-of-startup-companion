@@ -291,7 +291,7 @@ export default function PublicContractSigning() {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState(false);
 
-  const fetchPdf = async (): Promise<{ url: string; fileName: string } | null> => {
+  const fetchPdf = async (showErrorToast = true): Promise<{ url: string; fileName: string } | null> => {
     if (pdfUrl) return { url: pdfUrl, fileName: pdfFileName };
     setPdfLoading(true);
     setPdfError(false);
@@ -312,17 +312,18 @@ export default function PublicContractSigning() {
       return { url, fileName };
     } catch {
       setPdfError(true);
-      notify.error(t('publicContract.errors.pdfDownloadFailed'));
+      if (showErrorToast) notify.error(t('publicContract.errors.pdfDownloadFailed'));
       return null;
     } finally {
       setPdfLoading(false);
     }
   };
 
-  // Pre-fetch PDF when entering review or signing steps for instant preview
+  // Pre-fetch PDF only on the signing step where the inline preview is rendered.
+  // The review step loads it explicitly when the founder clicks View/Download.
   useEffect(() => {
-    if ((currentStep === 'review_contract' || currentStep === 'signing') && !pdfUrl && !pdfLoading) {
-      fetchPdf();
+    if (currentStep === 'signing' && !pdfUrl && !pdfLoading) {
+      fetchPdf(false);
     }
   }, [currentStep]);
 
@@ -336,6 +337,10 @@ export default function PublicContractSigning() {
     document.body.appendChild(a);
     a.click();
     a.remove();
+  };
+
+  const handleOpenPdf = async () => {
+    await fetchPdf();
   };
 
   useEffect(() => {
@@ -991,23 +996,45 @@ export default function PublicContractSigning() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <a href="/templates/V9_Minuta_Contrato_IF_e_IV_2026.docx" target="_blank" rel="noopener noreferrer">
-                      <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
-                        <Eye className="h-3.5 w-3.5" />
-                        {lang === 'pt' ? 'Ver' : 'View'}
-                      </Button>
-                    </a>
-                    <a href="/templates/V9_Minuta_Contrato_IF_e_IV_2026.docx" download>
-                      <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
-                        <Download className="h-3.5 w-3.5" />
-                        {lang === 'pt' ? 'Descarregar' : 'Download'}
-                      </Button>
-                    </a>
+                    <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={handleOpenPdf} disabled={pdfLoading} loading={pdfLoading}>
+                      {pdfLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5" />}
+                      {lang === 'pt' ? 'Ver' : 'View'}
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={handleDownloadPdf} disabled={pdfLoading} loading={pdfLoading}>
+                      {pdfLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                      {lang === 'pt' ? 'Descarregar' : 'Download'}
+                    </Button>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {t('publicContractSigning.theContractWillBeAutomatically')}
                 </p>
+                {pdfError && (
+                  <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive flex items-center justify-between gap-3">
+                    <span>{t('publicContractSigning.couldNotLoadThePdfPreview')}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => {
+                        setPdfUrl(null);
+                        void fetchPdf();
+                      }}
+                    >
+                      {t('publicContractSigning.tryAgain')}
+                    </Button>
+                  </div>
+                )}
+                {pdfUrl && (
+                  <div className="rounded-md overflow-hidden border bg-background">
+                    <iframe
+                      src={pdfUrl}
+                      title={t('publicContractSigning.contractPreview')}
+                      className="w-full h-[420px]"
+                      onError={() => setPdfError(true)}
+                    />
+                  </div>
+                )}
                 <div className="flex items-start gap-2">
                   <Checkbox
                     id="accept-contract"
