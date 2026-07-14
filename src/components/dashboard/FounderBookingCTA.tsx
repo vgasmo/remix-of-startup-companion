@@ -39,8 +39,8 @@ export function FounderBookingCTA({ workspaceId, className, isFirstWeek = false 
   const formatSessionDate = (dateStr: string) => {
     const date = new Date(dateStr);
     if (isToday(date)) return t('common.today');
-    if (isTomorrow(date)) return 'Tomorrow';
-    return format(date, 'EEE, MMM d');
+    if (isTomorrow(date)) return t('common.tomorrow', { defaultValue: 'Amanhã' });
+    return format(date, 'EEE, d MMM', { locale: dateLocale });
   };
 
   // No consultant assigned - show first contact CTA
