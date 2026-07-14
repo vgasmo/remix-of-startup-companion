@@ -400,6 +400,10 @@ export function AdminBackoffice() {
             <Package className="h-4 w-4" />
             {t('admin.backoffice.incubationTypes', { defaultValue: 'Tipos de Incubação' })}
           </TabsTrigger>
+          <TabsTrigger value="founder-requests" className="gap-1.5">
+            <Inbox className="h-4 w-4" />
+            {t('admin.backoffice.founderRequests', { defaultValue: 'Pedidos Founders' })}
+          </TabsTrigger>
           {isGovernance && (
             <TabsTrigger value="archive" className="gap-1.5">
               <Archive className="h-4 w-4" />
