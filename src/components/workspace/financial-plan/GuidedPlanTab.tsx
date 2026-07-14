@@ -107,16 +107,27 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
   const completedPacks = session?.completed_packs ?? [];
   const diagnosticDone = DIAGNOSTIC_KEYS.every(k => diagnostic[k]);
 
-  // First pack that isn't complete
+  // Filter packs the founder actually has to answer, based on diagnostic answers.
+  // Example: a bakery (revenue_model=one_off) skips the SaaS unit-economics pack.
+  const applicablePacks = useMemo(() => {
+    return QUESTION_PACKS.filter(p => {
+      if (!p.showWhen) return true;
+      return Object.entries(p.showWhen).every(([k, allowed]) =>
+        !allowed || allowed.length === 0 || allowed.includes(diagnostic[k] ?? ''),
+      );
+    });
+  }, [diagnostic]);
+
+  // First applicable pack that isn't complete
   const activePackId = useMemo(() => {
-    return QUESTION_PACKS.find(p => !completedPacks.includes(p.id))?.id ?? null;
-  }, [completedPacks]);
+    return applicablePacks.find(p => !completedPacks.includes(p.id))?.id ?? null;
+  }, [applicablePacks, completedPacks]);
   const activePack = activePackId ? packById(activePackId) : null;
 
-  // Coverage %
-  const totalQuestions = QUESTION_PACKS.reduce((a, p) => a + p.questions.length, 0);
+  // Coverage % — over applicable packs only
+  const totalQuestions = applicablePacks.reduce((a, p) => a + p.questions.length, 0);
   const answered = new Set(assumptions.map(a => a.key));
-  const answeredCount = QUESTION_PACKS.reduce((a, p) => a + p.questions.filter(q => answered.has(q.key)).length, 0);
+  const answeredCount = applicablePacks.reduce((a, p) => a + p.questions.filter(q => answered.has(q.key)).length, 0);
   const coverage = totalQuestions ? Math.round((answeredCount / totalQuestions) * 100) : 0;
 
   const saveDiagnostic = async (key: string, value: string) => {
