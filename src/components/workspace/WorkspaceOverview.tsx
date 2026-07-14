@@ -639,6 +639,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
 
 function ActionItem({ action }: { action: any }) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const isOverdue = action.due_date && isPast(new Date(action.due_date)) && !isToday(new Date(action.due_date));
   const isDueToday = action.due_date && isToday(new Date(action.due_date));
 
