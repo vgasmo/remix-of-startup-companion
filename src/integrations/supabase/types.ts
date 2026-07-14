@@ -1324,6 +1324,87 @@ export type Database = {
           },
         ]
       }
+      contract_field_conflicts: {
+        Row: {
+          actor_id: string | null
+          attempted_source: string | null
+          attempted_value: Json | null
+          contract_id: string
+          created_at: string
+          field_name: string
+          field_owner: string | null
+          id: string
+          old_value: Json | null
+          reason: string | null
+          resolution: string
+        }
+        Insert: {
+          actor_id?: string | null
+          attempted_source?: string | null
+          attempted_value?: Json | null
+          contract_id: string
+          created_at?: string
+          field_name: string
+          field_owner?: string | null
+          id?: string
+          old_value?: Json | null
+          reason?: string | null
+          resolution: string
+        }
+        Update: {
+          actor_id?: string | null
+          attempted_source?: string | null
+          attempted_value?: Json | null
+          contract_id?: string
+          created_at?: string
+          field_name?: string
+          field_owner?: string | null
+          id?: string
+          old_value?: Json | null
+          reason?: string | null
+          resolution?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_field_conflicts_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "startup_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_field_conflicts_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "startup_contracts_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_field_ownership: {
+        Row: {
+          created_at: string
+          description: string | null
+          field_name: string
+          owner: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          field_name: string
+          owner: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          field_name?: string
+          owner?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contract_intakes: {
         Row: {
           additional_representatives: Json
@@ -9686,6 +9767,10 @@ export type Database = {
       admin_commit_crm_import_job: { Args: { p_job_id: string }; Returns: Json }
       admin_rollback_crm_import_job: {
         Args: { p_job_id: string }
+        Returns: Json
+      }
+      apply_contract_patch: {
+        Args: { _contract_id: string; _patch: Json; _source: string }
         Returns: Json
       }
       approve_startup_claim: {
