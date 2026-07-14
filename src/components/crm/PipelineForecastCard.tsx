@@ -71,7 +71,7 @@ export function PipelineForecastCard({ pipeline }: PipelineForecastCardProps) {
     );
   }
 
-  const fmt = (v: number) => new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
+  const fmt = (v: number) => new Intl.NumberFormat(i18n.language?.startsWith('en') ? 'en-GB' : 'pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
 
   return (
     <Card>
