@@ -276,10 +276,13 @@ export default function AdminDataImportV2() {
                 {INTERNAL_FIELDS.map(f => (
                   <div key={f} className="flex items-center gap-2">
                     <Label className="text-xs w-40 shrink-0">{f}</Label>
-                    <Select value={mapping[f] ?? ''} onValueChange={v => setMapping(m => ({ ...m, [f]: v || null }))}>
+                    <Select
+                      value={mapping[f] ?? '__none__'}
+                      onValueChange={v => setMapping(m => ({ ...m, [f]: v === '__none__' ? null : v }))}
+                    >
                       <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="—" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">—</SelectItem>
+                        <SelectItem value="__none__">—</SelectItem>
                         {prepared.detected_headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
                       </SelectContent>
                     </Select>
@@ -293,7 +296,7 @@ export default function AdminDataImportV2() {
                 </Button>
                 <Button onClick={goReconcile} disabled={isLoading}>
                   {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ArrowRight className="h-4 w-4 mr-2" />}
-                  {t('dataImportV2.reconcile', 'Continue to reconciliation')}
+                  {t('dataImportV2.toReconcile', 'Continue to reconciliation')}
                 </Button>
               </div>
             </CardContent>
