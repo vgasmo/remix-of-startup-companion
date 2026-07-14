@@ -55,6 +55,23 @@ export function OverviewTab({
   const { data: incubationTypes } = useIncubationTypes();
   const { data: programs } = usePrograms();
 
+  // Live contract pricing (source of truth) — replaces the "proposta comercial"
+  // inputs whenever the lead is already linked to a startup_contracts row.
+  const { data: linkedContract } = useQuery({
+    queryKey: ['funnel-linked-contract', item.linked_contract_id],
+    enabled: !!item.linked_contract_id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('startup_contracts')
+        .select('id, contract_number, status, monthly_fee, currency, discount_percentage, discount_start_date, discount_end_date, incubation_type_id, incubation_type:incubation_types(name)')
+        .eq('id', item.linked_contract_id!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+
   const [editingDeal, setEditingDeal] = useState(false);
   const [dealValue, setDealValue] = useState(item.deal_value?.toString() || '');
   const [dealCurrency, setDealCurrency] = useState(item.deal_currency || 'EUR');
