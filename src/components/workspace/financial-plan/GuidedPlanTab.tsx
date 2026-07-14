@@ -23,11 +23,12 @@ import {
   useFinancialPlanSession, useUpsertFinancialPlanSession,
   useFinancialAssumptions, useSaveAssumption, useDeleteAssumption,
   usePrefillProposals, useResolvePrefillProposal,
-  useGeneratePrefill, useExportGuidedPlanXlsm,
+  useGeneratePrefill, useExportGuidedPlanXlsm, useSaveScenarioFromBase,
   PlanScenario, AssumptionSource, PrefillResult,
 } from '@/hooks/useFinancialPlan';
 import { QUESTION_PACKS, packById, QuestionDef, DIAGNOSTIC_KEYS } from './questionPacks';
 import { ScenarioSensitivityPanel } from './ScenarioSensitivityPanel';
+import { parseLocalizedNumber, formatLocalizedNumber } from '@/lib/parseLocalizedNumber';
 
 interface Props {
   workspaceId: string;
