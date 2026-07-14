@@ -3121,6 +3121,8 @@ export type Database = {
           deal_value: number | null
           expected_close_date: string | null
           first_contact_at: string | null
+          hubspot_company_id: string | null
+          hubspot_deal_id: string | null
           id: string
           last_activity_at: string | null
           linked_contract_id: string | null
@@ -3130,16 +3132,21 @@ export type Database = {
           metadata_json: Json
           next_action_at: string | null
           next_action_description: string | null
+          nif_normalized: string | null
           notes: string | null
           organization_name: string | null
           owner_consultant_id: string | null
+          phc_customer_id: string | null
           program_id: string | null
           qualified_at: string | null
           source: string | null
+          source_system: string | null
+          source_updated_at: string | null
           stage: string
           tags: string[] | null
           type: string
           updated_at: string
+          verified_fields_json: Json
           win_probability: number | null
         }
         Insert: {
@@ -3152,6 +3159,8 @@ export type Database = {
           deal_value?: number | null
           expected_close_date?: string | null
           first_contact_at?: string | null
+          hubspot_company_id?: string | null
+          hubspot_deal_id?: string | null
           id?: string
           last_activity_at?: string | null
           linked_contract_id?: string | null
@@ -3161,16 +3170,21 @@ export type Database = {
           metadata_json?: Json
           next_action_at?: string | null
           next_action_description?: string | null
+          nif_normalized?: string | null
           notes?: string | null
           organization_name?: string | null
           owner_consultant_id?: string | null
+          phc_customer_id?: string | null
           program_id?: string | null
           qualified_at?: string | null
           source?: string | null
+          source_system?: string | null
+          source_updated_at?: string | null
           stage?: string
           tags?: string[] | null
           type?: string
           updated_at?: string
+          verified_fields_json?: Json
           win_probability?: number | null
         }
         Update: {
@@ -3183,6 +3197,8 @@ export type Database = {
           deal_value?: number | null
           expected_close_date?: string | null
           first_contact_at?: string | null
+          hubspot_company_id?: string | null
+          hubspot_deal_id?: string | null
           id?: string
           last_activity_at?: string | null
           linked_contract_id?: string | null
@@ -3192,16 +3208,21 @@ export type Database = {
           metadata_json?: Json
           next_action_at?: string | null
           next_action_description?: string | null
+          nif_normalized?: string | null
           notes?: string | null
           organization_name?: string | null
           owner_consultant_id?: string | null
+          phc_customer_id?: string | null
           program_id?: string | null
           qualified_at?: string | null
           source?: string | null
+          source_system?: string | null
+          source_updated_at?: string | null
           stage?: string
           tags?: string[] | null
           type?: string
           updated_at?: string
+          verified_fields_json?: Json
           win_probability?: number | null
         }
         Relationships: [
@@ -9698,6 +9719,21 @@ export type Database = {
           p_payload: Json
           p_row_id: string
           p_tags: string[]
+        }
+        Returns: Json
+      }
+      commit_import_funnel_item_v2: {
+        Args: {
+          p_expected_updated_at: string
+          p_external_ids: Json
+          p_final_stage: string
+          p_job_id: string
+          p_match_entity_id: string
+          p_payload: Json
+          p_row_id: string
+          p_source: string
+          p_tags: string[]
+          p_verified_fields: Json
         }
         Returns: Json
       }
