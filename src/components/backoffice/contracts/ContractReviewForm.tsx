@@ -440,6 +440,50 @@ export function ContractReviewForm({
 
               <FormField
                 control={form.control}
+                name="discount_start_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t('admin.backoffice.discountStartDate', { defaultValue: 'Início do Desconto' })}
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="discount_end_date"
+                render={({ field }) => {
+                  const discountPct = Number(form.watch('discount_percentage') || 0);
+                  return (
+                    <FormItem>
+                      <FormLabel>
+                        {t('admin.backoffice.discountEndDate', { defaultValue: 'Fim do Desconto' })}
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} value={field.value || ''} />
+                      </FormControl>
+                      {discountPct > 0 && !field.value && (
+                        <p className="text-xs text-warning mt-1">
+                          {t('contracts.review.noDiscountEndNudge', {
+                            defaultValue: 'Sem data de fim, o desconto será permanente e não gera aviso.',
+                          })}
+                        </p>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+
+
+
+              <FormField
+                control={form.control}
                 name="equity_percentage"
                 render={({ field }) => (
                   <FormItem>
