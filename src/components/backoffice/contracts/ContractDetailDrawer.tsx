@@ -729,6 +729,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
 /** Signature Provider Panel — shows provider status, allows selection for unsent drafts, retry */
 function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const [sending, setSending] = useState(false);
   const queryClient = useQueryClient();
 
