@@ -90,12 +90,36 @@ export function ContractReviewForm({
       end_date: aiData?.endDate || '',
       monthly_fee: aiData?.monthlyFee || 0,
       discount_percentage: 0,
+      discount_start_date: '',
+      discount_end_date: '',
       notes: aiData?.notes || '',
       contract_number: '',
+      room_id: '',
       square_meters: undefined,
       equity_percentage: undefined,
     },
   });
+
+  const selectedBuildingId = form.watch('building_id');
+  const { data: rooms } = useQuery({
+    queryKey: ['rooms-by-building', selectedBuildingId],
+    enabled: !!selectedBuildingId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('rooms')
+        .select('id, name, room_number, floor, status, building_id')
+        .eq('building_id', selectedBuildingId!)
+        .order('name', { ascending: true });
+      if (error) throw error;
+      return data as Array<{ id: string; name: string; room_number: string | null; floor: string | null; status: string | null }>;
+    },
+  });
+
+  // Reset room when building changes
+  useEffect(() => {
+    form.setValue('room_id', '');
+  }, [selectedBuildingId]);
+
 
   const handleFormSubmit = (values: ContractFormValues) => {
     const cleanValues = {
