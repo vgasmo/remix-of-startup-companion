@@ -391,80 +391,167 @@ export function OverviewTab({
         )}
       </div>
 
-      {/* Commercial Proposal Section */}
-      <div className="space-y-3 pt-4 border-t">
-        <h4 className="text-sm font-medium flex items-center gap-2">
-          <Briefcase className="h-4 w-4 text-muted-foreground" />
-          {t('crm.commercialProposal', { defaultValue: 'Proposta Comercial' })}
-        </h4>
-        
-        <div className="grid gap-3">
-          <div className="flex items-center justify-between gap-2">
-            <Label className="text-xs text-muted-foreground">{t('crm.proposedIncubationType', { defaultValue: 'Tipo de Incubação Proposto' })}</Label>
-            <Select
-              value={proposedIncubationTypeId || '__none__'}
-              onValueChange={(value) => setProposedIncubationTypeId(value === '__none__' ? '' : value)}
-            >
-              <SelectTrigger className="w-52 h-8 text-xs">
-                <SelectValue placeholder={t('crm.selectIncubationType', { defaultValue: 'Selecionar tipo' })} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">{t('common.none', { defaultValue: 'Nenhum' })}</SelectItem>
-                {(incubationTypes || [])
-                  .filter(type => type.is_active)
-                  .map(type => (
-                    <SelectItem key={type.id} value={type.id}>
-                      {type.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
+      {/* Commercial Proposal / Linked Contract — single source of truth.
+          If the lead already has a contract, the backoffice contract is authoritative:
+          show its live pricing/discount read-only and hide the editable proposal fields. */}
+      {linkedContract ? (
+        <div className="space-y-3 pt-4 border-t">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium flex items-center gap-2">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              {t('crm.linkedContractPricing', { defaultValue: 'Contrato ligado (fonte de verdade)' })}
+            </h4>
+            <Badge variant="outline" className="text-[10px] gap-1">
+              <Lock className="h-3 w-3" />
+              {t('crm.managedInBackoffice', { defaultValue: 'Gerido no backoffice' })}
+            </Badge>
           </div>
 
-          <div className="flex items-center justify-between">
-            <Label className="text-xs text-muted-foreground">{t('crm.proposedMonthlyFee', { defaultValue: 'Mensalidade Proposta (€)' })}</Label>
-            <Input 
-              type="number" 
-              className="w-32 h-8 text-xs" 
-              value={proposedFee}
-              onChange={(e) => setProposedFee(e.target.value)}
-              placeholder="0"
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <Label className="text-xs text-muted-foreground">{t('crm.proposedDiscount', { defaultValue: 'Desconto Proposto (%)' })}</Label>
-            <Input 
-              type="number" 
-              className="w-24 h-8 text-xs" 
-              min="0" max="100"
-              value={proposedDiscount}
-              onChange={(e) => setProposedDiscount(e.target.value)}
-              placeholder="0"
-            />
+          <div className="rounded-md border bg-muted/30 p-3 space-y-2 text-xs">
+            {linkedContract.contract_number && (
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">{t('contractDetail.number', { defaultValue: 'Nº do contrato' })}</span>
+                <span className="font-medium">{linkedContract.contract_number}</span>
+              </div>
+            )}
+            {linkedContract.incubation_type?.name && (
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">{t('crm.incubationType', { defaultValue: 'Tipo de incubação' })}</span>
+                <span className="font-medium">{linkedContract.incubation_type.name}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">{t('crm.monthlyFee', { defaultValue: 'Mensalidade' })}</span>
+              <span className="font-medium">
+                {linkedContract.monthly_fee != null
+                  ? `${Number(linkedContract.monthly_fee).toFixed(2)} ${linkedContract.currency || 'EUR'}`
+                  : '—'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">{t('crm.activeDiscount', { defaultValue: 'Desconto ativo' })}</span>
+              <span className="font-medium">
+                {Number(linkedContract.discount_percentage || 0) > 0
+                  ? `${Number(linkedContract.discount_percentage).toFixed(0)}%`
+                  : '—'}
+              </span>
+            </div>
+            {linkedContract.discount_end_date && Number(linkedContract.discount_percentage || 0) > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">{t('crm.discountUntil', { defaultValue: 'Desconto até' })}</span>
+                <span className="font-medium">{new Date(linkedContract.discount_end_date).toLocaleDateString()}</span>
+              </div>
+            )}
           </div>
 
           <div>
             <Label className="text-xs text-muted-foreground">{t('crm.commercialNotes', { defaultValue: 'Notas Comerciais' })}</Label>
-            <Textarea 
-              className="mt-1 text-xs" 
+            <Textarea
+              className="mt-1 text-xs"
               rows={2}
               value={commercialNotes}
               onChange={(e) => setCommercialNotes(e.target.value)}
               placeholder={t('crm.commercialNotesPlaceholder', { defaultValue: 'Tipo de contrato, condições especiais...' })}
             />
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full h-8 text-xs mt-2"
+              onClick={handleSaveCommercialProposal}
+              disabled={updateItem.isPending} loading={updateItem.isPending}
+            >
+              {t('crm.saveCommercialNotes', { defaultValue: 'Guardar notas comerciais' })}
+            </Button>
           </div>
 
-          <Button
-            size="sm"
-            className="w-full h-8 text-xs"
-            onClick={handleSaveCommercialProposal}
-            disabled={updateItem.isPending} loading={updateItem.isPending}
-          >
-            {t('crm.saveCommercialProposal', { defaultValue: 'Guardar proposta comercial' })}
-          </Button>
+          <p className="text-[11px] text-muted-foreground">
+            {t('crm.pricingSyncHint', {
+              defaultValue: 'Preços e descontos são editados no separador Backoffice → Contratos. As alterações aqui refletem-se automaticamente.',
+            })}
+          </p>
         </div>
-      </div>
+      ) : (
+        <div className="space-y-3 pt-4 border-t">
+          <h4 className="text-sm font-medium flex items-center gap-2">
+            <Briefcase className="h-4 w-4 text-muted-foreground" />
+            {t('crm.commercialProposal', { defaultValue: 'Proposta Comercial' })}
+          </h4>
+
+          <p className="text-[11px] text-muted-foreground -mt-1">
+            {t('crm.commercialProposalHint', {
+              defaultValue: 'Valores propostos ao lead. Ao criar o contrato serão copiados para o backoffice, que passa a ser a fonte de verdade.',
+            })}
+          </p>
+
+          <div className="grid gap-3">
+            <div className="flex items-center justify-between gap-2">
+              <Label className="text-xs text-muted-foreground">{t('crm.proposedIncubationType', { defaultValue: 'Tipo de Incubação Proposto' })}</Label>
+              <Select
+                value={proposedIncubationTypeId || '__none__'}
+                onValueChange={(value) => setProposedIncubationTypeId(value === '__none__' ? '' : value)}
+              >
+                <SelectTrigger className="w-52 h-8 text-xs">
+                  <SelectValue placeholder={t('crm.selectIncubationType', { defaultValue: 'Selecionar tipo' })} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">{t('common.none', { defaultValue: 'Nenhum' })}</SelectItem>
+                  {(incubationTypes || [])
+                    .filter(type => type.is_active)
+                    .map(type => (
+                      <SelectItem key={type.id} value={type.id}>
+                        {type.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label className="text-xs text-muted-foreground">{t('crm.proposedMonthlyFee', { defaultValue: 'Mensalidade Proposta (€)' })}</Label>
+              <Input
+                type="number"
+                className="w-32 h-8 text-xs"
+                value={proposedFee}
+                onChange={(e) => setProposedFee(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label className="text-xs text-muted-foreground">{t('crm.proposedDiscount', { defaultValue: 'Desconto Proposto (%)' })}</Label>
+              <Input
+                type="number"
+                className="w-24 h-8 text-xs"
+                min="0" max="100"
+                value={proposedDiscount}
+                onChange={(e) => setProposedDiscount(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+
+            <div>
+              <Label className="text-xs text-muted-foreground">{t('crm.commercialNotes', { defaultValue: 'Notas Comerciais' })}</Label>
+              <Textarea
+                className="mt-1 text-xs"
+                rows={2}
+                value={commercialNotes}
+                onChange={(e) => setCommercialNotes(e.target.value)}
+                placeholder={t('crm.commercialNotesPlaceholder', { defaultValue: 'Tipo de contrato, condições especiais...' })}
+              />
+            </div>
+
+            <Button
+              size="sm"
+              className="w-full h-8 text-xs"
+              onClick={handleSaveCommercialProposal}
+              disabled={updateItem.isPending} loading={updateItem.isPending}
+            >
+              {t('crm.saveCommercialProposal', { defaultValue: 'Guardar proposta comercial' })}
+            </Button>
+          </div>
+        </div>
+      )}
+
 
       {/* Booking Questionnaire Data */}
       <BookingQuestionnaireSection item={item} />
