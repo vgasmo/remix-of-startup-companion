@@ -38,6 +38,8 @@ import {
   FinancialInsight,
 } from '@/hooks/useFinancialModel';
 import { logger } from '@/lib/logger';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
+import { GuidedPlanTab } from './financial-plan/GuidedPlanTab';
 
 interface FinancialModelPanelProps {
   workspaceId: string;
