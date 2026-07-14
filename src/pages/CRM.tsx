@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { PipelineView } from '@/components/crm/PipelineView';
 import { useCrmInbox, useCrmTasksDue, CrmInboxItem } from '@/hooks/useCrmInbox';
+import { useCrmPipeline } from '@/hooks/useCrmPipeline';
 import { usePrograms } from '@/hooks/useWorkspaces';
 import { notify } from "@/lib/notify";
 import { useConsultors } from '@/hooks/useWorkspaceOwner';
