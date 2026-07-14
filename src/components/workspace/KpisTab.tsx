@@ -212,7 +212,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
   }, [kpiValues, selectedMonthStr]);
 
   // ── Autosave integration ──
-  const { savedKpis, savingKpis, scheduleAutosave, saveKpi } = useAutosave(
+  const { savedKpis, savingKpis, scheduleAutosave, flushAutosave, saveKpi } = useAutosave(
     editedValues,
     monthValues,
     workspaceKpis,
