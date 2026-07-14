@@ -621,7 +621,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
                             {milestone.target_date && (
                               <Badge variant="outline" className={`text-xs shrink-0 ${isOverdue ? 'text-destructive border-destructive' : ''}`}>
                                 <Calendar className="h-3 w-3 mr-1" />
-                                {format(parseISO(milestone.target_date), 'dd MMM')}
+                                {format(parseISO(milestone.target_date), 'dd MMM', { locale: dateLocale })}
                               </Badge>
                             )}
                             <ViewReceipt workspaceId={workspaceId} targetType="milestone" targetId={milestone.id} />
