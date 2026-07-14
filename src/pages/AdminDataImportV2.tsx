@@ -247,9 +247,10 @@ export default function AdminDataImportV2() {
               <Input type="file" accept=".csv,.xlsx,.xlsm" onChange={e => onFile(e.target.files?.[0] ?? null)} />
               <div className="grid gap-2 max-w-sm">
                 <Label className="text-xs">{t('common.program', 'Program')}</Label>
-                <Select value={programId ?? ''} onValueChange={v => setProgramId(v || null)}>
+                <Select value={programId ?? '__none__'} onValueChange={v => setProgramId(v === '__none__' ? null : v)}>
                   <SelectTrigger><SelectValue placeholder={t('dataImportV2.selectProgram', 'Select program (optional)')} /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__none__">—</SelectItem>
                     {(programs ?? []).map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
