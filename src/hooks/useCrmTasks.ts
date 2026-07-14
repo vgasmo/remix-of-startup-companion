@@ -59,7 +59,7 @@ export function useAddTask() {
       const { data, error } = await supabase
         .from('communication_log')
         .insert({
-          workspace_id: workspaceId,
+          workspace_id: workspaceId ?? null,
           funnel_item_id: params.funnel_item_id,
           activity_type: 'task',
           subject: params.subject,
