@@ -910,13 +910,21 @@
     "failedToRemoveMentor": "Failed To Remove Mentor",
     "failedToUpdateMaterial": "Failed to update material",
     "featureFlags": {
+      "addOverride": "Add override",
       "description": "Control which new features are enabled. All flags are OFF by default for safety.",
       "flagToggled": "Feature flag {{state}}",
       "globalFlags": "Global Flags",
+      "newWorkspaceOverride": "New workspace override",
+      "newWorkspaceOverrideDesc": "Enable this flag only for a specific workspace. Leave empty to remove an existing override.",
       "noGlobalFlags": "No global flags configured",
+      "overrideCreated": "Workspace override saved",
+      "overrideRemoved": "Workspace override removed",
       "programOverrides": "Program Overrides",
       "tab": "Tab",
-      "title": "Feature Flags"
+      "title": "Feature Flags",
+      "workspaceIdPlaceholder": "Workspace ID (UUID)",
+      "workspaceIdRequired": "Workspace ID is required",
+      "workspaceOverrides": "Workspace overrides"
     },
     "flagUpdateFailed": "Failed to update flag",
     "funnel": {
@@ -6702,6 +6710,9 @@
     "updatedDescription": "Workspace priority has been updated"
   },
   "programSetup": {
+    "conflictBadge": "Conflict",
+    "conflictReconciled": "Conflict reconciled with the latest saved version.",
+    "saveError": "Failed to save program setup. Please retry.",
     "acceleration": {
       "addDeliverable": "Add",
       "addGate": "Add Gate",
@@ -8358,6 +8369,7 @@
   "surveys": {
     "active": "Active",
     "addQuestion": "Add Question",
+    "templateDeleteBlockedByCampaigns": "Cannot delete: this template is used by active campaigns.",
     "allPrograms": "All Programs",
     "analytics": "Analytics",
     "autoFillKey": "Auto-fill Field",

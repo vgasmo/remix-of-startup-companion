@@ -910,13 +910,21 @@
     "failedToRemoveMentor": "Falha ao remover mentor",
     "failedToUpdateMaterial": "Erro ao atualizar material",
     "featureFlags": {
+      "addOverride": "Adicionar override",
       "description": "Controlar quais funcionalidades estão ativas. Todas as flags estão desativadas por defeito por segurança.",
       "flagToggled": "Feature flag {{state}}",
       "globalFlags": "Flags Globais",
+      "newWorkspaceOverride": "Novo override de workspace",
+      "newWorkspaceOverrideDesc": "Ativa esta flag apenas para um workspace específico. Deixa vazio para remover um override existente.",
       "noGlobalFlags": "Sem flags globais configuradas",
+      "overrideCreated": "Override de workspace guardado",
+      "overrideRemoved": "Override de workspace removido",
       "programOverrides": "Overrides de Programa",
       "tab": "Flags",
-      "title": "Feature Flags"
+      "title": "Feature Flags",
+      "workspaceIdPlaceholder": "ID do workspace (UUID)",
+      "workspaceIdRequired": "ID do workspace é obrigatório",
+      "workspaceOverrides": "Overrides por workspace"
     },
     "flagUpdateFailed": "Erro ao atualizar flag",
     "funnel": {
@@ -6702,6 +6710,9 @@
     "updatedDescription": "A prioridade do workspace foi atualizada"
   },
   "programSetup": {
+    "conflictBadge": "Conflito",
+    "conflictReconciled": "Conflito reconciliado com a versão gravada mais recente.",
+    "saveError": "Falha ao guardar a configuração do programa. Tenta novamente.",
     "acceleration": {
       "addDeliverable": "Adicionar",
       "addGate": "Adicionar Gate",
@@ -8358,6 +8369,7 @@
   "surveys": {
     "active": "Ativo",
     "addQuestion": "Adicionar Questão",
+    "templateDeleteBlockedByCampaigns": "Não é possível eliminar: este template está a ser usado por campanhas ativas.",
     "allPrograms": "Todos os Programas",
     "analytics": "Análises",
     "autoFillKey": "Campo de Preenchimento Automático",
