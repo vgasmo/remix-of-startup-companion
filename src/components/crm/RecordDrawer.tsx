@@ -525,16 +525,31 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
                 onCreateAndSendContract={async () => {
                   try {
                     const today = new Date().toISOString().slice(0, 10);
+
+                    // Seed the contract with the CRM's commercial proposal so
+                    // backoffice and CRM don't drift on pricing/discount/typology.
+                    const metadata = ((item as any).metadata_json && typeof (item as any).metadata_json === 'object')
+                      ? (item as any).metadata_json as Record<string, any>
+                      : {};
+                    const proposedFee = metadata?.proposed_fee != null ? Number(metadata.proposed_fee) : 0;
+                    const proposedDiscount = metadata?.proposed_discount != null ? Number(metadata.proposed_discount) : 0;
+                    const proposedIncubationTypeId = typeof metadata?.proposed_incubation_type_id === 'string'
+                      ? metadata.proposed_incubation_type_id
+                      : null;
+
                     const insertPayload: Record<string, unknown> = {
                       status: 'draft',
                       start_date: today,
-                      monthly_fee: 0,
+                      monthly_fee: Number.isFinite(proposedFee) ? proposedFee : 0,
                       currency: 'EUR',
                       funnel_item_id: item.id,
                       organization_name: item.organization_name || item.contact_name || null,
                       legal_representative_name: item.contact_name || null,
                       legal_representative_email: item.contact_email || null,
                       workspace_id: item.linked_workspace_id || null,
+                      incubation_type_id: proposedIncubationTypeId,
+                      discount_percentage: proposedDiscount > 0 ? proposedDiscount : null,
+                      discount_start_date: proposedDiscount > 0 ? today : null,
                     };
                     const { data: newContract, error: createErr } = await supabase
                       .from('startup_contracts')
@@ -544,10 +559,22 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
                     if (createErr) throw createErr;
                     if (!newContract?.id) throw new Error('contract_id_missing');
 
+                    // Also persist the discount as a first-class contract_discounts row
+                    // so it appears in the Discounts panel and is used by the pricing engine.
+                    if (proposedDiscount > 0) {
+                      await supabase.from('contract_discounts').insert({
+                        contract_id: newContract.id,
+                        discount_percentage: proposedDiscount,
+                        start_date: today,
+                        reason: (metadata?.commercial_notes as string) || 'Seeded from CRM commercial proposal',
+                      } as any);
+                    }
+
                     await supabase
                       .from('funnel_items')
                       .update({ linked_contract_id: newContract.id })
                       .eq('id', item.id);
+
 
                     const { data, error } = await invokeWithAuth('public-contract-onboarding', {
                       body: { action: 'generate_token', contractId: newContract.id },
