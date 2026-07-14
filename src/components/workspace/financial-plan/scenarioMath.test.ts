@@ -172,7 +172,7 @@ describe('sensitivityToDeltas — save-as-scenario materialization', () => {
   it('stacks the slider on top of the scenario bias', () => {
     const rows = sensitivityToDeltas(
       REVENUE_ASSUMPTIONS,
-      { revenueGrowth: 5, cmvmcDelta: 0, payrollDelta: 0 },
+      { revenueGrowth: 5, cmvmcDelta: 0, payrollDelta: 0, churnDelta: 0 },
       'optimistic',
     );
     const growth = rows.find(r => r.key === 'revenue.item1.growth');
@@ -182,7 +182,45 @@ describe('sensitivityToDeltas — save-as-scenario materialization', () => {
 
   it('does not emit a salary row when base salary is missing', () => {
     const noSalary = REVENUE_ASSUMPTIONS.filter(x => x.key !== 'team.avg_salary_month');
-    const rows = sensitivityToDeltas(noSalary, { revenueGrowth: 0, cmvmcDelta: 0, payrollDelta: 20 }, 'optimistic');
+    const rows = sensitivityToDeltas(noSalary, { revenueGrowth: 0, cmvmcDelta: 0, payrollDelta: 20, churnDelta: 0 }, 'optimistic');
     expect(rows.find(r => r.key === 'team.avg_salary_month')).toBeUndefined();
   });
+
+  it('materializes a worse churn for conservative when base churn is set', () => {
+    const withChurn = [...REVENUE_ASSUMPTIONS, ...UE_ASSUMPTIONS];
+    const rows = sensitivityToDeltas(withChurn, DEFAULT_SENSITIVITY, 'conservative');
+    const churn = rows.find(r => r.key === 'ue.churn_monthly_pct');
+    // 5 + 1 = 6
+    expect(churn?.value_numeric).toBeCloseTo(6, 6);
+  });
+
+  it('does not emit a churn row when base churn is missing', () => {
+    const rows = sensitivityToDeltas(REVENUE_ASSUMPTIONS, DEFAULT_SENSITIVITY, 'conservative');
+    expect(rows.find(r => r.key === 'ue.churn_monthly_pct')).toBeUndefined();
+  });
 });
+
+describe('computeKpis — pessimist bias moves LTV:CAC', () => {
+  const all = [
+    ...REVENUE_ASSUMPTIONS,
+    a('ue.cac', 100, '€'),
+    a('ue.arpu_month', 50, '€'),
+    a('ue.gross_margin_pct', 80, '%'),
+    a('ue.churn_monthly_pct', 5, '%'),
+  ];
+  it('conservative churn +1pp lowers LTV:CAC vs base', () => {
+    const base = computeKpis(all, DEFAULT_SENSITIVITY, SCENARIO_BIAS.base);
+    const cons = computeKpis(all, DEFAULT_SENSITIVITY, SCENARIO_BIAS.conservative);
+    // base: 1/0.05 = 20mo × 50 × 0.8 = 800 → LTV:CAC = 8
+    // cons: 1/0.06 ≈ 16.67 × 50 × 0.8 = 666.67 → LTV:CAC ≈ 6.667
+    expect(base.ltvCac).toBeCloseTo(8, 4);
+    expect(cons.ltvCac!).toBeLessThan(base.ltvCac!);
+    expect(cons.ltvCac).toBeCloseTo(6.6667, 3);
+  });
+  it('optimistic churn -1pp raises LTV:CAC vs base', () => {
+    const base = computeKpis(all, DEFAULT_SENSITIVITY, SCENARIO_BIAS.base);
+    const opt = computeKpis(all, DEFAULT_SENSITIVITY, SCENARIO_BIAS.optimistic);
+    expect(opt.ltvCac!).toBeGreaterThan(base.ltvCac!);
+  });
+});
+
