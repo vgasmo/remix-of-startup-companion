@@ -362,16 +362,25 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
         </Card>
       )}
 
-      {/* Scenario sensitivity — live projection from the assumptions register */}
-      {diagnosticDone && assumptions.length > 0 && (
+      {/* Scenario sensitivity — always anchored to BASE assumptions so bias
+          never compounds when browsing an already-biased scenario. */}
+      {diagnosticDone && baseAssumptions.length > 0 && (
         <ScenarioSensitivityPanel
           workspaceId={workspaceId}
           canWrite={canWrite}
-          assumptions={assumptions}
-          onScenarioSaved={(target) => {
-            // Switch to the just-saved scenario so the assumptions register,
-            // KPI columns and any downstream model recompute immediately.
-            setScenario(target);
+          baseAssumptions={baseAssumptions}
+          onSaveAsScenario={async (target, deltas) => {
+            try {
+              const res = await saveScenarioFromBase.mutateAsync({ target, deltas });
+              notify.success(t('financialPlan.sensitivity.savedAs', {
+                defaultValue: 'Saved as {{scenario}} ({{n}} value(s)) — showing updated plan',
+                scenario: t(`financialPlan.scenario.${target}`, { defaultValue: target }),
+                n: res.applied,
+              }));
+              setScenario(target);
+            } catch (e: any) {
+              notify.error(e?.message ?? t('financialPlan.sensitivity.saveFailed', { defaultValue: 'Save failed' }));
+            }
           }}
         />
       )}
