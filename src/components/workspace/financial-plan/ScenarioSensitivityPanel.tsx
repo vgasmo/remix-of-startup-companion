@@ -121,12 +121,40 @@ export function ScenarioSensitivityPanel({ workspaceId, canWrite, assumptions }:
               })}
             </CardDescription>
           </div>
-          {isDirty && (
-            <Button variant="ghost" size="sm" onClick={reset} className="h-7 text-xs">
-              <RotateCcw className="h-3 w-3 mr-1" />
-              {t('common.reset', { defaultValue: 'Reset' })}
-            </Button>
-          )}
+          <div className="flex items-center gap-1">
+            {isDirty && (
+              <Button variant="ghost" size="sm" onClick={reset} className="h-7 text-xs">
+                <RotateCcw className="h-3 w-3 mr-1" />
+                {t('common.reset', { defaultValue: 'Reset' })}
+              </Button>
+            )}
+            {canWrite && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline" size="sm" className="h-7 text-xs"
+                    disabled={!hasAnyRevenue || savingScenario !== null}
+                  >
+                    {savingScenario
+                      ? <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      : <Save className="h-3 w-3 mr-1" />}
+                    {t('financialPlan.sensitivity.saveAs', { defaultValue: 'Save as…' })}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleSaveAsScenario('conservative')}>
+                    {t('financialPlan.scenario.conservative', { defaultValue: 'Conservative' })}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleSaveAsScenario('base')}>
+                    {t('financialPlan.scenario.base', { defaultValue: 'Base' })}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleSaveAsScenario('optimistic')}>
+                    {t('financialPlan.scenario.optimistic', { defaultValue: 'Optimistic' })}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
