@@ -5766,7 +5766,10 @@
     "startTime": "Hora de início",
     "whatToDiscuss": "O que gostaria de discutir?",
     "yourBookings": "As Suas Marcações",
-    "slotAlreadyTaken": "Esse horário acabou de ser reservado por outra pessoa — escolha outro."
+    "slotAlreadyTaken": "Esse horário acabou de ser reservado por outra pessoa — escolha outro.",
+    "nextAvailableSlots": "Próximos horários disponíveis",
+    "pickSuggestedSlot": "Escolher horário sugerido",
+    "noAlternativesAvailable": "Sem outros horários disponíveis nos próximos 14 dias."
   },
   "mentorsPage": {
     "accept": "Aceitar",
