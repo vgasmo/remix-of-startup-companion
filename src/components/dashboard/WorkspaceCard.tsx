@@ -13,6 +13,8 @@ import { Sparkline } from '@/components/ui/Sparkline';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { HealthScore } from '@/types/database';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { ProgramSwitcher } from '@/components/workspace/ProgramSwitcher';
 
 interface WorkspaceCardProps {
   workspace: WorkspaceWithDetails;
