@@ -294,7 +294,9 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
                       size="sm"
                       className="gap-1.5 bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]"
                       onClick={() => handleTransition('approved_for_signature')}
-                      disabled={transition.isPending} loading={transition.isPending}
+                      disabled={transition.isPending || contractBlocksApproval}
+                      loading={transition.isPending}
+                      title={contractBlocksApproval ? 'Contrato incompleto ou em falta' : undefined}
                     >
                       {transition.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
                       Confirmar Aprovação
