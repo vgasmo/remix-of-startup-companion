@@ -235,7 +235,7 @@ export function useResolvePrefillProposal(workspaceId: string) {
             rationale: `Accepted from ${proposal.source}`,
             owner_user_id: userRes.user?.id ?? null,
             last_validated_at: new Date().toISOString(),
-          }) as any],
+          } as any],
           { onConflict: 'workspace_id,scenario,key,period_index' },
         );
         if (upErr) throw upErr;
