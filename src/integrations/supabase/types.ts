@@ -9696,6 +9696,10 @@ export type Database = {
         Args: { _entity_id: string; _entity_type: string }
         Returns: boolean
       }
+      can_write_startup_data: {
+        Args: { _startup_id: string }
+        Returns: boolean
+      }
       can_write_workspace: { Args: { _workspace_id: string }; Returns: boolean }
       check_ai_rate_limit: {
         Args: {
