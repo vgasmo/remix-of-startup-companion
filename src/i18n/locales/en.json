@@ -5766,7 +5766,10 @@
     "startTime": "Hora de início",
     "whatToDiscuss": "What would you like to discuss?",
     "yourBookings": "Your Bookings",
-    "slotAlreadyTaken": "That slot was just booked by someone else — please pick another one."
+    "slotAlreadyTaken": "That slot was just booked by someone else — please pick another one.",
+    "nextAvailableSlots": "Next available slots",
+    "pickSuggestedSlot": "Pick a suggested slot",
+    "noAlternativesAvailable": "No other slots available in the next 14 days."
   },
   "mentorsPage": {
     "accept": "Accept",
