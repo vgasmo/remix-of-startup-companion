@@ -245,10 +245,29 @@ Never include keys outside the supplied missing_keys array.`;
       }
     }
 
-    // Insert as pending proposals.
+    // Insert as pending proposals — per source, so a failure on one bucket
+    // (e.g. AI) doesn't sink the deterministic profile/KPI proposals.
+    const SOURCES: Source[] = ["prefill_profile", "prefill_kpi", "prefill_ai"];
+    const bySource: Record<Source, { created: number; skipped: number; failed: number; error: string | null }> = {
+      prefill_profile: { created: 0, skipped: 0, failed: 0, error: null },
+      prefill_kpi:     { created: 0, skipped: 0, failed: 0, error: null },
+      prefill_ai:      { created: 0, skipped: 0, failed: 0, error: null },
+    };
+    // Count skipped-per-source from the pushIfFree stream we already tracked.
+    // `skipped` only contains keys, so recompute buckets from AI_CANDIDATES / stage lists:
+    const skipBuckets = { prefill_profile: 0, prefill_kpi: 0, prefill_ai: 0 } as Record<Source, number>;
+    for (const k of skipped) {
+      if (k.startsWith("ue.")) skipBuckets.prefill_kpi++;
+      else if (AI_CANDIDATES.includes(k)) skipBuckets.prefill_ai++;
+      else skipBuckets.prefill_profile++;
+    }
+    (Object.keys(skipBuckets) as Source[]).forEach((s) => { bySource[s].skipped = skipBuckets[s]; });
+
     let created = 0;
-    if (drafts.length > 0) {
-      const rows = drafts.map(d => ({
+    for (const src of SOURCES) {
+      const bucket = drafts.filter((d) => d.source === src);
+      if (bucket.length === 0) continue;
+      const rows = bucket.map((d) => ({
         workspace_id: workspaceId,
         scenario,
         key: d.key,
@@ -264,15 +283,21 @@ Never include keys outside the supplied missing_keys array.`;
         .from("financial_prefill_proposals")
         .insert(rows, { count: "exact" });
       if (insErr) {
-        console.error("[generate-financial-prefill] insert error", insErr);
-        return corsJsonResponse({ error: `Insert failed: ${insErr.message}`, warnings }, req, 500);
+        console.error(`[generate-financial-prefill] insert error (${src})`, insErr);
+        bySource[src].failed = rows.length;
+        bySource[src].error = insErr.message;
+        warnings.push(`${src}: ${insErr.message}`);
+        continue;
       }
-      created = count ?? rows.length;
+      const c = count ?? rows.length;
+      bySource[src].created = c;
+      created += c;
     }
 
     return corsJsonResponse({
       success: true,
       proposals_created: created,
+      by_source: bySource,
       skipped_keys: skipped,
       warnings,
     }, req, 200);
