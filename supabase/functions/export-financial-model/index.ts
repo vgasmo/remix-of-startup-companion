@@ -48,24 +48,66 @@ serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const versionId: string | undefined = body?.version_id;
-    if (!versionId) return corsJsonResponse({ error: "version_id is required" }, req, 400);
+    const bodyWorkspaceId: string | undefined = body?.workspace_id;
+    const bodyScenario: string = (body?.scenario as string) ?? "base";
 
-    const { data: version, error: versionErr } = await supabase
-      .from("financial_model_versions")
-      .select("id, workspace_id, template_schema_version, key_metrics_json, assumptions_json")
-      .eq("id", versionId)
-      .single();
-    if (versionErr || !version) {
-      return corsJsonResponse({ error: `Version not found: ${versionErr?.message ?? "missing"}` }, req, 404);
+    // Two entrypoints:
+    //  A) version_id -> pull values from financial_model_versions.assumptions_json
+    //  B) workspace_id + scenario -> pull values from financial_assumptions
+    //     (Guided Plan path — no persisted version yet).
+    if (!versionId && !bodyWorkspaceId) {
+      return corsJsonResponse({ error: "version_id or workspace_id is required" }, req, 400);
     }
 
-    const { data: hasAccess } = await supabase.rpc("has_workspace_access", {
-      _user_id: user.id,
-      _workspace_id: version.workspace_id,
-    });
-    if (!hasAccess) return corsJsonResponse({ error: "Access denied" }, req, 403);
+    let workspaceIdResolved: string;
+    let schemaVersion: number = 1;
+    let assumptionsLookup: (key: string) => unknown;
+    let exportRefId: string; // used for signed url path + activity log
 
-    const schemaVersion: number = version.template_schema_version ?? 1;
+    if (versionId) {
+      const { data: version, error: versionErr } = await supabase
+        .from("financial_model_versions")
+        .select("id, workspace_id, template_schema_version, key_metrics_json, assumptions_json")
+        .eq("id", versionId)
+        .single();
+      if (versionErr || !version) {
+        return corsJsonResponse({ error: `Version not found: ${versionErr?.message ?? "missing"}` }, req, 404);
+      }
+      workspaceIdResolved = version.workspace_id;
+      schemaVersion = version.template_schema_version ?? 1;
+      exportRefId = versionId;
+
+      const { data: hasAccess } = await supabase.rpc("has_workspace_access", {
+        _user_id: user.id, _workspace_id: workspaceIdResolved,
+      });
+      if (!hasAccess) return corsJsonResponse({ error: "Access denied" }, req, 403);
+
+      const assumptions = (version.assumptions_json ?? {}) as Record<string, unknown>;
+      const metrics = (version.key_metrics_json ?? {}) as Record<string, unknown>;
+      assumptionsLookup = (key: string) => assumptions[key] ?? metrics[key];
+    } else {
+      workspaceIdResolved = bodyWorkspaceId!;
+      exportRefId = `guided-${workspaceIdResolved}-${bodyScenario}`;
+
+      const { data: hasAccess } = await supabase.rpc("has_workspace_access", {
+        _user_id: user.id, _workspace_id: workspaceIdResolved,
+      });
+      if (!hasAccess) return corsJsonResponse({ error: "Access denied" }, req, 403);
+
+      const { data: rows, error: aErr } = await supabase
+        .from("financial_assumptions")
+        .select("key, value_numeric, value_json")
+        .eq("workspace_id", workspaceIdResolved)
+        .eq("scenario", bodyScenario);
+      if (aErr) return corsJsonResponse({ error: `Assumptions load failed: ${aErr.message}` }, req, 500);
+
+      const map = new Map<string, unknown>();
+      for (const r of rows ?? []) {
+        map.set(r.key as string, (r.value_numeric ?? r.value_json) as unknown);
+      }
+      assumptionsLookup = (key: string) => map.get(key);
+    }
+
 
     // Locate active canonical XLSM asset for this schema version.
     const { data: asset, error: assetErr } = await supabase
