@@ -63,6 +63,7 @@ interface SessionDetailDialogProps {
 
 export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOpenChange, onOpenFacilitator }: SessionDetailDialogProps) {
   const { t } = useTranslation();
+  const locale = useDateLocale();
   const { isAdmin, isConsultor, isFounder } = useAuth();
   const isStaff = isAdmin || isConsultor;
   const canUseFacilitator = isStaff;
