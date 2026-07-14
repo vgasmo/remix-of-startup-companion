@@ -255,7 +255,7 @@ export function useResolvePrefillProposal(workspaceId: string) {
       if (error) throw error;
     },
     onSuccess: (_r, vars) => {
-      qc.invalidateQueries({ queryKey: ['financial-prefill-proposals', workspaceId, vars.proposal.scenario] });
+      qc.invalidateQueries({ queryKey: ['financial-prefill-proposals', workspaceId, 'all'] });
       qc.invalidateQueries({ queryKey: ['financial-assumptions', workspaceId, vars.proposal.scenario] });
     },
   });
