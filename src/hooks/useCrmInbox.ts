@@ -8,6 +8,7 @@ export interface CrmInboxItem {
   contact_name: string | null;
   organization_name: string | null;
   contact_email: string | null;
+  contact_phone: string | null;
   stage: FunnelStage;
   owner_consultant_id: string | null;
   program_id: string | null;
@@ -15,6 +16,14 @@ export interface CrmInboxItem {
   next_action_description: string | null;
   last_activity_at: string | null;
   linked_workspace_id: string | null;
+  notes: string | null;
+  source: string | null;
+  first_contact_at: string | null;
+  metadata_json: unknown;
+  deal_value: number | null;
+  deal_currency: string | null;
+  expected_close_date: string | null;
+  win_probability: number | null;
   created_at: string;
   owner?: { id: string; full_name: string | null } | null;
   program?: { id: string; name: string } | null;
