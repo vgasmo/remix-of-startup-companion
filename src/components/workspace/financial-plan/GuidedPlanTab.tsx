@@ -739,6 +739,11 @@ function PackRunner({
                   source: 'founder' as AssumptionSource,
                   rationale: t('financialPlan.idkRationale', { defaultValue: 'Skipped by founder — revisit later' }) as string,
                 });
+                // Fire-and-forget: enqueue a consultor review item so staff
+                // knows the founder is stuck on this specific assumption.
+                if (onSkipQuestion) {
+                  void onSkipQuestion(q.key, assumptionLabel(t, q.key));
+                }
                 setValue(''); setRationale('');
               } catch (e: any) {
                 notify.error(e?.message ?? t('financialPlan.saveFailed', { defaultValue: 'Save failed' }));
