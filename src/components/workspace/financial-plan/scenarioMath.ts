@@ -13,73 +13,52 @@ export interface Sensitivity {
   cmvmcDelta: number;
   /** Percentage multiplier applied on top of total payroll (-50..+50). */
   payrollDelta: number;
+  /** Percentage-points added to monthly churn. Not exposed as a user slider —
+   *  driven by scenario bias only so pessimism/optimism moves LTV:CAC. */
+  churnDelta: number;
 }
 
 export const DEFAULT_SENSITIVITY: Sensitivity = {
   revenueGrowth: 0,
   cmvmcDelta: 0,
   payrollDelta: 0,
+  churnDelta: 0,
 };
+
+/**
+ * PT employer social-security ("Taxa Social Única") on gross salary.
+ * Standard TSU is 23.75% for private employers (Segurança Social).
+ * Applied as a fixed uplift on top of the 14-month gross payroll.
+ */
+export const TSU_RATE = 0.2375;
 
 /** Per-scenario bias applied on top of user sliders. */
 export const SCENARIO_BIAS: Record<ScenarioKey, Sensitivity> = {
-  conservative: { revenueGrowth: -10, cmvmcDelta: +5, payrollDelta: +5 },
-  base:         { revenueGrowth: 0,   cmvmcDelta: 0,  payrollDelta: 0 },
-  optimistic:   { revenueGrowth: +10, cmvmcDelta: -5, payrollDelta: -5 },
+  conservative: { revenueGrowth: -10, cmvmcDelta: +5, payrollDelta: +5, churnDelta: +1 },
+  base:         { revenueGrowth: 0,   cmvmcDelta: 0,  payrollDelta: 0,  churnDelta: 0 },
+  optimistic:   { revenueGrowth: +10, cmvmcDelta: -5, payrollDelta: -5, churnDelta: -1 },
 };
-
-export interface Kpis {
-  revenueY1: number;
-  revenueY2: number;
-  cogs: number;
-  grossProfit: number;
-  grossMarginPct: number;
-  payrollYear: number;
-  ebitdaProxy: number;
-  ltv: number | null;
-  cac: number | null;
-  ltvCac: number | null;
-  paybackMonths: number | null;
-}
-
-function num(assumptions: FinancialAssumption[], key: string, fallback = 0): number {
-  // Defensive: on legacy duplicate rows for the same key, prefer the latest
-  // updated_at so a correction always wins over the stale original.
-  let picked: FinancialAssumption | undefined;
-  for (const x of assumptions) {
-    if (x.key !== key) continue;
-    if (!picked || (x.updated_at ?? '') > (picked.updated_at ?? '')) picked = x;
-  }
-  const v = picked?.value_numeric;
-  return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
-}
-
-export function computeKpis(
-  a: FinancialAssumption[],
-  s: Sensitivity,
-  bias: Sensitivity = SCENARIO_BIAS.base,
-): Kpis {
-  const qty = num(a, 'revenue.item1.qty_y1');
-  const price = num(a, 'revenue.item1.price');
-  const growthPct = num(a, 'revenue.item1.growth') + s.revenueGrowth + bias.revenueGrowth;
-  const cmvmcPct = Math.max(0, num(a, 'cost.cmvmc_pct') + s.cmvmcDelta + bias.cmvmcDelta);
-  const headcount = num(a, 'team.headcount_y1');
-  const avgSalary = num(a, 'team.avg_salary_month');
-  const payrollMult = 1 + (s.payrollDelta + bias.payrollDelta) / 100;
-
+...
   const revenueY1 = qty * price;
   const revenueY2 = revenueY1 * (1 + growthPct / 100);
   const cogs = revenueY1 * (cmvmcPct / 100);
   const grossProfit = revenueY1 - cogs;
   const grossMarginPct = revenueY1 > 0 ? (grossProfit / revenueY1) * 100 : 0;
-  // 14 months in PT payroll (12 + holiday + Xmas subsidies) as a rough proxy.
-  const payrollYear = headcount * avgSalary * 14 * payrollMult;
+  // 14 months in PT payroll (12 + holiday + Xmas subsidies) grossed up by the
+  // employer TSU contribution (23.75%) — this is the number a founder actually
+  // pays out, not just the salary line.
+  const payrollYear = headcount * avgSalary * 14 * (1 + TSU_RATE) * payrollMult;
   const ebitdaProxy = grossProfit - payrollYear;
 
   const cacRaw = a.find(x => x.key === 'ue.cac')?.value_numeric ?? null;
   const arpu = a.find(x => x.key === 'ue.arpu_month')?.value_numeric ?? null;
   const gmPct = a.find(x => x.key === 'ue.gross_margin_pct')?.value_numeric ?? null;
-  const churnPct = a.find(x => x.key === 'ue.churn_monthly_pct')?.value_numeric ?? null;
+  const churnRaw = a.find(x => x.key === 'ue.churn_monthly_pct')?.value_numeric ?? null;
+  // Conservative bumps churn (worsens LTV:CAC); optimistic trims it.
+  // Clamp to (0, 100] so lifetime stays defined.
+  const churnPct = churnRaw == null
+    ? null
+    : Math.min(100, Math.max(0, churnRaw + bias.churnDelta));
 
   let ltv: number | null = null;
   let ltvCac: number | null = null;
