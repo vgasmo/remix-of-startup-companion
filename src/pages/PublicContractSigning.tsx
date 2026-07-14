@@ -1023,15 +1023,32 @@ export default function PublicContractSigning() {
 
               {/* Regulation Document */}
               <div className="border rounded-lg p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-amber-600" />
-                  <div>
-                    <p className="text-sm font-medium">
-                      {t('publicContractSigning.startupLeiriaRegulation')}
-                    </p>
-                    <p className="text-xs text-muted-foreground">V11 — Anexo I — 2026</p>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-amber-600" />
+                    <div>
+                      <p className="text-sm font-medium">
+                        {t('publicContractSigning.startupLeiriaRegulation')}
+                      </p>
+                      <p className="text-xs text-muted-foreground">V11 — Anexo I — 2026</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a href="/templates/V11_Anexo_I_Regulamento_SUP_LRA_2026_2.pdf" target="_blank" rel="noopener noreferrer">
+                      <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+                        <Eye className="h-3.5 w-3.5" />
+                        {lang === 'pt' ? 'Ver' : 'View'}
+                      </Button>
+                    </a>
+                    <a href="/templates/V11_Anexo_I_Regulamento_SUP_LRA_2026_2.pdf" download>
+                      <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+                        <Download className="h-3.5 w-3.5" />
+                        {lang === 'pt' ? 'Descarregar' : 'Download'}
+                      </Button>
+                    </a>
                   </div>
                 </div>
+
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {t('publicContractSigning.theRegulationDefinesTheOperating')}
                 </p>
