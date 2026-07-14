@@ -96,10 +96,17 @@ export function ScenarioSensitivityPanel({ workspaceId, canWrite, assumptions, o
         });
       }
       notify.success(t('financialPlan.sensitivity.savedAs', {
-        defaultValue: 'Saved as {{scenario}} ({{n}} value(s))',
+        defaultValue: 'Saved as {{scenario}} ({{n}} value(s)) — showing updated plan',
         scenario: t(`financialPlan.scenario.${target}`, { defaultValue: target }),
         n: rows.length,
       }));
+      // Reset sliders so the recomputed table reflects the persisted values
+      // (deltas are now baked into the assumptions themselves).
+      setSens(DEFAULT_SENSITIVITY);
+      // Ask parent to switch the active scenario so the whole panel — including
+      // the assumptions register and KPI columns — refreshes to the just-saved
+      // scenario without needing a page reload.
+      onScenarioSaved?.(target);
     } catch (e: any) {
       notify.error(e?.message ?? t('financialPlan.sensitivity.saveFailed', { defaultValue: 'Save failed' }));
     } finally {
