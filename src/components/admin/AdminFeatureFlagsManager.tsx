@@ -36,6 +36,7 @@ export function AdminFeatureFlagsManager() {
   const { t } = useTranslation();
   const { data: flags, isLoading } = useFeatureFlags();
   const updateFlag = useUpdateFeatureFlag();
+  const deleteWorkspaceFlag = useDeleteWorkspaceFlag();
 
   const handleToggle = (flagId: string, currentEnabled: boolean) => {
     updateFlag.mutate(
