@@ -823,6 +823,10 @@ export function AdminBackoffice() {
           <BackofficeIncubationTypesTab />
         </TabsContent>
 
+        <TabsContent value="founder-requests">
+          <FounderRequestsInbox />
+        </TabsContent>
+
         {/* Archive & Backups Tab — governance roles only */}
         {isGovernance && (
           <TabsContent value="archive">
