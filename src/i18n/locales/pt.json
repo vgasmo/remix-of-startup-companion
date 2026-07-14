@@ -9684,7 +9684,7 @@
       "empty": "Preenche receita e custos para veres a projeção.",
       "footnote": "Ilustrativo — calculado ao vivo a partir do teu registo de pressupostos. Não substitui o modelo XLSM canónico.",
       "saveAs": "Guardar como…",
-      "savedAs": "Guardado como {{scenario}} ({{n}} valor(es))",
+      "savedAs": "Guardado como {{scenario}} ({{n}} valor(es)) — a mostrar plano atualizado",
       "noDeltas": "Sem alterações a guardar — sliders e cenário coincidem com o base.",
       "saveFailed": "Falha ao guardar"
     },
