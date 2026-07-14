@@ -525,6 +525,44 @@ serve(async (req) => {
       console.warn('Failed to create CRM notification:', notifErr);
     }
 
+    // === Internal notification for the founder (if they already have an account) ===
+    try {
+      const { data: founderProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', contact.email)
+        .maybeSingle();
+
+      if (founderProfile?.id) {
+        const dt = `${slot.date} ${slot.time}`;
+        await supabase.from('notifications').insert({
+          user_id: founderProfile.id,
+          type: 'first_contact_booked',
+          title: 'Marcação de Primeiro Contacto confirmada',
+          message: `A tua reunião está agendada para ${dt} (Europe/Lisbon).${teamsLink ? ' Convite do Teams enviado por email.' : ''}`,
+          link: `/crm?open=${funnelItemId}`,
+          entity_type: 'funnel_item',
+          entity_id: funnelItemId,
+          event_key: `first_contact_booked_founder:${funnelItemId}:${slot.date}T${slot.time}`,
+          read: false,
+          metadata: {
+            funnel_item_id: funnelItemId,
+            booking_date: slot.date,
+            booking_time: slot.time,
+            timezone: 'Europe/Lisbon',
+            teams_link: teamsLink,
+            calendar_event_id: calendarEventId,
+            consultant_id: consultantId,
+            consultant_name: consultantName,
+            source: 'public_booking',
+          },
+        });
+      }
+    } catch (founderNotifErr) {
+      console.warn('Failed to create founder notification:', founderNotifErr);
+    }
+
+
 
     // === Send alert email to consultant (fire-and-forget) ===
     try {
