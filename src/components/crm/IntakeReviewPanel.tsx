@@ -337,6 +337,8 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
                   size="sm"
                   className="gap-1.5 bg-[hsl(var(--success))] hover:bg-[hsl(var(--success))]"
                   onClick={() => setShowNotes('approve')}
+                  disabled={contractBlocksApproval}
+                  title={contractBlocksApproval ? 'Contrato incompleto ou em falta — crie/complete o contrato primeiro' : undefined}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   Aprovar para Assinatura
