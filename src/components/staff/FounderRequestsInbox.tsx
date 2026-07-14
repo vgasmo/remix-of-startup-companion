@@ -159,7 +159,7 @@ function RequestRow({
 }: {
   r: EnrichedRequest;
   lang: 'pt' | 'en';
-  locale: Locale;
+  locale: typeof pt;
   onUpdate: (patch: { status?: FounderRequestStatus; staff_notes?: string | null }) => void;
 }) {
   const [notes, setNotes] = useState(r.staff_notes || '');
