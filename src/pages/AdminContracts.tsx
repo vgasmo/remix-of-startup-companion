@@ -85,9 +85,16 @@ export default function AdminContracts() {
         .from('startup_contracts')
         .select(`
           id, contract_number, status, signature_status, organization_name,
-          legal_representative_name, legal_representative_email, company_nif,
+          legal_representative_name, legal_representative_email, legal_representative_phone,
+          billing_email, company_nif, company_address, company_city, company_postal_code,
           start_date, signed_at, created_at, document_url, contract_pdf_path, workspace_id,
-          workspaces:workspace_id ( id, startup_id, startups:startup_id ( name ) )
+          workspaces:workspace_id (
+            id, startup_id,
+            startups:startup_id (
+              name, description, website, phone, address,
+              main_contact_name, main_contact_email, main_contact_phone
+            )
+          )
         `)
         .order('created_at', { ascending: false })
         .limit(500);
