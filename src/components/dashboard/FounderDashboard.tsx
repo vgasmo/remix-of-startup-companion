@@ -673,7 +673,9 @@ function WeeklyGreetingSubline({ userId, workspaceId, isFirstWeek }: { userId?: 
   }
 
   const pending = (actions ?? []).filter((a) => a.status !== 'completed').length;
-  const upcoming = (sessions ?? []).length;
+  // G1: sessions come from all workspaces — filter to this one so a two-startup
+  // founder doesn't see the other startup's count in their weekly greeting.
+  const upcoming = (sessions ?? []).filter((s) => s.workspace_id === workspaceId).length;
 
   return (
     <p className="text-sm text-muted-foreground motion-safe:animate-fade-in">
