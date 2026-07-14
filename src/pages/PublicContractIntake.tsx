@@ -355,7 +355,87 @@ export default function PublicContractIntake() {
               <p className="text-sm text-amber-700 dark:text-amber-300">{intake.changes_requested_notes}</p>
             </CardContent>
           </Card>
+
+        {/* Commercial proposal snapshot from CRM */}
+        {intake.commercial_proposal && (
+          <Card className="border-primary/30">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Shield className="h-4 w-4 text-primary" />
+                {lang === 'pt' ? 'Proposta Comercial' : 'Commercial Proposal'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                {intake.commercial_proposal.proposed_incubation_type_name && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">{lang === 'pt' ? 'Tipo de incubação' : 'Incubation type'}</p>
+                    <p className="font-medium">{intake.commercial_proposal.proposed_incubation_type_name}</p>
+                  </div>
+                )}
+                {intake.commercial_proposal.proposed_fee != null && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">{lang === 'pt' ? 'Mensalidade proposta' : 'Proposed monthly fee'}</p>
+                    <p className="font-medium">
+                      {new Intl.NumberFormat(lang === 'pt' ? 'pt-PT' : 'en-GB', { style: 'currency', currency: intake.commercial_proposal.deal_currency || 'EUR' }).format(Number(intake.commercial_proposal.proposed_fee))}
+                    </p>
+                  </div>
+                )}
+                {intake.commercial_proposal.proposed_discount != null && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">{lang === 'pt' ? 'Desconto potencial' : 'Potential discount'}</p>
+                    <p className="font-medium">{Number(intake.commercial_proposal.proposed_discount)}%</p>
+                  </div>
+                )}
+                {intake.commercial_proposal.deal_value != null && intake.commercial_proposal.proposed_fee == null && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">{lang === 'pt' ? 'Valor estimado' : 'Estimated value'}</p>
+                    <p className="font-medium">
+                      {new Intl.NumberFormat(lang === 'pt' ? 'pt-PT' : 'en-GB', { style: 'currency', currency: intake.commercial_proposal.deal_currency || 'EUR' }).format(Number(intake.commercial_proposal.deal_value))}
+                    </p>
+                  </div>
+                )}
+              </div>
+              {intake.commercial_proposal.commercial_notes && (
+                <div>
+                  <p className="text-xs text-muted-foreground">{lang === 'pt' ? 'Notas comerciais' : 'Commercial notes'}</p>
+                  <p className="whitespace-pre-wrap text-sm">{intake.commercial_proposal.commercial_notes}</p>
+                </div>
+              )}
+              <div className="border-t pt-3 space-y-1.5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {lang === 'pt' ? 'Documentos para análise' : 'Documents for review'}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href="/templates/V11_Anexo_I_Regulamento_SUP_LRA_2026_2.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+                  >
+                    <Shield className="h-3.5 w-3.5" />
+                    {lang === 'pt' ? 'Regulamento (PDF)' : 'Regulation (PDF)'}
+                  </a>
+                  <a
+                    href="/templates/V9_Minuta_Contrato_IF_e_IV_2026.docx"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+                  >
+                    <Shield className="h-3.5 w-3.5" />
+                    {lang === 'pt' ? 'Minuta de Contrato' : 'Standard Contract'}
+                  </a>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  {lang === 'pt'
+                    ? 'Reveja os termos padrão antes de submeter os dados. A assinatura será feita numa fase seguinte.'
+                    : 'Please review the standard terms before submitting your data. Signature happens in a later step.'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         )}
+
 
         {/* Info banner */}
         <Card className="border-primary/20 bg-primary/5">
