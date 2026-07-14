@@ -73,6 +73,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown } from 'lucide-react';
 import { ProgramSwitcher } from '@/components/workspace/ProgramSwitcher';
 import { PrivateDocumentsPanel } from '@/components/workspace/PrivateDocumentsPanel';
+import { PlanAssistantsCard } from '@/components/workspace/PlanAssistantsCard';
 
 interface WorkspaceOverviewProps {
   workspace: {
