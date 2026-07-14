@@ -59,6 +59,20 @@ export const WorkspaceCard = memo(function WorkspaceCard({ workspace, onClick, k
             <p className="text-sm text-muted-foreground truncate">
               {workspace.program?.name}
             </p>
+            {isStaff && workspace.program_id && (
+              <div
+                className="mt-1.5"
+                onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+                <ProgramSwitcher
+                  workspaceId={workspace.id}
+                  currentProgramId={workspace.program_id}
+                  size="sm"
+                  className="h-7 w-full text-xs"
+                />
+              </div>
+            )}
           </div>
           <div className="flex flex-col items-end gap-1" data-tour="health-badge">
             <HealthBadge score={effectiveHealth as HealthScore | null} size="sm" />
