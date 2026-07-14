@@ -9375,6 +9375,7 @@
     "snooze7Days": "Snooze 7 days",
     "snoozeFailed": "Failed to snooze",
     "snoozedForDays": "Snoozed for {{days}} days",
+    "stillPendingValidation": "{{count}} actions still awaiting validation.",
     "statusAll": "All",
     "statusDone": "Done",
     "statusInProgress": "In Progress",
