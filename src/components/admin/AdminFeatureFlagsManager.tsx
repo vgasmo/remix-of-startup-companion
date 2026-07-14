@@ -44,6 +44,30 @@ export function AdminFeatureFlagsManager() {
   const { data: flags, isLoading } = useFeatureFlags();
   const updateFlag = useUpdateFeatureFlag();
   const deleteWorkspaceFlag = useDeleteWorkspaceFlag();
+  const upsertWorkspaceFlag = useUpsertWorkspaceFlag();
+
+  // Local form state for creating a workspace override
+  const [newFlagKey, setNewFlagKey] = useState<FeatureFlagKey>('financial_business_plan_coach_v1');
+  const [newFlagWorkspaceId, setNewFlagWorkspaceId] = useState('');
+  const [newFlagEnabled, setNewFlagEnabled] = useState(true);
+
+  const handleCreateWorkspaceOverride = () => {
+    const wsId = newFlagWorkspaceId.trim();
+    if (!wsId) {
+      notify.error(t('admin.featureFlags.workspaceIdRequired', 'ID do workspace obrigatório'));
+      return;
+    }
+    upsertWorkspaceFlag.mutate(
+      { key: newFlagKey, workspaceId: wsId, enabled: newFlagEnabled },
+      {
+        onSuccess: () => {
+          notify.success(t('admin.featureFlags.overrideCreated', 'Override criado para este workspace.'));
+          setNewFlagWorkspaceId('');
+        },
+        onError: (err: any) => notify.error(err?.message ?? 'Erro'),
+      },
+    );
+  };
 
   const handleToggle = (flagId: string, currentEnabled: boolean) => {
     updateFlag.mutate(
