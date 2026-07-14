@@ -282,6 +282,7 @@
       "allocations": "allocations",
       "amenities": "Amenities",
       "amount": "Amount",
+      "anniversaryLine": "Completes {{years}} year(s) on {{date}} ({{days}} days)",
       "archiveAndBackups": "Archive & Backups",
       "archived": "Archived",
       "assignQuick": "Assign",
@@ -323,6 +324,7 @@
       "consultant": "Consultant",
       "consultantAssigned": "Consultant assigned",
       "consultantRemoved": "Consultant removed",
+      "contract": "Contract",
       "contractNumber": "Contract Number",
       "contractSigners": {
         "autoAssigned": "Will be auto-assigned on send",
@@ -330,6 +332,7 @@
         "firstParty": "First Party",
         "secondParty": "Second Party"
       },
+      "contractSince": "Under contract since",
       "contractStatus": {
         "active": "Active",
         "draft": "Draft",
@@ -417,7 +420,12 @@
       "floorPlan": "Floor Plan",
       "fulfillRequest": "Fulfill Request",
       "health": "Health",
+      "hero": {
+        "eyebrow": "Backoffice",
+        "subline": "Integrated management of spaces, contracts, and operations."
+      },
       "hotDesk": "Hot Desk",
+      "inSpaceSince": "In space since",
       "inactive": "Inactive",
       "includesOfficeSpace": "Includes Office Space",
       "incubationType": "Incubation Type",
@@ -496,15 +504,9 @@
       "occupiedRooms": "Occupied",
       "officeIncluded": "Office included",
       "officeSpaces": "Office Spaces",
+      "openContract": "Open contract",
       "openPdf": "Open PDF",
       "openStartup": "Open Startup",
-      "openContract": "Open contract",
-      "contract": "Contract",
-      "contractSince": "Under contract since",
-      "inSpaceSince": "In space since",
-      "sinceShort": "Since",
-      "reviewTerms": "Review terms",
-      "anniversaryLine": "Completes {{years}} year(s) on {{date}} ({{days}} days)",
       "opsHub": {
         "allContractsGood": "All contracts in good standing",
         "allPaid": "All invoices paid",
@@ -572,6 +574,7 @@
       "requestFor": "Request For",
       "requestType": "Request Type",
       "requiresSpace": "Requires Space Allocation",
+      "reviewTerms": "Review terms",
       "room": "Room",
       "roomMapping": "Space Management",
       "roomMappingDesc": "Map rooms and track which startups are where",
@@ -622,8 +625,12 @@
       "shapeUpdateFailed": "Failed to update room shape",
       "shapeUpdated": "Room shape updated",
       "since": "since",
+      "sinceShort": "Since",
       "space": "Space",
       "spaceAssigned": "Space assigned successfully",
+      "spaceDetailsEmpty": "Select a space to see the details.",
+      "spaceDetailsEmptyBody": "No space selected.",
+      "spaceDetailsTitle": "Space details",
       "spaceName": "Space Name",
       "spaceNamePlaceholder": "Desk A1, Office 101...",
       "spaceTypes": {
@@ -632,9 +639,6 @@
         "meetingRoom": "Meeting Room",
         "privateOffice": "Private Office"
       },
-      "spaceDetailsEmpty": "Select a space to see the details.",
-      "spaceDetailsEmptyBody": "No space selected.",
-      "spaceDetailsTitle": "Space details",
       "spaceVacated": "Space vacated successfully",
       "spaces": "Spaces",
       "spacesAndInfra": "Spaces & Infrastructure",
@@ -687,11 +691,7 @@
       "waitlistSuggestions": "Waitlist Suggestions",
       "workspaceBlocked": "Workspace blocked",
       "workspaceUnblocked": "Workspace unblocked",
-      "workspacesWithoutContracts": "Workspaces Without Contracts",
-      "hero": {
-        "eyebrow": "Backoffice",
-        "subline": "Integrated management of spaces, contracts, and operations."
-      }
+      "workspacesWithoutContracts": "Workspaces Without Contracts"
     },
     "backofficeExtended": {
       "addSpace": "Add Space",
@@ -1320,59 +1320,59 @@
       "titleRequired": "Title is required"
     },
     "surveys": {
+      "addQuestion": "Add question",
+      "addToSection": "Add to section",
       "analytics": "Analytics",
       "analyticsComingSoon": "Survey analytics dashboard coming soon",
+      "autoFillKey": "Auto-fill key",
       "campaignName": "Campaign Name",
       "campaigns": "Campaigns",
+      "clearAnswers": "Clear answers",
       "close": "Close",
       "completion": "Completion",
+      "confirmDeleteQuestion": "Delete this question?",
+      "confirmDeleteQuestionDesc": "This action cannot be undone.",
+      "confirmDeleteTemplate": "Delete this template?",
+      "confirmDeleteTemplateDesc": "All questions will be removed. Associated campaigns remain archived.",
+      "createBlank": "Create blank template",
       "createCampaign": "Create Survey Campaign",
       "createDefaultTemplate": "Create Ecosystem Survey Template",
       "createFirst": "Create Campaign",
       "description": "Create and manage periodic ecosystem surveys",
+      "descriptionPlaceholder": "Survey description (optional)",
+      "editQuestion": "Edit question",
+      "emptyQuestions": "No questions in this section.",
       "endDate": "End",
+      "exitPreview": "Exit preview",
       "launch": "Launch",
       "manageTemplates": "Templates",
       "newCampaign": "New Campaign",
       "noCampaigns": "No campaigns yet",
       "noCampaignsDesc": "Create your first survey campaign to collect ecosystem data",
       "noTemplates": "No survey templates yet",
+      "options": "Options",
+      "preview": "Preview",
+      "previewNotice": "Survey preview. No responses are saved.",
       "progress": "Progress",
+      "questionText": "Question text",
+      "questions": "Questions",
+      "required": "Required",
+      "respondentMode": "Respondent mode",
+      "respondentNotice": "You are answering in preview mode. Responses are not saved.",
       "responses": "Responses",
+      "section": "Section",
       "selectTemplate": "Survey Template",
+      "simulateSubmit": "Simulate submission",
+      "simulatedNotice": "These answers were not saved — simulation only.",
+      "simulatedResponses": "Simulated responses",
       "startDate": "Start",
       "submitted": "submitted",
       "template": "Template",
       "templateEditor": "Survey Templates",
       "templates": "Templates",
       "title": "Ecosystem Surveys",
-      "viewResponses": "View Responses",
-      "options": "Options",
-      "autoFillKey": "Auto-fill key",
-      "required": "Required",
-      "respondentMode": "Respondent mode",
-      "respondentNotice": "You are answering in preview mode. Responses are not saved.",
-      "previewNotice": "Survey preview. No responses are saved.",
-      "clearAnswers": "Clear answers",
-      "simulateSubmit": "Simulate submission",
-      "simulatedResponses": "Simulated responses",
-      "simulatedNotice": "These answers were not saved — simulation only.",
-      "addQuestion": "Add question",
-      "addToSection": "Add to section",
-      "confirmDeleteQuestion": "Delete this question?",
-      "confirmDeleteQuestionDesc": "This action cannot be undone.",
-      "confirmDeleteTemplate": "Delete this template?",
-      "confirmDeleteTemplateDesc": "All questions will be removed. Associated campaigns remain archived.",
-      "createBlank": "Create blank template",
-      "descriptionPlaceholder": "Survey description (optional)",
-      "editQuestion": "Edit question",
-      "emptyQuestions": "No questions in this section.",
-      "exitPreview": "Exit preview",
-      "preview": "Preview",
-      "questionText": "Question text",
-      "questions": "Questions",
-      "section": "Section",
-      "type": "Type"
+      "type": "Type",
+      "viewResponses": "View Responses"
     },
     "suspend": "Suspend",
     "suspendUser": "Suspend User",
@@ -1922,14 +1922,6 @@
     "updatePassword": "Update Password"
   },
   "backoffice": {
-    "invoiceStatus": {
-      "draft": "Draft",
-      "sent": "Sent",
-      "paid": "Paid",
-      "overdue": "Overdue",
-      "cancelled": "Cancelled",
-      "refunded": "Refunded"
-    },
     "allocationEndError": "Failed to end allocation",
     "allocationEnded": "Allocation ended",
     "billing": {
@@ -1964,6 +1956,14 @@
     "incubationTypeUpdated": "Incubation type updated",
     "invoiceCreateError": "Failed to create invoice",
     "invoiceCreated": "Invoice created",
+    "invoiceStatus": {
+      "cancelled": "Cancelled",
+      "draft": "Draft",
+      "overdue": "Overdue",
+      "paid": "Paid",
+      "refunded": "Refunded",
+      "sent": "Sent"
+    },
     "invoiceUpdateError": "Failed to update invoice",
     "invoiceUpdated": "Invoice updated",
     "paymentRecordError": "Failed to record payment",
@@ -2194,14 +2194,12 @@
     "claimedTitle": "Startup verified!",
     "error": "An error occurred during verification. Please try again.",
     "errorTitle": "Verification error",
-    "loadFailed": "Could not load claim requests.",
-    "rejectConfirmDesc": "The requester will be notified. This action cannot be undone.",
-    "rejectConfirmTitle": "Reject this claim request?",
     "found": "Startup verified successfully!",
     "goToWorkspace": "Go to my workspace",
     "howItWorks": "We'll check if there's a startup linked to your email. If we find one, it will be automatically linked to your account.",
     "howItWorksTitle": "Como funciona",
     "inviteOnlyNote": "Invite-only platform. Verification is quick and secure.",
+    "loadFailed": "Could not load claim requests.",
     "manualRequest": "Manual Request",
     "newStartupHint": "Have a new startup that isn't in the system yet?",
     "noMatchHint": "If we can't find a match, our team will review your request.",
@@ -2214,6 +2212,8 @@
     "pendingTiming": "You'll receive an email as soon as the team reviews your request.",
     "pendingTitle": "Request Under Review",
     "redirecting": "Redirecting to your workspace...",
+    "rejectConfirmDesc": "The requester will be notified. This action cannot be undone.",
+    "rejectConfirmTitle": "Reject this claim request?",
     "rejected": "Request rejected",
     "searching": "Verifying your startup...",
     "searchingHint": "Isto demora apenas alguns segundos.",
@@ -2764,37 +2764,11 @@
     }
   },
   "contractDetail": {
-    "renewCta": "Renew",
-    "renewTitle": "Renew contract",
-    "renewDesc": "Renews for 12 months from the day after the current end date. Updates end_date and logs a lifecycle event.",
-    "renewStart": "New start",
-    "renewEnd": "New end",
-    "renewFee": "Monthly fee (€)",
-    "confirmRenew": "Confirm renewal",
-    "renewSuccess": "Contract renewed",
-    "renewError": "Could not renew the contract",
-    "terminateCta": "Terminate",
-    "terminate": {
-      "title": "Terminate contract",
-      "description": "This marks the contract as terminated, frees allocated rooms and creates a task to cancel future sessions. It cannot be undone automatically — only via renewal.",
-      "reasonLabel": "Termination reason",
-      "reasonPlaceholder": "E.g. founder request, breach of contract, program change…",
-      "reasonRequired": "Please provide a termination reason.",
-      "archiveWorkspaceLabel": "Archive associated workspace",
-      "archiveWorkspaceHint": "You can revert later from the workspaces list.",
-      "confirm": "Terminate contract",
-      "success": "Contract terminated",
-      "error": "Could not terminate the contract",
-      "staffTaskTitle": "Cancel future sessions (contract terminated)",
-      "staffTaskDesc": "Contract {{ref}} terminated. Please review and cancel future sessions in the calendar.",
-      "notifyStaffTitle": "Contract terminated",
-      "notifyStaffMsg": "Contract {{ref}} was terminated. Reason: {{reason}}",
-      "notifyFounderTitle": "Your contract has been terminated",
-      "notifyFounderMsg": "The Startup Leiria team terminated the contract. Reason: {{reason}}"
-    },
     "completedAt": "Completed at",
     "configured": "Configured",
+    "confirmRenew": "Confirm renewal",
     "contractTimeline": "Contract Timeline",
+    "declinedNotice": "This contract was declined by the signer.",
     "digitalSignature": "🇵🇹 Digital Signature (Portuguese Nationals)",
     "digitalSignatureDesc": "The founder will receive a link to digitally sign on the platform. Simple electronic signature valid under eIDAS.",
     "docuSignNotConfigured": "Digital signature not configured",
@@ -2832,6 +2806,20 @@
     "providerUpdateFailed": "Error updating provider",
     "providerUpdated": "Signature provider updated",
     "refreshStatus": "Refresh Status",
+    "renewCta": "Renew",
+    "renewDesc": "Renews for 12 months from the day after the current end date. Updates end_date and logs a lifecycle event.",
+    "renewEnd": "New end",
+    "renewError": "Could not renew the contract",
+    "renewFee": "Monthly fee (€)",
+    "renewInvalidStatus": "Only active or expired contracts can be renewed.",
+    "renewNotifyMsg": "The renewal proposal has been sent to the signer.",
+    "renewNotifyTitle": "Renewal sent",
+    "renewStart": "New start",
+    "renewSuccess": "Contract renewed",
+    "renewTitle": "Renew contract",
+    "resetAndResend": "Reset and resend",
+    "resetFailed": "Unable to reset the contract.",
+    "resetOk": "Contract reset successfully.",
     "retry": "Retry",
     "retrySendDocuSign": "Retry via DocuSign",
     "retrySendPandaDoc": "Retry via PandaDoc",
@@ -2869,17 +2857,29 @@
     "step1DownloadPdf": "1. Download Contract PDF",
     "step2OpenPandaDoc": "2. Open PandaDoc (upload & send)",
     "step3MarkSent": "3. Already sent in PandaDoc → Mark as Sent",
+    "terminate": {
+      "archiveWorkspaceHint": "You can revert later from the workspaces list.",
+      "archiveWorkspaceLabel": "Archive associated workspace",
+      "confirm": "Terminate contract",
+      "description": "This marks the contract as terminated, frees allocated rooms and creates a task to cancel future sessions. It cannot be undone automatically — only via renewal.",
+      "error": "Could not terminate the contract",
+      "notifyFounderMsg": "The Startup Leiria team terminated the contract. Reason: {{reason}}",
+      "notifyFounderTitle": "Your contract has been terminated",
+      "notifyStaffMsg": "Contract {{ref}} was terminated. Reason: {{reason}}",
+      "notifyStaffTitle": "Contract terminated",
+      "reasonLabel": "Termination reason",
+      "reasonPlaceholder": "E.g. founder request, breach of contract, program change…",
+      "reasonRequired": "Please provide a termination reason.",
+      "staffTaskDesc": "Contract {{ref}} terminated. Please review and cancel future sessions in the calendar.",
+      "staffTaskTitle": "Cancel future sessions (contract terminated)",
+      "success": "Contract terminated",
+      "title": "Terminate contract"
+    },
+    "terminateCta": "Terminate",
     "viewInCRM": "View in CRM",
     "viewInvoices": "View Invoices",
     "viewWorkspace": "View Workspace",
-    "declinedNotice": "This contract was declined by the signer.",
-    "voidedNotice": "This contract has been voided.",
-    "resetOk": "Contract reset successfully.",
-    "resetFailed": "Unable to reset the contract.",
-    "resetAndResend": "Reset and resend",
-    "renewNotifyTitle": "Renewal sent",
-    "renewNotifyMsg": "The renewal proposal has been sent to the signer.",
-    "renewInvalidStatus": "Only active or expired contracts can be renewed."
+    "voidedNotice": "This contract has been voided."
   },
   "contractOnboarding": {
     "acceptContract": "I have read and accept the terms of the Incubation Contract, including the conditions of service, obligations and rights of the parties.",
@@ -2983,12 +2983,12 @@
     "bulk": {
       "archiveSelected": "Archive Selected",
       "archiveSuccess": "{{count}} contracts archived",
+      "selected": "{{count}} selected",
+      "terminateConfirm": "Terminate {{count}} contracts",
+      "terminateDescription": "You are about to terminate {{count}} contracts. Rooms will be freed and a task will be created to cancel future sessions.",
       "terminateSelected": "Terminate selected",
       "terminateSuccess": "{{count}} contracts terminated",
-      "terminateTitle": "Terminate contracts",
-      "terminateDescription": "You are about to terminate {{count}} contracts. Rooms will be freed and a task will be created to cancel future sessions.",
-      "terminateConfirm": "Terminate {{count}} contracts",
-      "selected": "{{count}} selected"
+      "terminateTitle": "Terminate contracts"
     },
     "confirmAnalysis": "Confirm AI Analysis",
     "confirmAnalysisDesc": "AI reviews the contract and flags dates, missing info and risks. Nothing is changed.",
@@ -3164,11 +3164,11 @@
       "moveSuccess": "{{count}} leads moved to {{stage}}",
       "moveTo": "Move to",
       "moveUndone": "Move reverted",
-      "partialEventFailures": "{{count}}/{{total}} events not recorded. History may be incomplete.",
       "nextActionConfirmDesc": "This will set the next action date to tomorrow ({{date}}) for all selected leads without a next action.",
       "nextActionConfirmTitle": "Set next action for {{count}} leads?",
       "nextActionFailed": "Failed to set next actions",
       "nextActionSuccess": "Next actions set for leads",
+      "partialEventFailures": "{{count}}/{{total}} events not recorded. History may be incomplete.",
       "selectLead": "Select lead",
       "selectLeads": "Select leads to perform bulk actions",
       "selectedCount": "{{count}} selected",
@@ -3278,6 +3278,7 @@
     "falhaAoReenviarUseO": "Failed to reenviar. Use o link copied como alternativa.",
     "filterByAssignee": "Assignee",
     "filterByProgram": "Program",
+    "filterBySegment": "Segment",
     "filterByStage": "Stage",
     "focusItems": "Focus Items",
     "focusMode": "Focus Mode",
@@ -3459,6 +3460,11 @@
     "saveChanges": "Save Changes",
     "saveCommercialProposal": "Save commercial proposal",
     "searchPlaceholder": "Search leads...",
+    "segment": {
+      "activeCustomers": "Active customers",
+      "all": "All",
+      "commercial": "Commercial pipeline"
+    },
     "selecioneUmProviderDeAssinatura": "Select a signature provider.",
     "selectCategory": "Definir categoria",
     "selectConsultor": "Selecionar...",
@@ -3471,6 +3477,8 @@
     "setReminder": "Definir Lembrete",
     "shareWithFounder": "Share with founder",
     "shared": "Shared",
+    "showLess": "Show less",
+    "showMoreEmails": "Show {{count}} more",
     "sinceLast": "Since last time",
     "source": "Source",
     "sourcePlaceholder": "Ex: Website, Event, Referral...",
@@ -3485,14 +3493,6 @@
     },
     "stale": "Stale leads (>14 days)",
     "staleTooltip": "Commercial opportunities with no recent activity and no scheduled next action. Active customers (incubating/accelerating) are not shown here.",
-    "filterBySegment": "Segment",
-    "segment": {
-      "all": "All",
-      "commercial": "Commercial pipeline",
-      "activeCustomers": "Active customers"
-    },
-    "showLess": "Show less",
-    "showMoreEmails": "Show {{count}} more",
     "startFirstSync": "Start first sync",
     "startupCategory": "Categoria",
     "suggestedNextSteps": "Suggested Next Steps",
@@ -3575,57 +3575,6 @@
     "upcomingSessions": "Upcoming Sessions",
     "viewAll": "View All"
   },
-  "dataImportV2": {
-    "title": "HubSpot Importer v2",
-    "subtitle": "Staged, server-side, idempotent import with full audit trail",
-    "contractBannerTitle": "No contracts are activated or signed by this import.",
-    "contractBannerDesc": "Startups, workspaces and contract proposals are opt-in per row. Committed data can be reverted from the audit.",
-    "step": {
-      "upload": "Upload",
-      "mapping": "Mapping",
-      "reconcile": "Reconcile",
-      "commit": "Commit",
-      "results": "Results"
-    },
-    "upload": {
-      "title": "Upload CRM export",
-      "desc": "CSV or XLSX/XLSM only. Legacy .xls is not supported."
-    },
-    "source": "Source system",
-    "phc": {
-      "notice": "PHC import is strict CRM-only. Building, service and price-list fields are stored as hints — never as fees or buildings. Column mapping is derived automatically from the PHC headers."
-    },
-    "analyze": "Analyze file",
-    "selectProgram": "Select program (optional)",
-    "mapping": {
-      "title": "Column mapping",
-      "desc": "Confirm which upload column feeds each internal field. Leave empty to ignore."
-    },
-    "reconcile": {
-      "title": "Reconciliation preview",
-      "desc": "Every match method and confidence is shown. Nothing is written until you approve and commit."
-    },
-    "commit": {
-      "title": "Commit approved rows",
-      "desc": "Only admins can commit. Rows are processed atomically; failures are recorded per row and safe to resume.",
-      "warning": "Contracts, occupied offices and consultant assignments require a separate staff review — never inferred from HubSpot."
-    },
-    "results": {
-      "title": "Import committed",
-      "desc": "Summary and downloadable exception report."
-    },
-    "prepared": "File analyzed: {{n}} rows",
-    "approved": "Approved {{n}} rows",
-    "commitDone": "Import committed",
-    "approveAll": "Approve valid rows",
-    "toCommit": "Continue to commit",
-    "commitNow": "Commit now",
-    "download": "Download report",
-    "noRows": "No rows in this filter.",
-    "toReconcile": "Continue to reconciliation",
-    "noneConfident": "No rows clear the {{pct}}% confidence bar — review each match manually.",
-    "approvedHeld": "Approved {{n}} rows · {{held}} held for manual review (< {{pct}}% match)"
-  },
   "dataImport": {
     "adminOnly": "Only administrators and consultants can access this page.",
     "allowStageUpdate": "Allow Stage Update",
@@ -3704,6 +3653,57 @@
     "willBeUpdated": "will be updated",
     "withEmail": "with email",
     "withNIF": "with NIF"
+  },
+  "dataImportV2": {
+    "analyze": "Analyze file",
+    "approveAll": "Approve valid rows",
+    "approved": "Approved {{n}} rows",
+    "approvedHeld": "Approved {{n}} rows · {{held}} held for manual review (< {{pct}}% match)",
+    "commit": {
+      "desc": "Only admins can commit. Rows are processed atomically; failures are recorded per row and safe to resume.",
+      "title": "Commit approved rows",
+      "warning": "Contracts, occupied offices and consultant assignments require a separate staff review — never inferred from HubSpot."
+    },
+    "commitDone": "Import committed",
+    "commitNow": "Commit now",
+    "contractBannerDesc": "Startups, workspaces and contract proposals are opt-in per row. Committed data can be reverted from the audit.",
+    "contractBannerTitle": "No contracts are activated or signed by this import.",
+    "download": "Download report",
+    "mapping": {
+      "desc": "Confirm which upload column feeds each internal field. Leave empty to ignore.",
+      "title": "Column mapping"
+    },
+    "noRows": "No rows in this filter.",
+    "noneConfident": "No rows clear the {{pct}}% confidence bar — review each match manually.",
+    "phc": {
+      "notice": "PHC import is strict CRM-only. Building, service and price-list fields are stored as hints — never as fees or buildings. Column mapping is derived automatically from the PHC headers."
+    },
+    "prepared": "File analyzed: {{n}} rows",
+    "reconcile": {
+      "desc": "Every match method and confidence is shown. Nothing is written until you approve and commit.",
+      "title": "Reconciliation preview"
+    },
+    "results": {
+      "desc": "Summary and downloadable exception report.",
+      "title": "Import committed"
+    },
+    "selectProgram": "Select program (optional)",
+    "source": "Source system",
+    "step": {
+      "commit": "Commit",
+      "mapping": "Mapping",
+      "reconcile": "Reconcile",
+      "results": "Results",
+      "upload": "Upload"
+    },
+    "subtitle": "Staged, server-side, idempotent import with full audit trail",
+    "title": "HubSpot Importer v2",
+    "toCommit": "Continue to commit",
+    "toReconcile": "Continue to reconciliation",
+    "upload": {
+      "desc": "CSV or XLSX/XLSM only. Legacy .xls is not supported.",
+      "title": "Upload CRM export"
+    }
   },
   "dataQuality": {
     "action": "Action",
@@ -4042,6 +4042,7 @@
     "leadDeleted": "Lead deleted",
     "leadRestored": "Lead restaurada",
     "leads": "leads",
+    "loadMore": "Load more",
     "manageTeam": "Manage Team",
     "name": "Name",
     "needsAttention": "Needs Attention Only",
@@ -4052,6 +4053,7 @@
     "owner": "Owner",
     "scheduleSession": "Schedule Session",
     "searchPlaceholder": "Search by name...",
+    "showingCount": "Showing {{shown}} of {{total}}",
     "startupPortugalBadge": "Startup Portugal certified",
     "startupPortugalShort": "SP",
     "startupsTab": "Startups & Leads",
@@ -4063,9 +4065,7 @@
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
     "workspaceRestored": "Workspace restaurado",
-    "workspaces": "workspaces",
-    "showingCount": "Showing {{shown}} of {{total}}",
-    "loadMore": "Load more"
+    "workspaces": "workspaces"
   },
   "ecosystemHub": {
     "navLabel": "Management Hub",
@@ -4369,6 +4369,181 @@
     "uploadModel": "Upload Model",
     "uploadTitle": "Upload Financial Model",
     "version": "Version:"
+  },
+  "financialPlan": {
+    "aboveMax": "Value above the maximum ({{max}})",
+    "accept": "Accept",
+    "allDone": "All sections captured",
+    "allDoneDesc": "You can revisit any assumption below, or export the workbook to feed the canonical XLSM.",
+    "belowMin": "Value below the minimum ({{min}})",
+    "continue": "Continue",
+    "coverage": "Coverage",
+    "diag": {
+      "activity": "Activity type",
+      "desc": "These answers decide which question packs run.",
+      "earlyRevenue": "Early revenue",
+      "fundraising": "Fundraising",
+      "grant": "Grant application",
+      "horizon": "Planning horizon",
+      "internal": "Internal alignment",
+      "mixed": "Mixed",
+      "objective": "Primary objective",
+      "oneOff": "One-off",
+      "operational": "Operational planning",
+      "preRevenue": "Pre-revenue",
+      "product": "Physical product",
+      "recurring": "Recurring revenue",
+      "revenueModel": "Revenue model",
+      "sector": "Sector",
+      "services": "Services",
+      "stage": "Stage",
+      "subscription": "Subscription",
+      "title": "5-minute diagnostic",
+      "traction": "Traction",
+      "transactional": "Transactional"
+    },
+    "exportFailed": "Export failed",
+    "exportReady": "XLSM export ready — {{n}} cells filled",
+    "exportXlsm": "Export XLSM",
+    "idk": "I don't know yet",
+    "idkRationale": "Skipped by founder — revisit later",
+    "invalidNumber": "Enter a valid number",
+    "kpi": {
+      "cogs": "COGS",
+      "ebitdaProxy": "EBITDA proxy",
+      "grossMargin": "Gross margin",
+      "ltvCac": "LTV : CAC",
+      "payback": "Payback (months)",
+      "payroll": "Payroll (14m + TSU)",
+      "revenueY1": "Revenue Y1",
+      "revenueY2": "Revenue Y2"
+    },
+    "pack": {
+      "capexFinancing": "CAPEX & financing",
+      "capexFinancingDesc": "Investment plan, equity raise and debt financing.",
+      "company": "Company setup",
+      "companyDesc": "Fiscal setup, inflation and growth defaults.",
+      "costs": "Costs & COGS",
+      "costsDesc": "Direct costs (CMVMC) and gross margin drivers.",
+      "revenue": "Revenue & pricing",
+      "revenueDesc": "Volumes, prices and growth for each revenue line.",
+      "team": "Team & payroll",
+      "teamDesc": "Headcount plan and average compensation.",
+      "unitEconomics": "Unit economics",
+      "unitEconomicsDesc": "CAC, LTV, churn — SaaS founders should fill this pack."
+    },
+    "packAllAnswered": "Section complete",
+    "packComplete": "Section saved",
+    "parsedAs": "Interpreted as {{value}}",
+    "pendingProposals": "Suggestions waiting for you",
+    "pendingProposalsDesc": "These values were prefilled from your profile, KPIs, or the AI. Confirm each before it becomes an assumption.",
+    "prefill": "Prefill",
+    "prefillCreated": "{{count}} suggestion(s) ready to review",
+    "prefillEmpty": "No new suggestions — everything already covered.",
+    "prefillFailed": "Prefill failed",
+    "prefillFailedN": "{{n}} failed",
+    "prefillPartial": "{{ok}} created, {{fail}} failed — see details below",
+    "prefillResult": "Prefill result",
+    "prefillRunning": "Running prefill…",
+    "prefillStats": "{{ok}} created · {{skipped}} skipped · {{failed}} failed",
+    "prefillStep": {
+      "ai": "AI suggestions",
+      "insert": "Saving proposals",
+      "kpi": "KPI signals",
+      "profile": "Profile defaults"
+    },
+    "q": {
+      "arpu": "ARPU (€ / month)",
+      "avgSalary": "Average monthly gross salary (€)",
+      "cac": "CAC — customer acquisition cost (€)",
+      "capexY1": "CAPEX — Year 1 (€)",
+      "churnMonthly": "Monthly churn %",
+      "cmvmc": "% CMVMC / Sales",
+      "debt": "Debt financing (€)",
+      "debtRate": "Debt interest rate",
+      "equityRaise": "Equity to raise (€)",
+      "gmPct": "Gross margin %",
+      "grossMarginTarget": "Target gross margin",
+      "growth": "Annual growth rate",
+      "headcountY1": "Headcount — Year 1",
+      "inflation": "Annual inflation",
+      "ircRate": "Corporate tax rate (IRC)",
+      "item1Growth": "YoY growth",
+      "item1Name": "Main product / service name",
+      "item1Price": "Unit price (€)",
+      "item1QtyY1": "Units sold — Year 1"
+    },
+    "queue": {
+      "skippedDesc": "The founder marked \"{{label}}\" as unknown in the {{scenario}} scenario — help them find a defensible value.",
+      "skippedTitle": "Review skipped assumption: {{label}}"
+    },
+    "rationalePlaceholder": "Why this value? Cite source, benchmark, or reasoning (optional).",
+    "registerDesc": "Every value that will feed the financial model. Sources are tracked and auditable.",
+    "registerEmpty": "No assumptions saved yet.",
+    "registerTitle": "Assumptions register",
+    "saveFailed": "Save failed",
+    "saveNext": "Save & next",
+    "scenario": {
+      "base": "Base",
+      "conservative": "Conservative",
+      "optimistic": "Optimistic"
+    },
+    "scenarioLabel": "Scenario",
+    "sensitivity": {
+      "cmvmc": "CMVMC ratio Δ",
+      "desc": "Live projection from your assumptions. Move the sliders to stress-test — nothing is saved.",
+      "empty": "Fill in revenue and cost assumptions to see the projection.",
+      "footnote": "Illustrative — computed live from your assumptions register. Not a substitute for the canonical XLSM model.",
+      "metric": "Metric",
+      "noDeltas": "No changes to save — sliders and scenario bias match the base.",
+      "payroll": "Payroll Δ",
+      "revenueGrowth": "Revenue growth Δ",
+      "saveAs": "Save as…",
+      "saveFailed": "Save failed",
+      "savedAs": "Saved as {{scenario}} ({{n}} value(s)) — showing updated plan",
+      "title": "Scenarios & sensitivity"
+    },
+    "skipSection": "Skip section",
+    "skippedBadge": "Skipped",
+    "source": {
+      "founder": "Manual",
+      "imported_xlsm": "Imported",
+      "prefill_ai": "AI",
+      "prefill_kpi": "KPI",
+      "prefill_profile": "Profile"
+    },
+    "subtitle": "Answer one decision at a time. Every value is yours to confirm — nothing is saved silently.",
+    "title": "Guided plan"
+  },
+  "firstSteps": {
+    "admin": {
+      "approvals": "Approvals",
+      "ecosystem": "Ecosystem health",
+      "programs": "Programs & cohorts",
+      "subtitle": "The three panels where admins spend most time.",
+      "title": "First steps"
+    },
+    "backoffice": {
+      "approvals": "Pending approvals",
+      "contracts": "Contracts expiring",
+      "spaces": "Spaces & occupancy",
+      "subtitle": "The daily backoffice cycle in three stops.",
+      "title": "First steps"
+    },
+    "consultor": {
+      "availability": "Set up your availability",
+      "portfolio": "View your portfolio",
+      "subtitle": "Set up the essentials to start with your portfolio.",
+      "title": "First steps",
+      "workQueue": "Meet the Work Queue"
+    },
+    "mentor": {
+      "availability": "Set up your availability",
+      "impact": "View your impact",
+      "startups": "Meet your startups",
+      "subtitle": "Start with these three steps.",
+      "title": "First steps"
+    }
   },
   "focusMode": {
     "activate": "Focus Mode",
@@ -5039,7 +5214,6 @@
   },
   "integrations": {
     "accountId": "Account ID",
-    "movedToSettings": "Integrations now live in Settings → Integrations.",
     "advanced": "Advanced",
     "baseUrl": "Base URL",
     "connected": "Connected",
@@ -5073,6 +5247,7 @@
     "microsoftTeams": "Microsoft Teams",
     "milestoneReminders": "Milestone Reminders",
     "milestoneRemindersDesc": "Milestone Reminders Desc",
+    "movedToSettings": "Integrations now live in Settings → Integrations.",
     "pandadoc": {
       "step1": "Aceda ao",
       "step2": "Copy the API Key and add it as a secret",
@@ -5480,6 +5655,10 @@
     "upcomingRenewals": "Upcoming Renewals"
   },
   "lifecycleMismatch": {
+    "activeNoWorkspace": {
+      "detail": "This founder is marked active but has no workspace assigned. Assign one to unblock them.",
+      "title": "Active founder without a workspace"
+    },
     "allConsistent": "Contract / intake / CRM / workspace states are consistent.",
     "contractActiveWorkspaceNot": {
       "detail": "workspace.status=\"{{wstate}}\"",
@@ -5499,11 +5678,7 @@
       "detail": "signature_provider is empty.",
       "title": "Contract in pending_signature without a defined provider"
     },
-    "title": "Lifecycle inconsistencies",
-    "activeNoWorkspace": {
-      "title": "Active founder without a workspace",
-      "detail": "This founder is marked active but has no workspace assigned. Assign one to unblock them."
-    }
+    "title": "Lifecycle inconsistencies"
   },
   "loading": {
     "almostThere": "Almost there...",
@@ -5589,10 +5764,13 @@
       "eyebrow": "Mentor dashboard",
       "subline": "{{count}} startups · {{sessions}} sessions this week"
     },
+    "hours": "Hours",
     "hoursByStartup": "Hours by Startup",
     "kpiMissing": "KPIs to update",
     "kpiUpToDate": "KPIs atualizados",
     "lastSession": "Última sessão",
+    "logTimeHelp": "Log hours to track your impact.",
+    "logTimeOptional": "Log time (optional)",
     "manageConnections": "Manage Connections",
     "monthlyGoal": "Monthly goal",
     "myStartups": "My Startups",
@@ -5608,6 +5786,7 @@
     "noStartupsAssignedDesc": "You'll see your mentored startups here once you're assigned to workspaces.",
     "noteAdded": "Note added successfully",
     "noteVisibility": "This note will be shared with the staff team.",
+    "openFollowups": "Open follow-ups",
     "openLoops": {
       "allClearDesc": "No outstanding issues with your startups. Good job!",
       "allClearTitle": "Tudo em dia",
@@ -5619,6 +5798,21 @@
     },
     "pendingActions": "Pending Actions",
     "pendingActionsCount": "actions",
+    "postNdaChecklist": {
+      "availability": {
+        "title": "Set your availability",
+        "why": "Founders can only book slots you've opened."
+      },
+      "guide": {
+        "title": "Read the mentor guide",
+        "why": "Learn how sessions and confidentiality work."
+      },
+      "profile": {
+        "title": "Fill in your profile",
+        "why": "Founders can find and pick you."
+      },
+      "title": "Complete your mentor profile"
+    },
     "postSession": {
       "subtitle": "You have recent sessions without notes — log them while fresh.",
       "title": "Log your session notes"
@@ -5647,33 +5841,14 @@
     "startupsSupported": "Startups supported",
     "thankYouMessage": "Your time and expertise make all the difference to these startups.",
     "timeBreakdown": "Breakdown of time invested",
+    "timeEntryDescription": "Time entry description",
+    "timeEntryFailed": "Failed to log time",
     "to": "to",
     "upcomingMeetings": "Upcoming Meetings",
     "updateAvailability": "Update Availability",
     "viewConnectionRequests": "View Connection Requests",
     "welcomeTitle": "Welcome to the Mentor Panel",
-    "yourImpact": "Your Impact",
-    "postNdaChecklist": {
-      "title": "Complete your mentor profile",
-      "profile": {
-        "title": "Fill in your profile",
-        "why": "Founders can find and pick you."
-      },
-      "availability": {
-        "title": "Set your availability",
-        "why": "Founders can only book slots you've opened."
-      },
-      "guide": {
-        "title": "Read the mentor guide",
-        "why": "Learn how sessions and confidentiality work."
-      }
-    },
-    "timeEntryDescription": "Time entry description",
-    "timeEntryFailed": "Failed to log time",
-    "logTimeOptional": "Log time (optional)",
-    "logTimeHelp": "Log hours to track your impact.",
-    "hours": "Hours",
-    "openFollowups": "Open follow-ups"
+    "yourImpact": "Your Impact"
   },
   "mentorFeedback": {
     "blockedPlaceholder": "Issues or blockers identified...",
@@ -5764,6 +5939,8 @@
     "messageOptional": "Message (optional)",
     "messagePlaceholder": "Briefly describe what you're looking for help with...",
     "ndaNotSigned": "Este mentor ainda não assinou o NDA. O acesso aos dados do workspace ficará bloqueado até que o NDA seja aceite.",
+    "nextAvailableSlots": "Next available slots",
+    "noAlternativesAvailable": "No other slots available in the next 14 days.",
     "noAvailabilityYet": "This mentor hasn't set their availability yet.",
     "noMatchingMentors": "No mentors match the selected expertise",
     "noPendingRequests": "No pending booking requests",
@@ -5772,6 +5949,7 @@
     "pending": "Pending",
     "pendingRequests": "Pending Requests",
     "pickDate": "Pick a date",
+    "pickSuggestedSlot": "Pick a suggested slot",
     "recommendations": "Recommended Mentors",
     "recommendationsDesc": "Based on expertise match and availability",
     "recommendedMentors": "Recommended Mentors",
@@ -5785,13 +5963,10 @@
     "selectTimeSlot": "Select Time Slot",
     "sendRequest": "Send Request",
     "sessions": "sessions",
+    "slotAlreadyTaken": "That slot was just booked by someone else — please pick another one.",
     "startTime": "Hora de início",
     "whatToDiscuss": "What would you like to discuss?",
-    "yourBookings": "Your Bookings",
-    "slotAlreadyTaken": "That slot was just booked by someone else — please pick another one.",
-    "nextAvailableSlots": "Next available slots",
-    "pickSuggestedSlot": "Pick a suggested slot",
-    "noAlternativesAvailable": "No other slots available in the next 14 days."
+    "yourBookings": "Your Bookings"
   },
   "mentorsPage": {
     "accept": "Accept",
@@ -5799,6 +5974,8 @@
     "accessRestricted": "Access Restricted",
     "accessRestrictedDesc": "This page is only available to founders and mentors.",
     "assign": "Assign",
+    "assignAlreadyResolved": "This request has already been resolved.",
+    "assignLegacyNeedsWorkspace": "Legacy request without workspace. Please contact support.",
     "assignMentorDesc": "Select a mentor to assign to {{startup}}",
     "assignMentorTitle": "Assign Mentor",
     "assigned": "Assigned",
@@ -5818,9 +5995,6 @@
     "connectionMessagePlaceholder": "Optional message to the mentor…",
     "connectionRequested": "Connection request sent",
     "connectionRequests": "Connection Requests",
-    "legacyConnectionRefused": "This legacy connection is not linked to a specific workspace. Ask staff to reassign.",
-    "requestConnection": "Request connection",
-    "requestPending": "Request pending",
     "contact": "Contact",
     "contactMentor": "Contact mentor",
     "decline": "Decline",
@@ -5836,6 +6010,7 @@
     "fulfilled": "Fulfilled",
     "impact": "Impact",
     "industryOptional": "Industry (optional)",
+    "legacyConnectionRefused": "This legacy connection is not linked to a specific workspace. Ask staff to reassign.",
     "matchingMentors": "Matching mentors",
     "mentor": "Mentor",
     "mentorAssigned": "Mentor assigned successfully!",
@@ -5858,12 +6033,15 @@
     "pendingMentorRequestsDesc": "Founders have requested mentors with specific expertise. Review and assign.",
     "pendingRequests": "Pending Requests",
     "requestCancelled": "Request cancelled",
+    "requestConnection": "Request connection",
     "requestFailed": "Failed to submit request. Please try again.",
     "requestMentor": "Request a Mentor",
     "requestMentorDesc": "Tell us what expertise you need and we'll match you with the right mentor.",
+    "requestPending": "Request pending",
     "requestSubmitted": "Your mentor request has been submitted!",
     "requestedBy": "Requested by",
     "requestedExpertise": "Requested expertise",
+    "responseTime": "We'll notify you as soon as the request is accepted.",
     "searchMentors": "Search by name or expertise...",
     "selectExpertise": "What expertise do you need?",
     "selectIndustry": "Select industries...",
@@ -5880,10 +6058,7 @@
     "thisContact": "este contacto",
     "unknownFounder": "Unknown Founder",
     "unnamedMentor": "Mentor",
-    "whatNeedsHelp": "What do you need help with?",
-    "responseTime": "We'll notify you as soon as the request is accepted.",
-    "assignLegacyNeedsWorkspace": "Legacy request without workspace. Please contact support.",
-    "assignAlreadyResolved": "This request has already been resolved."
+    "whatNeedsHelp": "What do you need help with?"
   },
   "messaging": {
     "adjustSearch": "Try adjusting search or check if user is registered.",
@@ -5979,6 +6154,7 @@
     "actionsFollowups": "Actions & Follow-ups",
     "admin": {
       "crm": "CRM",
+      "crmPipeline": "CRM pipeline",
       "diagnostics": "Diagnósticos",
       "ecosystem": "Ecosystem Directory",
       "operations": "Operations",
@@ -5986,8 +6162,7 @@
       "quickGuide": "Quick Guide",
       "reports": "Reports",
       "systemConfig": "System Configuration",
-      "usersPermissions": "Users & Permissions",
-      "crmPipeline": "CRM pipeline"
+      "usersPermissions": "Users & Permissions"
     },
     "adminPanel": "Admin Panel",
     "backoffice": {
@@ -6034,13 +6209,13 @@
     "mentor": {
       "assignedStartups": "Assigned Startups",
       "home": "Home",
+      "impact": "My impact",
       "mySessions": "My Sessions",
       "notesActions": "Notes & Actions",
       "profile": "Profile",
       "quickGuide": "Quick Guide",
       "resources": "Resources",
-      "upcomingSessions": "Upcoming Sessions",
-      "impact": "My impact"
+      "upcomingSessions": "Upcoming Sessions"
     },
     "mentors": "Mentors",
     "mobile": {
@@ -6436,30 +6611,6 @@
     "updateKpis": "Update your KPIs for this month"
   },
   "ops": {
-    "state": {
-      "pending": "pending",
-      "onboarding": "onboarding"
-    },
-    "onboardingNoContract": {
-      "title": "Contract to be sent",
-      "desc": "{{name}} is in {{state}} without a recorded contract."
-    },
-    "readyActivation": {
-      "title": "Ready for manual activation",
-      "desc": "{{name}} has an active contract but the workspace is in \"{{status}}\"."
-    },
-    "pendingSignature": {
-      "title": "Awaiting signature",
-      "desc": "The contract for {{name}} is pending signature."
-    },
-    "missingContract": {
-      "title": "No contract",
-      "desc": "{{name}} has an active workspace with no linked contract."
-    },
-    "missingAllocation": {
-      "title": "No space assigned",
-      "desc": "{{name}} has no room or office allocated."
-    },
     "checklistCopied": "Checklist copied",
     "console": {
       "allStatuses": "All statuses",
@@ -6493,9 +6644,33 @@
       "workspace": "Workspace"
     },
     "emailTemplateCopied": "Email template copied",
+    "missingAllocation": {
+      "desc": "{{name}} has no room or office allocated.",
+      "title": "No space assigned"
+    },
+    "missingContract": {
+      "desc": "{{name}} has an active workspace with no linked contract.",
+      "title": "No contract"
+    },
+    "onboardingNoContract": {
+      "desc": "{{name}} is in {{state}} without a recorded contract.",
+      "title": "Contract to be sent"
+    },
+    "pendingSignature": {
+      "desc": "The contract for {{name}} is pending signature.",
+      "title": "Awaiting signature"
+    },
     "prompts": {
       "allClear": "No pending actions — all clear!",
       "title": "Ações Sugeridas"
+    },
+    "readyActivation": {
+      "desc": "{{name}} has an active contract but the workspace is in \"{{status}}\".",
+      "title": "Ready for manual activation"
+    },
+    "state": {
+      "onboarding": "onboarding",
+      "pending": "pending"
     }
   },
   "ownership": {
@@ -6710,9 +6885,6 @@
     "updatedDescription": "Workspace priority has been updated"
   },
   "programSetup": {
-    "conflictBadge": "Conflict",
-    "conflictReconciled": "Conflict reconciled with the latest saved version.",
-    "saveError": "Failed to save program setup. Please retry.",
     "acceleration": {
       "addDeliverable": "Add",
       "addGate": "Add Gate",
@@ -6785,6 +6957,8 @@
     "cloneDescription": "This will copy stages, KPIs, playbooks, and alert rules from the selected program.",
     "cloneFrom": "Clone from existing program",
     "configureStepByStep": "Configure your program step by step",
+    "conflictBadge": "Conflict",
+    "conflictReconciled": "Conflict reconciled with the latest saved version.",
     "customizeModules": "Customize modules (optional)",
     "description": "Description",
     "descriptionPlaceholder": "Describe the program objectives and focus areas...",
@@ -6823,6 +6997,7 @@
     "publishing": "🎉 Publishing...",
     "restoredFromBackup": "We restored your latest unsaved edits.",
     "saveAndContinue": "Save & Continue",
+    "saveError": "Failed to save program setup. Please retry.",
     "saving": "A guardar...",
     "selectToClone": "Select a program to clone...",
     "setupProgress": "Setup Progress",
@@ -7592,6 +7767,7 @@
     "applySelected": "Apply Selected",
     "askConsultor": "Ask your consultant",
     "availableSlots": "Available Slots",
+    "bookWithMentor": "Book with mentor",
     "browserNotSupported": "Your browser does not support audio recording",
     "calendarInvites": "Calendar Invites",
     "checkingAvailability": "Checking availability...",
@@ -7599,6 +7775,8 @@
     "clickToViewSessions": "Select a date to view sessions",
     "comingSoon": "Coming soon",
     "commentsOptional": "Comments (optional)",
+    "conflictMentor": "The mentor already has a session at this time.",
+    "conflictWorkspace": "This workspace already has a session at this time.",
     "connectMeetingTools": "Connect meeting tools",
     "convertDecisionsToActions": "Convert decisions into actions",
     "copiedToClipboard": "Copied to clipboard",
@@ -7824,10 +8002,7 @@
     "withConsultant": "Consultor",
     "withMentor": "Mentor",
     "workspaceMembers": "workspace members",
-    "zoomDesc": "Auto-import meeting recordings and transcripts",
-    "bookWithMentor": "Book with mentor",
-    "conflictWorkspace": "This workspace already has a session at this time.",
-    "conflictMentor": "The mentor already has a session at this time."
+    "zoomDesc": "Auto-import meeting recordings and transcripts"
   },
   "sessionsEmpty": {
     "description": "Your consultant or program will schedule your first session soon.",
@@ -8146,21 +8321,20 @@
     "viewActions": "View Actions"
   },
   "spaces": {
-    "allocation": "Allocation",
-    "noActiveAllocation": "No active allocation",
-    "workspaceStartup": "Workspace / Startup",
-    "openWorkspace": "Open Workspace",
-    "noWorkspaceAssociated": "No workspace associated",
     "allStatuses": "All statuses",
+    "allocation": "Allocation",
     "available": "Available",
     "clearError": "Error clearing rooms",
     "clearStaleRooms": "Clear {{count}} orphan room(s)",
     "floor": "Floor",
     "maintenance": "Maintenance",
     "monthlyFee": "Monthly Fee",
+    "noActiveAllocation": "No active allocation",
     "noWarnings": "No Warnings",
+    "noWorkspaceAssociated": "No workspace associated",
     "occupant": "Startup / Occupant",
     "occupied": "Occupied",
+    "openWorkspace": "Open Workspace",
     "package": "Package",
     "reserved": "Reserved",
     "room": "Room",
@@ -8188,7 +8362,8 @@
       "pendingSig": "Pending signature"
     },
     "warnings": "Warnings",
-    "withWarnings": "With Warnings"
+    "withWarnings": "With Warnings",
+    "workspaceStartup": "Workspace / Startup"
   },
   "staff": {
     "actionItemCreated": "Action item created",
@@ -8369,11 +8544,13 @@
   "surveys": {
     "active": "Active",
     "addQuestion": "Add Question",
-    "templateDeleteBlockedByCampaigns": "Cannot delete: this template is used by active campaigns.",
     "allPrograms": "All Programs",
     "analytics": "Analytics",
     "autoFillKey": "Auto-fill Field",
     "autoFilled": "Auto-filled",
+    "autosaveLocalOnly": "Saved locally only — we'll retry syncing",
+    "autosaveSaved": "Saved at {{time}}",
+    "autosaveSaving": "Saving…",
     "campaignCloseFailed": "Failed to close campaign",
     "campaignClosed": "Campaign closed",
     "campaignCreateFailed": "Failed to create campaign",
@@ -8405,7 +8582,6 @@
     "pendingSurveysDesc": "You have surveys waiting to be completed",
     "progress": "Progress",
     "progressSaved": "Progress saved",
-    "snapshotDrift": "{{accepted}} answers saved. {{dropped}} were ignored because the question no longer exists in this survey.",
     "questionOptions": "Options",
     "questionRequired": "Required",
     "questionText": "Question",
@@ -8414,13 +8590,11 @@
     "reminderDays": "Reminder Days",
     "responseRate": "Response Rate",
     "saveDraft": "Save Draft",
-    "autosaveSaving": "Saving…",
-    "autosaveSaved": "Saved at {{time}}",
-    "autosaveLocalOnly": "Saved locally only — we'll retry syncing",
     "saveFailed": "Failed to save survey",
     "saveTemplate": "Save Template",
     "section": "Section",
     "selectTemplate": "Select Template",
+    "snapshotDrift": "{{accepted}} answers saved. {{dropped}} were ignored because the question no longer exists in this survey.",
     "startDate": "Start Date",
     "submit": "Submit Survey",
     "submitted": "Survey submitted successfully!",
@@ -8430,6 +8604,9 @@
     "targetProgram": "Target Program",
     "templateCreateFailed": "Failed to create survey template",
     "templateCreated": "Survey template created",
+    "templateDeleteBlockedByCampaigns": "Cannot delete: this template is used by active campaigns.",
+    "templateDeleteFailed": "Failed to delete template",
+    "templateDeleted": "Template deleted",
     "templateDescription": "Description",
     "templateName": "Template Name",
     "templateUpdateFailed": "Failed to update survey template",
@@ -8442,9 +8619,7 @@
     "typeSelect": "Single Select",
     "typeText": "Text",
     "typeTextarea": "Long Text",
-    "viewResponses": "View Responses",
-    "templateDeleted": "Template deleted",
-    "templateDeleteFailed": "Failed to delete template"
+    "viewResponses": "View Responses"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",
@@ -9288,21 +9463,18 @@
     "whyAlternativesFail": "Why do these alternatives fail?"
   },
   "waitingList": {
-    "fulfill": "Fulfill",
-    "selectStartup": "Select startup...",
-    "selectLead": "Select lead...",
-    "numberOfPeople": "Number of people",
-    "anyBuilding": "Any building...",
-    "selectAvailableRoom": "Select available room...",
     "allRequests": "All Requests",
     "any": "Any",
+    "anyBuilding": "Any building...",
     "availableRooms": "Available Rooms",
     "dedicatedDesk": "Dedicated Desk",
     "forPeople": "for {{count}} people",
+    "fulfill": "Fulfill",
     "highPriority": "High Priority",
     "hotDesk": "Hot Desk",
     "leadProspect": "Lead/Prospect",
     "meetingRoom": "Meeting Room",
+    "numberOfPeople": "Number of people",
     "organization": "Organization",
     "people": "people",
     "preference": "Preference",
@@ -9311,6 +9483,9 @@
     "request": "Request",
     "requested": "Requested",
     "requests": "Requests",
+    "selectAvailableRoom": "Select available room...",
+    "selectLead": "Select lead...",
+    "selectStartup": "Select startup...",
     "startup": "Startup",
     "status": "Status",
     "statusAccepted": "Accepted",
@@ -9401,12 +9576,12 @@
     "snooze7Days": "Snooze 7 days",
     "snoozeFailed": "Failed to snooze",
     "snoozedForDays": "Snoozed for {{days}} days",
-    "stillPendingValidation": "{{count}} actions still awaiting validation.",
     "statusAll": "All",
     "statusDone": "Done",
     "statusInProgress": "In Progress",
     "statusOpen": "Open",
     "statusSnoozed": "Snoozed",
+    "stillPendingValidation": "{{count}} actions still awaiting validation.",
     "title": "Work Queue",
     "types": {
       "escalation": "Escalation",
@@ -9483,6 +9658,7 @@
       "pendingMilestones": "Pending Milestones",
       "title": "Incubation Status"
     },
+    "invalidTab": "That tab isn't available for this workspace.",
     "kpiAtualizado": "KPI atualizado",
     "kpis": "KPIs",
     "locationContract": "Location & Contract",
@@ -9530,8 +9706,7 @@
     "workspaceUpdated": "Workspace updated",
     "yourConsultant": "Your Consultant",
     "yourMentor": "Your Mentor",
-    "yourTeam": "Your Team",
-    "invalidTab": "That tab isn't available for this workspace."
+    "yourTeam": "Your Team"
   },
   "workspaceCard": {
     "actions": "Actions",
@@ -9607,180 +9782,5 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
-  },
-  "firstSteps": {
-    "consultor": {
-      "title": "First steps",
-      "subtitle": "Set up the essentials to start with your portfolio.",
-      "workQueue": "Meet the Work Queue",
-      "availability": "Set up your availability",
-      "portfolio": "View your portfolio"
-    },
-    "backoffice": {
-      "title": "First steps",
-      "subtitle": "The daily backoffice cycle in three stops.",
-      "contracts": "Contracts expiring",
-      "spaces": "Spaces & occupancy",
-      "approvals": "Pending approvals"
-    },
-    "admin": {
-      "title": "First steps",
-      "subtitle": "The three panels where admins spend most time.",
-      "approvals": "Approvals",
-      "programs": "Programs & cohorts",
-      "ecosystem": "Ecosystem health"
-    },
-    "mentor": {
-      "title": "First steps",
-      "subtitle": "Start with these three steps.",
-      "availability": "Set up your availability",
-      "startups": "Meet your startups",
-      "impact": "View your impact"
-    }
-  },
-  "financialPlan": {
-    "title": "Guided plan",
-    "subtitle": "Answer one decision at a time. Every value is yours to confirm — nothing is saved silently.",
-    "scenarioLabel": "Scenario",
-    "coverage": "Coverage",
-    "prefill": "Prefill",
-    "prefillCreated": "{{count}} suggestion(s) ready to review",
-    "prefillPartial": "{{ok}} created, {{fail}} failed — see details below",
-    "prefillEmpty": "No new suggestions — everything already covered.",
-    "prefillFailed": "Prefill failed",
-    "exportXlsm": "Export XLSM",
-    "exportReady": "XLSM export ready — {{n}} cells filled",
-    "exportFailed": "Export failed",
-    "pendingProposals": "Suggestions waiting for you",
-    "pendingProposalsDesc": "These values were prefilled from your profile, KPIs, or the AI. Confirm each before it becomes an assumption.",
-    "accept": "Accept",
-    "source": {
-      "founder": "Manual",
-      "prefill_profile": "Profile",
-      "prefill_kpi": "KPI",
-      "prefill_ai": "AI",
-      "imported_xlsm": "Imported"
-    },
-    "packComplete": "Section saved",
-    "allDone": "All sections captured",
-    "allDoneDesc": "You can revisit any assumption below, or export the workbook to feed the canonical XLSM.",
-    "registerTitle": "Assumptions register",
-    "registerDesc": "Every value that will feed the financial model. Sources are tracked and auditable.",
-    "registerEmpty": "No assumptions saved yet.",
-    "scenario": {
-      "base": "Base",
-      "conservative": "Conservative",
-      "optimistic": "Optimistic"
-    },
-    "diag": {
-      "title": "5-minute diagnostic",
-      "desc": "These answers decide which question packs run.",
-      "activity": "Activity type",
-      "services": "Services",
-      "product": "Physical product",
-      "sector": "Sector",
-      "stage": "Stage",
-      "revenueModel": "Revenue model",
-      "subscription": "Subscription",
-      "transactional": "Transactional",
-      "oneOff": "One-off",
-      "mixed": "Mixed",
-      "traction": "Traction",
-      "preRevenue": "Pre-revenue",
-      "earlyRevenue": "Early revenue",
-      "recurring": "Recurring revenue",
-      "horizon": "Planning horizon",
-      "objective": "Primary objective",
-      "fundraising": "Fundraising",
-      "operational": "Operational planning",
-      "grant": "Grant application",
-      "internal": "Internal alignment"
-    },
-    "pack": {
-      "company": "Company setup",
-      "companyDesc": "Fiscal setup, inflation and growth defaults.",
-      "revenue": "Revenue & pricing",
-      "revenueDesc": "Volumes, prices and growth for each revenue line.",
-      "costs": "Costs & COGS",
-      "costsDesc": "Direct costs (CMVMC) and gross margin drivers.",
-      "team": "Team & payroll",
-      "teamDesc": "Headcount plan and average compensation.",
-      "capexFinancing": "CAPEX & financing",
-      "capexFinancingDesc": "Investment plan, equity raise and debt financing.",
-      "unitEconomics": "Unit economics",
-      "unitEconomicsDesc": "CAC, LTV, churn — SaaS founders should fill this pack."
-    },
-    "q": {
-      "ircRate": "Corporate tax rate (IRC)",
-      "inflation": "Annual inflation",
-      "growth": "Annual growth rate",
-      "item1Name": "Main product / service name",
-      "item1QtyY1": "Units sold — Year 1",
-      "item1Price": "Unit price (€)",
-      "item1Growth": "YoY growth",
-      "cmvmc": "% CMVMC / Sales",
-      "grossMarginTarget": "Target gross margin",
-      "headcountY1": "Headcount — Year 1",
-      "avgSalary": "Average monthly gross salary (€)",
-      "capexY1": "CAPEX — Year 1 (€)",
-      "equityRaise": "Equity to raise (€)",
-      "debt": "Debt financing (€)",
-      "debtRate": "Debt interest rate",
-      "cac": "CAC — customer acquisition cost (€)",
-      "arpu": "ARPU (€ / month)",
-      "gmPct": "Gross margin %",
-      "churnMonthly": "Monthly churn %"
-    },
-    "sensitivity": {
-      "title": "Scenarios & sensitivity",
-      "desc": "Live projection from your assumptions. Move the sliders to stress-test — nothing is saved.",
-      "revenueGrowth": "Revenue growth Δ",
-      "cmvmc": "CMVMC ratio Δ",
-      "payroll": "Payroll Δ",
-      "metric": "Metric",
-      "empty": "Fill in revenue and cost assumptions to see the projection.",
-      "footnote": "Illustrative — computed live from your assumptions register. Not a substitute for the canonical XLSM model.",
-      "saveAs": "Save as…",
-      "savedAs": "Saved as {{scenario}} ({{n}} value(s)) — showing updated plan",
-      "noDeltas": "No changes to save — sliders and scenario bias match the base.",
-      "saveFailed": "Save failed"
-    },
-    "kpi": {
-      "revenueY1": "Revenue Y1",
-      "revenueY2": "Revenue Y2",
-      "cogs": "COGS",
-      "grossMargin": "Gross margin",
-      "payroll": "Payroll (14m + TSU)",
-      "ebitdaProxy": "EBITDA proxy",
-      "ltvCac": "LTV : CAC",
-      "payback": "Payback (months)"
-    },
-    "saveNext": "Save & next",
-    "skipSection": "Skip section",
-    "idk": "I don't know yet",
-    "continue": "Continue",
-    "packAllAnswered": "Section complete",
-    "rationalePlaceholder": "Why this value? Cite source, benchmark, or reasoning (optional).",
-    "invalidNumber": "Enter a valid number",
-    "parsedAs": "Interpreted as {{value}}",
-    "belowMin": "Value below the minimum ({{min}})",
-    "aboveMax": "Value above the maximum ({{max}})",
-    "saveFailed": "Save failed",
-    "prefillRunning": "Running prefill…",
-    "prefillResult": "Prefill result",
-    "prefillStats": "{{ok}} created · {{skipped}} skipped · {{failed}} failed",
-    "prefillFailedN": "{{n}} failed",
-    "prefillStep": {
-      "profile": "Profile defaults",
-      "kpi": "KPI signals",
-      "ai": "AI suggestions",
-      "insert": "Saving proposals"
-    },
-    "idkRationale": "Skipped by founder — revisit later",
-    "skippedBadge": "Skipped",
-    "queue": {
-      "skippedTitle": "Review skipped assumption: {{label}}",
-      "skippedDesc": "The founder marked \"{{label}}\" as unknown in the {{scenario}} scenario — help them find a defensible value."
-    }
   }
 }
