@@ -147,11 +147,35 @@ export function MentorBookingPanel({
           notify.error(t('mentors.slotAlreadyTaken', {
             defaultValue: 'That slot was just booked by someone else — please pick another one.',
           }));
+          // Compute up to 5 next available slots across the next 14 days.
+          const suggestions: { date: Date; start: string; end: string; key: string }[] = [];
+          const startFrom = selectedDate ?? new Date();
+          for (let i = 0; i < 14 && suggestions.length < 5; i++) {
+            const d = addDays(startFrom, i);
+            if (isBefore(d, startOfDay(new Date()))) continue;
+            const slots = getAvailableSlotsForDate(d);
+            for (const s of slots) {
+              // Skip the exact slot the founder just tried.
+              if (
+                format(d, 'yyyy-MM-dd') === format(selectedDate ?? d, 'yyyy-MM-dd') &&
+                s.key === selectedSlot
+              ) continue;
+              suggestions.push({ date: d, ...s });
+              if (suggestions.length >= 5) break;
+            }
+          }
+          setSuggestedSlots(suggestions);
         } else {
           notify.error(msg || t('mentors.failedToCreateBooking', 'Failed to create booking'));
         }
       },
     });
+  };
+
+  const applySuggestion = (s: { date: Date; start: string; end: string; key: string }) => {
+    setSelectedDate(s.date);
+    setSelectedSlot(s.key);
+    setSuggestedSlots([]);
   };
 
   const handleUpdateStatus = (booking: MentorBooking, status: 'accepted' | 'declined') => {
