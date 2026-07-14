@@ -1,179 +1,106 @@
-# Financial + Business Plan Coach
+# HubSpot Importer — Correction Plan
 
-## Ground truth from the audit
+## Goal
+Replace the current client-side, email-only, direct-write HubSpot importer with a staged, server-side, idempotent, feature-flagged job pipeline. The live production data is not touched during rollout; the legacy path stays behind a flag until pilot passes.
 
-- **XLSM (`Template_Avaliacao_Startup_Ecossistema.xlsm`)**: 19 sheets, VBA present, 9 defined names — 4 broken (`areas`, `Áreas`, `fimSomas`, `YesNo`). Sheet names include diacritics and dot-numbering: `Pressupostos`, `1.Demonstração de Resultados`, `2. Balanço`, `3. Avaliação Financeira`, `4. Rácios Financeiros`, `5. Fundo de Maneio`, `6. Investimento`, `7. Serviço da Dívida`, `8. Mapa de tesouraria`, `9. Capital Próprio`, `10. Anexo_Prejuízos fiscais`, `11. Investidores`, `12. Unit Economics`.
-- **Existing surfaces to extend (not replace)**: `src/components/workspace/FinancialModelPanel.tsx` (732), `src/hooks/useFinancialModel.ts` (519), edge functions `import-financial-model` (404), `generate-financial-model-coach` (300), `sync-financial-kpis` (213), `analyze-template` (232), `analyze-pitch-deck` (221). Tables `financial_model_versions` and `financial_model_metric_map` already exist.
-- **Current parser is weak**: label-normalize + scan-adjacent-cells, PT-locale-broken (`.replace(',', '.')` drops thousands), claims `.xls` support, no signature/fingerprint/coverage/confidence. Must be replaced with a versioned explicit mapping.
-- **Business Plan surface**: none. Word templates PT/EN must be introspected to derive the 16-chapter bilingual schema.
+## Confirmed defects (recap, mapped to code)
+- Email-only DB matching in `AdminDataImport.tsx` (`existingEmailMap`, `in('contact_email', emails)`); NIF/HubSpot IDs collected but unused.
+- HubSpot IDs stored in `notes` string → no idempotency.
+- `config.create_workspaces` not respected; `create_draft_contracts` defaults to true.
+- Tier A/B/C/qualified auto-mapped to `contracted` in `mapHubSpotStage`.
+- Existing-row updates use `config.default_stage` instead of `finalStage`.
+- Owners never updated on existing rows; new sector/type tags never merged.
+- Startup/workspace/link/contract writes are client-side, sequential, non-transactional; several errors are logged and ignored.
+- Draft contracts get `start_date = today` and base fee with no human verification.
+- UI advertises `.xls`, but `excelParser.ts` is JSZip-only (XLSX/XLSM). Reads only the first sheet; inline-string handling incomplete.
+- Preview capped ~100 rows; no persistent/resumable job; no exception report.
 
-## Non-negotiables carried into every batch
+## Target architecture
 
-- **Additive migrations only**, all behind `feature_flag='financial_business_plan_coach_v1'` (off by default, staff-then-pilot-then-all).
-- **Never mutate canonical assets**. Round-trip works on generated copies; VBA `vbaProject.bin` must survive byte-identical (contract-tested).
-- **AI writes proposals only**. Server-computed scores; LLM only fills anchored rubric dimensions; results carry prompt/rubric/model version.
-- **Payload isolation**: uploaded document text is data, never instructions; workspace-scoped RLS on every new table; no financial values or PII in logs.
-- **Preserve existing flows**: manual download/upload of blank templates, KPI sync, action creation, consultant review, autosave via `useSingleFlightDraft`.
+### Additive database (migrations, workspace-safe)
+- `data_import_jobs` (source, filename, file_hash, status, config_json, counts_json, created_by, approved_by, timestamps).
+- `data_import_rows` (job_id, row_number, raw_json, normalized_json, row_hash, proposed_action, match_entity_type, match_entity_id, match_method, confidence, validation_errors_json, approval_state, commit_result_json).
+- `external_entity_refs` (provider, object_type, external_id, internal_entity_type, internal_entity_id, UNIQUE(provider,object_type,external_id)).
+- All tables: GRANTs to authenticated + service_role; RLS: staff-read/insert; admin-only approve/commit; row-level `has_role`.
+- Backfill helper migration to populate `external_entity_refs` from any HubSpot IDs already in `funnel_items.notes` (best-effort, non-destructive).
 
-## Delivery batches
+### Edge functions
+- `prepare-hubspot-import` — staff-only; validates extension/MIME/magic bytes/size/row count; parses CSV or real XLSX; accepts explicit column mapping; normalizes NIF/email/phone/company/HubSpot IDs; runs canonical match engine; persists every row and outcome; NEVER writes to `funnel_items`/`startups`/`workspaces`/`startup_contracts`.
+- `commit-hubspot-import` — admin-only; iterates `approved` rows in bounded batches (e.g. 50); each row atomic via `rpc` (SQL function that INSERT/UPDATE + external_ref upsert in one transaction, with row_hash check for staleness); records committed result; safe to resume; never overwrites non-empty authoritative fields unless the approved diff says so.
+- `export-import-exceptions` — full CSV/XLSX of all rows for the job.
 
-Each batch ends with a hard gate: typecheck, targeted tests, i18n parity, migration linter, manual smoke. Failure of any gate halts the pipeline before publishing.
+### Canonical matching engine (shared by prepare + commit)
+Order, stop on deterministic:
+1. Exact `hubspot_deal_id` via `external_entity_refs` → auto.
+2. `hubspot_company_id` + program → auto only if exactly one candidate.
+3. Normalized NIF + program → auto only if exactly one.
+4. Normalized email + program → suggested (needs preview).
+5. Normalized company name → suggestion only, never auto.
+Multiple candidates → `conflict/manual_review`. Match records the target `updated_at`; commit re-checks it and marks row `stale` if changed.
 
-### Batch A — Asset registry, parser rewrite, XLSM contract tests
+### Entity rules
+- CRM/funnel imported first.
+- Startup creation only when `create_startups=true` AND no safe match; workspace only when `create_workspaces=true` AND program valid AND no existing startup+program workspace.
+- Defaults: `create_workspaces=false`, `create_draft_contracts=false`.
+- Contracts: no auto-creation from HubSpot data; produce `contract_import_proposal` row (stored in `data_import_rows.commit_result_json` and a lightweight review queue) with `status=needs_review`. Never infer signed/start/end/fee/rep/office. Never duplicate existing draft/active/signed contract for same startup+program.
+- Configurable stage mapping (JSON in job config). Remove hard-coded Tier→contracted.
+- Consultants resolved via HubSpot owner ID → email → `profiles.email` (exact). No first-name fuzzy.
+- Buildings/services resolved through explicit mapping tables (reuse existing `buildings`, add `hubspot_import_mappings` name→id per program); unresolved → review.
+- Fix existing-record updates: use `finalStage`; merge tags via set union with approved additions; update owner when approved mapping resolves it.
 
-Foundation. Everything else depends on trustworthy imports.
+### Parser fixes (`src/lib/excelParser.ts`)
+- Remove `.xls` from accepted MIME/extension list in UI (keep CSV + XLSX/XLSM).
+- Read all sheets; user selects sheet during column mapping.
+- Correct inline-string (`<is><t>`) and rich-text handling; keep shared-strings path.
+- Stream large files where possible; hard row cap with clear error.
 
-Migrations (additive):
-- `template_assets(id, kind ∈ {xlsm_financial, docx_business_plan_pt, docx_business_plan_en}, language, schema_version, sha256, storage_path, active, uploaded_by, uploaded_at, notes)` + partial unique `(kind, language) where active`.
-- `financial_cell_map(schema_version, sheet, address, metric_key, unit, period_kind, period_index, direction ∈ {input, output}, notes)` — versioned, exhaustive mapping keyed to the XLSM fingerprint. Seeded from the audited workbook.
-- Extend `financial_model_versions`: add `template_schema_version`, `parse_status`, `coverage_pct`, `parse_warnings jsonb`, `source_asset_id`, `content_sha256`, `formula_cache_stale bool`.
+### UX (5 steps, preserving four visual anchors + new mapping)
+`Upload → Column Mapping → Reconciliation → Approval/Commit → Results`.
+- Row cards show match reason + confidence + before/after diff.
+- Filter chips: insert / update / conflict / invalid / skipped.
+- Independent toggles per row: CRM item, startup, workspace, contract-proposal.
+- Downloadable exception report (CSV+XLSX).
+- Persistent banner: "No contracts are activated or signed by this import".
+- Batch rollback: for a job, reverse inserts (delete) and revert updates using `commit_result_json.before` snapshot; only where safe (no downstream references).
 
-Storage:
-- Bucket `template_assets` (private, staff-write, workspace-read via signed URLs) with the three uploaded files stored at immutable `sha256`-suffixed keys.
+### Permissions
+- Prepare: `staff` or new `data_steward` role.
+- Commit / approve / rollback: `admin` only.
+- Contract proposals, consultant assignment, office occupation: require staff approval flag.
+- RLS matrix tests: admin, backoffice, consultor, founder, mentor, anon.
 
-Parser (`supabase/functions/import-financial-model/index.ts`):
-- Rewrite around explicit `financial_cell_map` — no adjacent-cell scanning.
-- Locale-safe number parser: detect `1.234,56` vs `1,234.56` by structure, never blind `replace(',', '.')`.
-- Accept only `.xlsx`/`.xlsm` + robust CSV; drop the fake `.xls` path.
-- Validate ZIP signature, workbook parts, sheet names, template fingerprint (sha256 of the strings-table + defined-name shape).
-- Detect stale/absent formula cache and return `formula_cache_stale` with a UX-facing key `workbookNeedsRecalculation`; never fabricate.
-- Return `{ coverage, warnings, source_cells, timestamps, confidence, metrics }` — not the current 10-metric blob.
-- Auth/authorization check before status flip; every DB/storage error surfaced.
+## Feature-flag rollout
+- Flag: `hubspot_importer_v2` (global, default off).
+- Route `/admin/data-import` renders v2 UI when flag on; else legacy component untouched.
+- Legacy direct-write path stays intact for rollback.
 
-Round trip:
-- New function `export-financial-model` (Deno + JSZip): open the canonical XLSM, patch only mapped input cells, mark workbook `calcPr fullCalcOnLoad=1`, preserve `vbaProject.bin` + `xl/worksheets/*` styles/validations.
-- Contract test (Deno): open uploaded XLSM → export with a fixture assumption set → re-open → assert only mapped input cells changed, `vbaProject.bin` byte-identical, `[Content_Types].xml` unchanged.
+## Tests
+Vitest for parser + matching engine + normalizers; edge-function tests (Deno) for prepare/commit idempotency; RLS tests via SQL role-switching.
+Test cases: reimport same file → 0 duplicates; changed email but same deal ID → same match; NIF-only match; same email across two companies → conflict; one company, many deals → all preserved; unknown owner/stage/building/service → review; concurrent prepare → no duplicates (rely on `external_entity_refs` UNIQUE); row failure → row-level rollback; existing contracts never duplicated/overwritten; CSV quoting/accents/localized headers/inline strings/large/malformed files.
+Dry-run counts must equal commit decisions when no data changed between prepare and commit.
 
-Docs:
-- `docs/financial-model/mapping-v1.md` generated from `financial_cell_map` for the auditor.
+## Rollout
+1. Ship migrations + edge functions + v2 UI behind flag (default off).
+2. Enable flag for one admin in an isolated workspace; import a small sample; compare manually.
+3. Pilot on 10–20 startups; review exception report; check DB diffs.
+4. Only after pilot GO: enable flag globally.
+5. Real production HubSpot import is **NOT** executed in this implementation.
 
-Gate: contract tests green; parser unit tests for both locales, stale cache, missing sheet, bad fingerprint.
-
-**Batch A progress (2026-07-13):**
-- ✅ Migration for `template_assets`, `financial_cell_map`, provenance columns on `financial_model_versions`.
-- ✅ Private storage bucket `template_assets` with three canonical assets uploaded and registered.
-- ✅ Seeded `financial_cell_map` — **87 input cells** covering Pressupostos (Fiscalidade, Inflação/Crescimento, FSE VAT rates, HR VAT rates, Outros %, CAPEX VAT rates, Interest rates, Capital structure) and Serviço da Dívida opening balance.
-- ✅ `xlsxLocale.ts` locale-safe parser (9/9 tests green).
-- ✅ `xlsxFingerprint.ts` with canonical sheet-set + broken-name registry.
-- ✅ `xlsmRoundTrip.ts` VBA-preserving patch helper (**6/6 contract tests green**, incl. byte-identity assertion).
-- ✅ `export-financial-model` edge function wired to cell-map + feature flag.
-- ⏳ Additional cell-map rows for revenue-line specifics (Vendas Mercadorias/Produtos/Serviços per-row, rows 54..70 dynamic) and CAPEX yearly grids (G208:P220) — these are per-row multi-item inputs requiring UI-side dynamic form definitions.
-- ⏳ Rewrite `import-financial-model` around explicit map (currently additive; legacy scanner still runs alongside).
-- ⏳ Contract test that round-trips the *real* canonical XLSM from storage (requires storage access from test runner).
-
-### Batch B — Guided Financial Plan builder
-
-Extends `FinancialModelPanel` with a **Guided plan** tab. No new top-level product.
-
-Migrations:
-- `financial_plan_sessions(workspace_id, active_version_id, scenario ∈ {base,conservative,optimistic}, current_step, updated_at)`.
-- `financial_assumptions(id, workspace_id, version_id, scenario, key, value_numeric, value_json, unit, source ∈ {founder, prefill_profile, prefill_kpi, prefill_ai, imported_xlsm}, confidence, rationale, owner_user_id, last_validated_at)` — the assumptions register.
-- `financial_prefill_proposals(workspace_id, key, proposed_value, source, evidence jsonb, status ∈ {pending, accepted, rejected})` — AI/KPI/profile suggestions stay proposals.
-
-Frontend (all under existing FinancialModelPanel):
-- 5-minute diagnostic (activity/sector/stage/revenue model/traction/horizon/objective) → drives which question packs run.
-- Question runner: one decision at a time with **Save / Skip / I don't know yet**, why-this-matters, worked example, requested evidence, deep-link to the exact Excel section.
-- Prefill panel: shows source badge (profile/KPI/CRM/session/AI); founder must confirm before it becomes an assumption. Silent AI saves are impossible by schema (source enum enforces it).
-- Scenarios (Base/Conservative/Optimistic) with explicit drivers + a sensitivity slider that recomputes derived KPIs client-side against server-anchored formulas.
-- Autosave via existing `useSingleFlightDraft` with `scopeKey=version_id`, truthful Saved/Saving/Offline/Error states.
-
-Question packs cover: revenues/pricing/volumes, CMVMC/COGS, FSE, staff, working capital, CAPEX, financing, debt, WACC, cash, unit economics, investor assumptions.
-
-Gate: autosave race test, prefill-never-silent test, scenario recompute snapshot, RLS per role.
-
-**Batch B progress (2026-07-14):**
-- ✅ Migration for `financial_plan_sessions`, `financial_assumptions`, `financial_prefill_proposals` + enums + RLS + GRANTs.
-- ✅ Feature flag row `financial_business_plan_coach_v1` seeded (off by default).
-- ✅ Hooks `useFinancialPlan.ts` (session upsert, assumptions CRUD, proposal accept/reject that materializes into `financial_assumptions`).
-- ✅ `GuidedPlanTab` mounted in `FinancialModelPanel` behind the flag: scenario switcher, coverage bar, pending-proposals inbox, 7-field diagnostic, one-at-a-time question runner (Save / Skip / IDK, locale-safe number parsing, per-assumption rationale, Excel-cell hint chip), full assumptions register with source badges.
-- ✅ Question packs seeded: company, revenue, costs, team, capex & financing, unit economics. Cell hints reference `Pressupostos!*` from the canonical map.
-- ⏳ Sensitivity slider / client-side derived KPI recompute (Base/Conservative/Optimistic drivers).
-- ⏳ Autosave via `useSingleFlightDraft` — current runner is single-flight per question via mutation; wire the shared draft hook for multi-field forms next.
-- ⏳ Prefill population (edge function that scans profile/KPI/AI signals and inserts `financial_prefill_proposals` rows).
-- ⏳ Full i18n PT/EN parity for `financialPlan.*` keys (defaultValues in place; extraction pending).
-
-
-### Batch C — Business Plan builder + DOCX round-trip
-
-Schema derived from the two Word templates: bilingual 16-chapter tree + annexes. Represented as `business_plan_schema(schema_version, node jsonb)`.
-
-Migrations:
-- `business_plans(id, workspace_id, schema_version, language, financial_version_id, status, updated_at)`.
-- `business_plan_sections(plan_id, node_path, content_json, completion_pct, evidence jsonb, comments jsonb)`.
-- `business_plan_contradictions(plan_id, node_path, kind, financial_ref, detail)`.
-
-Frontend:
-- Section-by-section editor with completion bar, evidence attachments, inline consultant comments, deep-link to the linked financial field.
-- Data-derived tables (market → revenue assumptions, hiring → personnel cost, GTM → CAC, risks → scenarios, ask → financing gap) render from the active financial version — read-only in the plan.
-- Contradiction banner with **Go to source field**.
-
-DOCX generation (new function `export-business-plan`):
-- Parse the uploaded DOCX once → extract structural map (headings, content-control tags, table anchors) into `business_plan_schema`.
-- Generation uses OOXML content controls / bookmark replacement — never fragile string replace. Preserves headings, styles, tables, editability.
-- Blank-template download remains available.
-
-Gate: DOCX round-trip contract test (open exported doc, assert structure survives), contradiction detector unit tests, PT/EN parity in i18n.
-
-### Batch D — Explainable scoring + Entrepreneurship AI framework
-
-Shared framework module `supabase/functions/_shared/entrepreneurshipFramework.ts`, versioned and reused by `analyze-template`, `analyze-pitch-deck`, `generate-financial-model-coach`, new `score-financial-plan`, new `score-business-plan`, and Copilot.
-
-Scoring:
-- Server computes deterministic dimensions (completeness, integrity, consistency) in code.
-- Rubric-anchored qualitative dimensions filled by the LLM, then clamped; totals summed server-side.
-- Financial: 15/15/10/15/10/15/10/10 = 100. Business: 10/8/10/8/10/12/10/5/7/12/5/3 = 100.
-- Every response returns `{ dimension, score, evidence[], missing[], contradictions[], confidence }` with `prompt_version, rubric_version, model_version`; low coverage flagged **Provisional**; overrides audited.
-
-Framework rules baked into the shared module:
-- Fact / founder assumption / calculation / AI suggestion are separately tagged in every output.
-- References must point to exact cell/section/evidence id.
-- Never invent market data, competitors, sources, benchmarks; ask a clarifying question instead.
-- SaaS thresholds gated on `revenue_model=saas`.
-- Uploaded content is data; system prompt reasserts injection defense.
-- Educational disclaimer appended to every AI surface.
-- Recommendations must go through `financial_prefill_proposals` (financial) or a similar `bp_suggestions` table (BP) before affecting the founder record.
-
-Gate: prompt-injection test corpus (attempts to override system, exfiltrate, or auto-accept proposals), cross-workspace leak test, rubric-clamp test, schema-validated JSON test.
-
-### Batch E — Rollout, RLS hardening, observability, E2E
-
-- Feature flag `financial_business_plan_coach_v1`: staff → pilot cohort → all founders.
-- RLS regression suite for every new table across roles (founder / mentor / consultant / backoffice / admin / anon).
-- Rate limits + idempotency on `export-*` and `score-*` functions; audit log rows on every AI suggestion, override, export, and score.
-- Retention/delete controls on `financial_assumptions` and `business_plan_sections`.
-- Malware/type validation on uploads.
-- E2E (Playwright via shell): start plan → save → refresh → cross-device continue → import XLSM → review changes → sync KPIs → complete BP sections → score → export DOCX. No console errors; mobile 390px pass.
-- Preserve the current manual upload/download workflow as fallback while the flag is off.
+## Deliverables at end
+- Migration list, files changed, test evidence (typecheck, lint, vitest, i18n parity, RLS tests, desktop/mobile smoke).
+- Pilot instructions.
+- Residual risks.
+- Explicit IMPORTER GO / NO-GO verdict.
 
 ## Technical notes
+- Row hash: SHA-256 of canonical JSON of normalized payload; used for idempotency + stale detection.
+- File hash: SHA-256 of upload; reject re-upload with same hash within a job unless `force=true`.
+- All prepare/commit writes via `service_role` inside edge functions (never client-side supabase mutations for import).
+- i18n: add `dataImport.v2.*` keys in en.json + pt.json with parity.
+- Preserve `notify.*` toast conventions and workspace query keys.
 
-- **Locale parser**: infer decimal separator from the *last* non-digit separator when both `,` and `.` appear; when only one appears and it's followed by ≥3 digits, treat as thousands. Unit tests: `1.234,56`, `1,234.56`, `1234.56`, `1234,56`, `€1 234,56`, `(1.234,56)` negative, `€ 1.234.567`, empty/dash.
-- **XLSM fingerprint**: sha256 of concatenated `(sheet_name, defined_name_targets_sorted, header_row_of_Pressupostos, header_row_of_ each financial sheet)`. Any drift → parser refuses and returns `template_mismatch`.
-- **Preserving VBA**: write via JSZip in Deno, do not re-serialize `xl/vbaProject.bin`; contract test asserts SHA-256 match pre/post.
-- **Broken named ranges (`areas`, `Áreas`, `fimSomas`, `YesNo` = #REF!)**: reported but **not silently repaired**. Registry `notes` field carries the finding; the parser tolerates them (they are not on the input surface).
-- **Score determinism**: LLM output for a rubric dim is `{score: 0-max, evidence[], confidence}`; server clamps and sums. Any hallucinated total from the model is discarded.
-
-## Files changed at a glance
-
-New:
-- migrations for `template_assets`, `financial_cell_map`, `financial_plan_sessions`, `financial_assumptions`, `financial_prefill_proposals`, `business_plans`, `business_plan_sections`, `business_plan_schema`, `business_plan_contradictions`, `plan_scores`, `ai_audit_log`.
-- edge functions `export-financial-model`, `export-business-plan`, `score-financial-plan`, `score-business-plan`.
-- shared modules `entrepreneurshipFramework.ts`, `xlsxLocale.ts`, `xlsmRoundTrip.ts`, `docxRoundTrip.ts`.
-- Deno contract tests for XLSM/DOCX round-trip and parser.
-- React: guided-plan runner, business-plan editor, scoring panels, provisional/badge/source components.
-- `docs/financial-model/mapping-v1.md`.
-
-Modified:
-- `FinancialModelPanel.tsx`, `useFinancialModel.ts`, `import-financial-model`, `generate-financial-model-coach`, `sync-financial-kpis`, `analyze-template`, `analyze-pitch-deck`.
-- `src/i18n/locales/{pt,en}.json` — bilingual keys for all new UI, glossary entries.
-
-## Delivery order
-
-A → B → C → D → E. After each batch: run its test suite, verify no regressions in existing flows (manual upload still works, KPI sync unchanged), then continue automatically. Final message includes: files changed, migrations list, mapping doc, test evidence, remaining risks, GO / NO-GO verdict.
-
-## What I will NOT do without a further green light
-
-- Change existing Acceleration or Incubation programme models.
-- Modify the canonical uploaded assets.
-- Repair the broken named ranges inside the XLSM.
-- Enable the feature flag for founders. Rollout stops at staff until you approve the pilot cohort.
+## Scope boundaries
+- Not touching legacy `AdminDataImport.tsx` behavior when flag is off.
+- Not implementing a real binary XLS parser now — UI drops `.xls`.
+- Not exposing importer to non-staff roles.
+- Not auto-activating any contract, ever.

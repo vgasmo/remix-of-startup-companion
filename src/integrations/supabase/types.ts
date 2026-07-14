@@ -1797,6 +1797,125 @@ export type Database = {
         }
         Relationships: []
       }
+      data_import_jobs: {
+        Row: {
+          approved_by: string | null
+          committed_at: string | null
+          config_json: Json
+          counts_json: Json
+          created_at: string
+          created_by: string | null
+          file_hash: string | null
+          filename: string
+          id: string
+          prepared_at: string | null
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_by?: string | null
+          committed_at?: string | null
+          config_json?: Json
+          counts_json?: Json
+          created_at?: string
+          created_by?: string | null
+          file_hash?: string | null
+          filename: string
+          id?: string
+          prepared_at?: string | null
+          source: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_by?: string | null
+          committed_at?: string | null
+          config_json?: Json
+          counts_json?: Json
+          created_at?: string
+          created_by?: string | null
+          file_hash?: string | null
+          filename?: string
+          id?: string
+          prepared_at?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      data_import_rows: {
+        Row: {
+          approval_state: string
+          approve_toggles_json: Json
+          commit_result_json: Json | null
+          created_at: string
+          id: string
+          job_id: string
+          match_confidence: number | null
+          match_entity_id: string | null
+          match_entity_type: string | null
+          match_method: string | null
+          match_snapshot_updated_at: string | null
+          normalized_json: Json
+          proposed_action: string
+          raw_json: Json
+          row_hash: string
+          row_number: number
+          updated_at: string
+          validation_errors_json: Json
+        }
+        Insert: {
+          approval_state?: string
+          approve_toggles_json?: Json
+          commit_result_json?: Json | null
+          created_at?: string
+          id?: string
+          job_id: string
+          match_confidence?: number | null
+          match_entity_id?: string | null
+          match_entity_type?: string | null
+          match_method?: string | null
+          match_snapshot_updated_at?: string | null
+          normalized_json?: Json
+          proposed_action?: string
+          raw_json: Json
+          row_hash: string
+          row_number: number
+          updated_at?: string
+          validation_errors_json?: Json
+        }
+        Update: {
+          approval_state?: string
+          approve_toggles_json?: Json
+          commit_result_json?: Json | null
+          created_at?: string
+          id?: string
+          job_id?: string
+          match_confidence?: number | null
+          match_entity_id?: string | null
+          match_entity_type?: string | null
+          match_method?: string | null
+          match_snapshot_updated_at?: string | null
+          normalized_json?: Json
+          proposed_action?: string
+          raw_json?: Json
+          row_hash?: string
+          row_number?: number
+          updated_at?: string
+          validation_errors_json?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_import_rows_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "data_import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dataroom_items: {
         Row: {
           created_at: string
@@ -2341,6 +2460,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      external_entity_refs: {
+        Row: {
+          created_at: string
+          external_id: string
+          id: string
+          internal_entity_id: string
+          internal_entity_type: string
+          metadata_json: Json
+          object_type: string
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          external_id: string
+          id?: string
+          internal_entity_id: string
+          internal_entity_type: string
+          metadata_json?: Json
+          object_type: string
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          external_id?: string
+          id?: string
+          internal_entity_id?: string
+          internal_entity_type?: string
+          metadata_json?: Json
+          object_type?: string
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       feature_flags: {
         Row: {
@@ -9485,6 +9640,19 @@ export type Database = {
       check_signup_allowed: { Args: { p_email: string }; Returns: boolean }
       claim_startup: { Args: never; Returns: Json }
       cleanup_old_rate_limits: { Args: never; Returns: number }
+      commit_import_funnel_item: {
+        Args: {
+          p_expected_updated_at: string
+          p_external_ids: Json
+          p_final_stage: string
+          p_job_id: string
+          p_match_entity_id: string
+          p_payload: Json
+          p_row_id: string
+          p_tags: string[]
+        }
+        Returns: Json
+      }
       create_conversation: {
         Args: {
           _title?: string
@@ -9762,6 +9930,7 @@ export type Database = {
         Args: { p_claim_id: string; p_reason?: string }
         Returns: undefined
       }
+      revert_import_row: { Args: { p_row_id: string }; Returns: Json }
       search_workspaces_paged: {
         Args: {
           _assigned_to?: string
