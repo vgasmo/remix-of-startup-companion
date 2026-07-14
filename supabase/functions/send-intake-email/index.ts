@@ -75,6 +75,54 @@ Deno.serve(async (req) => {
     let subject = ''
     let html = ''
 
+    // Enrich intake_request with commercial proposal from funnel_items.metadata_json
+    let proposalHtml = ''
+    if (type === 'intake_request' && body.intakeId) {
+      try {
+        const { data: ik } = await supabase
+          .from('contract_intakes')
+          .select('funnel_item_id')
+          .eq('id', body.intakeId)
+          .maybeSingle()
+        if (ik?.funnel_item_id) {
+          const { data: fi } = await supabase
+            .from('funnel_items')
+            .select('metadata_json, deal_value, deal_currency')
+            .eq('id', ik.funnel_item_id)
+            .maybeSingle()
+          const md = (fi?.metadata_json && typeof fi.metadata_json === 'object' && !Array.isArray(fi.metadata_json))
+            ? fi.metadata_json as Record<string, any> : {}
+          let typeName: string | null = null
+          if (typeof md.proposed_incubation_type_id === 'string' && md.proposed_incubation_type_id) {
+            const { data: itype } = await supabase.from('incubation_types').select('name').eq('id', md.proposed_incubation_type_id).maybeSingle()
+            typeName = itype?.name ?? null
+          }
+          const currency = fi?.deal_currency || 'EUR'
+          const fmt = (v: number) => new Intl.NumberFormat('pt-PT', { style: 'currency', currency }).format(v)
+          const rows: string[] = []
+          if (typeName) rows.push(`<tr><td style="padding:6px 10px;color:#666">Tipo de incubação</td><td style="padding:6px 10px;font-weight:600">${escapeHtml(typeName)}</td></tr>`)
+          if (md.proposed_fee != null) rows.push(`<tr><td style="padding:6px 10px;color:#666">Mensalidade proposta</td><td style="padding:6px 10px;font-weight:600">${escapeHtml(fmt(Number(md.proposed_fee)))}</td></tr>`)
+          if (md.proposed_discount != null) rows.push(`<tr><td style="padding:6px 10px;color:#666">Desconto potencial</td><td style="padding:6px 10px;font-weight:600">${Number(md.proposed_discount)}%</td></tr>`)
+          if (md.proposed_fee == null && fi?.deal_value != null) rows.push(`<tr><td style="padding:6px 10px;color:#666">Valor estimado</td><td style="padding:6px 10px;font-weight:600">${escapeHtml(fmt(Number(fi.deal_value)))}</td></tr>`)
+          if (typeof md.commercial_notes === 'string' && md.commercial_notes.trim()) rows.push(`<tr><td colspan="2" style="padding:8px 10px;color:#444;background:#fafafa;font-size:13px">${escapeHtml(md.commercial_notes).replace(/\n/g, '<br/>')}</td></tr>`)
+          if (rows.length > 0) {
+            proposalHtml = `
+              <div style="margin:18px 0;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+                <div style="background:#1a1a2e;color:#fff;padding:10px 14px;font-weight:600;font-size:14px">Proposta Comercial</div>
+                <table style="width:100%;border-collapse:collapse;font-size:14px">${rows.join('')}</table>
+                <div style="padding:10px 14px;background:#f9fafb;font-size:12px;color:#555">
+                  Documentos padrão para análise:
+                  <a href="${appUrl}/templates/V11_Anexo_I_Regulamento_SUP_LRA_2026_2.pdf" style="color:#1a1a2e;margin-left:6px">Regulamento (PDF)</a> ·
+                  <a href="${appUrl}/templates/V9_Minuta_Contrato_IF_e_IV_2026.docx" style="color:#1a1a2e">Minuta de Contrato</a>
+                </div>
+              </div>`
+          }
+        }
+      } catch (e) {
+        console.warn('[send-intake-email] proposal enrichment failed', e)
+      }
+    }
+
     if (type === 'intake_request') {
       subject = `${safeOrg ? safeOrg + ' — ' : ''}Pedido de Contratação — Startup Leiria`
       html = `
@@ -82,10 +130,11 @@ Deno.serve(async (req) => {
           <h2 style="color:#1a1a2e">Pedido de Contratação</h2>
           <p>Olá${safeName ? ' ' + safeName : ''},</p>
           <p>A equipa <strong>Startup Leiria</strong> iniciou o processo de contratação${safeOrg ? ' para <strong>' + safeOrg + '</strong>' : ''}.</p>
-          <p>Para avançar, pedimos que preencha o formulário com os dados da empresa:</p>
+          ${proposalHtml}
+          <p>Para avançar, pedimos que preencha o formulário com os dados da empresa. No próprio formulário poderá consultar o regulamento e a minuta de contrato standard antes de submeter:</p>
           <p style="text-align:center;margin:25px 0">
             <a href="${intakeUrl}" style="background:#1a1a2e;color:#fff;padding:12px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block">
-              Preencher Dados
+              Preencher Dados e Rever Proposta
             </a>
           </p>
           <p style="font-size:13px;color:#666">Este link é válido por 30 dias. Após o preenchimento, a nossa equipa irá validar os dados antes de enviar o contrato para assinatura.</p>

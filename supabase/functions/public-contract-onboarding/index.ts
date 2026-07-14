@@ -394,7 +394,7 @@ Deno.serve(async (req) => {
       const tokenHashLoad = await sha256Hex(token)
       const { data: intake, error: iErr } = await supabase
         .from('contract_intakes')
-        .select('id, status, organization_name, company_nif, company_address, company_city, company_postal_code, iban, legal_representative_name, legal_representative_email, legal_representative_phone, billing_email, startup_description, website, documents_json, missing_documents, changes_requested_notes, intake_token_expires_at, submitted_at, project_name, certidao_permanente_code, additional_representatives')
+        .select('id, funnel_item_id, status, organization_name, company_nif, company_address, company_city, company_postal_code, iban, legal_representative_name, legal_representative_email, legal_representative_phone, billing_email, startup_description, website, documents_json, missing_documents, changes_requested_notes, intake_token_expires_at, submitted_at, project_name, certidao_permanente_code, additional_representatives')
         .eq('intake_token_hash', tokenHashLoad)
         .maybeSingle()
 
@@ -410,7 +410,47 @@ Deno.serve(async (req) => {
         })
       }
 
-      return new Response(JSON.stringify({ intake }), {
+      // Build a lightweight commercial proposal snapshot from the linked funnel
+      // item metadata so the founder can review price / incubation type /
+      // discount + standard regulation & contract before submitting data.
+      let commercial_proposal: Record<string, unknown> | null = null
+      if (intake.funnel_item_id) {
+        try {
+          const { data: funnelItem } = await supabase
+            .from('funnel_items')
+            .select('metadata_json, deal_value, deal_currency')
+            .eq('id', intake.funnel_item_id)
+            .maybeSingle()
+          const md = (funnelItem?.metadata_json && typeof funnelItem.metadata_json === 'object' && !Array.isArray(funnelItem.metadata_json))
+            ? funnelItem.metadata_json as Record<string, any>
+            : {}
+          let incubationTypeName: string | null = null
+          if (typeof md.proposed_incubation_type_id === 'string' && md.proposed_incubation_type_id) {
+            const { data: itype } = await supabase
+              .from('incubation_types')
+              .select('name')
+              .eq('id', md.proposed_incubation_type_id)
+              .maybeSingle()
+            incubationTypeName = itype?.name ?? null
+          }
+          const hasAny = md.proposed_fee != null || md.proposed_discount != null || incubationTypeName || md.commercial_notes || funnelItem?.deal_value != null
+          if (hasAny) {
+            commercial_proposal = {
+              proposed_fee: md.proposed_fee ?? null,
+              proposed_discount: md.proposed_discount ?? null,
+              proposed_incubation_type_id: md.proposed_incubation_type_id ?? null,
+              proposed_incubation_type_name: incubationTypeName,
+              commercial_notes: typeof md.commercial_notes === 'string' ? md.commercial_notes : null,
+              deal_value: funnelItem?.deal_value ?? null,
+              deal_currency: funnelItem?.deal_currency ?? 'EUR',
+            }
+          }
+        } catch (e) {
+          console.warn('[intake_load_by_token] proposal enrichment failed', e)
+        }
+      }
+
+      return new Response(JSON.stringify({ intake: { ...intake, commercial_proposal } }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
