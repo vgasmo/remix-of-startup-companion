@@ -58,6 +58,25 @@ const FUNNEL_ITEM_FIELDS = `
   created_at, updated_at
 `;
 
+
+
+
+/**
+ * Operational (post-contracting) customer records must not appear in the
+ * commercial "stale" / "no next action" buckets merely because historical
+ * CRM activity is missing. They are only surfaced when they carry an
+ * explicit next_action_at (overdue / today / upcoming).
+ */
+export function isOperationalCustomer(item: {
+  stage: FunnelStage | string;
+  type?: string | null;
+}): boolean {
+  if (item.stage === 'incubating' || item.stage === 'accelerating') return true;
+  if (item.stage === 'contracted' && item.type === 'startup_active') return true;
+  return false;
+}
+
+
 export function useCrmInbox(filters?: UseCrmInboxFilters) {
   return useQuery({
     queryKey: ['crm-inbox', filters],
@@ -132,13 +151,18 @@ export function useCrmInbox(filters?: UseCrmInboxFilters) {
       };
 
       enrichedItems.forEach(item => {
-        // Check for stale items (no activity in 14 days)
-        const lastActivity = item.last_activity_at ? new Date(item.last_activity_at) : null;
-        const isStale = !lastActivity || lastActivity < staleThreshold;
+        // Operational (post-contracting) customers are excluded from
+        // commercial follow-up buckets unless they carry an explicit
+        // next_action_at. Missing historical activity is not a signal.
+        const operational = isOperationalCustomer(item);
 
         if (!item.next_action_at) {
-          // Put stale items in stale group, others in noNextAction
-          if (isStale && !item.next_action_at) {
+          if (operational) return; // not commercial follow-up
+
+          const lastActivity = item.last_activity_at ? new Date(item.last_activity_at) : null;
+          const isStale = !lastActivity || lastActivity < staleThreshold;
+
+          if (isStale) {
             groups.stale.push(item);
           } else {
             groups.noNextAction.push(item);
