@@ -355,6 +355,7 @@ export default function PublicContractIntake() {
               <p className="text-sm text-amber-700 dark:text-amber-300">{intake.changes_requested_notes}</p>
             </CardContent>
           </Card>
+        )}
 
         {/* Commercial proposal snapshot from CRM */}
         {intake.commercial_proposal && (
