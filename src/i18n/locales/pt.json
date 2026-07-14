@@ -3156,6 +3156,7 @@
       "moveSuccess": "{{count}} leads movidos para {{stage}}",
       "moveTo": "Mover para",
       "moveUndone": "Movimento revertido",
+      "partialEventFailures": "{{count}}/{{total}} eventos não registados. O histórico pode estar incompleto.",
       "nextActionConfirmDesc": "Isto irá definir a data da próxima ação para amanhã ({{date}}) para todos os leads sem próxima ação.",
       "nextActionConfirmTitle": "Definir próxima ação para {{count}} leads?",
       "nextActionFailed": "Falha ao definir próximas ações",
