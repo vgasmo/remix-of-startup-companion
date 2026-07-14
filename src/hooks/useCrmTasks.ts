@@ -91,6 +91,7 @@ export function useAddTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-tasks-due'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
       notify.success(t('crm.taskAdded'));
@@ -130,6 +131,7 @@ export function useCompleteTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-tasks-due'] });
       // G1: the CRM Tarefas tab reads ['crm-tasks-due', filters] — invalidate it too.
       queryClient.invalidateQueries({ queryKey: ['crm-tasks-due'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
@@ -162,6 +164,7 @@ export function useReopenTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-tasks-due'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       notify.success(t('crm.taskReopened'));
     },
@@ -191,6 +194,7 @@ export function useCancelTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-tasks-due'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       notify.success(t('crm.taskCanceled'));
     },
@@ -226,6 +230,7 @@ export function useUpdateTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-tasks-due'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       notify.success(t('crm.taskUpdated'));
     },
