@@ -222,11 +222,21 @@ export function AdminBackoffice() {
 
   const changeProgramMutation = useMutation({
     mutationFn: async ({ workspaceId, programId }: { workspaceId: string; programId: string | null }) => {
-      const { error } = await supabase.from('workspaces').update({ program_id: programId }).eq('id', workspaceId);
+      // Program change resets stage_id (stages are program-scoped) and adjusts current_week
+      // based on the target program's type. Milestones/actions are preserved.
+      const target = programId ? programs?.find(p => p.id === programId) : null;
+      const targetType = (target as any)?.program_type ?? null;
+      const patch: Record<string, unknown> = {
+        program_id: programId,
+        stage_id: null,
+        current_week: targetType === 'acceleration' ? 1 : null,
+      };
+      const { error } = await supabase.from('workspaces').update(patch).eq('id', workspaceId);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['backoffice-unified'] });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       notify.success(t('admin.backoffice.programUpdated'));
     },
     onError: (error) => notify.error(`${t('common.error')}: ${error.message}`),
