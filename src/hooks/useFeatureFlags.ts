@@ -145,3 +145,80 @@ export function useCreateProgramFlag() {
     },
   });
 }
+
+/**
+ * Hook to create or toggle a workspace-scoped feature flag override (admin only).
+ * Upserts on (key, workspace_id) — running with a new `enabled` value flips the pilot.
+ */
+export function useUpsertWorkspaceFlag() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      key,
+      workspaceId,
+      enabled,
+      description,
+    }: {
+      key: FeatureFlagKey;
+      workspaceId: string;
+      enabled: boolean;
+      description?: string;
+    }) => {
+      // Look for an existing workspace-scoped row first — the partial unique
+      // index (key, workspace_id) WHERE scope='workspace' guarantees at most one.
+      const { data: existing, error: selErr } = await supabase
+        .from('feature_flags')
+        .select('id')
+        .eq('key', key)
+        .eq('scope', 'workspace')
+        .eq('workspace_id', workspaceId)
+        .maybeSingle();
+      if (selErr) throw selErr;
+
+      if (existing?.id) {
+        const { error } = await supabase
+          .from('feature_flags')
+          .update({ enabled, description: description ?? undefined })
+          .eq('id', existing.id);
+        if (error) throw error;
+        return existing.id;
+      }
+
+      const { data, error } = await supabase
+        .from('feature_flags')
+        .insert({
+          key,
+          scope: 'workspace',
+          workspace_id: workspaceId,
+          program_id: null,
+          enabled,
+          description: description ?? `Workspace pilot override for ${key}`,
+        })
+        .select('id')
+        .single();
+      if (error) throw error;
+      return data.id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feature-flags'] });
+    },
+  });
+}
+
+/**
+ * Hook to delete a workspace-scoped override, reverting the workspace to
+ * the program/global default. Admin only (RLS enforced).
+ */
+export function useDeleteWorkspaceFlag() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('feature_flags').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feature-flags'] });
+    },
+  });
+}
