@@ -3571,8 +3571,12 @@
       "results": "Resultados"
     },
     "upload": {
-      "title": "Carregar exportação HubSpot",
+      "title": "Carregar exportação CRM",
       "desc": "Apenas CSV ou XLSX/XLSM. O formato legado .xls não é suportado."
+    },
+    "source": "Sistema de origem",
+    "phc": {
+      "notice": "A importação PHC é estritamente CRM. Edifício, serviço e tabela de preços são guardados como sugestões — nunca como taxas ou edifícios. O mapeamento de colunas é derivado automaticamente dos cabeçalhos PHC."
     },
     "analyze": "Analisar ficheiro",
     "selectProgram": "Selecionar programa (opcional)",
