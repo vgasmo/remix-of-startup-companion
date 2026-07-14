@@ -8,8 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Flag, Globe, Building2 } from 'lucide-react';
-import { useFeatureFlags, useUpdateFeatureFlag } from '@/hooks/useFeatureFlags';
+import { Flag, Globe, Building2, Layers, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useFeatureFlags, useUpdateFeatureFlag, useDeleteWorkspaceFlag } from '@/hooks/useFeatureFlags';
 import { notify } from "@/lib/notify";
 
 const FLAG_DESCRIPTIONS: Record<string, { label: string; description: string }> = {
