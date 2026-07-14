@@ -340,7 +340,9 @@ export default function PublicContractSigning() {
   };
 
   const handleOpenPdf = async () => {
-    await fetchPdf();
+    const res = await fetchPdf();
+    if (!res) return;
+    window.open(res.url, '_blank', 'noopener,noreferrer');
   };
 
   useEffect(() => {
