@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Target, Clock, X, Plus, DollarSign, CalendarDays, TrendingUp, Tag, Briefcase, Calendar, FileText, ExternalLink } from 'lucide-react';
+import { Target, Clock, X, Plus, DollarSign, CalendarDays, TrendingUp, Tag, Briefcase, Calendar, FileText, ExternalLink, Lock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,10 +16,11 @@ import { cn } from '@/lib/utils';
 import { STAGE_COLORS } from './RecordDrawerHeader';
 import { CategoryBadge } from '@/components/ui/CategoryBadge';
 import { supabase } from '@/lib/supabaseClient';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { notify } from "@/lib/notify";
 import { useIncubationTypes } from '@/hooks/backoffice/useIncubationTypes';
 import { usePrograms } from '@/hooks/useAdminData';
+
 
 interface OverviewTabProps {
   item: FunnelItem;
