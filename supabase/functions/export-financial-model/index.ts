@@ -139,11 +139,8 @@ serve(async (req) => {
       return corsJsonResponse({ error: `Cell map unavailable: ${mapErr?.message}` }, req, 500);
     }
 
-    // Prefer explicit assumptions; fall back to key_metrics_json.
-    const assumptions = (version.assumptions_json ?? {}) as Record<string, unknown>;
-    const metrics = (version.key_metrics_json ?? {}) as Record<string, unknown>;
-    const lookup = (key: string): unknown =>
-      assumptions[key] ?? metrics[key];
+    const lookup = assumptionsLookup;
+
 
     const patches: CellPatch[] = [];
     const warnings: string[] = [];
