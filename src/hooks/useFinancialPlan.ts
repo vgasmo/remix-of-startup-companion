@@ -4,6 +4,8 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { invokeWithAuth } from '@/lib/invokeWithAuth';
+
 
 export type PlanScenario = 'base' | 'conservative' | 'optimistic';
 export type AssumptionSource =
