@@ -24,6 +24,7 @@ interface KpiCardProps {
   p75?: number | null;
   onValueChange: (field: 'value' | 'notes', val: string) => void;
   onSave: () => void;
+  onBlurFlush?: () => void;
   onUnlock?: (kpiValueId: string) => void;
 }
 
