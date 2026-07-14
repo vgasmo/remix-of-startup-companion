@@ -3477,6 +3477,12 @@
     },
     "stale": "Stale leads (>14 days)",
     "staleTooltip": "Commercial opportunities with no recent activity and no scheduled next action. Active customers (incubating/accelerating) are not shown here.",
+    "filterBySegment": "Segment",
+    "segment": {
+      "all": "All",
+      "commercial": "Commercial pipeline",
+      "activeCustomers": "Active customers"
+    },
     "startFirstSync": "Start first sync",
     "startupCategory": "Categoria",
     "suggestedNextSteps": "Suggested Next Steps",

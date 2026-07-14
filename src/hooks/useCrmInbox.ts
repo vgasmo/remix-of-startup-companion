@@ -40,6 +40,8 @@ export interface CrmInboxGroups {
 interface UseCrmInboxFilters {
   programId?: string;
   stage?: FunnelStage;
+  /** Optional multi-stage filter (segment). Applied when set; overrides single `stage`. */
+  stages?: FunnelStage[];
   assigneeId?: string;
   search?: string;
   myItemsOnly?: boolean;
@@ -90,7 +92,9 @@ export function useCrmInbox(filters?: UseCrmInboxFilters) {
       if (filters?.programId) {
         query = query.eq('program_id', filters.programId);
       }
-      if (filters?.stage) {
+      if (filters?.stages && filters.stages.length > 0) {
+        query = query.in('stage', filters.stages);
+      } else if (filters?.stage) {
         query = query.eq('stage', filters.stage);
       }
       if (filters?.assigneeId) {

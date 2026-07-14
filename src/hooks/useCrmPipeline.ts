@@ -16,6 +16,8 @@ interface UseCrmPipelineFilters {
   search?: string;
   myItemsOnly?: boolean;
   currentUserId?: string;
+  /** Optional multi-stage filter (segment). Applied when set; defaults to PIPELINE_STAGES. */
+  stages?: FunnelStage[];
 }
 
 // Explicit select for funnel_items (P1.2 optimization)
@@ -32,10 +34,11 @@ export function useCrmPipeline(filters?: UseCrmPipelineFilters) {
   return useQuery({
     queryKey: ['crm-pipeline', filters?.currentUserId ?? null, filters],
     queryFn: async (): Promise<CrmPipelineGroups> => {
+      const stagesFilter = filters?.stages && filters.stages.length > 0 ? filters.stages : PIPELINE_STAGES;
       let query = supabase
         .from('funnel_items')
         .select(FUNNEL_ITEM_FIELDS)
-        .in('stage', PIPELINE_STAGES)
+        .in('stage', stagesFilter)
         .order('next_action_at', { ascending: true, nullsFirst: false });
 
       if (filters?.programId) {

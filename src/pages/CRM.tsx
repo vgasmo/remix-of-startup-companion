@@ -79,6 +79,16 @@ const STAGE_COLORS: Record<FunnelStage, string> = {
 
 const ACTIVE_STAGES: FunnelStage[] = ['new', 'first_contact_booked', 'met', 'qualified', 'proposal_sent', 'negotiating', 'intake_requested', 'intake_filling', 'intake_submitted', 'intake_review', 'intake_changes_requested', 'approved_for_signature', 'sent_for_signature', 'contracted', 'incubating', 'accelerating'];
 
+const COMMERCIAL_STAGES: FunnelStage[] = ['new', 'first_contact_booked', 'met', 'qualified', 'proposal_sent', 'negotiating', 'intake_requested', 'intake_filling', 'intake_submitted', 'intake_review', 'intake_changes_requested', 'approved_for_signature', 'sent_for_signature'];
+const ACTIVE_CUSTOMER_STAGES: FunnelStage[] = ['contracted', 'incubating', 'accelerating'];
+
+type CrmSegment = 'all' | 'commercial' | 'active_customers';
+const SEGMENT_STAGES: Record<CrmSegment, FunnelStage[] | undefined> = {
+  all: undefined,
+  commercial: COMMERCIAL_STAGES,
+  active_customers: ACTIVE_CUSTOMER_STAGES,
+};
+
 export default function CRM() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -90,6 +100,7 @@ export default function CRM() {
   const programFilter = searchParams.get('program') || 'all';
   const stageFilter = searchParams.get('stage') || 'all';
   const assigneeFilter = searchParams.get('assignee') || 'all';
+  const segmentFilter = (searchParams.get('segment') as CrmSegment) || 'all';
   const urlSearchQuery = searchParams.get('q') || '';
   // Local input state → debounce → URL, so we don't hit Supabase on every keystroke.
   const [searchInput, setSearchInput] = useState(urlSearchQuery);
@@ -109,9 +120,12 @@ export default function CRM() {
   const setProgramFilter = (v: string) => updateFilterParam('program', v, 'all');
   const setStageFilter = (v: string) => updateFilterParam('stage', v, 'all');
   const setAssigneeFilter = (v: string) => updateFilterParam('assignee', v, 'all');
+  const setSegmentFilter = (v: string) => updateFilterParam('segment', v, 'all');
   const setSearchQuery = (v: string) => setSearchInput(v);
   const setMyItemsOnly = (v: boolean) => updateFilterParam('mine', v, false);
   const setFocusMode = (v: boolean) => updateFilterParam('focus', v, false);
+
+  const segmentStages = SEGMENT_STAGES[segmentFilter];
 
   // Push debounced search into the URL (survives refresh + shareable)
   useEffect(() => {
@@ -127,6 +141,7 @@ export default function CRM() {
   const { data: inbox, isLoading: loadingInbox } = useCrmInbox({
     programId: programFilter !== 'all' ? programFilter : undefined,
     stage: stageFilter !== 'all' ? stageFilter as FunnelStage : undefined,
+    stages: segmentStages,
     assigneeId: assigneeFilter !== 'all' ? assigneeFilter : undefined,
     search: searchQuery || undefined,
     myItemsOnly: focusMode ? true : myItemsOnly, // Focus mode implies my items
@@ -146,6 +161,7 @@ export default function CRM() {
     search: searchQuery || undefined,
     myItemsOnly: focusMode ? true : myItemsOnly,
     currentUserId: user?.id,
+    stages: segmentStages,
   });
 
   const completeTask = useCompleteTask();
@@ -382,6 +398,17 @@ export default function CRM() {
               {programs?.map(p => (
                 <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={segmentFilter} onValueChange={setSegmentFilter}>
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder={t('crm.filterBySegment', { defaultValue: 'Segment' })} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('crm.segment.all', { defaultValue: 'All' })}</SelectItem>
+              <SelectItem value="commercial">{t('crm.segment.commercial', { defaultValue: 'Commercial pipeline' })}</SelectItem>
+              <SelectItem value="active_customers">{t('crm.segment.activeCustomers', { defaultValue: 'Active customers' })}</SelectItem>
             </SelectContent>
           </Select>
 
