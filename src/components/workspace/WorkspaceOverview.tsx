@@ -97,7 +97,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
   const dateLocale = useDateLocale();
   const [, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const { roles, isConsultor, isAdmin } = useAuth();
+  const { roles, isConsultor, isAdmin, user, profile: authProfile } = useAuth();
   const isFounder = roles.includes('founder');
   const canSetPriority = isConsultor || isAdmin;
   const { data: actions, isLoading: actionsLoading } = useWorkspaceActions(workspace.id);
