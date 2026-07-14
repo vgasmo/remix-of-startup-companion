@@ -268,6 +268,30 @@ Deno.serve(async (req) => {
       }
 
       // === Generate onboarding token ===
+      if (!contractId) {
+        return new Response(JSON.stringify({ error: 'contractId required' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      // Verify the contract exists before generating a token; otherwise the
+      // update returns no rows and we hand out a link that will 404.
+      const { data: existing, error: existingErr } = await supabase
+        .from('startup_contracts')
+        .select('id, status')
+        .eq('id', contractId)
+        .maybeSingle()
+
+      if (existingErr) throw existingErr
+      if (!existing) {
+        return new Response(JSON.stringify({
+          error: 'contract_not_found',
+          message: 'Contrato não encontrado. Foi arquivado ou eliminado — crie um novo contrato antes de enviar.',
+        }), {
+          status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
       const onboardingToken = generateToken()
       const onboardingTokenHashStore = await sha256Hex(onboardingToken)
       const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
@@ -284,8 +308,8 @@ Deno.serve(async (req) => {
 
       const publicUrl = `${req.headers.get('origin') || Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/contract-signing/${onboardingToken}`
 
-      return new Response(JSON.stringify({ 
-        token: onboardingToken, 
+      return new Response(JSON.stringify({
+        token: onboardingToken,
         url: publicUrl,
         expiresAt: expiresAt.toISOString(),
       }), {
