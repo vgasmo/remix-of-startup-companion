@@ -535,6 +535,57 @@ Deno.serve(async (req) => {
         metadata: { missing_documents: fd.missing_documents || [], channel: 'public_form' },
       })
 
+      // Notify staff — especially when this is a resubmission after "Correções Pedidas".
+      try {
+        const isResubmission = intake.status === 'changes_requested'
+        const { data: intakeMeta } = await supabase
+          .from('contract_intakes')
+          .select('reviewed_by, assigned_to, created_by, funnel_item_id, organization_name')
+          .eq('id', intake.id)
+          .maybeSingle()
+
+        const recipientIds = new Set<string>()
+        if (intakeMeta?.reviewed_by) recipientIds.add(intakeMeta.reviewed_by)
+        if (intakeMeta?.assigned_to) recipientIds.add(intakeMeta.assigned_to)
+        if (intakeMeta?.created_by) recipientIds.add(intakeMeta.created_by)
+
+        // Fallback: notify all admin/backoffice staff when we have no specific recipient.
+        if (recipientIds.size === 0) {
+          const { data: staffUsers } = await supabase
+            .from('user_roles')
+            .select('user_id')
+            .in('role', ['admin', 'backoffice'])
+          staffUsers?.forEach((s: any) => recipientIds.add(s.user_id))
+        }
+
+        if (recipientIds.size > 0) {
+          const orgName = intakeMeta?.organization_name || intake.organization_name || 'Lead'
+          const title = isResubmission
+            ? `Correções submetidas: ${orgName}`
+            : `Novo intake submetido: ${orgName}`
+          const message = isResubmission
+            ? `O founder respondeu ao pedido de correções. Revê o intake atualizado.`
+            : `O founder submeteu o intake para revisão.`
+          const link = intakeMeta?.funnel_item_id
+            ? `/crm?open=${intakeMeta.funnel_item_id}`
+            : '/admin?tab=backoffice&subtab=contracts'
+
+          await supabase.from('notifications').insert(
+            Array.from(recipientIds).map((uid) => ({
+              user_id: uid,
+              type: 'intake_resubmitted',
+              title,
+              message,
+              entity_type: 'contract_intake',
+              entity_id: intake.id,
+              link,
+            })),
+          )
+        }
+      } catch (notifyErr) {
+        console.error('Intake resubmission notification failed (non-fatal):', notifyErr)
+      }
+
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
