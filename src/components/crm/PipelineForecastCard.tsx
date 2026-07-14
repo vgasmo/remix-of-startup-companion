@@ -86,7 +86,7 @@ export function PipelineForecastCard({ pipeline }: PipelineForecastCardProps) {
         <div className="grid grid-cols-3 gap-3">
           <div className="text-center">
             <p className="text-2xl font-bold text-foreground">{fmt(forecast.totalValue)}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('crm.forecast.totalPipeline', { defaultValue: 'Total Pipeline' })}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('crm.forecast.totalPipeline')}</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-primary">{fmt(forecast.weightedValue)}</p>
