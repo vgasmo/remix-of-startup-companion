@@ -148,7 +148,9 @@ export default function CRM() {
     setSearchParams(next, { replace: false });
   };
 
-  // Internal: open drawer without URL push (used by deep-link)
+  // Internal: open drawer without URL push (used by deep-link).
+  // G0 fix: hydrate real values (notes, source, metadata_json…) from the inbox row
+  // so subsequent saves don't wipe them out with hardcoded nulls.
   const openDrawerDirect = useCallback((item: CrmInboxItem) => {
     const funnelItem: FunnelItem = {
       id: item.id,
@@ -157,31 +159,32 @@ export default function CRM() {
       owner_consultant_id: item.owner_consultant_id,
       contact_name: item.contact_name,
       contact_email: item.contact_email,
-      contact_phone: null,
+      contact_phone: item.contact_phone ?? null,
       organization_name: item.organization_name,
-      source: null,
+      source: item.source ?? null,
       tags: [],
-      notes: null,
+      notes: item.notes ?? null,
       linked_startup_id: null,
       linked_workspace_id: item.linked_workspace_id,
       linked_contract_id: null,
       program_id: item.program_id,
-      first_contact_at: null,
+      first_contact_at: item.first_contact_at ?? null,
       qualified_at: null,
       converted_at: null,
       next_action_at: item.next_action_at,
       next_action_description: item.next_action_description,
       last_activity_at: item.last_activity_at,
-      deal_value: (item as any).deal_value ?? null,
-      deal_currency: (item as any).deal_currency ?? 'EUR',
-      expected_close_date: (item as any).expected_close_date ?? null,
-      win_probability: (item as any).win_probability ?? null,
-      loss_reason: (item as any).loss_reason ?? null,
+      deal_value: item.deal_value ?? null,
+      deal_currency: item.deal_currency ?? 'EUR',
+      expected_close_date: item.expected_close_date ?? null,
+      win_probability: item.win_probability ?? null,
+      loss_reason: null,
+      metadata_json: item.metadata_json ?? null,
       created_at: item.created_at,
       updated_at: item.created_at,
       owner: item.owner ? { ...item.owner, email: '' } : null,
       program: item.program,
-    };
+    } as FunnelItem;
     setSelectedItem(funnelItem);
     setDrawerOpen(true);
   }, []);
