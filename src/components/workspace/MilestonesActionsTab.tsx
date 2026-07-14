@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { format, isPast, isToday, parseISO } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { 
   Plus, AlertTriangle, Calendar, Trash2, Target, Download, 
   GripVertical, Clock, CheckCircle2, Circle, ChevronDown, ChevronRight,
