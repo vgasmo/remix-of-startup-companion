@@ -225,11 +225,13 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
         </Card>
       )}
 
-      {/* Monthly Check-in Banner for Founders (advanced) */}
-      {isFounder && founderAdvancedOpen && <MonthlyCheckinBanner workspaceId={workspace.id} />}
+      {/* Monthly Check-in Banner for Founders — always visible (self-hides when nothing pending).
+          Was gated behind advanced disclosure, which caused the "Submeter check-in" CTA
+          from OneThingToday/EnhancedNextSteps/NextBestAction to dead-end. */}
+      {isFounder && <MonthlyCheckinBanner workspaceId={workspace.id} />}
 
-      {/* Pending Surveys Banner for Founders (advanced) */}
-      {isFounder && founderAdvancedOpen && (
+      {/* Pending Surveys Banner for Founders — self-hides when empty. */}
+      {isFounder && (
         <PendingSurveysBanner 
           workspaceId={workspace.id} 
           onOpenSurvey={setActiveSurveyId} 
