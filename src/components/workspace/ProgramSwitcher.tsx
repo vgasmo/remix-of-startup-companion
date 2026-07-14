@@ -130,7 +130,9 @@ export function ProgramSwitcher({
               {p.name}
               {p.program_type ? (
                 <span className="text-muted-foreground ml-2 text-xs">
-                  ({t(`programType.${p.program_type}`, { defaultValue: p.program_type })})
+                  ({p.program_type === 'acceleration'
+                    ? t('programSwitcher.acceleration', { defaultValue: 'Aceleração' })
+                    : t('programSwitcher.incubation', { defaultValue: 'Incubação' })})
                 </span>
               ) : null}
             </SelectItem>
