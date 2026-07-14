@@ -203,7 +203,7 @@ export function OwnershipCard({ workspaceId, compact = false }: OwnershipCardPro
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm">
                     {ownership?.next_followup_at
-                      ? format(new Date(ownership.next_followup_at), 'MMM d, yyyy')
+                      ? format(new Date(ownership.next_followup_at), 'd MMM yyyy', { locale: dateLocale })
                       : t('ownership.setDate')}
                   </Button>
                 </PopoverTrigger>
