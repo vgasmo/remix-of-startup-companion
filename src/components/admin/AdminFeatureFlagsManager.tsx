@@ -252,6 +252,43 @@ export function AdminFeatureFlagsManager() {
             </div>
           </div>
         )}
+
+        {/* Create a new workspace override — admin pilots */}
+        <div className="space-y-3 rounded-lg border border-dashed p-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <Plus className="h-4 w-4" />
+            {t('admin.featureFlags.newWorkspaceOverride', 'Nova override de workspace')}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t('admin.featureFlags.newWorkspaceOverrideDesc', 'Ativa uma feature apenas para um workspace piloto sem afetar os restantes.')}
+          </p>
+          <div className="grid gap-2 md:grid-cols-[minmax(180px,220px)_1fr_120px_auto]">
+            <Select value={newFlagKey} onValueChange={(v) => setNewFlagKey(v as FeatureFlagKey)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {Object.keys(FLAG_DESCRIPTIONS).concat(['financial_business_plan_coach_v1']).filter((v, i, a) => a.indexOf(v) === i).map((k) => (
+                  <SelectItem key={k} value={k}>{k}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              placeholder={t('admin.featureFlags.workspaceIdPlaceholder', 'Workspace ID (UUID)') as string}
+              value={newFlagWorkspaceId}
+              onChange={(e) => setNewFlagWorkspaceId(e.target.value)}
+            />
+            <div className="flex items-center gap-2">
+              <Switch checked={newFlagEnabled} onCheckedChange={setNewFlagEnabled} />
+              <span className="text-xs">{newFlagEnabled ? t('common.enabled', 'ativada') : t('common.disabled', 'desativada')}</span>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleCreateWorkspaceOverride}
+              disabled={upsertWorkspaceFlag.isPending}
+            >
+              {t('admin.featureFlags.addOverride', 'Adicionar')}
+            </Button>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
