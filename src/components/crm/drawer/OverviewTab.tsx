@@ -19,6 +19,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
 import { notify } from "@/lib/notify";
 import { useIncubationTypes } from '@/hooks/backoffice/useIncubationTypes';
+import { usePrograms } from '@/hooks/useAdminData';
 
 interface OverviewTabProps {
   item: FunnelItem;
