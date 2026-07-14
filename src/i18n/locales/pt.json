@@ -3477,6 +3477,12 @@
     },
     "stale": "Leads parados (>14 dias)",
     "staleTooltip": "Oportunidades comerciais sem atividade recente e sem próxima ação agendada. Clientes ativos (incubação/aceleração) não aparecem aqui.",
+    "filterBySegment": "Segmento",
+    "segment": {
+      "all": "Todos",
+      "commercial": "Pipeline comercial",
+      "activeCustomers": "Clientes ativos"
+    },
     "startFirstSync": "Iniciar primeira sincronização",
     "startupCategory": "Categoria",
     "suggestedNextSteps": "Próximos Passos Sugeridos",
