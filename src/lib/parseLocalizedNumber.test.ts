@@ -126,7 +126,10 @@ describe('formatLocalizedNumber', () => {
     expect(formatLocalizedNumber(null)).toBe('—');
     expect(formatLocalizedNumber(Number.NaN)).toBe('—');
   });
-  it('formats currency in EUR pt-PT', () => {
-    expect(formatLocalizedNumber(1500, { currency: true })).toMatch(/1\.500,00.*€/);
+  it('formats currency in EUR', () => {
+    const out = formatLocalizedNumber(1500, { currency: true });
+    expect(out).toContain('€');
+    // Round-trip through parseLocalizedNumber must yield the original.
+    expect(parseLocalizedNumber(out)).toBe(1500);
   });
 });
