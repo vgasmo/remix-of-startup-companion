@@ -282,6 +282,7 @@
       "allocations": "alocações",
       "amenities": "Comodidades",
       "amount": "Montante",
+      "anniversaryLine": "Faz {{years}} ano(s) a {{date}} ({{days}} dias)",
       "archiveAndBackups": "Arquivo e Backups",
       "archived": "Arquivado",
       "assignQuick": "Atribuir",
@@ -323,6 +324,7 @@
       "consultant": "Consultor",
       "consultantAssigned": "Consultor atribuído",
       "consultantRemoved": "Consultor removido",
+      "contract": "Contrato",
       "contractNumber": "Número do Contrato",
       "contractSigners": {
         "autoAssigned": "Será atribuído automaticamente ao enviar",
@@ -330,6 +332,7 @@
         "firstParty": "Primeiro Outorgante",
         "secondParty": "Segundo Outorgante"
       },
+      "contractSince": "Contrato desde",
       "contractStatus": {
         "active": "Ativo",
         "draft": "Rascunho",
@@ -417,7 +420,12 @@
       "floorPlan": "Planta",
       "fulfillRequest": "Atender Pedido",
       "health": "Saúde",
+      "hero": {
+        "eyebrow": "Backoffice",
+        "subline": "Gestão integrada de espaços, contratos e operações."
+      },
       "hotDesk": "Hot Desk",
+      "inSpaceSince": "No espaço desde",
       "inactive": "Inativo",
       "includesOfficeSpace": "Inclui Espaço de Escritório",
       "incubationType": "Tipo de Incubação",
@@ -496,15 +504,9 @@
       "occupiedRooms": "Ocupadas",
       "officeIncluded": "Escritório incluído",
       "officeSpaces": "Espaços de Escritório",
+      "openContract": "Abrir contrato",
       "openPdf": "Abrir PDF",
       "openStartup": "Abrir Startup",
-      "openContract": "Abrir contrato",
-      "contract": "Contrato",
-      "contractSince": "Contrato desde",
-      "inSpaceSince": "No espaço desde",
-      "sinceShort": "Desde",
-      "reviewTerms": "Rever condições",
-      "anniversaryLine": "Faz {{years}} ano(s) a {{date}} ({{days}} dias)",
       "opsHub": {
         "allContractsGood": "Todos os contratos em boa situação",
         "allPaid": "Todas as faturas pagas",
@@ -572,6 +574,7 @@
       "requestFor": "Pedido Para",
       "requestType": "Tipo de Pedido",
       "requiresSpace": "Requer Atribuição de Espaço",
+      "reviewTerms": "Rever condições",
       "room": "Sala",
       "roomMapping": "Gestão de Espaços",
       "roomMappingDesc": "Mapear salas e localizar startups",
@@ -622,8 +625,12 @@
       "shapeUpdateFailed": "Falha ao atualizar forma da sala",
       "shapeUpdated": "Forma da sala atualizada",
       "since": "desde",
+      "sinceShort": "Desde",
       "space": "Espaço",
       "spaceAssigned": "Espaço atribuído com sucesso",
+      "spaceDetailsEmpty": "Selecione um espaço para ver os detalhes.",
+      "spaceDetailsEmptyBody": "Nenhum espaço selecionado.",
+      "spaceDetailsTitle": "Detalhes do espaço",
       "spaceName": "Nome do Espaço",
       "spaceNamePlaceholder": "Mesa A1, Sala 101...",
       "spaceTypes": {
@@ -632,9 +639,6 @@
         "meetingRoom": "Sala de Reuniões",
         "privateOffice": "Gabinete Privado"
       },
-      "spaceDetailsEmpty": "Selecione um espaço para ver os detalhes.",
-      "spaceDetailsEmptyBody": "Nenhum espaço selecionado.",
-      "spaceDetailsTitle": "Detalhes do espaço",
       "spaceVacated": "Espaço desocupado com sucesso",
       "spaces": "Espaços",
       "spacesAndInfra": "Espaços & Infraestrutura",
@@ -687,11 +691,7 @@
       "waitlistSuggestions": "Sugestões da Lista de Espera",
       "workspaceBlocked": "Workspace bloqueado",
       "workspaceUnblocked": "Workspace desbloqueado",
-      "workspacesWithoutContracts": "Workspaces Sem Contratos",
-      "hero": {
-        "eyebrow": "Backoffice",
-        "subline": "Gestão integrada de espaços, contratos e operações."
-      }
+      "workspacesWithoutContracts": "Workspaces Sem Contratos"
     },
     "backofficeExtended": {
       "addSpace": "Adicionar Espaço",
@@ -1320,59 +1320,59 @@
       "titleRequired": "Título is obrigatório"
     },
     "surveys": {
+      "addQuestion": "Adicionar pergunta",
+      "addToSection": "Adicionar à secção",
       "analytics": "Analytics",
       "analyticsComingSoon": "Survey analytics Painel coming soon",
+      "autoFillKey": "Preencher chave automaticamente",
       "campaignName": "Campaign Nome",
       "campaigns": "Campanhas",
+      "clearAnswers": "Limpar respostas",
       "close": "Fechar",
       "completion": "Conclusão",
+      "confirmDeleteQuestion": "Remover esta pergunta?",
+      "confirmDeleteQuestionDesc": "Esta ação não pode ser revertida.",
+      "confirmDeleteTemplate": "Remover este template?",
+      "confirmDeleteTemplateDesc": "Todas as perguntas serão removidas. Campanhas associadas serão mantidas em arquivo.",
+      "createBlank": "Criar template em branco",
       "createCampaign": "Criar Survey Campaign",
       "createDefaultTemplate": "Criar Ecosystem Survey Template",
       "createFirst": "Criar Campaign",
       "description": "Criar e Gerir periodic ecosystem surveys",
+      "descriptionPlaceholder": "Descrição do inquérito (opcional)",
+      "editQuestion": "Editar pergunta",
+      "emptyQuestions": "Sem perguntas nesta secção.",
       "endDate": "End",
+      "exitPreview": "Sair da pré-visualização",
       "launch": "Lançar",
       "manageTemplates": "Templates",
       "newCampaign": "Nova Campanha",
       "noCampaigns": "Ainda sem campanhas",
       "noCampaignsDesc": "Criar your first survey campaign to collect ecosystem data",
       "noTemplates": "No survey Templates yet",
+      "options": "Opções",
+      "preview": "Pré-visualizar",
+      "previewNotice": "Pré-visualização do inquérito. Nenhuma resposta é guardada.",
       "progress": "Progress",
+      "questionText": "Texto da pergunta",
+      "questions": "Perguntas",
+      "required": "Obrigatória",
+      "respondentMode": "Modo respondente",
+      "respondentNotice": "Está a responder como pré-visualização. As respostas não são guardadas.",
       "responses": "Respostas",
+      "section": "Secção",
       "selectTemplate": "Modelo de Inquérito",
+      "simulateSubmit": "Simular submissão",
+      "simulatedNotice": "Estas respostas não foram guardadas — apenas simulação.",
+      "simulatedResponses": "Respostas simuladas",
       "startDate": "Iniciar",
       "submitted": "submetido",
       "template": "Template",
       "templateEditor": "Modelos de Inquérito",
       "templates": "Templates",
       "title": "Inquéritos",
-      "viewResponses": "Ver Responses",
-      "options": "Opções",
-      "autoFillKey": "Preencher chave automaticamente",
-      "required": "Obrigatória",
-      "respondentMode": "Modo respondente",
-      "respondentNotice": "Está a responder como pré-visualização. As respostas não são guardadas.",
-      "previewNotice": "Pré-visualização do inquérito. Nenhuma resposta é guardada.",
-      "clearAnswers": "Limpar respostas",
-      "simulateSubmit": "Simular submissão",
-      "simulatedResponses": "Respostas simuladas",
-      "simulatedNotice": "Estas respostas não foram guardadas — apenas simulação.",
-      "addQuestion": "Adicionar pergunta",
-      "addToSection": "Adicionar à secção",
-      "confirmDeleteQuestion": "Remover esta pergunta?",
-      "confirmDeleteQuestionDesc": "Esta ação não pode ser revertida.",
-      "confirmDeleteTemplate": "Remover este template?",
-      "confirmDeleteTemplateDesc": "Todas as perguntas serão removidas. Campanhas associadas serão mantidas em arquivo.",
-      "createBlank": "Criar template em branco",
-      "descriptionPlaceholder": "Descrição do inquérito (opcional)",
-      "editQuestion": "Editar pergunta",
-      "emptyQuestions": "Sem perguntas nesta secção.",
-      "exitPreview": "Sair da pré-visualização",
-      "preview": "Pré-visualizar",
-      "questionText": "Texto da pergunta",
-      "questions": "Perguntas",
-      "section": "Secção",
-      "type": "Tipo"
+      "type": "Tipo",
+      "viewResponses": "Ver Responses"
     },
     "suspend": "Suspender",
     "suspendUser": "Suspend Utilizador",
@@ -1922,14 +1922,6 @@
     "updatePassword": "Atualizar Palavra-passe"
   },
   "backoffice": {
-    "invoiceStatus": {
-      "draft": "Rascunho",
-      "sent": "Enviada",
-      "paid": "Paga",
-      "overdue": "Em atraso",
-      "cancelled": "Cancelada",
-      "refunded": "Reembolsada"
-    },
     "allocationEndError": "Erro ao terminar atribuição",
     "allocationEnded": "Atribuição terminada",
     "billing": {
@@ -1964,6 +1956,14 @@
     "incubationTypeUpdated": "Tipo de incubação atualizado",
     "invoiceCreateError": "Erro ao criar fatura",
     "invoiceCreated": "Fatura criada",
+    "invoiceStatus": {
+      "cancelled": "Cancelada",
+      "draft": "Rascunho",
+      "overdue": "Em atraso",
+      "paid": "Paga",
+      "refunded": "Reembolsada",
+      "sent": "Enviada"
+    },
     "invoiceUpdateError": "Erro ao atualizar fatura",
     "invoiceUpdated": "Fatura atualizada",
     "paymentRecordError": "Erro ao registar pagamento",
@@ -2194,14 +2194,12 @@
     "claimedTitle": "Startup verificada!",
     "error": "Ocorreu um erro na verificação. Por favor tente novamente.",
     "errorTitle": "Erro na verificação",
-    "loadFailed": "Não foi possível carregar os pedidos de associação.",
-    "rejectConfirmDesc": "O requerente será notificado. Esta ação não pode ser anulada.",
-    "rejectConfirmTitle": "Rejeitar este pedido de associação?",
     "found": "Startup verificada com sucesso!",
     "goToWorkspace": "Ir para o meu espaço de trabalho",
     "howItWorks": "Vamos verificar se existe uma startup associada ao seu email. Se encontrarmos, será associada automaticamente à sua conta.",
     "howItWorksTitle": "Como funciona",
     "inviteOnlyNote": "Plataforma apenas por convite. A verificação é rápida e segura.",
+    "loadFailed": "Não foi possível carregar os pedidos de associação.",
     "manualRequest": "Pedido Manual",
     "newStartupHint": "Tem uma startup nova que ainda não está no sistema?",
     "noMatchHint": "Se não encontrarmos correspondência, a nossa equipa irá rever o seu pedido.",
@@ -2214,6 +2212,8 @@
     "pendingTiming": "Receberá uma notificação por email assim que a equipa revir o seu pedido.",
     "pendingTitle": "Pedido em Análise",
     "redirecting": "A redirecionar para o seu espaço de trabalho...",
+    "rejectConfirmDesc": "O requerente será notificado. Esta ação não pode ser anulada.",
+    "rejectConfirmTitle": "Rejeitar este pedido de associação?",
     "rejected": "Pedido rejeitado",
     "searching": "A verificar a sua startup...",
     "searchingHint": "Isto demora apenas alguns segundos.",
@@ -2764,37 +2764,11 @@
     }
   },
   "contractDetail": {
-    "renewCta": "Renovar",
-    "renewTitle": "Renovar contrato",
-    "renewDesc": "Renova por 12 meses a partir do dia seguinte ao fim atual. Atualiza a data de fim e regista um evento no histórico.",
-    "renewStart": "Novo início",
-    "renewEnd": "Novo fim",
-    "renewFee": "Mensalidade (€)",
-    "confirmRenew": "Confirmar renovação",
-    "renewSuccess": "Contrato renovado",
-    "renewError": "Não foi possível renovar o contrato",
-    "terminateCta": "Terminar",
-    "terminate": {
-      "title": "Terminar contrato",
-      "description": "Esta ação marca o contrato como terminado, liberta as salas alocadas e cria uma tarefa para cancelar sessões futuras. Não pode ser desfeita automaticamente — apenas por renovação.",
-      "reasonLabel": "Motivo da terminação",
-      "reasonPlaceholder": "Ex: pedido do founder, incumprimento, mudança de programa…",
-      "reasonRequired": "Indique o motivo da terminação.",
-      "archiveWorkspaceLabel": "Arquivar workspace associado",
-      "archiveWorkspaceHint": "Pode reverter mais tarde a partir da lista de workspaces.",
-      "confirm": "Terminar contrato",
-      "success": "Contrato terminado",
-      "error": "Não foi possível terminar o contrato",
-      "staffTaskTitle": "Cancelar sessões futuras (contrato terminado)",
-      "staffTaskDesc": "Contrato {{ref}} terminado. Reveja e cancele sessões futuras no calendário.",
-      "notifyStaffTitle": "Contrato terminado",
-      "notifyStaffMsg": "Contrato {{ref}} foi terminado. Motivo: {{reason}}",
-      "notifyFounderTitle": "O seu contrato foi terminado",
-      "notifyFounderMsg": "A equipa Startup Leiria terminou o contrato. Motivo: {{reason}}"
-    },
     "completedAt": "Concluído em",
     "configured": "Configurado",
+    "confirmRenew": "Confirmar renovação",
     "contractTimeline": "Cronologia do Contrato",
+    "declinedNotice": "Este contrato foi recusado pelo signatário.",
     "digitalSignature": "🇵🇹 Assinatura Digital (Nacionais)",
     "digitalSignatureDesc": "O founder receberá um link para assinar digitalmente na plataforma. Assinatura eletrónica simples válida sob eIDAS.",
     "docuSignNotConfigured": "Assinatura digital não configurada",
@@ -2832,6 +2806,20 @@
     "providerUpdateFailed": "Erro ao atualizar fornecedor",
     "providerUpdated": "Fornecedor de assinatura atualizado",
     "refreshStatus": "Atualizar Estado",
+    "renewCta": "Renovar",
+    "renewDesc": "Renova por 12 meses a partir do dia seguinte ao fim atual. Atualiza a data de fim e regista um evento no histórico.",
+    "renewEnd": "Novo fim",
+    "renewError": "Não foi possível renovar o contrato",
+    "renewFee": "Mensalidade (€)",
+    "renewInvalidStatus": "Só é possível renovar contratos ativos ou expirados.",
+    "renewNotifyMsg": "A proposta de renovação foi enviada ao signatário.",
+    "renewNotifyTitle": "Renovação enviada",
+    "renewStart": "Novo início",
+    "renewSuccess": "Contrato renovado",
+    "renewTitle": "Renovar contrato",
+    "resetAndResend": "Reiniciar e reenviar",
+    "resetFailed": "Não foi possível reiniciar o contrato.",
+    "resetOk": "Contrato reiniciado com sucesso.",
     "retry": "Tentar Novamente",
     "retrySendDocuSign": "Reenviar via DocuSign",
     "retrySendPandaDoc": "Reenviar via PandaDoc",
@@ -2869,17 +2857,29 @@
     "step1DownloadPdf": "1. Descarregar PDF do Contrato",
     "step2OpenPandaDoc": "2. Abrir PandaDoc (upload e enviar)",
     "step3MarkSent": "3. Já enviei no PandaDoc → Marcar como Enviado",
+    "terminate": {
+      "archiveWorkspaceHint": "Pode reverter mais tarde a partir da lista de workspaces.",
+      "archiveWorkspaceLabel": "Arquivar workspace associado",
+      "confirm": "Terminar contrato",
+      "description": "Esta ação marca o contrato como terminado, liberta as salas alocadas e cria uma tarefa para cancelar sessões futuras. Não pode ser desfeita automaticamente — apenas por renovação.",
+      "error": "Não foi possível terminar o contrato",
+      "notifyFounderMsg": "A equipa Startup Leiria terminou o contrato. Motivo: {{reason}}",
+      "notifyFounderTitle": "O seu contrato foi terminado",
+      "notifyStaffMsg": "Contrato {{ref}} foi terminado. Motivo: {{reason}}",
+      "notifyStaffTitle": "Contrato terminado",
+      "reasonLabel": "Motivo da terminação",
+      "reasonPlaceholder": "Ex: pedido do founder, incumprimento, mudança de programa…",
+      "reasonRequired": "Indique o motivo da terminação.",
+      "staffTaskDesc": "Contrato {{ref}} terminado. Reveja e cancele sessões futuras no calendário.",
+      "staffTaskTitle": "Cancelar sessões futuras (contrato terminado)",
+      "success": "Contrato terminado",
+      "title": "Terminar contrato"
+    },
+    "terminateCta": "Terminar",
     "viewInCRM": "Ver no CRM",
     "viewInvoices": "Ver Faturas",
     "viewWorkspace": "Ver Workspace",
-    "declinedNotice": "Este contrato foi recusado pelo signatário.",
-    "voidedNotice": "Este contrato foi anulado.",
-    "resetOk": "Contrato reiniciado com sucesso.",
-    "resetFailed": "Não foi possível reiniciar o contrato.",
-    "resetAndResend": "Reiniciar e reenviar",
-    "renewNotifyTitle": "Renovação enviada",
-    "renewNotifyMsg": "A proposta de renovação foi enviada ao signatário.",
-    "renewInvalidStatus": "Só é possível renovar contratos ativos ou expirados."
+    "voidedNotice": "Este contrato foi anulado."
   },
   "contractOnboarding": {
     "acceptContract": "Li e aceito os termos do Contrato de Incubação, incluindo as condições de prestação de serviços, obrigações e direitos das partes.",
@@ -2983,12 +2983,12 @@
     "bulk": {
       "archiveSelected": "Arquivar Selecionados",
       "archiveSuccess": "{{count}} contratos arquivados",
+      "selected": "{{count}} selecionados",
+      "terminateConfirm": "Terminar {{count}} contratos",
+      "terminateDescription": "Vai terminar {{count}} contratos. Liberta as salas alocadas e cria tarefas para cancelar sessões futuras.",
       "terminateSelected": "Terminar selecionados",
       "terminateSuccess": "{{count}} contratos terminados",
-      "terminateTitle": "Terminar contratos",
-      "terminateDescription": "Vai terminar {{count}} contratos. Liberta as salas alocadas e cria tarefas para cancelar sessões futuras.",
-      "terminateConfirm": "Terminar {{count}} contratos",
-      "selected": "{{count}} selecionados"
+      "terminateTitle": "Terminar contratos"
     },
     "confirmAnalysis": "Confirmar Análise IA",
     "confirmAnalysisDesc": "A IA analisa o contrato e sinaliza datas, informação em falta e riscos. Nenhuma alteração é feita.",
@@ -3164,11 +3164,11 @@
       "moveSuccess": "{{count}} leads movidos para {{stage}}",
       "moveTo": "Mover para",
       "moveUndone": "Movimento revertido",
-      "partialEventFailures": "{{count}}/{{total}} eventos não registados. O histórico pode estar incompleto.",
       "nextActionConfirmDesc": "Isto irá definir a data da próxima ação para amanhã ({{date}}) para todos os leads sem próxima ação.",
       "nextActionConfirmTitle": "Definir próxima ação para {{count}} leads?",
       "nextActionFailed": "Falha ao definir próximas ações",
       "nextActionSuccess": "Próximas ações definidas",
+      "partialEventFailures": "{{count}}/{{total}} eventos não registados. O histórico pode estar incompleto.",
       "selectLead": "Selecionar lead",
       "selectLeads": "Selecione leads para ações em massa",
       "selectedCount": "{{count}} selecionados",
@@ -3278,6 +3278,7 @@
     "falhaAoReenviarUseO": "Falha ao reenviar. Use o link copiado como alternativa.",
     "filterByAssignee": "Filtrar por responsável",
     "filterByProgram": "Filtrar por programa",
+    "filterBySegment": "Segmento",
     "filterByStage": "Fase",
     "focusItems": "Itens Urgentes",
     "focusMode": "Modo Foco",
@@ -3459,6 +3460,11 @@
     "saveChanges": "Guardar Alterações",
     "saveCommercialProposal": "Guardar proposta comercial",
     "searchPlaceholder": "Pesquisar leads...",
+    "segment": {
+      "activeCustomers": "Clientes ativos",
+      "all": "Todos",
+      "commercial": "Pipeline comercial"
+    },
     "selecioneUmProviderDeAssinatura": "Selecione um provider de assinatura.",
     "selectCategory": "Definir categoria",
     "selectConsultor": "Selecionar...",
@@ -3471,6 +3477,8 @@
     "setReminder": "Definir Lembrete",
     "shareWithFounder": "Partilhar com founder",
     "shared": "Partilhado",
+    "showLess": "Mostrar menos",
+    "showMoreEmails": "Mostrar mais {{count}}",
     "sinceLast": "Desde a última vez",
     "source": "Origem",
     "sourcePlaceholder": "Ex: Website, Evento, Referência...",
@@ -3485,14 +3493,6 @@
     },
     "stale": "Leads parados (>14 dias)",
     "staleTooltip": "Oportunidades comerciais sem atividade recente e sem próxima ação agendada. Clientes ativos (incubação/aceleração) não aparecem aqui.",
-    "filterBySegment": "Segmento",
-    "segment": {
-      "all": "Todos",
-      "commercial": "Pipeline comercial",
-      "activeCustomers": "Clientes ativos"
-    },
-    "showLess": "Mostrar menos",
-    "showMoreEmails": "Mostrar mais {{count}}",
     "startFirstSync": "Iniciar primeira sincronização",
     "startupCategory": "Categoria",
     "suggestedNextSteps": "Próximos Passos Sugeridos",
@@ -3575,57 +3575,6 @@
     "upcomingSessions": "Próximas Sessões",
     "viewAll": "Ver Todas"
   },
-  "dataImportV2": {
-    "title": "Importador HubSpot v2",
-    "subtitle": "Importação faseada, do lado do servidor, idempotente e com trilho de auditoria",
-    "contractBannerTitle": "Nenhum contrato é ativado ou assinado por esta importação.",
-    "contractBannerDesc": "Startups, workspaces e propostas de contrato são opcionais por linha. Dados commit ficam reversíveis pela auditoria.",
-    "step": {
-      "upload": "Upload",
-      "mapping": "Mapeamento",
-      "reconcile": "Reconciliação",
-      "commit": "Commit",
-      "results": "Resultados"
-    },
-    "upload": {
-      "title": "Carregar exportação CRM",
-      "desc": "Apenas CSV ou XLSX/XLSM. O formato legado .xls não é suportado."
-    },
-    "source": "Sistema de origem",
-    "phc": {
-      "notice": "A importação PHC é estritamente CRM. Edifício, serviço e tabela de preços são guardados como sugestões — nunca como taxas ou edifícios. O mapeamento de colunas é derivado automaticamente dos cabeçalhos PHC."
-    },
-    "analyze": "Analisar ficheiro",
-    "selectProgram": "Selecionar programa (opcional)",
-    "mapping": {
-      "title": "Mapeamento de colunas",
-      "desc": "Confirme que coluna do ficheiro alimenta cada campo interno. Deixe vazio para ignorar."
-    },
-    "reconcile": {
-      "title": "Pré-visualização de reconciliação",
-      "desc": "Cada método de correspondência e confiança é mostrado. Nada é escrito até aprovar e fazer commit."
-    },
-    "commit": {
-      "title": "Fazer commit das linhas aprovadas",
-      "desc": "Apenas administradores podem fazer commit. As linhas são processadas atomicamente; falhas ficam registadas por linha e são retomáveis.",
-      "warning": "Contratos, ocupação de gabinetes e atribuição de consultores exigem revisão manual — nunca inferidos do HubSpot."
-    },
-    "results": {
-      "title": "Importação concluída",
-      "desc": "Resumo e relatório de exceções descarregável."
-    },
-    "prepared": "Ficheiro analisado: {{n}} linhas",
-    "approved": "Aprovadas {{n}} linhas",
-    "commitDone": "Importação concluída",
-    "approveAll": "Aprovar linhas válidas",
-    "toCommit": "Continuar para commit",
-    "commitNow": "Fazer commit agora",
-    "download": "Descarregar relatório",
-    "noRows": "Sem linhas neste filtro.",
-    "toReconcile": "Continuar para reconciliação",
-    "noneConfident": "Nenhuma linha atinge o limiar de {{pct}}% de confiança — reveja cada correspondência manualmente.",
-    "approvedHeld": "Aprovadas {{n}} linhas · {{held}} retidas para revisão manual (< {{pct}}%)"
-  },
   "dataImport": {
     "adminOnly": "Only administrators e consultants can access this page.",
     "allowStageUpdate": "Allow Stage Atualizar",
@@ -3704,6 +3653,57 @@
     "willBeUpdated": "will be updated",
     "withEmail": "com Email",
     "withNIF": "com NIF"
+  },
+  "dataImportV2": {
+    "analyze": "Analisar ficheiro",
+    "approveAll": "Aprovar linhas válidas",
+    "approved": "Aprovadas {{n}} linhas",
+    "approvedHeld": "Aprovadas {{n}} linhas · {{held}} retidas para revisão manual (< {{pct}}%)",
+    "commit": {
+      "desc": "Apenas administradores podem fazer commit. As linhas são processadas atomicamente; falhas ficam registadas por linha e são retomáveis.",
+      "title": "Fazer commit das linhas aprovadas",
+      "warning": "Contratos, ocupação de gabinetes e atribuição de consultores exigem revisão manual — nunca inferidos do HubSpot."
+    },
+    "commitDone": "Importação concluída",
+    "commitNow": "Fazer commit agora",
+    "contractBannerDesc": "Startups, workspaces e propostas de contrato são opcionais por linha. Dados commit ficam reversíveis pela auditoria.",
+    "contractBannerTitle": "Nenhum contrato é ativado ou assinado por esta importação.",
+    "download": "Descarregar relatório",
+    "mapping": {
+      "desc": "Confirme que coluna do ficheiro alimenta cada campo interno. Deixe vazio para ignorar.",
+      "title": "Mapeamento de colunas"
+    },
+    "noRows": "Sem linhas neste filtro.",
+    "noneConfident": "Nenhuma linha atinge o limiar de {{pct}}% de confiança — reveja cada correspondência manualmente.",
+    "phc": {
+      "notice": "A importação PHC é estritamente CRM. Edifício, serviço e tabela de preços são guardados como sugestões — nunca como taxas ou edifícios. O mapeamento de colunas é derivado automaticamente dos cabeçalhos PHC."
+    },
+    "prepared": "Ficheiro analisado: {{n}} linhas",
+    "reconcile": {
+      "desc": "Cada método de correspondência e confiança é mostrado. Nada é escrito até aprovar e fazer commit.",
+      "title": "Pré-visualização de reconciliação"
+    },
+    "results": {
+      "desc": "Resumo e relatório de exceções descarregável.",
+      "title": "Importação concluída"
+    },
+    "selectProgram": "Selecionar programa (opcional)",
+    "source": "Sistema de origem",
+    "step": {
+      "commit": "Commit",
+      "mapping": "Mapeamento",
+      "reconcile": "Reconciliação",
+      "results": "Resultados",
+      "upload": "Upload"
+    },
+    "subtitle": "Importação faseada, do lado do servidor, idempotente e com trilho de auditoria",
+    "title": "Importador HubSpot v2",
+    "toCommit": "Continuar para commit",
+    "toReconcile": "Continuar para reconciliação",
+    "upload": {
+      "desc": "Apenas CSV ou XLSX/XLSM. O formato legado .xls não é suportado.",
+      "title": "Carregar exportação CRM"
+    }
   },
   "dataQuality": {
     "action": "Ação",
@@ -4042,6 +4042,7 @@
     "leadDeleted": "Lead eliminada",
     "leadRestored": "Lead restaurada",
     "leads": "Leads",
+    "loadMore": "Carregar mais",
     "manageTeam": "Gerir Equipa",
     "name": "Nome",
     "needsAttention": "Apenas Precisa de Atenção",
@@ -4052,6 +4053,7 @@
     "owner": "Responsável",
     "scheduleSession": "Agendar Sessão",
     "searchPlaceholder": "Pesquisar por nome...",
+    "showingCount": "A mostrar {{shown}} de {{total}}",
     "startupPortugalBadge": "Certificada Startup Portugal",
     "startupPortugalShort": "SP",
     "startupsTab": "Startups & Leads",
@@ -4063,9 +4065,7 @@
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
     "workspaceRestored": "Workspace restaurado",
-    "workspaces": "workspaces",
-    "showingCount": "A mostrar {{shown}} de {{total}}",
-    "loadMore": "Carregar mais"
+    "workspaces": "workspaces"
   },
   "ecosystemHub": {
     "navLabel": "Hub de Gestão",
@@ -4369,6 +4369,181 @@
     "uploadModel": "Carregar Modelo",
     "uploadTitle": "Carregar Modelo Financeiro",
     "version": "Versão:"
+  },
+  "financialPlan": {
+    "aboveMax": "Valor acima do máximo ({{max}})",
+    "accept": "Aceitar",
+    "allDone": "Todas as secções capturadas",
+    "allDoneDesc": "Podes rever qualquer pressuposto em baixo, ou exportar o livro para alimentar o XLSM canónico.",
+    "belowMin": "Valor abaixo do mínimo ({{min}})",
+    "continue": "Continuar",
+    "coverage": "Cobertura",
+    "diag": {
+      "activity": "Tipo de atividade",
+      "desc": "Estas respostas decidem que pacotes de perguntas correm.",
+      "earlyRevenue": "Receita inicial",
+      "fundraising": "Angariação de capital",
+      "grant": "Candidatura a subsídio",
+      "horizon": "Horizonte de planeamento",
+      "internal": "Alinhamento interno",
+      "mixed": "Misto",
+      "objective": "Objetivo principal",
+      "oneOff": "Pontual",
+      "operational": "Planeamento operacional",
+      "preRevenue": "Pré-receita",
+      "product": "Produto físico",
+      "recurring": "Receita recorrente",
+      "revenueModel": "Modelo de receita",
+      "sector": "Setor",
+      "services": "Serviços",
+      "stage": "Estágio",
+      "subscription": "Subscrição",
+      "title": "Diagnóstico de 5 minutos",
+      "traction": "Tração",
+      "transactional": "Transacional"
+    },
+    "exportFailed": "Exportação falhou",
+    "exportReady": "Exportação XLSM pronta — {{n}} células preenchidas",
+    "exportXlsm": "Exportar XLSM",
+    "idk": "Ainda não sei",
+    "idkRationale": "Ignorado pelo fundador — a revisitar",
+    "invalidNumber": "Introduza um número válido",
+    "kpi": {
+      "cogs": "CMVMC",
+      "ebitdaProxy": "EBITDA (proxy)",
+      "grossMargin": "Margem bruta",
+      "ltvCac": "LTV : CAC",
+      "payback": "Payback (meses)",
+      "payroll": "Salários (14m + TSU)",
+      "revenueY1": "Receita Ano 1",
+      "revenueY2": "Receita Ano 2"
+    },
+    "pack": {
+      "capexFinancing": "CAPEX e financiamento",
+      "capexFinancingDesc": "Plano de investimento, entrada de capital e dívida.",
+      "company": "Configuração da empresa",
+      "companyDesc": "Enquadramento fiscal, inflação e crescimento por defeito.",
+      "costs": "Custos e CMVMC",
+      "costsDesc": "Custos diretos (CMVMC) e alavancas de margem bruta.",
+      "revenue": "Receita e preços",
+      "revenueDesc": "Volumes, preços e crescimento para cada linha de receita.",
+      "team": "Equipa e salários",
+      "teamDesc": "Plano de contratações e remuneração média.",
+      "unitEconomics": "Unit economics",
+      "unitEconomicsDesc": "CAC, LTV, churn — founders SaaS devem preencher este pacote."
+    },
+    "packAllAnswered": "Secção concluída",
+    "packComplete": "Secção guardada",
+    "parsedAs": "Interpretado como {{value}}",
+    "pendingProposals": "Sugestões à tua espera",
+    "pendingProposalsDesc": "Estes valores foram pré-preenchidos a partir do teu perfil, KPIs ou IA. Confirma cada um antes de se tornar um pressuposto.",
+    "prefill": "Pré-preencher",
+    "prefillCreated": "{{count}} sugestão(ões) prontas para rever",
+    "prefillEmpty": "Sem novas sugestões — está tudo coberto.",
+    "prefillFailed": "Pré-preenchimento falhou",
+    "prefillFailedN": "{{n}} falhados",
+    "prefillPartial": "{{ok}} criadas, {{fail}} falharam — vê detalhes abaixo",
+    "prefillResult": "Resultado do prefill",
+    "prefillRunning": "A executar prefill…",
+    "prefillStats": "{{ok}} criados · {{skipped}} ignorados · {{failed}} falhados",
+    "prefillStep": {
+      "ai": "Sugestões da IA",
+      "insert": "A guardar propostas",
+      "kpi": "Sinais de KPI",
+      "profile": "Predefinições do perfil"
+    },
+    "q": {
+      "arpu": "ARPU (€ / mês)",
+      "avgSalary": "Salário bruto médio mensal (€)",
+      "cac": "CAC — custo de aquisição de cliente (€)",
+      "capexY1": "CAPEX — Ano 1 (€)",
+      "churnMonthly": "Churn mensal %",
+      "cmvmc": "% CMVMC / Vendas",
+      "debt": "Financiamento por dívida (€)",
+      "debtRate": "Taxa de juro da dívida",
+      "equityRaise": "Capital a angariar (€)",
+      "gmPct": "Margem bruta %",
+      "grossMarginTarget": "Margem bruta alvo",
+      "growth": "Taxa de crescimento anual",
+      "headcountY1": "Colaboradores — Ano 1",
+      "inflation": "Inflação anual",
+      "ircRate": "Taxa de IRC",
+      "item1Growth": "Crescimento ano-a-ano",
+      "item1Name": "Nome do produto / serviço principal",
+      "item1Price": "Preço unitário (€)",
+      "item1QtyY1": "Unidades vendidas — Ano 1"
+    },
+    "queue": {
+      "skippedDesc": "O fundador marcou \"{{label}}\" como desconhecido no cenário {{scenario}} — ajude a encontrar um valor defensável.",
+      "skippedTitle": "Rever pressuposto ignorado: {{label}}"
+    },
+    "rationalePlaceholder": "Porquê este valor? Cite fonte, benchmark ou raciocínio (opcional).",
+    "registerDesc": "Cada valor que vai alimentar o modelo financeiro. As fontes são rastreadas e auditáveis.",
+    "registerEmpty": "Ainda não há pressupostos guardados.",
+    "registerTitle": "Registo de pressupostos",
+    "saveFailed": "Falha ao guardar",
+    "saveNext": "Guardar e seguinte",
+    "scenario": {
+      "base": "Base",
+      "conservative": "Conservador",
+      "optimistic": "Otimista"
+    },
+    "scenarioLabel": "Cenário",
+    "sensitivity": {
+      "cmvmc": "Δ Rácio CMVMC",
+      "desc": "Projeção ao vivo a partir dos teus pressupostos. Move os sliders para testar — nada é guardado.",
+      "empty": "Preenche receita e custos para veres a projeção.",
+      "footnote": "Ilustrativo — calculado ao vivo a partir do teu registo de pressupostos. Não substitui o modelo XLSM canónico.",
+      "metric": "Métrica",
+      "noDeltas": "Sem alterações a guardar — sliders e cenário coincidem com o base.",
+      "payroll": "Δ Salários",
+      "revenueGrowth": "Δ Crescimento de receita",
+      "saveAs": "Guardar como…",
+      "saveFailed": "Falha ao guardar",
+      "savedAs": "Guardado como {{scenario}} ({{n}} valor(es)) — a mostrar plano atualizado",
+      "title": "Cenários e sensibilidade"
+    },
+    "skipSection": "Saltar secção",
+    "skippedBadge": "Ignorado",
+    "source": {
+      "founder": "Manual",
+      "imported_xlsm": "Importado",
+      "prefill_ai": "IA",
+      "prefill_kpi": "KPI",
+      "prefill_profile": "Perfil"
+    },
+    "subtitle": "Responde a uma decisão de cada vez. Cada valor é teu para confirmar — nada é guardado em silêncio.",
+    "title": "Plano guiado"
+  },
+  "firstSteps": {
+    "admin": {
+      "approvals": "Aprovações",
+      "ecosystem": "Saúde do ecossistema",
+      "programs": "Programas & coortes",
+      "subtitle": "Os três painéis onde o admin passa mais tempo.",
+      "title": "Primeiros passos"
+    },
+    "backoffice": {
+      "approvals": "Aprovações pendentes",
+      "contracts": "Contratos a expirar",
+      "spaces": "Espaços & ocupação",
+      "subtitle": "O ciclo diário do backoffice em três paragens.",
+      "title": "Primeiros passos"
+    },
+    "consultor": {
+      "availability": "Configure a sua disponibilidade",
+      "portfolio": "Veja o seu portefólio",
+      "subtitle": "Configure o essencial para começar com o seu portefólio.",
+      "title": "Primeiros passos",
+      "workQueue": "Conheça o Work Queue"
+    },
+    "mentor": {
+      "availability": "Configure a sua disponibilidade",
+      "impact": "Veja o seu impacto",
+      "startups": "Conheça as suas startups",
+      "subtitle": "Comece com estes três passos.",
+      "title": "Primeiros passos"
+    }
   },
   "focusMode": {
     "activate": "Modo Foco",
@@ -5039,7 +5214,6 @@
   },
   "integrations": {
     "accountId": "Account ID",
-    "movedToSettings": "As integrações estão agora em Definições → Integrações.",
     "advanced": "Avançado",
     "baseUrl": "Base URL",
     "connected": "Connected",
@@ -5073,6 +5247,7 @@
     "microsoftTeams": "Microsoft Teams",
     "milestoneReminders": "Marco Reminders",
     "milestoneRemindersDesc": "Marco Reminders Desc",
+    "movedToSettings": "As integrações estão agora em Definições → Integrações.",
     "pandadoc": {
       "step1": "Aceda ao",
       "step2": "Copie a API Key e adicione como secret",
@@ -5480,6 +5655,10 @@
     "upcomingRenewals": "Próximas Renovações"
   },
   "lifecycleMismatch": {
+    "activeNoWorkspace": {
+      "detail": "Este founder está marcado como ativo mas não tem workspace atribuído. Atribua um para o desbloquear.",
+      "title": "Founder ativo sem workspace"
+    },
     "allConsistent": "Estados de contrato/intake/CRM/workspace consistentes.",
     "contractActiveWorkspaceNot": {
       "detail": "workspace.status=\"{{wstate}}\"",
@@ -5499,11 +5678,7 @@
       "detail": "signature_provider está vazio.",
       "title": "Contrato em pending_signature sem prestador definido"
     },
-    "title": "Inconsistências de ciclo de vida",
-    "activeNoWorkspace": {
-      "title": "Founder ativo sem workspace",
-      "detail": "Este founder está marcado como ativo mas não tem workspace atribuído. Atribua um para o desbloquear."
-    }
+    "title": "Inconsistências de ciclo de vida"
   },
   "loading": {
     "almostThere": "Quase lá...",
@@ -5589,10 +5764,13 @@
       "eyebrow": "Painel do mentor",
       "subline": "{{count}} startups · {{sessions}} sessões esta semana"
     },
+    "hours": "Horas",
     "hoursByStartup": "Horas por Startup",
     "kpiMissing": "KPIs por atualizar",
     "kpiUpToDate": "KPIs atualizados",
     "lastSession": "Última sessão",
+    "logTimeHelp": "Regista as horas dedicadas para acompanhar o impacto.",
+    "logTimeOptional": "Registar tempo (opcional)",
     "manageConnections": "Gerir Conexões",
     "monthlyGoal": "Objetivo mensal",
     "myStartups": "As Minhas Startups",
@@ -5608,6 +5786,7 @@
     "noStartupsAssignedDesc": "Verá as suas startups aqui assim que for atribuído a workspaces.",
     "noteAdded": "Nota adicionada com sucesso",
     "noteVisibility": "Esta nota será partilhada com a equipa de staff.",
+    "openFollowups": "Seguimentos abertos",
     "openLoops": {
       "allClearDesc": "Não há pendências com as suas startups. Bom trabalho!",
       "allClearTitle": "Tudo em dia",
@@ -5619,6 +5798,21 @@
     },
     "pendingActions": "Ações Pendentes",
     "pendingActionsCount": "ações pendentes",
+    "postNdaChecklist": {
+      "availability": {
+        "title": "Defina a sua disponibilidade",
+        "why": "Os founders só podem marcar horários que abriu."
+      },
+      "guide": {
+        "title": "Leia o guia do mentor",
+        "why": "Perceba como funcionam as sessões e a confidencialidade."
+      },
+      "profile": {
+        "title": "Preencha o seu perfil",
+        "why": "Os founders podem encontrá-lo e escolhê-lo."
+      },
+      "title": "Complete o seu perfil de mentor"
+    },
     "postSession": {
       "subtitle": "Tens sessões recentes sem notas — regista enquanto estão frescas.",
       "title": "Regista as notas da sessão"
@@ -5647,33 +5841,14 @@
     "startupsSupported": "Startups apoiadas",
     "thankYouMessage": "O teu tempo e experiência fazem toda a diferença para estas startups.",
     "timeBreakdown": "Distribuição do tempo investido",
+    "timeEntryDescription": "Descrição da entrada de tempo",
+    "timeEntryFailed": "Falha ao registar tempo",
     "to": "a",
     "upcomingMeetings": "Próximas Reuniões",
     "updateAvailability": "Atualizar Disponibilidade",
     "viewConnectionRequests": "Ver Pedidos de Ligação",
     "welcomeTitle": "Bem-vindo ao Painel de Mentor",
-    "yourImpact": "O Teu Impacto",
-    "postNdaChecklist": {
-      "title": "Complete o seu perfil de mentor",
-      "profile": {
-        "title": "Preencha o seu perfil",
-        "why": "Os founders podem encontrá-lo e escolhê-lo."
-      },
-      "availability": {
-        "title": "Defina a sua disponibilidade",
-        "why": "Os founders só podem marcar horários que abriu."
-      },
-      "guide": {
-        "title": "Leia o guia do mentor",
-        "why": "Perceba como funcionam as sessões e a confidencialidade."
-      }
-    },
-    "timeEntryDescription": "Descrição da entrada de tempo",
-    "timeEntryFailed": "Falha ao registar tempo",
-    "logTimeOptional": "Registar tempo (opcional)",
-    "logTimeHelp": "Regista as horas dedicadas para acompanhar o impacto.",
-    "hours": "Horas",
-    "openFollowups": "Seguimentos abertos"
+    "yourImpact": "O Teu Impacto"
   },
   "mentorFeedback": {
     "blockedPlaceholder": "Problemas ou bloqueios identificados...",
@@ -5764,6 +5939,8 @@
     "messageOptional": "Mensagem (opcional)",
     "messagePlaceholder": "Descreva brevemente em que precisa de ajuda...",
     "ndaNotSigned": "Este mentor ainda não assinou o NDA. O acesso aos dados do Workspace ficará bloqueado até que o NDA seja aceite.",
+    "nextAvailableSlots": "Próximos horários disponíveis",
+    "noAlternativesAvailable": "Sem outros horários disponíveis nos próximos 14 dias.",
     "noAvailabilityYet": "Este mentor ainda não definiu a sua disponibilidade.",
     "noMatchingMentors": "No mentors match the selecionado expertise",
     "noPendingRequests": "Sem pedidos de marcação pendentes",
@@ -5772,6 +5949,7 @@
     "pending": "Pendente",
     "pendingRequests": "Pedidos Pendentes",
     "pickDate": "Escolha uma data",
+    "pickSuggestedSlot": "Escolher horário sugerido",
     "recommendations": "Mentores Recomendados",
     "recommendationsDesc": "Based on expertise match e availability",
     "recommendedMentors": "Mentores Recomendados",
@@ -5785,13 +5963,10 @@
     "selectTimeSlot": "Selecionar Horário",
     "sendRequest": "Enviar Pedido",
     "sessions": "Sessões",
+    "slotAlreadyTaken": "Esse horário acabou de ser reservado por outra pessoa — escolha outro.",
     "startTime": "Hora de início",
     "whatToDiscuss": "O que gostaria de discutir?",
-    "yourBookings": "As Suas Marcações",
-    "slotAlreadyTaken": "Esse horário acabou de ser reservado por outra pessoa — escolha outro.",
-    "nextAvailableSlots": "Próximos horários disponíveis",
-    "pickSuggestedSlot": "Escolher horário sugerido",
-    "noAlternativesAvailable": "Sem outros horários disponíveis nos próximos 14 dias."
+    "yourBookings": "As Suas Marcações"
   },
   "mentorsPage": {
     "accept": "Aceitar",
@@ -5799,6 +5974,8 @@
     "accessRestricted": "Acesso Restrito",
     "accessRestrictedDesc": "Esta página está disponível apenas para founders e mentores.",
     "assign": "Atribuir",
+    "assignAlreadyResolved": "Este pedido já foi resolvido.",
+    "assignLegacyNeedsWorkspace": "Pedido antigo sem workspace. Contactar suporte.",
     "assignMentorDesc": "Selecione um mentor para atribuir a {{startup}}",
     "assignMentorTitle": "Atribuir Mentor",
     "assigned": "Atribuído",
@@ -5818,9 +5995,6 @@
     "connectionMessagePlaceholder": "Mensagem opcional para o mentor…",
     "connectionRequested": "Pedido de ligação enviado",
     "connectionRequests": "Pedidos de Conexão",
-    "legacyConnectionRefused": "Esta ligação legada não está associada a um workspace específico. Peça ao staff para reatribuir.",
-    "requestConnection": "Pedir ligação",
-    "requestPending": "Pedido pendente",
     "contact": "Contactar",
     "contactMentor": "Contactar mentor",
     "decline": "Recusar",
@@ -5836,6 +6010,7 @@
     "fulfilled": "Atendido",
     "impact": "Impacto",
     "industryOptional": "Industry (opcional)",
+    "legacyConnectionRefused": "Esta ligação legada não está associada a um workspace específico. Peça ao staff para reatribuir.",
     "matchingMentors": "Mentores correspondentes",
     "mentor": "Mentor",
     "mentorAssigned": "Mentor atribuído com sucesso!",
@@ -5858,12 +6033,15 @@
     "pendingMentorRequestsDesc": "Founders pediram mentores com experiência específica. Reveja e atribua.",
     "pendingRequests": "Pedidos Pendentes",
     "requestCancelled": "Pedido cancelado",
+    "requestConnection": "Pedir ligação",
     "requestFailed": "Falha ao enviar pedido. Tente novamente.",
     "requestMentor": "Pedir um Mentor",
     "requestMentorDesc": "Diga-nos que experiência precisa e nós encontramos o mentor certo.",
+    "requestPending": "Pedido pendente",
     "requestSubmitted": "O seu pedido de mentor foi enviado!",
     "requestedBy": "Pedido por",
     "requestedExpertise": "Experiência solicitada",
+    "responseTime": "Notificamos assim que o pedido for aceite.",
     "searchMentors": "Pesquisar por nome ou especialidade...",
     "selectExpertise": "Que experiência precisa?",
     "selectIndustry": "Selecionar indústria...",
@@ -5880,10 +6058,7 @@
     "thisContact": "este contacto",
     "unknownFounder": "Fundador Desconhecido",
     "unnamedMentor": "Mentor",
-    "whatNeedsHelp": "Em que precisa de ajuda?",
-    "responseTime": "Notificamos assim que o pedido for aceite.",
-    "assignLegacyNeedsWorkspace": "Pedido antigo sem workspace. Contactar suporte.",
-    "assignAlreadyResolved": "Este pedido já foi resolvido."
+    "whatNeedsHelp": "Em que precisa de ajuda?"
   },
   "messaging": {
     "adjustSearch": "Tente ajustar a pesquisa ou verifique se o utilizador já está registado.",
@@ -5979,6 +6154,7 @@
     "actionsFollowups": "Ações & Follow-ups",
     "admin": {
       "crm": "CRM",
+      "crmPipeline": "Pipeline CRM",
       "diagnostics": "Diagnósticos",
       "ecosystem": "Diretório Ecossistema",
       "operations": "Operações",
@@ -5986,8 +6162,7 @@
       "quickGuide": "Guia Rápido",
       "reports": "Relatórios",
       "systemConfig": "Configuração do Sistema",
-      "usersPermissions": "Utilizadores & Permissões",
-      "crmPipeline": "Pipeline CRM"
+      "usersPermissions": "Utilizadores & Permissões"
     },
     "adminPanel": "Painel de Admin",
     "backoffice": {
@@ -6034,13 +6209,13 @@
     "mentor": {
       "assignedStartups": "Startups Atribuídas",
       "home": "Início",
+      "impact": "O meu impacto",
       "mySessions": "As Minhas Sessões",
       "notesActions": "Notas & Ações",
       "profile": "Perfil",
       "quickGuide": "Guia Rápido",
       "resources": "Recursos",
-      "upcomingSessions": "Próximas Sessões",
-      "impact": "O meu impacto"
+      "upcomingSessions": "Próximas Sessões"
     },
     "mentors": "Mentores",
     "mobile": {
@@ -6436,30 +6611,6 @@
     "updateKpis": "Atualizar os KPIs deste mês"
   },
   "ops": {
-    "state": {
-      "pending": "estado pendente",
-      "onboarding": "onboarding"
-    },
-    "onboardingNoContract": {
-      "title": "Contrato por enviar",
-      "desc": "{{name}} está em {{state}} sem contrato registado."
-    },
-    "readyActivation": {
-      "title": "Pronto para ativação manual",
-      "desc": "{{name}} tem contrato ativo mas workspace em estado \"{{status}}\"."
-    },
-    "pendingSignature": {
-      "title": "Aguarda assinatura",
-      "desc": "O contrato de {{name}} está pendente de assinatura."
-    },
-    "missingContract": {
-      "title": "Sem contrato",
-      "desc": "{{name}} tem workspace ativo sem contrato associado."
-    },
-    "missingAllocation": {
-      "title": "Sem espaço atribuído",
-      "desc": "{{name}} não tem sala/gabinete alocado."
-    },
     "checklistCopied": "Checklist copiada",
     "console": {
       "allStatuses": "Todos os estados",
@@ -6493,9 +6644,33 @@
       "workspace": "Workspace"
     },
     "emailTemplateCopied": "Template de email copiado",
+    "missingAllocation": {
+      "desc": "{{name}} não tem sala/gabinete alocado.",
+      "title": "Sem espaço atribuído"
+    },
+    "missingContract": {
+      "desc": "{{name}} tem workspace ativo sem contrato associado.",
+      "title": "Sem contrato"
+    },
+    "onboardingNoContract": {
+      "desc": "{{name}} está em {{state}} sem contrato registado.",
+      "title": "Contrato por enviar"
+    },
+    "pendingSignature": {
+      "desc": "O contrato de {{name}} está pendente de assinatura.",
+      "title": "Aguarda assinatura"
+    },
     "prompts": {
       "allClear": "Sem ações pendentes — tudo em ordem!",
       "title": "Ações Sugeridas"
+    },
+    "readyActivation": {
+      "desc": "{{name}} tem contrato ativo mas workspace em estado \"{{status}}\".",
+      "title": "Pronto para ativação manual"
+    },
+    "state": {
+      "onboarding": "onboarding",
+      "pending": "estado pendente"
     }
   },
   "ownership": {
@@ -6710,9 +6885,6 @@
     "updatedDescription": "A prioridade do workspace foi atualizada"
   },
   "programSetup": {
-    "conflictBadge": "Conflito",
-    "conflictReconciled": "Conflito reconciliado com a versão gravada mais recente.",
-    "saveError": "Falha ao guardar a configuração do programa. Tenta novamente.",
     "acceleration": {
       "addDeliverable": "Adicionar",
       "addGate": "Adicionar Gate",
@@ -6785,6 +6957,8 @@
     "cloneDescription": "Isto irá copiar etapas, KPIs, playbooks e regras de alerta do programa selecionado.",
     "cloneFrom": "Clonar de programa existente",
     "configureStepByStep": "Configure o seu programa passo a passo",
+    "conflictBadge": "Conflito",
+    "conflictReconciled": "Conflito reconciliado com a versão gravada mais recente.",
     "customizeModules": "Personalizar módulos (opcional)",
     "description": "Descrição",
     "descriptionPlaceholder": "Descreva os objetivos e áreas de foco do programa...",
@@ -6823,6 +6997,7 @@
     "publishing": "🎉 A publicar...",
     "restoredFromBackup": "Restaurámos as últimas edições não guardadas.",
     "saveAndContinue": "Guardar e Continuar",
+    "saveError": "Falha ao guardar a configuração do programa. Tenta novamente.",
     "saving": "A guardar...",
     "selectToClone": "Selecione um programa para clonar...",
     "setupProgress": "Progresso da Configuração",
@@ -7592,6 +7767,7 @@
     "applySelected": "Aplicar selecionado",
     "askConsultor": "Pedir ajuda ao consultor",
     "availableSlots": "Disponível Slots",
+    "bookWithMentor": "Agendar com mentor",
     "browserNotSupported": "Your browser does not support audio recording",
     "calendarInvites": "Convites de Calendário",
     "checkingAvailability": "Checking availability...",
@@ -7599,6 +7775,8 @@
     "clickToViewSessions": "Clique numa data para ver sessões",
     "comingSoon": "Em breve",
     "commentsOptional": "Comentários (opcional)",
+    "conflictMentor": "O mentor já tem uma sessão a esta hora.",
+    "conflictWorkspace": "Este workspace já tem uma sessão a esta hora.",
     "connectMeetingTools": "Conectar ferramentas de reunião",
     "convertDecisionsToActions": "Converter decisões em ações",
     "copiedToClipboard": "Copied to clipboard",
@@ -7824,10 +8002,7 @@
     "withConsultant": "Consultor",
     "withMentor": "Mentor",
     "workspaceMembers": "membros do espaço",
-    "zoomDesc": "Importar gravações e transcrições automaticamente",
-    "bookWithMentor": "Agendar com mentor",
-    "conflictWorkspace": "Este workspace já tem uma sessão a esta hora.",
-    "conflictMentor": "O mentor já tem uma sessão a esta hora."
+    "zoomDesc": "Importar gravações e transcrições automaticamente"
   },
   "sessionsEmpty": {
     "description": "O seu consultor ou programa vai agendar a primeira sessão em breve.",
@@ -8146,21 +8321,20 @@
     "viewActions": "Ver Ações"
   },
   "spaces": {
-    "allocation": "Alocação",
-    "noActiveAllocation": "Sem alocação ativa",
-    "workspaceStartup": "Workspace / Startup",
-    "openWorkspace": "Abrir Workspace",
-    "noWorkspaceAssociated": "Sem workspace associado",
     "allStatuses": "Todos os estados",
+    "allocation": "Alocação",
     "available": "Disponível",
     "clearError": "Erro ao limpar salas",
     "clearStaleRooms": "Libertar {{count}} sala(s) órfã(s)",
     "floor": "Piso",
     "maintenance": "Manutenção",
     "monthlyFee": "Mensalidade",
+    "noActiveAllocation": "Sem alocação ativa",
     "noWarnings": "Sem Avisos",
+    "noWorkspaceAssociated": "Sem workspace associado",
     "occupant": "Startup / Ocupante",
     "occupied": "Ocupada",
+    "openWorkspace": "Abrir Workspace",
     "package": "Pacote",
     "reserved": "Reservada",
     "room": "Sala",
@@ -8188,7 +8362,8 @@
       "pendingSig": "Aguarda assinatura"
     },
     "warnings": "Avisos",
-    "withWarnings": "Com Avisos"
+    "withWarnings": "Com Avisos",
+    "workspaceStartup": "Workspace / Startup"
   },
   "staff": {
     "actionItemCreated": "Action item created",
@@ -8369,11 +8544,13 @@
   "surveys": {
     "active": "Ativo",
     "addQuestion": "Adicionar Questão",
-    "templateDeleteBlockedByCampaigns": "Não é possível eliminar: este template está a ser usado por campanhas ativas.",
     "allPrograms": "Todos os Programas",
     "analytics": "Análises",
     "autoFillKey": "Campo de Preenchimento Automático",
     "autoFilled": "Preenchido automaticamente",
+    "autosaveLocalOnly": "Guardado apenas no dispositivo — vamos tentar sincronizar novamente",
+    "autosaveSaved": "Guardado {{time}}",
+    "autosaveSaving": "A guardar…",
     "campaignCloseFailed": "Falha ao encerrar campanha",
     "campaignClosed": "Campanha encerrada",
     "campaignCreateFailed": "Falha ao criar campanha",
@@ -8405,7 +8582,6 @@
     "pendingSurveysDesc": "Tem inquéritos à espera de serem preenchidos",
     "progress": "Progresso",
     "progressSaved": "Progresso guardado",
-    "snapshotDrift": "{{accepted}} respostas guardadas. {{dropped}} foram ignoradas porque a questão já não existe neste inquérito.",
     "questionOptions": "Opções",
     "questionRequired": "Obrigatória",
     "questionText": "Questão",
@@ -8414,13 +8590,11 @@
     "reminderDays": "Dias de Lembrete",
     "responseRate": "Taxa de Resposta",
     "saveDraft": "Guardar Rascunho",
-    "autosaveSaving": "A guardar…",
-    "autosaveSaved": "Guardado {{time}}",
-    "autosaveLocalOnly": "Guardado apenas no dispositivo — vamos tentar sincronizar novamente",
     "saveFailed": "Falha ao guardar questionário",
     "saveTemplate": "Guardar Template",
     "section": "Secção",
     "selectTemplate": "Selecionar Template",
+    "snapshotDrift": "{{accepted}} respostas guardadas. {{dropped}} foram ignoradas porque a questão já não existe neste inquérito.",
     "startDate": "Data de Início",
     "submit": "Submeter Inquérito",
     "submitted": "Questionário submetido com sucesso!",
@@ -8430,6 +8604,9 @@
     "targetProgram": "Programa Alvo",
     "templateCreateFailed": "Falha ao criar modelo de questionário",
     "templateCreated": "Modelo de questionário criado",
+    "templateDeleteBlockedByCampaigns": "Não é possível eliminar: este template está a ser usado por campanhas ativas.",
+    "templateDeleteFailed": "Falha ao remover template",
+    "templateDeleted": "Template removido",
     "templateDescription": "Descrição",
     "templateName": "Nome do Template",
     "templateUpdateFailed": "Falha ao atualizar modelo",
@@ -8442,9 +8619,7 @@
     "typeSelect": "Seleção Única",
     "typeText": "Texto",
     "typeTextarea": "Texto Longo",
-    "viewResponses": "Ver Respostas",
-    "templateDeleted": "Template removido",
-    "templateDeleteFailed": "Falha ao remover template"
+    "viewResponses": "Ver Respostas"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",
@@ -9288,21 +9463,18 @@
     "whyAlternativesFail": "Porque falham essas alternativas?"
   },
   "waitingList": {
-    "fulfill": "Atribuir",
-    "selectStartup": "Selecionar startup...",
-    "selectLead": "Selecionar lead...",
-    "numberOfPeople": "Número de pessoas",
-    "anyBuilding": "Qualquer edifício...",
-    "selectAvailableRoom": "Selecionar sala disponível...",
     "allRequests": "Todos os Pedidos",
     "any": "Qualquer",
+    "anyBuilding": "Qualquer edifício...",
     "availableRooms": "Salas Disponíveis",
     "dedicatedDesk": "Secretária Dedicada",
     "forPeople": "para {{count}} pessoas",
+    "fulfill": "Atribuir",
     "highPriority": "Alta Prioridade",
     "hotDesk": "Hot Desk",
     "leadProspect": "Lead/Prospect",
     "meetingRoom": "Sala de Reuniões",
+    "numberOfPeople": "Número de pessoas",
     "organization": "Organização",
     "people": "pessoas",
     "preference": "Preferência",
@@ -9311,6 +9483,9 @@
     "request": "Pedido",
     "requested": "Pedido",
     "requests": "Pedidos",
+    "selectAvailableRoom": "Selecionar sala disponível...",
+    "selectLead": "Selecionar lead...",
+    "selectStartup": "Selecionar startup...",
     "startup": "Startup",
     "status": "Estado",
     "statusAccepted": "Aceite",
@@ -9401,12 +9576,12 @@
     "snooze7Days": "Adiar 7 dias",
     "snoozeFailed": "Falha ao adiar",
     "snoozedForDays": "Adiado por {{days}} dias",
-    "stillPendingValidation": "Ainda há {{count}} ações por validar.",
     "statusAll": "Todas",
     "statusDone": "Concluídas",
     "statusInProgress": "Em Progresso",
     "statusOpen": "Abertas",
     "statusSnoozed": "Adiadas",
+    "stillPendingValidation": "Ainda há {{count}} ações por validar.",
     "title": "Fila de Trabalho",
     "types": {
       "escalation": "Escalação",
@@ -9483,6 +9658,7 @@
       "pendingMilestones": "Marcos Pendentes",
       "title": "Estado da Incubação"
     },
+    "invalidTab": "Este separador não está disponível para este workspace.",
     "kpiAtualizado": "KPI atualizado",
     "kpis": "KPIs",
     "locationContract": "Localização e Contrato",
@@ -9530,8 +9706,7 @@
     "workspaceUpdated": "Workspace updated",
     "yourConsultant": "Seu Consultor",
     "yourMentor": "Seu Mentor",
-    "yourTeam": "A Sua Equipa",
-    "invalidTab": "Este separador não está disponível para este workspace."
+    "yourTeam": "A Sua Equipa"
   },
   "workspaceCard": {
     "actions": "Ações",
@@ -9607,180 +9782,5 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
-  },
-  "firstSteps": {
-    "consultor": {
-      "title": "Primeiros passos",
-      "subtitle": "Configure o essencial para começar com o seu portefólio.",
-      "workQueue": "Conheça o Work Queue",
-      "availability": "Configure a sua disponibilidade",
-      "portfolio": "Veja o seu portefólio"
-    },
-    "backoffice": {
-      "title": "Primeiros passos",
-      "subtitle": "O ciclo diário do backoffice em três paragens.",
-      "contracts": "Contratos a expirar",
-      "spaces": "Espaços & ocupação",
-      "approvals": "Aprovações pendentes"
-    },
-    "admin": {
-      "title": "Primeiros passos",
-      "subtitle": "Os três painéis onde o admin passa mais tempo.",
-      "approvals": "Aprovações",
-      "programs": "Programas & coortes",
-      "ecosystem": "Saúde do ecossistema"
-    },
-    "mentor": {
-      "title": "Primeiros passos",
-      "subtitle": "Comece com estes três passos.",
-      "availability": "Configure a sua disponibilidade",
-      "startups": "Conheça as suas startups",
-      "impact": "Veja o seu impacto"
-    }
-  },
-  "financialPlan": {
-    "title": "Plano guiado",
-    "subtitle": "Responde a uma decisão de cada vez. Cada valor é teu para confirmar — nada é guardado em silêncio.",
-    "scenarioLabel": "Cenário",
-    "coverage": "Cobertura",
-    "prefill": "Pré-preencher",
-    "prefillCreated": "{{count}} sugestão(ões) prontas para rever",
-    "prefillPartial": "{{ok}} criadas, {{fail}} falharam — vê detalhes abaixo",
-    "prefillEmpty": "Sem novas sugestões — está tudo coberto.",
-    "prefillFailed": "Pré-preenchimento falhou",
-    "exportXlsm": "Exportar XLSM",
-    "exportReady": "Exportação XLSM pronta — {{n}} células preenchidas",
-    "exportFailed": "Exportação falhou",
-    "pendingProposals": "Sugestões à tua espera",
-    "pendingProposalsDesc": "Estes valores foram pré-preenchidos a partir do teu perfil, KPIs ou IA. Confirma cada um antes de se tornar um pressuposto.",
-    "accept": "Aceitar",
-    "source": {
-      "founder": "Manual",
-      "prefill_profile": "Perfil",
-      "prefill_kpi": "KPI",
-      "prefill_ai": "IA",
-      "imported_xlsm": "Importado"
-    },
-    "packComplete": "Secção guardada",
-    "allDone": "Todas as secções capturadas",
-    "allDoneDesc": "Podes rever qualquer pressuposto em baixo, ou exportar o livro para alimentar o XLSM canónico.",
-    "registerTitle": "Registo de pressupostos",
-    "registerDesc": "Cada valor que vai alimentar o modelo financeiro. As fontes são rastreadas e auditáveis.",
-    "registerEmpty": "Ainda não há pressupostos guardados.",
-    "scenario": {
-      "base": "Base",
-      "conservative": "Conservador",
-      "optimistic": "Otimista"
-    },
-    "diag": {
-      "title": "Diagnóstico de 5 minutos",
-      "desc": "Estas respostas decidem que pacotes de perguntas correm.",
-      "activity": "Tipo de atividade",
-      "services": "Serviços",
-      "product": "Produto físico",
-      "sector": "Setor",
-      "stage": "Estágio",
-      "revenueModel": "Modelo de receita",
-      "subscription": "Subscrição",
-      "transactional": "Transacional",
-      "oneOff": "Pontual",
-      "mixed": "Misto",
-      "traction": "Tração",
-      "preRevenue": "Pré-receita",
-      "earlyRevenue": "Receita inicial",
-      "recurring": "Receita recorrente",
-      "horizon": "Horizonte de planeamento",
-      "objective": "Objetivo principal",
-      "fundraising": "Angariação de capital",
-      "operational": "Planeamento operacional",
-      "grant": "Candidatura a subsídio",
-      "internal": "Alinhamento interno"
-    },
-    "pack": {
-      "company": "Configuração da empresa",
-      "companyDesc": "Enquadramento fiscal, inflação e crescimento por defeito.",
-      "revenue": "Receita e preços",
-      "revenueDesc": "Volumes, preços e crescimento para cada linha de receita.",
-      "costs": "Custos e CMVMC",
-      "costsDesc": "Custos diretos (CMVMC) e alavancas de margem bruta.",
-      "team": "Equipa e salários",
-      "teamDesc": "Plano de contratações e remuneração média.",
-      "capexFinancing": "CAPEX e financiamento",
-      "capexFinancingDesc": "Plano de investimento, entrada de capital e dívida.",
-      "unitEconomics": "Unit economics",
-      "unitEconomicsDesc": "CAC, LTV, churn — founders SaaS devem preencher este pacote."
-    },
-    "q": {
-      "ircRate": "Taxa de IRC",
-      "inflation": "Inflação anual",
-      "growth": "Taxa de crescimento anual",
-      "item1Name": "Nome do produto / serviço principal",
-      "item1QtyY1": "Unidades vendidas — Ano 1",
-      "item1Price": "Preço unitário (€)",
-      "item1Growth": "Crescimento ano-a-ano",
-      "cmvmc": "% CMVMC / Vendas",
-      "grossMarginTarget": "Margem bruta alvo",
-      "headcountY1": "Colaboradores — Ano 1",
-      "avgSalary": "Salário bruto médio mensal (€)",
-      "capexY1": "CAPEX — Ano 1 (€)",
-      "equityRaise": "Capital a angariar (€)",
-      "debt": "Financiamento por dívida (€)",
-      "debtRate": "Taxa de juro da dívida",
-      "cac": "CAC — custo de aquisição de cliente (€)",
-      "arpu": "ARPU (€ / mês)",
-      "gmPct": "Margem bruta %",
-      "churnMonthly": "Churn mensal %"
-    },
-    "sensitivity": {
-      "title": "Cenários e sensibilidade",
-      "desc": "Projeção ao vivo a partir dos teus pressupostos. Move os sliders para testar — nada é guardado.",
-      "revenueGrowth": "Δ Crescimento de receita",
-      "cmvmc": "Δ Rácio CMVMC",
-      "payroll": "Δ Salários",
-      "metric": "Métrica",
-      "empty": "Preenche receita e custos para veres a projeção.",
-      "footnote": "Ilustrativo — calculado ao vivo a partir do teu registo de pressupostos. Não substitui o modelo XLSM canónico.",
-      "saveAs": "Guardar como…",
-      "savedAs": "Guardado como {{scenario}} ({{n}} valor(es)) — a mostrar plano atualizado",
-      "noDeltas": "Sem alterações a guardar — sliders e cenário coincidem com o base.",
-      "saveFailed": "Falha ao guardar"
-    },
-    "kpi": {
-      "revenueY1": "Receita Ano 1",
-      "revenueY2": "Receita Ano 2",
-      "cogs": "CMVMC",
-      "grossMargin": "Margem bruta",
-      "payroll": "Salários (14m + TSU)",
-      "ebitdaProxy": "EBITDA (proxy)",
-      "ltvCac": "LTV : CAC",
-      "payback": "Payback (meses)"
-    },
-    "saveNext": "Guardar e seguinte",
-    "skipSection": "Saltar secção",
-    "idk": "Ainda não sei",
-    "continue": "Continuar",
-    "packAllAnswered": "Secção concluída",
-    "rationalePlaceholder": "Porquê este valor? Cite fonte, benchmark ou raciocínio (opcional).",
-    "invalidNumber": "Introduza um número válido",
-    "parsedAs": "Interpretado como {{value}}",
-    "belowMin": "Valor abaixo do mínimo ({{min}})",
-    "aboveMax": "Valor acima do máximo ({{max}})",
-    "saveFailed": "Falha ao guardar",
-    "prefillRunning": "A executar prefill…",
-    "prefillResult": "Resultado do prefill",
-    "prefillStats": "{{ok}} criados · {{skipped}} ignorados · {{failed}} falhados",
-    "prefillFailedN": "{{n}} falhados",
-    "prefillStep": {
-      "profile": "Predefinições do perfil",
-      "kpi": "Sinais de KPI",
-      "ai": "Sugestões da IA",
-      "insert": "A guardar propostas"
-    },
-    "idkRationale": "Ignorado pelo fundador — a revisitar",
-    "skippedBadge": "Ignorado",
-    "queue": {
-      "skippedTitle": "Rever pressuposto ignorado: {{label}}",
-      "skippedDesc": "O fundador marcou \"{{label}}\" como desconhecido no cenário {{scenario}} — ajude a encontrar um valor defensável."
-    }
   }
 }
