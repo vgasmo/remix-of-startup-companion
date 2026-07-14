@@ -98,27 +98,32 @@ export default function AdminDataImportV2() {
     setIsLoading(true);
     try {
       const content_base64 = await fileToBase64(file);
-      const { data, error } = await invokeWithAuth<PrepareResponse>('prepare-hubspot-import', {
-        body: {
-          filename: file.name,
-          content_base64,
-          mime_type: file.type,
-          program_id: programId,
-          stage_map: stageMap,
-          config: { default_stage: 'new' },
-        },
-      });
+      const fn = source === 'phc' ? 'prepare-phc-import' : 'prepare-hubspot-import';
+      const body: any = {
+        filename: file.name,
+        content_base64,
+        mime_type: file.type,
+        program_id: programId,
+      };
+      if (source === 'hubspot') {
+        body.stage_map = stageMap;
+        body.config = { default_stage: 'new' };
+      } else {
+        body.config = { default_stage: 'customer' };
+      }
+      const { data, error } = await invokeWithAuth<PrepareResponse>(fn, { body });
       if (error) throw error;
       setPrepared(data!);
-      setMapping(data!.column_mapping);
-      setStep('mapping');
+      setMapping(data!.column_mapping ?? {});
+      setStep(source === 'phc' ? 'reconcile' : 'mapping');
+      if (source === 'phc') await loadRows(data!.job_id);
       notify.success(t('dataImportV2.prepared', 'File analyzed: {{n}} rows', { n: data!.total_rows }));
     } catch (e: any) {
       notify.error(e?.message ?? 'Prepare failed');
     } finally {
       setIsLoading(false);
     }
-  }, [file, programId, stageMap, t]);
+  }, [file, source, programId, stageMap, t]);
 
   const loadRows = useCallback(async (jobId: string) => {
     setIsLoading(true);
