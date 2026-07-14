@@ -222,7 +222,7 @@ export function useResolvePrefillProposal(workspaceId: string) {
       if (action === 'accept') {
         // Materialize into financial_assumptions with the same source.
         const { error: upErr } = await supabase.from('financial_assumptions').upsert(
-          {
+          [{
             workspace_id: workspaceId,
             scenario: proposal.scenario,
             key: proposal.key,
@@ -235,7 +235,7 @@ export function useResolvePrefillProposal(workspaceId: string) {
             rationale: `Accepted from ${proposal.source}`,
             owner_user_id: userRes.user?.id ?? null,
             last_validated_at: new Date().toISOString(),
-          },
+          }],
           { onConflict: 'workspace_id,scenario,key,period_index' },
         );
         if (upErr) throw upErr;
