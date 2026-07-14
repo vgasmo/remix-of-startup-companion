@@ -601,6 +601,34 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Authorization: caller must be staff (admin/consultor/backoffice) OR an
+    // active member of the contract's workspace. Prevents any authenticated
+    // user from downloading another startup's contract PDF by supplying its ID.
+    const { data: staffRoles } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+    const isStaff = (staffRoles ?? []).some((r: { role: string }) =>
+      r.role === 'admin' || r.role === 'consultor' || r.role === 'backoffice'
+    )
+    let authorized = isStaff
+    if (!authorized && contract.workspace_id) {
+      const { data: membership } = await supabase
+        .from('workspace_users')
+        .select('user_id')
+        .eq('workspace_id', contract.workspace_id)
+        .eq('user_id', user.id)
+        .maybeSingle()
+      authorized = !!membership
+    }
+    if (!authorized) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+
     // Fetch active discounts
     const { data: discounts } = await supabase
       .from('contract_discounts')
