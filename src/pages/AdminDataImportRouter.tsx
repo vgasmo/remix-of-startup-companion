@@ -11,7 +11,7 @@ const Legacy = lazy(() => import('./AdminDataImport'));
 const V2 = lazy(() => import('./AdminDataImportV2'));
 
 export default function AdminDataImportRouter() {
-  const useV2 = useFeatureFlag('hubspot_importer_v2', false);
+  const useV2 = useFeatureFlag('hubspot_importer_v2');
   const Comp = useV2 ? V2 : Legacy;
   return (
     <Suspense fallback={<div className="p-6"><Skeleton className="h-40 w-full" /></div>}>
