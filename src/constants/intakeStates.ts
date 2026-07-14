@@ -24,7 +24,9 @@ export const INTAKE_TRANSITIONS: Record<IntakeState, IntakeState[]> = {
   draft_internal: ['intake_requested', 'cancelled'],
   intake_requested: ['intake_in_progress', 'cancelled'],
   intake_in_progress: ['intake_submitted', 'cancelled'],
-  intake_submitted: ['review_pending', 'cancelled'],
+  // Reviewers can approve or request changes directly from "submitted" without
+  // an explicit "start review" step — the UI exposes both actions from this state.
+  intake_submitted: ['review_pending', 'approved_for_signature', 'changes_requested', 'cancelled'],
   review_pending: ['changes_requested', 'approved_for_signature', 'cancelled'],
   changes_requested: ['intake_in_progress', 'intake_submitted', 'review_pending', 'cancelled'],
   approved_for_signature: ['signature_sent', 'cancelled'],
