@@ -665,7 +665,7 @@ export default function CRM() {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-4">
-            <PipelineForecastCard pipeline={inbox as unknown as Record<string, CrmInboxItem[]>} />
+            <PipelineForecastCard pipeline={pipelineForForecast} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <EmailSyncHealthPanel />
               <EmailReviewQueue />
