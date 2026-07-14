@@ -108,9 +108,12 @@ export const PIPELINE_STAGES: FunnelStage[] = [
   'intake_filling',
   'intake_submitted',
   'intake_review',
+  'intake_changes_requested',
   'approved_for_signature',
   'sent_for_signature',
   'contracted',
+  'incubating',
+  'accelerating',
   'rejected',
   'archived',
 ];
