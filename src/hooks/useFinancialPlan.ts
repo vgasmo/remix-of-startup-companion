@@ -197,16 +197,18 @@ export function useDeleteAssumption(workspaceId: string) {
 
 // -------- Prefill proposals -----------------------------------------------
 
-export function usePrefillProposals(workspaceId: string | undefined, scenario: PlanScenario = 'base') {
+// Pending proposals are surfaced across ALL scenarios so a founder who
+// prefilled on one scenario still sees suggestions when browsing another.
+// Callers can filter client-side when a strictly per-scenario view is needed.
+export function usePrefillProposals(workspaceId: string | undefined, _scenario?: PlanScenario) {
   return useQuery({
-    queryKey: ['financial-prefill-proposals', workspaceId, scenario],
+    queryKey: ['financial-prefill-proposals', workspaceId, 'all'],
     enabled: !!workspaceId,
     queryFn: async (): Promise<FinancialPrefillProposal[]> => {
       const { data, error } = await supabase
         .from('financial_prefill_proposals')
         .select('*')
         .eq('workspace_id', workspaceId!)
-        .eq('scenario', scenario)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -253,7 +255,7 @@ export function useResolvePrefillProposal(workspaceId: string) {
       if (error) throw error;
     },
     onSuccess: (_r, vars) => {
-      qc.invalidateQueries({ queryKey: ['financial-prefill-proposals', workspaceId, vars.proposal.scenario] });
+      qc.invalidateQueries({ queryKey: ['financial-prefill-proposals', workspaceId, 'all'] });
       qc.invalidateQueries({ queryKey: ['financial-assumptions', workspaceId, vars.proposal.scenario] });
     },
   });
@@ -288,8 +290,8 @@ export function useGeneratePrefill(workspaceId: string) {
       if (error) throw error;
       return data!;
     },
-    onSuccess: (_r, scenario) => {
-      qc.invalidateQueries({ queryKey: ['financial-prefill-proposals', workspaceId, scenario] });
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['financial-prefill-proposals', workspaceId, 'all'] });
     },
   });
 }

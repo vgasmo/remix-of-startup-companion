@@ -256,9 +256,12 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
             {proposals.map(p => (
               <div key={p.id} className="flex items-center justify-between gap-3 p-2 border rounded-md">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium truncate">{p.key}</span>
                     <SourceBadge source={p.source} />
+                    <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
+                      {scenarioLabel(t, p.scenario)}
+                    </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {p.proposed_value_numeric ?? JSON.stringify(p.proposed_value_json ?? {})}
