@@ -38,11 +38,14 @@ interface UseCrmInboxFilters {
 }
 
 // Explicit select for funnel_items (P1.2 optimization)
+// G0: include deal fields — the drawer opened from the Inbox was stripping
+// deal_value/expected_close/win_probability, so Save nulled the existing deal.
 const FUNNEL_ITEM_FIELDS = `
   id, stage, type, owner_consultant_id, program_id,
   contact_name, contact_email, organization_name,
   next_action_at, next_action_description, last_activity_at,
   linked_workspace_id, metadata_json, notes, contact_phone, source, first_contact_at,
+  deal_value, deal_currency, expected_close_date, win_probability,
   created_at, updated_at
 `;
 
