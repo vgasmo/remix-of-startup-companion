@@ -79,6 +79,16 @@ const STAGE_COLORS: Record<FunnelStage, string> = {
 
 const ACTIVE_STAGES: FunnelStage[] = ['new', 'first_contact_booked', 'met', 'qualified', 'proposal_sent', 'negotiating', 'intake_requested', 'intake_filling', 'intake_submitted', 'intake_review', 'intake_changes_requested', 'approved_for_signature', 'sent_for_signature', 'contracted', 'incubating', 'accelerating'];
 
+const COMMERCIAL_STAGES: FunnelStage[] = ['new', 'first_contact_booked', 'met', 'qualified', 'proposal_sent', 'negotiating', 'intake_requested', 'intake_filling', 'intake_submitted', 'intake_review', 'intake_changes_requested', 'approved_for_signature', 'sent_for_signature'];
+const ACTIVE_CUSTOMER_STAGES: FunnelStage[] = ['contracted', 'incubating', 'accelerating'];
+
+type CrmSegment = 'all' | 'commercial' | 'active_customers';
+const SEGMENT_STAGES: Record<CrmSegment, FunnelStage[] | undefined> = {
+  all: undefined,
+  commercial: COMMERCIAL_STAGES,
+  active_customers: ACTIVE_CUSTOMER_STAGES,
+};
+
 export default function CRM() {
   const { t } = useTranslation();
   const { user } = useAuth();
