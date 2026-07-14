@@ -5667,27 +5667,28 @@
       "detail": "This founder is marked active but has no workspace assigned. Assign one to unblock them.",
       "title": "Active founder without a workspace"
     },
-    "allConsistent": "Contract / intake / CRM / workspace states are consistent.",
+    "allConsistent": "Contract, intake, CRM and workspace states are consistent.",
     "contractActiveWorkspaceNot": {
-      "detail": "workspace.status=\"{{wstate}}\"",
-      "title": "Contract active but workspace is not active"
+      "detail": "The contract is active but the workspace is \"{{wstate}}\". Activate the workspace so the founder can access it.",
+      "title": "Contract active but workspace inactive"
     },
     "crmContractedNoLink": {
-      "detail": "funnel_items.linked_contract_id is empty.",
-      "title": "Lead in \"contracted\" phase without linked contract"
+      "detail": "The lead is marked as contracted but no contract is linked yet. Create or link a contract.",
+      "title": "Contracted lead without a linked contract"
     },
-    "disclaimer": "Read-only. No automatic repair. Use existing actions on each record.",
+    "disclaimer": "Read-only. No automatic repair. Use the existing actions on each record.",
     "intakeAheadOfContract": {
-      "detail": "intake.status=\"{{istate}}\" / contract.status=\"{{cstate}}\"",
-      "title": "Intake signed but contract not active"
+      "detail": "The intake is \"{{istate}}\" but the contract is still \"{{cstate}}\". Update the contract to reflect the signature.",
+      "title": "Intake signed but contract not yet active"
     },
     "open": "Open",
     "pendingSignatureNoProvider": {
-      "detail": "signature_provider is empty.",
-      "title": "Contract in pending_signature without a defined provider"
+      "detail": "The contract is pending signature but no signature provider has been set.",
+      "title": "Pending contract without a signature provider"
     },
     "title": "Lifecycle inconsistencies"
   },
+
   "loading": {
     "almostThere": "Almost there...",
     "default": "Loading...",
