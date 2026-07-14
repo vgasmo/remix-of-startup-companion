@@ -100,7 +100,7 @@ export function useUpsertFinancialPlanSession(workspaceId: string) {
       };
       const { data, error } = await supabase
         .from('financial_plan_sessions')
-        .upsert(payload, { onConflict: 'workspace_id,scenario' })
+        .upsert([payload], { onConflict: 'workspace_id,scenario' })
         .select()
         .single();
       if (error) throw error;
@@ -168,7 +168,7 @@ export function useSaveAssumption(workspaceId: string) {
       };
       const { data, error } = await supabase
         .from('financial_assumptions')
-        .upsert(payload, { onConflict: 'workspace_id,scenario,key,period_index' })
+        .upsert([payload], { onConflict: 'workspace_id,scenario,key,period_index' })
         .select()
         .single();
       if (error) throw error;
