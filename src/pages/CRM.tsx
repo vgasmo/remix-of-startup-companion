@@ -141,6 +141,7 @@ export default function CRM() {
   const { data: inbox, isLoading: loadingInbox } = useCrmInbox({
     programId: programFilter !== 'all' ? programFilter : undefined,
     stage: stageFilter !== 'all' ? stageFilter as FunnelStage : undefined,
+    stages: segmentStages,
     assigneeId: assigneeFilter !== 'all' ? assigneeFilter : undefined,
     search: searchQuery || undefined,
     myItemsOnly: focusMode ? true : myItemsOnly, // Focus mode implies my items
