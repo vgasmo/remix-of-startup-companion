@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { useTranslation } from 'react-i18next';
 import { 
   TrendingUp, 
@@ -30,6 +31,7 @@ interface SessionPrepCardProps {
 
 export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { data, isLoading } = useSessionPrep(sessionId, workspaceId);
   const [showPrepSheet, setShowPrepSheet] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
@@ -202,7 +204,7 @@ export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps
                         "text-muted-foreground",
                         action.isOverdue && "text-destructive"
                       )}>
-                        {format(new Date(action.due_date), 'MMM d')}
+                        {format(new Date(action.due_date), 'MMM d', { locale: dateLocale })}
                       </span>
                     )}
                   </div>
@@ -248,7 +250,7 @@ export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps
                       "text-muted-foreground flex-shrink-0",
                       milestone.isOverdue && "text-destructive"
                     )}>
-                      {format(new Date(milestone.target_date), 'MMM d')}
+                      {format(new Date(milestone.target_date), 'MMM d', { locale: dateLocale })}
                     </span>
                   )}
                 </div>
@@ -274,7 +276,7 @@ export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{session.title}</span>
                     <span className="text-muted-foreground">
-                      {format(new Date(session.scheduled_at), 'MMM d')}
+                      {format(new Date(session.scheduled_at), 'MMM d', { locale: dateLocale })}
                     </span>
                   </div>
                   {session.ai_summary && (

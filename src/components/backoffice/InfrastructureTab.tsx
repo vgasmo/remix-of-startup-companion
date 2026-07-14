@@ -41,6 +41,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { notify } from "@/lib/notify";
 import { renderPdfToImage, isPdfFile } from '@/lib/pdfRenderer';
 import { logger } from '@/lib/logger';
@@ -58,6 +59,7 @@ const VALID_VIEWS: SubView[] = ['dashboard', 'map', 'list', 'buildings', 'waitli
 
 export function InfrastructureTab() {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { user } = useAuth();
 
   // URL-backed sub-view (?view=) and deep-link (?room=) — parsed once per mount.
@@ -622,7 +624,7 @@ export function InfrastructureTab() {
                                     {occupantName}
                                     {allocation?.start_date && (
                                       <span className="block text-muted-foreground">
-                                        {t('admin.backoffice.since', { defaultValue: 'Desde' })} {format(new Date(allocation.start_date), 'MMM yyyy')}
+                                        {t('admin.backoffice.since', { defaultValue: 'Desde' })} {format(new Date(allocation.start_date), 'MMM yyyy', { locale: dateLocale })}
                                       </span>
                                     )}
                                   </div>
@@ -862,7 +864,7 @@ export function InfrastructureTab() {
                               <div className="min-w-0">
                                 <span className="font-medium block truncate">{occupantName}</span>
                                 <span className="text-[10px] text-muted-foreground">
-                                  {t('admin.backoffice.since', { defaultValue: 'Desde' })} {format(new Date(allocation.start_date), 'MMM yyyy')}
+                                  {t('admin.backoffice.since', { defaultValue: 'Desde' })} {format(new Date(allocation.start_date), 'MMM yyyy', { locale: dateLocale })}
                                 </span>
                               </div>
                             </div>

@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { format, isPast, isToday, parseISO } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { AlertTriangle, Calendar, Trash2, GripVertical, Paperclip, FileText, Plus, Check, ExternalLink, Hourglass, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -57,6 +58,7 @@ export const ActionItemCard = memo(function ActionItemCard({
   onAddDeliverable, onCompleteDeliverable, isSelected, onToggleSelect,
 }: ActionItemCardProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const navigate = useNavigate();
   const { user } = useAuth();
   // G0 fix: use item.workspace_id — route param is `:id`, not `:workspaceId`,
@@ -192,7 +194,7 @@ export const ActionItemCard = memo(function ActionItemCard({
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className={`h-6 px-2 text-xs border-dashed ${isOverdue ? 'text-destructive border-destructive' : isDueToday ? 'text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30' : ''}`}>
                   <Calendar className="h-3 w-3 mr-1" />
-                  {item.due_date ? format(parseISO(item.due_date), 'd MMM') : t('actions.dueDate')}
+                  {item.due_date ? format(parseISO(item.due_date), 'd MMM', { locale: dateLocale }) : t('actions.dueDate')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -202,7 +204,7 @@ export const ActionItemCard = memo(function ActionItemCard({
           ) : item.due_date ? (
             <Badge variant="outline" className={`text-xs ${isOverdue ? 'text-destructive border-destructive' : ''}`}>
               <Calendar className="h-3 w-3 mr-1" />
-              {format(parseISO(item.due_date), 'd MMM')}
+              {format(parseISO(item.due_date), 'd MMM', { locale: dateLocale })}
             </Badge>
           ) : null}
 

@@ -19,9 +19,11 @@ import {
 import { computeEffectiveDiscount } from '@/lib/contractLifecycle';
 import { useNavigate } from 'react-router-dom';
 import { format, differenceInDays, addDays } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 
 export function OccupancyDashboard() {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const navigate = useNavigate();
   const { data: rooms } = useRoomsWithAllocations();
   const { data: buildings } = useBuildings();
@@ -222,7 +224,7 @@ export function OccupancyDashboard() {
                     )}
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Calendar className="h-3 w-3" />
-                      {t('admin.backoffice.occupancyDashboard.expiresOn', { defaultValue: 'Expira em' })} {format(new Date(c.end_date!), 'dd MMM yyyy')}
+                      {t('admin.backoffice.occupancyDashboard.expiresOn', { defaultValue: 'Expira em' })} {format(new Date(c.end_date!), 'dd MMM yyyy', { locale: dateLocale })}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

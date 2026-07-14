@@ -18,6 +18,7 @@ import {
   TrendingDown, Zap, Clock, Users, FileDown
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { useTranslation } from 'react-i18next';
 import { notify } from "@/lib/notify";
 import { supabase } from '@/lib/supabaseClient';
@@ -95,6 +96,7 @@ function MetricCard({
 
 function InsightCard({ insight, onCreateAction, createActionLabel }: { insight: FinancialInsight; onCreateAction?: () => void; createActionLabel?: string }) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const severityConfig = {
     critical: { bg: 'bg-destructive/10', border: 'border-destructive/30', icon: XCircle, color: 'text-destructive' },
     warning: { bg: 'bg-[hsl(var(--warning))]/10', border: 'border-[hsl(var(--warning))]/30', icon: AlertTriangle, color: 'text-[hsl(var(--warning))]' },
@@ -392,7 +394,7 @@ export function FinancialModelPanel({ workspaceId, canWrite, isMentor = false }:
                   <SelectContent>
                     {versions.map(v => (
                       <SelectItem key={v.id} value={v.id}>
-                        {v.scenario_name} - {format(new Date(v.uploaded_at), 'MMM d, yyyy HH:mm')}
+                        {v.scenario_name} - {format(new Date(v.uploaded_at), 'MMM d, yyyy HH:mm', { locale: dateLocale })}
                       </SelectItem>
                     ))}
                   </SelectContent>

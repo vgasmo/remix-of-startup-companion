@@ -565,7 +565,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                   {isEditing ? (
                     <Input type="date" value={editValues.end_date} onChange={e => setEditValues(p => ({ ...p, end_date: e.target.value }))} className="h-8 text-sm" />
                   ) : (
-                    <span className="text-sm font-medium">{contract.end_date ? format(new Date(contract.end_date), 'dd MMM yyyy') : '—'}</span>
+                    <span className="text-sm font-medium">{contract.end_date ? format(new Date(contract.end_date), 'dd MMM yyyy', { locale: dateLocale }) : '—'}</span>
                   )}
                 </FieldDisplay>
               </div>
@@ -956,15 +956,15 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
         </div>
         <div className="space-y-1">
           <Label className="text-[10px] text-muted-foreground uppercase">{t('contractDetail.sentAt', { defaultValue: 'Enviado em' })}</Label>
-          <p className="text-xs">{contract.provider_sent_at ? format(new Date(contract.provider_sent_at), 'dd MMM yyyy HH:mm') : contract.signature_requested_at ? format(new Date(contract.signature_requested_at), 'dd MMM yyyy HH:mm') : '—'}</p>
+          <p className="text-xs">{contract.provider_sent_at ? format(new Date(contract.provider_sent_at), 'dd MMM yyyy HH:mm', { locale: dateLocale }) : contract.signature_requested_at ? format(new Date(contract.signature_requested_at), 'dd MMM yyyy HH:mm', { locale: dateLocale }) : '—'}</p>
         </div>
         <div className="space-y-1">
           <Label className="text-[10px] text-muted-foreground uppercase">{t('contractDetail.completedAt', { defaultValue: 'Concluído em' })}</Label>
-          <p className="text-xs">{contract.provider_completed_at ? format(new Date(contract.provider_completed_at), 'dd MMM yyyy HH:mm') : contract.signed_at ? format(new Date(contract.signed_at), 'dd MMM yyyy HH:mm') : '—'}</p>
+          <p className="text-xs">{contract.provider_completed_at ? format(new Date(contract.provider_completed_at), 'dd MMM yyyy HH:mm', { locale: dateLocale }) : contract.signed_at ? format(new Date(contract.signed_at), 'dd MMM yyyy HH:mm', { locale: dateLocale }) : '—'}</p>
         </div>
         <div className="space-y-1 col-span-2">
           <Label className="text-[10px] text-muted-foreground uppercase">{t('contractDetail.lastSync', { defaultValue: 'Última Sincronização' })}</Label>
-          <p className="text-xs">{contract.provider_last_sync_at ? format(new Date(contract.provider_last_sync_at), 'dd MMM yyyy HH:mm') : '—'}</p>
+          <p className="text-xs">{contract.provider_last_sync_at ? format(new Date(contract.provider_last_sync_at), 'dd MMM yyyy HH:mm', { locale: dateLocale }) : '—'}</p>
         </div>
       </div>
 

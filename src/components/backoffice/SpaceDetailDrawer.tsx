@@ -235,7 +235,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {t('admin.backoffice.inSpaceSince', { defaultValue: 'No espaço desde' })} {format(new Date(allocation.start_date), 'dd MMM yyyy')}
+                      {t('admin.backoffice.inSpaceSince', { defaultValue: 'No espaço desde' })} {format(new Date(allocation.start_date), 'dd MMM yyyy', { locale: dateLocale })}
                     </span>
                     {tenure && (
                       <span className="flex items-center gap-1">
@@ -246,7 +246,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
                   </div>
                   {allocation.end_date && (
                     <div className="text-sm text-muted-foreground">
-                      {t('admin.backoffice.endDate', { defaultValue: 'Data de Fim' })}: {format(new Date(allocation.end_date), 'dd MMM yyyy')}
+                      {t('admin.backoffice.endDate', { defaultValue: 'Data de Fim' })}: {format(new Date(allocation.end_date), 'dd MMM yyyy', { locale: dateLocale })}
                     </div>
                   )}
                   {allocation.notes && (
@@ -317,13 +317,13 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
                           {t('admin.backoffice.contractSince', { defaultValue: 'Contrato desde' })}
                         </div>
                         <div className="font-medium">
-                          {format(new Date(contractSummary.contractStart), 'dd MMM yyyy')}
+                          {format(new Date(contractSummary.contractStart), 'dd MMM yyyy', { locale: dateLocale })}
                         </div>
                       </div>
                       {contractSummary.contractEnd && (
                         <div>
                           <div className="text-muted-foreground">{t('common.endDate', { defaultValue: 'Fim' })}</div>
-                          <div className="font-medium">{format(new Date(contractSummary.contractEnd), 'dd MMM yyyy')}</div>
+                          <div className="font-medium">{format(new Date(contractSummary.contractEnd), 'dd MMM yyyy', { locale: dateLocale })}</div>
                         </div>
                       )}
                     </div>

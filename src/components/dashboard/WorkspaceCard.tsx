@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { Calendar, FileText } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -21,6 +22,7 @@ interface WorkspaceCardProps {
 
 export const WorkspaceCard = memo(function WorkspaceCard({ workspace, onClick, kpiTrend }: WorkspaceCardProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const effectiveHealth = workspace.health_score_override || workspace.health_score;
   const hasOverdue = workspace.overdueActionsCount > 0;
 
@@ -96,7 +98,7 @@ export const WorkspaceCard = memo(function WorkspaceCard({ workspace, onClick, k
           {workspace.nextMeetingDate ? (
             <div className="flex items-center gap-1.5 min-w-0">
               <Calendar className="h-3.5 w-3.5 text-primary/60 flex-shrink-0" />
-              <span className="truncate">{format(new Date(workspace.nextMeetingDate), 'MMM d')}</span>
+              <span className="truncate">{format(new Date(workspace.nextMeetingDate), 'MMM d', { locale: dateLocale })}</span>
             </div>
           ) : (
             <span className="text-muted-foreground/50 text-[11px]">{t('workspaceCard.noMeetings')}</span>

@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Clock, Building2, User, Calendar, ArrowRight } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { cn } from '@/lib/utils';
 
 interface RoomAllocationHistoryProps {
@@ -15,6 +16,7 @@ interface RoomAllocationHistoryProps {
 
 export function RoomAllocationHistory({ roomId, roomName }: RoomAllocationHistoryProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { data: allocations, isLoading } = useRoomAllocations(roomId);
 
   const getOccupantName = (alloc: RoomAllocation): string => {
@@ -103,10 +105,10 @@ export function RoomAllocationHistory({ roomId, roomName }: RoomAllocationHistor
 
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3 shrink-0" />
-                        <span>{format(new Date(alloc.start_date), 'MMM dd, yyyy')}</span>
+                        <span>{format(new Date(alloc.start_date), 'MMM dd, yyyy', { locale: dateLocale })}</span>
                         <ArrowRight className="h-3 w-3 shrink-0" />
                         {alloc.end_date ? (
-                          <span>{format(new Date(alloc.end_date), 'MMM dd, yyyy')}</span>
+                          <span>{format(new Date(alloc.end_date), 'MMM dd, yyyy', { locale: dateLocale })}</span>
                         ) : (
                           <span className="text-primary font-medium">{t('admin.backoffice.present', 'Present')}</span>
                         )}

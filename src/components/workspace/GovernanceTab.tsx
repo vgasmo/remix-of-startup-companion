@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 import { 
   Shield, 
   CheckCircle2, 
@@ -50,6 +51,7 @@ const STAGES: StartupStage[] = ['ideation', 'validation', 'mvp', 'growth', 'scal
 
 export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }: GovernanceTabProps) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { isAdmin, isConsultor, isFounder } = useAuth();
   const isStaff = isAdmin || isConsultor;
   
@@ -225,7 +227,7 @@ export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }
                   <div>
                     <p className="font-medium">{t('governance.reviewPending', 'Stage gate review pending')}</p>
                     <p className="text-sm text-muted-foreground">
-                      {t('governance.requestedAt', 'Requested {{date}}', { date: format(new Date(pendingReview.requested_at), 'MMM d, yyyy') })}
+                      {t('governance.requestedAt', 'Requested {{date}}', { date: format(new Date(pendingReview.requested_at), 'MMM d, yyyy', { locale: dateLocale }) })}
                     </p>
                   </div>
                 </div>
@@ -309,7 +311,7 @@ export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }
                       {getStatusBadge(review.status)}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Reviewed {review.reviewed_at ? format(new Date(review.reviewed_at), 'MMM d, yyyy') : 'N/A'}
+                      Reviewed {review.reviewed_at ? format(new Date(review.reviewed_at), 'MMM d, yyyy', { locale: dateLocale }) : 'N/A'}
                     </p>
                     {review.conditions && (
                       <p className="text-sm mt-2 p-2 rounded bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]">
