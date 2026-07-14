@@ -53,7 +53,7 @@ Deno.test('resolveTaxId classifies PT valid', () => {
 });
 
 Deno.test('resolveTaxId flags PT-country + bad checksum as invalid', () => {
-  const r = resolveTaxId('123456789', 'Portugal');
+  const r = resolveTaxId('501442699', 'Portugal');
   assertEquals(r.kind, 'invalid');
   assertEquals(r.normalized, null);
 });
