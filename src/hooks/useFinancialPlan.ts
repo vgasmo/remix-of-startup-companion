@@ -100,7 +100,7 @@ export function useUpsertFinancialPlanSession(workspaceId: string) {
       };
       const { data, error } = await supabase
         .from('financial_plan_sessions')
-        .upsert([payload], { onConflict: 'workspace_id,scenario' })
+        .upsert([payload as any], { onConflict: 'workspace_id,scenario' })
         .select()
         .single();
       if (error) throw error;
@@ -168,7 +168,7 @@ export function useSaveAssumption(workspaceId: string) {
       };
       const { data, error } = await supabase
         .from('financial_assumptions')
-        .upsert([payload], { onConflict: 'workspace_id,scenario,key,period_index' })
+        .upsert([payload as any], { onConflict: 'workspace_id,scenario,key,period_index' })
         .select()
         .single();
       if (error) throw error;
@@ -221,8 +221,8 @@ export function useResolvePrefillProposal(workspaceId: string) {
       const { data: userRes } = await supabase.auth.getUser();
       if (action === 'accept') {
         // Materialize into financial_assumptions with the same source.
-        const { error: upErr } = await supabase.from('financial_assumptions').upsert(
-          [{
+        const { error: upErr } = await supabase.from('financial_assumptions')
+          .upsert([{
             workspace_id: workspaceId,
             scenario: proposal.scenario,
             key: proposal.key,
@@ -235,7 +235,7 @@ export function useResolvePrefillProposal(workspaceId: string) {
             rationale: `Accepted from ${proposal.source}`,
             owner_user_id: userRes.user?.id ?? null,
             last_validated_at: new Date().toISOString(),
-          }],
+          }) as any],
           { onConflict: 'workspace_id,scenario,key,period_index' },
         );
         if (upErr) throw upErr;
