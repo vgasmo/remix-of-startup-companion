@@ -249,9 +249,9 @@ export async function matchRow(n: NormalizedRow, ctx: MatchCtx): Promise<MatchRe
     }
   }
 
-  // 3. NIF + program
+  // 3. NIF + program (stored in funnel_items.metadata_json->>'nif')
   if (n.nif) {
-    let q = sb.from('funnel_items').select('id, updated_at').eq('nif', n.nif);
+    let q = sb.from('funnel_items').select('id, updated_at').eq('metadata_json->>nif', n.nif);
     if (ctx.program_id) q = q.eq('program_id', ctx.program_id);
     const { data } = await q;
     if (data && data.length === 1) return { entity_type: 'funnel_item', entity_id: data[0].id, method: 'nif', confidence: 0.9, candidates: 1, snapshot_updated_at: data[0].updated_at };
