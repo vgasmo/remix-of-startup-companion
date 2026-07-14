@@ -5667,27 +5667,28 @@
       "detail": "Este founder está marcado como ativo mas não tem workspace atribuído. Atribua um para o desbloquear.",
       "title": "Founder ativo sem workspace"
     },
-    "allConsistent": "Estados de contrato/intake/CRM/workspace consistentes.",
+    "allConsistent": "Estados de contrato, intake, CRM e workspace consistentes.",
     "contractActiveWorkspaceNot": {
-      "detail": "workspace.status=\"{{wstate}}\"",
-      "title": "Contrato activo mas workspace não está activo"
+      "detail": "O contrato está ativo, mas o workspace está em \"{{wstate}}\". Ative o workspace para o founder aceder.",
+      "title": "Contrato ativo mas workspace inativo"
     },
     "crmContractedNoLink": {
-      "detail": "funnel_items.linked_contract_id está vazio.",
-      "title": "Lead em fase \"contracted\" sem contrato ligado"
+      "detail": "O lead está marcado como contratado mas ainda não tem contrato associado. Crie ou associe o contrato.",
+      "title": "Lead contratado sem contrato associado"
     },
-    "disclaimer": "Apenas leitura. Nenhuma reparação automática. Use as acções existentes em cada registo.",
+    "disclaimer": "Apenas leitura. Nenhuma reparação automática. Use as ações existentes em cada registo.",
     "intakeAheadOfContract": {
-      "detail": "intake.status=\"{{istate}}\" / contract.status=\"{{cstate}}\"",
-      "title": "Intake assinado mas contrato não está activo"
+      "detail": "O intake está \"{{istate}}\" mas o contrato ainda está \"{{cstate}}\". Atualize o contrato para refletir a assinatura.",
+      "title": "Intake assinado mas contrato ainda não ativo"
     },
     "open": "Abrir",
     "pendingSignatureNoProvider": {
-      "detail": "signature_provider está vazio.",
-      "title": "Contrato em pending_signature sem prestador definido"
+      "detail": "O contrato está pendente de assinatura mas ainda não tem prestador de assinatura configurado.",
+      "title": "Contrato pendente sem prestador de assinatura"
     },
     "title": "Inconsistências de ciclo de vida"
   },
+
   "loading": {
     "almostThere": "Quase lá...",
     "default": "A carregar...",

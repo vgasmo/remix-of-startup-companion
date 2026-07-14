@@ -227,9 +227,10 @@ export function LifecycleMismatchPanel({
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium leading-snug">{m.title}</div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5 font-mono">
+                    <div className="text-[11px] text-muted-foreground mt-0.5">
                       {m.recordLabel ? `${m.recordLabel} — ` : ''}{m.detail}
                     </div>
+
                   </div>
                   {m.recordType === 'contract' && onOpenContract && (
                     <Button
