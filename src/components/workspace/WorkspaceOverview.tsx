@@ -734,6 +734,7 @@ function MilestoneCount({ label, count, color }: { label: string; count: number;
 
 function SessionItem({ session }: { session: any }) {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   return (
     <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
       <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
