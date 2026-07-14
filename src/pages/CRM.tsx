@@ -120,9 +120,12 @@ export default function CRM() {
   const setProgramFilter = (v: string) => updateFilterParam('program', v, 'all');
   const setStageFilter = (v: string) => updateFilterParam('stage', v, 'all');
   const setAssigneeFilter = (v: string) => updateFilterParam('assignee', v, 'all');
+  const setSegmentFilter = (v: string) => updateFilterParam('segment', v, 'all');
   const setSearchQuery = (v: string) => setSearchInput(v);
   const setMyItemsOnly = (v: boolean) => updateFilterParam('mine', v, false);
   const setFocusMode = (v: boolean) => updateFilterParam('focus', v, false);
+
+  const segmentStages = SEGMENT_STAGES[segmentFilter];
 
   // Push debounced search into the URL (survives refresh + shareable)
   useEffect(() => {
