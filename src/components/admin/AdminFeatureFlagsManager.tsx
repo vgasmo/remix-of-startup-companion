@@ -71,6 +71,7 @@ export function AdminFeatureFlagsManager() {
   // Group flags by scope
   const globalFlags = flags?.filter((f) => f.scope === 'global') ?? [];
   const programFlags = flags?.filter((f) => f.scope === 'program') ?? [];
+  const workspaceFlags = flags?.filter((f) => f.scope === 'workspace') ?? [];
 
   return (
     <Card>
