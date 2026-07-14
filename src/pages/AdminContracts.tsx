@@ -28,7 +28,25 @@ type ContractRow = {
   document_url: string | null;
   contract_pdf_path: string | null;
   workspace_id: string | null;
-  workspaces?: { id: string; startup_id: string; startups?: { name: string | null } | null } | null;
+  legal_representative_phone?: string | null;
+  billing_email?: string | null;
+  company_address?: string | null;
+  company_city?: string | null;
+  company_postal_code?: string | null;
+  workspaces?: {
+    id: string;
+    startup_id: string;
+    startups?: {
+      name: string | null;
+      description: string | null;
+      website: string | null;
+      phone: string | null;
+      address: string | null;
+      main_contact_name: string | null;
+      main_contact_email: string | null;
+      main_contact_phone: string | null;
+    } | null;
+  } | null;
 };
 
 type StorageFile = {
@@ -67,9 +85,16 @@ export default function AdminContracts() {
         .from('startup_contracts')
         .select(`
           id, contract_number, status, signature_status, organization_name,
-          legal_representative_name, legal_representative_email, company_nif,
+          legal_representative_name, legal_representative_email, legal_representative_phone,
+          billing_email, company_nif, company_address, company_city, company_postal_code,
           start_date, signed_at, created_at, document_url, contract_pdf_path, workspace_id,
-          workspaces:workspace_id ( id, startup_id, startups:startup_id ( name ) )
+          workspaces:workspace_id (
+            id, startup_id,
+            startups:startup_id (
+              name, description, website, phone, address,
+              main_contact_name, main_contact_email, main_contact_phone
+            )
+          )
         `)
         .order('created_at', { ascending: false })
         .limit(500);
@@ -343,6 +368,54 @@ function ContractDocumentsDialog({
             {contract?.workspaces?.startups?.name || contract?.organization_name}
           </DialogDescription>
         </DialogHeader>
+
+        {contract && (() => {
+          const s = contract.workspaces?.startups || null;
+          const name = s?.name || contract.organization_name;
+          const description = s?.description;
+          const website = s?.website;
+          const contactName = s?.main_contact_name || contract.legal_representative_name;
+          const contactEmail = s?.main_contact_email || contract.legal_representative_email;
+          const contactPhone = s?.main_contact_phone || s?.phone || contract.legal_representative_phone;
+          const address = [contract.company_address || s?.address, contract.company_city, contract.company_postal_code]
+            .filter(Boolean).join(', ');
+          const hasAny = name || description || website || contactName || contactEmail || contactPhone || address || contract.company_nif;
+          if (!hasAny) return null;
+          return (
+            <div className="rounded-md border bg-muted/30 p-3 text-sm space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-semibold">{name || '—'}</div>
+                {contract.company_nif && (
+                  <Badge variant="outline" className="text-[10px]">NIF {contract.company_nif}</Badge>
+                )}
+              </div>
+              {description && (
+                <p className="text-xs text-muted-foreground whitespace-pre-wrap">{description}</p>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                {contactName && (
+                  <div><span className="text-muted-foreground">Contacto:</span> {contactName}</div>
+                )}
+                {contactEmail && (
+                  <div><span className="text-muted-foreground">Email:</span> {contactEmail}</div>
+                )}
+                {contactPhone && (
+                  <div><span className="text-muted-foreground">Telefone:</span> {contactPhone}</div>
+                )}
+                {website && (
+                  <div className="truncate"><span className="text-muted-foreground">Website:</span>{' '}
+                    <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="underline">{website}</a>
+                  </div>
+                )}
+                {address && (
+                  <div className="sm:col-span-2"><span className="text-muted-foreground">Morada:</span> {address}</div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
+
 
         {loading ? (
           <div className="flex items-center justify-center py-10">
