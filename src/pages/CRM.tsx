@@ -161,6 +161,7 @@ export default function CRM() {
     search: searchQuery || undefined,
     myItemsOnly: focusMode ? true : myItemsOnly,
     currentUserId: user?.id,
+    stages: segmentStages,
   });
 
   const completeTask = useCompleteTask();
