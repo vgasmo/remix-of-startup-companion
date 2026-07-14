@@ -362,7 +362,7 @@ export default function WorkspaceDetail() {
   return (
     <AppLayout
       title={startup?.name || 'Workspace'}
-      subtitle={program?.name}
+      subtitle={subtitleNode}
       actions={
         <div className="flex gap-1 sm:gap-2">
           <Button variant="outline" size="sm" onClick={copyWorkspaceLink} className="px-2 sm:px-3">
