@@ -477,7 +477,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                           <p className="font-medium text-sm truncate">{item.title}</p>
                           {item.due_date && (
                             <p className="text-xs text-muted-foreground">
-                              {t('sessions.dueDate', 'Due')}: {format(new Date(item.due_date), 'MMM d, yyyy')}
+                              {t('sessions.dueDate', 'Due')}: {format(new Date(item.due_date), 'd MMM yyyy', { locale })}
                             </p>
                           )}
                         </div>
