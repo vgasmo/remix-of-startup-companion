@@ -3600,7 +3600,9 @@
     "commitNow": "Fazer commit agora",
     "download": "Descarregar relatório",
     "noRows": "Sem linhas neste filtro.",
-    "toReconcile": "Continuar para reconciliação"
+    "toReconcile": "Continuar para reconciliação",
+    "noneConfident": "Nenhuma linha atinge o limiar de {{pct}}% de confiança — reveja cada correspondência manualmente.",
+    "approvedHeld": "Aprovadas {{n}} linhas · {{held}} retidas para revisão manual (< {{pct}}%)"
   },
   "dataImport": {
     "adminOnly": "Only administrators e consultants can access this page.",
@@ -5763,7 +5765,8 @@
     "sessions": "Sessões",
     "startTime": "Hora de início",
     "whatToDiscuss": "O que gostaria de discutir?",
-    "yourBookings": "As Suas Marcações"
+    "yourBookings": "As Suas Marcações",
+    "slotAlreadyTaken": "Esse horário acabou de ser reservado por outra pessoa — escolha outro."
   },
   "mentorsPage": {
     "accept": "Aceitar",
@@ -9743,6 +9746,10 @@
       "insert": "A guardar propostas"
     },
     "idkRationale": "Ignorado pelo fundador — a revisitar",
-    "skippedBadge": "Ignorado"
+    "skippedBadge": "Ignorado",
+    "queue": {
+      "skippedTitle": "Rever pressuposto ignorado: {{label}}",
+      "skippedDesc": "O fundador marcou \"{{label}}\" como desconhecido no cenário {{scenario}} — ajude a encontrar um valor defensável."
+    }
   }
 }
