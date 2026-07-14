@@ -164,6 +164,63 @@ export function AdminFeatureFlagsManager() {
             </div>
           </div>
         )}
+
+        {/* Workspace-scoped overrides (admin-only pilots) */}
+        {workspaceFlags.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Layers className="h-4 w-4" />
+              {t('admin.featureFlags.workspaceOverrides', 'Overrides de Workspace (piloto)')}
+            </div>
+            <div className="space-y-3">
+              {workspaceFlags.map((flag) => {
+                const meta = FLAG_DESCRIPTIONS[flag.key] ?? {
+                  label: flag.key,
+                  description: flag.description ?? '',
+                };
+                return (
+                  <div
+                    key={flag.id}
+                    className="flex items-center justify-between rounded-lg border p-4"
+                  >
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium">{meta.label}</span>
+                        <Badge variant="outline" className="text-xs">{flag.key}</Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          WS: {flag.workspace_id?.slice(0, 8)}…
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{meta.description}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={flag.enabled}
+                        onCheckedChange={() => handleToggle(flag.id, flag.enabled)}
+                        disabled={updateFlag.isPending}
+                      />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8"
+                        aria-label={t('common.remove', 'Remover') as string}
+                        onClick={() => {
+                          deleteWorkspaceFlag.mutate(flag.id, {
+                            onSuccess: () => notify.success(t('admin.featureFlags.overrideRemoved', 'Override removido — workspace volta ao default global.')),
+                            onError: (err: any) => notify.error(err?.message ?? 'Erro'),
+                          });
+                        }}
+                        disabled={deleteWorkspaceFlag.isPending}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
