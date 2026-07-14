@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Building2, Upload, Loader2, Globe, Calendar, Phone, MapPin, Mail, BadgeCheck, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
 import { notify } from "@/lib/notify";
 import { IntegrationSettings } from './IntegrationSettings';
+import { FounderRequestsPanel } from './FounderRequestsPanel';
 
 interface StartupSettingsTabProps {
   workspaceId: string;
@@ -515,6 +516,11 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
       emailAlias={`workspace-${workspaceId.slice(0, 8)}@capture.startupleiria.com`}
       canEdit={canEdit}
     />
+
+    <Separator className="my-6" />
+
+    {/* Founder → Staff requests */}
+    <FounderRequestsPanel workspaceId={workspaceId} />
   </>
   );
 }
