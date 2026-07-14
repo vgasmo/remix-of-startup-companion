@@ -278,7 +278,7 @@ Deno.serve(async (req) => {
       // update returns no rows and we hand out a link that will 404.
       const { data: existing, error: existingErr } = await supabase
         .from('startup_contracts')
-        .select('id, status')
+        .select('id, status, contract_number, organization_name, legal_representative_email, legal_representative_name, workspace:workspaces(startup:startups(name))')
         .eq('id', contractId)
         .maybeSingle()
 
@@ -308,14 +308,80 @@ Deno.serve(async (req) => {
 
       const publicUrl = `${req.headers.get('origin') || Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/contract-signing/${onboardingToken}`
 
+      // === Email the public signing link to the founder (best-effort) ===
+      let emailSent = false
+      let emailError: string | null = null
+      const recipientEmail = (existing as any).legal_representative_email as string | null
+      const recipientName = (existing as any).legal_representative_name as string | null
+      const orgName = (existing as any).organization_name
+        || (existing as any).workspace?.startup?.name
+        || ''
+      const contractNumber = (existing as any).contract_number || ''
+
+      if (recipientEmail) {
+        try {
+          const resendKey = Deno.env.get('RESEND_API_KEY')
+          if (!resendKey) throw new Error('RESEND_API_KEY not configured')
+
+          const esc = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as any)[c] || c)
+          const safeName = esc(recipientName || '')
+          const safeOrg = esc(orgName)
+          const safeContract = esc(contractNumber)
+          const subject = `${safeOrg ? safeOrg + ' — ' : ''}Contrato pronto para assinatura — Startup Leiria`
+          const html = `
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111">
+              <h2 style="color:#111;margin-bottom:8px">Contrato pronto para assinatura</h2>
+              ${safeName ? `<p>Olá ${safeName},</p>` : '<p>Olá,</p>'}
+              <p>${safeOrg ? `A ${safeOrg} tem` : 'Tem'} um contrato de incubação${safeContract ? ` (<strong>${safeContract}</strong>)` : ''} pronto para revisão e assinatura digital.</p>
+              <p style="margin:24px 0">
+                <a href="${publicUrl}" style="background:#84cc16;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block">
+                  Abrir contrato
+                </a>
+              </p>
+              <p style="font-size:12px;color:#666">Se o botão não funcionar, copie e cole este link no seu browser:<br/>
+              <a href="${publicUrl}" style="color:#0369a1;word-break:break-all">${publicUrl}</a></p>
+              <p style="font-size:12px;color:#666">O link é pessoal e expira em 30 dias.</p>
+              <hr style="border:none;border-top:1px solid #eee;margin:24px 0"/>
+              <p style="font-size:12px;color:#888">Startup Leiria</p>
+            </div>
+          `
+
+          const emailResp = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${resendKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'Startup Leiria <no-reply@startupleiria.com>',
+              to: [recipientEmail],
+              subject,
+              html,
+            }),
+          })
+          if (!emailResp.ok) {
+            const errBody = await emailResp.text()
+            throw new Error(`Resend ${emailResp.status}: ${errBody}`)
+          }
+          emailSent = true
+        } catch (err) {
+          console.warn('[generate_token] Failed to send signing-link email:', err)
+          emailError = String((err as any)?.message || err)
+        }
+      }
+
       return new Response(JSON.stringify({
         token: onboardingToken,
         url: publicUrl,
         expiresAt: expiresAt.toISOString(),
+        emailSent,
+        emailRecipient: recipientEmail || null,
+        emailError,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
+
 
     // === INTAKE: Load by token (public, no auth) ===
     if (action === 'intake_load_by_token') {
