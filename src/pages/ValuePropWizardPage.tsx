@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ValuePropWizard } from '@/components/consultor/ValuePropWizard';
 import { useValuePropArtifacts, ValuePropArtifact } from '@/hooks/useValueProp';
 import { format } from 'date-fns';
+import { useDateLocale } from '@/lib/dateLocale';
 
 export default function ValuePropWizardPage() {
   const { t } = useTranslation();
