@@ -64,7 +64,7 @@ export function PipelineForecastCard({ pipeline }: PipelineForecastCardProps) {
         <CardContent className="py-6 text-center">
           <DollarSign className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">
-            {t('crm.forecast.noData', { defaultValue: 'Adicione valores aos deals para ver o forecast' })}
+            {t('crm.forecast.noData')}
           </p>
         </CardContent>
       </Card>
@@ -78,7 +78,7 @@ export function PipelineForecastCard({ pipeline }: PipelineForecastCardProps) {
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-primary" />
-          {t('crm.forecast.title', { defaultValue: 'Pipeline Forecast' })}
+          {t('crm.forecast.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -86,15 +86,15 @@ export function PipelineForecastCard({ pipeline }: PipelineForecastCardProps) {
         <div className="grid grid-cols-3 gap-3">
           <div className="text-center">
             <p className="text-2xl font-bold text-foreground">{fmt(forecast.totalValue)}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('crm.forecast.totalPipeline', { defaultValue: 'Total Pipeline' })}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('crm.forecast.totalPipeline')}</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-primary">{fmt(forecast.weightedValue)}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('crm.forecast.weighted', { defaultValue: 'Ponderado' })}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('crm.forecast.weighted')}</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-foreground">{forecast.dealsWithValue}/{forecast.totalDeals}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('crm.forecast.deals', { defaultValue: 'Deals c/ valor' })}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('crm.forecast.deals')}</p>
           </div>
         </div>
 

@@ -3276,11 +3276,11 @@
     "focusModeDesc": "Show only urgent items needing attention",
     "followUpInbox": "Follow-up Inbox",
     "forecast": {
-      "deals": "Deals c/ valor",
+      "deals": "Deals w/ value",
       "noData": "Add values to deals to see the forecast",
       "title": "Pipeline Forecast",
       "totalPipeline": "Total Pipeline",
-      "weighted": "Ponderado"
+      "weighted": "Weighted"
     },
     "founder": {
       "call": "Phone call",
