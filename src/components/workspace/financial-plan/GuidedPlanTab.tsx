@@ -132,19 +132,73 @@ export function GuidedPlanTab({ workspaceId, canWrite }: Props) {
                 })}
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Label className="text-xs text-muted-foreground">
                 {t('financialPlan.scenarioLabel', { defaultValue: 'Scenario' })}
               </Label>
               <Select value={scenario} onValueChange={(v) => setScenario(v as PlanScenario)}>
-                <SelectTrigger className="h-8 w-40 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="base">{scenarioLabel(t, 'base')}</SelectItem>
                   <SelectItem value="conservative">{scenarioLabel(t, 'conservative')}</SelectItem>
                   <SelectItem value="optimistic">{scenarioLabel(t, 'optimistic')}</SelectItem>
                 </SelectContent>
               </Select>
+              {canWrite && (
+                <Button
+                  size="sm" variant="outline" className="h-8"
+                  disabled={generatePrefill.isPending}
+                  onClick={async () => {
+                    try {
+                      const res = await generatePrefill.mutateAsync(scenario);
+                      if (res.proposals_created > 0) {
+                        notify.success(t('financialPlan.prefillCreated', {
+                          defaultValue: '{{count}} suggestion(s) ready to review',
+                          count: res.proposals_created,
+                        }));
+                      } else {
+                        notify.info(t('financialPlan.prefillEmpty', {
+                          defaultValue: 'No new suggestions — everything already covered.',
+                        }));
+                      }
+                      if (res.warnings?.length) {
+                        // Non-fatal: surface as info toast for transparency.
+                        notify.info(res.warnings.join(' · '));
+                      }
+                    } catch (e: any) {
+                      notify.error(e?.message ?? t('financialPlan.prefillFailed', { defaultValue: 'Prefill failed' }));
+                    }
+                  }}
+                >
+                  {generatePrefill.isPending
+                    ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                    : <Wand2 className="h-3.5 w-3.5 mr-1" />}
+                  {t('financialPlan.prefill', { defaultValue: 'Prefill' })}
+                </Button>
+              )}
+              <Button
+                size="sm" variant="outline" className="h-8"
+                disabled={exportXlsm.isPending || assumptions.length === 0}
+                onClick={async () => {
+                  try {
+                    const res = await exportXlsm.mutateAsync(scenario);
+                    window.open(res.download_url, '_blank', 'noopener');
+                    notify.success(t('financialPlan.exportReady', {
+                      defaultValue: 'XLSM export ready — {{n}} cells filled',
+                      n: res.patch_count,
+                    }));
+                  } catch (e: any) {
+                    notify.error(e?.message ?? t('financialPlan.exportFailed', { defaultValue: 'Export failed' }));
+                  }
+                }}
+              >
+                {exportXlsm.isPending
+                  ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                  : <Download className="h-3.5 w-3.5 mr-1" />}
+                {t('financialPlan.exportXlsm', { defaultValue: 'Export XLSM' })}
+              </Button>
             </div>
+
           </div>
         </CardHeader>
         <CardContent className="pt-0 space-y-2">
