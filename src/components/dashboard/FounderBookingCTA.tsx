@@ -26,7 +26,9 @@ export function FounderBookingCTA({ workspaceId, className, isFirstWeek = false 
   const publicBookingEnabled = useFeatureFlag('public_first_contact_booking');
 
   const hasConsultant = Boolean(ownership?.assigned_consultor_id);
-  const nextSession = sessions?.[0];
+  // G1: pick the next session for THIS workspace only — otherwise a founder
+  // with two startups sees the other startup's session on this card.
+  const nextSession = sessions?.find((s) => s.workspace_id === workspaceId);
 
   const handleBookSession = () => {
     navigate(`/workspace/${workspaceId}?tab=agenda&new=1`);
