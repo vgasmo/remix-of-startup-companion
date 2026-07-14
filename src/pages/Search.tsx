@@ -328,9 +328,9 @@ export default function SearchPage() {
                   <CardContent>
                     <div className="space-y-3">
                       {items.map((result) => (
-                        <a
+                        <Link
                           key={result.id}
-                          href={result.url}
+                          to={result.url}
                           className="block p-3 rounded-lg border hover:bg-accent/50 transition-colors"
                         >
                           <div className="font-medium">{result.title}</div>
@@ -342,7 +342,7 @@ export default function SearchPage() {
                           <div className="text-xs text-muted-foreground mt-2">
                             {new Date(result.updated_at).toLocaleDateString()}
                           </div>
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   </CardContent>
