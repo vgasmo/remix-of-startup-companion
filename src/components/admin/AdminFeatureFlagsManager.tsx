@@ -3,14 +3,21 @@
  * Controls which new features are enabled globally or per-program
  */
 
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Flag, Globe, Building2, Layers, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Flag, Globe, Building2, Layers, X, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useFeatureFlags, useUpdateFeatureFlag, useDeleteWorkspaceFlag } from '@/hooks/useFeatureFlags';
+import {
+  useFeatureFlags, useUpdateFeatureFlag,
+  useDeleteWorkspaceFlag, useUpsertWorkspaceFlag,
+  type FeatureFlagKey,
+} from '@/hooks/useFeatureFlags';
 import { notify } from "@/lib/notify";
 
 const FLAG_DESCRIPTIONS: Record<string, { label: string; description: string }> = {
