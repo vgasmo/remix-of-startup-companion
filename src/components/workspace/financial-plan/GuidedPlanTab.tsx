@@ -820,3 +820,127 @@ function PrefillProgressCard({
     </Card>
   );
 }
+
+// -------- Inline-editable register row ------------------------------------
+
+function AssumptionRegisterRow({
+  assumption, scenario, canWrite, onSave, onDelete,
+}: {
+  assumption: import('@/hooks/useFinancialPlan').FinancialAssumption;
+  scenario: PlanScenario;
+  canWrite: boolean;
+  onSave: (input: import('@/hooks/useFinancialPlan').SaveAssumptionInput) => Promise<any>;
+  onDelete: () => void;
+}) {
+  const { t } = useTranslation();
+  const a = assumption;
+  const isSkipped = !!(a.value_json as any)?.skipped;
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState<string>(
+    a.value_numeric != null ? String(a.value_numeric) : '',
+  );
+  const [rationale, setRationale] = useState<string>(a.rationale ?? '');
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    if (!canWrite) return;
+    const n = parseLocalizedNumber(value);
+    if (n === null && value.trim() !== '') {
+      notify.error(t('financialPlan.invalidNumber', { defaultValue: 'Enter a valid number' }));
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSave({
+        key: a.key,
+        scenario,
+        value_numeric: n,
+        value_json: n === null ? { skipped: true } : null,
+        unit: a.unit ?? null,
+        source: 'founder',
+        rationale: rationale.trim() || null,
+      });
+      setEditing(false);
+    } catch (e: any) {
+      notify.error(e?.message ?? t('financialPlan.saveFailed', { defaultValue: 'Save failed' }));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (editing) {
+    return (
+      <div className="py-2 space-y-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium truncate flex-1">{assumptionLabel(t, a.key)}</span>
+          <SourceBadge source={a.source} />
+        </div>
+        <div className="flex gap-2">
+          <Input
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            placeholder={a.unit ?? '0'}
+            disabled={saving}
+            inputMode="decimal"
+            className="h-8 text-sm"
+          />
+          {a.unit && <span className="self-center text-xs text-muted-foreground">{a.unit}</span>}
+        </div>
+        <Textarea
+          value={rationale}
+          onChange={e => setRationale(e.target.value)}
+          placeholder={t('financialPlan.rationalePlaceholder', {
+            defaultValue: 'Why this value? Cite source, benchmark, or reasoning (optional).',
+          }) as string}
+          rows={2}
+          disabled={saving}
+          className="text-xs"
+        />
+        <div className="flex justify-end gap-2">
+          <Button size="sm" variant="ghost" onClick={() => setEditing(false)} disabled={saving}>
+            <X className="h-3.5 w-3.5 mr-1" />
+            {t('common.cancel', { defaultValue: 'Cancel' })}
+          </Button>
+          <Button size="sm" onClick={save} disabled={saving}>
+            {saving ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}
+            {t('common.save', { defaultValue: 'Save' })}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-2 flex items-center justify-between gap-2">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium truncate">{assumptionLabel(t, a.key)}</span>
+          <SourceBadge source={a.source} />
+          {isSkipped && (
+            <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
+              {t('financialPlan.skippedBadge', { defaultValue: 'Skipped' })}
+            </Badge>
+          )}
+        </div>
+        {a.rationale && <p className="text-xs text-muted-foreground truncate">{a.rationale}</p>}
+      </div>
+      <div className="text-sm tabular-nums whitespace-nowrap">
+        {isSkipped ? '—' : (a.value_numeric ?? '—')}{!isSkipped && a.unit ? ` ${a.unit}` : ''}
+      </div>
+      {canWrite && (
+        <>
+          <Button size="icon" variant="ghost" className="h-7 w-7"
+            onClick={() => setEditing(true)}
+            aria-label={t('common.edit', { defaultValue: 'Edit' }) as string}>
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+          <Button size="icon" variant="ghost" className="h-7 w-7"
+            onClick={onDelete}
+            aria-label={t('common.delete', { defaultValue: 'Delete' }) as string}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </>
+      )}
+    </div>
+  );
+}
