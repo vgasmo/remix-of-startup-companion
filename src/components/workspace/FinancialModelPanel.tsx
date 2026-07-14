@@ -300,7 +300,7 @@ export function FinancialModelPanel({ workspaceId, canWrite, isMentor = false }:
     <>
     {guidedPlanEnabled && (
       <div className="mb-4">
-        <GuidedPlanTab workspaceId={workspaceId} canWrite={canWrite} />
+        <GuidedPlanTab workspaceId={workspaceId} canWrite={canWrite && !isMentor} />
       </div>
     )}
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
