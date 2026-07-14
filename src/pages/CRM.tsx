@@ -137,6 +137,16 @@ export default function CRM() {
     myItemsOnly: focusMode ? true : myItemsOnly,
     currentUserId: user?.id,
   });
+  // Forecast needs deals grouped by pipeline stage (new/qualified/…), not by
+  // inbox bucket (overdue/today/…). Previously we cast the inbox groups to the
+  // pipeline shape, so no stage ever matched and the forecast was empty.
+  const { data: pipelineForForecast } = useCrmPipeline({
+    programId: programFilter !== 'all' ? programFilter : undefined,
+    assigneeId: assigneeFilter !== 'all' ? assigneeFilter : undefined,
+    search: searchQuery || undefined,
+    myItemsOnly: focusMode ? true : myItemsOnly,
+    currentUserId: user?.id,
+  });
 
   const completeTask = useCompleteTask();
 
