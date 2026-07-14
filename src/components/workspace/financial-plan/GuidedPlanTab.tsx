@@ -26,6 +26,7 @@ import {
   PlanScenario, AssumptionSource,
 } from '@/hooks/useFinancialPlan';
 import { QUESTION_PACKS, packById, QuestionDef, DIAGNOSTIC_KEYS } from './questionPacks';
+import { ScenarioSensitivityPanel } from './ScenarioSensitivityPanel';
 
 interface Props {
   workspaceId: string;
