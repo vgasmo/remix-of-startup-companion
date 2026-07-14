@@ -305,6 +305,14 @@ export function BackofficeContractsTab() {
         .from('funnel_items')
         .update({ linked_contract_id: newContract.id } as any)
         .eq('id', crmFunnelId);
+
+      // Also link any intake tied to this funnel item so the IntakeReviewPanel
+      // stops showing "Sem contrato associado" and approval is unblocked.
+      await supabase
+        .from('contract_intakes')
+        .update({ contract_id: newContract.id } as any)
+        .eq('funnel_item_id', crmFunnelId)
+        .is('contract_id', null);
     }
 
     setFlowState('idle');
