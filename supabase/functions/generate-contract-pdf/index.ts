@@ -566,12 +566,18 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid token' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    const isInternalServiceCall = token === supabaseKey
+    let user: { id: string } | null = null
+
+    if (!isInternalServiceCall) {
+      const { data: { user: authUser }, error: userError } = await supabase.auth.getUser(token)
+      if (userError || !authUser) {
+        return new Response(JSON.stringify({ error: 'Invalid token' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      user = authUser
     }
 
     const { contractId } = await req.json()
@@ -604,28 +610,30 @@ Deno.serve(async (req) => {
     // Authorization: caller must be staff (admin/consultor/backoffice) OR an
     // active member of the contract's workspace. Prevents any authenticated
     // user from downloading another startup's contract PDF by supplying its ID.
-    const { data: staffRoles } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-    const isStaff = (staffRoles ?? []).some((r: { role: string }) =>
-      r.role === 'admin' || r.role === 'consultor' || r.role === 'backoffice'
-    )
-    let authorized = isStaff
-    if (!authorized && contract.workspace_id) {
-      const { data: membership } = await supabase
-        .from('workspace_users')
-        .select('user_id')
-        .eq('workspace_id', contract.workspace_id)
-        .eq('user_id', user.id)
-        .maybeSingle()
-      authorized = !!membership
-    }
-    if (!authorized) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    if (!isInternalServiceCall) {
+      const { data: staffRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user!.id)
+      const isStaff = (staffRoles ?? []).some((r: { role: string }) =>
+        r.role === 'admin' || r.role === 'consultor' || r.role === 'backoffice'
+      )
+      let authorized = isStaff
+      if (!authorized && contract.workspace_id) {
+        const { data: membership } = await supabase
+          .from('workspace_users')
+          .select('user_id')
+          .eq('workspace_id', contract.workspace_id)
+          .eq('user_id', user!.id)
+          .maybeSingle()
+        authorized = !!membership
+      }
+      if (!authorized) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
     }
 
 
@@ -711,15 +719,18 @@ Deno.serve(async (req) => {
       })
       .eq('id', contractId)
 
-    // Log activity
-    await supabase.from('activity_log').insert({
-      user_id: user.id,
-      entity_type: 'contract',
-      entity_id: contractId,
-      action: 'pdf_generated',
-      workspace_id: contract.workspace_id,
-      metadata: { document_path: documentPath },
-    })
+    // Log direct user-initiated generation. Internal public-token generation is
+    // already mediated by public-contract-onboarding and has no authenticated user.
+    if (user) {
+      await supabase.from('activity_log').insert({
+        user_id: user.id,
+        entity_type: 'contract',
+        entity_id: contractId,
+        action: 'pdf_generated',
+        workspace_id: contract.workspace_id,
+        metadata: { document_path: documentPath },
+      })
+    }
 
     // Convert to base64 for response
     let binary = '';
