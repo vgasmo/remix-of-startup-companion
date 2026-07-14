@@ -3571,8 +3571,12 @@
       "results": "Results"
     },
     "upload": {
-      "title": "Upload HubSpot export",
+      "title": "Upload CRM export",
       "desc": "CSV or XLSX/XLSM only. Legacy .xls is not supported."
+    },
+    "source": "Source system",
+    "phc": {
+      "notice": "PHC import is strict CRM-only. Building, service and price-list fields are stored as hints — never as fees or buildings. Column mapping is derived automatically from the PHC headers."
     },
     "analyze": "Analyze file",
     "selectProgram": "Select program (optional)",
