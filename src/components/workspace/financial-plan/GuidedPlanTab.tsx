@@ -24,7 +24,7 @@ import {
   useFinancialAssumptions, useSaveAssumption, useDeleteAssumption,
   usePrefillProposals, useResolvePrefillProposal,
   useGeneratePrefill, useExportGuidedPlanXlsm,
-  PlanScenario, AssumptionSource,
+  PlanScenario, AssumptionSource, PrefillResult,
 } from '@/hooks/useFinancialPlan';
 import { QUESTION_PACKS, packById, QuestionDef, DIAGNOSTIC_KEYS } from './questionPacks';
 import { ScenarioSensitivityPanel } from './ScenarioSensitivityPanel';
