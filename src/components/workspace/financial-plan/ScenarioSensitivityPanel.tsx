@@ -55,7 +55,7 @@ function DeltaIcon({ delta }: { delta: number }) {
     : <TrendingDown className="h-3 w-3 text-destructive" />;
 }
 
-export function ScenarioSensitivityPanel({ workspaceId, canWrite, assumptions }: Props) {
+export function ScenarioSensitivityPanel({ workspaceId, canWrite, assumptions, onScenarioSaved }: Props) {
   const { t } = useTranslation();
   const [sens, setSens] = useState<Sensitivity>(DEFAULT_SENSITIVITY);
   const saveAssumption = useSaveAssumption(workspaceId);
