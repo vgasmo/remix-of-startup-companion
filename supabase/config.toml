@@ -30,6 +30,9 @@ verify_jwt = false
 [functions.export-financial-model]
 verify_jwt = false
 
+[functions.generate-financial-prefill]
+verify_jwt = true
+
 [functions.sync-financial-kpis]
 verify_jwt = true
 
