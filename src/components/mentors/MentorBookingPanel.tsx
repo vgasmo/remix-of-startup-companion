@@ -267,6 +267,32 @@ export function MentorBookingPanel({
                 </div>
               )}
 
+              {suggestedSlots.length > 0 && (
+                <div
+                  className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3"
+                  data-testid="mentor-booking-suggestions"
+                  role="region"
+                  aria-label={t('mentors.nextAvailableSlots', 'Next available slots')}
+                >
+                  <p className="text-sm font-medium">
+                    {t('mentors.nextAvailableSlots', 'Next available slots')}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestedSlots.map((s, i) => (
+                      <Button
+                        key={`${format(s.date, 'yyyy-MM-dd')}-${s.key}-${i}`}
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => applySuggestion(s)}
+                      >
+                        {format(s.date, 'MMM d')} · {s.start.slice(0, 5)}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label>{t('mentors.messageOptional')}</Label>
                 <Textarea
