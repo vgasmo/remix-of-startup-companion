@@ -123,7 +123,7 @@ function InsightCard({ insight, onCreateAction, createActionLabel }: { insight: 
   );
 }
 
-export function FinancialModelPanel({ workspaceId, canWrite }: FinancialModelPanelProps) {
+export function FinancialModelPanel({ workspaceId, canWrite, isMentor = false }: FinancialModelPanelProps) {
   const { t } = useTranslation();
   const { data: versions, isLoading } = useFinancialModelVersions(workspaceId);
   const uploadMutation = useUploadDocument();
