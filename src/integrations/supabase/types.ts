@@ -3090,6 +3090,59 @@ export type Database = {
           },
         ]
       }
+      founder_staff_requests: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          request_type: string
+          resolved_at: string | null
+          resolved_by: string | null
+          staff_notes: string | null
+          status: string
+          title: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description: string
+          id?: string
+          request_type: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          staff_notes?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          request_type?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          staff_notes?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "founder_staff_requests_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       funding_rounds: {
         Row: {
           announced_at: string | null
