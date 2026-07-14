@@ -100,6 +100,7 @@ export default function CRM() {
   const programFilter = searchParams.get('program') || 'all';
   const stageFilter = searchParams.get('stage') || 'all';
   const assigneeFilter = searchParams.get('assignee') || 'all';
+  const segmentFilter = (searchParams.get('segment') as CrmSegment) || 'all';
   const urlSearchQuery = searchParams.get('q') || '';
   // Local input state → debounce → URL, so we don't hit Supabase on every keystroke.
   const [searchInput, setSearchInput] = useState(urlSearchQuery);
