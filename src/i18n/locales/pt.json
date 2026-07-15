@@ -7884,6 +7884,25 @@
     "title": "Aviso de Expiração de Sessão"
   },
   "sessions": {
+    "completion": {
+      "title": "Completar sessão",
+      "subtitle": "Registe a duração real, consultor principal e presenças. Estes campos alimentam o relatório de impacto.",
+      "actualDuration": "Duração real (min)",
+      "primaryConsultant": "Consultor principal",
+      "template": "Modelo de sessão (opcional)",
+      "attendance": "Presenças",
+      "attended": "Presente",
+      "absent": "Ausente",
+      "excused": "Justificado",
+      "unknown": "Desconhecido",
+      "noParticipants": "Nenhum participante convidado registado.",
+      "notes": "Notas",
+      "decisions": "Decisões",
+      "submit": "Marcar como completada",
+      "success": "Sessão marcada como completada",
+      "durationRequired": "Duração real obrigatória (> 0)",
+      "consultantRequired": "Consultor principal obrigatório"
+    },
     "actionItemCreated": "Item de ação criado",
     "actionItemsFromSession": "Itens de Ação desta Sessão",
     "actions": "Ações",

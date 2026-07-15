@@ -7884,6 +7884,25 @@
     "title": "Session Timeout Warning"
   },
   "sessions": {
+    "completion": {
+      "title": "Complete session",
+      "subtitle": "Record actual duration, primary consultant, and attendance. These fields power the impact report.",
+      "actualDuration": "Actual duration (min)",
+      "primaryConsultant": "Primary consultant",
+      "template": "Session template (optional)",
+      "attendance": "Attendance",
+      "attended": "Attended",
+      "absent": "Absent",
+      "excused": "Excused",
+      "unknown": "Unknown",
+      "noParticipants": "No invited participants recorded.",
+      "notes": "Notes",
+      "decisions": "Decisions",
+      "submit": "Mark as completed",
+      "success": "Session marked as completed",
+      "durationRequired": "Actual duration is required (> 0)",
+      "consultantRequired": "Primary consultant is required"
+    },
     "actionItemCreated": "Action item created",
     "actionItemsFromSession": "Action Items from this Session",
     "actions": "Actions",
