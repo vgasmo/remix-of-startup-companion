@@ -40,6 +40,7 @@ import { OpsActionPrompts } from '@/components/backoffice/OpsActionPrompts';
 import { ContractLifecycleHub } from '@/components/admin/ContractLifecycleHub';
 import { AdminArchiveBackupTab } from '@/components/admin/AdminArchiveBackupTab';
 import { FounderRequestsInbox } from '@/components/staff/FounderRequestsInbox';
+import { StartupChangeRequestsInbox } from '@/components/admin/StartupChangeRequestsInbox';
 
 const STAGES: StartupStage[] = ['ideation', 'validation', 'mvp', 'growth', 'scale'];
 const PRIORITY_LEVELS: WorkspacePriority[] = ['star', 'high', 'standard', 'maintenance'];
