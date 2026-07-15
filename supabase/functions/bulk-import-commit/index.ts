@@ -63,32 +63,36 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const batchId = body?.batch_id as string | undefined;
     const overwriteExisting = body?.overwrite_existing === true; // admin opt-in
+    const dryRun = body?.dry_run === true;
+    const rowIdsAllowlist: string[] | null = Array.isArray(body?.row_ids) && body.row_ids.length > 0
+      ? body.row_ids.map((v: unknown) => String(v))
+      : null;
+    const requireAuthorization = body?.require_authorization !== false; // default ON
     if (!batchId) return jsonResponse({ error: "batch_id required" }, 400);
 
-    // Batch must have a programme assigned (no orphan workspaces).
+    // Batch must have a programme assigned (no orphan workspaces) UNLESS
+    // per-row programme_mapping is provided in edited_json.
     const { data: batch, error: batchErr } = await admin
       .from("bulk_import_batches")
       .select("id, program_id")
       .eq("id", batchId)
       .single();
     if (batchErr || !batch) return jsonResponse({ error: "Batch not found" }, 404);
-    if (!batch.program_id) {
-      return jsonResponse({
-        error: "program_required",
-        message: "This batch has no programme assigned. Pick a programme on the upload screen before committing.",
-      }, 400);
+    const batchProgramId = (batch.program_id as string | null) ?? null;
+
+    if (!dryRun) {
+      await admin.from("bulk_import_batches").update({ status: "committing" }).eq("id", batchId);
     }
-    const batchProgramId = batch.program_id as string;
 
-    await admin.from("bulk_import_batches").update({ status: "committing" }).eq("id", batchId);
-
-    // Fetch all selected, ready-to-commit rows
-    const { data: rows, error: rowsErr } = await admin
+    // Fetch selected, ready-to-commit rows (optionally narrowed by allowlist).
+    let rowsQuery = admin
       .from("bulk_import_rows")
       .select("*")
       .eq("batch_id", batchId)
       .eq("selected", true)
       .in("status", ["will_create", "will_update"]);
+    if (rowIdsAllowlist) rowsQuery = rowsQuery.in("id", rowIdsAllowlist);
+    const { data: rows, error: rowsErr } = await rowsQuery;
 
     if (rowsErr) return jsonResponse({ error: rowsErr.message }, 500);
 
@@ -102,13 +106,47 @@ Deno.serve(async (req) => {
     let committedCount = 0;
     let failedCount = 0;
     const errors: { row_id: string; error: string }[] = [];
+    const plannedWrites: Array<{
+      row_id: string;
+      action: "create_workspace" | "reuse_workspace" | "create_contract" | "update_contract";
+      program_id: string | null;
+      incubation_type_id: string | null;
+      startup_name: string;
+      contract_number: string | null;
+    }> = [];
 
     for (const row of rows || []) {
       try {
-        const data = (row.edited_json || row.extracted_json) as ExtractedData;
+        const data = (row.edited_json || row.extracted_json) as ExtractedData & {
+          programme_mapping?: {
+            program_id?: string | null;
+            incubation_type_id?: string | null;
+          };
+        };
         if (!data?.startup_name?.trim()) {
           throw new Error("startup_name is required");
         }
+
+        // Authorization gate — refuse rows that have not been explicitly
+        // marked commit_authorized by an operator (dry-run bypasses this,
+        // so reviewers can preview writes before flipping the flag).
+        if (!dryRun && requireAuthorization && row.commit_authorized !== true) {
+          throw new Error("commit_authorized=false — row not approved for commit");
+        }
+
+        // Per-row programme override from edited_json.programme_mapping wins
+        // over the batch-level program_id. Every row must resolve to SOME
+        // programme; otherwise we refuse to create an orphan workspace.
+        const rowProgramId =
+          (data.programme_mapping?.program_id as string | null | undefined) ??
+          batchProgramId;
+        if (!rowProgramId) {
+          throw new Error(
+            "program_required — no programme_mapping on row and batch has no program_id",
+          );
+        }
+        const rowIncubationOverride =
+          (data.programme_mapping?.incubation_type_id as string | null | undefined) ?? null;
 
         // 1) Resolve or create startup
         let startupId = row.matched_startup_id as string | null;
@@ -133,10 +171,10 @@ Deno.serve(async (req) => {
           fillIfEmpty("main_contact_name", data.main_contact_name);
           fillIfEmpty("main_contact_email", data.main_contact_email);
           fillIfEmpty("main_contact_phone", data.main_contact_phone);
-          if (Object.keys(updates).length > 0) {
+          if (!dryRun && Object.keys(updates).length > 0) {
             await admin.from("startups").update(updates).eq("id", startupId);
           }
-        } else {
+        } else if (!dryRun) {
           const { data: newStartup, error: createErr } = await admin
             .from("startups")
             .insert({
@@ -153,38 +191,42 @@ Deno.serve(async (req) => {
           startupId = newStartup.id;
         }
 
-        // 2) Resolve or create workspace — programme is REQUIRED.
+        // 2) Resolve or create workspace — programme is REQUIRED (row-level override wins).
         let workspaceId = row.matched_workspace_id as string | null;
+        let workspaceAction: "create_workspace" | "reuse_workspace" = "reuse_workspace";
         if (!workspaceId) {
-          const { data: newWs, error: wsErr } = await admin
-            .from("workspaces")
-            .insert({
-              startup_id: startupId,
-              program_id: batchProgramId, // never orphan
-              status: "imported_unclaimed",
-              needs_onboarding: false, // historical contract — already onboarded
-              stage: "ideation",
-            })
-            .select("id")
-            .single();
-          if (wsErr || !newWs) throw new Error(`Workspace create failed: ${wsErr?.message}`);
-          workspaceId = newWs.id;
+          workspaceAction = "create_workspace";
+          if (!dryRun) {
+            const { data: newWs, error: wsErr } = await admin
+              .from("workspaces")
+              .insert({
+                startup_id: startupId,
+                program_id: rowProgramId, // never orphan
+                status: "imported_unclaimed",
+                needs_onboarding: false, // historical contract — already onboarded
+                stage: "ideation",
+              })
+              .select("id")
+              .single();
+            if (wsErr || !newWs) throw new Error(`Workspace create failed: ${wsErr?.message}`);
+            workspaceId = newWs.id;
+          }
         } else {
-          // If matched workspace has no programme, attach the batch programme
+          // If matched workspace has no programme, attach the row programme
           // so we never end up with orphan workspaces post-import.
           const { data: ws } = await admin
             .from("workspaces")
             .select("program_id")
             .eq("id", workspaceId)
             .maybeSingle();
-          if (ws && !ws.program_id) {
-            await admin.from("workspaces").update({ program_id: batchProgramId }).eq("id", workspaceId);
+          if (!dryRun && ws && !ws.program_id) {
+            await admin.from("workspaces").update({ program_id: rowProgramId }).eq("id", workspaceId);
           }
         }
 
-        // 3) Resolve typology
-        let incubationTypeId: string | null = null;
-        if (data.typology_name) {
+        // 3) Resolve typology — explicit override from programme_mapping wins.
+        let incubationTypeId: string | null = rowIncubationOverride;
+        if (!incubationTypeId && data.typology_name) {
           const key = data.typology_name.toLowerCase().trim();
           incubationTypeId = typologyByName.get(key) || null;
           // Fuzzy fallback: contains
@@ -254,7 +296,8 @@ Deno.serve(async (req) => {
         // Idempotency: if the same contract_number already exists for this
         // workspace, link/update instead of creating a duplicate.
         let contractId: string | null = null;
-        if (data.contract_number) {
+        let contractAction: "create_contract" | "update_contract" = "create_contract";
+        if (data.contract_number && workspaceId) {
           const { data: existing } = await admin
             .from("startup_contracts")
             .select("id")
@@ -263,18 +306,21 @@ Deno.serve(async (req) => {
             .maybeSingle();
           if (existing?.id) {
             contractId = existing.id;
-            // Always refresh the PDF path; only overwrite full payload on admin opt-in
-            const updatePayload = overwriteExisting
-              ? contractPayload
-              : { contract_pdf_path: contractPdfPath, document_url: documentUrl, pricing_snapshot_json: { ...pricingSnapshot, pdf_bucket: pdfBucket } };
-            const { error: upErr } = await admin
-              .from("startup_contracts")
-              .update(updatePayload)
-              .eq("id", contractId);
-            if (upErr) throw new Error(`Contract update failed: ${upErr.message}`);
+            contractAction = "update_contract";
+            if (!dryRun) {
+              // Always refresh the PDF path; only overwrite full payload on admin opt-in
+              const updatePayload = overwriteExisting
+                ? contractPayload
+                : { contract_pdf_path: contractPdfPath, document_url: documentUrl, pricing_snapshot_json: { ...pricingSnapshot, pdf_bucket: pdfBucket } };
+              const { error: upErr } = await admin
+                .from("startup_contracts")
+                .update(updatePayload)
+                .eq("id", contractId);
+              if (upErr) throw new Error(`Contract update failed: ${upErr.message}`);
+            }
           }
         }
-        if (!contractId) {
+        if (!contractId && !dryRun) {
           const { data: newContract, error: cErr } = await admin
             .from("startup_contracts")
             .insert(contractPayload)
@@ -284,37 +330,61 @@ Deno.serve(async (req) => {
           contractId = newContract.id;
         }
 
-        await admin.from("bulk_import_rows").update({
-          status: "committed",
-          created_contract_id: contractId,
-          matched_startup_id: startupId,
-          matched_workspace_id: workspaceId,
-          error_message: null,
-        }).eq("id", row.id);
+        // Record the planned/actual write for reviewer output.
+        plannedWrites.push({
+          row_id: row.id,
+          action: dryRun
+            ? (contractAction === "update_contract" ? "update_contract" : (workspaceAction === "create_workspace" ? "create_workspace" : "create_contract"))
+            : contractAction,
+          program_id: rowProgramId,
+          incubation_type_id: incubationTypeId,
+          startup_name: data.startup_name.trim(),
+          contract_number: data.contract_number || null,
+        });
+
+        if (!dryRun) {
+          await admin.from("bulk_import_rows").update({
+            status: "committed",
+            created_contract_id: contractId,
+            matched_startup_id: startupId,
+            matched_workspace_id: workspaceId,
+            error_message: null,
+            committed_at: new Date().toISOString(),
+            committed_by: userData.user.id,
+          }).eq("id", row.id);
+        }
 
         committedCount++;
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Unknown error";
         failedCount++;
         errors.push({ row_id: row.id, error: msg });
-        await admin.from("bulk_import_rows").update({
-          status: "error",
-          error_message: msg,
-        }).eq("id", row.id);
+        if (!dryRun) {
+          await admin.from("bulk_import_rows").update({
+            status: "error",
+            error_message: msg,
+          }).eq("id", row.id);
+        }
       }
     }
 
-    await admin.from("bulk_import_batches").update({
-      status: "completed",
-      committed_count: committedCount,
-      failed_count: failedCount,
-      completed_at: new Date().toISOString(),
-    }).eq("id", batchId);
+    if (!dryRun) {
+      await admin.from("bulk_import_batches").update({
+        status: "completed",
+        committed_count: committedCount,
+        failed_count: failedCount,
+        completed_at: new Date().toISOString(),
+      }).eq("id", batchId);
+    }
 
     return jsonResponse({
       success: true,
-      committed: committedCount,
+      dry_run: dryRun,
+      committed: dryRun ? 0 : committedCount,
+      planned: dryRun ? committedCount : undefined,
       failed: failedCount,
+      row_count: (rows || []).length,
+      planned_writes: plannedWrites,
       errors,
     });
   } catch (e) {
