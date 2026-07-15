@@ -11,7 +11,16 @@ import { getFunnelStageLabel } from '@/lib/stageLabels';
 const DEFAULT_WIN_PROBABILITY: Record<string, number> = {
   new: 5, first_contact_booked: 10, met: 20, qualified: 40,
   proposal_sent: 60, negotiating: 75, contracted: 95,
+  // Late-funnel intake / signing stages default to >0 so weighted forecast
+  // doesn't zero out the deals closest to closing.
+  intake_requested: 80, intake_in_progress: 82, intake_submitted: 85,
+  review_pending: 87, changes_requested: 78,
+  approved_for_signature: 90, sent_for_signature: 95,
+  incubating: 100, accelerating: 100,
 };
+
+// Terminal stages (lost/dropped) — must NOT inflate pipeline totals.
+const TERMINAL_STAGES = new Set(['rejected', 'archived', 'lost', 'churned']);
 
 interface PipelineForecastCardProps {
   pipeline: Record<string, CrmInboxItem[]> | undefined;
@@ -30,6 +39,7 @@ export function PipelineForecastCard({ pipeline }: PipelineForecastCardProps) {
     const byStage: { stage: string; value: number; weighted: number; count: number }[] = [];
 
     for (const stage of PIPELINE_STAGES) {
+      if (TERMINAL_STAGES.has(stage)) continue; // exclude lost/dropped from forecast
       const items = pipeline[stage] || [];
       let stageValue = 0;
       let stageWeighted = 0;

@@ -285,3 +285,31 @@ export function useUpdateBookingStatus() {
     },
   });
 }
+
+/**
+ * FIX (N4): expose the SECURITY DEFINER `get_mentor_busy_slots` RPC so that
+ * cross-founder slot conflicts are hidden from the picker (no PII returned —
+ * only busy_date / start_time / end_time). Founder A booking a slot
+ * disappears from founder B's picker instead of surfacing as a 23505 after
+ * submit.
+ */
+export function useMentorBusySlots(mentorId: string | undefined, from?: string, to?: string) {
+  return useQuery({
+    queryKey: ['mentor-busy-slots', mentorId, from, to],
+    enabled: !!mentorId,
+    queryFn: async () => {
+      const now = new Date();
+      const defaultFrom = from ?? now.toISOString().slice(0, 10);
+      const inSixty = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
+      const defaultTo = to ?? inSixty.toISOString().slice(0, 10);
+      const { data, error } = await supabase.rpc('get_mentor_busy_slots', {
+        p_mentor_id: mentorId!,
+        p_from: defaultFrom,
+        p_to: defaultTo,
+      });
+      if (error) throw error;
+      return (data as Array<{ busy_date: string; start_time: string; end_time: string }>) || [];
+    },
+    staleTime: 30_000,
+  });
+}

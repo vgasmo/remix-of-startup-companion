@@ -172,9 +172,9 @@ export function FounderRequestsPanel({ workspaceId }: { workspaceId: string }) {
                   </Badge>
                 </div>
                 <p className="text-sm whitespace-pre-wrap">{r.description}</p>
-                {r.staff_notes && (
+                {isStaff && r.staff_notes && (
                   <div className="text-xs bg-muted p-2 rounded">
-                    <p className="font-semibold mb-0.5">{lang === 'pt' ? 'Notas da equipa' : 'Staff notes'}</p>
+                    <p className="font-semibold mb-0.5">{lang === 'pt' ? 'Notas internas' : 'Internal notes'}</p>
                     <p className="whitespace-pre-wrap">{r.staff_notes}</p>
                   </div>
                 )}
