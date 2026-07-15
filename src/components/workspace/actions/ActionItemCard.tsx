@@ -146,7 +146,7 @@ export const ActionItemCard = memo(function ActionItemCard({
       <div className={`
         group bg-background rounded-lg border p-3 space-y-2 transition-all
         ${isOverdue ? 'border-destructive/50 bg-destructive/5' : ''}
-        ${isDueToday ? 'border-[hsl(var(--warning))]/50 bg-[hsl(var(--warning))]/50' : ''}
+        ${isDueToday ? 'border-[hsl(var(--warning))]/40 bg-[hsl(var(--warning))]/5' : ''}
         ${isSelected ? 'ring-2 ring-primary/50 bg-primary/5' : ''}
       `}>
         <div className="flex items-start justify-between gap-2">

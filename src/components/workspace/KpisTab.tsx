@@ -314,7 +314,13 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
       });
       
       notify.success(t('kpis.kpiSaved'));
-      triggerKpiCelebration();
+      // G1: was firing on every manual save. Celebrate only the first save of
+      // the current month (per KPI+month), so it marks a real milestone.
+      const celebrateKey = `sl-kpi-celebrated-${workspaceId}-${kpiId}-${selectedMonthStr}`;
+      if (!localStorage.getItem(celebrateKey)) {
+        localStorage.setItem(celebrateKey, '1');
+        triggerKpiCelebration();
+      }
     } catch {
       notify.error(t('kpis.failedToSave'));
     }
@@ -434,7 +440,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
         <Card className={cn(
           "border transition-colors duration-300",
           progressInfo.percent === 100 
-            ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/50" 
+            ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10" 
             : "border-primary/20 bg-primary/5"
         )}>
           <CardContent className="py-4">
@@ -657,7 +663,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
                     key={wk.id}
                     className={cn(
                       "py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 transition-colors",
-                      isSaved && "bg-[hsl(var(--success))]/50"
+                      isSaved && "bg-[hsl(var(--success))]/10"
                     )}
                   >
                     {/* KPI name + context */}
