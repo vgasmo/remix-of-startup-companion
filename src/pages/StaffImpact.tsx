@@ -18,13 +18,15 @@ type ImpactAggregates = {
   hours: { meeting: number; manual: number };
   startups: { supported: number };
   avg_duration: number | null;
+  no_contact_30d?: number;
   data_completeness: {
     missing_duration: number;
     missing_consultant: number;
     missing_participants: number;
-    completeness_pct: number;
+    completeness_pct: number | null;
   };
 };
+
 
 type ToolAdoptionRow = {
   tool: string;
