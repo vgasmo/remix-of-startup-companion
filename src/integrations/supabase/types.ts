@@ -9945,6 +9945,10 @@ export type Database = {
         Returns: undefined
       }
       can_access_backoffice: { Args: never; Returns: boolean }
+      can_edit_financial_plan: {
+        Args: { _workspace_id: string }
+        Returns: boolean
+      }
       can_edit_workspace: {
         Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
