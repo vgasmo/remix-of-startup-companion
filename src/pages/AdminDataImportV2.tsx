@@ -26,6 +26,7 @@ import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { notify } from '@/lib/notify';
 import { cn } from '@/lib/utils';
 import { ReconcilerCanaryPanel } from '@/components/admin/ReconcilerCanaryPanel';
+import { CensusRunnerPanel } from '@/components/admin/CensusRunnerPanel';
 
 type Step = 'upload' | 'mapping' | 'reconcile' | 'commit' | 'results';
 type ImportSource = 'hubspot' | 'phc';
