@@ -488,17 +488,19 @@ async function loadProgramConfig(programId: string): Promise<ProgramSetupDraft['
   let draftWeeks: DraftWeek[] = [];
 
   if (isAcceleration) {
-    const { data: gates } = await supabase
+    const { data: gates, error: gatesErr } = await supabase
       .from('program_gates')
       .select('*')
       .eq('program_id', programId)
       .order('sort_order');
+    if (gatesErr) bail('program_gates', gatesErr);
 
-    const { data: weeks } = await supabase
+    const { data: weeks, error: weeksErr } = await supabase
       .from('program_weeks')
       .select('*')
       .eq('program_id', programId)
       .order('week_number');
+    if (weeksErr) bail('program_weeks', weeksErr);
 
     draftGates = (gates || []).map((g) => ({
       id: g.id,
