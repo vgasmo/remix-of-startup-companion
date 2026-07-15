@@ -208,15 +208,26 @@ Deno.serve(async (req) => {
       if (svc !== '(unset)' && !knownServices.has(svc.toLowerCase())) unmappedServices.push({ service: svc, count });
     }
 
-    // Workspaces breakdown
-    const { data: wsRows } = await sbSvc.from('workspaces').select('access_status, program_id');
-    const wsByStatus = new Map<string, number>();
-    let wsWithoutProgram = 0;
-    for (const r of ((wsRows ?? []) as Array<{ access_status: string | null; program_id: string | null }>)) {
-      const k = r.access_status ?? '(null)';
-      wsByStatus.set(k, (wsByStatus.get(k) ?? 0) + 1);
-      if (!r.program_id) wsWithoutProgram++;
+    // Workspaces breakdown — canonical column is `status`, not `access_status`.
+    const { data: wsRows, error: wsErr } = await sbSvc
+      .from('workspaces')
+      .select('status, program_id, engagement_state, archived_at');
+    if (wsErr) {
+      return new Response(JSON.stringify({ error: 'census_query_failed', source: 'workspaces', message: wsErr.message }), { status: 500, headers: jsonHeaders });
     }
+    const wsByStatus = new Map<string, number>();
+    const wsByEngagement = new Map<string, number>();
+    let wsWithoutProgram = 0;
+    let wsArchived = 0;
+    for (const r of ((wsRows ?? []) as Array<{ status: string | null; program_id: string | null; engagement_state: string | null; archived_at: string | null }>)) {
+      const k = r.status ?? '(null)';
+      wsByStatus.set(k, (wsByStatus.get(k) ?? 0) + 1);
+      const e = r.engagement_state ?? '(null)';
+      wsByEngagement.set(e, (wsByEngagement.get(e) ?? 0) + 1);
+      if (!r.program_id) wsWithoutProgram++;
+      if (r.archived_at) wsArchived++;
+    }
+
 
     // Contracts / intakes / users
     const { count: startupsTotal } = await sbSvc.from('startups').select('*', { count: 'exact', head: true });
@@ -270,9 +281,12 @@ Deno.serve(async (req) => {
     };
 
     const workspace_breakdown = {
-      by_access_status: Object.fromEntries(wsByStatus.entries()),
+      by_status: Object.fromEntries(wsByStatus.entries()),
+      by_engagement_state: Object.fromEntries(wsByEngagement.entries()),
       without_program: wsWithoutProgram,
+      archived: wsArchived,
     };
+
 
     const raw = {
       phc_extract: phcExtractCounts,

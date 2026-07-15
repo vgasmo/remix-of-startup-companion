@@ -100,13 +100,25 @@ export function ConsultorPortfolioView({ items, ownerId = 'all' }: ConsultorPort
     });
   }, [items, t, allConsultants, ownerId]);
 
+  // Health is an enum (thriving/healthy/stable/at_risk/critical) OR a numeric
+  // score string on legacy rows. parseInt on the enum returned NaN and rendered
+  // healthy startups in the destructive color (audit P2-1).
   const getHealthColor = (score: string | null) => {
     if (!score) return 'bg-muted text-muted-foreground';
-    const n = parseInt(score);
-    if (n >= 70) return 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ';
-    if (n >= 40) return 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ';
-    return 'bg-destructive/10 text-destructive ';
+    const s = score.toLowerCase();
+    if (s === 'thriving' || s === 'healthy') return 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ';
+    if (s === 'stable') return 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ';
+    if (s === 'at_risk') return 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ';
+    if (s === 'critical') return 'bg-destructive/10 text-destructive ';
+    const n = Number.parseInt(score, 10);
+    if (Number.isFinite(n)) {
+      if (n >= 70) return 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] ';
+      if (n >= 40) return 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] ';
+      return 'bg-destructive/10 text-destructive ';
+    }
+    return 'bg-muted text-muted-foreground';
   };
+
 
   return (
     <div className="space-y-3">

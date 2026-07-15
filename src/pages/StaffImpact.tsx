@@ -18,13 +18,15 @@ type ImpactAggregates = {
   hours: { meeting: number; manual: number };
   startups: { supported: number };
   avg_duration: number | null;
+  no_contact_30d?: number;
   data_completeness: {
     missing_duration: number;
     missing_consultant: number;
     missing_participants: number;
-    completeness_pct: number;
+    completeness_pct: number | null;
   };
 };
+
 
 type ToolAdoptionRow = {
   tool: string;
@@ -122,6 +124,8 @@ export default function StaffImpact() {
   });
 
   const agg = aggregates.data;
+  const aggError = aggregates.error as Error | null;
+
   const tools = adoption.data ?? [];
 
   const dqAlerts = useMemo(() => {
@@ -140,6 +144,14 @@ export default function StaffImpact() {
   return (
     <AppLayout>
       <div className="space-y-6 max-w-7xl mx-auto">
+        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
+          <div className="font-medium">
+            {t('impact.betaTitle', 'Beta — dados em reparação')}
+          </div>
+          <div className="text-xs text-amber-900/80 dark:text-amber-100/80 mt-0.5">
+            {t('impact.betaSubtitle', 'Sessões marcadas como completadas sem evidência foram colocadas em quarentena e revertidas para "agendada". Os números refletem apenas evidência real.')}
+          </div>
+        </div>
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-semibold flex items-center gap-2">
@@ -150,6 +162,7 @@ export default function StaffImpact() {
               {t('impact.subtitle', 'Métricas reais — sem estimativas ou proxies.')}
             </p>
           </div>
+
           <div className="flex items-end gap-2">
             <div>
               <Label htmlFor="from" className="text-xs">{t('impact.from', 'De')}</Label>
@@ -186,6 +199,23 @@ export default function StaffImpact() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24 rounded-2xl" />)}
               </div>
+            ) : aggError ? (
+              <Card className="border-destructive/50 bg-destructive/5">
+                <CardContent className="py-6 space-y-3 text-sm">
+                  <div className="flex items-center gap-2 text-destructive font-medium">
+                    <AlertTriangle className="h-4 w-4" />
+                    {t('impact.errorTitle', 'Falha ao carregar métricas')}
+                  </div>
+                  <div className="text-xs text-muted-foreground break-words">{aggError.message}</div>
+                  <button
+                    type="button"
+                    onClick={() => aggregates.refetch()}
+                    className="text-xs underline text-primary"
+                  >
+                    {t('impact.retry', 'Tentar novamente')}
+                  </button>
+                </CardContent>
+              </Card>
             ) : !agg ? (
               <Card><CardContent className="py-8 text-sm text-muted-foreground text-center">
                 {t('impact.noData', 'Sem dados no período selecionado.')}
@@ -203,14 +233,14 @@ export default function StaffImpact() {
                   <MetricCard
                     icon={Clock}
                     label={t('impact.meetingHours', 'Horas de sessão')}
-                    value={agg.hours.meeting.toFixed(1) + 'h'}
-                    hint={`${agg.hours.manual.toFixed(1)}h ${t('impact.manualHours', 'manuais')}`}
+                    value={(agg.hours?.meeting ?? 0).toFixed(1) + 'h'}
+                    hint={`${(agg.hours?.manual ?? 0).toFixed(1)}h ${t('impact.manualHours', 'manuais')}`}
                     source="sum(sessions.actual_duration_minutes) + time_entries (sem duplicação)"
                   />
                   <MetricCard
                     icon={Users}
                     label={t('impact.startupsSupported', 'Startups apoiadas')}
-                    value={agg.startups.supported}
+                    value={agg.startups?.supported ?? 0}
                     source="distinct sessions.workspace_id no período"
                   />
                   <MetricCard
@@ -236,7 +266,9 @@ export default function StaffImpact() {
                   <MetricCard
                     icon={Info}
                     label={t('impact.completenessPct', 'Completude')}
-                    value={`${agg.data_completeness.completeness_pct.toFixed(0)}%`}
+                    value={agg.data_completeness?.completeness_pct != null
+                      ? `${agg.data_completeness.completeness_pct.toFixed(0)}%`
+                      : '—'}
                     hint={t('impact.completenessHint', 'sessões com duração + consultor + participantes')}
                     source="1 - (missing / total)"
                   />
@@ -244,6 +276,7 @@ export default function StaffImpact() {
               </>
             )}
           </TabsContent>
+
 
           <TabsContent value="quality" className="space-y-3">
             {dqAlerts.length === 0 ? (

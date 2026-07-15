@@ -3,7 +3,7 @@
 // allowlist of funnel_item IDs. Supports plan (dry_run) and commit modes and
 // records every action in `activity_log` for operator sign-off.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -39,18 +39,49 @@ function safeParseJson(raw: string): { ok: true; value: any } | { ok: false; err
   catch (e) { return { ok: false, error: (e as Error).message }; }
 }
 
+// Deterministic client-side plan fingerprint. Prevents committing after the
+// operator edits the IDs or maps between plan and commit (audit P0-2). The
+// server should also enforce its own hash — this is defense-in-depth on the UI.
+async function computePlanHash(payload: unknown): Promise<string> {
+  const text = JSON.stringify(payload);
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function normalizePlanInput(idList: string[], pm: unknown, cm: unknown) {
+  return {
+    ids: [...idList].sort(),
+    program_map: pm,
+    classification_map: cm,
+  };
+}
+
 export function ReconcilerCanaryPanel() {
   const [ids, setIds] = useState('');
   const [programMap, setProgramMap] = useState('{}');
   const [classificationMap, setClassificationMap] = useState('{}');
   const [loading, setLoading] = useState<false | 'plan' | 'commit'>(false);
   const [result, setResult] = useState<RunResult | null>(null);
+  const [planHash, setPlanHash] = useState<string | null>(null);
+  const [currentHash, setCurrentHash] = useState<string | null>(null);
 
   const { mutate: logActivity } = useLogActivity();
   const { confirm, dialogProps } = useConfirmDialog();
 
   const idList = parseIds(ids);
   const canRun = idList.length > 0 && idList.length <= 5;
+
+  // Live-recompute the current input hash so the commit button can compare it
+  // against the frozen plan hash. Any drift disables commit.
+  useEffect(() => {
+    const pm = safeParseJson(programMap);
+    const cm = safeParseJson(classificationMap);
+    if (!pm.ok || !cm.ok || idList.length === 0) { setCurrentHash(null); return; }
+    let cancelled = false;
+    computePlanHash(normalizePlanInput(idList, pm.value, cm.value)).then(h => { if (!cancelled) setCurrentHash(h); });
+    return () => { cancelled = true; };
+  }, [ids, programMap, classificationMap]);
+
 
   const runReconciler = async (dryRun: boolean) => {
     if (!canRun) { notify.error('Provide 1–5 funnel_item IDs'); return; }
@@ -59,8 +90,23 @@ export function ReconcilerCanaryPanel() {
     if (!pm.ok) { notify.error(`service_program_map JSON: ${(pm as { error: string }).error}`); return; }
     if (!cm.ok) { notify.error(`service_classification_map JSON: ${(cm as { error: string }).error}`); return; }
 
+    // Guard: commit requires an existing plan hash that matches the current input.
+    if (!dryRun) {
+      const liveHash = await computePlanHash(normalizePlanInput(idList, pm.value, cm.value));
+      if (!planHash || planHash !== liveHash) {
+        notify.error('Plan/commit drift detected — re-run plan before committing.');
+        return;
+      }
+      if (!result || result.dry_run !== true) {
+        notify.error('Run a dry-run plan before committing.'); return;
+      }
+      if (result.conflicts > 0 || result.errors > 0) {
+        notify.error('Plan has conflicts or errors — commit blocked.'); return;
+      }
+    }
+
     setLoading(dryRun ? 'plan' : 'commit');
-    setResult(null);
+    if (dryRun) { setResult(null); setPlanHash(null); }
     try {
       const body: Record<string, unknown> = {
         funnel_item_ids: idList,
@@ -74,11 +120,17 @@ export function ReconcilerCanaryPanel() {
       if (error) throw error;
       setResult(data);
 
+      if (dryRun && data) {
+        const hash = await computePlanHash(normalizePlanInput(idList, pm.value, cm.value));
+        setPlanHash(hash);
+      }
+
       logActivity({
         action: dryRun ? 'reconciler.canary.plan' : 'reconciler.canary.commit',
         entityType: 'reconciler_run',
         metadata: {
           funnel_item_ids: idList,
+          plan_hash: planHash ?? undefined,
           total_rows: data?.total_rows ?? 0,
           planned_writes: data?.planned_writes ?? 0,
           noop: data?.noop ?? 0,
@@ -87,7 +139,13 @@ export function ReconcilerCanaryPanel() {
         },
       });
 
-      notify.success(dryRun ? 'Plan complete' : 'Commit complete');
+      if (dryRun) {
+        notify.success('Plan complete');
+      } else {
+        const committedErrors = (data?.errors ?? 0) > 0;
+        if (committedErrors) notify.error(`Commit completed with ${data?.errors} errors`);
+        else notify.success('Commit complete');
+      }
     } catch (e) {
       const msg = (e as Error).message;
       notify.error(msg);
@@ -101,15 +159,21 @@ export function ReconcilerCanaryPanel() {
     }
   };
 
+  const planReady = !!result && result.dry_run === true;
+  const planClean = planReady && (result?.conflicts ?? 0) === 0 && (result?.errors ?? 0) === 0;
+  const hashMatches = !!planHash && !!currentHash && planHash === currentHash;
+  const commitDisabled = !canRun || !!loading || !planClean || !hashMatches;
+
   const onCommitClick = () => {
     confirm({
       title: 'Commit reconciler canary?',
-      description: `This will attempt atomic writes for ${idList.length} authorized funnel_item ID(s). Requires RECONCILER_WRITE_MODE=enabled. This action is logged.`,
+      description: `This will attempt atomic writes for ${idList.length} authorized funnel_item ID(s). Requires RECONCILER_WRITE_MODE=enabled AND system_settings.reconciler.write_mode.enabled=true. Plan hash: ${planHash?.slice(0, 12)}…`,
       confirmLabel: 'Commit',
       variant: 'warning',
       onConfirm: () => runReconciler(false),
     });
   };
+
 
   return (
     <>
@@ -144,16 +208,23 @@ export function ReconcilerCanaryPanel() {
             </div>
           </div>
 
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center">
             <Button variant="outline" disabled={!canRun || !!loading} onClick={() => runReconciler(true)}>
               {loading === 'plan' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <PlayCircle className="h-4 w-4 mr-2" />}
               Run plan (dry-run)
             </Button>
-            <Button variant="destructive" disabled={!canRun || !!loading || !result || result.dry_run === false} onClick={onCommitClick}>
+            <Button variant="destructive" disabled={commitDisabled} onClick={onCommitClick}>
               {loading === 'commit' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
               Commit authorized IDs
             </Button>
+            {planHash && (
+              <div className="text-[10px] font-mono text-muted-foreground">
+                plan_hash: {planHash.slice(0, 12)}…
+                {!hashMatches && <span className="ml-2 text-destructive">drift — re-plan required</span>}
+              </div>
+            )}
           </div>
+
 
           {result && (
             <Alert>
