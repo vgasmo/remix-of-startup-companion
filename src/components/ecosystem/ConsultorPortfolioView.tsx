@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -24,16 +26,50 @@ interface ConsultorGroup {
   items: EcosystemItem[];
 }
 
+function useAllConsultants() {
+  return useQuery({
+    queryKey: ['ecosystem-all-consultants'],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id, role, profile:profiles_safe!inner(id, full_name)')
+        .in('role', ['admin', 'consultor']);
+      if (error) throw error;
+      const map = new Map<string, string>();
+      for (const row of (data ?? []) as Array<{ user_id: string; profile: { full_name: string | null } | null }>) {
+        if (!row.user_id) continue;
+        if (!map.has(row.user_id)) {
+          map.set(row.user_id, row.profile?.full_name || 'Sem nome');
+        }
+      }
+      return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+    },
+  });
+}
+
 export function ConsultorPortfolioView({ items }: ConsultorPortfolioViewProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const { data: allConsultants = [] } = useAllConsultants();
 
   const groups = useMemo(() => {
     const map = new Map<string, ConsultorGroup>();
     const unassignedKey = '__unassigned__';
+    const seen = new Set<string>();
+
+    // Seed groups with every known consultant so users with 0 assignments still appear.
+    for (const c of allConsultants) {
+      map.set(c.id, { id: c.id, name: c.name, items: [] });
+    }
 
     for (const item of items) {
+      // Defensive dedupe: the paginated RPC can emit the same row twice
+      // when many rows share `last_activity_at`, which inflated group counts.
+      if (seen.has(item.id)) continue;
+      seen.add(item.id);
+
       const key = item.owner_id || unassignedKey;
       if (!map.has(key)) {
         map.set(key, {
@@ -53,7 +89,7 @@ export function ConsultorPortfolioView({ items }: ConsultorPortfolioViewProps) {
       if (b.id === unassignedKey) return -1;
       return a.name.localeCompare(b.name);
     });
-  }, [items, t]);
+  }, [items, t, allConsultants]);
 
   const getHealthColor = (score: string | null) => {
     if (!score) return 'bg-muted text-muted-foreground';
