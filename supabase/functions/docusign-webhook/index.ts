@@ -377,6 +377,12 @@ Deno.serve(async (req) => {
         contractId: contract.id, workspaceId: contract.workspace_id,
         source: 'docusign_webhook_completed', operation: 'completed',
       })
+    } else if (status === 'declined' || status === 'voided') {
+      const r = await syncIntakeOnClosed(supabase, contract.id, status as 'declined' | 'voided', null, `docusign_webhook`)
+      await handleLifecycleSyncResult(supabase, r, {
+        contractId: contract.id, workspaceId: contract.workspace_id,
+        source: `docusign_webhook_${status}`, operation: status,
+      })
     }
 
     // === STAFF NOTIFICATION on decline/void (parity with pandadoc-webhook) ===
