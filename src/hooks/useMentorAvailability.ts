@@ -233,14 +233,16 @@ export function useUpdateBookingStatus() {
       } catch { /* ignore */ }
 
       if (status === 'accepted') {
-        // Create session row so it appears in calendars/prep
+        // Create session row so it appears in calendars/prep. Interpret the
+        // booking wall-clock as Europe/Lisbon (canonical) so the session and
+        // any downstream Outlook/Teams sync land at the exact requested time,
+        // regardless of the mentor's browser locale.
         try {
-          const startIso = new Date(
-            `${booking.requested_date}T${booking.requested_start_time}`,
-          ).toISOString();
+          const startTime = booking.requested_start_time.slice(0, 5); // HH:mm
+          const startIso = lisbonWallClockToUtcIso(`${booking.requested_date}T${startTime}`);
           const [sh, sm] = booking.requested_start_time.split(':').map(Number);
           const [eh, em] = booking.requested_end_time.split(':').map(Number);
-          const durationMin = Math.max(30, (eh * 60 + em) - (sh * 60 + sm));
+          const durationMin = Math.max(15, (eh * 60 + em) - (sh * 60 + sm));
           if (booking.workspace_id) {
             await supabase.from('sessions').insert({
               workspace_id: booking.workspace_id,
