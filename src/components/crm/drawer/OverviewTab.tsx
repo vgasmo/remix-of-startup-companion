@@ -760,7 +760,7 @@ function StartupCategorySelector({ workspaceId }: { workspaceId: string }) {
       notify.error(t('common.error'));
     } else {
       notify.success(t('crm.categoryUpdated', { defaultValue: 'Categoria atualizada' }));
-      queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
+      queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
     }
   };
 

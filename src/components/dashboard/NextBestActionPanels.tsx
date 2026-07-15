@@ -142,7 +142,7 @@ export function NextBestActionFounder({
           count: pendingCheckinsCount,
         }),
         ctaLabel: t('nextBestAction.openCheckin', { defaultValue: 'Abrir check-in' }),
-        to: `/workspace/${workspace.id}?tab=checkins`,
+        to: `/workspace/${workspace.id}?tab=overview`,
       };
     }
 
