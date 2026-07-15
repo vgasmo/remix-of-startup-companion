@@ -49,6 +49,7 @@ import { SessionExercisesPicker } from '@/components/sessions/SessionExercisesPi
 import { QualityGateCard } from '@/components/consultor/QualityGateCard';
 import { useAddTranscript } from '@/hooks/useSessionArtifacts';
 import { AddActionItemDialog } from './AddActionItemDialog';
+import { SessionCompletionDialog } from './SessionCompletionDialog';
 import { logger } from '@/lib/logger';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
 
@@ -77,6 +78,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [rescheduleValue, setRescheduleValue] = useState('');
   const [isRescheduling, setIsRescheduling] = useState(false);
+  const [completionOpen, setCompletionOpen] = useState(false);
 
   const updateMutation = useUpdateSession(workspaceId);
   const createActionItem = useCreateActionItem(workspaceId);
@@ -277,9 +279,27 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                     {t('sessions.facilitatorMode', { defaultValue: 'Modo Facilitador' })}
                   </Button>
                 )}
+                {isStaff && canWrite && isPastSession && session.status !== 'completed' && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCompletionOpen(true); }}
+                  >
+                    <CheckCircle2 className="h-4 w-4 mr-1" />
+                    {t('sessions.markAsCompleted', 'Marcar como concluída')}
+                  </Button>
+                )}
+                {session.status === 'completed' && (
+                  <Badge variant="outline" className="gap-1">
+                    <CheckCircle2 className="h-3 w-3 text-[hsl(var(--success))]" />
+                    {t('sessions.statusCompleted', 'Concluída')}
+                  </Badge>
+                )}
               </div>
             </div>
           </DialogHeader>
+
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className={`grid w-full ${isStaff ? 'grid-cols-3' : 'grid-cols-2'}`}>
