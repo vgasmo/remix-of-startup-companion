@@ -376,43 +376,56 @@ export function usePublishProgramDraft() {
 }
 
 // Helper: Load existing program config into draft format
+// P0 fix: previously destructured only `data` and ignored `error` on ~9 queries.
+// A single transient failure produced an empty draft, and the publish path
+// deletes-and-reinserts children from the draft — silently wiping the live
+// program config. Every query now checks `error` and aborts on failure.
 async function loadProgramConfig(programId: string): Promise<ProgramSetupDraft['draft_json']> {
+  const bail = (label: string, err: unknown): never => {
+    throw new Error(`loadProgramConfig(${label}): ${(err as { message?: string })?.message ?? 'unknown error'}`);
+  };
+
   // Load program basics
-  const { data: program } = await supabase
+  const { data: program, error: programErr } = await supabase
     .from('programs')
     .select('*')
     .eq('id', programId)
     .maybeSingle();
+  if (programErr) bail('programs', programErr);
 
 
   const programType = (program?.program_type as ProgramType) || 'incubation';
   const isAcceleration = programType === 'acceleration';
 
   // Load stages
-  const { data: stages } = await supabase
+  const { data: stages, error: stagesErr } = await supabase
     .from('stages')
     .select('*')
     .eq('program_id', programId)
     .order('position');
+  if (stagesErr) bail('stages', stagesErr);
 
   // Load stage KPI defaults
-  const { data: kpiDefaults } = await supabase
+  const { data: kpiDefaults, error: kpiDefaultsErr } = await supabase
     .from('stage_kpi_defaults')
     .select('*, kpi_definition:kpi_definitions(*)')
     .eq('program_id', programId);
+  if (kpiDefaultsErr) bail('stage_kpi_defaults', kpiDefaultsErr);
 
   // Load core KPIs
-  const { data: coreKpis } = await supabase
+  const { data: coreKpis, error: coreKpisErr } = await supabase
     .from('program_core_kpis')
     .select('*, kpi_definition:kpi_definitions(*)')
     .eq('program_id', programId)
     .order('order_index');
+  if (coreKpisErr) bail('program_core_kpis', coreKpisErr);
 
   // Load playbooks
-  const { data: playbooks } = await supabase
+  const { data: playbooks, error: playbooksErr } = await supabase
     .from('playbooks')
     .select('*, items:playbook_items(*)')
     .eq('program_id', programId);
+  if (playbooksErr) bail('playbooks', playbooksErr);
 
   const activeStageKeys = ((stages || [])
     .filter((stage) => stage.is_active ?? true)
@@ -433,12 +446,13 @@ async function loadProgramConfig(programId: string): Promise<ProgramSetupDraft['
   }>;
 
   if (missingPlaybookStages.length > 0) {
-    const { data: globalPlaybooks } = await supabase
+    const { data: globalPlaybooks, error: globalPlaybooksErr } = await supabase
       .from('playbooks')
       .select('*, items:playbook_items(*)')
       .is('program_id', null)
       .eq('is_active', true)
       .in('stage', missingPlaybookStages);
+    if (globalPlaybooksErr) bail('playbooks(global)', globalPlaybooksErr);
 
     if (globalPlaybooks?.length) {
       const fallbackByStage = new Map(
@@ -455,17 +469,19 @@ async function loadProgramConfig(programId: string): Promise<ProgramSetupDraft['
   }
 
   // Load alert rules
-  const { data: alertRules } = await supabase
+  const { data: alertRules, error: alertRulesErr } = await supabase
     .from('program_alert_rules')
     .select('*')
     .eq('program_id', programId);
+  if (alertRulesErr) bail('program_alert_rules', alertRulesErr);
 
   // Load health model
-  const { data: healthModel } = await supabase
+  const { data: healthModel, error: healthModelErr } = await supabase
     .from('program_health_model')
     .select('*')
     .eq('program_id', programId)
     .maybeSingle();
+  if (healthModelErr) bail('program_health_model', healthModelErr);
 
   // Load gates and weeks for acceleration programs
   let draftGates: DraftGate[] = [];
