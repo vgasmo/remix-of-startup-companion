@@ -387,7 +387,6 @@ Deno.serve(async (req) => {
       planned_writes: plannedWrites,
       errors,
     });
-    });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     console.error("bulk-import-commit error:", msg);
