@@ -10424,6 +10424,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_ecosystem_invariants: { Args: never; Returns: Json }
       check_signup_allowed: { Args: { p_email: string }; Returns: boolean }
       claim_startup: { Args: never; Returns: Json }
       cleanup_old_rate_limits: { Args: never; Returns: number }
