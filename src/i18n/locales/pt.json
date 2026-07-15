@@ -4133,6 +4133,8 @@
     "allPrograms": "Todos os Programas",
     "allStages": "Todas as Fases",
     "allTags": "Todas as Tags",
+    "tier": "Tier",
+    "tierChange": "Alterar tier",
     "archiveError": "Erro ao arquivar workspace",
     "archiveWorkspace": "Arquivar Workspace",
     "assignConsultant": "Atribuir...",
