@@ -7272,6 +7272,88 @@ export type Database = {
           },
         ]
       }
+      startup_change_requests: {
+        Row: {
+          applied_at: string | null
+          applied_automatically: boolean
+          created_at: string
+          current_value_json: Json | null
+          field_key: string
+          field_label: string
+          id: string
+          justification: string | null
+          requested_by: string
+          requested_value_json: Json
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          startup_id: string | null
+          status: string
+          updated_at: string
+          workspace_id: string | null
+        }
+        Insert: {
+          applied_at?: string | null
+          applied_automatically?: boolean
+          created_at?: string
+          current_value_json?: Json | null
+          field_key: string
+          field_label: string
+          id?: string
+          justification?: string | null
+          requested_by: string
+          requested_value_json: Json
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          startup_id?: string | null
+          status?: string
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Update: {
+          applied_at?: string | null
+          applied_automatically?: boolean
+          created_at?: string
+          current_value_json?: Json | null
+          field_key?: string
+          field_label?: string
+          id?: string
+          justification?: string | null
+          requested_by?: string
+          requested_value_json?: Json
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          startup_id?: string | null
+          status?: string
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_change_requests_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_change_requests_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_change_requests_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       startup_claim_requests: {
         Row: {
           created_at: string | null
@@ -10377,6 +10459,34 @@ export type Database = {
         Args: { _contract_id: string; _patch: Json; _source: string }
         Returns: Json
       }
+      approve_startup_change_request: {
+        Args: { _notes?: string; _request_id: string }
+        Returns: {
+          applied_at: string | null
+          applied_automatically: boolean
+          created_at: string
+          current_value_json: Json | null
+          field_key: string
+          field_label: string
+          id: string
+          justification: string | null
+          requested_by: string
+          requested_value_json: Json
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          startup_id: string | null
+          status: string
+          updated_at: string
+          workspace_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "startup_change_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       approve_startup_claim: {
         Args: { p_claim_id: string; p_workspace_id: string }
         Returns: undefined
@@ -10768,6 +10878,34 @@ export type Database = {
       }
       reconcile_rollback: { Args: { p_row_id: string }; Returns: Json }
       reconciler_write_enabled: { Args: never; Returns: boolean }
+      reject_startup_change_request: {
+        Args: { _notes?: string; _request_id: string }
+        Returns: {
+          applied_at: string | null
+          applied_automatically: boolean
+          created_at: string
+          current_value_json: Json | null
+          field_key: string
+          field_label: string
+          id: string
+          justification: string | null
+          requested_by: string
+          requested_value_json: Json
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          startup_id: string | null
+          status: string
+          updated_at: string
+          workspace_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "startup_change_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       reject_startup_claim: {
         Args: { p_claim_id: string; p_reason?: string }
         Returns: undefined
