@@ -108,6 +108,14 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
     [sortedItems, page, pageSize],
   );
 
+  // Bulk fetch tier assignments for the paginated workspaces
+  const visibleWorkspaceIds = useMemo(
+    () => paginatedItems.filter((it) => it.item_type === 'workspace' && it.workspace_id)
+      .map((it) => it.workspace_id as string),
+    [paginatedItems],
+  );
+  const { data: tierMap = {} } = useWorkspaceTiers(visibleWorkspaceIds);
+
   // Reset page when pageSize changes
   const safeSetPageSize = (size: number) => {
     setPageSize(size);
