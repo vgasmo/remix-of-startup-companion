@@ -84,17 +84,46 @@ Deno.serve(async (req) => {
     let planned_writes = 0;
     let noop = 0;
     let errors = 0;
+    let conflicts = 0;
 
     for (const it of (items ?? [])) {
-      const serviceName = (it.metadata_json?.phc_service as string) ?? (it.metadata_json?.service_hint as string) ?? (it.metadata_json?.service_name as string) ?? '';
-      const svcClass = body.service_classification_map?.[serviceName]
-        ?? (DEFAULT_SERVICE_CLASS[serviceName] as 'founder_journey' | 'domiciliacao' | 'service_only' | undefined)
-        ?? 'founder_journey';
-      // service_only rows still map to a workspace row for tracking; use domiciliacao class if unmapped
-      const effectiveClass = svcClass === 'service_only' ? 'domiciliacao' : svcClass;
+      // Correct path per plan: metadata_json.phc_service_hint takes precedence.
+      const meta = (it.metadata_json ?? {}) as Record<string, unknown>;
+      const serviceName =
+        (meta.phc_service_hint as string) ??
+        (meta.phc_service as string) ??
+        (meta.service_hint as string) ??
+        (meta.service_name as string) ??
+        '';
+
+      // Strict: unmapped service → conflict, no default.
+      const svcClass = body.service_classification_map?.[serviceName];
+      if (!svcClass || !['founder_journey', 'domiciliacao', 'mixed'].includes(svcClass)) {
+        conflicts++;
+        results.push({
+          funnel_item_id: it.id,
+          service_name: serviceName,
+          status: 'conflict',
+          reason: 'unmapped_service_classification',
+        });
+        continue;
+      }
 
       const programId = body.service_program_map?.[serviceName] ?? null;
-      const idempotencyKey = `reconciler-${it.phc_customer_id}-${effectiveClass}`;
+
+      // Programme required for founder_journey and mixed
+      if ((svcClass === 'founder_journey' || svcClass === 'mixed') && !programId) {
+        conflicts++;
+        results.push({
+          funnel_item_id: it.id,
+          service_name: serviceName,
+          status: 'conflict',
+          reason: 'programme_id_required_for_' + svcClass,
+        });
+        continue;
+      }
+
+      const idempotencyKey = `reconciler-${it.phc_customer_id}-${svcClass}-${programId ?? 'none'}`;
 
       const willWrite = !dryRun && authorized.has(it.id);
 
@@ -106,7 +135,7 @@ Deno.serve(async (req) => {
         organization_name: it.organization_name,
         contact_name: it.contact_name,
         contact_email: it.contact_email,
-        service_classification: effectiveClass,
+        service_classification: svcClass,
         program_id: programId,
         service_name: serviceName,
       };
@@ -124,12 +153,19 @@ Deno.serve(async (req) => {
         });
         if (rpcErr) throw rpcErr;
         const action = (rpcRes as { action?: string })?.action ?? 'unknown';
-        if (action === 'noop') noop++;
+        if (action === 'noop' || action === 'already_current') noop++;
         else planned_writes++;
         results.push({ funnel_item_id: it.id, service_name: serviceName, result: rpcRes });
       } catch (e) {
-        errors++;
-        results.push({ funnel_item_id: it.id, error: (e as Error).message });
+        const msg = (e as Error).message;
+        // Ambiguity / policy violations from RPC are conflicts, not internal errors.
+        if (/^ambiguous_|_required$/.test(msg)) {
+          conflicts++;
+          results.push({ funnel_item_id: it.id, service_name: serviceName, status: 'conflict', reason: msg });
+        } else {
+          errors++;
+          results.push({ funnel_item_id: it.id, error: msg });
+        }
       }
     }
 
@@ -138,6 +174,7 @@ Deno.serve(async (req) => {
       total_rows: items?.length ?? 0,
       planned_writes,
       noop,
+      conflicts,
       errors,
       results,
     }, null, 2), { headers: jsonHeaders });
