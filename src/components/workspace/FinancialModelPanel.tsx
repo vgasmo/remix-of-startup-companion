@@ -65,28 +65,36 @@ function MetricCard({
   trend?: 'up' | 'down' | 'neutral';
   comparison?: { prev: number | null; label: string };
 }) {
+  const { t, i18n } = useTranslation();
   if (value === null) return null;
   
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : null;
   const trendColor = trend === 'up' ? 'text-[hsl(var(--success))]' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground';
-  
+  const locale = i18n.language === 'pt' ? 'pt-PT' : 'en-US';
+  const fmt1 = (n: number) => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(n);
+  const fmtCurrency = (n: number) => new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+  const monthsLabel = Math.abs(value) === 1
+    ? t('financialPanel.month', { defaultValue: i18n.language === 'pt' ? 'mês' : 'month' })
+    : t('financialPanel.months', { defaultValue: i18n.language === 'pt' ? 'meses' : 'months' });
+
   return (
     <div className="p-3 rounded-lg border bg-card">
       <p className="text-xs text-muted-foreground mb-1">{label}</p>
       <div className="flex items-baseline gap-1">
         <span className="text-xl font-semibold">
-          {unit === '€' ? `€${value.toLocaleString()}` : 
-           unit === '%' ? `${value.toFixed(1)}%` :
-           unit === 'ratio' ? `${value.toFixed(1)}x` :
-           `${value}`}
+          {unit === '€' ? fmtCurrency(value) : 
+           unit === '%' ? `${fmt1(value)}%` :
+           unit === 'ratio' ? `${fmt1(value)}x` :
+           unit === 'months' ? fmt1(value) :
+           new Intl.NumberFormat(locale).format(value)}
         </span>
-        {unit === 'months' && <span className="text-xs text-muted-foreground">meses</span>}
+        {unit === 'months' && <span className="text-xs text-muted-foreground">{monthsLabel}</span>}
       </div>
       {TrendIcon && (
         <div className={`flex items-center gap-1 text-xs mt-1 ${trendColor}`}>
           <TrendIcon className="h-3 w-3" />
           {comparison && comparison.prev !== null && (
-            <span>vs {comparison.prev} ({comparison.label})</span>
+            <span>vs {new Intl.NumberFormat(locale).format(comparison.prev)} ({comparison.label})</span>
           )}
         </div>
       )}
@@ -180,15 +188,27 @@ export function FinancialModelPanel({ workspaceId, canWrite, isMentor = false }:
 
   const handleDownloadTemplate = async () => {
     const url = getTemplateUrl();
-    
-    // Check if template exists before opening
+    const filename = TEMPLATE_PATH.split('/').pop() || 'financial-template.xlsm';
+
+    // XLSM files are treated as macro-enabled and some browsers refuse to
+    // preview them — fetch as a blob and click a hidden anchor so we get a
+    // real "Save As" dialog on every browser instead of a broken new tab.
     try {
-      const response = await fetch(url, { method: 'HEAD' });
-      if (response.ok) {
-        window.open(url, '_blank');
-      } else {
+      const response = await fetch(url);
+      if (!response.ok) {
         notify.error(t('workspace.templateNotAvailableYetAsk'));
+        return;
       }
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = objectUrl;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      // Free the blob after the download prompt kicks in.
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
     } catch {
       notify.error(t('workspace.templateNotAvailableYetAsk'));
     }
@@ -323,7 +343,7 @@ export function FinancialModelPanel({ workspaceId, canWrite, isMentor = false }:
               <FileDown className="h-4 w-4 mr-2" />
               {t('financialPanel.downloadTemplate', { defaultValue: 'Download Template' })}
             </Button>
-            {canWrite && (
+            {canWrite && !isMentor && (
               <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm">
