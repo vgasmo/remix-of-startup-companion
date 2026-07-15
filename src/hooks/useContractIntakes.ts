@@ -366,41 +366,18 @@ export function useTransitionIntakeStatus() {
         updateFields.last_reminder_sent_at = null;
       }
 
-      const { error } = await supabase
-        .from('contract_intakes')
-        .update(updateFields)
-        .eq('id', params.intakeId);
-      if (error) throw error;
+      // FIX (partial-success trap): for changes_requested we MUST rotate the
+      // intake token and send the founder email BEFORE flipping the DB status.
+      // If either step fails after the status is committed, isValidIntakeTransition
+      // blocks the retry (changes_requested → changes_requested is not allowed),
+      // leaving the intake stuck with no email sent.
+      let preparedChangesRequestedEmail: null | {
+        recipientEmail: string;
+        recipientName: string | null;
+        organizationName: string | null;
+        intakeToken: string;
+      } = null;
 
-      // Sync CRM stage if funnel item is linked
-      if (current.funnel_item_id) {
-        const crmStage = INTAKE_TO_CRM_STAGE[params.newStatus];
-        if (crmStage) {
-          const { error: crmErr } = await supabase.from('funnel_items')
-            .update({ stage: crmStage })
-            .eq('id', current.funnel_item_id);
-          if (crmErr) {
-            logger.error('intake_crm_sync_failed', { funnelItemId: current.funnel_item_id, error: crmErr.message });
-            throw new Error(`Falha a sincronizar o CRM: ${crmErr.message}`);
-          }
-        }
-      }
-
-      // Audit trail — never silently drop history
-      const { error: auditErr } = await supabase.from('intake_events').insert({
-        intake_id: params.intakeId,
-        event_type: `status_changed_to_${params.newStatus}`,
-        from_status: currentStatus,
-        to_status: params.newStatus,
-        performed_by: user?.id,
-        metadata: { notes: params.notes, ...params.metadata },
-      });
-      if (auditErr) {
-        logger.error('intake_audit_insert_failed', { intakeId: params.intakeId, error: auditErr.message });
-      }
-
-      // Send changes_requested email automatically — the founder MUST get it,
-      // so surface failures instead of silently warning.
       if (params.newStatus === 'changes_requested') {
         const { data: intakeData, error: readErr } = await supabase
           .from('contract_intakes')
@@ -420,26 +397,77 @@ export function useTransitionIntakeStatus() {
             throw new Error(`Falha ao gerar o novo link de intake: ${tokenErr.message}`);
           }
           if (freshToken) {
+            preparedChangesRequestedEmail = {
+              recipientEmail: intakeData.legal_representative_email,
+              recipientName: intakeData.legal_representative_name,
+              organizationName: intakeData.organization_name,
+              intakeToken: freshToken as string,
+            };
             try {
               await invokeWithAuth('send-intake-email', {
                 body: {
                   type: 'changes_requested',
                   intakeId: params.intakeId,
-                  recipientEmail: intakeData.legal_representative_email,
-                  recipientName: intakeData.legal_representative_name,
-                  organizationName: intakeData.organization_name,
-                  intakeToken: freshToken,
+                  recipientEmail: preparedChangesRequestedEmail.recipientEmail,
+                  recipientName: preparedChangesRequestedEmail.recipientName,
+                  organizationName: preparedChangesRequestedEmail.organizationName,
+                  intakeToken: preparedChangesRequestedEmail.intakeToken,
                   changesNotes: params.notes,
                 },
               });
             } catch (emailErr) {
               logger.error('changes_requested_email_failed', { error: String(emailErr) });
-              throw new Error('O estado foi alterado, mas o email de pedido de correções não foi enviado. Reenvie manualmente.');
+              // Send failed BEFORE any DB status change — safe to abort cleanly.
+              throw new Error(`Falha ao enviar o email de pedido de correções ao fundador: ${String(emailErr)}. Nenhuma alteração foi guardada — tente novamente.`);
             }
           }
         }
       }
-    },
+
+      const { error } = await supabase
+        .from('contract_intakes')
+        .update(updateFields)
+        .eq('id', params.intakeId);
+      if (error) throw error;
+
+      // Post-commit side-effects. The status row is now final; a throw here would
+      // leave the intake stuck with no way to retry (isValidIntakeTransition rejects
+      // self-transitions). Log + warn softly instead so the operator can reconcile.
+      const postWarnings: string[] = [];
+
+      // Sync CRM stage if funnel item is linked
+      if (current.funnel_item_id) {
+        const crmStage = INTAKE_TO_CRM_STAGE[params.newStatus];
+        if (crmStage) {
+          const { error: crmErr } = await supabase.from('funnel_items')
+            .update({ stage: crmStage })
+            .eq('id', current.funnel_item_id);
+          if (crmErr) {
+            logger.error('intake_crm_sync_failed', { funnelItemId: current.funnel_item_id, error: crmErr.message });
+            postWarnings.push(`CRM não sincronizado: ${crmErr.message}`);
+          }
+        }
+      }
+
+      // Audit trail — best-effort, never blocks
+      const { error: auditErr } = await supabase.from('intake_events').insert({
+        intake_id: params.intakeId,
+        event_type: `status_changed_to_${params.newStatus}`,
+        from_status: currentStatus,
+        to_status: params.newStatus,
+        performed_by: user?.id,
+        metadata: { notes: params.notes, ...params.metadata },
+      });
+      if (auditErr) {
+        logger.error('intake_audit_insert_failed', { intakeId: params.intakeId, error: auditErr.message });
+        postWarnings.push(`Registo de auditoria falhou: ${auditErr.message}`);
+      }
+
+      if (postWarnings.length > 0) {
+        // Surface as a non-blocking warning; status change itself succeeded.
+        notify.warning?.(postWarnings.join(' · '));
+      }
+
     onSuccess: (_, params) => {
       queryClient.invalidateQueries({ queryKey: ['contract-intakes'] });
       queryClient.invalidateQueries({ queryKey: ['contract-intake'] });
