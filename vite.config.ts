@@ -11,9 +11,12 @@ function versionJsonPlugin(): Plugin {
     closeBundle() {
       const version = new Date().toISOString().slice(0, 19).replace(/[-T:]/g, '.');
       const content = JSON.stringify({ version });
-      // Write to dist (production) and public (source, so next dev/build starts fresh)
-      fs.writeFileSync(path.resolve(__dirname, 'dist/version.json'), content);
-      fs.writeFileSync(path.resolve(__dirname, 'public/version.json'), content);
+      // Production only: dist/version.json is the runtime cache-bust signal.
+      // Never write to public/ — that would be checked into source and defeat cache-busting.
+      const distDir = path.resolve(__dirname, 'dist');
+      if (fs.existsSync(distDir)) {
+        fs.writeFileSync(path.resolve(distDir, 'version.json'), content);
+      }
     },
   };
 }

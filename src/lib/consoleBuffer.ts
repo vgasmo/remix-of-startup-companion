@@ -19,6 +19,24 @@ function push(entry: ConsoleEntry) {
   if (buffer.length > BUFFER_LIMIT) buffer.shift();
 }
 
+// Redact common secret shapes before persisting: JWTs, bearer tokens, emails,
+// generic API-key-looking strings. Best-effort; never a substitute for not
+// logging secrets in the first place.
+const REDACTION_PATTERNS: Array<[RegExp, string]> = [
+  [/eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{5,}/g, '[REDACTED_JWT]'],
+  [/Bearer\s+[A-Za-z0-9._\-]{16,}/gi, 'Bearer [REDACTED]'],
+  [/(sk|pk|rk)_(live|test)_[A-Za-z0-9]{16,}/g, '[REDACTED_KEY]'],
+  [/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[REDACTED_EMAIL]'],
+  [/\b(api[_-]?key|secret|token|password)["':\s=]+[A-Za-z0-9._\-]{8,}/gi, '$1=[REDACTED]'],
+];
+
+function redact(s: string | undefined): string | undefined {
+  if (!s) return s;
+  let out = s;
+  for (const [re, repl] of REDACTION_PATTERNS) out = out.replace(re, repl);
+  return out;
+}
+
 function stringify(arg: unknown): string {
   if (arg instanceof Error) return arg.message;
   if (typeof arg === 'string') return arg;
@@ -42,8 +60,8 @@ export function installConsoleBuffer() {
       push({
         ts: new Date().toISOString(),
         level: 'error',
-        message: args.map(stringify).join(' ').slice(0, 2000),
-        stack: firstErr?.stack?.slice(0, 4000),
+        message: redact(args.map(stringify).join(' ').slice(0, 2000))!,
+        stack: redact(firstErr?.stack?.slice(0, 4000)),
       });
     } catch { /* noop */ }
     return origError.apply(console, args as []);
@@ -54,7 +72,7 @@ export function installConsoleBuffer() {
       push({
         ts: new Date().toISOString(),
         level: 'warn',
-        message: args.map(stringify).join(' ').slice(0, 2000),
+        message: redact(args.map(stringify).join(' ').slice(0, 2000))!,
       });
     } catch { /* noop */ }
     return origWarn.apply(console, args as []);
@@ -64,8 +82,8 @@ export function installConsoleBuffer() {
     push({
       ts: new Date().toISOString(),
       level: 'window.error',
-      message: (event.message || 'window.error').slice(0, 2000),
-      stack: event.error instanceof Error ? event.error.stack?.slice(0, 4000) : undefined,
+      message: redact((event.message || 'window.error').slice(0, 2000))!,
+      stack: redact(event.error instanceof Error ? event.error.stack?.slice(0, 4000) : undefined),
     });
   });
 
@@ -75,8 +93,8 @@ export function installConsoleBuffer() {
     push({
       ts: new Date().toISOString(),
       level: 'unhandledrejection',
-      message: msg.slice(0, 2000),
-      stack: reason instanceof Error ? reason.stack?.slice(0, 4000) : undefined,
+      message: redact(msg.slice(0, 2000))!,
+      stack: redact(reason instanceof Error ? reason.stack?.slice(0, 4000) : undefined),
     });
   });
 }
