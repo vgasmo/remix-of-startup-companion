@@ -30,6 +30,8 @@ import { getVisibleTabs, type WorkspaceTab } from '@/lib/workspaceTabs';
 import { useWorkspaceTabBadges } from '@/hooks/useWorkspaceTabBadges';
 import { useTrackEngagement, type EngagementTargetType } from '@/hooks/useEngagementEvents';
 import { useWorkspaceTags } from '@/hooks/useGlobalSearch';
+import { useValuePropArtifacts } from '@/hooks/useValueProp';
+
 
 // Lazy-loaded tab panels — each becomes its own async chunk so the initial
 // WorkspaceDetail bundle only ships Overview + shell. lazyWithRetry forces a
@@ -335,12 +337,43 @@ export default function WorkspaceDetail() {
   const isOverflowTabActive = overflowTabs.some(tab => tab.id === activeTab);
 
   const mainContact = startup?.main_contact_name || startup?.main_contact_email;
+
+  // "What does this startup do?" — prefer the manually-curated startup.description,
+  // fall back to the latest Value Proposition canvas (short_version, then raw
+  // value_prop field) so newly-imported workspaces without a filled description
+  // still show a meaningful one-liner in the header.
+  const { data: valuePropArtifacts } = useValuePropArtifacts(workspace?.id);
+  const canvasDescription =
+    valuePropArtifacts?.[0]?.outputs_text?.short_version?.trim() ||
+    valuePropArtifacts?.[0]?.json_fields?.value_prop?.trim() ||
+    '';
+  const startupDescription = (startup?.description?.trim() || canvasDescription) || null;
+  const descriptionSourceLabel = startup?.description?.trim()
+    ? undefined
+    : (canvasDescription ? t('workspace.header.fromValueProp', { defaultValue: 'Do canvas de proposta de valor' }) : undefined);
+
   const subtitleNode = (isConsultor || isAdmin || isBackoffice) && startup ? (
     <div className="flex items-center gap-1.5 text-xs lg:text-sm text-muted-foreground overflow-hidden">
       {program?.name && <span className="truncate shrink-0">{program.name}</span>}
-      {startup.description && program?.name && <span className="text-border shrink-0">•</span>}
-      {startup.description && <span className="truncate max-w-[200px] lg:max-w-xs" title={startup.description}>{startup.description}</span>}
-      {mainContact && (startup.description || program?.name) && <span className="text-border shrink-0">•</span>}
+      {startupDescription && program?.name && <span className="text-border shrink-0">•</span>}
+      {startupDescription && (
+        <span
+          className="truncate max-w-[240px] lg:max-w-md"
+          title={descriptionSourceLabel ? `${startupDescription} — ${descriptionSourceLabel}` : startupDescription}
+        >
+          {startupDescription}
+        </span>
+      )}
+      {!startupDescription && (isConsultor || isAdmin) && (
+        <button
+          type="button"
+          onClick={() => handleTabChange('settings')}
+          className="text-xs italic underline-offset-2 hover:underline text-muted-foreground/80 shrink-0"
+        >
+          {t('workspace.header.addDescription', { defaultValue: '+ Adicionar descrição' })}
+        </button>
+      )}
+      {mainContact && (startupDescription || program?.name) && <span className="text-border shrink-0">•</span>}
       {mainContact && (
         <span className="flex items-center gap-1 truncate shrink-0" title={startup.main_contact_email || undefined}>
           <Mail className="h-3 w-3" />
@@ -348,7 +381,7 @@ export default function WorkspaceDetail() {
           <span className="sm:hidden">{startup.main_contact_name || startup.main_contact_email}</span>
         </span>
       )}
-      {workspaceTags.length > 0 && (mainContact || startup.description || program?.name) && <span className="text-border shrink-0">•</span>}
+      {workspaceTags.length > 0 && (mainContact || startupDescription || program?.name) && <span className="text-border shrink-0">•</span>}
       {workspaceTags.length > 0 && (
         <span className="flex items-center gap-1 truncate shrink-0" title={workspaceTags.map(t => t.name).join(', ')}>
           <Tag className="h-3 w-3" />
@@ -358,6 +391,7 @@ export default function WorkspaceDetail() {
       )}
     </div>
   ) : program?.name;
+
 
   return (
     <AppLayout

@@ -72,6 +72,8 @@ import { notify } from "@/lib/notify";
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
+import { useQuery } from '@tanstack/react-query';
+
 
 interface CalendarTabProps {
   workspaceId: string;
@@ -101,6 +103,23 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
   const [quickInviteEmails, setQuickInviteEmails] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
 
+  // Founder-of-record fallback: some workspaces (imported / unclaimed) have no
+  // authenticated founder in workspace_users yet, so we also pre-fill the
+  // startup's main contact email so booking a session actually notifies them.
+  const { data: startupContact } = useQuery({
+    queryKey: ['workspace-startup-contact', workspaceId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('workspaces')
+        .select('startup:startups(main_contact_email)')
+        .eq('id', workspaceId)
+        .maybeSingle();
+      return (data?.startup as { main_contact_email: string | null } | null)?.main_contact_email || null;
+    },
+    enabled: !!workspaceId,
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Get member emails for auto-complete (exclude current user)
   const memberEmails = workspaceMembers
     .filter((m) => m.profile?.email && m.user_id !== user?.id)
@@ -116,8 +135,10 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
     const emails = memberEmails
       .filter((m) => preferredRoles.has(m.role))
       .map((m) => m.email);
-    return [...new Set(emails)].join(', ');
+    if (startupContact) emails.push(startupContact);
+    return [...new Set(emails.map((e) => e.toLowerCase()))].join(', ');
   };
+
 
   // Form state
   const [formData, setFormData] = useState({
