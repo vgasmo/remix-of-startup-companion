@@ -281,9 +281,12 @@ Deno.serve(async (req) => {
     };
 
     const workspace_breakdown = {
-      by_access_status: Object.fromEntries(wsByStatus.entries()),
+      by_status: Object.fromEntries(wsByStatus.entries()),
+      by_engagement_state: Object.fromEntries(wsByEngagement.entries()),
       without_program: wsWithoutProgram,
+      archived: wsArchived,
     };
+
 
     const raw = {
       phc_extract: phcExtractCounts,
