@@ -52,16 +52,36 @@ Deno.serve(async (req) => {
     const dryRun = body.dry_run;
     const authorized = new Set(body.commit_authorized_ids ?? []);
 
-    // PHASE 0 FREEZE: writes are locked until an admin explicitly flips the
-    // RECONCILER_WRITE_MODE secret to "enabled". Absence or any other value
-    // means the reconciler is read-only.
-    const writeMode = (Deno.env.get('RECONCILER_WRITE_MODE') ?? '').toLowerCase();
-    const writesUnlocked = writeMode === 'enabled';
-    if (!dryRun && !writesUnlocked) {
+    // PHASE 0 FREEZE: writes require BOTH the env kill-switch AND the DB kill-switch.
+    // Either off ⇒ 423 read-only. This eliminates the dual-source-of-truth risk noted
+    // in the audit (P0-1 / P0-2).
+    const writeModeEnv = (Deno.env.get('RECONCILER_WRITE_MODE') ?? '').toLowerCase();
+    const envUnlocked = writeModeEnv === 'enabled';
+
+    let dbUnlocked = false;
+    let killSwitchError: string | null = null;
+    {
+      const { data: setting, error: settingErr } = await sbSvc
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'reconciler.write_mode')
+        .maybeSingle();
+      if (settingErr) {
+        killSwitchError = settingErr.message;
+      } else {
+        const v = (setting?.value ?? {}) as { enabled?: boolean };
+        dbUnlocked = v.enabled === true;
+      }
+    }
+    const writesUnlocked = envUnlocked && dbUnlocked;
+    if (!dryRun && (!writesUnlocked || killSwitchError)) {
       return new Response(
         JSON.stringify({
           error: 'writes_frozen',
-          message: 'Reconciler is in read-only mode. An admin must set RECONCILER_WRITE_MODE=enabled to authorize commits.',
+          message: 'Reconciler is in read-only mode. Both RECONCILER_WRITE_MODE env AND system_settings.reconciler.write_mode.enabled must be true to authorize commits.',
+          env_unlocked: envUnlocked,
+          db_unlocked: dbUnlocked,
+          kill_switch_error: killSwitchError,
         }),
         { status: 423, headers: jsonHeaders },
       );
@@ -70,10 +90,12 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'commit_authorized_ids_required' }), { status: 400, headers: jsonHeaders });
     }
 
-    // Fetch candidate funnel_items
+    // Fetch candidate funnel_items. Note: startups has NO hubspot_company_id column;
+    // HubSpot associations are represented via funnel_items + external_entity_refs.
     let q = sbSvc.from('funnel_items')
       .select('id, phc_customer_id, hubspot_company_id, nif_normalized, organization_name, contact_name, contact_email, linked_startup_id, linked_workspace_id, stage, metadata_json')
       .not('phc_customer_id', 'is', null);
+
     if (body.funnel_item_ids?.length) q = q.in('id', body.funnel_item_ids);
     if (body.limit) q = q.limit(body.limit);
 
