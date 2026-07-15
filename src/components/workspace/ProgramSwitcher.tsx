@@ -97,6 +97,10 @@ export function ProgramSwitcher({
       queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces-paged'] });
+      // Force re-materialization check so the new program's deliverables show up.
+      queryClient.invalidateQueries({ queryKey: ['acceleration-materialized', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['workspace-milestones', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['workspace-actions', workspaceId] });
       setPendingProgramId(null);
     } catch (err) {
       notify.error(
