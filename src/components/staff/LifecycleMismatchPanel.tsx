@@ -197,20 +197,23 @@ export function LifecycleMismatchPanel({
         }
       }
 
-      // 3e) intake still draft but contract already progressed past draft
+      // 3e) intake still in early stages but contract already progressed
       if (
         intake &&
-        intake.status === 'draft' &&
-        ['pending_signature', 'signed', 'active'].includes(c.status)
+        (intake.status === 'intake_requested' ||
+          intake.status === 'intake_in_progress' ||
+          intake.status === 'draft_internal') &&
+        (c.status === 'pending_signature' || c.status === 'active')
       ) {
         out.push({
           id: `intake-behind-contract-${c.id}`,
           severity: 'info',
           title: t('lifecycleMismatch.intakeBehindContract.title', {
-            defaultValue: 'Intake em rascunho mas contrato já avançou',
+            defaultValue: 'Intake ainda em recolha mas contrato já avançou',
           }),
           detail: t('lifecycleMismatch.intakeBehindContract.detail', {
-            defaultValue: 'intake.status="draft" / contract.status="{{cstate}}"',
+            defaultValue: 'intake.status="{{istate}}" / contract.status="{{cstate}}"',
+            istate: intake.status,
             cstate: c.status,
           }),
           recordType: 'contract',
