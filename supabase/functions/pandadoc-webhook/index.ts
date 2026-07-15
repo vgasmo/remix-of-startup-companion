@@ -316,6 +316,19 @@ Deno.serve(async (req) => {
           contractId: contract.id, workspaceId: contract.workspace_id,
           source: `pandadoc_webhook_${eventName}_completed`, operation: 'completed',
         })
+        // Notify founders + assigned consultant that the contract is signed & activated.
+        if (contract.workspace_id) {
+          try {
+            await supabase.functions.invoke('send-notification-email', {
+              body: { type: 'contract_signed', workspace_id: contract.workspace_id, contract_id: contract.id },
+            })
+            await supabase.functions.invoke('send-notification-email', {
+              body: { type: 'contract_activated', workspace_id: contract.workspace_id, contract_id: contract.id },
+            })
+          } catch (e) {
+            console.warn('pandadoc-webhook: contract_signed/activated notification failed', String(e))
+          }
+        }
       } else if (canonicalStatus === 'declined' || canonicalStatus === 'voided') {
         const r = await syncIntakeOnClosed(
           supabase, contract.id, canonicalStatus as 'declined' | 'voided', null, `pandadoc_webhook_${eventName}`,
