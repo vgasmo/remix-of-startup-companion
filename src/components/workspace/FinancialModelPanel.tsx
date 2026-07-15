@@ -188,15 +188,27 @@ export function FinancialModelPanel({ workspaceId, canWrite, isMentor = false }:
 
   const handleDownloadTemplate = async () => {
     const url = getTemplateUrl();
-    
-    // Check if template exists before opening
+    const filename = TEMPLATE_PATH.split('/').pop() || 'financial-template.xlsm';
+
+    // XLSM files are treated as macro-enabled and some browsers refuse to
+    // preview them — fetch as a blob and click a hidden anchor so we get a
+    // real "Save As" dialog on every browser instead of a broken new tab.
     try {
-      const response = await fetch(url, { method: 'HEAD' });
-      if (response.ok) {
-        window.open(url, '_blank');
-      } else {
+      const response = await fetch(url);
+      if (!response.ok) {
         notify.error(t('workspace.templateNotAvailableYetAsk'));
+        return;
       }
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = objectUrl;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      // Free the blob after the download prompt kicks in.
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
     } catch {
       notify.error(t('workspace.templateNotAvailableYetAsk'));
     }
