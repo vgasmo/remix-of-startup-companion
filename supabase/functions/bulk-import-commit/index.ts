@@ -296,7 +296,8 @@ Deno.serve(async (req) => {
         // Idempotency: if the same contract_number already exists for this
         // workspace, link/update instead of creating a duplicate.
         let contractId: string | null = null;
-        if (data.contract_number) {
+        let contractAction: "create_contract" | "update_contract" = "create_contract";
+        if (data.contract_number && workspaceId) {
           const { data: existing } = await admin
             .from("startup_contracts")
             .select("id")
@@ -305,18 +306,21 @@ Deno.serve(async (req) => {
             .maybeSingle();
           if (existing?.id) {
             contractId = existing.id;
-            // Always refresh the PDF path; only overwrite full payload on admin opt-in
-            const updatePayload = overwriteExisting
-              ? contractPayload
-              : { contract_pdf_path: contractPdfPath, document_url: documentUrl, pricing_snapshot_json: { ...pricingSnapshot, pdf_bucket: pdfBucket } };
-            const { error: upErr } = await admin
-              .from("startup_contracts")
-              .update(updatePayload)
-              .eq("id", contractId);
-            if (upErr) throw new Error(`Contract update failed: ${upErr.message}`);
+            contractAction = "update_contract";
+            if (!dryRun) {
+              // Always refresh the PDF path; only overwrite full payload on admin opt-in
+              const updatePayload = overwriteExisting
+                ? contractPayload
+                : { contract_pdf_path: contractPdfPath, document_url: documentUrl, pricing_snapshot_json: { ...pricingSnapshot, pdf_bucket: pdfBucket } };
+              const { error: upErr } = await admin
+                .from("startup_contracts")
+                .update(updatePayload)
+                .eq("id", contractId);
+              if (upErr) throw new Error(`Contract update failed: ${upErr.message}`);
+            }
           }
         }
-        if (!contractId) {
+        if (!contractId && !dryRun) {
           const { data: newContract, error: cErr } = await admin
             .from("startup_contracts")
             .insert(contractPayload)
@@ -326,38 +330,63 @@ Deno.serve(async (req) => {
           contractId = newContract.id;
         }
 
-        await admin.from("bulk_import_rows").update({
-          status: "committed",
-          created_contract_id: contractId,
-          matched_startup_id: startupId,
-          matched_workspace_id: workspaceId,
-          error_message: null,
-        }).eq("id", row.id);
+        // Record the planned/actual write for reviewer output.
+        plannedWrites.push({
+          row_id: row.id,
+          action: dryRun
+            ? (contractAction === "update_contract" ? "update_contract" : (workspaceAction === "create_workspace" ? "create_workspace" : "create_contract"))
+            : contractAction,
+          program_id: rowProgramId,
+          incubation_type_id: incubationTypeId,
+          startup_name: data.startup_name.trim(),
+          contract_number: data.contract_number || null,
+        });
+
+        if (!dryRun) {
+          await admin.from("bulk_import_rows").update({
+            status: "committed",
+            created_contract_id: contractId,
+            matched_startup_id: startupId,
+            matched_workspace_id: workspaceId,
+            error_message: null,
+            committed_at: new Date().toISOString(),
+            committed_by: userData.user.id,
+          }).eq("id", row.id);
+        }
 
         committedCount++;
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Unknown error";
         failedCount++;
         errors.push({ row_id: row.id, error: msg });
-        await admin.from("bulk_import_rows").update({
-          status: "error",
-          error_message: msg,
-        }).eq("id", row.id);
+        if (!dryRun) {
+          await admin.from("bulk_import_rows").update({
+            status: "error",
+            error_message: msg,
+          }).eq("id", row.id);
+        }
       }
     }
 
-    await admin.from("bulk_import_batches").update({
-      status: "completed",
-      committed_count: committedCount,
-      failed_count: failedCount,
-      completed_at: new Date().toISOString(),
-    }).eq("id", batchId);
+    if (!dryRun) {
+      await admin.from("bulk_import_batches").update({
+        status: "completed",
+        committed_count: committedCount,
+        failed_count: failedCount,
+        completed_at: new Date().toISOString(),
+      }).eq("id", batchId);
+    }
 
     return jsonResponse({
       success: true,
-      committed: committedCount,
+      dry_run: dryRun,
+      committed: dryRun ? 0 : committedCount,
+      planned: dryRun ? committedCount : undefined,
       failed: failedCount,
+      row_count: (rows || []).length,
+      planned_writes: plannedWrites,
       errors,
+    });
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
