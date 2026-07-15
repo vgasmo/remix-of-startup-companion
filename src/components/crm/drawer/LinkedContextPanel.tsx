@@ -106,6 +106,22 @@ export function LinkedContextPanel({
     },
   });
 
+  // Fetch startup directly when the lead is linked to a startup but not to a
+  // workspace yet (pre-onboarding CRM leads keep workspace_id null).
+  const { data: startupOnly, isLoading: loadingStartup } = useQuery({
+    queryKey: ['crm-linked-startup', linkedStartupId],
+    enabled: !!linkedStartupId && !linkedWorkspaceId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('startups')
+        .select('id, name, sector, main_contact_email, main_contact_name')
+        .eq('id', linkedStartupId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
   // Fetch linked contract
   const { data: contract, isLoading: loadingContract } = useQuery({
     queryKey: ['crm-linked-contract', linkedContractId],
@@ -140,7 +156,7 @@ export function LinkedContextPanel({
   const hasAnyLink = linkedWorkspaceId || linkedStartupId || linkedContractId;
   if (!hasAnyLink) return null;
 
-  const isLoading = loadingWs || loadingContract || loadingWsContracts;
+  const isLoading = loadingWs || loadingContract || loadingWsContracts || loadingStartup;
   if (isLoading) {
     return (
       <Card className="flex-1 border-border/60">
@@ -165,6 +181,7 @@ export function LinkedContextPanel({
   // button when the caller provided it so staff can recover.
   const nothingToShow =
     !workspace &&
+    !startupOnly &&
     !contract &&
     !(workspaceContracts && workspaceContracts.length > 0);
   if (nothingToShow) {
@@ -241,6 +258,32 @@ export function LinkedContextPanel({
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <Users className="h-3 w-3" />
                 {(workspace as any).startup.main_contact_name} — {(workspace as any).startup.main_contact_email}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Startup-only (pre-onboarding lead) */}
+        {!workspace && startupOnly && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <Building2 className="h-3.5 w-3.5 text-primary" />
+              <span className="text-sm font-medium">{(startupOnly as any).name}</span>
+              <Badge variant="outline" className="text-[10px] h-5">
+                {t('crm.startupNoWorkspace', { defaultValue: 'Sem workspace' })}
+              </Badge>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(startupOnly as any).sector && (
+                <Badge variant="outline" className="text-[10px] h-5">
+                  {(startupOnly as any).sector}
+                </Badge>
+              )}
+            </div>
+            {(startupOnly as any).main_contact_email && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <Users className="h-3 w-3" />
+                {(startupOnly as any).main_contact_name} — {(startupOnly as any).main_contact_email}
               </p>
             )}
           </div>

@@ -24,22 +24,28 @@ export function useAutoMaterializeDeliverables(
     enabled,
     staleTime: 60_000,
     queryFn: async () => {
-      if (!workspaceId) return true;
-      const { count, error } = await supabase
+      if (!workspaceId || !programId) return true;
+      // Scope the "already materialized" check to the CURRENT program, so that
+      // switching a workspace between acceleration programs re-materializes the
+      // new program's gates/deliverables instead of being blocked by leftover
+      // milestones from the previous program.
+      const { data, error } = await supabase
         .from('milestones')
-        .select('id', { count: 'exact', head: true })
+        .select('id, source_gate:program_gates!milestones_source_gate_id_fkey(program_id)')
         .eq('workspace_id', workspaceId)
         .not('source_gate_id', 'is', null);
       if (error) {
         logger.error('materialize_deliverables_check_failed', { workspaceId, error: error.message });
         return true; // Assume materialized on error to avoid infinite retry
       }
-      // Once any source-linked milestones exist for this workspace, treat as
-      // materialized and skip the RPC. The RPC is now backed by unique partial
-      // indexes on (workspace_id, source_gate_id) and (workspace_id, source_deliverable_key),
-      // so concurrent runs can no longer produce duplicate gates / actions.
-      logger.debug('materialize_deliverables_check_result', { workspaceId, count });
-      return (count ?? 0) > 0;
+      const matches = (data ?? []).filter((row: any) => row?.source_gate?.program_id === programId);
+      logger.debug('materialize_deliverables_check_result', {
+        workspaceId,
+        programId,
+        totalSourceLinked: data?.length ?? 0,
+        matchingCurrentProgram: matches.length,
+      });
+      return matches.length > 0;
     },
   });
 
