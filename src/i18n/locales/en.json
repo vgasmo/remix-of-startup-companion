@@ -8660,6 +8660,7 @@
   "stages": {
     "accelerating": "Accelerating",
     "archived": "Archived",
+    "awaiting_workspace": "Awaiting workspace",
     "contracted": "Contracted",
     "first_contact_booked": "Meeting Booked",
     "graduated": "Graduated",
