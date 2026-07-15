@@ -316,6 +316,14 @@ Deno.serve(async (req) => {
           contractId: contract.id, workspaceId: contract.workspace_id,
           source: `pandadoc_webhook_${eventName}_completed`, operation: 'completed',
         })
+      } else if (canonicalStatus === 'declined' || canonicalStatus === 'voided') {
+        const r = await syncIntakeOnClosed(
+          supabase, contract.id, canonicalStatus as 'declined' | 'voided', null, `pandadoc_webhook_${eventName}`,
+        )
+        await handleLifecycleSyncResult(supabase, r, {
+          contractId: contract.id, workspaceId: contract.workspace_id,
+          source: `pandadoc_webhook_${eventName}_${canonicalStatus}`, operation: canonicalStatus,
+        })
       }
 
       // ═══ AUDIT: Log lifecycle event with full payload ═══
