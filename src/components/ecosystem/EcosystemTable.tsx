@@ -36,6 +36,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { EcosystemItem } from '@/hooks/useEcosystemItems';
+import { useWorkspaceTiers } from '@/hooks/useWorkspaceTiers';
+import { InlineTierSelect } from './InlineTierSelect';
 
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100];
