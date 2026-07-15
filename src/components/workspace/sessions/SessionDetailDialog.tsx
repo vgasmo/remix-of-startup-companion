@@ -287,21 +287,53 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                     {t('sessions.facilitatorMode', { defaultValue: 'Modo Facilitador' })}
                   </Button>
                 )}
-                {isStaff && canWrite && isPastSession && session.status !== 'completed' && (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    type="button"
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCompletionOpen(true); }}
-                  >
-                    <CheckCircle2 className="h-4 w-4 mr-1" />
-                    {t('sessions.markAsCompleted', 'Marcar como concluída')}
-                  </Button>
+                {isStaff && canWrite && isPastSession && session.status !== 'completed' && session.status !== 'cancelled' && session.status !== 'no_show' && (
+                  <>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCompletionOpen(true); }}
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-1" />
+                      {t('sessions.markAsCompleted', 'Marcar como concluída')}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setNoShowOpen(true); }}
+                    >
+                      <UserX className="h-4 w-4 mr-1" />
+                      {t('sessions.markAsNoShow', 'Marcar como no-show')}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCancelOpen(true); }}
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      {t('sessions.cancelSession', 'Cancelar sessão')}
+                    </Button>
+                  </>
                 )}
                 {session.status === 'completed' && (
                   <Badge variant="outline" className="gap-1">
                     <CheckCircle2 className="h-3 w-3 text-[hsl(var(--success))]" />
                     {t('sessions.statusCompleted', 'Concluída')}
+                  </Badge>
+                )}
+                {session.status === 'cancelled' && (
+                  <Badge variant="outline" className="gap-1">
+                    <XCircle className="h-3 w-3 text-destructive" />
+                    {t('sessions.statusCancelled', 'Cancelada')}
+                  </Badge>
+                )}
+                {session.status === 'no_show' && (
+                  <Badge variant="outline" className="gap-1">
+                    <UserX className="h-3 w-3 text-muted-foreground" />
+                    {t('sessions.statusNoShow', 'No-show')}
                   </Badge>
                 )}
               </div>
