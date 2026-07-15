@@ -653,6 +653,87 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
           session_template_id: session.session_template_id ?? null,
         }}
       />
+
+      <Dialog open={cancelOpen} onOpenChange={(v) => { if (!cancelMutation.isPending) setCancelOpen(v); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('sessions.cancelSession', 'Cancelar sessão')}</DialogTitle>
+            <DialogDescription>
+              {t('sessions.cancelDesc', 'Motivo do cancelamento (opcional). Os participantes serão notificados.')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="cancel-reason">{t('sessions.cancelReason', 'Motivo')}</Label>
+            <Textarea id="cancel-reason" rows={3} value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCancelOpen(false)} disabled={cancelMutation.isPending}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              loading={cancelMutation.isPending}
+              onClick={async () => {
+                try {
+                  await cancelMutation.mutateAsync({
+                    session_id: session.id,
+                    workspace_id: workspaceId,
+                    reason: cancelReason.trim() || null,
+                  });
+                  notify.success(t('sessions.cancelled', 'Sessão cancelada'));
+                  setCancelOpen(false);
+                  setCancelReason('');
+                  onOpenChange(false);
+                } catch (e) {
+                  notify.error((e as Error).message);
+                }
+              }}
+            >
+              {t('sessions.confirmCancel', 'Cancelar sessão')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={noShowOpen} onOpenChange={(v) => { if (!noShowMutation.isPending) setNoShowOpen(v); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('sessions.markAsNoShow', 'Marcar como no-show')}</DialogTitle>
+            <DialogDescription>
+              {t('sessions.noShowDesc', 'Registe uma nota (opcional). O relatório de impacto mantém a sessão contabilizada como no-show.')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="noshow-notes">{t('sessions.noShowNotes', 'Notas')}</Label>
+            <Textarea id="noshow-notes" rows={3} value={noShowNotes} onChange={(e) => setNoShowNotes(e.target.value)} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNoShowOpen(false)} disabled={noShowMutation.isPending}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              loading={noShowMutation.isPending}
+              onClick={async () => {
+                try {
+                  await noShowMutation.mutateAsync({
+                    session_id: session.id,
+                    workspace_id: workspaceId,
+                    notes: noShowNotes.trim() || null,
+                  });
+                  notify.success(t('sessions.noShowRecorded', 'Sessão marcada como no-show'));
+                  setNoShowOpen(false);
+                  setNoShowNotes('');
+                  onOpenChange(false);
+                } catch (e) {
+                  notify.error((e as Error).message);
+                }
+              }}
+            >
+              {t('sessions.confirmNoShow', 'Marcar como no-show')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
