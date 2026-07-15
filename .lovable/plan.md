@@ -1,122 +1,108 @@
-# PHC Active Customer → Workspace Reconciliation
 
-**Rule of engagement:** production is live. Phases 0–1 write **nothing** to `funnel_items`, `startups`, `workspaces`, `startup_contracts`, `user_roles`, or `auth.*`. Only Phase 3 mutates, one canary of 5 first, with rollback proven before scaling. The target count is *derived*, not forced to 180.
+# Production Recovery Plan
 
----
+Four phases delivered as separate, reviewable batches. Nothing writes to production data until an admin explicitly authorizes a canary after all dry-run invariants pass.
 
-## Phase 0 — Read-only live census (no writes)
+## Ground rules
 
-Deliverable: `docs/reconciliation/phase0-census.md` + CSVs under `/mnt/documents/reconciliation/`.
+- Read-only until a human approves a commit. `reconciler-run` refuses commits without an admin-issued authorization token and a matching authorized-ID allowlist.
+- No user creation, membership grants, invitations, notifications, automations, or e-mail sends inside the import path.
+- No hardcoded programme UUIDs. All programme mapping comes from an explicit `service_program_map` submitted by the operator.
+- Every reconciliation row is a persisted `bulk_import_rows`-shaped record with `idempotency_key`, `before_snapshot`, `after_snapshot`, `actor`, `status`, `error`, and `committed_at`.
+- Every code path guarding a write asserts the caller is `admin` via `has_role`, never via role columns on profiles.
 
-Queries run via `supabase--read_query` and `psql` (select-only). No inserts, no functions deployed.
+## Phase 0 — Freeze and verify (read-only)
 
-1. **PHC active customers** — regenerate a canonical UTF-8 CSV from the original PHC export (not the malformed `phc_hubspot_crm_classified_ready_2026-07-14.csv`). Ask the user for the source-of-truth PHC file (XLSX/CSV/DB extract). Group by `service`, `crm_stage`, `programme_hint`. Expect ~202; reconcile against historical 187 incubation + 15 domiciliação.
-2. **Funnel items**: counts split by (has startup_id, has workspace_id, has contract link, orphan).
-3. **Workspaces**: by `status`, `program_id`, service classification, `needs_onboarding`, presence of members.
-4. **Duplicate identities**: PHC ID, normalized NIF (digits only, len=9), HubSpot company id, `lower(trim(email))`.
-5. **Batch `3dd77436-…`**: rows grouped by `status`, `selected`, `commit_authorized`, `committed`, `error_message`. Include the 5 canary rows previously flagged.
-6. **Partial-failure debris**: workspaces / startups / contracts created inside the batch's time window with `metadata_json.provenance='bulk-import'` or matching `bulk_import_rows.id` — flag as suspect for cleanup review (no delete yet).
-7. **Source reconciliation table**: 202 PHC → eligible for founder-journey workspace / service-only domiciliação / excluded (with reason).
+Deliverables:
+- `reconciler-run` gains a hard `WRITE_MODE=false` env-driven kill switch. Commits return 423 Locked until an admin flips it via a new `system_settings` row (audited).
+- New edge function `census-run` (admin-only, read-only) produces:
+  - Counts and cross-tab of `funnel_items` × `phc_customer_id` presence × `metadata_json.phc_service_hint` × stage.
+  - Counts of `startups`, `workspaces` (by `access_status`, `engagement_state`, `programme_id`), `startup_contracts`, `contract_intakes`, `workspace_users`, room allocations, `bulk_import_rows`.
+  - Duplicate NIF and duplicate HubSpot company reports.
+  - Distinct services observed and their current default classification.
+- Operator uploads the authoritative PHC service extract as a CSV via `AdminDataImport` → stored in a private storage bucket `phc-extracts/` (admin-only RLS). Census joins that extract; the target customer count is derived, never hardcoded.
+- Census output persisted to `bulk_import_batches` (new `kind='census'` row) and exported as CSV to the admin-downloadable storage bucket `admin-exports/` with a signed URL surfaced in the UI.
 
-Output: exact counts, exclusion CSV, duplicate CSV, and a *derived* target N (not 180).
+Gate to Phase 1: operator signs off on the census numbers in-app (recorded in `activity_log`).
 
----
+## Phase 1 — Safe reconciliation
 
-## Phase 1 — Import architecture repair (code + migrations, no data writes)
+Schema (single migration):
+- Extend `bulk_import_rows` with `status` enum (`ready`, `conflict`, `excluded`, `dry_run_ok`, `authorized`, `committed`, `failed`, `rolled_back`), `idempotency_key uuid unique`, `before_snapshot jsonb`, `after_snapshot jsonb`, `error jsonb`, `committed_at`, `rolled_back_at`.
+- Add `workspaces.engagement_state text` (`operational`, `service_only`, `dormant`) separate from `access_status` (which stays `imported_unclaimed` until claim).
+- Add `workspaces.service_classification text` and `workspaces.phc_customer_id text unique nullable`.
+- RPC `public.reconcile_active_customer(...)` rewritten as `SECURITY DEFINER` and:
+  - Reads identity by precedence `phc_customer_id → normalized NIF → HubSpot company ID`. Email is advisory only, never auto-link.
+  - Rejects ambiguous matches (two rows for same key) with `status='conflict'` — no `LIMIT 1`.
+  - Requires an explicit `programme_id` for `founder_journey` and `mixed`; otherwise `status='conflict'`.
+  - Uses `metadata_json ->> 'phc_service_hint'` (correct path) — unknown service is `conflict`, never defaulted to `founder_journey`.
+  - Excludes rows where PHC extract marks customer archived/rejected/inactive unless explicitly authorized.
+  - Wraps startup + workspace + startup_contract + contract_intake linkage in a single transaction. Any failure rolls back that row.
+  - Idempotent: same `idempotency_key` re-run is a no-op returning the prior `after_snapshot`.
+  - Rollback RPC `reconcile_rollback(row_id)` restores from `before_snapshot` and marks `rolled_back`.
+- No user/membership/invitation writes anywhere in these RPCs; enforced by grep test.
 
-### 1a. Feature-flag flip and legacy fence
-- Enable `hubspot_importer_v2` globally for admins; keep per-workspace override.
-- Legacy `AdminDataImport` mutation path becomes read-only (banner + disabled buttons); route continues to render via `AdminDataImportRouter` for rollback.
+Edge function `reconciler-run`:
+- Modes: `plan` (default), `commit` (requires kill switch open, admin, and `commit_authorized_ids`).
+- Validates every row against invariants before returning. Persists all rows with their status.
+- Returns exact counts: reconciled, service_only, excluded, conflicts, contracts_linked, workspaces_created, workspaces_reused.
 
-### 1b. New dedicated module: **Active Customer Workspace Reconciler**
-Separate from `BulkContractImport` (which stays for signed PDFs only).
-- New page `src/pages/AdminActiveCustomerReconciler.tsx` under `/admin/data-import` tab.
-- New edge functions:
-  - `reconciler-stage` — ingests canonical PHC CSV, validates schema strictly, resolves identity, produces per-row proposed action (create_workspace / update_workspace / link_only / service_only / manual_review / conflict). No writes.
-  - `reconciler-dryrun` — recomputes diff against live, returns before/after per row.
-  - `reconciler-commit` — calls the atomic RPC (Phase 2) per row with idempotency key.
-  - `reconciler-rollback` — restores `before_snapshot`.
+UI: `AdminDataImportV2` gains staged review — filter by status, inspect before/after JSON diff, tick authorized IDs, submit canary of 5, then rollback, then rerun, then full commit. Every action logged.
 
-### 1c. Schema additions (migration, additive only)
-- `workspaces.engagement_state` (`prospect | active | paused | churned | service_only`), default `NULL`; **do not overload `status`** — `imported_unclaimed` stays for founder claiming.
-- `workspaces.service_classification` (`founder_journey | domiciliacao | mixed`).
-- `startups.phc_customer_id text unique nullable`, `startups.nif_normalized text`.
-- `funnel_items.phc_customer_id text` + partial unique index where not null.
-- `reconciler_batches`, `reconciler_rows`, `reconciler_rollbacks` (mirroring the bulk_import shape but scoped and with `idempotency_key text unique`, `before_snapshot jsonb`, `after_snapshot jsonb`).
-- GRANTs + RLS admin-only per project rules.
-- Programme mapping stored per-batch as `service_program_map jsonb` (uuid resolved live from `programs` — never hardcoded in migration files).
+## Phase 2 — Meeting and impact truth
 
-### 1d. Identity resolution (locked order)
-1. `phc_customer_id`
-2. normalized NIF (9 digits)
-3. HubSpot company id
-4. exact `lower(trim(email))` on org email
-5. else → `manual_review` (never fuzzy-name commit)
+Schema:
+- `sessions`: add `status` (`scheduled|completed|cancelled|no_show`), `actual_duration_minutes int`, `completed_at timestamptz`, `session_template_id uuid`, `primary_consultant_id uuid`.
+- New `session_participants (session_id, user_id, role, attendance_status, source, created_at)` with unique `(session_id, user_id)` and RLS mirroring `sessions`.
+- New `tool_usage_events (id, tool, entity_type, entity_id, workspace_id, user_id, session_id, occurred_at, metadata jsonb)` — no PII, indexed by workspace/user/tool.
+- Backfill script only marks attendance where evidence is unambiguous (present in `session_participants` legacy JSON or explicit membership on that session). Never infers attendance from workspace membership or a past date; unresolved rows stay `null`.
 
-### 1e. Founder-journey vs service-only split
-Service list mapping (confirmed by admin in UI before commit):
-- Incubação Física / Virtual / Ideias → `founder_journey`
-- Domiciliação → `service_only` unless explicitly promoted per-row
-- Mixed → `mixed`
+RPCs (all `SECURITY DEFINER`, filter by role):
+- `get_impact_aggregates(date_from, date_to, consultant_id?, startup_id?, programme_id?, service?)` returning completed meetings, scheduled meetings, actual meeting hours, manual logged hours (from `time_entries`), startups supported, meetings per startup, avg duration, no-contact-30d count, cancellations, no-shows, data completeness percentages.
+- De-dupe rule: `time_entries` linked to a session are excluded from manual hours; sessions without `actual_duration_minutes` contribute zero hours, not an estimate.
+- `get_tool_adoption(...)` grouped by tool/entity/workspace.
 
-Only `founder_journey` and `mixed` get a workspace of `service_classification` matching; `service_only` gets a lightweight workspace row with `needs_onboarding=false`, no playbook materialization, no members.
+Client hooks call the RPCs; no aggregation happens client-side.
 
-### 1f. `BulkContractImport` UX fixes (separate from reconciler)
-- `selected` and `commit_authorized` are two explicit columns/checkboxes.
-- Dry-run mandatory before commit button enables.
-- Partial failure → `completed_with_errors` status distinct from `completed`; toast/label reflects it; never "Import complete" when `error_count > 0`.
+## Phase 3 — Truthful dashboards
 
----
+- Four views under `/staff/impact`: Executive, Consultant, Startup, Tool Adoption. Shared global period + programme + service filters via URL search params.
+- Every metric card shows a tooltip with source table, filter, and denominator; drill-down opens the underlying sessions or time entries list.
+- Data Quality card lists counts of workspaces/sessions missing consultant, programme, contract, participant, duration, service classification, each with a link to the fix flow.
+- CSV export button per view.
+- Remove `MockSparkline`, `mockKpis`, `sampleImpact` references and any string proxy metric. Grep test in CI forbids `mock` in `src/components/impact/`.
+- `list_ecosystem_items_v2`: fix owner filter (currently drops rows with owner mismatches after pagination). Compute `last_activity_at` from `greatest(coalesce(latest_session_completed_at), coalesce(latest_note_at), coalesce(latest_message_at))`; `next_meeting_at` from `min(sessions.starts_at where status='scheduled')`.
+- `imported_unclaimed` workspaces visible to staff (`has_role('admin')` or `has_role('consultor')`) but excluded from founder-facing queries by an explicit filter on `access_status <> 'imported_unclaimed'`.
 
-## Phase 2 — Atomic idempotent RPC
+## Phase 4 — Release blockers
 
-Postgres function `public.reconcile_active_customer(p_row jsonb, p_idempotency_key text)` — SECURITY DEFINER, single transaction:
+- Fix two hook-order violations (identified during typecheck sweep) by moving early returns after all hook calls.
+- `scripts/write-version.ts`: write `version.json` only to `dist/`, remove any `public/version.json` output; update Vite plugin accordingly.
+- Resolve all `tsgo` errors, all `eslint` errors, and add missing keys in `pt.json`/`en.json` (i18n parity script fails CI on drift).
+- Bug screenshots bucket: create `bug-report-screenshots` idempotently in a migration guarded by `if not exists`; add a cleanup edge function `bug-report-cleanup` triggered on failed inserts to delete orphaned uploads; console capture buffer redacts strings matching JWT, email, and known secret patterns before persisting.
 
-1. Lookup existing by identity ladder → resolve `startup_id` (create if missing, PHC id set).
-2. Resolve target workspace: must match `program_id`, `service_classification`, and not be archived. Never pick "oldest" blindly.
-3. Create workspace when none matches (status `imported_unclaimed`, `engagement_state='active'` for founder_journey, `service_only` otherwise, no members, no consultant, no notifications).
-4. Link funnel item → startup → workspace.
-5. Preserve verified non-empty values (fill-only-empty).
-6. Write `before_snapshot` + `after_snapshot` + `idempotency_key` into `reconciler_rows`.
-7. Contracts without number → deterministic key `sha256(phc_id|service|start_date)`.
-8. Any exception → full `ROLLBACK`, mark row `failed` with reason.
-9. Idempotency: unique index on `(idempotency_key)` prevents duplicate re-runs — second call is a no-op returning `{action:'noop'}`.
+## Acceptance and gates
 
-Never touches `auth.users`, `user_roles`, `workspace_users`, `notifications`, `workflow_executions`.
+1. Run 5-row canary in `plan` mode → all `dry_run_ok`.
+2. Flip kill switch, commit those 5 IDs → all `committed`, snapshots match.
+3. Rollback the 5 → all `rolled_back`, before-state restored.
+4. Rerun the same 5 in `commit` → `committed` again; rerun once more → no-op (`already_current`).
+5. Full dry-run over the full authoritative PHC set → report exact counts.
+6. Invariants (all must be zero): ambiguous auto-links, duplicate PHC IDs, founder-journey workspaces with `programme_id is null`, user/invitation/notification writes during import.
+7. Final CI: `bun run build`, `tsgo`, `eslint`, `vitest run`, i18n parity, secret scan — all green.
 
----
+Delivery reports files changed, migrations, SQL verification (as `read_query` results in the reply), canary evidence, residual risks, and a GO/NO-GO based on the invariants above.
 
-## Phase 3 — Safe execution
+## Technical notes
 
-1. **Canary 5** (from `1_READY` queue only, `commit_authorized=true`): dry-run → review diff → commit → verify in app (admin + founder role probe returns 0 rows for non-owner) → rollback → verify snapshot restored → recommit → prove zero-delta on third run.
-2. **Canary 20** — same protocol.
-3. **Full remaining eligible population** — batched in 25s, each row still requires `commit_authorized=true`.
-4. Outputs: before/after count table, per-row action CSV, exclusion CSV, manual-review CSV.
+- Kill switch stored in new `public.system_settings (key text primary key, value jsonb, updated_by uuid, updated_at timestamptz)` — reconciler reads `reconciler.write_mode` at request time; UI toggle audits into `activity_log`.
+- All new RPCs use `SECURITY DEFINER SET search_path=public`.
+- All new tables carry `GRANT SELECT, INSERT, UPDATE, DELETE ... TO authenticated; GRANT ALL ... TO service_role;` plus RLS policies scoped via `has_role`.
+- Client uses `invokeWithAuth` for every edge function call, per project standard.
+- Order of merges: Phase 0 → Phase 1 (behind kill switch, WRITE_MODE default false) → Phase 4 release blockers → Phase 2 schema+backfill → Phase 2 RPCs → Phase 3 UI. Each phase is independently revertable.
 
-Hard stop between each stage awaiting user GO.
+## Assumptions I need confirmed before Agent Mode
 
----
-
-## Phase 4 — Cross-app corrections (parallel PRs, not blocking canary)
-
-- `ProgramSwitcher`: replace direct `UPDATE workspaces SET program_id=…` with RPC `transfer_workspace_program(workspace_id, new_program_id, options)` — archives generated milestones/actions with `source='program_template'`, preserves user-authored items, materializes new programme, updates CRM stage mapping, writes audit row.
-- Mentor attribution: session/feedback counters read from `session_participants` and `mentor_bookings` only; drop any `mentor_connections.count` shortcuts.
-- Fix 21 TS errors, 130 i18n-lint issues, `CommandPalette` failing test.
-- Vite/PWA: pin to tested compat matrix (Vite 5.x + `vite-plugin-pwa` matching), verify build + preview, no `--force`.
-
----
-
-## Mandatory verification gate before any GO
-
-`bun run lint`, `tsgo --noEmit`, `bun run build`, `bunx vitest run`, `node scripts/i18n-check.cjs`, `node scripts/i18n-lint.mjs`, `node scripts/secret-scan.cjs`, migration replay on shadow, RLS regression SQL, Playwright smoke for admin/consultant/founder/mentor.
-
-Final report: exact live counts, files changed, migrations applied, canary evidence (screenshots + row diffs), rollback evidence, residual manual-review rows, GO/NO-GO recommendation.
-
----
-
-## Immediate asks before I start Phase 0
-
-1. **Source-of-truth PHC file**: please re-upload the original PHC export (XLSX preferred) or confirm I should pull via the PHC connector. The `phc_hubspot_crm_classified_ready_2026-07-14.csv` is unusable.
-2. **Domiciliação decision**: are the ~15 domiciliação clients `service_only` (no founder workspace) or should any be promoted to `founder_journey`? A per-row toggle will be exposed in the reconciler UI either way, but I need the default.
-3. **Programme mapping confirmation** for the 4 service groups — I'll present a live dropdown in the UI; confirm you (admin) will pick them at dry-run time rather than me proposing UUIDs now.
-4. Confirm approval to run Phase 0 read-only queries against production now.
+- The authoritative PHC service extract will be uploaded by an admin as CSV (columns: `phc_customer_id`, `nif`, `organization_name`, `service_name`, `status`, `hubspot_company_id?`). Fine to fix column names once you share a sample header.
+- Programme mapping (`service_name` → `programme_id`) is provided per run by the operator, not stored globally. Confirm this is acceptable, or say if you want a persisted `service_programme_map` table with an audit trail.
+- Founder-facing views must exclude `imported_unclaimed`. Confirm no other `access_status` value needs to be hidden from founders.
