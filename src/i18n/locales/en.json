@@ -7901,6 +7901,18 @@
   "sessions": {
     "markAsCompleted": "Mark as completed",
     "statusCompleted": "Completed",
+    "markAsNoShow": "Mark as no-show",
+    "cancelSession": "Cancel session",
+    "cancelDesc": "Cancellation reason (optional). Participants will be notified.",
+    "cancelReason": "Reason",
+    "cancelled": "Session cancelled",
+    "confirmCancel": "Cancel session",
+    "statusCancelled": "Cancelled",
+    "noShowDesc": "Add a note (optional). The impact report keeps the session recorded as a no-show.",
+    "noShowNotes": "Notes",
+    "noShowRecorded": "Session marked as no-show",
+    "confirmNoShow": "Mark as no-show",
+    "statusNoShow": "No-show",
     "completion": {
       "title": "Complete session",
       "subtitle": "Record actual duration, primary consultant, and attendance. These fields power the impact report.",
