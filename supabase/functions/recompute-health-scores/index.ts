@@ -49,6 +49,29 @@ async function sendTeamsHealthAlert(
   }
 }
 
+/**
+ * Helper to fire the health alert email edge function (non-blocking).
+ */
+async function sendHealthAlertEmail(
+  supabaseUrl: string,
+  supabaseKey: string,
+  alertId: string,
+) {
+  try {
+    await fetch(`${supabaseUrl}/functions/v1/send-health-alert-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseKey}`,
+        'x-cron-secret': Deno.env.get('CRON_SECRET') || '',
+      },
+      body: JSON.stringify({ alert_id: alertId }),
+    });
+  } catch {
+    // Non-blocking; alert is already persisted.
+  }
+}
+
 interface HealthModel {
   program_id: string;
   weights_json: {
@@ -488,7 +511,7 @@ serve(async (req) => {
           
           // Alert: drop to critical
           if (healthLabel === "critical" && prevLabel !== "critical") {
-            await supabase.from("workspace_health_alerts").insert({
+            const { data: alertRow } = await supabase.from("workspace_health_alerts").insert({
               workspace_id: workspace.id,
               alert_type: "drop_to_critical",
               severity: "critical",
@@ -500,7 +523,7 @@ serve(async (req) => {
                 new_label: healthLabel,
                 delta: scoreDelta,
               },
-            });
+            }).select("id").single();
             alertsCreated++;
             
             // Send Teams notification for critical alerts
@@ -514,10 +537,14 @@ serve(async (req) => {
               prevScore,
               finalScore
             ).catch(() => {}); // Non-blocking
+
+            if (alertRow?.id) {
+              sendHealthAlertEmail(supabaseUrl, supabaseKey, alertRow.id).catch(() => {});
+            }
           }
           // Alert: drop to at_risk
           else if (healthLabel === "at_risk" && prevLabel !== "at_risk" && prevLabel !== "critical") {
-            await supabase.from("workspace_health_alerts").insert({
+            const { data: alertRow } = await supabase.from("workspace_health_alerts").insert({
               workspace_id: workspace.id,
               alert_type: "drop_to_at_risk",
               severity: "warning",
@@ -529,7 +556,7 @@ serve(async (req) => {
                 new_label: healthLabel,
                 delta: scoreDelta,
               },
-            });
+            }).select("id").single();
             alertsCreated++;
             
             // Send Teams notification for at_risk alerts
@@ -543,6 +570,10 @@ serve(async (req) => {
               prevScore,
               finalScore
             ).catch(() => {}); // Non-blocking
+
+            if (alertRow?.id) {
+              sendHealthAlertEmail(supabaseUrl, supabaseKey, alertRow.id).catch(() => {});
+            }
           }
           // Alert: significant points drop
           else if (scoreDelta >= alertConfig.pointsDropThreshold) {

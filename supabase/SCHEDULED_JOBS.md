@@ -6,14 +6,25 @@ the shared `x-cron-secret` header, sourced from
 `current_setting('app.settings.cron_secret', true)`. No job uses the anon key
 as authorization.
 
-| Job | Schedule (UTC) | Edge function | Auth | Migration |
-|---|---|---|---|---|
-| `run-intake-reminders` | `0 9 * * *` (daily 09:00) | `run-intake-reminders` | `x-cron-secret` | `20260330122409_*.sql` |
-| `check-contract-anniversaries-daily` | `0 6 * * *` (daily 06:00) | `check-contract-anniversaries` | `x-cron-secret` | `20260713141000_schedule-contract-lifecycle-and-checkin-reminders.sql` |
-| `run-checkin-reminders-weekly` | `0 9 * * 1` (Mon 09:00) | `run-checkin-reminders` | `x-cron-secret` | `20260713141000_schedule-contract-lifecycle-and-checkin-reminders.sql` |
-| `archive-contracts-daily` | `0 2 * * *` (daily 02:00) | `archive-contracts-to-sharepoint` | `x-cron-secret` | `20260428_schedule-archive-contracts.sql` |
-| `run-ecosystem-snapshot-daily` | `0 3 * * *` (daily 03:00) | `run-ecosystem-snapshot` | `x-cron-secret` | `20260428_schedule-ecosystem-snapshot.sql` |
-| `compute-cohort-benchmarks-daily` | `0 4 * * *` (daily 04:00) | `compute-cohort-benchmarks` | `x-cron-secret` | `20260428_schedule-cohort-benchmarks.sql` |
+| Job | Schedule (UTC) | Edge function | Auth |
+|---|---|---|---|
+| `run-intake-reminders` | `0 9 * * *` (daily 09:00) | `run-intake-reminders` | `x-cron-secret` |
+| `check-contract-anniversaries-daily` | `0 6 * * *` (daily 06:00) | `check-contract-anniversaries` | `x-cron-secret` |
+| `check-missed-milestones-daily` | `0 9 * * *` (daily 09:00) | `check-missed-milestones` | `x-cron-secret` |
+| `send-milestone-reminders-daily` | `30 8 * * *` (daily 08:30) | `send-milestone-reminders` | `x-cron-secret` |
+| `generate-crm-notifications-daily` | `30 8 * * *` (daily 08:30) | `generate-crm-notifications` | `x-cron-secret` |
+| `recompute-health-scores-daily` | `0 6 * * *` (daily 06:00) | `recompute-health-scores` (→ fires `send-health-alert-email` on drops) | `x-cron-secret` |
+| `automation-engine-hourly` | `0 * * * *` (hourly) | `automation-engine` | `x-cron-secret` |
+| `ecosystem-invariants-hourly` | `17 * * * *` (hourly) | invariants checker | `x-cron-secret` |
+| `auto-sync-outlook-emails` | `*/5 * * * *` (every 5 min) | `sync-outlook-emails` | `x-cron-secret` |
+| `run-checkin-reminders-weekly` | `0 9 * * 1` (Mon 09:00) | `run-checkin-reminders` | `x-cron-secret` |
+| `send-email-digest-weekly` | `0 8 * * 1` (Mon 08:00) | `send-email-digest` | `x-cron-secret` |
+| `send-weekly-health-digest-weekly` | `30 7 * * 1` (Mon 07:30) | `send-weekly-health-digest` | `x-cron-secret` |
+| `archive-contracts-daily` | `0 2 * * *` (daily 02:00) | `archive-contracts-to-sharepoint` | `x-cron-secret` |
+| `run-ecosystem-snapshot-daily` | `0 3 * * *` (daily 03:00) | `run-ecosystem-snapshot` | `x-cron-secret` |
+| `compute-cohort-benchmarks-daily` | `0 4 * * *` (daily 04:00) | `compute-cohort-benchmarks` | `x-cron-secret` |
+
+> `generate-invoices-monthly` was unscheduled — the platform's "No Invoicing/Billing" governance rule forbids financial execution jobs. The `generate-invoices` edge function remains for on-demand/legacy use only.
 
 ---
 
