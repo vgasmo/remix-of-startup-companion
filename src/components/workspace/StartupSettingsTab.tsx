@@ -586,17 +586,55 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
             />
           </div>
 
+          {requiresApproval && (
+            <Alert>
+              <Clock className="h-4 w-4" />
+              <AlertDescription className="space-y-2">
+                <p className="text-sm">
+                  {t(
+                    'startupChangeRequests.approvalNotice',
+                    'Alterações a campos legais/fiscais (nome, NIF, morada, contactos) serão enviadas como pedido para validação da equipa.',
+                  )}
+                </p>
+                <div>
+                  <Label htmlFor="justification" className="text-xs">
+                    {t('startupChangeRequests.justification', 'Justificação (opcional)')}
+                  </Label>
+                  <Textarea
+                    id="justification"
+                    rows={2}
+                    value={justification}
+                    onChange={(e) => setJustification(e.target.value)}
+                    placeholder={t(
+                      'startupChangeRequests.justificationPlaceholder',
+                      'Ex: Mudámos de sede, atualizar morada para a nova.',
+                    )}
+                  />
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="flex justify-end">
-            <Button type="submit" disabled={updateMutation.isPending} loading={updateMutation.isPending}>
-              {updateMutation.isPending ? (
+            <Button
+              type="submit"
+              disabled={updateMutation.isPending || submitChangeRequests.isPending}
+              loading={updateMutation.isPending || submitChangeRequests.isPending}
+            >
+              {(updateMutation.isPending || submitChangeRequests.isPending) ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : null}
-              {t('common.save', 'Save Changes')}
+              {requiresApproval
+                ? t('startupChangeRequests.submitButton', 'Enviar para validação')
+                : t('common.save', 'Save Changes')}
             </Button>
           </div>
         </form>
       </CardContent>
     </Card>
+
+    {/* Founder's structured change-request history */}
+    <StartupChangeRequestsList workspaceId={workspaceId} canManage={requiresApproval} />
 
     <Separator className="my-6" />
 
@@ -609,7 +647,7 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
 
     <Separator className="my-6" />
 
-    {/* Founder → Staff requests */}
+    {/* Founder → Staff requests (free-form) */}
     <FounderRequestsPanel workspaceId={workspaceId} />
   </>
   );
