@@ -60,8 +60,8 @@ export function installConsoleBuffer() {
       push({
         ts: new Date().toISOString(),
         level: 'error',
-        message: args.map(stringify).join(' ').slice(0, 2000),
-        stack: firstErr?.stack?.slice(0, 4000),
+        message: redact(args.map(stringify).join(' ').slice(0, 2000))!,
+        stack: redact(firstErr?.stack?.slice(0, 4000)),
       });
     } catch { /* noop */ }
     return origError.apply(console, args as []);
@@ -72,7 +72,7 @@ export function installConsoleBuffer() {
       push({
         ts: new Date().toISOString(),
         level: 'warn',
-        message: args.map(stringify).join(' ').slice(0, 2000),
+        message: redact(args.map(stringify).join(' ').slice(0, 2000))!,
       });
     } catch { /* noop */ }
     return origWarn.apply(console, args as []);
@@ -82,8 +82,8 @@ export function installConsoleBuffer() {
     push({
       ts: new Date().toISOString(),
       level: 'window.error',
-      message: (event.message || 'window.error').slice(0, 2000),
-      stack: event.error instanceof Error ? event.error.stack?.slice(0, 4000) : undefined,
+      message: redact((event.message || 'window.error').slice(0, 2000))!,
+      stack: redact(event.error instanceof Error ? event.error.stack?.slice(0, 4000) : undefined),
     });
   });
 
@@ -93,8 +93,8 @@ export function installConsoleBuffer() {
     push({
       ts: new Date().toISOString(),
       level: 'unhandledrejection',
-      message: msg.slice(0, 2000),
-      stack: reason instanceof Error ? reason.stack?.slice(0, 4000) : undefined,
+      message: redact(msg.slice(0, 2000))!,
+      stack: redact(reason instanceof Error ? reason.stack?.slice(0, 4000) : undefined),
     });
   });
 }
