@@ -134,108 +134,197 @@ Deno.serve(async (req) => {
     }
 
     // ----- Aggregate reads (no writes) ---------------------------------
-    // funnel_items totals
-    const { count: funnelTotal } = await sbSvc.from('funnel_items').select('*', { count: 'exact', head: true });
-    const { count: funnelWithPhc } = await sbSvc.from('funnel_items').select('*', { count: 'exact', head: true }).not('phc_customer_id', 'is', null);
-    const { count: funnelLinkedStartup } = await sbSvc.from('funnel_items').select('*', { count: 'exact', head: true }).not('linked_startup_id', 'is', null);
-    const { count: funnelLinkedWorkspace } = await sbSvc.from('funnel_items').select('*', { count: 'exact', head: true }).not('linked_workspace_id', 'is', null);
+    // Phase 2: each query records into `errors[]` on failure. A non-empty
+    // errors[] fails the census with 500 — never persists a silently-empty
+    // snapshot (audit P0-3).
+    const errors: Array<{ source: string; message: string }> = [];
+    async function safeCount(source: string, q: Promise<{ count: number | null; error: unknown }>): Promise<number | null> {
+      const { count, error } = await q;
+      if (error) { errors.push({ source, message: (error as { message?: string }).message ?? 'unknown_error' }); return null; }
+      return count ?? 0;
+    }
 
-    // Duplicate PHC customer IDs inside funnel_items
-    const { data: phcDupes } = await sbSvc
-      .rpc('census_phc_customer_duplicates')
-      .maybeSingle()
-      .then(r => r, () => ({ data: null }));
-    // Fallback: inline query if RPC missing
+    const funnelTotal = await safeCount('funnel_items.total',
+      sbSvc.from('funnel_items').select('*', { count: 'exact', head: true }));
+    const funnelWithPhc = await safeCount('funnel_items.with_phc',
+      sbSvc.from('funnel_items').select('*', { count: 'exact', head: true }).not('phc_customer_id', 'is', null));
+    const funnelLinkedStartup = await safeCount('funnel_items.linked_startup',
+      sbSvc.from('funnel_items').select('*', { count: 'exact', head: true }).not('linked_startup_id', 'is', null));
+    const funnelLinkedWorkspace = await safeCount('funnel_items.linked_workspace',
+      sbSvc.from('funnel_items').select('*', { count: 'exact', head: true }).not('linked_workspace_id', 'is', null));
+
+    // Duplicates inside funnel_items
     let phcDupeRows: Array<{ phc_customer_id: string; n: number }> = [];
-    if (!phcDupes) {
-      const { data } = await sbSvc
-        .from('funnel_items')
-        .select('phc_customer_id')
-        .not('phc_customer_id', 'is', null);
-      const counts = new Map<string, number>();
-      for (const r of ((data ?? []) as Array<{ phc_customer_id: string }>)) {
-        counts.set(r.phc_customer_id, (counts.get(r.phc_customer_id) ?? 0) + 1);
+    {
+      const { data, error } = await sbSvc
+        .from('funnel_items').select('id, phc_customer_id, organization_name').not('phc_customer_id', 'is', null);
+      if (error) errors.push({ source: 'funnel_items.phc_dupes', message: error.message });
+      else {
+        const counts = new Map<string, number>();
+        for (const r of ((data ?? []) as Array<{ phc_customer_id: string }>)) counts.set(r.phc_customer_id, (counts.get(r.phc_customer_id) ?? 0) + 1);
+        phcDupeRows = Array.from(counts.entries()).filter(([, n]) => n > 1).map(([phc_customer_id, n]) => ({ phc_customer_id, n }));
       }
-      phcDupeRows = Array.from(counts.entries())
-        .filter(([, n]) => n > 1)
-        .map(([phc_customer_id, n]) => ({ phc_customer_id, n }));
     }
-
-    // Duplicate NIFs
-    const { data: nifRows } = await sbSvc
-      .from('funnel_items')
-      .select('nif_normalized')
-      .not('nif_normalized', 'is', null);
-    const nifCounts = new Map<string, number>();
-    for (const r of ((nifRows ?? []) as Array<{ nif_normalized: string }>)) {
-      nifCounts.set(r.nif_normalized, (nifCounts.get(r.nif_normalized) ?? 0) + 1);
+    let nifDupeRows: Array<{ nif_normalized: string; n: number }> = [];
+    {
+      const { data, error } = await sbSvc.from('funnel_items').select('nif_normalized').not('nif_normalized', 'is', null);
+      if (error) errors.push({ source: 'funnel_items.nif_dupes', message: error.message });
+      else {
+        const nifCounts = new Map<string, number>();
+        for (const r of ((data ?? []) as Array<{ nif_normalized: string }>)) nifCounts.set(r.nif_normalized, (nifCounts.get(r.nif_normalized) ?? 0) + 1);
+        nifDupeRows = Array.from(nifCounts.entries()).filter(([, n]) => n > 1).map(([nif_normalized, n]) => ({ nif_normalized, n }));
+      }
     }
-    const nifDupeRows = Array.from(nifCounts.entries())
-      .filter(([, n]) => n > 1)
-      .map(([nif_normalized, n]) => ({ nif_normalized, n }));
-
-    // Duplicate HubSpot company IDs
-    const { data: hsRows } = await sbSvc
-      .from('funnel_items')
-      .select('hubspot_company_id')
-      .not('hubspot_company_id', 'is', null);
-    const hsCounts = new Map<string, number>();
-    for (const r of ((hsRows ?? []) as Array<{ hubspot_company_id: string }>)) {
-      hsCounts.set(r.hubspot_company_id, (hsCounts.get(r.hubspot_company_id) ?? 0) + 1);
+    let hsDupeRows: Array<{ hubspot_company_id: string; n: number }> = [];
+    {
+      const { data, error } = await sbSvc.from('funnel_items').select('hubspot_company_id').not('hubspot_company_id', 'is', null);
+      if (error) errors.push({ source: 'funnel_items.hs_dupes', message: error.message });
+      else {
+        const hsCounts = new Map<string, number>();
+        for (const r of ((data ?? []) as Array<{ hubspot_company_id: string }>)) hsCounts.set(r.hubspot_company_id, (hsCounts.get(r.hubspot_company_id) ?? 0) + 1);
+        hsDupeRows = Array.from(hsCounts.entries()).filter(([, n]) => n > 1).map(([hubspot_company_id, n]) => ({ hubspot_company_id, n }));
+      }
     }
-    const hsDupeRows = Array.from(hsCounts.entries())
-      .filter(([, n]) => n > 1)
-      .map(([hubspot_company_id, n]) => ({ hubspot_company_id, n }));
 
     // Service breakdown from funnel_items.metadata_json
-    const { data: svcRows } = await sbSvc
-      .from('funnel_items')
-      .select('metadata_json')
-      .not('phc_customer_id', 'is', null);
     const svcCounts = new Map<string, number>();
-    for (const r of ((svcRows ?? []) as Array<{ metadata_json: Record<string, unknown> | null }>)) {
-      const m = r.metadata_json ?? {};
-      const raw = (m['phc_service_hint'] ?? m['phc_service'] ?? m['service_hint'] ?? m['service_name'] ?? '') as string;
-      const key = raw ? String(raw).trim() : '(unset)';
-      svcCounts.set(key, (svcCounts.get(key) ?? 0) + 1);
+    {
+      const { data, error } = await sbSvc.from('funnel_items').select('metadata_json').not('phc_customer_id', 'is', null);
+      if (error) errors.push({ source: 'funnel_items.service_breakdown', message: error.message });
+      else {
+        for (const r of ((data ?? []) as Array<{ metadata_json: Record<string, unknown> | null }>)) {
+          const m = r.metadata_json ?? {};
+          const raw = (m['phc_service_hint'] ?? m['phc_service'] ?? m['service_hint'] ?? m['service_name'] ?? '') as string;
+          const key = raw ? String(raw).trim() : '(unset)';
+          svcCounts.set(key, (svcCounts.get(key) ?? 0) + 1);
+        }
+      }
     }
 
     // Programme map coverage
-    const { data: mapRows } = await sbSvc.from('service_programme_map').select('service_name, service_classification, programme_id');
-    const knownServices = new Set((mapRows ?? []).map(r => (r as { service_name: string }).service_name.trim().toLowerCase()));
     const unmappedServices: Array<{ service: string; count: number }> = [];
-    for (const [svc, count] of svcCounts.entries()) {
-      if (svc !== '(unset)' && !knownServices.has(svc.toLowerCase())) unmappedServices.push({ service: svc, count });
+    {
+      const { data, error } = await sbSvc.from('service_programme_map').select('service_name, service_classification, programme_id');
+      if (error) errors.push({ source: 'service_programme_map', message: error.message });
+      else {
+        const knownServices = new Set((data ?? []).map(r => (r as { service_name: string }).service_name.trim().toLowerCase()));
+        for (const [svc, count] of svcCounts.entries()) {
+          if (svc !== '(unset)' && !knownServices.has(svc.toLowerCase())) unmappedServices.push({ service: svc, count });
+        }
+      }
     }
 
     // Workspaces breakdown — canonical column is `status`, not `access_status`.
-    const { data: wsRows, error: wsErr } = await sbSvc
-      .from('workspaces')
-      .select('status, program_id, engagement_state, archived_at');
-    if (wsErr) {
-      return new Response(JSON.stringify({ error: 'census_query_failed', source: 'workspaces', message: wsErr.message }), { status: 500, headers: jsonHeaders });
-    }
     const wsByStatus = new Map<string, number>();
     const wsByEngagement = new Map<string, number>();
     let wsWithoutProgram = 0;
     let wsArchived = 0;
-    for (const r of ((wsRows ?? []) as Array<{ status: string | null; program_id: string | null; engagement_state: string | null; archived_at: string | null }>)) {
-      const k = r.status ?? '(null)';
-      wsByStatus.set(k, (wsByStatus.get(k) ?? 0) + 1);
-      const e = r.engagement_state ?? '(null)';
-      wsByEngagement.set(e, (wsByEngagement.get(e) ?? 0) + 1);
-      if (!r.program_id) wsWithoutProgram++;
-      if (r.archived_at) wsArchived++;
+    let wsCount = 0;
+    {
+      const { data, error } = await sbSvc.from('workspaces').select('id, name, status, program_id, engagement_state, archived_at');
+      if (error) errors.push({ source: 'workspaces', message: error.message });
+      else {
+        wsCount = (data ?? []).length;
+        for (const r of ((data ?? []) as Array<{ status: string | null; program_id: string | null; engagement_state: string | null; archived_at: string | null }>)) {
+          const k = r.status ?? '(null)';
+          wsByStatus.set(k, (wsByStatus.get(k) ?? 0) + 1);
+          const e = r.engagement_state ?? '(null)';
+          wsByEngagement.set(e, (wsByEngagement.get(e) ?? 0) + 1);
+          if (!r.program_id) wsWithoutProgram++;
+          if (r.archived_at) wsArchived++;
+        }
+      }
     }
 
-
     // Contracts / intakes / users
-    const { count: startupsTotal } = await sbSvc.from('startups').select('*', { count: 'exact', head: true });
-    const { count: contractsTotal } = await sbSvc.from('startup_contracts').select('*', { count: 'exact', head: true });
-    const { count: intakesTotal } = await sbSvc.from('contract_intakes').select('*', { count: 'exact', head: true });
-    const { count: workspaceUsersTotal } = await sbSvc.from('workspace_users').select('*', { count: 'exact', head: true });
-    const { count: roomAllocsTotal } = await sbSvc.from('room_allocations').select('*', { count: 'exact', head: true });
-    const { count: bulkRowsTotal } = await sbSvc.from('bulk_import_rows').select('*', { count: 'exact', head: true });
+    const startupsTotal = await safeCount('startups', sbSvc.from('startups').select('*', { count: 'exact', head: true }));
+    const contractsTotal = await safeCount('startup_contracts', sbSvc.from('startup_contracts').select('*', { count: 'exact', head: true }));
+    const intakesTotal = await safeCount('contract_intakes', sbSvc.from('contract_intakes').select('*', { count: 'exact', head: true }));
+    const workspaceUsersTotal = await safeCount('workspace_users', sbSvc.from('workspace_users').select('*', { count: 'exact', head: true }));
+    const roomAllocsTotal = await safeCount('room_allocations', sbSvc.from('room_allocations').select('*', { count: 'exact', head: true }));
+    const bulkRowsTotal = await safeCount('bulk_import_rows', sbSvc.from('bulk_import_rows').select('*', { count: 'exact', head: true }));
+
+    // Hard-fail if any critical query errored — never persist a silent-zero snapshot.
+    if (errors.length > 0) {
+      return new Response(JSON.stringify({
+        error: 'census_query_failed',
+        errors,
+      }, null, 2), { status: 500, headers: jsonHeaders });
+    }
+
+    // ----- Exception queries → CSVs ------------------------------------
+    // Each exception is a row-level list operators can act on. CSVs are uploaded
+    // to the admin-only `admin-exports` bucket; signed URLs are returned.
+    const exceptions: Record<string, { row_count: number; object_path: string | null; signed_url: string | null; error: string | null }> = {};
+    const bucketId = 'admin-exports';
+    const runStamp = new Date().toISOString().replace(/[:.]/g, '-');
+
+    function toCsv(rows: Array<Record<string, unknown>>): string {
+      if (rows.length === 0) return '';
+      const cols = Array.from(new Set(rows.flatMap(r => Object.keys(r))));
+      const esc = (v: unknown) => {
+        if (v === null || v === undefined) return '';
+        const s = String(v);
+        return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      };
+      return [cols.join(','), ...rows.map(r => cols.map(c => esc(r[c])).join(','))].join('\n');
+    }
+    async function persistException(name: string, rows: Array<Record<string, unknown>>) {
+      const path = `census/${runStamp}/${name}.csv`;
+      const csv = toCsv(rows);
+      if (rows.length === 0) { exceptions[name] = { row_count: 0, object_path: null, signed_url: null, error: null }; return; }
+      const { error: upErr } = await sbSvc.storage.from(bucketId).upload(path, new Blob([csv], { type: 'text/csv' }), { upsert: true, contentType: 'text/csv' });
+      if (upErr) { exceptions[name] = { row_count: rows.length, object_path: null, signed_url: null, error: upErr.message }; return; }
+      const { data: sig } = await sbSvc.storage.from(bucketId).createSignedUrl(path, 3600);
+      exceptions[name] = { row_count: rows.length, object_path: path, signed_url: sig?.signedUrl ?? null, error: null };
+    }
+
+    // Exception 1: orphan contracts (workspace_id NULL and no funnel link)
+    {
+      const { data, error } = await sbSvc.from('startup_contracts')
+        .select('id, contract_number, status, workspace_id, funnel_item_id, created_at')
+        .is('workspace_id', null);
+      if (error) exceptions['orphan_contracts'] = { row_count: 0, object_path: null, signed_url: null, error: error.message };
+      else await persistException('orphan_contracts', (data ?? []) as Array<Record<string, unknown>>);
+    }
+    // Exception 2: unlinked contracted funnel (has phc + stage past 'contracted' but no workspace)
+    {
+      const { data, error } = await sbSvc.from('funnel_items')
+        .select('id, phc_customer_id, organization_name, stage, linked_startup_id, linked_workspace_id')
+        .not('phc_customer_id', 'is', null)
+        .is('linked_workspace_id', null);
+      if (error) exceptions['unlinked_contracted_funnel'] = { row_count: 0, object_path: null, signed_url: null, error: error.message };
+      else await persistException('unlinked_contracted_funnel', (data ?? []) as Array<Record<string, unknown>>);
+    }
+    // Exception 3: duplicate PHC customer IDs (row-level)
+    await persistException('duplicate_phc_customer_ids', phcDupeRows as unknown as Array<Record<string, unknown>>);
+    // Exception 4: duplicate NIFs (row-level)
+    await persistException('duplicate_nifs', nifDupeRows as unknown as Array<Record<string, unknown>>);
+    // Exception 5: workspaces without program (potentially wrong programme)
+    {
+      const { data, error } = await sbSvc.from('workspaces')
+        .select('id, name, status, engagement_state, archived_at')
+        .is('program_id', null);
+      if (error) exceptions['workspaces_without_program'] = { row_count: 0, object_path: null, signed_url: null, error: error.message };
+      else await persistException('workspaces_without_program', (data ?? []) as Array<Record<string, unknown>>);
+    }
+    // Exception 6: startups with multiple active contracts
+    {
+      const { data, error } = await sbSvc.from('startup_contracts')
+        .select('id, workspace_id, status')
+        .in('status', ['active', 'sent', 'signed']);
+      if (error) exceptions['multiple_active_contracts'] = { row_count: 0, object_path: null, signed_url: null, error: error.message };
+      else {
+        const byWs = new Map<string, Array<Record<string, unknown>>>();
+        for (const r of ((data ?? []) as Array<{ id: string; workspace_id: string | null; status: string }>)) {
+          if (!r.workspace_id) continue;
+          const arr = byWs.get(r.workspace_id) ?? []; arr.push(r); byWs.set(r.workspace_id, arr);
+        }
+        const dupes: Array<Record<string, unknown>> = [];
+        for (const [ws, arr] of byWs.entries()) if (arr.length > 1) for (const row of arr) dupes.push({ workspace_id: ws, ...row });
+        await persistException('multiple_active_contracts', dupes);
+      }
+    }
 
     // PHC extract derived counts
     let phcExtractCounts: Record<string, unknown> = {};
@@ -260,7 +349,7 @@ Deno.serve(async (req) => {
       funnel_items_linked_startup: funnelLinkedStartup ?? 0,
       funnel_items_linked_workspace: funnelLinkedWorkspace ?? 0,
       startups: startupsTotal ?? 0,
-      workspaces: (wsRows ?? []).length,
+      workspaces: wsCount,
       workspaces_without_program: wsWithoutProgram,
       startup_contracts: contractsTotal ?? 0,
       contract_intakes: intakesTotal ?? 0,
@@ -291,6 +380,7 @@ Deno.serve(async (req) => {
     const raw = {
       phc_extract: phcExtractCounts,
       phc_parse_error: phcParseError,
+      exceptions,
     };
 
     const { data: inserted, error: insErr } = await sbSvc
@@ -322,6 +412,7 @@ Deno.serve(async (req) => {
       },
       service_breakdown,
       workspace_breakdown,
+      exceptions,
       phc_extract: phcExtractCounts,
       phc_parse_error: phcParseError,
     }, null, 2), { headers: jsonHeaders });
@@ -331,3 +422,4 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: 'internal_error', message: msg }), { status: 500, headers: jsonHeaders });
   }
 });
+
