@@ -158,6 +158,20 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
     }
   }, [searchParams]);
 
+  // Deep-link scroll: `?scroll=business-plan|financial-model` (from PlanAssistantsCard).
+  useEffect(() => {
+    const target = searchParams.get('scroll');
+    if (!target) return;
+    const timer = setTimeout(() => {
+      const el = document.getElementById(target);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('scroll');
+      setSearchParams(newParams, { replace: true });
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchParams, setSearchParams]);
+
   // B6 Fix: Auto-open upload dialog with pre-selected category via query param
   useEffect(() => {
     const uploadCategory = searchParams.get('upload');
