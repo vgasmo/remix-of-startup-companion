@@ -167,32 +167,25 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      try {
-        const { data: rpcRes, error: rpcErr } = await sbSvc.rpc('reconcile_active_customer', {
-          p_row: payload,
-          p_idempotency_key: idempotencyKey,
-          p_dry_run: dryRun || !willWrite,
-        });
-        if (rpcErr) throw rpcErr;
-        const action = (rpcRes as { action?: string })?.action ?? 'unknown';
-        if (action === 'noop' || action === 'already_current') noop++;
-        else planned_writes++;
-        results.push({ funnel_item_id: it.id, service_name: serviceName, result: rpcRes });
-      } catch (e) {
-        const msg = (e as Error).message;
-        // Ambiguity / policy violations from RPC are conflicts, not internal errors.
-        if (/^ambiguous_|_required$/.test(msg)) {
-          conflicts++;
-          results.push({ funnel_item_id: it.id, service_name: serviceName, status: 'conflict', reason: msg });
-        } else {
-          errors++;
-          results.push({ funnel_item_id: it.id, error: msg });
-        }
-      }
+      // RELEASE-HARDENING (P0-2): the atomic `reconcile_active_customer(p_row,...)`
+      // overload was dropped by migration 20260715202735. The staged-commit
+      // replacement is not yet safely wired end-to-end (no batch creation,
+      // no server-side plan-hash verification). Until that lands, this
+      // function is DIAGNOSTICS-ONLY: it reports the planned action for each
+      // row without invoking any RPC. Combined with the writes_frozen gate
+      // above, no write path exists.
+      planned_writes++;
+      results.push({
+        funnel_item_id: it.id,
+        service_name: serviceName,
+        status: 'diagnostic_only',
+        planned: payload,
+      });
     }
 
     return new Response(JSON.stringify({
       dry_run: dryRun,
+      diagnostics_only: true,
       total_rows: items?.length ?? 0,
       planned_writes,
       noop,

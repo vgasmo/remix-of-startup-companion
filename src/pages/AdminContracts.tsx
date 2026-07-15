@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { notify } from '@/lib/notify';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -102,6 +103,25 @@ export default function AdminContracts() {
       return (data ?? []) as unknown as ContractRow[];
     },
   });
+
+  // Release-hardening P1: consume `?open=<contract_id>` deep link from the
+  // manual-resolution work queue. Opens the drawer for the requested contract
+  // if it exists and the caller has access; otherwise a truthful toast.
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    const openId = searchParams.get('open');
+    if (!openId || !data) return;
+    const match = data.find((c) => c.id === openId);
+    if (match) {
+      setSelected(match);
+    } else {
+      notify.error(t('adminContracts.openNotFound', 'Contrato não encontrado ou sem acesso.'));
+    }
+    // Consume the param so back/forward navigation doesn't reopen.
+    const next = new URLSearchParams(searchParams);
+    next.delete('open');
+    setSearchParams(next, { replace: true });
+  }, [data, searchParams, setSearchParams, t]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

@@ -6503,6 +6503,7 @@ export type Database = {
           ai_risks: Json | null
           ai_summary: string | null
           completed_at: string | null
+          completion_idempotency_key: string | null
           created_at: string
           created_by: string | null
           decisions: string | null
@@ -6540,6 +6541,7 @@ export type Database = {
           ai_risks?: Json | null
           ai_summary?: string | null
           completed_at?: string | null
+          completion_idempotency_key?: string | null
           created_at?: string
           created_by?: string | null
           decisions?: string | null
@@ -6577,6 +6579,7 @@ export type Database = {
           ai_risks?: Json | null
           ai_summary?: string | null
           completed_at?: string | null
+          completion_idempotency_key?: string | null
           created_at?: string
           created_by?: string | null
           decisions?: string | null
@@ -8074,6 +8077,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      system_alerts: {
+        Row: {
+          created_at: string
+          dedupe_key: string | null
+          id: string
+          kind: string
+          payload: Json
+          severity: string
+        }
+        Insert: {
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          kind: string
+          payload?: Json
+          severity?: string
+        }
+        Update: {
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          kind?: string
+          payload?: Json
+          severity?: string
+        }
+        Relationships: []
       }
       system_settings: {
         Row: {
@@ -10563,6 +10593,20 @@ export type Database = {
           p_source: string
           p_tags: string[]
           p_verified_fields: Json
+        }
+        Returns: Json
+      }
+      complete_session_atomic: {
+        Args: {
+          p_actual_duration_minutes: number
+          p_decisions: string
+          p_idempotency_key: string
+          p_notes: string
+          p_participants: Json
+          p_primary_consultant_id: string
+          p_session_id: string
+          p_template_id: string
+          p_workspace_id: string
         }
         Returns: Json
       }

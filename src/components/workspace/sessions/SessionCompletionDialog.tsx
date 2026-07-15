@@ -60,7 +60,9 @@ export function SessionCompletionDialog({ open, onOpenChange, session, onComplet
 
   useEffect(() => {
     if (!open) return;
-    setActualDuration(session.duration ? String(session.duration) : '');
+    // Release-hardening P0: actual duration must be entered explicitly,
+    // never inferred from planned duration.
+    setActualDuration('');
     setPrimaryConsultantId(session.primary_consultant_id ?? '');
     setTemplateId(session.session_template_id ?? '');
     setNotes('');

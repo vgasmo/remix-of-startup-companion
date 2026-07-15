@@ -368,43 +368,41 @@ export function useCompleteSession() {
   return useMutation({
     mutationFn: async (payload: SessionCompletionPayload) => {
       if (!payload.session_id) throw new Error('session_id required');
+      if (!payload.workspace_id) throw new Error('workspace_id required');
       if (typeof payload.actual_duration_minutes !== 'number' || payload.actual_duration_minutes <= 0) {
         throw new Error('actual_duration_minutes must be > 0');
       }
-      const completedAt = payload.completed_at ?? new Date().toISOString();
+      if (!payload.primary_consultant_id) throw new Error('primary_consultant_id required');
 
-      const updatePayload: Record<string, unknown> = {
-        status: 'completed',
-        actual_duration_minutes: payload.actual_duration_minutes,
-        completed_at: completedAt,
-        primary_consultant_id: payload.primary_consultant_id,
-      };
-      if (payload.session_template_id !== undefined) updatePayload.session_template_id = payload.session_template_id;
-      if (payload.notes != null) updatePayload.notes = payload.notes;
-      if (payload.decisions != null) updatePayload.decisions = payload.decisions;
+      // Release-hardening P0: session completion is now atomic on the server.
+      // A single SECURITY DEFINER RPC locks the session row, validates the
+      // transition (scheduled → completed only), enforces workspace + role
+      // access, upserts attendance in the same transaction, and is
+      // idempotent per client-supplied key.
+      const idempotencyKey =
+        (globalThis.crypto?.randomUUID?.() ??
+          `${payload.session_id}-${Date.now()}`);
 
-      const { data: updated, error: updErr } = await supabase
-        .from('sessions')
-        .update(updatePayload)
-        .eq('id', payload.session_id)
-        .select('id, workspace_id, title')
-        .single();
-      if (updErr) throw updErr;
-
-      // Upsert attendance per participant.
-      if (payload.attendance.length > 0) {
-        const rows = payload.attendance.map(a => ({
-          session_id: payload.session_id,
-          user_id: a.user_id,
-          attendance_status: a.attendance_status,
-          role: a.role ?? null,
-          source: 'completion_dialog',
-        }));
-        const { error: partErr } = await supabase
-          .from('session_participants')
-          .upsert(rows, { onConflict: 'session_id,user_id' });
-        if (partErr) throw partErr;
-      }
+      // Cast to `never` on the RPC name is required until Supabase types are
+      // regenerated after the `complete_session_atomic` migration is applied.
+      const { data, error } = await (supabase.rpc as unknown as (
+        fn: string,
+        args: Record<string, unknown>,
+      ) => Promise<{ data: unknown; error: { message: string } | null }>)(
+        'complete_session_atomic',
+        {
+          p_session_id: payload.session_id,
+          p_workspace_id: payload.workspace_id,
+          p_actual_duration_minutes: payload.actual_duration_minutes,
+          p_primary_consultant_id: payload.primary_consultant_id,
+          p_template_id: payload.session_template_id ?? null,
+          p_notes: payload.notes ?? null,
+          p_decisions: payload.decisions ?? null,
+          p_participants: payload.attendance,
+          p_idempotency_key: idempotencyKey,
+        },
+      );
+      if (error) throw new Error(error.message);
 
       // Canonical tool usage event — powers Adoption tab.
       const { logToolUsage, TOOL_EVENTS } = await import('@/lib/toolUsage');
@@ -421,11 +419,7 @@ export function useCompleteSession() {
         },
       });
 
-      await logActivity('completed', 'session', payload.session_id, payload.workspace_id, {
-        actual_duration_minutes: payload.actual_duration_minutes,
-      });
-
-      return updated;
+      return data as { session_id: string; workspace_id: string };
     },
     onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: ['sessions', vars.workspace_id] });
