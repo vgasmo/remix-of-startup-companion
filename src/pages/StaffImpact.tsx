@@ -122,6 +122,8 @@ export default function StaffImpact() {
   });
 
   const agg = aggregates.data;
+  const aggError = aggregates.error as Error | null;
+
   const tools = adoption.data ?? [];
 
   const dqAlerts = useMemo(() => {
