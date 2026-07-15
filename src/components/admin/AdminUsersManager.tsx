@@ -68,11 +68,23 @@ export function AdminUsersManager() {
     if (!profileList.length) return [];
     if (!searchTerm.trim()) return profileList;
     const term = searchTerm.toLowerCase();
-    return profileList.filter(p => 
-      p.full_name?.toLowerCase().includes(term) || 
+    return profileList.filter(p =>
+      p.full_name?.toLowerCase().includes(term) ||
       p.email.toLowerCase().includes(term)
     );
   }, [profiles, searchTerm]);
+
+  // P4: paginate the user list — the admin org has hundreds of profiles and
+  // rendering them all at once tanks React reconciliation on this route.
+  const PAGE_SIZE = 25;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / PAGE_SIZE));
+  // Reset to first page whenever the filtered set changes (e.g. new search term).
+  useMemo(() => { setPage(1); }, [searchTerm, filteredProfiles.length]);
+  const pagedProfiles = useMemo(
+    () => filteredProfiles.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filteredProfiles, page]
+  );
 
   const getUserRoles = (userId: string) => userRoles?.filter(r => r.user_id === userId) || [];
   const getUserWorkspaces = (userId: string) => workspaceUsers?.filter(wu => wu.user_id === userId) || [];
@@ -205,7 +217,7 @@ export function AdminUsersManager() {
             </CardContent>
           </Card>
         ) : (
-          filteredProfiles.map(profile => {
+          pagedProfiles.map(profile => {
             const roles = getUserRoles(profile.id);
             const wsAssignments = getUserWorkspaces(profile.id);
             const isAdmin = roles.some(r => r.role === 'admin');
@@ -360,6 +372,42 @@ export function AdminUsersManager() {
           })
         )}
       </div>
+
+      {filteredProfiles.length > PAGE_SIZE && (
+        <div className="flex items-center justify-between gap-3 pt-2">
+          <span className="text-xs text-muted-foreground">
+            {t('admin.userManagement.pageStatus', {
+              defaultValue: '{{from}}–{{to}} de {{total}}',
+              from: (page - 1) * PAGE_SIZE + 1,
+              to: Math.min(page * PAGE_SIZE, filteredProfiles.length),
+              total: filteredProfiles.length,
+            })}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+            >
+              {t('common.previous', { defaultValue: 'Anterior' })}
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              {t('common.pageOf', { defaultValue: '{{page}} / {{total}}', page, total: totalPages })}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            >
+              {t('common.next', { defaultValue: 'Seguinte' })}
+            </Button>
+          </div>
+        </div>
+      )}
+
+
 
       {/* Add Role Dialog */}
       <Dialog open={!!addRoleDialog} onOpenChange={(open) => !open && setAddRoleDialog(null)}>
