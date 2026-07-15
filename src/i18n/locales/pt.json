@@ -7896,6 +7896,8 @@
     "title": "Aviso de Expiração de Sessão"
   },
   "sessions": {
+    "markAsCompleted": "Marcar como concluída",
+    "statusCompleted": "Concluída",
     "completion": {
       "title": "Completar sessão",
       "subtitle": "Registe a duração real, consultor principal e presenças. Estes campos alimentam o relatório de impacto.",
