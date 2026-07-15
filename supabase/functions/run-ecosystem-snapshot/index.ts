@@ -22,7 +22,10 @@ const SNAPSHOT_DOMAINS: { name: string; table: string; safe?: boolean }[] = [
   { name: 'startups', table: 'startups' },
   { name: 'workspaces', table: 'workspaces' },
   { name: 'workspace_users', table: 'workspace_users' },
-  { name: 'profiles', table: 'profiles_safe', safe: true },
+  // profiles_export is a service-role only view that bypasses profiles_safe's
+  // auth.uid() filter (which returned zero rows for the service client and
+  // caused silent-empty snapshots).
+  { name: 'profiles', table: 'profiles_export', safe: true },
   { name: 'mentor_connections', table: 'mentor_connections' },
   { name: 'funnel_items', table: 'funnel_items' },
   { name: 'contract_intakes', table: 'contract_intakes' },
