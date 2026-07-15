@@ -383,18 +383,26 @@ export function useCompleteSession() {
         (globalThis.crypto?.randomUUID?.() ??
           `${payload.session_id}-${Date.now()}`);
 
-      const { data, error } = await supabase.rpc('complete_session_atomic', {
-        p_session_id: payload.session_id,
-        p_workspace_id: payload.workspace_id,
-        p_actual_duration_minutes: payload.actual_duration_minutes,
-        p_primary_consultant_id: payload.primary_consultant_id,
-        p_template_id: payload.session_template_id ?? null,
-        p_notes: payload.notes ?? null,
-        p_decisions: payload.decisions ?? null,
-        p_participants: payload.attendance as unknown as object,
-        p_idempotency_key: idempotencyKey,
-      });
-      if (error) throw error;
+      // Cast to `never` on the RPC name is required until Supabase types are
+      // regenerated after the `complete_session_atomic` migration is applied.
+      const { data, error } = await (supabase.rpc as unknown as (
+        fn: string,
+        args: Record<string, unknown>,
+      ) => Promise<{ data: unknown; error: { message: string } | null }>)(
+        'complete_session_atomic',
+        {
+          p_session_id: payload.session_id,
+          p_workspace_id: payload.workspace_id,
+          p_actual_duration_minutes: payload.actual_duration_minutes,
+          p_primary_consultant_id: payload.primary_consultant_id,
+          p_template_id: payload.session_template_id ?? null,
+          p_notes: payload.notes ?? null,
+          p_decisions: payload.decisions ?? null,
+          p_participants: payload.attendance,
+          p_idempotency_key: idempotencyKey,
+        },
+      );
+      if (error) throw new Error(error.message);
 
       // Canonical tool usage event — powers Adoption tab.
       const { logToolUsage, TOOL_EVENTS } = await import('@/lib/toolUsage');
