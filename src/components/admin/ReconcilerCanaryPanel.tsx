@@ -73,12 +73,15 @@ export function ReconcilerCanaryPanel() {
 
   // Live-recompute the current input hash so the commit button can compare it
   // against the frozen plan hash. Any drift disables commit.
-  useMemo(() => {
+  useEffect(() => {
     const pm = safeParseJson(programMap);
     const cm = safeParseJson(classificationMap);
     if (!pm.ok || !cm.ok || idList.length === 0) { setCurrentHash(null); return; }
-    computePlanHash(normalizePlanInput(idList, pm.value, cm.value)).then(setCurrentHash);
+    let cancelled = false;
+    computePlanHash(normalizePlanInput(idList, pm.value, cm.value)).then(h => { if (!cancelled) setCurrentHash(h); });
+    return () => { cancelled = true; };
   }, [ids, programMap, classificationMap]);
+
 
   const runReconciler = async (dryRun: boolean) => {
     if (!canRun) { notify.error('Provide 1–5 funnel_item IDs'); return; }
