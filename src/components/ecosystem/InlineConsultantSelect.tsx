@@ -36,6 +36,18 @@ export function InlineConsultantSelect({
         }),
       );
       queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
+      // Fire notification email (best-effort; ignore failures).
+      if (consultantId) {
+        supabase.functions
+          .invoke('send-notification-email', {
+            body: {
+              type: 'consultant_assigned',
+              workspace_id: workspaceId,
+              consultant_id: consultantId,
+            },
+          })
+          .catch((e) => logger.warn('consultant_assigned_email_failed', {}, e));
+      }
       onAssigned?.();
     } catch (err) {
       logger.error('consultant_assign_failed', {}, err);
