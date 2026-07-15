@@ -377,6 +377,18 @@ Deno.serve(async (req) => {
         contractId: contract.id, workspaceId: contract.workspace_id,
         source: 'docusign_webhook_completed', operation: 'completed',
       })
+      if (contract.workspace_id) {
+        try {
+          await supabase.functions.invoke('send-notification-email', {
+            body: { type: 'contract_signed', workspace_id: contract.workspace_id, contract_id: contract.id },
+          })
+          await supabase.functions.invoke('send-notification-email', {
+            body: { type: 'contract_activated', workspace_id: contract.workspace_id, contract_id: contract.id },
+          })
+        } catch (e) {
+          console.warn('docusign-webhook: contract_signed/activated notification failed', String(e))
+        }
+      }
     } else if (status === 'declined' || status === 'voided') {
       const r = await syncIntakeOnClosed(supabase, contract.id, status as 'declined' | 'voided', null, `docusign_webhook`)
       await handleLifecycleSyncResult(supabase, r, {
