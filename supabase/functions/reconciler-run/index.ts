@@ -54,6 +54,21 @@ Deno.serve(async (req) => {
     }
     const dryRun = body.dry_run;
     const authorized = new Set(body.commit_authorized_ids ?? []);
+
+    // PHASE 0 FREEZE: writes are locked until an admin explicitly flips the
+    // RECONCILER_WRITE_MODE secret to "enabled". Absence or any other value
+    // means the reconciler is read-only.
+    const writeMode = (Deno.env.get('RECONCILER_WRITE_MODE') ?? '').toLowerCase();
+    const writesUnlocked = writeMode === 'enabled';
+    if (!dryRun && !writesUnlocked) {
+      return new Response(
+        JSON.stringify({
+          error: 'writes_frozen',
+          message: 'Reconciler is in read-only mode. An admin must set RECONCILER_WRITE_MODE=enabled to authorize commits.',
+        }),
+        { status: 423, headers: jsonHeaders },
+      );
+    }
     if (!dryRun && authorized.size === 0) {
       return new Response(JSON.stringify({ error: 'commit_authorized_ids_required' }), { status: 400, headers: jsonHeaders });
     }
