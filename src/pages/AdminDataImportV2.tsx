@@ -262,7 +262,10 @@ export default function AdminDataImportV2() {
           </AlertDescription>
         </Alert>
 
+        <CensusRunnerPanel />
+
         <ReconcilerCanaryPanel />
+
 
         {/* Stepper */}
         <div className="flex items-center gap-2 text-xs">
