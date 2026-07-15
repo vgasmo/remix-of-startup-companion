@@ -467,7 +467,7 @@ export function useTransitionIntakeStatus() {
         // Surface as a non-blocking warning; status change itself succeeded.
         notify.warning?.(postWarnings.join(' · '));
       }
-
+    },
     onSuccess: (_, params) => {
       queryClient.invalidateQueries({ queryKey: ['contract-intakes'] });
       queryClient.invalidateQueries({ queryKey: ['contract-intake'] });
