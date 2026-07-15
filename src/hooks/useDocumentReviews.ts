@@ -88,6 +88,18 @@ export function useCreateReview() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['document-reviews', data.document_id] });
+      // Notify: a new review means a review was requested/created for staff visibility;
+      // and if it was already marked approved, notify founders.
+      supabase.functions
+        .invoke('send-notification-email', {
+          body: {
+            type: data.approval_status === 'approved' ? 'document_review_approved' : 'document_review_requested',
+            workspace_id: data.workspace_id,
+            document_id: data.document_id,
+            review_id: data.id,
+          },
+        })
+        .catch(() => { /* silent */ });
     },
   });
 }
