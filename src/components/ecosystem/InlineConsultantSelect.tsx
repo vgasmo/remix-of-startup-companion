@@ -46,7 +46,7 @@ export function InlineConsultantSelect({
               consultant_id: consultantId,
             },
           })
-          .catch((e) => logger.warn('consultant_assigned_email_failed', {}, e));
+          .catch((e) => logger.warn('consultant_assigned_email_failed', { error: String(e) }));
       }
       onAssigned?.();
     } catch (err) {
