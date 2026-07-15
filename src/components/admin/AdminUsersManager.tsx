@@ -373,6 +373,42 @@ export function AdminUsersManager() {
         )}
       </div>
 
+      {filteredProfiles.length > PAGE_SIZE && (
+        <div className="flex items-center justify-between gap-3 pt-2">
+          <span className="text-xs text-muted-foreground">
+            {t('admin.userManagement.pageStatus', {
+              defaultValue: '{{from}}–{{to}} de {{total}}',
+              from: (page - 1) * PAGE_SIZE + 1,
+              to: Math.min(page * PAGE_SIZE, filteredProfiles.length),
+              total: filteredProfiles.length,
+            })}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+            >
+              {t('common.previous', { defaultValue: 'Anterior' })}
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              {t('common.pageOf', { defaultValue: '{{page}} / {{total}}', page, total: totalPages })}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            >
+              {t('common.next', { defaultValue: 'Seguinte' })}
+            </Button>
+          </div>
+        </div>
+      )}
+
+
+
       {/* Add Role Dialog */}
       <Dialog open={!!addRoleDialog} onOpenChange={(open) => !open && setAddRoleDialog(null)}>
         <DialogContent>
