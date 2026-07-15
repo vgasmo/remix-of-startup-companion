@@ -167,7 +167,12 @@ function InstanceDetailDialog({
 
   if (!instanceId) return null;
 
-  const questions = (data?.instance?.campaign?.survey_definition?.questions_json || []) as SurveyQuestion[];
+  // P4: prefer the campaign's frozen questions_snapshot so historical
+  // responses stay readable even after the survey template is edited.
+  const campaign = data?.instance?.campaign as
+    | { questions_snapshot?: SurveyQuestion[] | null; survey_definition?: { questions_json?: SurveyQuestion[] } }
+    | undefined;
+  const questions = (campaign ? getCampaignQuestions(campaign as any) : []) as SurveyQuestion[];
   const responses = data?.responses || [];
 
   const getResponseValue = (questionId: string) => {
