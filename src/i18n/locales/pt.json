@@ -10,6 +10,7 @@
     "tabQuality": "Qualidade de Dados",
     "tabAdoption": "Adoção de Ferramentas",
     "errorTitle": "Falha ao carregar métricas",
+    "adoptionErrorTitle": "Falha ao carregar adoção",
     "retry": "Tentar novamente",
     "noData": "Sem dados no período selecionado.",
     "meetingsCompleted": "Sessões completadas",
