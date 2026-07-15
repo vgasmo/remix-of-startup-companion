@@ -11,6 +11,7 @@ import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { CommandPalette } from "@/components/command/CommandPalette";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
+import { BugReportWidget } from "@/components/support/BugReportWidget";
 import { useMentorNdaStatus } from "@/hooks/useMentorNdaStatus";
 import { useVersionCheck } from "@/hooks/useVersionCheck";
 import { useFounderOnboardingState } from "@/hooks/useFounderOnboardingState";
@@ -125,6 +126,7 @@ function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { ch
     <>
       <SessionTimeoutWarning timeoutMs={8 * 60 * 60 * 1000} warningTimeMs={10 * 60 * 1000} />
       <CommandPalette />
+      <BugReportWidget />
       {children}
     </>
   );
