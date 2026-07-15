@@ -63,32 +63,36 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const batchId = body?.batch_id as string | undefined;
     const overwriteExisting = body?.overwrite_existing === true; // admin opt-in
+    const dryRun = body?.dry_run === true;
+    const rowIdsAllowlist: string[] | null = Array.isArray(body?.row_ids) && body.row_ids.length > 0
+      ? body.row_ids.map((v: unknown) => String(v))
+      : null;
+    const requireAuthorization = body?.require_authorization !== false; // default ON
     if (!batchId) return jsonResponse({ error: "batch_id required" }, 400);
 
-    // Batch must have a programme assigned (no orphan workspaces).
+    // Batch must have a programme assigned (no orphan workspaces) UNLESS
+    // per-row programme_mapping is provided in edited_json.
     const { data: batch, error: batchErr } = await admin
       .from("bulk_import_batches")
       .select("id, program_id")
       .eq("id", batchId)
       .single();
     if (batchErr || !batch) return jsonResponse({ error: "Batch not found" }, 404);
-    if (!batch.program_id) {
-      return jsonResponse({
-        error: "program_required",
-        message: "This batch has no programme assigned. Pick a programme on the upload screen before committing.",
-      }, 400);
+    const batchProgramId = (batch.program_id as string | null) ?? null;
+
+    if (!dryRun) {
+      await admin.from("bulk_import_batches").update({ status: "committing" }).eq("id", batchId);
     }
-    const batchProgramId = batch.program_id as string;
 
-    await admin.from("bulk_import_batches").update({ status: "committing" }).eq("id", batchId);
-
-    // Fetch all selected, ready-to-commit rows
-    const { data: rows, error: rowsErr } = await admin
+    // Fetch selected, ready-to-commit rows (optionally narrowed by allowlist).
+    let rowsQuery = admin
       .from("bulk_import_rows")
       .select("*")
       .eq("batch_id", batchId)
       .eq("selected", true)
       .in("status", ["will_create", "will_update"]);
+    if (rowIdsAllowlist) rowsQuery = rowsQuery.in("id", rowIdsAllowlist);
+    const { data: rows, error: rowsErr } = await rowsQuery;
 
     if (rowsErr) return jsonResponse({ error: rowsErr.message }, 500);
 
