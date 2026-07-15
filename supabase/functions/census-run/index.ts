@@ -4,17 +4,21 @@
 // Persists ONE row into public.census_reports as an auditable snapshot.
 //
 // Body:
-//   { phc_extract_object_path?: string, notes?: string }
+//   { phc_extract_object_path?: string, phc_active_only?: boolean, notes?: string }
 //
-// The optional phc_extract_object_path points at a CSV in the admin-only
-// "phc-extracts" bucket. The census will still run without it; when present,
-// the CSV is parsed to derive "authoritative active PHC customers".
+// Release-hardening Phase 4:
+//   - State-machine CSV parser: BOM strip, CRLF, quoted commas/semicolons/newlines, escaped quotes.
+//   - Delimiter auto-detect (single delimiter per file: comma or semicolon).
+//   - PHC parse error → run fails, no snapshot persisted (no more silent ok:true).
+//   - `unlinked_contracted_funnel` filters canonical `contracted` stage (not "has phc_customer_id").
+//   - Every aggregate/exception query error still hard-fails the run.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.1';
 import { getCorsHeaders, handleCorsOptions } from '../_shared/cors.ts';
 
 interface Body {
   phc_extract_object_path?: string;
+  phc_active_only?: boolean;
   notes?: string;
 }
 
@@ -36,59 +40,129 @@ const HEADER_ALIASES: Record<keyof ParsedPhcRow, string[]> = {
   hubspot_company_id: ['hubspot_company_id', 'hubspot_id', 'hs_company_id'],
 };
 
-function parseCsv(text: string): ParsedPhcRow[] {
-  const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-  if (lines.length === 0) return [];
-  const rawHeader = splitCsvLine(lines[0]).map(h => h.trim().toLowerCase());
+// --- State-machine CSV parser -----------------------------------------------
+// Handles BOM, CRLF/LF/CR line endings, quoted fields with embedded commas,
+// semicolons, newlines, and RFC-4180 escaped quotes ("").
+// Single delimiter per file — auto-detected on the header line.
+
+function stripBOM(s: string): string {
+  return s.length > 0 && s.charCodeAt(0) === 0xfeff ? s.slice(1) : s;
+}
+
+function detectDelimiter(headerLine: string): ',' | ';' {
+  // Ignore delimiters inside quoted spans when detecting.
+  let commas = 0, semis = 0, inQuote = false;
+  for (let i = 0; i < headerLine.length; i++) {
+    const c = headerLine.charCodeAt(i);
+    if (c === 34 /* " */) {
+      if (inQuote && headerLine.charCodeAt(i + 1) === 34) { i++; continue; }
+      inQuote = !inQuote; continue;
+    }
+    if (inQuote) continue;
+    if (c === 44) commas++;
+    else if (c === 59) semis++;
+  }
+  return semis > commas ? ';' : ',';
+}
+
+function parseCsvRows(text: string): string[][] {
+  const src = stripBOM(text);
+  // Find the header line (first \n or end of string, respecting quotes).
+  let headerEnd = -1;
+  {
+    let inQuote = false;
+    for (let i = 0; i < src.length; i++) {
+      const c = src.charCodeAt(i);
+      if (c === 34) {
+        if (inQuote && src.charCodeAt(i + 1) === 34) { i++; continue; }
+        inQuote = !inQuote; continue;
+      }
+      if (!inQuote && (c === 10 || c === 13)) { headerEnd = i; break; }
+    }
+  }
+  const headerLine = headerEnd === -1 ? src : src.slice(0, headerEnd);
+  const delim = detectDelimiter(headerLine);
+
+  const rows: string[][] = [];
+  let cur = '';
+  let field: string[] = [];
+  let inQuote = false;
+  const flushField = () => { field.push(cur); cur = ''; };
+  const flushRow = () => {
+    // Skip fully empty lines (produced by CRLF at EOF etc.)
+    if (field.length === 1 && field[0] === '') { field = []; return; }
+    rows.push(field);
+    field = [];
+  };
+
+  for (let i = 0; i < src.length; i++) {
+    const ch = src[i];
+    if (inQuote) {
+      if (ch === '"') {
+        if (src[i + 1] === '"') { cur += '"'; i++; }
+        else { inQuote = false; }
+      } else {
+        cur += ch;
+      }
+      continue;
+    }
+    if (ch === '"') { inQuote = true; continue; }
+    if (ch === delim) { flushField(); continue; }
+    if (ch === '\r') {
+      flushField(); flushRow();
+      if (src[i + 1] === '\n') i++;
+      continue;
+    }
+    if (ch === '\n') { flushField(); flushRow(); continue; }
+    cur += ch;
+  }
+  // Trailing field / row
+  if (cur.length > 0 || field.length > 0) { flushField(); flushRow(); }
+  if (inQuote) throw new Error('csv_unterminated_quote');
+  return rows;
+}
+
+function parseCsv(text: string, opts: { activeOnly: boolean }): ParsedPhcRow[] {
+  const rows = parseCsvRows(text);
+  if (rows.length === 0) throw new Error('csv_empty');
+  const header = rows[0].map(h => h.trim().toLowerCase());
   const indexByField: Record<string, number> = {};
   for (const [field, aliases] of Object.entries(HEADER_ALIASES)) {
-    const idx = rawHeader.findIndex(h => aliases.includes(h));
+    const idx = header.findIndex(h => aliases.includes(h));
     if (idx >= 0) indexByField[field] = idx;
   }
-  // Require the two identity-critical columns.
   if (indexByField['phc_customer_id'] === undefined && indexByField['nif'] === undefined) {
-    throw new Error(`CSV missing required columns. Need at least phc_customer_id or nif. Got header: ${rawHeader.join(', ')}`);
+    throw new Error(`csv_missing_identity_columns: header=${header.join(', ')}`);
   }
-  const rows: ParsedPhcRow[] = [];
-  for (let i = 1; i < lines.length; i++) {
-    const parts = splitCsvLine(lines[i]);
+  // If not activeOnly and no status column, we still parse but flag later.
+  const hasStatusCol = indexByField['status'] !== undefined;
+  if (!opts.activeOnly && !hasStatusCol) {
+    throw new Error('csv_missing_status_column_required_when_not_active_only');
+  }
+
+  const out: ParsedPhcRow[] = [];
+  for (let r = 1; r < rows.length; r++) {
+    const parts = rows[r];
     const pick = (k: keyof ParsedPhcRow): string | null => {
       const idx = indexByField[k];
       if (idx === undefined) return null;
       const v = parts[idx];
       if (v === undefined) return null;
-      const trimmed = v.trim();
-      return trimmed.length === 0 ? null : trimmed;
+      const t = v.trim();
+      return t.length === 0 ? null : t;
     };
-    rows.push({
+    // Skip rows with no identifying data at all.
+    const row: ParsedPhcRow = {
       phc_customer_id: pick('phc_customer_id'),
       nif: pick('nif'),
       organization_name: pick('organization_name'),
       service_name: pick('service_name'),
-      status: pick('status'),
+      status: pick('status') ?? (opts.activeOnly ? 'active' : null),
       hubspot_company_id: pick('hubspot_company_id'),
-    });
+    };
+    if (!row.phc_customer_id && !row.nif && !row.organization_name) continue;
+    out.push(row);
   }
-  return rows;
-}
-
-function splitCsvLine(line: string): string[] {
-  const out: string[] = [];
-  let cur = '';
-  let inQuote = false;
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if (inQuote) {
-      if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; }
-      else if (c === '"') { inQuote = false; }
-      else { cur += c; }
-    } else {
-      if (c === '"') inQuote = true;
-      else if (c === ',' || c === ';') { out.push(cur); cur = ''; }
-      else cur += c;
-    }
-  }
-  out.push(cur);
   return out;
 }
 
@@ -117,26 +191,28 @@ Deno.serve(async (req) => {
     const body = (await req.json().catch(() => ({}))) as Body;
 
     // ----- Parse PHC extract if provided -------------------------------
+    // Fail-closed: any download or parse error aborts the run before writes.
     let phcRows: ParsedPhcRow[] = [];
-    let phcParseError: string | null = null;
     if (body.phc_extract_object_path) {
       const { data: blob, error: dlErr } = await sbSvc.storage.from('phc-extracts').download(body.phc_extract_object_path);
       if (dlErr || !blob) {
-        phcParseError = `failed_to_download_extract: ${dlErr?.message ?? 'no data'}`;
-      } else {
-        try {
-          const text = await blob.text();
-          phcRows = parseCsv(text);
-        } catch (e) {
-          phcParseError = (e as Error).message;
-        }
+        return new Response(JSON.stringify({
+          error: 'phc_extract_failed',
+          errors: [{ source: 'phc_extract.download', message: dlErr?.message ?? 'no data' }],
+        }, null, 2), { status: 500, headers: jsonHeaders });
+      }
+      try {
+        const text = await blob.text();
+        phcRows = parseCsv(text, { activeOnly: body.phc_active_only === true });
+      } catch (e) {
+        return new Response(JSON.stringify({
+          error: 'phc_extract_parse_failed',
+          errors: [{ source: 'phc_extract.parse', message: (e as Error).message }],
+        }, null, 2), { status: 500, headers: jsonHeaders });
       }
     }
 
     // ----- Aggregate reads (no writes) ---------------------------------
-    // Phase 2: each query records into `errors[]` on failure. A non-empty
-    // errors[] fails the census with 500 — never persists a silently-empty
-    // snapshot (audit P0-3).
     const errors: Array<{ source: string; message: string }> = [];
     async function safeCount(source: string, q: Promise<{ count: number | null; error: unknown }>): Promise<number | null> {
       const { count, error } = await q;
@@ -214,7 +290,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Workspaces breakdown — canonical column is `status`, not `access_status`.
+    // Workspaces breakdown
     const wsByStatus = new Map<string, number>();
     const wsByEngagement = new Map<string, number>();
     let wsWithoutProgram = 0;
@@ -236,7 +312,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Contracts / intakes / users
     const startupsTotal = await safeCount('startups', sbSvc.from('startups').select('*', { count: 'exact', head: true }));
     const contractsTotal = await safeCount('startup_contracts', sbSvc.from('startup_contracts').select('*', { count: 'exact', head: true }));
     const intakesTotal = await safeCount('contract_intakes', sbSvc.from('contract_intakes').select('*', { count: 'exact', head: true }));
@@ -244,7 +319,6 @@ Deno.serve(async (req) => {
     const roomAllocsTotal = await safeCount('room_allocations', sbSvc.from('room_allocations').select('*', { count: 'exact', head: true }));
     const bulkRowsTotal = await safeCount('bulk_import_rows', sbSvc.from('bulk_import_rows').select('*', { count: 'exact', head: true }));
 
-    // Hard-fail if any critical query errored — never persist a silent-zero snapshot.
     if (errors.length > 0) {
       return new Response(JSON.stringify({
         error: 'census_query_failed',
@@ -253,8 +327,6 @@ Deno.serve(async (req) => {
     }
 
     // ----- Exception queries → CSVs ------------------------------------
-    // Each exception is a row-level list operators can act on. CSVs are uploaded
-    // to the admin-only `admin-exports` bucket; signed URLs are returned.
     const exceptions: Record<string, { row_count: number; object_path: string | null; signed_url: string | null; error: string | null }> = {};
     const bucketId = 'admin-exports';
     const runStamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -279,7 +351,7 @@ Deno.serve(async (req) => {
       exceptions[name] = { row_count: rows.length, object_path: path, signed_url: sig?.signedUrl ?? null, error: null };
     }
 
-    // Exception 1: orphan contracts (workspace_id NULL and no funnel link)
+    // Exception 1: orphan contracts
     {
       const { data, error } = await sbSvc.from('startup_contracts')
         .select('id, contract_number, status, workspace_id, funnel_item_id, created_at')
@@ -287,20 +359,19 @@ Deno.serve(async (req) => {
       if (error) exceptions['orphan_contracts'] = { row_count: 0, object_path: null, signed_url: null, error: error.message };
       else await persistException('orphan_contracts', (data ?? []) as Array<Record<string, unknown>>);
     }
-    // Exception 2: unlinked contracted funnel (has phc + stage past 'contracted' but no workspace)
+    // Exception 2: unlinked contracted funnel — canonical `contracted` stage, missing workspace link.
     {
       const { data, error } = await sbSvc.from('funnel_items')
         .select('id, phc_customer_id, organization_name, stage, linked_startup_id, linked_workspace_id')
-        .not('phc_customer_id', 'is', null)
+        .eq('stage', 'contracted')
         .is('linked_workspace_id', null);
       if (error) exceptions['unlinked_contracted_funnel'] = { row_count: 0, object_path: null, signed_url: null, error: error.message };
       else await persistException('unlinked_contracted_funnel', (data ?? []) as Array<Record<string, unknown>>);
     }
-    // Exception 3: duplicate PHC customer IDs (row-level)
+    // Exception 3-4: duplicates
     await persistException('duplicate_phc_customer_ids', phcDupeRows as unknown as Array<Record<string, unknown>>);
-    // Exception 4: duplicate NIFs (row-level)
     await persistException('duplicate_nifs', nifDupeRows as unknown as Array<Record<string, unknown>>);
-    // Exception 5: workspaces without program (potentially wrong programme)
+    // Exception 5: workspaces without program
     {
       const { data, error } = await sbSvc.from('workspaces')
         .select('id, name, status, engagement_state, archived_at')
@@ -308,7 +379,7 @@ Deno.serve(async (req) => {
       if (error) exceptions['workspaces_without_program'] = { row_count: 0, object_path: null, signed_url: null, error: error.message };
       else await persistException('workspaces_without_program', (data ?? []) as Array<Record<string, unknown>>);
     }
-    // Exception 6: startups with multiple active contracts
+    // Exception 6: multiple active contracts
     {
       const { data, error } = await sbSvc.from('startup_contracts')
         .select('id, workspace_id, status')
@@ -326,10 +397,23 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Any exception upload error → also fail the run.
+    const uploadErrors = Object.entries(exceptions)
+      .filter(([, v]) => v.error !== null)
+      .map(([k, v]) => ({ source: `exception.${k}`, message: v.error! }));
+    if (uploadErrors.length > 0) {
+      return new Response(JSON.stringify({ error: 'exception_upload_failed', errors: uploadErrors }, null, 2), {
+        status: 500, headers: jsonHeaders,
+      });
+    }
+
     // PHC extract derived counts
     let phcExtractCounts: Record<string, unknown> = {};
     if (phcRows.length > 0) {
-      const active = phcRows.filter(r => (r.status ?? '').toLowerCase() === 'active' || (r.status ?? '').toLowerCase() === 'ativo');
+      const active = phcRows.filter(r => {
+        const s = (r.status ?? '').toLowerCase();
+        return s === 'active' || s === 'ativo';
+      });
       const svcInExtract = new Map<string, number>();
       for (const r of active) {
         const k = (r.service_name ?? '(unset)').trim();
@@ -376,10 +460,9 @@ Deno.serve(async (req) => {
       archived: wsArchived,
     };
 
-
     const raw = {
       phc_extract: phcExtractCounts,
-      phc_parse_error: phcParseError,
+      phc_parse_error: null,
       exceptions,
     };
 
@@ -414,7 +497,7 @@ Deno.serve(async (req) => {
       workspace_breakdown,
       exceptions,
       phc_extract: phcExtractCounts,
-      phc_parse_error: phcParseError,
+      phc_parse_error: null,
     }, null, 2), { headers: jsonHeaders });
   } catch (e) {
     const msg = (e as Error).message;
@@ -422,4 +505,3 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: 'internal_error', message: msg }), { status: 500, headers: jsonHeaders });
   }
 });
-
