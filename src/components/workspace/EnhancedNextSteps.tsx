@@ -182,7 +182,7 @@ export function EnhancedNextSteps({ workspaceId, programId, stage, canWrite }: E
 
   if (steps.length === 0) {
     return (
-      <Card className="border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/50 ">
+      <Card className="border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 ">
         <CardContent className="py-6">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-[hsl(var(--success))]/10 flex items-center justify-center">
@@ -222,7 +222,7 @@ export function EnhancedNextSteps({ workspaceId, programId, stage, canWrite }: E
               key={step.id}
               className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
                 step.variant === 'destructive'
-                  ? 'border-[hsl(var(--warning))]/40 bg-[hsl(var(--warning))]/30 hover:bg-[hsl(var(--warning))]/50'
+                  ? 'border-[hsl(var(--warning))]/40 bg-[hsl(var(--warning))]/10 hover:bg-[hsl(var(--warning))]/15'
                   : step.variant === 'warning'
                   ? 'border-border bg-muted/30 hover:bg-muted/50'
                   : 'border-border/50 bg-muted/20 hover:bg-muted/40'
@@ -235,7 +235,7 @@ export function EnhancedNextSteps({ workspaceId, programId, stage, canWrite }: E
                 <div
                   className={`h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                     step.variant === 'destructive'
-                      ? 'bg-[hsl(var(--warning))]/50 text-[hsl(var(--warning))] '
+                      ? 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] '
                       : step.variant === 'warning'
                       ? 'bg-primary/10 text-primary'
                       : 'bg-muted text-muted-foreground'
