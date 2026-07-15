@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { usePendingCheckin, useSubmitCheckin, useSkipCheckin, CheckinQuestion, SubmitCheckinPayload } from '@/hooks/useCheckins';
 import { useAllKpiDefinitions, KpiDefinition } from '@/hooks/useKpis';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
