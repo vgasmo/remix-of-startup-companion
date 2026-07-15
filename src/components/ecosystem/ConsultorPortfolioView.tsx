@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -24,16 +26,54 @@ interface ConsultorGroup {
   items: EcosystemItem[];
 }
 
+function useAllConsultants() {
+  return useQuery({
+    queryKey: ['ecosystem-all-consultants'],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data: roles, error } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('role', ['admin', 'consultor']);
+      if (error) throw error;
+      const ids = Array.from(new Set((roles ?? []).map(r => r.user_id).filter(Boolean))) as string[];
+      if (ids.length === 0) return [] as Array<{ id: string; name: string }>;
+      const { data: profs, error: pErr } = await supabase
+        .from('profiles_safe')
+        .select('id, full_name')
+        .in('id', ids);
+      if (pErr) throw pErr;
+      const nameById = new Map<string, string>();
+      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null }>) {
+        nameById.set(p.id, p.full_name || 'Sem nome');
+      }
+      return ids.map(id => ({ id, name: nameById.get(id) || 'Sem nome' }));
+    },
+  });
+}
+
 export function ConsultorPortfolioView({ items }: ConsultorPortfolioViewProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const { data: allConsultants = [] } = useAllConsultants();
 
   const groups = useMemo(() => {
     const map = new Map<string, ConsultorGroup>();
     const unassignedKey = '__unassigned__';
+    const seen = new Set<string>();
+
+    // Seed groups with every known consultant so users with 0 assignments still appear.
+    for (const c of allConsultants) {
+      map.set(c.id, { id: c.id, name: c.name, items: [] });
+    }
 
     for (const item of items) {
+      // Defensive dedupe: the paginated RPC can emit the same row twice
+      // when many rows share `last_activity_at`, which inflated group counts.
+      if (seen.has(item.id)) continue;
+      seen.add(item.id);
+
       const key = item.owner_id || unassignedKey;
       if (!map.has(key)) {
         map.set(key, {
@@ -53,7 +93,7 @@ export function ConsultorPortfolioView({ items }: ConsultorPortfolioViewProps) {
       if (b.id === unassignedKey) return -1;
       return a.name.localeCompare(b.name);
     });
-  }, [items, t]);
+  }, [items, t, allConsultants]);
 
   const getHealthColor = (score: string | null) => {
     if (!score) return 'bg-muted text-muted-foreground';
