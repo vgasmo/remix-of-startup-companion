@@ -80,6 +80,10 @@ export default function WorkspaceDetail() {
   const canWrite = isAdmin || isConsultor || isMentor || isFounder;
   const tabBadges = useWorkspaceTabBadges(id);
   const { data: workspaceTags = [] } = useWorkspaceTags(id);
+  // Must be called unconditionally before any early return — moving this below
+  // the isLoading / !workspace / isPendingWorkspace returns caused a hook-order
+  // violation and crashed the ErrorBoundary on every workspace open.
+  const { data: valuePropArtifacts } = useValuePropArtifacts(id);
 
   // Auto-materialize acceleration deliverables at page level (not tab-dependent)
   const programType = workspace?.program ? (workspace.program as { program_type?: string }).program_type : undefined;
@@ -342,7 +346,7 @@ export default function WorkspaceDetail() {
   // fall back to the latest Value Proposition canvas (short_version, then raw
   // value_prop field) so newly-imported workspaces without a filled description
   // still show a meaningful one-liner in the header.
-  const { data: valuePropArtifacts } = useValuePropArtifacts(workspace?.id);
+  // (valuePropArtifacts is fetched near the top of the component to keep hook order stable.)
   const canvasDescription =
     valuePropArtifacts?.[0]?.outputs_text?.short_version?.trim() ||
     valuePropArtifacts?.[0]?.json_fields?.value_prop?.trim() ||
