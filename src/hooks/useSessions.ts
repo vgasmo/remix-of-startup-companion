@@ -351,9 +351,13 @@ export function useUpdateSession(workspaceId: string) {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<SessionFormData> & { id: string }) => {
-      // Track which fields changed for conditional sync
-      const syncTriggerFields = ['scheduled_at', 'duration', 'title', 'location', 'join_url'];
-      const needsSync = syncTriggerFields.some(field => field in updates);
+      // Outlook re-sync covers anything that changes the event card
+      // (subject / when / where). Reschedule email + Teams ping only fire
+      // when the *time* actually moved — a rename must not spam attendees.
+      const outlookSyncFields = ['scheduled_at', 'duration', 'title', 'location', 'join_url'];
+      const rescheduleFields = ['scheduled_at', 'duration'];
+      const needsSync = outlookSyncFields.some(field => field in updates);
+      const isReschedule = rescheduleFields.some(field => field in updates);
 
       const { data, error } = await supabase
         .from('sessions')
@@ -366,7 +370,7 @@ export function useUpdateSession(workspaceId: string) {
         .single();
 
       if (error) throw error;
-      return { session: data as unknown as Session, needsSync };
+      return { session: data as unknown as Session, needsSync, isReschedule };
     },
     onSuccess: async (result) => {
       queryClient.invalidateQueries({ queryKey: ['sessions', workspaceId] });
@@ -376,8 +380,8 @@ export function useUpdateSession(workspaceId: string) {
       // P1.2: Log activity
       logActivity('updated', 'session', result.session.id, workspaceId, { title: result.session.title });
 
-      // Inbox + email notifications for all participants on reschedule
-      if (result.needsSync) {
+      // Inbox + email notifications for all participants — only on real reschedule
+      if (result.isReschedule) {
         void notifySessionEvent('rescheduled', {
           id: result.session.id,
           title: result.session.title,
@@ -392,15 +396,17 @@ export function useUpdateSession(workspaceId: string) {
         body: { workspaceId },
       }).catch((err) => logger.warn('recompute_health_score_failed', { workspaceId, error: String(err) }));
 
-      // P0.1: Auto-trigger Outlook sync if date/time/duration changed
+      // P0.1: Auto-trigger Outlook sync if any card-visible field changed
       if (result.needsSync) {
         syncOutlookCalendar({
           sessionId: result.session.id,
           action: 'update',
           workspaceId,
         }).catch((err) => logger.warn('outlook_sync_update_failed', { workspaceId, sessionId: result.session.id, error: String(err) }));
+      }
 
-        // Send reschedule notification
+      // Teams ping — only when the meeting time moved
+      if (result.isReschedule) {
         (async () => {
           let startupName: string | undefined;
           let ownerName: string | undefined;
