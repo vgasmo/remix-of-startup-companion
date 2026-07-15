@@ -148,7 +148,17 @@ export function BugReportWidget() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Clean up orphaned uploads when the row insert fails so the bucket
+        // does not accumulate unreferenced screenshots.
+        if (uploadedPaths.length) {
+          await supabase.storage
+            .from('bug-report-screenshots')
+            .remove(uploadedPaths)
+            .catch(() => { /* best-effort */ });
+        }
+        throw error;
+      }
 
       notify.success(t('bugReport.sent', 'Relatório enviado. Obrigado!'));
       resetForm();
