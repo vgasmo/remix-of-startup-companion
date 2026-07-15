@@ -32,7 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useUpdateSession, useSessionActionItems, useWorkspaceMembers, useCreateActionItem } from '@/hooks/useSessions';
+import { useUpdateSession, useSessionActionItems, useWorkspaceMembers, useCreateActionItem, useCancelSession, useMarkSessionNoShow } from '@/hooks/useSessions';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
