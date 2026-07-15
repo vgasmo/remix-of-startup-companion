@@ -117,7 +117,7 @@ export default function Ecosystem() {
           </TabsContent>
 
           <TabsContent value="by-consultant" className="space-y-6 mt-0">
-            <EcosystemFilters filters={filters} onChange={setFilters} />
+            <EcosystemFilters filters={filters} onChange={setFilters} showOwnerFilter />
             {isLoading ? (
               <ContentSkeleton type="list" count={6} />
             ) : (
