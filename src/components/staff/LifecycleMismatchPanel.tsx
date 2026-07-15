@@ -152,10 +152,10 @@ export function LifecycleMismatchPanel({
         });
       }
 
-      // 3c) contract terminated/voided but workspace still active
+      // 3c) contract terminated but workspace still active
       if (
         c.workspace_id &&
-        (c.status === 'terminated' || c.status === 'voided')
+        c.status === 'terminated'
       ) {
         const ws = wsById.get(c.workspace_id);
         if (ws && ws.status === 'active') {
