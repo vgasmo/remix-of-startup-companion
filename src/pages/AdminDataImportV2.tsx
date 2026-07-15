@@ -25,6 +25,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { notify } from '@/lib/notify';
 import { cn } from '@/lib/utils';
+import { ReconcilerCanaryPanel } from '@/components/admin/ReconcilerCanaryPanel';
 
 type Step = 'upload' | 'mapping' | 'reconcile' | 'commit' | 'results';
 type ImportSource = 'hubspot' | 'phc';
