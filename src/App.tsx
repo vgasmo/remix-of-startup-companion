@@ -126,6 +126,7 @@ function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { ch
     <>
       <SessionTimeoutWarning timeoutMs={8 * 60 * 60 * 1000} warningTimeMs={10 * 60 * 1000} />
       <CommandPalette />
+      <BugReportWidget />
       {children}
     </>
   );
