@@ -270,7 +270,6 @@ export function useSingleFlightDraft<T>({
       if (dataRef.current !== null) persistLocal(dataRef.current);
       if (localRevRef.current > savedRevRef.current) void doServerSave();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {

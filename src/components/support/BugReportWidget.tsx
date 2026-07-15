@@ -29,8 +29,9 @@ export function BugReportWidget() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const location = useLocation();
-  const workspaceMatch = useMatch('/workspace/:id/*') || useMatch('/workspace/:id');
-  const workspaceId = workspaceMatch?.params?.id ?? null;
+  const workspaceMatchSplat = useMatch('/workspace/:id/*');
+  const workspaceMatchExact = useMatch('/workspace/:id');
+  const workspaceId = workspaceMatchSplat?.params?.id ?? workspaceMatchExact?.params?.id ?? null;
 
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState('');
@@ -60,7 +61,6 @@ export function BugReportWidget() {
     };
     window.addEventListener('paste', handler);
     return () => window.removeEventListener('paste', handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, files]);
 
   const consoleErrorCount = useMemo(
