@@ -266,3 +266,84 @@ export async function syncIntakeOnCompleted(
     errors: errors.length ? errors : undefined,
   }
 }
+
+/**
+ * When a contract is declined / voided / terminated:
+ * 1. Update linked intake to matching status (declined | voided | terminated)
+ * 2. Log audit event
+ * 3. Move CRM funnel_item.stage → 'rejected' (declined/voided) or 'archived' (terminated)
+ *
+ * Errors are captured (not thrown) so callers keep going.
+ */
+export async function syncIntakeOnClosed(
+  supabase: any,
+  contractId: string,
+  outcome: 'declined' | 'voided' | 'terminated',
+  performedBy: string | null,
+  source: string,
+): Promise<SyncResult> {
+  const errors: string[] = []
+
+  const { data: intake, error: findErr } = await supabase
+    .from('contract_intakes')
+    .select('id, status, funnel_item_id')
+    .eq('contract_id', contractId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (findErr) {
+    console.warn('[lifecycleSync] syncIntakeOnClosed find error', { contractId, error: findErr.message })
+    errors.push(`find_intake: ${findErr.message}`)
+  }
+
+  const funnelStage = outcome === 'terminated' ? 'archived' : 'rejected'
+  let funnelItemId: string | null = intake?.funnel_item_id ?? null
+
+  if (intake) {
+    // Don't regress terminal statuses
+    const TERMINAL = ['declined', 'voided', 'terminated']
+    if (!TERMINAL.includes(intake.status)) {
+      const { error: updErr } = await supabase
+        .from('contract_intakes')
+        .update({ status: outcome })
+        .eq('id', intake.id)
+      if (updErr) {
+        console.error('[lifecycleSync] intake close update failed', { intakeId: intake.id, outcome, error: updErr.message })
+        errors.push(`intake_${outcome}: ${updErr.message}`)
+      } else {
+        const { error: evtErr } = await supabase.from('intake_events').insert({
+          intake_id: intake.id,
+          event_type: `lifecycle_sync_${outcome}`,
+          from_status: intake.status,
+          to_status: outcome,
+          performed_by: performedBy,
+          metadata: { source, contract_id: contractId },
+        })
+        if (evtErr) errors.push(`intake_event: ${evtErr.message}`)
+      }
+    }
+  } else {
+    // CRM-direct fallback: resolve funnel via contract row
+    const { data: contractRow } = await supabase
+      .from('startup_contracts')
+      .select('funnel_item_id')
+      .eq('id', contractId)
+      .maybeSingle()
+    funnelItemId = contractRow?.funnel_item_id ?? null
+  }
+
+  if (funnelItemId) {
+    const { error: crmErr } = await supabase.from('funnel_items')
+      .update({ stage: funnelStage })
+      .eq('id', funnelItemId)
+    if (crmErr) {
+      console.warn('[lifecycleSync] funnel_items close stage failed', {
+        funnelItemId, funnelStage, error: crmErr.message,
+      })
+      errors.push(`funnel_stage: ${crmErr.message}`)
+    }
+  }
+
+  return { synced: errors.length === 0, intakeId: intake?.id, errors: errors.length ? errors : undefined }
+}
