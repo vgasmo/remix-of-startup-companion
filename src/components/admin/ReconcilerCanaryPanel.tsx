@@ -56,8 +56,8 @@ export function ReconcilerCanaryPanel() {
     if (!canRun) { notify.error('Provide 1–5 funnel_item IDs'); return; }
     const pm = safeParseJson(programMap);
     const cm = safeParseJson(classificationMap);
-    if (!pm.ok) { notify.error(`service_program_map JSON: ${pm.error}`); return; }
-    if (!cm.ok) { notify.error(`service_classification_map JSON: ${cm.error}`); return; }
+    if (!pm.ok) { notify.error(`service_program_map JSON: ${(pm as { error: string }).error}`); return; }
+    if (!cm.ok) { notify.error(`service_classification_map JSON: ${(cm as { error: string }).error}`); return; }
 
     setLoading(dryRun ? 'plan' : 'commit');
     setResult(null);
