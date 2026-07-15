@@ -3,19 +3,46 @@ import { useTranslation } from 'react-i18next';
 import { Sparkles, Calculator, ArrowRight, ClipboardList } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
+
+interface PlanAssistantsCardProps {
+  workspaceId?: string;
+  programId?: string;
+}
 
 /**
  * Surfaces the guided Business Plan / Financial Model assistants
  * from the Workspace Overview. Deep-links into
- * Documents → Financial sub-tab where the Guided Plan Tab and the
- * Financial Model panel render (both live under the same section).
+ * Documents → Financial sub-tab, using URL hash to scroll to the
+ * matching assistant (business plan vs. financial model).
+ * The Business Plan tile is only shown when the guided plan feature
+ * flag is enabled for this workspace/program.
  */
-export function PlanAssistantsCard() {
+export function PlanAssistantsCard({ workspaceId, programId }: PlanAssistantsCardProps = {}) {
   const { t } = useTranslation();
-  const [, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const guidedPlanEnabled = useFeatureFlag(
+    'financial_business_plan_coach_v1',
+    programId,
+    workspaceId,
+  );
 
-  const openAssistants = () => {
-    setSearchParams({ tab: 'documents', sub: 'financial' });
+  const openAssistants = (anchor?: 'business-plan' | 'financial-model') => {
+    const next = new URLSearchParams(searchParams);
+    next.set('tab', 'documents');
+    next.set('sub', 'financial');
+    if (anchor) next.set('scroll', anchor);
+    else next.delete('scroll');
+    setSearchParams(next);
+    // Best-effort scroll after tab renders.
+    if (anchor) {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const el = document.getElementById(anchor);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+      });
+    }
   };
 
   return (
@@ -38,32 +65,34 @@ export function PlanAssistantsCard() {
         </div>
       </CardHeader>
       <CardContent className="grid gap-3 sm:grid-cols-2">
-        <button
-          type="button"
-          onClick={openAssistants}
-          className="group text-left rounded-xl border border-border/60 bg-background/60 p-4 hover:border-primary/40 hover:bg-primary/5 transition-colors"
-        >
-          <div className="flex items-center gap-2 mb-1.5">
-            <ClipboardList className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-sm">
-              {t('planAssistants.businessPlan.title', { defaultValue: 'Plano de Negócios' })}
+        {guidedPlanEnabled && (
+          <button
+            type="button"
+            onClick={() => openAssistants('business-plan')}
+            className="group text-left rounded-xl border border-border/60 bg-background/60 p-4 hover:border-primary/40 hover:bg-primary/5 transition-colors"
+          >
+            <div className="flex items-center gap-2 mb-1.5">
+              <ClipboardList className="h-4 w-4 text-primary" />
+              <span className="font-semibold text-sm">
+                {t('planAssistants.businessPlan.title', { defaultValue: 'Plano de Negócios' })}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              {t('planAssistants.businessPlan.description', {
+                defaultValue: 'Perguntas passo-a-passo para estruturar proposta de valor, mercado e go-to-market.',
+              })}
+            </p>
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-primary group-hover:gap-2 transition-all">
+              {t('planAssistants.open', { defaultValue: 'Abrir assistente' })}
+              <ArrowRight className="h-3 w-3" />
             </span>
-          </div>
-          <p className="text-xs text-muted-foreground mb-3">
-            {t('planAssistants.businessPlan.description', {
-              defaultValue: 'Perguntas passo-a-passo para estruturar proposta de valor, mercado e go-to-market.',
-            })}
-          </p>
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-primary group-hover:gap-2 transition-all">
-            {t('planAssistants.open', { defaultValue: 'Abrir assistente' })}
-            <ArrowRight className="h-3 w-3" />
-          </span>
-        </button>
+          </button>
+        )}
 
         <button
           type="button"
-          onClick={openAssistants}
-          className="group text-left rounded-xl border border-border/60 bg-background/60 p-4 hover:border-primary/40 hover:bg-primary/5 transition-colors"
+          onClick={() => openAssistants('financial-model')}
+          className={`group text-left rounded-xl border border-border/60 bg-background/60 p-4 hover:border-primary/40 hover:bg-primary/5 transition-colors ${guidedPlanEnabled ? '' : 'sm:col-span-2'}`}
         >
           <div className="flex items-center gap-2 mb-1.5">
             <Calculator className="h-4 w-4 text-primary" />
@@ -83,7 +112,7 @@ export function PlanAssistantsCard() {
         </button>
 
         <div className="sm:col-span-2 flex justify-end">
-          <Button size="sm" variant="ghost" onClick={openAssistants} className="gap-1.5">
+          <Button size="sm" variant="ghost" onClick={() => openAssistants()} className="gap-1.5">
             {t('planAssistants.goToSection', { defaultValue: 'Ir para Documentos → Financeiro' })}
             <ArrowRight className="h-3.5 w-3.5" />
           </Button>
