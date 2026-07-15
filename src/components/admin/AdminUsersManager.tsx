@@ -217,7 +217,7 @@ export function AdminUsersManager() {
             </CardContent>
           </Card>
         ) : (
-          filteredProfiles.map(profile => {
+          pagedProfiles.map(profile => {
             const roles = getUserRoles(profile.id);
             const wsAssignments = getUserWorkspaces(profile.id);
             const isAdmin = roles.some(r => r.role === 'admin');
