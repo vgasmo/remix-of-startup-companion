@@ -825,7 +825,10 @@ export function AdminBackoffice() {
         </TabsContent>
 
         <TabsContent value="founder-requests">
-          <FounderRequestsInbox />
+          <div className="space-y-6">
+            <StartupChangeRequestsInbox />
+            <FounderRequestsInbox />
+          </div>
         </TabsContent>
 
         {/* Archive & Backups Tab — governance roles only */}
