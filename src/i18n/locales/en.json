@@ -1,6 +1,8 @@
 {
   "accelerationCalendar": {
+    "assistant": "Assistente",
     "joinSession": "Entrar",
+    "openAssistant": "Abrir assistente de plano",
     "pickDate": "Data",
     "saveFailed": "Erro ao guardar",
     "saved": "Session updated",
@@ -389,8 +391,10 @@
       "dedicatedDesk": "Dedicated Desk",
       "description": "Description",
       "discount": "Discount",
+      "discountEndDate": "Fim do Desconto",
       "discountReason": "Discount Reason",
       "discountReasonPlaceholder": "Reason for discount (e.g. CRM promotion)",
+      "discountStartDate": "Início do Desconto",
       "discounts": "Discounts",
       "dueDate": "Due Date",
       "duration": "Duration",
@@ -418,6 +422,7 @@
       "floorMaps": "Floor Maps",
       "floorPlaceholder": "1, Ground, Mezzanine...",
       "floorPlan": "Floor Plan",
+      "founderRequests": "Pedidos Founders",
       "fulfillRequest": "Fulfill Request",
       "health": "Health",
       "hero": {
@@ -473,7 +478,9 @@
       "noProgram": "No program",
       "noRequestsInStatus": "No requests with this status",
       "noResultsFound": "No results found",
+      "noRoom": "Sem sala específica",
       "noRooms": "No rooms defined",
+      "noRoomsInBuilding": "Sem salas neste edifício",
       "noShapeDrawn": "Please draw a shape first",
       "noStartups": "No startups found",
       "noTypes": "No incubation types defined",
@@ -1462,6 +1469,8 @@
       "alreadyAssignedAll": "Already assigned to all workspaces",
       "assign": "Assign",
       "assignTitle": "Assign {{name}} to Workspace",
+      "cannotSuspendAdmin": "Não é permitido suspender outra conta admin",
+      "cannotSuspendSelf": "Não podes suspender a tua própria conta",
       "deleteError": "Error deleting user",
       "deleteSuccess": "User deleted successfully",
       "deleteUser": "Delete",
@@ -1475,6 +1484,7 @@
       "noRoles": "No roles",
       "noUsers": "No users found.",
       "notAssigned": "Not assigned to any workspace",
+      "pageStatus": "{{from}}–{{to}} de {{total}}",
       "reactivate": "Reactivate",
       "reactivateConfirm": "Are you sure you want to reactivate this user?",
       "reactivateTitle": "Reativar Conta",
@@ -2013,6 +2023,37 @@
     "title": "Program Benchmark",
     "you": "You"
   },
+  "bugReport": {
+    "autoCaptured": "Anexado automaticamente",
+    "choose": "Escolher",
+    "consoleErrors": "Erros da consola",
+    "description": "Description",
+    "error": "Falha ao enviar: {{msg}}",
+    "errorNotImage": "Só imagens são suportadas.",
+    "errorTooLarge": "Ficheiro maior que {{mb}} MB.",
+    "needAuth": "Inicie sessão para enviar um relatório.",
+    "openLabel": "Reportar problema",
+    "page": "Página",
+    "pasteHint": "Paste Hint",
+    "placeholder": "Placeholder",
+    "screenshots": "Screenshots",
+    "sent": "Relatório enviado. Obrigado!",
+    "sev": {
+      "blocker": "Bloqueador — não consigo usar a app",
+      "high": "Alta — bloqueia uma tarefa",
+      "low": "Baixa — pequeno incómodo",
+      "normal": "Normal"
+    },
+    "severity": "Gravidade",
+    "submit": "Enviar relatório",
+    "title": "Reportar um bug",
+    "tooLong": "Descrição demasiado longa.",
+    "tooShort": "Descreva o problema (mín. 5 caracteres).",
+    "trigger": "Reportar bug",
+    "viewport": "Viewport",
+    "what": "O que aconteceu?",
+    "workspace": "Workspace"
+  },
   "bulkActions": {
     "createTaskDesc": "This will create a work queue item for each selected startup.",
     "createTaskTitle": "Create Staff Task for {{count}} Startups",
@@ -2408,6 +2449,7 @@
     "other": "Outro",
     "overdue": "overdue",
     "page": "Page",
+    "pageOf": "{{page}} / {{total}}",
     "pending": "Pendente",
     "perMonth": "/mo",
     "phone": "Phone",
@@ -2786,6 +2828,8 @@
     "lastSync": "Last Sync",
     "linkCopied": "Signing link copied! Send it to the founder by email.",
     "linkGenerated": "Public link generated and copied! Send it to the founder.",
+    "linkGeneratedAndEmailed": "Link público copiado e enviado por email para {{email}}.",
+    "linkGeneratedEmailFailed": "Link copiado, mas falhou o envio por email. Envie manualmente ao founder.",
     "linkedEntities": "Linked Entities",
     "linksTab": "Links",
     "manualSignature": "📋 In-Person (Fallback)",
@@ -2796,6 +2840,7 @@
     "noWorkspace": "No workspace linked",
     "notConfigured": "Not Configured",
     "notSelected": "Not selected",
+    "number": "Nº do contrato",
     "pandadocManual": "🌍 PandaDoc Web (International)",
     "pandadocManualDesc": "Generate the PDF, upload to PandaDoc web, and send for signature. Then come back here to update the status.",
     "pdfGenerated": "Contract PDF generated successfully",
@@ -3014,6 +3059,7 @@
       "aiDesc": "AI extracted these fields from the PDF. Review and edit before saving.",
       "aiPopulated": "AI Populated",
       "manualDesc": "Fill in the contract details manually.",
+      "noDiscountEndNudge": "Sem data de fim, o desconto será permanente e não gera aviso.",
       "noEndDateNudge": "Without an end date this contract will not trigger renewal alerts.",
       "saveContract": "Save Contract to Database",
       "title": "Review Contract Details"
@@ -3099,6 +3145,7 @@
     "websitePlaceholder": "https://mystartup.com"
   },
   "crm": {
+    "activeDiscount": "Desconto ativo",
     "activity": "Activity",
     "activityAdded": "Activity added",
     "activityType": {
@@ -3186,6 +3233,7 @@
     "commercialNotes": "Commercial Notes",
     "commercialNotesPlaceholder": "Contract type, special conditions...",
     "commercialProposal": "Commercial Proposal",
+    "commercialProposalHint": "Valores propostos ao lead. Ao criar o contrato serão copiados para o backoffice, que passa a ser a fonte de verdade.",
     "consultantRequest": "Request from your consultant",
     "contactName": "Contact Name",
     "context": "Contexto",
@@ -3197,7 +3245,6 @@
     "contractLinkError": "Failed to generate contract link",
     "contractLinkMissing": "The server did not return a valid link.",
     "contractMissingNotice": "The linked contract no longer exists (deleted or archived).",
-    "createAndSendContract": "Create contract and send",
     "contratoEnviadoParaAssinatura": "Contract sent for signature!",
     "convertToStartup": "Convert to Startup",
     "convertToWorkspace": {
@@ -3210,6 +3257,7 @@
       "title": "Convert Lead to Workspace"
     },
     "convertedToStartup": "Converted to startup",
+    "createAndSendContract": "Create contract and send",
     "createLead": "Criar Lead",
     "createNewLead": "Criar Nova Lead",
     "createWorkspace": "Create Workspace",
@@ -3260,6 +3308,7 @@
       "title": "CRM Diagnostics"
     },
     "discardChanges": "Discard Changes",
+    "discountUntil": "Desconto até",
     "done": "Done",
     "dragDropHint": "Drag cards to change stage",
     "dragLeadsHere": "Drag leads here",
@@ -3336,6 +3385,7 @@
       "description": "All tasks are up to date. Great work!",
       "title": "Inbox clear!"
     },
+    "incubationType": "Tipo de incubação",
     "initiateContract": "Initiate Contract",
     "intakeCreatedNoEmail": "Intake created but the email was not sent. The link was copied — you can send it manually.",
     "interactions": "Interactions",
@@ -3362,15 +3412,18 @@
     "linkCopyFailed": "Failed to generate link",
     "linkHint": "The link is created automatically when converting the lead or can be done manually.",
     "linkedContext": "Linked Context",
+    "linkedContractPricing": "Contrato ligado (fonte de verdade)",
     "logCall": "Log Call",
     "logEmail": "Log Email",
     "logMeeting": "Log Meeting",
     "logged": "Registados",
     "low": "Low",
+    "managedInBackoffice": "Gerido no backoffice",
     "markDone": "Mark Done",
     "medium": "Medium",
     "meeting": "Meeting",
     "meetingDate": "Meeting Date",
+    "monthlyFee": "Mensalidade",
     "moveError": "Error moving lead",
     "moveTo": "Move to...",
     "movedTo": "Moved to {{stage}}",
@@ -3405,6 +3458,7 @@
     "noLinkedContext": "This lead is not yet linked to a workspace or contract.",
     "noNextAction": "No Next Action",
     "noNextActionSet": "No next action set",
+    "noProgram": "Sem programa",
     "noRecapYet": "No summary available yet",
     "noSubject": "(no subject)",
     "noSyncConfigured": "No synchronization configured",
@@ -3442,9 +3496,12 @@
       "velocityDesc": "Velocity Desc",
       "velocityTitle": "Good Velocity"
     },
+    "pricingSyncHint": "Preços e descontos são editados no separador Backoffice → Contratos. As alterações aqui refletem-se automaticamente.",
     "priority": "Priority",
     "processed": "Processados",
     "program": "Program",
+    "programUpdateFailed": "Falha ao atualizar programa",
+    "programUpdated": "Programa atualizado",
     "proposedDiscount": "Desconto Proposto (%)",
     "proposedIncubationType": "Proposed incubation type",
     "proposedMonthlyFee": "Mensalidade Proposta (€)",
@@ -3465,6 +3522,7 @@
     "resend": "Resend",
     "risks": "Risks",
     "saveChanges": "Save Changes",
+    "saveCommercialNotes": "Guardar notas comerciais",
     "saveCommercialProposal": "Save commercial proposal",
     "searchPlaceholder": "Search leads...",
     "segment": {
@@ -3502,6 +3560,7 @@
     "staleTooltip": "Commercial opportunities with no recent activity and no scheduled next action. Active customers (incubating/accelerating) are not shown here.",
     "startFirstSync": "Start first sync",
     "startupCategory": "Categoria",
+    "startupNoWorkspace": "Sem workspace",
     "suggestedNextSteps": "Suggested Next Steps",
     "sync": "Sync",
     "syncEmails": "Sync Emails",
@@ -4025,6 +4084,7 @@
   },
   "ecosystem": {
     "allCategories": "All Categories",
+    "allConsultants": "Todos os consultores",
     "allHealth": "All Health",
     "allPrograms": "All Programs",
     "allStages": "All Stages",
@@ -4038,6 +4098,7 @@
     "confirmArchiveTitle": "Archive workspace?",
     "confirmDeleteDesc": "Confirm Delete Desc",
     "confirmDeleteTitle": "Eliminar Lead?",
+    "consultant": "Consultor",
     "consultantAssigned": "Consultant successfully assigned",
     "deleteBlockedByContract": "Cannot delete: there is/are contract(s) linked to this lead.",
     "deleteBlockedByReferences": "Cannot delete: this lead is linked to other records (contract, room, or history).",
@@ -4352,6 +4413,7 @@
     "ltv": "LTV",
     "ltvCac": "LTV/CAC",
     "mentorPrep": "Mentor Prep",
+    "month": "Month",
     "monthlyBurn": "Monthly Burn",
     "months": "months",
     "newVersion": "New Version",
@@ -5557,6 +5619,8 @@
     "createWorkspaceContract": "Create Workspace & Contract",
     "criticalAlerts": "Critical",
     "daysRemaining": "{{count}} days",
+    "discountEnded": "O período de desconto de {{pct}}% terminou. Reveja a mensalidade e atualize o contrato.",
+    "discountEndingSoon": "Desconto de {{pct}}% termina em {{days}} dias — mensalidade voltará ao valor cheio.",
     "drafts": "Draft Contracts",
     "equity": "Equity: {{percentage}}%",
     "expired": "Contract Expired",
@@ -5668,6 +5732,10 @@
       "title": "Active founder without a workspace"
     },
     "allConsistent": "Contract, intake, CRM and workspace states are consistent.",
+    "closedContractActiveWorkspace": {
+      "detail": "contract.status=",
+      "title": "Contrato terminado/anulado mas workspace continua activo"
+    },
     "contractActiveWorkspaceNot": {
       "detail": "The contract is active but the workspace is \"{{wstate}}\". Activate the workspace so the founder can access it.",
       "title": "Contract active but workspace inactive"
@@ -5676,10 +5744,22 @@
       "detail": "The lead is marked as contracted but no contract is linked yet. Create or link a contract.",
       "title": "Contracted lead without a linked contract"
     },
+    "crmStaleLinkedContract": {
+      "detail": "contract.status=",
+      "title": "Lead ligada a contrato encerrado sem actualização de fase"
+    },
     "disclaimer": "Read-only. No automatic repair. Use the existing actions on each record.",
+    "expiredStillActive": {
+      "detail": "end_date={{end}} — necessita renovação ou encerramento.",
+      "title": "Contrato activo com end_date no passado"
+    },
     "intakeAheadOfContract": {
       "detail": "The intake is \"{{istate}}\" but the contract is still \"{{cstate}}\". Update the contract to reflect the signature.",
       "title": "Intake signed but contract not yet active"
+    },
+    "intakeBehindContract": {
+      "detail": "intake.status=",
+      "title": "Intake ainda em recolha mas contrato já avançou"
     },
     "open": "Open",
     "pendingSignatureNoProvider": {
@@ -5933,6 +6013,7 @@
     "confirmed": "Confirmed",
     "confirmedSessions": "Confirmed Sessions",
     "declined": "Declined",
+    "duration": "Duração",
     "endTime": "Hora de fim",
     "excellentMatch": "Excellent Match",
     "expressInterest": "Express Interest",
@@ -6740,6 +6821,20 @@
       "sent_for_signature": "Sent for Signature"
     }
   },
+  "planAssistants": {
+    "businessPlan": {
+      "description": "Perguntas passo-a-passo para estruturar proposta de valor, mercado e go-to-market.",
+      "title": "Plano de Negócios"
+    },
+    "description": "Wizards guiados de Plano de Negócios e Modelo Financeiro com apoio de IA.",
+    "financial": {
+      "description": "Cenários, burn, runway, LTV/CAC e revisão automática das projeções.",
+      "title": "Modelo Financeiro"
+    },
+    "goToSection": "Ir para Documentos → Financeiro",
+    "open": "Abrir assistente",
+    "title": "Assistentes de Plano"
+  },
   "playbookProgress": {
     "activateToTrack": "Activate a playbook to track your progress",
     "activePlaybook": "Active Playbook",
@@ -6892,6 +6987,16 @@
     "updated": "Priority updated",
     "updatedDescription": "Workspace priority has been updated"
   },
+  "privateDocs": {
+    "description": "Cartão de Cidadão, IBAN, assinaturas e outros documentos sensíveis dos contratos deste workspace.",
+    "empty": "Ainda não existem documentos privados para este workspace.",
+    "noContract": "Sem contrato associado a este workspace",
+    "signError": "Erro ao gerar link",
+    "staffOnly": "Só staff",
+    "title": "Documentos privados",
+    "tooLarge": "Ficheiro demasiado grande (max 20MB)",
+    "uploadOk": "Documento privado carregado"
+  },
   "programSetup": {
     "acceleration": {
       "addDeliverable": "Add",
@@ -7043,6 +7148,16 @@
       "programNameRequired": "Program name is required"
     }
   },
+  "programSwitcher": {
+    "acceleration": "Aceleração",
+    "confirm": "Confirmar",
+    "confirmDesc": "A startup será movida de ",
+    "confirmTitle": "Alterar programa?",
+    "incubation": "Incubação",
+    "label": "Programa",
+    "updateFailed": "Falha ao alterar programa",
+    "updated": "Programa atualizado"
+  },
   "programs": {
     "draftDiscarded": "Draft discarded",
     "programPublishedSuccessfully": "Program published successfully"
@@ -7097,6 +7212,7 @@
     }
   },
   "publicBooking": {
+    "backToBook": "Back To Book",
     "backToSite": "Back to site",
     "bookFirstMeeting": "Book Your First Meeting",
     "bookFirstMeetingDesc": "Schedule a free consultation to learn how we can help your startup grow.",
@@ -9655,6 +9771,10 @@
     "filterSaved": "Filter saved",
     "funding": "Funding",
     "governance": "Governance",
+    "header": {
+      "addDescription": "+ Adicionar descrição",
+      "fromValueProp": "Do canvas de proposta de valor"
+    },
     "healthNotesSaved": "Health notes saved",
     "healthScore": "Health",
     "healthScoreRecomputed": "Health score recomputed",

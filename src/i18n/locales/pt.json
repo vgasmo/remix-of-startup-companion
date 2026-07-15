@@ -1,6 +1,8 @@
 {
   "accelerationCalendar": {
+    "assistant": "Assistente",
     "joinSession": "Entrar",
+    "openAssistant": "Abrir assistente de plano",
     "pickDate": "Data",
     "saveFailed": "Erro ao guardar",
     "saved": "Sessão atualizada",
@@ -389,8 +391,10 @@
       "dedicatedDesk": "Secretária Dedicada",
       "description": "Descrição",
       "discount": "Desconto",
+      "discountEndDate": "Fim do Desconto",
       "discountReason": "Motivo do Desconto",
       "discountReasonPlaceholder": "Motivo do desconto (ex: promoção CRM)",
+      "discountStartDate": "Início do Desconto",
       "discounts": "Descontos",
       "dueDate": "Data de Vencimento",
       "duration": "Duração",
@@ -418,6 +422,7 @@
       "floorMaps": "Mapas dos Pisos",
       "floorPlaceholder": "1, Piso térreo, Mezzanine...",
       "floorPlan": "Planta",
+      "founderRequests": "Pedidos Founders",
       "fulfillRequest": "Atender Pedido",
       "health": "Saúde",
       "hero": {
@@ -473,7 +478,9 @@
       "noProgram": "Sem programa",
       "noRequestsInStatus": "Sem pedidos com este estado",
       "noResultsFound": "Nenhum resultado encontrado",
+      "noRoom": "Sem sala específica",
       "noRooms": "Nenhuma sala definida",
+      "noRoomsInBuilding": "Sem salas neste edifício",
       "noShapeDrawn": "Por favor desenhe uma forma primeiro",
       "noStartups": "Nenhuma startup encontrada",
       "noTypes": "Nenhum tipo de incubação definido",
@@ -1462,6 +1469,8 @@
       "alreadyAssignedAll": "Já atribuído a todos os workspaces",
       "assign": "Atribuir",
       "assignTitle": "Atribuir {{name}} a Workspace",
+      "cannotSuspendAdmin": "Não é permitido suspender outra conta admin",
+      "cannotSuspendSelf": "Não podes suspender a tua própria conta",
       "deleteError": "Erro ao apagar utilizador",
       "deleteSuccess": "Utilizador apagado com sucesso",
       "deleteUser": "Apagar",
@@ -1475,6 +1484,7 @@
       "noRoles": "Sem funções",
       "noUsers": "Nenhum utilizador encontrado.",
       "notAssigned": "Não atribuído a nenhum workspace",
+      "pageStatus": "{{from}}–{{to}} de {{total}}",
       "reactivate": "Reativar",
       "reactivateConfirm": "Tem a certeza que deseja reativar este utilizador?",
       "reactivateTitle": "Reativar Conta",
@@ -2013,6 +2023,37 @@
     "title": "Benchmark do Programa",
     "you": "Tu"
   },
+  "bugReport": {
+    "autoCaptured": "Anexado automaticamente",
+    "choose": "Escolher",
+    "consoleErrors": "Erros da consola",
+    "description": "Descrição",
+    "error": "Falha ao enviar: {{msg}}",
+    "errorNotImage": "Só imagens são suportadas.",
+    "errorTooLarge": "Ficheiro maior que {{mb}} MB.",
+    "needAuth": "Inicie sessão para enviar um relatório.",
+    "openLabel": "Reportar problema",
+    "page": "Página",
+    "pasteHint": "Paste Hint",
+    "placeholder": "Placeholder",
+    "screenshots": "Screenshots",
+    "sent": "Relatório enviado. Obrigado!",
+    "sev": {
+      "blocker": "Bloqueador — não consigo usar a app",
+      "high": "Alta — bloqueia uma tarefa",
+      "low": "Baixa — pequeno incómodo",
+      "normal": "Normal"
+    },
+    "severity": "Gravidade",
+    "submit": "Enviar relatório",
+    "title": "Reportar um bug",
+    "tooLong": "Descrição demasiado longa.",
+    "tooShort": "Descreva o problema (mín. 5 caracteres).",
+    "trigger": "Reportar bug",
+    "viewport": "Viewport",
+    "what": "O que aconteceu?",
+    "workspace": "Workspace"
+  },
   "bulkActions": {
     "createTaskDesc": "Será criado um item na fila de trabalho para cada startup selecionada.",
     "createTaskTitle": "Criar Tarefa para {{count}} Startups",
@@ -2408,6 +2449,7 @@
     "other": "Outro",
     "overdue": "atrasado",
     "page": "Página",
+    "pageOf": "{{page}} / {{total}}",
     "pending": "Pendente",
     "perMonth": "/mês",
     "phone": "Phone",
@@ -2786,6 +2828,8 @@
     "lastSync": "Última Sincronização",
     "linkCopied": "Link de assinatura copiado! Envie ao founder por email.",
     "linkGenerated": "Link público gerado e copiado! Envie ao founder.",
+    "linkGeneratedAndEmailed": "Link público copiado e enviado por Email para {{email}}.",
+    "linkGeneratedEmailFailed": "Link copiado, mas falhou o envio por Email. Envie manualmente ao founder.",
     "linkedEntities": "Entidades Ligadas",
     "linksTab": "Ligações",
     "manualSignature": "📋 Presencial (Fallback)",
@@ -2796,6 +2840,7 @@
     "noWorkspace": "Sem workspace associado",
     "notConfigured": "Não Configurado",
     "notSelected": "Não selecionado",
+    "number": "Nº do contrato",
     "pandadocManual": "🌍 PandaDoc Web (Estrangeiros)",
     "pandadocManualDesc": "Gera o PDF, faz upload no PandaDoc web, e envia para assinatura. Depois volta aqui para marcar o estado.",
     "pdfGenerated": "PDF do contrato gerado com sucesso",
@@ -3014,6 +3059,7 @@
       "aiDesc": "A IA extraiu estes campos do PDF. Reveja e edite antes de guardar.",
       "aiPopulated": "Preenchido por IA",
       "manualDesc": "Preencha os detalhes do contrato manualmente.",
+      "noDiscountEndNudge": "Sem data de fim, o desconto será permanente e não gera aviso.",
       "noEndDateNudge": "Sem data de fim, este contrato não gera alertas de renovação.",
       "saveContract": "Guardar Contrato na Base de Dados",
       "title": "Rever Detalhes do Contrato"
@@ -3099,6 +3145,7 @@
     "websitePlaceholder": "https://minhastartup.com"
   },
   "crm": {
+    "activeDiscount": "Desconto ativo",
     "activity": "Atividade",
     "activityAdded": "Atividade adicionada",
     "activityType": {
@@ -3186,6 +3233,7 @@
     "commercialNotes": "Notas Comerciais",
     "commercialNotesPlaceholder": "Tipo de contrato, condições especiais...",
     "commercialProposal": "Proposta Comercial",
+    "commercialProposalHint": "Valores propostos ao Lead. Ao criar o contrato serão copiados para o backoffice, que passa a ser a fonte de verdade.",
     "consultantRequest": "Pedido do seu consultor",
     "contactName": "Nome do Contacto",
     "context": "Contexto",
@@ -3197,7 +3245,6 @@
     "contractLinkError": "Erro ao gerar link do contrato",
     "contractLinkMissing": "O servidor não devolveu um link válido.",
     "contractMissingNotice": "O contrato vinculado já não existe (foi eliminado ou arquivado).",
-    "createAndSendContract": "Criar contrato e enviar",
     "contratoEnviadoParaAssinatura": "Contrato enviado para assinatura!",
     "convertToStartup": "Converter em Startup",
     "convertToWorkspace": {
@@ -3210,6 +3257,7 @@
       "title": "Converter Lead em Workspace"
     },
     "convertedToStartup": "Convertido em startup",
+    "createAndSendContract": "Criar contrato e enviar",
     "createLead": "Criar Lead",
     "createNewLead": "Criar Nova Lead",
     "createWorkspace": "Criar Workspace",
@@ -3260,6 +3308,7 @@
       "title": "Diagnósticos CRM"
     },
     "discardChanges": "Descartar Alterações",
+    "discountUntil": "Desconto até",
     "done": "Concluídas",
     "dragDropHint": "Arraste os cartões para mudar de fase",
     "dragLeadsHere": "Arraste leads para aqui",
@@ -3336,6 +3385,7 @@
       "description": "Todas as tarefas estão em dia. Bom trabalho!",
       "title": "Inbox limpo!"
     },
+    "incubationType": "Tipo de incubação",
     "initiateContract": "Iniciar Contrato",
     "intakeCreatedNoEmail": "Intake criado mas o email não foi enviado. O link foi copiado — pode enviar manualmente.",
     "interactions": "Interações",
@@ -3362,15 +3412,18 @@
     "linkCopyFailed": "Falha ao gerar o link",
     "linkHint": "O vínculo é criado automaticamente ao converter o lead ou pode ser feito manualmente.",
     "linkedContext": "Contexto Vinculado",
+    "linkedContractPricing": "Contrato ligado (fonte de verdade)",
     "logCall": "Registar Chamada",
     "logEmail": "Registar Email",
     "logMeeting": "Registar Reunião",
     "logged": "Registados",
     "low": "Baixa",
+    "managedInBackoffice": "Gerido no backoffice",
     "markDone": "Concluir",
     "medium": "Média",
     "meeting": "Reunião",
     "meetingDate": "Data da Reunião",
+    "monthlyFee": "Mensalidade",
     "moveError": "Erro ao mover lead",
     "moveTo": "Mover para...",
     "movedTo": "Movido para {{stage}}",
@@ -3405,6 +3458,7 @@
     "noLinkedContext": "Este lead ainda não está vinculado a um workspace ou contrato.",
     "noNextAction": "Sem ação definida",
     "noNextActionSet": "Sem próxima ação definida",
+    "noProgram": "Sem programa",
     "noRecapYet": "Ainda sem resumo disponível",
     "noSubject": "(sem assunto)",
     "noSyncConfigured": "Nenhuma sincronização configurada",
@@ -3442,9 +3496,12 @@
       "velocityDesc": "Velocity Desc",
       "velocityTitle": "Good Velocity"
     },
+    "pricingSyncHint": "Preços e descontos são editados no separador Backoffice → Contratos. As alterações aqui refletem-se automaticamente.",
     "priority": "Prioridade",
     "processed": "Processados",
     "program": "Programa",
+    "programUpdateFailed": "Falha ao atualizar programa",
+    "programUpdated": "Programa atualizado",
     "proposedDiscount": "Desconto Proposto (%)",
     "proposedIncubationType": "Tipo de Incubação Proposto",
     "proposedMonthlyFee": "Mensalidade Proposta (€)",
@@ -3465,6 +3522,7 @@
     "resend": "Reenviar",
     "risks": "Riscos",
     "saveChanges": "Guardar Alterações",
+    "saveCommercialNotes": "Guardar notas comerciais",
     "saveCommercialProposal": "Guardar proposta comercial",
     "searchPlaceholder": "Pesquisar leads...",
     "segment": {
@@ -3502,6 +3560,7 @@
     "staleTooltip": "Oportunidades comerciais sem atividade recente e sem próxima ação agendada. Clientes ativos (incubação/aceleração) não aparecem aqui.",
     "startFirstSync": "Iniciar primeira sincronização",
     "startupCategory": "Categoria",
+    "startupNoWorkspace": "Sem Workspace",
     "suggestedNextSteps": "Próximos Passos Sugeridos",
     "sync": "Sincronizar",
     "syncEmails": "Sincronizar Emails",
@@ -4025,6 +4084,7 @@
   },
   "ecosystem": {
     "allCategories": "Todas as Categorias",
+    "allConsultants": "Todos os consultores",
     "allHealth": "Toda a Saúde",
     "allPrograms": "Todos os Programas",
     "allStages": "Todas as Fases",
@@ -4038,6 +4098,7 @@
     "confirmArchiveTitle": "Arquivar workspace?",
     "confirmDeleteDesc": "Confirmar Eliminar Desc",
     "confirmDeleteTitle": "Eliminar Lead?",
+    "consultant": "Consultor",
     "consultantAssigned": "Consultor atribuído com sucesso",
     "deleteBlockedByContract": "Não é possível eliminar: existe(m) contrato(s) associado(s) a esta lead.",
     "deleteBlockedByReferences": "Não é possível eliminar: esta lead está associada a outros registos (contrato, sala ou histórico).",
@@ -4352,6 +4413,7 @@
     "ltv": "LTV",
     "ltvCac": "LTV/CAC",
     "mentorPrep": "Preparação Mentoria",
+    "month": "Month",
     "monthlyBurn": "Burn Mensal",
     "months": "meses",
     "newVersion": "Nova Versão",
@@ -5557,6 +5619,8 @@
     "createWorkspaceContract": "Criar Workspace e Contrato",
     "criticalAlerts": "Crítico",
     "daysRemaining": "{{count}} dias",
+    "discountEnded": "O período de desconto de {{pct}}% terminou. Reveja a mensalidade e atualize o contrato.",
+    "discountEndingSoon": "Desconto de {{pct}}% termina em {{days}} dias — mensalidade voltará ao valor cheio.",
     "drafts": "Contratos em Rascunho",
     "equity": "Equity: {{percentage}}%",
     "expired": "Contrato Expirado",
@@ -5668,6 +5732,10 @@
       "title": "Founder ativo sem workspace"
     },
     "allConsistent": "Estados de contrato, intake, CRM e workspace consistentes.",
+    "closedContractActiveWorkspace": {
+      "detail": "Contrato.Estado=",
+      "title": "Contrato terminado/anulado mas Workspace continua activo"
+    },
     "contractActiveWorkspaceNot": {
       "detail": "O contrato está ativo, mas o workspace está em \"{{wstate}}\". Ative o workspace para o founder aceder.",
       "title": "Contrato ativo mas workspace inativo"
@@ -5676,10 +5744,22 @@
       "detail": "O lead está marcado como contratado mas ainda não tem contrato associado. Crie ou associe o contrato.",
       "title": "Lead contratado sem contrato associado"
     },
+    "crmStaleLinkedContract": {
+      "detail": "Contrato.Estado=",
+      "title": "Lead ligada a contrato encerrado sem actualização de fase"
+    },
     "disclaimer": "Apenas leitura. Nenhuma reparação automática. Use as ações existentes em cada registo.",
+    "expiredStillActive": {
+      "detail": "end_date={{end}} — necessita renovação ou encerramento.",
+      "title": "Contrato activo com end_date no passado"
+    },
     "intakeAheadOfContract": {
       "detail": "O intake está \"{{istate}}\" mas o contrato ainda está \"{{cstate}}\". Atualize o contrato para refletir a assinatura.",
       "title": "Intake assinado mas contrato ainda não ativo"
+    },
+    "intakeBehindContract": {
+      "detail": "intake.Estado=",
+      "title": "Intake ainda em recolha mas contrato já avançou"
     },
     "open": "Abrir",
     "pendingSignatureNoProvider": {
@@ -5688,7 +5768,6 @@
     },
     "title": "Inconsistências de ciclo de vida"
   },
-
   "loading": {
     "almostThere": "Quase lá...",
     "default": "A carregar...",
@@ -5934,6 +6013,7 @@
     "confirmed": "Confirmado",
     "confirmedSessions": "Sessões Confirmadas",
     "declined": "Recusado",
+    "duration": "Duração",
     "endTime": "Hora de fim",
     "excellentMatch": "Excelente Compatibilidade",
     "expressInterest": "Expressar Interesse",
@@ -6741,6 +6821,20 @@
       "sent_for_signature": "Enviado p/ Assinatura"
     }
   },
+  "planAssistants": {
+    "businessPlan": {
+      "description": "Perguntas passo-a-passo para estruturar proposta de valor, mercado e go-to-market.",
+      "title": "Plano de Negócios"
+    },
+    "description": "Wizards guiados de Plano de Negócios e Modelo Financeiro com apoio de IA.",
+    "financial": {
+      "description": "Cenários, burn, runway, LTV/CAC e revisão automática das projeções.",
+      "title": "Modelo Financeiro"
+    },
+    "goToSection": "Ir para Documentos → Financeiro",
+    "open": "Abrir assistente",
+    "title": "Assistentes de Plano"
+  },
   "playbookProgress": {
     "activateToTrack": "Ative um playbook para acompanhar o progresso",
     "activePlaybook": "Playbook Ativo",
@@ -6893,6 +6987,16 @@
     "updated": "Prioridade atualizada",
     "updatedDescription": "A prioridade do workspace foi atualizada"
   },
+  "privateDocs": {
+    "description": "Cartão de Cidadão, IBAN, assinaturas e outros documentos sensíveis dos contratos deste Workspace.",
+    "empty": "Ainda não existem documentos privados para este Workspace.",
+    "noContract": "Sem contrato associado a este Workspace",
+    "signError": "Erro ao gerar link",
+    "staffOnly": "Só staff",
+    "title": "Documentos privados",
+    "tooLarge": "Ficheiro demasiado grande (max 20MB)",
+    "uploadOk": "Documento privado carregado"
+  },
   "programSetup": {
     "acceleration": {
       "addDeliverable": "Adicionar",
@@ -7044,6 +7148,16 @@
       "programNameRequired": "O nome do programa é obrigatório"
     }
   },
+  "programSwitcher": {
+    "acceleration": "Aceleração",
+    "confirm": "Confirmar",
+    "confirmDesc": "A Startup será movida de ",
+    "confirmTitle": "Alterar programa?",
+    "incubation": "Incubação",
+    "label": "Programa",
+    "updateFailed": "Falha ao alterar programa",
+    "updated": "Programa atualizado"
+  },
   "programs": {
     "draftDiscarded": "Draft discarded",
     "programPublishedSuccessfully": "Program published successfully"
@@ -7098,6 +7212,7 @@
     }
   },
   "publicBooking": {
+    "backToBook": "Voltar To Reservar",
     "backToSite": "Voltar ao site",
     "bookFirstMeeting": "Marcar Primeira Reunião",
     "bookFirstMeetingDesc": "Agende uma consulta gratuita para saber como podemos ajudar a sua startup a crescer.",
@@ -9656,6 +9771,10 @@
     "filterSaved": "Filter saved",
     "funding": "Financiamento",
     "governance": "Governança",
+    "header": {
+      "addDescription": "+ Adicionar descrição",
+      "fromValueProp": "Do canvas de proposta de valor"
+    },
     "healthNotesSaved": "Health notes saved",
     "healthScore": "Saúde",
     "healthScoreRecomputed": "Health score recomputed",
