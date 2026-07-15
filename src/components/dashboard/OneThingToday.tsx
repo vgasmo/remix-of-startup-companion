@@ -72,7 +72,7 @@ export function OneThingToday({ workspace, className, isFirstWeek = false }: One
         type: 'checkin',
         title: t('oneThingToday.submitCheckin'),
         why: t('oneThingToday.checkinWhy'),
-        link: `/workspace/${workspace.id}?tab=overview`,
+        link: `/workspace/${workspace.id}?tab=overview&open=checkin`,
         priority: 80,
         icon: Calendar,
         variant: 'warning',
