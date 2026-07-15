@@ -16,7 +16,7 @@ import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { notify } from '@/lib/notify';
 import { useLogActivity } from '@/hooks/useActivityLog';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 interface RunResult {
   dry_run: boolean;
