@@ -2,6 +2,14 @@ import { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  useStartupChangeRequests,
+  useSubmitStartupChangeRequests,
+  type NewChangeRequestInput,
+  type StartupChangeRequestFieldKey,
+} from '@/hooks/useStartupChangeRequests';
+import { StartupChangeRequestsList } from './StartupChangeRequestsList';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Building2, Upload, Loader2, Globe, Calendar, Phone, MapPin, Mail, BadgeCheck, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Building2, Upload, Loader2, Globe, Calendar, Phone, MapPin, Mail, BadgeCheck, FileText, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import { notify } from "@/lib/notify";
 import { IntegrationSettings } from './IntegrationSettings';
 import { FounderRequestsPanel } from './FounderRequestsPanel';
