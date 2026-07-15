@@ -171,10 +171,10 @@ Deno.serve(async (req) => {
           fillIfEmpty("main_contact_name", data.main_contact_name);
           fillIfEmpty("main_contact_email", data.main_contact_email);
           fillIfEmpty("main_contact_phone", data.main_contact_phone);
-          if (Object.keys(updates).length > 0) {
+          if (!dryRun && Object.keys(updates).length > 0) {
             await admin.from("startups").update(updates).eq("id", startupId);
           }
-        } else {
+        } else if (!dryRun) {
           const { data: newStartup, error: createErr } = await admin
             .from("startups")
             .insert({
@@ -191,38 +191,42 @@ Deno.serve(async (req) => {
           startupId = newStartup.id;
         }
 
-        // 2) Resolve or create workspace — programme is REQUIRED.
+        // 2) Resolve or create workspace — programme is REQUIRED (row-level override wins).
         let workspaceId = row.matched_workspace_id as string | null;
+        let workspaceAction: "create_workspace" | "reuse_workspace" = "reuse_workspace";
         if (!workspaceId) {
-          const { data: newWs, error: wsErr } = await admin
-            .from("workspaces")
-            .insert({
-              startup_id: startupId,
-              program_id: batchProgramId, // never orphan
-              status: "imported_unclaimed",
-              needs_onboarding: false, // historical contract — already onboarded
-              stage: "ideation",
-            })
-            .select("id")
-            .single();
-          if (wsErr || !newWs) throw new Error(`Workspace create failed: ${wsErr?.message}`);
-          workspaceId = newWs.id;
+          workspaceAction = "create_workspace";
+          if (!dryRun) {
+            const { data: newWs, error: wsErr } = await admin
+              .from("workspaces")
+              .insert({
+                startup_id: startupId,
+                program_id: rowProgramId, // never orphan
+                status: "imported_unclaimed",
+                needs_onboarding: false, // historical contract — already onboarded
+                stage: "ideation",
+              })
+              .select("id")
+              .single();
+            if (wsErr || !newWs) throw new Error(`Workspace create failed: ${wsErr?.message}`);
+            workspaceId = newWs.id;
+          }
         } else {
-          // If matched workspace has no programme, attach the batch programme
+          // If matched workspace has no programme, attach the row programme
           // so we never end up with orphan workspaces post-import.
           const { data: ws } = await admin
             .from("workspaces")
             .select("program_id")
             .eq("id", workspaceId)
             .maybeSingle();
-          if (ws && !ws.program_id) {
-            await admin.from("workspaces").update({ program_id: batchProgramId }).eq("id", workspaceId);
+          if (!dryRun && ws && !ws.program_id) {
+            await admin.from("workspaces").update({ program_id: rowProgramId }).eq("id", workspaceId);
           }
         }
 
-        // 3) Resolve typology
-        let incubationTypeId: string | null = null;
-        if (data.typology_name) {
+        // 3) Resolve typology — explicit override from programme_mapping wins.
+        let incubationTypeId: string | null = rowIncubationOverride;
+        if (!incubationTypeId && data.typology_name) {
           const key = data.typology_name.toLowerCase().trim();
           incubationTypeId = typologyByName.get(key) || null;
           // Fuzzy fallback: contains
