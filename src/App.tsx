@@ -39,6 +39,7 @@ const ProgramSetupWizard = lazy(lazyWithRetry(() => import("./pages/ProgramSetup
 const Settings = lazy(lazyWithRetry(() => import("./pages/Settings"), "lazy:settings"));
 const Mentors = lazy(lazyWithRetry(() => import("./pages/Mentors"), "lazy:mentors"));
 const MentorImpact = lazy(lazyWithRetry(() => import("./pages/MentorImpact"), "lazy:mentor-impact"));
+const StaffImpact = lazy(lazyWithRetry(() => import("./pages/StaffImpact"), "lazy:staff-impact"));
 const MentorProfile = lazy(lazyWithRetry(() => import("./pages/MentorProfile"), "lazy:mentor-profile"));
 const UserProfile = lazy(lazyWithRetry(() => import("./pages/UserProfile"), "lazy:user-profile"));
 const Search = lazy(lazyWithRetry(() => import("./pages/Search"), "lazy:search"));
@@ -183,6 +184,7 @@ function AppRoutes() {
         <Route path="/ecosystem" element={<ProtectedRoute staffOnly><Ecosystem /></ProtectedRoute>} />
         <Route path="/admin/crm-diagnostics" element={<ProtectedRoute staffOnly><CrmDiagnostics /></ProtectedRoute>} />
         <Route path="/staff-cockpit" element={<ProtectedRoute staffOnly><StaffCockpit /></ProtectedRoute>} />
+        <Route path="/staff/impact" element={<ProtectedRoute staffOnly><StaffImpact /></ProtectedRoute>} />
         <Route path="/system-settings" element={<ProtectedRoute adminOnly><SystemSettings /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute staffOnly><Admin /></ProtectedRoute>} />
         <Route path="/admin/datarooms" element={<ProtectedRoute staffOnly><AdminDatarooms /></ProtectedRoute>} />
