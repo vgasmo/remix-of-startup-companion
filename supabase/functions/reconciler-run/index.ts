@@ -21,6 +21,7 @@ const DEFAULT_SERVICE_CLASS: Record<string, string> = {
   'Incubação Física': 'founder_journey',
   'Incubação Virtual': 'founder_journey',
   'Incubação de Ideias': 'founder_journey',
+  'Incubação Visa': 'founder_journey',
   'Domiciliação': 'domiciliacao',
 };
 
