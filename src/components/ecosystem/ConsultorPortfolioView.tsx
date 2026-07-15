@@ -18,6 +18,7 @@ import type { FunnelStage } from '@/constants/funnelStages';
 
 interface ConsultorPortfolioViewProps {
   items: EcosystemItem[];
+  ownerId?: string;
 }
 
 interface ConsultorGroup {
@@ -52,7 +53,7 @@ function useAllConsultants() {
   });
 }
 
-export function ConsultorPortfolioView({ items }: ConsultorPortfolioViewProps) {
+export function ConsultorPortfolioView({ items, ownerId = 'all' }: ConsultorPortfolioViewProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -64,7 +65,11 @@ export function ConsultorPortfolioView({ items }: ConsultorPortfolioViewProps) {
     const seen = new Set<string>();
 
     // Seed groups with every known consultant so users with 0 assignments still appear.
-    for (const c of allConsultants) {
+    const visibleConsultants = ownerId && ownerId !== 'all'
+      ? allConsultants.filter(c => c.id === ownerId)
+      : allConsultants;
+
+    for (const c of visibleConsultants) {
       map.set(c.id, { id: c.id, name: c.name, items: [] });
     }
 
@@ -93,7 +98,7 @@ export function ConsultorPortfolioView({ items }: ConsultorPortfolioViewProps) {
       if (b.id === unassignedKey) return -1;
       return a.name.localeCompare(b.name);
     });
-  }, [items, t, allConsultants]);
+  }, [items, t, allConsultants, ownerId]);
 
   const getHealthColor = (score: string | null) => {
     if (!score) return 'bg-muted text-muted-foreground';
