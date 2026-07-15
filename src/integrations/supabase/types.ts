@@ -6502,6 +6502,7 @@ export type Database = {
           ai_kpi_prompts: Json | null
           ai_risks: Json | null
           ai_summary: string | null
+          cancellation_reason: string | null
           completed_at: string | null
           completion_idempotency_key: string | null
           created_at: string
@@ -6540,6 +6541,7 @@ export type Database = {
           ai_kpi_prompts?: Json | null
           ai_risks?: Json | null
           ai_summary?: string | null
+          cancellation_reason?: string | null
           completed_at?: string | null
           completion_idempotency_key?: string | null
           created_at?: string
@@ -6578,6 +6580,7 @@ export type Database = {
           ai_kpi_prompts?: Json | null
           ai_risks?: Json | null
           ai_summary?: string | null
+          cancellation_reason?: string | null
           completed_at?: string | null
           completion_idempotency_key?: string | null
           created_at?: string
@@ -10555,6 +10558,15 @@ export type Database = {
         Returns: boolean
       }
       can_write_workspace: { Args: { _workspace_id: string }; Returns: boolean }
+      cancel_session_atomic: {
+        Args: {
+          p_idempotency_key: string
+          p_reason: string
+          p_session_id: string
+          p_workspace_id: string
+        }
+        Returns: Json
+      }
       check_ai_rate_limit: {
         Args: {
           _function_name: string
@@ -10889,6 +10901,15 @@ export type Database = {
           updated_at: string
           workspace_id: string
         }[]
+      }
+      mark_session_no_show_atomic: {
+        Args: {
+          p_idempotency_key: string
+          p_notes: string
+          p_session_id: string
+          p_workspace_id: string
+        }
+        Returns: Json
       }
       materialize_acceleration_deliverables: {
         Args: { p_program_id: string; p_workspace_id: string }

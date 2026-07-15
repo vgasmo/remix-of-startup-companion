@@ -17,6 +17,8 @@ import {
   ExternalLink,
   ListChecks,
   CalendarClock,
+  XCircle,
+  UserX,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useUpdateSession, useSessionActionItems, useWorkspaceMembers, useCreateActionItem } from '@/hooks/useSessions';
+import { useUpdateSession, useSessionActionItems, useWorkspaceMembers, useCreateActionItem, useCancelSession, useMarkSessionNoShow } from '@/hooks/useSessions';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
@@ -79,8 +81,14 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
   const [rescheduleValue, setRescheduleValue] = useState('');
   const [isRescheduling, setIsRescheduling] = useState(false);
   const [completionOpen, setCompletionOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [noShowOpen, setNoShowOpen] = useState(false);
+  const [noShowNotes, setNoShowNotes] = useState('');
 
   const updateMutation = useUpdateSession(workspaceId);
+  const cancelMutation = useCancelSession();
+  const noShowMutation = useMarkSessionNoShow();
   const createActionItem = useCreateActionItem(workspaceId);
   const { data: actionItems, isLoading: actionsLoading, refetch: refetchActions } = useSessionActionItems(session.id);
   const { data: members } = useWorkspaceMembers(workspaceId);
@@ -279,21 +287,53 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                     {t('sessions.facilitatorMode', { defaultValue: 'Modo Facilitador' })}
                   </Button>
                 )}
-                {isStaff && canWrite && isPastSession && session.status !== 'completed' && (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    type="button"
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCompletionOpen(true); }}
-                  >
-                    <CheckCircle2 className="h-4 w-4 mr-1" />
-                    {t('sessions.markAsCompleted', 'Marcar como concluída')}
-                  </Button>
+                {isStaff && canWrite && isPastSession && session.status !== 'completed' && session.status !== 'cancelled' && session.status !== 'no_show' && (
+                  <>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCompletionOpen(true); }}
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-1" />
+                      {t('sessions.markAsCompleted', 'Marcar como concluída')}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setNoShowOpen(true); }}
+                    >
+                      <UserX className="h-4 w-4 mr-1" />
+                      {t('sessions.markAsNoShow', 'Marcar como no-show')}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCancelOpen(true); }}
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      {t('sessions.cancelSession', 'Cancelar sessão')}
+                    </Button>
+                  </>
                 )}
                 {session.status === 'completed' && (
                   <Badge variant="outline" className="gap-1">
                     <CheckCircle2 className="h-3 w-3 text-[hsl(var(--success))]" />
                     {t('sessions.statusCompleted', 'Concluída')}
+                  </Badge>
+                )}
+                {session.status === 'cancelled' && (
+                  <Badge variant="outline" className="gap-1">
+                    <XCircle className="h-3 w-3 text-destructive" />
+                    {t('sessions.statusCancelled', 'Cancelada')}
+                  </Badge>
+                )}
+                {session.status === 'no_show' && (
+                  <Badge variant="outline" className="gap-1">
+                    <UserX className="h-3 w-3 text-muted-foreground" />
+                    {t('sessions.statusNoShow', 'No-show')}
                   </Badge>
                 )}
               </div>
@@ -613,6 +653,87 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
           session_template_id: session.session_template_id ?? null,
         }}
       />
+
+      <Dialog open={cancelOpen} onOpenChange={(v) => { if (!cancelMutation.isPending) setCancelOpen(v); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('sessions.cancelSession', 'Cancelar sessão')}</DialogTitle>
+            <DialogDescription>
+              {t('sessions.cancelDesc', 'Motivo do cancelamento (opcional). Os participantes serão notificados.')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="cancel-reason">{t('sessions.cancelReason', 'Motivo')}</Label>
+            <Textarea id="cancel-reason" rows={3} value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCancelOpen(false)} disabled={cancelMutation.isPending}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              loading={cancelMutation.isPending}
+              onClick={async () => {
+                try {
+                  await cancelMutation.mutateAsync({
+                    session_id: session.id,
+                    workspace_id: workspaceId,
+                    reason: cancelReason.trim() || null,
+                  });
+                  notify.success(t('sessions.cancelled', 'Sessão cancelada'));
+                  setCancelOpen(false);
+                  setCancelReason('');
+                  onOpenChange(false);
+                } catch (e) {
+                  notify.error((e as Error).message);
+                }
+              }}
+            >
+              {t('sessions.confirmCancel', 'Cancelar sessão')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={noShowOpen} onOpenChange={(v) => { if (!noShowMutation.isPending) setNoShowOpen(v); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('sessions.markAsNoShow', 'Marcar como no-show')}</DialogTitle>
+            <DialogDescription>
+              {t('sessions.noShowDesc', 'Registe uma nota (opcional). O relatório de impacto mantém a sessão contabilizada como no-show.')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="noshow-notes">{t('sessions.noShowNotes', 'Notas')}</Label>
+            <Textarea id="noshow-notes" rows={3} value={noShowNotes} onChange={(e) => setNoShowNotes(e.target.value)} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNoShowOpen(false)} disabled={noShowMutation.isPending}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              loading={noShowMutation.isPending}
+              onClick={async () => {
+                try {
+                  await noShowMutation.mutateAsync({
+                    session_id: session.id,
+                    workspace_id: workspaceId,
+                    notes: noShowNotes.trim() || null,
+                  });
+                  notify.success(t('sessions.noShowRecorded', 'Sessão marcada como no-show'));
+                  setNoShowOpen(false);
+                  setNoShowNotes('');
+                  onOpenChange(false);
+                } catch (e) {
+                  notify.error((e as Error).message);
+                }
+              }}
+            >
+              {t('sessions.confirmNoShow', 'Marcar como no-show')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

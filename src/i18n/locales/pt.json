@@ -7901,6 +7901,18 @@
   "sessions": {
     "markAsCompleted": "Marcar como concluída",
     "statusCompleted": "Concluída",
+    "markAsNoShow": "Marcar como no-show",
+    "cancelSession": "Cancelar sessão",
+    "cancelDesc": "Motivo do cancelamento (opcional). Os participantes serão notificados.",
+    "cancelReason": "Motivo",
+    "cancelled": "Sessão cancelada",
+    "confirmCancel": "Cancelar sessão",
+    "statusCancelled": "Cancelada",
+    "noShowDesc": "Registe uma nota (opcional). O relatório de impacto mantém a sessão contabilizada como no-show.",
+    "noShowNotes": "Notas",
+    "noShowRecorded": "Sessão marcada como no-show",
+    "confirmNoShow": "Marcar como no-show",
+    "statusNoShow": "No-show",
     "completion": {
       "title": "Completar sessão",
       "subtitle": "Registe a duração real, consultor principal e presenças. Estes campos alimentam o relatório de impacto.",
