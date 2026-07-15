@@ -40,6 +40,7 @@ import { OpsActionPrompts } from '@/components/backoffice/OpsActionPrompts';
 import { ContractLifecycleHub } from '@/components/admin/ContractLifecycleHub';
 import { AdminArchiveBackupTab } from '@/components/admin/AdminArchiveBackupTab';
 import { FounderRequestsInbox } from '@/components/staff/FounderRequestsInbox';
+import { StartupChangeRequestsInbox } from '@/components/admin/StartupChangeRequestsInbox';
 
 const STAGES: StartupStage[] = ['ideation', 'validation', 'mvp', 'growth', 'scale'];
 const PRIORITY_LEVELS: WorkspacePriority[] = ['star', 'high', 'standard', 'maintenance'];
@@ -824,7 +825,10 @@ export function AdminBackoffice() {
         </TabsContent>
 
         <TabsContent value="founder-requests">
-          <FounderRequestsInbox />
+          <div className="space-y-6">
+            <StartupChangeRequestsInbox />
+            <FounderRequestsInbox />
+          </div>
         </TabsContent>
 
         {/* Archive & Backups Tab — governance roles only */}

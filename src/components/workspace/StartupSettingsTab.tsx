@@ -2,6 +2,14 @@ import { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  useStartupChangeRequests,
+  useSubmitStartupChangeRequests,
+  type NewChangeRequestInput,
+  type StartupChangeRequestFieldKey,
+} from '@/hooks/useStartupChangeRequests';
+import { StartupChangeRequestsList } from './StartupChangeRequestsList';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Building2, Upload, Loader2, Globe, Calendar, Phone, MapPin, Mail, BadgeCheck, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Building2, Upload, Loader2, Globe, Calendar, Phone, MapPin, Mail, BadgeCheck, FileText, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import { notify } from "@/lib/notify";
 import { IntegrationSettings } from './IntegrationSettings';
 import { FounderRequestsPanel } from './FounderRequestsPanel';
@@ -41,10 +49,15 @@ interface StartupSettingsTabProps {
 export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }: StartupSettingsTabProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { isStaff } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+  const [justification, setJustification] = useState('');
+  const submitChangeRequests = useSubmitStartupChangeRequests();
+  // Founders (non-staff) submit change requests instead of writing directly.
+  const requiresApproval = !isStaff;
   const [formData, setFormData] = useState({
     name: startup.name,
     description: startup.description || '',
@@ -59,6 +72,7 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
     has_startup_portugal_status: !!startup.has_startup_portugal_status,
     startup_portugal_document_path: startup.startup_portugal_document_path || '',
   });
+
 
   const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -187,14 +201,90 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
     }
   };
 
+  // Fields that require admin approval when edited by a founder.
+  const APPROVAL_FIELDS: { key: StartupChangeRequestFieldKey; labelKey: string; fallback: string }[] = [
+    { key: 'name', labelKey: 'startupSettings.startupName', fallback: 'Startup Name' },
+    { key: 'nif', labelKey: 'nif.label', fallback: 'NIF (Tax ID)' },
+    { key: 'address', labelKey: 'startupSettings.address', fallback: 'Address' },
+    { key: 'phone', labelKey: 'startupSettings.phone', fallback: 'Phone' },
+    { key: 'website', labelKey: 'startupSettings.website', fallback: 'Website' },
+    { key: 'main_contact_name', labelKey: 'startupSettings.contactName', fallback: 'Contact name' },
+    { key: 'main_contact_email', labelKey: 'startupSettings.contactEmail', fallback: 'Contact email' },
+    { key: 'main_contact_phone', labelKey: 'startupSettings.contactPhone', fallback: 'Contact phone' },
+  ];
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
       notify.error(t('startupSettings.nameRequired', 'Name is required'));
       return;
     }
-    updateMutation.mutate(formData);
+
+    if (!requiresApproval) {
+      updateMutation.mutate(formData);
+      return;
+    }
+
+    // Founder path: diff sensitive fields → create change requests instead of writing.
+    const items: NewChangeRequestInput[] = [];
+    for (const f of APPROVAL_FIELDS) {
+      const current = ((startup as any)[f.key] ?? '') as string;
+      const next = ((formData as any)[f.key] ?? '') as string;
+      if ((current || '').trim() !== (next || '').trim()) {
+        items.push({
+          field_key: f.key,
+          field_label: t(f.labelKey, f.fallback),
+          current_value: current || null,
+          requested_value: next || null,
+        });
+      }
+    }
+
+    // Non-approval fields (description, founded_date, has_startup_portugal_status, logo, document)
+    // can still be updated directly — those aren't legal/financial.
+    const directPayload: Record<string, any> = {
+      description: formData.description || null,
+      founded_date: formData.founded_date || null,
+      has_startup_portugal_status: !!formData.has_startup_portugal_status,
+      startup_portugal_document_path: formData.startup_portugal_document_path || null,
+    };
+
+    if (items.length === 0) {
+      // Only non-sensitive changes — apply directly (unchanged behaviour for description etc.).
+      updateMutation.mutate(formData);
+      return;
+    }
+
+    if (formData.has_startup_portugal_status && !formData.startup_portugal_document_path) {
+      notify.error(t('admin.startupsManager.documentRequired'));
+      return;
+    }
+
+    submitChangeRequests.mutate(
+      {
+        workspaceId,
+        startupId,
+        items,
+        justification: justification.trim() || null,
+      },
+      {
+        onSuccess: async () => {
+          // Also persist the non-sensitive edits directly.
+          const { error } = await supabase.from('startups').update(directPayload).eq('id', startupId);
+          if (error) {
+            notify.warn(`${t('common.warning', 'Aviso')}: ${error.message}`);
+          }
+          queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] });
+          setJustification('');
+          notify.success(
+            t('startupChangeRequests.submitted', 'Pedido(s) enviado(s) para validação da equipa'),
+          );
+        },
+        onError: (err: any) => notify.error(`${t('common.error')}: ${err.message}`),
+      },
+    );
   };
+
 
   if (!canEdit) {
     return (
@@ -496,17 +586,55 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
             />
           </div>
 
+          {requiresApproval && (
+            <Alert>
+              <Clock className="h-4 w-4" />
+              <AlertDescription className="space-y-2">
+                <p className="text-sm">
+                  {t(
+                    'startupChangeRequests.approvalNotice',
+                    'Alterações a campos legais/fiscais (nome, NIF, morada, contactos) serão enviadas como pedido para validação da equipa.',
+                  )}
+                </p>
+                <div>
+                  <Label htmlFor="justification" className="text-xs">
+                    {t('startupChangeRequests.justification', 'Justificação (opcional)')}
+                  </Label>
+                  <Textarea
+                    id="justification"
+                    rows={2}
+                    value={justification}
+                    onChange={(e) => setJustification(e.target.value)}
+                    placeholder={t(
+                      'startupChangeRequests.justificationPlaceholder',
+                      'Ex: Mudámos de sede, atualizar morada para a nova.',
+                    )}
+                  />
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="flex justify-end">
-            <Button type="submit" disabled={updateMutation.isPending} loading={updateMutation.isPending}>
-              {updateMutation.isPending ? (
+            <Button
+              type="submit"
+              disabled={updateMutation.isPending || submitChangeRequests.isPending}
+              loading={updateMutation.isPending || submitChangeRequests.isPending}
+            >
+              {(updateMutation.isPending || submitChangeRequests.isPending) ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : null}
-              {t('common.save', 'Save Changes')}
+              {requiresApproval
+                ? t('startupChangeRequests.submitButton', 'Enviar para validação')
+                : t('common.save', 'Save Changes')}
             </Button>
           </div>
         </form>
       </CardContent>
     </Card>
+
+    {/* Founder's structured change-request history */}
+    <StartupChangeRequestsList workspaceId={workspaceId} canManage={requiresApproval} />
 
     <Separator className="my-6" />
 
@@ -519,7 +647,7 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
 
     <Separator className="my-6" />
 
-    {/* Founder → Staff requests */}
+    {/* Founder → Staff requests (free-form) */}
     <FounderRequestsPanel workspaceId={workspaceId} />
   </>
   );
