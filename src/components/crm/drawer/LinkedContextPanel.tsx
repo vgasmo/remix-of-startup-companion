@@ -156,7 +156,7 @@ export function LinkedContextPanel({
   const hasAnyLink = linkedWorkspaceId || linkedStartupId || linkedContractId;
   if (!hasAnyLink) return null;
 
-  const isLoading = loadingWs || loadingContract || loadingWsContracts;
+  const isLoading = loadingWs || loadingContract || loadingWsContracts || loadingStartup;
   if (isLoading) {
     return (
       <Card className="flex-1 border-border/60">
@@ -181,6 +181,7 @@ export function LinkedContextPanel({
   // button when the caller provided it so staff can recover.
   const nothingToShow =
     !workspace &&
+    !startupOnly &&
     !contract &&
     !(workspaceContracts && workspaceContracts.length > 0);
   if (nothingToShow) {
