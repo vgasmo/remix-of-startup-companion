@@ -228,10 +228,11 @@ export function CrmBulkActions({
               funnel_item_id: id,
               event_type: 'assignee_changed',
               performed_by: performedBy,
-              metadata: { bulk_action: true, from_owner: prev, to_owner: consultantId },
-            });
+              metadata: { bulk_action: true, from_owner: prev, to_owner: consultantId } as any,
+            } as any);
             if (evErr) logger.warn('crm_bulk_assign_event_failed', { id, error: evErr.message });
           }
+
 
 
           notify.success(t('crm.bulk.assignSuccess', { count: selectedCount, name: consultant?.full_name }), {
