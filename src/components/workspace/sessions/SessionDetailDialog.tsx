@@ -81,8 +81,14 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
   const [rescheduleValue, setRescheduleValue] = useState('');
   const [isRescheduling, setIsRescheduling] = useState(false);
   const [completionOpen, setCompletionOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [noShowOpen, setNoShowOpen] = useState(false);
+  const [noShowNotes, setNoShowNotes] = useState('');
 
   const updateMutation = useUpdateSession(workspaceId);
+  const cancelMutation = useCancelSession();
+  const noShowMutation = useMarkSessionNoShow();
   const createActionItem = useCreateActionItem(workspaceId);
   const { data: actionItems, isLoading: actionsLoading, refetch: refetchActions } = useSessionActionItems(session.id);
   const { data: members } = useWorkspaceMembers(workspaceId);
