@@ -49,10 +49,15 @@ interface StartupSettingsTabProps {
 export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }: StartupSettingsTabProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { isStaff } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+  const [justification, setJustification] = useState('');
+  const submitChangeRequests = useSubmitStartupChangeRequests();
+  // Founders (non-staff) submit change requests instead of writing directly.
+  const requiresApproval = !isStaff;
   const [formData, setFormData] = useState({
     name: startup.name,
     description: startup.description || '',
@@ -67,6 +72,7 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
     has_startup_portugal_status: !!startup.has_startup_portugal_status,
     startup_portugal_document_path: startup.startup_portugal_document_path || '',
   });
+
 
   const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
