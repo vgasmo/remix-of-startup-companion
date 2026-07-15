@@ -142,6 +142,14 @@ export default function StaffImpact() {
   return (
     <AppLayout>
       <div className="space-y-6 max-w-7xl mx-auto">
+        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
+          <div className="font-medium">
+            {t('impact.betaTitle', 'Beta — dados em reparação')}
+          </div>
+          <div className="text-xs text-amber-900/80 dark:text-amber-100/80 mt-0.5">
+            {t('impact.betaSubtitle', 'Sessões marcadas como completadas sem evidência foram colocadas em quarentena e revertidas para "agendada". Os números refletem apenas evidência real.')}
+          </div>
+        </div>
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-semibold flex items-center gap-2">
@@ -152,6 +160,7 @@ export default function StaffImpact() {
               {t('impact.subtitle', 'Métricas reais — sem estimativas ou proxies.')}
             </p>
           </div>
+
           <div className="flex items-end gap-2">
             <div>
               <Label htmlFor="from" className="text-xs">{t('impact.from', 'De')}</Label>
