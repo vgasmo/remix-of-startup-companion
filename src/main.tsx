@@ -10,6 +10,9 @@ validateEnv();
 // 🛰️ Global error capture → client_error_logs sink (Tier-0 observability).
 // logError is fire-and-forget; these handlers never block the app.
 import { logError } from "./lib/logError";
+import { installConsoleBuffer } from "./lib/consoleBuffer";
+
+installConsoleBuffer();
 
 if (typeof window !== "undefined") {
   window.addEventListener("error", (event) => {
