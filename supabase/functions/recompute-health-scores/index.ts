@@ -537,10 +537,14 @@ serve(async (req) => {
               prevScore,
               finalScore
             ).catch(() => {}); // Non-blocking
+
+            if (alertRow?.id) {
+              sendHealthAlertEmail(supabaseUrl, supabaseKey, alertRow.id).catch(() => {});
+            }
           }
           // Alert: drop to at_risk
           else if (healthLabel === "at_risk" && prevLabel !== "at_risk" && prevLabel !== "critical") {
-            await supabase.from("workspace_health_alerts").insert({
+            const { data: alertRow } = await supabase.from("workspace_health_alerts").insert({
               workspace_id: workspace.id,
               alert_type: "drop_to_at_risk",
               severity: "warning",
@@ -552,7 +556,7 @@ serve(async (req) => {
                 new_label: healthLabel,
                 delta: scoreDelta,
               },
-            });
+            }).select("id").single();
             alertsCreated++;
             
             // Send Teams notification for at_risk alerts
@@ -566,6 +570,10 @@ serve(async (req) => {
               prevScore,
               finalScore
             ).catch(() => {}); // Non-blocking
+
+            if (alertRow?.id) {
+              sendHealthAlertEmail(supabaseUrl, supabaseKey, alertRow.id).catch(() => {});
+            }
           }
           // Alert: significant points drop
           else if (scoreDelta >= alertConfig.pointsDropThreshold) {
