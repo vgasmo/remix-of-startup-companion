@@ -694,9 +694,11 @@ export type Database = {
           created_at: string
           created_contract_id: string | null
           edited_json: Json | null
+          error: Json | null
           error_message: string | null
           extracted_json: Json | null
           id: string
+          idempotency_key: string | null
           match_method: string | null
           matched_startup_id: string | null
           matched_workspace_id: string | null
@@ -705,6 +707,7 @@ export type Database = {
           pdf_sha256: string | null
           pdf_verified: boolean
           rollback_state: string
+          rolled_back_at: string | null
           selected: boolean
           service_group: string | null
           source_case: string | null
@@ -724,9 +727,11 @@ export type Database = {
           created_at?: string
           created_contract_id?: string | null
           edited_json?: Json | null
+          error?: Json | null
           error_message?: string | null
           extracted_json?: Json | null
           id?: string
+          idempotency_key?: string | null
           match_method?: string | null
           matched_startup_id?: string | null
           matched_workspace_id?: string | null
@@ -735,6 +740,7 @@ export type Database = {
           pdf_sha256?: string | null
           pdf_verified?: boolean
           rollback_state?: string
+          rolled_back_at?: string | null
           selected?: boolean
           service_group?: string | null
           source_case?: string | null
@@ -754,9 +760,11 @@ export type Database = {
           created_at?: string
           created_contract_id?: string | null
           edited_json?: Json | null
+          error?: Json | null
           error_message?: string | null
           extracted_json?: Json | null
           id?: string
+          idempotency_key?: string | null
           match_method?: string | null
           matched_startup_id?: string | null
           matched_workspace_id?: string | null
@@ -765,6 +773,7 @@ export type Database = {
           pdf_sha256?: string | null
           pdf_verified?: boolean
           rollback_state?: string
+          rolled_back_at?: string | null
           selected?: boolean
           service_group?: string | null
           source_case?: string | null
@@ -9522,6 +9531,7 @@ export type Database = {
           last_contact_at: string | null
           needs_onboarding: boolean
           next_followup_at: string | null
+          phc_customer_id: string | null
           priority_level: Database["public"]["Enums"]["workspace_priority"]
           priority_notes: string | null
           priority_set_at: string | null
@@ -9566,6 +9576,7 @@ export type Database = {
           last_contact_at?: string | null
           needs_onboarding?: boolean
           next_followup_at?: string | null
+          phc_customer_id?: string | null
           priority_level?: Database["public"]["Enums"]["workspace_priority"]
           priority_notes?: string | null
           priority_set_at?: string | null
@@ -9610,6 +9621,7 @@ export type Database = {
           last_contact_at?: string | null
           needs_onboarding?: boolean
           next_followup_at?: string | null
+          phc_customer_id?: string | null
           priority_level?: Database["public"]["Enums"]["workspace_priority"]
           priority_notes?: string | null
           priority_set_at?: string | null
@@ -10643,10 +10655,24 @@ export type Database = {
         Args: { p_gates: Json; p_program_id: string; p_weeks: Json }
         Returns: Json
       }
-      reconcile_active_customer: {
-        Args: { p_dry_run?: boolean; p_idempotency_key: string; p_row: Json }
-        Returns: Json
-      }
+      reconcile_active_customer:
+        | {
+            Args: {
+              p_batch_id: string
+              p_idempotency_key?: string
+              p_input: Json
+              p_service_program_map?: Json
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_dry_run?: boolean
+              p_idempotency_key: string
+              p_row: Json
+            }
+            Returns: Json
+          }
       reconcile_rollback: { Args: { p_row_id: string }; Returns: Json }
       reconciler_write_enabled: { Args: never; Returns: boolean }
       reject_startup_claim: {
