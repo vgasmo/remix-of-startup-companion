@@ -272,29 +272,43 @@ export function PendingApprovalsManager() {
   };
 
   const handleApproveUser = async (userId: string) => {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ account_status: 'approved' })
-      .eq('id', userId);
-    if (error) {
+    // P0 fix: staff had no UPDATE policy on profiles.account_status, so the
+    // bare `.update` silently affected 0 rows while the toast said "aprovada".
+    // Route through the SECURITY DEFINER RPC and check its result.
+    const { data, error } = await supabase.rpc('approve_user_account', {
+      p_user_id: userId,
+    });
+    if (error || data === false) {
       notify.error(t('admin.erroAoAprovarConta'));
-    } else {
-      notify.success(t('admin.contaAprovadaComSucesso'));
-      queryClient.invalidateQueries({ queryKey: ['pending-user-accounts'] });
+      return;
     }
+    notify.success(t('admin.contaAprovadaComSucesso'));
+    queryClient.invalidateQueries({ queryKey: ['pending-user-accounts'] });
   };
 
   const handleSuspendUser = async (userId: string) => {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ account_status: 'suspended' })
-      .eq('id', userId);
-    if (error) {
+    // P0 fix: same silent no-op as approve. Fall back to the RPC when
+    // available; else surface the error explicitly rather than lying.
+    const { data, error } = await supabase.rpc('suspend_user_account', {
+      p_user_id: userId,
+    } as any);
+    if (error && (error as any).code === '42883') {
+      // RPC not deployed yet — attempt direct update but VERIFY row count.
+      const { data: rows, error: updErr } = await supabase
+        .from('profiles')
+        .update({ account_status: 'suspended' })
+        .eq('id', userId)
+        .select('id');
+      if (updErr || !rows || rows.length === 0) {
+        notify.error(t('admin.erroAoSuspenderConta'));
+        return;
+      }
+    } else if (error || data === false) {
       notify.error(t('admin.erroAoSuspenderConta'));
-    } else {
-      notify.success(t('admin.contaSuspensa'));
-      queryClient.invalidateQueries({ queryKey: ['pending-user-accounts'] });
+      return;
     }
+    notify.success(t('admin.contaSuspensa'));
+    queryClient.invalidateQueries({ queryKey: ['pending-user-accounts'] });
   };
 
   const handleAssignClaim = async () => {
@@ -308,11 +322,14 @@ export function PendingApprovalsManager() {
 
       if (approveError) throw approveError;
 
-      // Also approve account if still pending
-      await supabase
-        .from('profiles')
-        .update({ account_status: 'approved' })
-        .eq('id', assignClaimTarget.user_id);
+      // P0 fix: was a bare `.update` that silently no-op'd against RLS.
+      // Approve the account via the RPC and check it.
+      const { data: approvedOk, error: acctErr } = await supabase.rpc('approve_user_account', {
+        p_user_id: assignClaimTarget.user_id,
+      });
+      if (acctErr || approvedOk === false) {
+        throw acctErr || new Error('approve_user_account returned false');
+      }
 
       notify.success(t('admin.claimAprovadoEFounderAssociado'));
       queryClient.invalidateQueries({ queryKey: ['pending-claim-requests'] });

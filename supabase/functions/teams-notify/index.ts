@@ -304,9 +304,10 @@ Deno.serve(async (req: Request) => {
       }, req);
     }
 
-    // For test events, only require webhook URL (bypass enabled check)
-    // For normal events, require integration enabled
-    if (event_type !== 'test' && !settings.enabled) {
+    // P0 fix: require the integration to be enabled for ALL event types,
+    // including `test` — previously any authenticated user could probe/spam
+    // webhooks against disabled integrations.
+    if (!settings.enabled) {
       log.info('Skip: Teams integration disabled', { ...responseMetadata, settingsEnabled: false });
       return corsJsonResponse({ 
         success: true, 
