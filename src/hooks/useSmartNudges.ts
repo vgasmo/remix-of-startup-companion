@@ -139,7 +139,7 @@ export function useSmartNudges(workspaceId: string | undefined) {
           defaultValue: `You have ${checkinData.pendingCheckins} pending check-in(s). Submit to keep your team informed.`,
         }),
         cta: t('smartNudges.completeCheckin', { defaultValue: 'Complete Check-in' }),
-        href: `/workspace/${workspaceId}?tab=overview`,
+        href: `/workspace/${workspaceId}?tab=overview&open=checkin`,
       });
     }
 
