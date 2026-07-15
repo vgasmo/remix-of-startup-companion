@@ -153,11 +153,12 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
   const getWorkspaceInfo = async () => {
     const { data } = await supabase
       .from('workspaces')
-      .select(`id, startup:startups(name), program:programs(name)`)
+      .select(`id, startup:startups(name, main_contact_email, main_contact_name), program:programs(name)`)
       .eq('id', workspaceId)
       .maybeSingle();
     return data;
   };
+
 
   const getCurrentUserProfile = async () => {
     const { data: { user } } = await supabase.auth.getUser();
