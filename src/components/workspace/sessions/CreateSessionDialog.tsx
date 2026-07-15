@@ -318,7 +318,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
         source: logPast ? 'off_platform' : null,
       });
 
-      if (!logPast && sendInvites && members && members.length > 0) {
+      if (!logPast && sendInvites) {
 
         try {
           const [workspaceInfo, currentUser] = await Promise.all([
@@ -326,9 +326,22 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
             getCurrentUserProfile(),
           ]);
 
-          const recipientEmails = members
+          const memberEmails = (members || [])
             .filter(m => m.profile?.email)
             .map(m => m.profile!.email);
+
+          // Founder fallback: always include the startup's main contact email if
+          // present, so consultants booking with unclaimed / not-yet-provisioned
+          // workspaces still notify the founder of record.
+          const startupInfo = (workspaceInfo?.startup as { name?: string; main_contact_email?: string | null; main_contact_name?: string | null } | null) || null;
+          const founderFallbackEmail = startupInfo?.main_contact_email?.trim();
+          const recipientEmails = Array.from(
+            new Set(
+              [...memberEmails, ...(founderFallbackEmail ? [founderFallbackEmail] : [])]
+                .filter(Boolean)
+                .map((e) => e.toLowerCase()),
+            ),
+          );
 
           if (recipientEmails.length > 0) {
             const { error } = await invokeWithAuth('send-session-invite', {
@@ -343,7 +356,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
                 joinUrl: joinUrl.trim() || undefined,
                 recipientEmails,
                 organizerName: currentUser?.full_name || currentUser?.email || 'Mentor',
-                startupName: (workspaceInfo?.startup as { name: string } | null)?.name || 'Startup',
+                startupName: startupInfo?.name || 'Startup',
               },
             });
 
@@ -355,6 +368,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
           logger.error('Email sending error', {}, emailError);
         }
       }
+
 
       notify.success(t('sessions.sessionCreated'));
       onOpenChange(false);
