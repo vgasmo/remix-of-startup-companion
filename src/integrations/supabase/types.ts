@@ -7375,6 +7375,8 @@ export type Database = {
           main_contact_phone: string | null
           name: string
           nif: string | null
+          nif_normalized: string | null
+          phc_customer_id: string | null
           phone: string | null
           startup_portugal_document_path: string | null
           updated_at: string
@@ -7396,6 +7398,8 @@ export type Database = {
           main_contact_phone?: string | null
           name: string
           nif?: string | null
+          nif_normalized?: string | null
+          phc_customer_id?: string | null
           phone?: string | null
           startup_portugal_document_path?: string | null
           updated_at?: string
@@ -7417,6 +7421,8 @@ export type Database = {
           main_contact_phone?: string | null
           name?: string
           nif?: string | null
+          nif_normalized?: string | null
+          phc_customer_id?: string | null
           phone?: string | null
           startup_portugal_document_path?: string | null
           updated_at?: string
@@ -9175,6 +9181,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           current_week: number | null
+          engagement_state: string | null
           external_id: string | null
           health_confidence: string | null
           health_confidence_reason: string | null
@@ -9200,6 +9207,7 @@ export type Database = {
           priority_set_by: string | null
           program_id: string
           quality_mode: string | null
+          service_classification: string | null
           stage: Database["public"]["Enums"]["startup_stage"]
           stage_id: string | null
           startup_category: string | null
@@ -9217,6 +9225,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_week?: number | null
+          engagement_state?: string | null
           external_id?: string | null
           health_confidence?: string | null
           health_confidence_reason?: string | null
@@ -9242,6 +9251,7 @@ export type Database = {
           priority_set_by?: string | null
           program_id: string
           quality_mode?: string | null
+          service_classification?: string | null
           stage?: Database["public"]["Enums"]["startup_stage"]
           stage_id?: string | null
           startup_category?: string | null
@@ -9259,6 +9269,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_week?: number | null
+          engagement_state?: string | null
           external_id?: string | null
           health_confidence?: string | null
           health_confidence_reason?: string | null
@@ -9284,6 +9295,7 @@ export type Database = {
           priority_set_by?: string | null
           program_id?: string
           quality_mode?: string | null
+          service_classification?: string | null
           stage?: Database["public"]["Enums"]["startup_stage"]
           stage_id?: string | null
           startup_category?: string | null
@@ -10280,6 +10292,10 @@ export type Database = {
       }
       publish_program_version: {
         Args: { p_gates: Json; p_program_id: string; p_weeks: Json }
+        Returns: Json
+      }
+      reconcile_active_customer: {
+        Args: { p_dry_run?: boolean; p_idempotency_key: string; p_row: Json }
         Returns: Json
       }
       reject_startup_claim: {
