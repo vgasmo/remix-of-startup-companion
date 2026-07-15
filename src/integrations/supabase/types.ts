@@ -6606,6 +6606,45 @@ export type Database = {
           },
         ]
       }
+      sessions_backfill_quarantine: {
+        Row: {
+          before_actual_duration_minutes: number | null
+          before_completed_at: string | null
+          before_status: string | null
+          id: string
+          planned_duration: number | null
+          quarantined_at: string
+          reason: string
+          scheduled_at: string | null
+          session_id: string
+          workspace_id: string | null
+        }
+        Insert: {
+          before_actual_duration_minutes?: number | null
+          before_completed_at?: string | null
+          before_status?: string | null
+          id?: string
+          planned_duration?: number | null
+          quarantined_at?: string
+          reason?: string
+          scheduled_at?: string | null
+          session_id: string
+          workspace_id?: string | null
+        }
+        Update: {
+          before_actual_duration_minutes?: number | null
+          before_completed_at?: string | null
+          before_status?: string | null
+          id?: string
+          planned_duration?: number | null
+          quarantined_at?: string
+          reason?: string
+          scheduled_at?: string | null
+          session_id?: string
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       share_links: {
         Row: {
           created_at: string
@@ -10427,7 +10466,7 @@ export type Database = {
           p_consultant_id?: string
           p_date_from: string
           p_date_to: string
-          p_programme_id?: string
+          p_program_id?: string
           p_service?: string
           p_startup_id?: string
         }
@@ -10655,24 +10694,15 @@ export type Database = {
         Args: { p_gates: Json; p_program_id: string; p_weeks: Json }
         Returns: Json
       }
-      reconcile_active_customer:
-        | {
-            Args: {
-              p_batch_id: string
-              p_idempotency_key?: string
-              p_input: Json
-              p_service_program_map?: Json
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_dry_run?: boolean
-              p_idempotency_key: string
-              p_row: Json
-            }
-            Returns: Json
-          }
+      reconcile_active_customer: {
+        Args: {
+          p_batch_id: string
+          p_idempotency_key?: string
+          p_input: Json
+          p_service_program_map?: Json
+        }
+        Returns: Json
+      }
       reconcile_rollback: { Args: { p_row_id: string }; Returns: Json }
       reconciler_write_enabled: { Args: never; Returns: boolean }
       reject_startup_claim: {
