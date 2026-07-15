@@ -254,21 +254,39 @@ export function MentorBookingPanel({
               </div>
 
               {selectedDate && (
-                <div className="space-y-2">
-                  <Label>{t('mentors.selectTimeSlot')}</Label>
-                  <Select value={selectedSlot} onValueChange={setSelectedSlot}>
-                    <SelectTrigger aria-label={t('mentors.selectTimeSlot')}>
-                      <SelectValue placeholder={t('mentors.chooseTimeSlot')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {getAvailableSlotsForDate(selectedDate).map(slot => (
-                        <SelectItem key={slot.key} value={slot.key}>
-                          {slot.start.slice(0, 5)} - {slot.end.slice(0, 5)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label>{t('mentors.duration', { defaultValue: 'Duração' })}</Label>
+                    <Select
+                      value={String(slotDuration)}
+                      onValueChange={(v) => { setSlotDuration(Number(v)); setSelectedSlot(''); }}
+                    >
+                      <SelectTrigger aria-label={t('mentors.duration', { defaultValue: 'Duração' })}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="30">30 min</SelectItem>
+                        <SelectItem value="60">60 min</SelectItem>
+                        <SelectItem value="90">90 min</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('mentors.selectTimeSlot')}</Label>
+                    <Select value={selectedSlot} onValueChange={setSelectedSlot}>
+                      <SelectTrigger aria-label={t('mentors.selectTimeSlot')}>
+                        <SelectValue placeholder={t('mentors.chooseTimeSlot')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getAvailableSlotsForDate(selectedDate).map(slot => (
+                          <SelectItem key={slot.key} value={slot.key}>
+                            {slot.start.slice(0, 5)} - {slot.end.slice(0, 5)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
               )}
 
               {suggestedSlots.length > 0 && (
