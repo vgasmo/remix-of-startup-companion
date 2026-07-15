@@ -448,6 +448,16 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
                 <TableCell>
                   <CategoryBadge category={item.startup_category} />
                 </TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  {item.item_type === 'workspace' && item.workspace_id ? (
+                    <InlineTierSelect
+                      workspaceId={item.workspace_id}
+                      currentTier={tierMap[item.workspace_id] ?? null}
+                    />
+                  ) : (
+                    <span className="text-muted-foreground text-sm">-</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   {item.health_score ? (
                     <HealthBadge score={item.health_score as any} />
