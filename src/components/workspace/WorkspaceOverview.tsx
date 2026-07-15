@@ -568,7 +568,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
         {/* Plan Assistants — Business Plan + Financial Model wizards */}
         {(isFounder || isConsultor || isAdmin) && (
           <div className="lg:col-span-2">
-            <PlanAssistantsCard />
+            <PlanAssistantsCard workspaceId={workspace.id} programId={workspace.program_id ?? undefined} />
           </div>
         )}
 
