@@ -59,7 +59,7 @@ const EVENT_TOGGLE_MAP: Record<string, keyof TeamsSettings | null> = {
   session_created: 'notify_session_created',
   session_rescheduled: 'notify_session_rescheduled',
   health_alert: 'notify_health_alert',
-  test: null, // test bypasses toggles
+  test: null, // test still requires `enabled=true` (P0: no unauthenticated bypass)
 };
 
 // Priority to color mapping (Teams Adaptive Card accent colors)
@@ -226,6 +226,7 @@ Deno.serve(async (req: Request) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Validate the JWT for user calls (cron path is already verified by the shared secret)
+    let callerUserId: string | null = null;
     if (!isSystemCall && isUserCall) {
       const userClient = createClient(supabaseUrl, supabaseAnonKey, {
         global: { headers: { Authorization: authHeader! } },
@@ -235,6 +236,7 @@ Deno.serve(async (req: Request) => {
         log.warn('Unauthorized: invalid bearer token');
         return corsJsonResponse({ error: 'Unauthorized', code: ErrorCode.UNAUTHORIZED }, req, 401);
       }
+      callerUserId = user.id;
     }
 
     const body = await req.json() as TeamsNotificationRequest;
@@ -247,6 +249,37 @@ Deno.serve(async (req: Request) => {
     const toggleColumn = EVENT_TOGGLE_MAP[event_type];
     if (toggleColumn === undefined) {
       return corsJsonResponse({ error: `Invalid event_type: ${event_type}`, code: ErrorCode.BAD_REQUEST }, req, 400);
+    }
+
+    // P0 fix: any founder JWT could previously post arbitrary titles/links into
+    // staff channels. Authorize the caller BEFORE resolving/sending.
+    //  - Cron (isSystemCall) is trusted.
+    //  - User calls with workspace_id => require has_workspace_access.
+    //  - User calls without workspace_id (global / program / staff channels)
+    //    => require staff role.
+    if (!isSystemCall && callerUserId) {
+      if (workspace_id) {
+        const { data: hasAccess, error: accessErr } = await supabase.rpc('has_workspace_access', {
+          _user_id: callerUserId,
+          _workspace_id: workspace_id,
+        });
+        if (accessErr || !hasAccess) {
+          log.warn('Forbidden: no workspace access', { workspace_id, callerUserId });
+          return corsJsonResponse({ error: 'Forbidden', code: ErrorCode.FORBIDDEN }, req, 403);
+        }
+      } else {
+        const { data: staffRow, error: staffErr } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', callerUserId)
+          .in('role', ['admin', 'consultant'])
+          .limit(1)
+          .maybeSingle();
+        if (staffErr || !staffRow) {
+          log.warn('Forbidden: staff role required for non-workspace channel', { callerUserId });
+          return corsJsonResponse({ error: 'Forbidden', code: ErrorCode.FORBIDDEN }, req, 403);
+        }
+      }
     }
 
     log.info('Processing notification', { workspace_id, program_id, event_type });
@@ -271,9 +304,10 @@ Deno.serve(async (req: Request) => {
       }, req);
     }
 
-    // For test events, only require webhook URL (bypass enabled check)
-    // For normal events, require integration enabled
-    if (event_type !== 'test' && !settings.enabled) {
+    // P0 fix: require the integration to be enabled for ALL event types,
+    // including `test` — previously any authenticated user could probe/spam
+    // webhooks against disabled integrations.
+    if (!settings.enabled) {
       log.info('Skip: Teams integration disabled', { ...responseMetadata, settingsEnabled: false });
       return corsJsonResponse({ 
         success: true, 

@@ -45,7 +45,9 @@ const TabFallback = () => (
   <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">…</div>
 );
 
-const ADMIN_ONLY_TABS = new Set(['users', 'data-quality', 'system-health']);
+// P0 fix: `enrollment` (EnrollmentControlCenter) exposes the global open_registration
+// toggle and other admin-only controls. Consultores must not see this tab.
+const ADMIN_ONLY_TABS = new Set(['users', 'data-quality', 'system-health', 'enrollment']);
 
 const TAB_GROUPS_BASE: Record<string, string[]> = {
   operations: ['approvals', 'enrollment', 'backoffice', 'announcements'],

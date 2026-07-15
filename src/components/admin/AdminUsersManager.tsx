@@ -120,11 +120,34 @@ export function AdminUsersManager() {
   const handleSuspendUser = async () => {
     if (!suspendTarget) return;
     const newStatus = suspendTarget.currentStatus === 'suspended' ? 'approved' : 'suspended';
-    const { error } = await supabase
+
+    // P0 guard: prevent self-suspension and suspending another admin.
+    if (newStatus === 'suspended') {
+      if (suspendTarget.userId === currentUser?.id) {
+        notify.error(t('admin.userManagement.cannotSuspendSelf', { defaultValue: 'Não podes suspender a tua própria conta' }));
+        setSuspendTarget(null);
+        return;
+      }
+      const { data: targetRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', suspendTarget.userId)
+        .eq('role', 'admin')
+        .limit(1);
+      if (targetRoles && targetRoles.length > 0) {
+        notify.error(t('admin.userManagement.cannotSuspendAdmin', { defaultValue: 'Não é permitido suspender outra conta admin' }));
+        setSuspendTarget(null);
+        return;
+      }
+    }
+
+    // P0 fix: verify the row actually changed (RLS may silently drop the update).
+    const { data: rows, error } = await supabase
       .from('profiles')
       .update({ account_status: newStatus })
-      .eq('id', suspendTarget.userId);
-    if (error) {
+      .eq('id', suspendTarget.userId)
+      .select('id');
+    if (error || !rows || rows.length === 0) {
       notify.error(t('admin.userManagement.suspendError', { defaultValue: 'Erro ao alterar estado da conta' }));
     } else {
       notify.success(newStatus === 'suspended' 
@@ -137,11 +160,12 @@ export function AdminUsersManager() {
   };
 
   const handleApproveUser = async (userId: string) => {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ account_status: 'approved' })
-      .eq('id', userId);
-    if (error) {
+    // P0 fix: use the SECURITY DEFINER RPC so the update is not silently
+    // dropped by RLS.
+    const { data, error } = await supabase.rpc('approve_user_account', {
+      p_user_id: userId,
+    });
+    if (error || data === false) {
       notify.error(t('admin.approveError', 'Erro ao aprovar conta'));
     } else {
       notify.success(t('admin.approveSuccess', 'Conta aprovada com sucesso'));
