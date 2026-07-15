@@ -208,16 +208,23 @@ export function ReconcilerCanaryPanel() {
             </div>
           </div>
 
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center">
             <Button variant="outline" disabled={!canRun || !!loading} onClick={() => runReconciler(true)}>
               {loading === 'plan' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <PlayCircle className="h-4 w-4 mr-2" />}
               Run plan (dry-run)
             </Button>
-            <Button variant="destructive" disabled={!canRun || !!loading || !result || result.dry_run === false} onClick={onCommitClick}>
+            <Button variant="destructive" disabled={commitDisabled} onClick={onCommitClick}>
               {loading === 'commit' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
               Commit authorized IDs
             </Button>
+            {planHash && (
+              <div className="text-[10px] font-mono text-muted-foreground">
+                plan_hash: {planHash.slice(0, 12)}…
+                {!hashMatches && <span className="ml-2 text-destructive">drift — re-plan required</span>}
+              </div>
+            )}
           </div>
+
 
           {result && (
             <Alert>
