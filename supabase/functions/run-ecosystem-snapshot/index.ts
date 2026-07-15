@@ -148,6 +148,22 @@ Deno.serve(async (req) => {
       log.info(`Exported ${domain.name}: ${allRows.length} records`);
     }
 
+    // Non-empty domain assertions: catch silent-empty exports (e.g. profiles_safe
+    // returning 0 rows for the service client). Fail the snapshot before we
+    // mark it completed.
+    const REQUIRED_NONZERO: Record<string, number> = {
+      profiles: 1,
+      programs: 1,
+    };
+    for (const [domain, min] of Object.entries(REQUIRED_NONZERO)) {
+      const actual = recordCounts[domain] ?? 0;
+      if (actual < min) {
+        throw new Error(
+          `Domain ${domain} exported ${actual} rows (expected >= ${min}). Aborting snapshot.`,
+        );
+      }
+    }
+
     // Compute aggregate checksum
     const aggregateInput = allChecksums.join(':');
     const aggHashBuffer = await crypto.subtle.digest(
