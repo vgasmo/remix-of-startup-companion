@@ -497,11 +497,16 @@ export type Database = {
           completed_at: string | null
           created_at: string
           created_by: string
+          dry_run_report: Json | null
           extracted_count: number
           failed_count: number
           id: string
+          mapping_mode: string
           notes: string | null
+          package_kind: string | null
+          package_manifest: Json | null
           program_id: string | null
+          service_program_map: Json
           status: string
           total_files: number
           updated_at: string
@@ -511,11 +516,16 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           created_by: string
+          dry_run_report?: Json | null
           extracted_count?: number
           failed_count?: number
           id?: string
+          mapping_mode?: string
           notes?: string | null
+          package_kind?: string | null
+          package_manifest?: Json | null
           program_id?: string | null
+          service_program_map?: Json
           status?: string
           total_files?: number
           updated_at?: string
@@ -525,11 +535,16 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           created_by?: string
+          dry_run_report?: Json | null
           extracted_count?: number
           failed_count?: number
           id?: string
+          mapping_mode?: string
           notes?: string | null
+          package_kind?: string | null
+          package_manifest?: Json | null
           program_id?: string | null
+          service_program_map?: Json
           status?: string
           total_files?: number
           updated_at?: string
@@ -544,10 +559,70 @@ export type Database = {
           },
         ]
       }
+      bulk_import_rollbacks: {
+        Row: {
+          actor_user_id: string | null
+          batch_id: string
+          created_at: string
+          executed_at: string
+          id: string
+          outcome: string
+          reason: string | null
+          row_id: string | null
+          storage_objects_removed: Json
+          undo_payload: Json
+        }
+        Insert: {
+          actor_user_id?: string | null
+          batch_id: string
+          created_at?: string
+          executed_at?: string
+          id?: string
+          outcome?: string
+          reason?: string | null
+          row_id?: string | null
+          storage_objects_removed?: Json
+          undo_payload: Json
+        }
+        Update: {
+          actor_user_id?: string | null
+          batch_id?: string
+          created_at?: string
+          executed_at?: string
+          id?: string
+          outcome?: string
+          reason?: string | null
+          row_id?: string | null
+          storage_objects_removed?: Json
+          undo_payload?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_import_rollbacks_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_import_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_import_rollbacks_row_id_fkey"
+            columns: ["row_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_import_rows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bulk_import_rows: {
         Row: {
+          after_snapshot: Json | null
           ai_confidence: number | null
           batch_id: string
+          before_snapshot: Json | null
+          commit_authorized: boolean
+          commit_idempotency_key: string | null
+          committed_at: string | null
+          committed_by: string | null
           created_at: string
           created_contract_id: string | null
           edited_json: Json | null
@@ -559,13 +634,25 @@ export type Database = {
           matched_workspace_id: string | null
           pdf_filename: string
           pdf_path: string
+          pdf_sha256: string | null
+          pdf_verified: boolean
+          rollback_state: string
           selected: boolean
+          service_group: string | null
+          source_case: string | null
           status: string
+          tomorrow_queue: string | null
           updated_at: string
         }
         Insert: {
+          after_snapshot?: Json | null
           ai_confidence?: number | null
           batch_id: string
+          before_snapshot?: Json | null
+          commit_authorized?: boolean
+          commit_idempotency_key?: string | null
+          committed_at?: string | null
+          committed_by?: string | null
           created_at?: string
           created_contract_id?: string | null
           edited_json?: Json | null
@@ -577,13 +664,25 @@ export type Database = {
           matched_workspace_id?: string | null
           pdf_filename: string
           pdf_path: string
+          pdf_sha256?: string | null
+          pdf_verified?: boolean
+          rollback_state?: string
           selected?: boolean
+          service_group?: string | null
+          source_case?: string | null
           status?: string
+          tomorrow_queue?: string | null
           updated_at?: string
         }
         Update: {
+          after_snapshot?: Json | null
           ai_confidence?: number | null
           batch_id?: string
+          before_snapshot?: Json | null
+          commit_authorized?: boolean
+          commit_idempotency_key?: string | null
+          committed_at?: string | null
+          committed_by?: string | null
           created_at?: string
           created_contract_id?: string | null
           edited_json?: Json | null
@@ -595,8 +694,14 @@ export type Database = {
           matched_workspace_id?: string | null
           pdf_filename?: string
           pdf_path?: string
+          pdf_sha256?: string | null
+          pdf_verified?: boolean
+          rollback_state?: string
           selected?: boolean
+          service_group?: string | null
+          source_case?: string | null
           status?: string
+          tomorrow_queue?: string | null
           updated_at?: string
         }
         Relationships: [
