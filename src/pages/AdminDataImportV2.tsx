@@ -25,6 +25,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { notify } from '@/lib/notify';
 import { cn } from '@/lib/utils';
+import { ReconcilerCanaryPanel } from '@/components/admin/ReconcilerCanaryPanel';
 
 type Step = 'upload' | 'mapping' | 'reconcile' | 'commit' | 'results';
 type ImportSource = 'hubspot' | 'phc';
@@ -259,6 +260,8 @@ export default function AdminDataImportV2() {
             {t('dataImportV2.contractBannerDesc', 'Startups, workspaces and contract proposals are opt-in per row. Committed data can be reverted from the audit.')}
           </AlertDescription>
         </Alert>
+
+        <ReconcilerCanaryPanel />
 
         {/* Stepper */}
         <div className="flex items-center gap-2 text-xs">
