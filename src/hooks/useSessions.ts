@@ -430,6 +430,87 @@ export function useCompleteSession() {
   });
 }
 
+// Distinct atomic transitions from scheduled|in_progress. Mirror the
+// complete_session_atomic contract: single SECURITY DEFINER RPC, locks the
+// session row, staff-only, idempotent per client key.
+type TerminalRpcResult = { session_id: string; workspace_id: string; status: string; idempotent_replay: boolean };
+
+async function invokeTerminalTransition(
+  rpc: 'cancel_session_atomic' | 'mark_session_no_show_atomic',
+  args: Record<string, unknown>,
+): Promise<TerminalRpcResult> {
+  const { data, error } = await (supabase.rpc as unknown as (
+    fn: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ data: unknown; error: { message: string } | null }>)(rpc, args);
+  if (error) throw new Error(error.message);
+  return data as TerminalRpcResult;
+}
+
+export function useCancelSession() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { session_id: string; workspace_id: string; reason?: string | null }) => {
+      if (!payload.session_id) throw new Error('session_id required');
+      if (!payload.workspace_id) throw new Error('workspace_id required');
+      const idempotencyKey =
+        globalThis.crypto?.randomUUID?.() ?? `${payload.session_id}-cancel-${Date.now()}`;
+
+      // Snapshot for cancellation notice BEFORE the transition so we still
+      // have the meeting details for participants.
+      const { data: snap } = await supabase
+        .from('sessions')
+        .select('id, title, scheduled_at, duration, agenda')
+        .eq('id', payload.session_id)
+        .maybeSingle();
+
+      const result = await invokeTerminalTransition('cancel_session_atomic', {
+        p_session_id: payload.session_id,
+        p_workspace_id: payload.workspace_id,
+        p_reason: payload.reason ?? null,
+        p_idempotency_key: idempotencyKey,
+      });
+
+      if (snap && !result.idempotent_replay) {
+        void notifySessionEvent('cancelled', snap as {
+          id: string; title: string; scheduled_at: string; duration: number | null; agenda?: string | null;
+        }, payload.workspace_id);
+      }
+      return result;
+    },
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['sessions', vars.workspace_id] });
+      queryClient.invalidateQueries({ queryKey: ['calendar-sessions', vars.workspace_id] });
+      queryClient.invalidateQueries({ queryKey: ['workspace-sessions', vars.workspace_id] });
+      queryClient.invalidateQueries({ queryKey: ['impact-aggregates'] });
+    },
+  });
+}
+
+export function useMarkSessionNoShow() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { session_id: string; workspace_id: string; notes?: string | null }) => {
+      if (!payload.session_id) throw new Error('session_id required');
+      if (!payload.workspace_id) throw new Error('workspace_id required');
+      const idempotencyKey =
+        globalThis.crypto?.randomUUID?.() ?? `${payload.session_id}-noshow-${Date.now()}`;
+      return invokeTerminalTransition('mark_session_no_show_atomic', {
+        p_session_id: payload.session_id,
+        p_workspace_id: payload.workspace_id,
+        p_notes: payload.notes ?? null,
+        p_idempotency_key: idempotencyKey,
+      });
+    },
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['sessions', vars.workspace_id] });
+      queryClient.invalidateQueries({ queryKey: ['calendar-sessions', vars.workspace_id] });
+      queryClient.invalidateQueries({ queryKey: ['workspace-sessions', vars.workspace_id] });
+      queryClient.invalidateQueries({ queryKey: ['impact-aggregates'] });
+    },
+  });
+}
+
 export function useUpdateSession(workspaceId: string) {
   const queryClient = useQueryClient();
 
