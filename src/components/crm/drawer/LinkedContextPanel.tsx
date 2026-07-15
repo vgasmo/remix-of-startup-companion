@@ -106,6 +106,22 @@ export function LinkedContextPanel({
     },
   });
 
+  // Fetch startup directly when the lead is linked to a startup but not to a
+  // workspace yet (pre-onboarding CRM leads keep workspace_id null).
+  const { data: startupOnly, isLoading: loadingStartup } = useQuery({
+    queryKey: ['crm-linked-startup', linkedStartupId],
+    enabled: !!linkedStartupId && !linkedWorkspaceId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('startups')
+        .select('id, name, sector, main_contact_email, main_contact_name')
+        .eq('id', linkedStartupId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
   // Fetch linked contract
   const { data: contract, isLoading: loadingContract } = useQuery({
     queryKey: ['crm-linked-contract', linkedContractId],
