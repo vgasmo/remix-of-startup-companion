@@ -96,15 +96,37 @@ Scope: production-safety fixes only. No new features, no redesigns, no deletions
 - `npm run lint` → **PASS**
 - `npm run test` → **PASS** (23 files / 200 tests)
 
-### Deferred to a follow-up hardening pass (not in this session)
-- Phase 4: full CSV parser rewrite + storage-bucket migration for census.
-- Phase 6: impact-completeness formula alignment + consultant `no_contact_30d` portfolio scoping + `tool_usage_events` FKs.
-- Phase 7 (rest): `ecosystem-snapshot` temp-prefix pattern and manifest-last publish.
-- Session `cancel_session_atomic` / `mark_session_no_show_atomic` RPCs (distinct actions in UI).
-- Full transactional staged-commit protocol for reconciler (kept diagnostics-only for this release).
+### Shipped (follow-up pass — deferred P1s)
+- **Phase 4 (P1) — Census fail-closed**
+  - `supabase/functions/census-run/index.ts` PHC CSV parser rewritten as a full state machine: BOM strip, CRLF/LF/CR, quoted commas/semicolons/newlines, RFC-4180 escaped quotes, delimiter auto-detect (comma vs semicolon) on the header line.
+  - PHC download OR parse error → run returns 500 with error details, no `census_reports` row persisted (no more silent `ok:true`).
+  - Exception CSV upload errors also fail the run (added `exception_upload_failed` guard).
+  - `unlinked_contracted_funnel` query fixed to filter canonical `stage='contracted'` with missing `linked_workspace_id` (previous filter matched any funnel row with `phc_customer_id`).
+  - New optional `phc_active_only` body flag: when false and the CSV has no `status` column, parse fails (`csv_missing_status_column_required_when_not_active_only`).
+- **Phase 6 (P1) — Truthful impact aggregates**
+  - New migration replaces `public.get_impact_aggregates(...)`:
+    - Completeness formula matches the UI label: session counts as complete iff `actual_duration_minutes>0` AND `primary_consultant_id IS NOT NULL` AND `EXISTS session_participants`.
+    - `no_contact_30d` scope: admins keep ecosystem view (respect `p_consultant_id`); consultants restricted to workspaces in `workspace_assignments` for the caller.
+    - Adds `complete_sessions` to the payload alongside the missing-*  breakdown.
+  - Supporting idempotent indexes: `idx_sessions_status_scheduled_at`, `idx_sessions_primary_consultant`, `idx_session_participants_session`, `idx_workspace_assignments_user`.
+- **Phase 7 (P1) — Snapshot temp-prefix + manifest-last publish**
+  - `supabase/functions/run-ecosystem-snapshot/index.ts` uploads all domain JSONs to `snapshots/<ts>/tmp/` first, validates counts + required non-zero domains + presence of every declared domain, then uploads `snapshots/<ts>/manifest.json` LAST as the atomic promotion flag. Manifest carries `data_prefix` so consumers must resolve files through it.
+  - On any failure the temp uploads are removed via `storage.remove(...)` — no half-baked snapshot ever shadows a valid one.
+
+### Verification (final pass)
+- `bun run typecheck` → **PASS** (0 errors)
+- `bunx vitest run` → **PASS** (23 files / 200 tests)
+
+### Still deferred
+- `cancel_session_atomic` / `mark_session_no_show_atomic` RPCs (distinct actions in UI).
+- Full transactional staged-commit protocol for the reconciler (kept diagnostics-only for this release).
+- `tool_usage_events` FKs (polymorphism-safe subset only).
+- Storage-bucket idempotent migration for `admin-exports` and `phc-extracts` if either is ever recreated from scratch.
 
 ### Rollback
 - Drop `public.system_alerts` (cascades to policy).
 - Drop `public.complete_session_atomic(...)` and the `uq_sessions_completion_idempotency` unique index; drop `sessions.completion_idempotency_key` column.
 - Restore prior `check_ecosystem_invariants()` from migration `20260715211024_*.sql`.
-- Revert reconciler edge function to prior git revision (kill-switch gate remains).
+- Restore prior `get_impact_aggregates(...)` from migration `20260715202735_*.sql`.
+- Revert reconciler / census-run / run-ecosystem-snapshot edge functions to prior git revisions.
+- New indexes are `IF NOT EXISTS` and can be dropped by name; no data movement.
