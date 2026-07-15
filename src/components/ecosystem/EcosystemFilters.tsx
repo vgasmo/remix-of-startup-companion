@@ -30,7 +30,7 @@ interface Props {
 }
 
 // Stage values are now translated in the component using t()
-const STAGE_VALUES = ['all', 'ideation', 'validation', 'early_traction', 'scaling', 'growth', 'new', 'first_contact_booked', 'met', 'contracted'] as const;
+const STAGE_VALUES = ['all', 'awaiting_workspace', 'ideation', 'validation', 'early_traction', 'scaling', 'growth', 'new', 'first_contact_booked', 'met', 'contracted'] as const;
 
 // Health scores are now translated in the component using t()
 const HEALTH_SCORE_VALUES = ['all', 'critical', 'at_risk', 'stable', 'healthy', 'thriving'] as const;
