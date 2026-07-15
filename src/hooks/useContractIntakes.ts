@@ -465,7 +465,7 @@ export function useTransitionIntakeStatus() {
 
       if (postWarnings.length > 0) {
         // Surface as a non-blocking warning; status change itself succeeded.
-        notify.warning?.(postWarnings.join(' · '));
+        notify.warn(postWarnings.join(' · '));
       }
     },
     onSuccess: (_, params) => {
