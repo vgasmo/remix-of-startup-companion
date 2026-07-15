@@ -263,6 +263,32 @@ export function LinkedContextPanel({
           </div>
         )}
 
+        {/* Startup-only (pre-onboarding lead) */}
+        {!workspace && startupOnly && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <Building2 className="h-3.5 w-3.5 text-primary" />
+              <span className="text-sm font-medium">{(startupOnly as any).name}</span>
+              <Badge variant="outline" className="text-[10px] h-5">
+                {t('crm.startupNoWorkspace', { defaultValue: 'Sem workspace' })}
+              </Badge>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(startupOnly as any).sector && (
+                <Badge variant="outline" className="text-[10px] h-5">
+                  {(startupOnly as any).sector}
+                </Badge>
+              )}
+            </div>
+            {(startupOnly as any).main_contact_email && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <Users className="h-3 w-3" />
+                {(startupOnly as any).main_contact_name} — {(startupOnly as any).main_contact_email}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Contract Info — linked contract OR all workspace contracts */}
         {contract ? (
           <div className="border-t pt-2">
