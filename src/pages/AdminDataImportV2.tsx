@@ -265,7 +265,11 @@ export default function AdminDataImportV2() {
 
         <CensusRunnerPanel />
 
+        <ManualResolutionQueuePanel />
+
         <ReconcilerCanaryPanel />
+
+
 
 
         {/* Stepper */}
