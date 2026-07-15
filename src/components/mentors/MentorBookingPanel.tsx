@@ -74,10 +74,11 @@ export function MentorBookingPanel({
     return name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
   };
 
-  // Generate 60-min slots inside each availability window, excluding those
-  // that overlap with existing accepted bookings for this mentor.
-  const SLOT_MIN = 60;
-  const getAvailableSlotsForDate = (date: Date) => {
+  // Generate slots of the selected duration (30/60/90 min) inside each
+  // availability window, stepping by 30 min, excluding those that overlap
+  // with existing accepted/pending bookings for this mentor.
+  const SLOT_STEP = 30;
+  const getAvailableSlotsForDate = (date: Date, durationMin: number = slotDuration) => {
     const dayOfWeek = date.getDay();
     const windows = availability?.filter(a => a.day_of_week === dayOfWeek) || [];
     if (!windows.length) return [] as { start: string; end: string; key: string }[];
@@ -98,16 +99,16 @@ export function MentorBookingPanel({
     for (const w of windows) {
       let cursor = timeToMin(w.start_time);
       const end = timeToMin(w.end_time);
-      while (cursor + SLOT_MIN <= end) {
+      while (cursor + durationMin <= end) {
         const slotStart = cursor;
-        const slotEnd = cursor + SLOT_MIN;
+        const slotEnd = cursor + durationMin;
         const clash = busy.some(b => slotStart < b.e && slotEnd > b.s);
         if (!clash) {
           const startStr = minToTime(slotStart);
           const endStr = minToTime(slotEnd);
           slots.push({ start: startStr, end: endStr, key: `${startStr}-${endStr}` });
         }
-        cursor += SLOT_MIN;
+        cursor += SLOT_STEP;
       }
     }
     return slots;
