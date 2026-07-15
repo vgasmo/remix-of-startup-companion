@@ -3,7 +3,7 @@
 // allowlist of funnel_item IDs. Supports plan (dry_run) and commit modes and
 // records every action in `activity_log` for operator sign-off.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
