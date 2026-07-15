@@ -1,26 +1,52 @@
-// reconciler-run
-// Admin-only. Reconciles PHC-tagged funnel_items into startups + workspaces
-// via the atomic public.reconcile_active_customer RPC.
-// - dry_run=true  : zero writes, returns planned action per row.
-// - dry_run=false : requires commit_authorized_ids allowlist. Writes atomically.
+// reconciler-run — staged-commit protocol
+// Admin-only. Two phases:
+//   phase='stage'  (or legacy dry_run=true): zero writes to business tables;
+//     stages candidates via reconcile_active_customer, seals the batch with a
+//     plan_hash, returns per-row plan.
+//   phase='commit' (or legacy dry_run=false): requires batch_id +
+//     expected_plan_hash + commit_authorized_ids allowlist and BOTH kill-switches
+//     enabled (env + system_settings). Applies rows atomically via
+//     reconciler_commit_row(row_id, expected_plan_hash).
 // Never creates users, memberships, invitations, notifications, or automations.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.1';
 import { getCorsHeaders, handleCorsOptions } from '../_shared/cors.ts';
 
+type Phase = 'stage' | 'commit';
+
 interface RunBody {
-  funnel_item_ids?: string[];         // explicit subset
-  service_program_map?: Record<string, string | null>; // service_name -> program uuid
+  phase?: Phase;
+  dry_run?: boolean; // legacy
+  funnel_item_ids?: string[];
+  service_program_map?: Record<string, string | null>;
   service_classification_map?: Record<string, 'founder_journey' | 'domiciliacao' | 'mixed' | 'service_only'>;
-  dry_run: boolean;
-  commit_authorized_ids?: string[];   // required when dry_run=false
+  commit_authorized_ids?: string[];
+  batch_id?: string;
+  expected_plan_hash?: string;
   limit?: number;
 }
 
-// Phase 1: NO hardcoded default service classification. Operators must supply
-// `service_classification_map` for every distinct service_name observed;
-// unmapped services are reported as conflicts and skipped.
+async function sha256Hex(input: string): Promise<string> {
+  const buf = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
 
+function canonicalStringify(v: unknown): string {
+  if (v === null || typeof v !== 'object') return JSON.stringify(v);
+  if (Array.isArray(v)) return '[' + v.map(canonicalStringify).join(',') + ']';
+  const keys = Object.keys(v as Record<string, unknown>).sort();
+  return '{' + keys.map((k) => JSON.stringify(k) + ':' + canonicalStringify((v as Record<string, unknown>)[k])).join(',') + '}';
+}
+
+async function computePlanHash(rows: Array<{ id: string; after_snapshot: unknown }>): Promise<string> {
+  const parts: string[] = [];
+  for (const r of rows.slice().sort((a, b) => a.id.localeCompare(b.id))) {
+    const snapHash = await sha256Hex(canonicalStringify(r.after_snapshot));
+    parts.push(`${r.id}:${snapHash}`);
+  }
+  return sha256Hex(parts.join('|'));
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return handleCorsOptions(req);
@@ -45,111 +71,115 @@ Deno.serve(async (req) => {
     const isAdmin = (roles ?? []).some((r: { role: string }) => r.role === 'admin');
     if (!isAdmin) return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: jsonHeaders });
 
-    const body = await req.json() as RunBody;
-    if (typeof body?.dry_run !== 'boolean') {
-      return new Response(JSON.stringify({ error: 'invalid_input', message: 'dry_run required' }), { status: 400, headers: jsonHeaders });
-    }
-    const dryRun = body.dry_run;
-    const authorized = new Set(body.commit_authorized_ids ?? []);
+    const body = (await req.json()) as RunBody;
+    const phase: Phase = body.phase ?? (body.dry_run === false ? 'commit' : 'stage');
 
-    // PHASE 0 FREEZE: writes require BOTH the env kill-switch AND the DB kill-switch.
-    // Either off ⇒ 423 read-only. This eliminates the dual-source-of-truth risk noted
-    // in the audit (P0-1 / P0-2).
-    const writeModeEnv = (Deno.env.get('RECONCILER_WRITE_MODE') ?? '').toLowerCase();
-    const envUnlocked = writeModeEnv === 'enabled';
-
+    // Kill-switch check (used for commit only; stage never writes business tables)
+    const envUnlocked = (Deno.env.get('RECONCILER_WRITE_MODE') ?? '').toLowerCase() === 'enabled';
     let dbUnlocked = false;
     let killSwitchError: string | null = null;
     {
       const { data: setting, error: settingErr } = await sbSvc
-        .from('system_settings')
-        .select('value')
-        .eq('key', 'reconciler.write_mode')
-        .maybeSingle();
-      if (settingErr) {
-        killSwitchError = settingErr.message;
-      } else {
-        const v = (setting?.value ?? {}) as { enabled?: boolean };
-        dbUnlocked = v.enabled === true;
-      }
+        .from('system_settings').select('value').eq('key', 'reconciler.write_mode').maybeSingle();
+      if (settingErr) killSwitchError = settingErr.message;
+      else dbUnlocked = ((setting?.value ?? {}) as { enabled?: boolean }).enabled === true;
     }
     const writesUnlocked = envUnlocked && dbUnlocked;
-    if (!dryRun && (!writesUnlocked || killSwitchError)) {
-      return new Response(
-        JSON.stringify({
+
+    // ===== PHASE: COMMIT =====
+    if (phase === 'commit') {
+      if (!writesUnlocked || killSwitchError) {
+        return new Response(JSON.stringify({
           error: 'writes_frozen',
-          message: 'Reconciler is in read-only mode. Both RECONCILER_WRITE_MODE env AND system_settings.reconciler.write_mode.enabled must be true to authorize commits.',
-          env_unlocked: envUnlocked,
-          db_unlocked: dbUnlocked,
-          kill_switch_error: killSwitchError,
-        }),
-        { status: 423, headers: jsonHeaders },
-      );
-    }
-    if (!dryRun && authorized.size === 0) {
-      return new Response(JSON.stringify({ error: 'commit_authorized_ids_required' }), { status: 400, headers: jsonHeaders });
+          message: 'Both RECONCILER_WRITE_MODE env AND system_settings.reconciler.write_mode.enabled must be true.',
+          env_unlocked: envUnlocked, db_unlocked: dbUnlocked, kill_switch_error: killSwitchError,
+        }), { status: 423, headers: jsonHeaders });
+      }
+      if (!body.batch_id || !body.expected_plan_hash) {
+        return new Response(JSON.stringify({ error: 'invalid_input', message: 'batch_id and expected_plan_hash required' }), { status: 400, headers: jsonHeaders });
+      }
+      const authorized = new Set(body.commit_authorized_ids ?? []);
+      if (authorized.size === 0) {
+        return new Response(JSON.stringify({ error: 'commit_authorized_ids_required' }), { status: 400, headers: jsonHeaders });
+      }
+
+      // Fetch all dry_run_ok rows in the batch, recompute plan_hash, compare.
+      const { data: rows, error: rowsErr } = await sbSvc
+        .from('bulk_import_rows')
+        .select('id, status, after_snapshot')
+        .eq('batch_id', body.batch_id)
+        .eq('status', 'dry_run_ok');
+      if (rowsErr) throw rowsErr;
+
+      const recomputed = await computePlanHash((rows ?? []).map((r) => ({ id: r.id as string, after_snapshot: r.after_snapshot })));
+      const { data: batch, error: batchErr } = await sbSvc
+        .from('bulk_import_batches').select('plan_hash').eq('id', body.batch_id).maybeSingle();
+      if (batchErr) throw batchErr;
+      const sealedHash = (batch as { plan_hash: string | null } | null)?.plan_hash ?? null;
+
+      if (!sealedHash || sealedHash !== body.expected_plan_hash || recomputed !== body.expected_plan_hash) {
+        return new Response(JSON.stringify({
+          error: 'plan_hash_mismatch', sealed: sealedHash, recomputed, expected: body.expected_plan_hash,
+        }), { status: 409, headers: jsonHeaders });
+      }
+
+      const results: Array<Record<string, unknown>> = [];
+      let committed = 0, skipped = 0, errored = 0;
+      for (const r of rows ?? []) {
+        if (!authorized.has(r.id as string)) { skipped++; results.push({ row_id: r.id, skipped: 'not_authorized' }); continue; }
+        const { data: outcome, error: rpcErr } = await sbSvc.rpc('reconciler_commit_row', {
+          p_row_id: r.id, p_expected_plan_hash: body.expected_plan_hash,
+        });
+        if (rpcErr) { errored++; results.push({ row_id: r.id, error: rpcErr.message }); continue; }
+        committed++; results.push({ row_id: r.id, outcome });
+      }
+
+      return new Response(JSON.stringify({
+        phase: 'commit', batch_id: body.batch_id, total_rows: rows?.length ?? 0,
+        committed, skipped, errored, results,
+      }, null, 2), { headers: jsonHeaders });
     }
 
-    // Fetch candidate funnel_items. Note: startups has NO hubspot_company_id column;
-    // HubSpot associations are represented via funnel_items + external_entity_refs.
+    // ===== PHASE: STAGE =====
     let q = sbSvc.from('funnel_items')
       .select('id, phc_customer_id, hubspot_company_id, nif_normalized, organization_name, contact_name, contact_email, linked_startup_id, linked_workspace_id, stage, metadata_json')
       .not('phc_customer_id', 'is', null);
-
     if (body.funnel_item_ids?.length) q = q.in('id', body.funnel_item_ids);
     if (body.limit) q = q.limit(body.limit);
-
     const { data: items, error: fetchErr } = await q;
     if (fetchErr) throw fetchErr;
 
-    const results: Array<Record<string, unknown>> = [];
-    let planned_writes = 0;
-    let noop = 0;
-    let errors = 0;
-    let conflicts = 0;
+    // Create a batch record for this staging run
+    const { data: batchInsert, error: batchInsErr } = await sbSvc
+      .from('bulk_import_batches')
+      .insert({
+        created_by: uid,
+        status: 'staged',
+        total_files: items?.length ?? 0,
+        extracted_count: 0,
+        committed_count: 0,
+        failed_count: 0,
+        mapping_mode: 'reconciler',
+        service_program_map: body.service_program_map ?? {},
+        package_kind: 'reconciler_active_customer',
+        notes: `reconciler-run stage by ${uid}`,
+      })
+      .select('id').single();
+    if (batchInsErr) throw batchInsErr;
+    const batchId = (batchInsert as { id: string }).id;
 
-    for (const it of (items ?? [])) {
-      // Correct path per plan: metadata_json.phc_service_hint takes precedence.
+    const results: Array<Record<string, unknown>> = [];
+    let staged = 0, conflicts = 0, errors = 0;
+
+    for (const it of items ?? []) {
       const meta = (it.metadata_json ?? {}) as Record<string, unknown>;
       const serviceName =
-        (meta.phc_service_hint as string) ??
-        (meta.phc_service as string) ??
-        (meta.service_hint as string) ??
-        (meta.service_name as string) ??
-        '';
-
-      // Strict: unmapped service → conflict, no default.
+        (meta.phc_service_hint as string) ?? (meta.phc_service as string) ??
+        (meta.service_hint as string) ?? (meta.service_name as string) ?? '';
       const svcClass = body.service_classification_map?.[serviceName];
-      if (!svcClass || !['founder_journey', 'domiciliacao', 'mixed'].includes(svcClass)) {
-        conflicts++;
-        results.push({
-          funnel_item_id: it.id,
-          service_name: serviceName,
-          status: 'conflict',
-          reason: 'unmapped_service_classification',
-        });
-        continue;
-      }
-
       const programId = body.service_program_map?.[serviceName] ?? null;
 
-      // Programme required for founder_journey and mixed
-      if ((svcClass === 'founder_journey' || svcClass === 'mixed') && !programId) {
-        conflicts++;
-        results.push({
-          funnel_item_id: it.id,
-          service_name: serviceName,
-          status: 'conflict',
-          reason: 'programme_id_required_for_' + svcClass,
-        });
-        continue;
-      }
-
-      const idempotencyKey = `reconciler-${it.phc_customer_id}-${svcClass}-${programId ?? 'none'}`;
-
-      const willWrite = !dryRun && authorized.has(it.id);
-
-      const payload = {
+      const rpcInput = {
         funnel_item_id: it.id,
         phc_customer_id: it.phc_customer_id,
         hubspot_company_id: it.hubspot_company_id,
@@ -157,40 +187,39 @@ Deno.serve(async (req) => {
         organization_name: it.organization_name,
         contact_name: it.contact_name,
         contact_email: it.contact_email,
-        service_classification: svcClass,
+        service_classification: svcClass ?? null,
         program_id: programId,
         service_name: serviceName,
       };
 
-      if (!dryRun && !willWrite) {
-        results.push({ funnel_item_id: it.id, skipped: 'not_authorized' });
-        continue;
-      }
-
-      // RELEASE-HARDENING (P0-2): the atomic `reconcile_active_customer(p_row,...)`
-      // overload was dropped by migration 20260715202735. The staged-commit
-      // replacement is not yet safely wired end-to-end (no batch creation,
-      // no server-side plan-hash verification). Until that lands, this
-      // function is DIAGNOSTICS-ONLY: it reports the planned action for each
-      // row without invoking any RPC. Combined with the writes_frozen gate
-      // above, no write path exists.
-      planned_writes++;
-      results.push({
-        funnel_item_id: it.id,
-        service_name: serviceName,
-        status: 'diagnostic_only',
-        planned: payload,
+      const { data: staging, error: rpcErr } = await sbSvc.rpc('reconcile_active_customer', {
+        p_batch_id: batchId,
+        p_input: rpcInput,
+        p_service_program_map: {},
+        p_idempotency_key: null,
       });
+      if (rpcErr) { errors++; results.push({ funnel_item_id: it.id, error: rpcErr.message }); continue; }
+      const s = staging as { row_id: string; status: string; after_snapshot: unknown; error?: unknown };
+      if (s.status === 'dry_run_ok') staged++;
+      else if (s.status === 'conflict') conflicts++;
+      results.push({ funnel_item_id: it.id, row_id: s.row_id, status: s.status, service_name: serviceName, after_snapshot: s.after_snapshot, error: s.error });
     }
 
+    // Compute plan hash over dry_run_ok rows, seal batch
+    const stageableRows = (results
+      .filter((r) => r.status === 'dry_run_ok')
+      .map((r) => ({ id: r.row_id as string, after_snapshot: r.after_snapshot }))) as Array<{ id: string; after_snapshot: unknown }>;
+    const planHash = await computePlanHash(stageableRows);
+    await sbSvc.from('bulk_import_batches')
+      .update({ plan_hash: planHash, extracted_count: items?.length ?? 0 })
+      .eq('id', batchId);
+
     return new Response(JSON.stringify({
-      dry_run: dryRun,
-      diagnostics_only: true,
+      phase: 'stage',
+      batch_id: batchId,
+      plan_hash: planHash,
       total_rows: items?.length ?? 0,
-      planned_writes,
-      noop,
-      conflicts,
-      errors,
+      staged, conflicts, errors,
       results,
     }, null, 2), { headers: jsonHeaders });
   } catch (e) {
