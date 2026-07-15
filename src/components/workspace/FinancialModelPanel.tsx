@@ -343,7 +343,7 @@ export function FinancialModelPanel({ workspaceId, canWrite, isMentor = false }:
               <FileDown className="h-4 w-4 mr-2" />
               {t('financialPanel.downloadTemplate', { defaultValue: 'Download Template' })}
             </Button>
-            {canWrite && (
+            {canWrite && !isMentor && (
               <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm">
