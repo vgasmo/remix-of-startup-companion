@@ -10,6 +10,7 @@
     "tabQuality": "Data Quality",
     "tabAdoption": "Tool Adoption",
     "errorTitle": "Failed to load metrics",
+    "adoptionErrorTitle": "Failed to load adoption",
     "retry": "Retry",
     "noData": "No data in the selected period.",
     "meetingsCompleted": "Sessions completed",
