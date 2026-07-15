@@ -27,6 +27,7 @@ import { notify } from '@/lib/notify';
 import { cn } from '@/lib/utils';
 import { ReconcilerCanaryPanel } from '@/components/admin/ReconcilerCanaryPanel';
 import { CensusRunnerPanel } from '@/components/admin/CensusRunnerPanel';
+import { ManualResolutionQueuePanel } from '@/components/admin/ManualResolutionQueuePanel';
 
 type Step = 'upload' | 'mapping' | 'reconcile' | 'commit' | 'results';
 type ImportSource = 'hubspot' | 'phc';
