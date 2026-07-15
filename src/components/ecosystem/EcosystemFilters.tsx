@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { usePrograms } from '@/hooks/useWorkspaces';
+import { useConsultors } from '@/hooks/useWorkspaceOwner';
 import { useTagCategories, useTagsByCategory } from '@/hooks/useEcosystemItems';
 import { Card } from '@/components/ui/card';
 
@@ -25,6 +26,7 @@ export interface EcosystemFiltersState {
 interface Props {
   filters: EcosystemFiltersState;
   onChange: (filters: EcosystemFiltersState) => void;
+  showOwnerFilter?: boolean;
 }
 
 // Stage values are now translated in the component using t()
@@ -33,9 +35,10 @@ const STAGE_VALUES = ['all', 'ideation', 'validation', 'early_traction', 'scalin
 // Health scores are now translated in the component using t()
 const HEALTH_SCORE_VALUES = ['all', 'critical', 'at_risk', 'stable', 'healthy', 'thriving'] as const;
 
-export function EcosystemFilters({ filters, onChange }: Props) {
+export function EcosystemFilters({ filters, onChange, showOwnerFilter = false }: Props) {
   const { t } = useTranslation();
   const { data: programs } = usePrograms();
+  const { data: consultors } = useConsultors();
   const { data: categories } = useTagCategories();
   const { data: tags } = useTagsByCategory(filters.categoryId !== 'all' ? filters.categoryId : undefined);
 
@@ -61,6 +64,25 @@ export function EcosystemFilters({ filters, onChange }: Props) {
             />
           </div>
         </div>
+
+        {showOwnerFilter && (
+          <div className="w-[220px]">
+            <Label className="text-xs text-muted-foreground mb-1 block">
+              {t('ecosystem.consultant', { defaultValue: 'Consultor' })}
+            </Label>
+            <Select value={filters.ownerId} onValueChange={(v) => updateFilter('ownerId', v)}>
+              <SelectTrigger>
+                <SelectValue placeholder={t('ecosystem.allConsultants', { defaultValue: 'Todos os consultores' })} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('ecosystem.allConsultants', { defaultValue: 'Todos os consultores' })}</SelectItem>
+                {consultors?.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.full_name || c.email || t('common.unnamed', 'Sem nome')}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Program Filter */}
         <div className="w-[180px]">
