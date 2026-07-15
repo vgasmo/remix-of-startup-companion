@@ -39,6 +39,7 @@ const ProgramSetupWizard = lazy(lazyWithRetry(() => import("./pages/ProgramSetup
 const Settings = lazy(lazyWithRetry(() => import("./pages/Settings"), "lazy:settings"));
 const Mentors = lazy(lazyWithRetry(() => import("./pages/Mentors"), "lazy:mentors"));
 const MentorImpact = lazy(lazyWithRetry(() => import("./pages/MentorImpact"), "lazy:mentor-impact"));
+const StaffImpact = lazy(lazyWithRetry(() => import("./pages/StaffImpact"), "lazy:staff-impact"));
 const MentorProfile = lazy(lazyWithRetry(() => import("./pages/MentorProfile"), "lazy:mentor-profile"));
 const UserProfile = lazy(lazyWithRetry(() => import("./pages/UserProfile"), "lazy:user-profile"));
 const Search = lazy(lazyWithRetry(() => import("./pages/Search"), "lazy:search"));
