@@ -1,3 +1,4 @@
+import { timeAgo } from '@/lib/dateLocale';
 /**
  * FounderRequestsPanel — Founders open change requests to staff from
  * the workspace settings (IBAN, address, legal representative, etc.).
@@ -15,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { MessageSquarePlus, Send, Inbox } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+
 import { pt, enGB } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 
@@ -163,7 +164,7 @@ export function FounderRequestsPanel({ workspaceId }: { workspaceId: string }) {
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(r.created_at), { addSuffix: true, locale })}
+                      {timeAgo(new Date(r.created_at), { locale })}
                     </p>
                   </div>
                   <Badge variant={statusMeta.variant} className="shrink-0">

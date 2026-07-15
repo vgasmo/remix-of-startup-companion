@@ -1,3 +1,4 @@
+import { timeAgo } from '@/lib/dateLocale';
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useConversations, useMessages, useSendMessage, useMarkConversationRead, Conversation } from '@/hooks/useMessaging';
@@ -7,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { formatDistanceToNow } from 'date-fns';
+
 import { MessageCircle, Send, ArrowLeft, Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { NewConversationDialog } from './NewConversationDialog';
@@ -83,7 +84,7 @@ export const MessagingPanel = React.forwardRef<HTMLDivElement, MessagingPanelPro
                       </Avatar>
                       <div className={`max-w-[70%] rounded-lg p-3 ${msg.sender_id === user?.id ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                         <p className="text-sm">{msg.content}</p>
-                        <p className="text-xs opacity-70 mt-1">{formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}</p>
+                        <p className="text-xs opacity-70 mt-1">{timeAgo(new Date(msg.created_at))}</p>
                       </div>
                     </div>
                   ))}

@@ -1,5 +1,6 @@
+import { timeAgo } from '@/lib/dateLocale';
 import { useTranslation } from 'react-i18next';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { AlertCircle, CheckCircle, ExternalLink, RefreshCw, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -117,7 +118,7 @@ export function IntegrationErrorsPanel({ compact = false, maxHeight = '300px' }:
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground mt-1">
-                      {formatDistanceToNow(new Date(error.created_at), { addSuffix: true })}
+                      {timeAgo(new Date(error.created_at))}
                     </p>
                   </div>
                   <Tooltip>

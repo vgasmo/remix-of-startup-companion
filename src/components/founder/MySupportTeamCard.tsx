@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { formatDistanceToNow } from 'date-fns';
-import { getDateLocale } from '@/lib/dateLocale';
+
+import { getDateLocale, timeAgo } from '@/lib/dateLocale';
 import { Users, Calendar, MessageSquare, Info } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -64,7 +64,7 @@ function MySupportTeamCardInner({ workspaceId, consultantId, mentorMember, lastS
   const lastSessionLabel = lastSessionDate
     ? t('founder.supportTeam.lastSession', {
         defaultValue: 'Última sessão {{when}}',
-        when: formatDistanceToNow(new Date(lastSessionDate), { addSuffix: true, locale }),
+        when: timeAgo(new Date(lastSessionDate), { locale }),
       })
     : t('founder.supportTeam.noSession', { defaultValue: 'Sem sessões registadas' });
 

@@ -12,8 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useTemplateRequests, useUpdateTemplateRequest, type TemplateRequest, type TemplateRequestStatus } from '@/hooks/useTemplateRequests';
 import { useTemplates } from '@/hooks/useTemplates';
 import { notify } from '@/lib/notify';
-import { formatDistanceToNow } from 'date-fns';
-import { getDateLocale } from '@/lib/dateLocale';
+
+import { getDateLocale, timeAgo } from '@/lib/dateLocale';
 
 const TABS: { key: TemplateRequestStatus | 'all'; defaultLabel: string }[] = [
   { key: 'pending', defaultLabel: 'Pendentes' },
@@ -139,7 +139,7 @@ export function AdminTemplateRequestsManager() {
                       <p className="text-sm font-medium">{r.title}</p>
                       <StatusBadge status={r.status} />
                       <span className="text-[10px] text-muted-foreground">
-                        {formatDistanceToNow(new Date(r.created_at), { addSuffix: true, locale: getDateLocale() })}
+                        {timeAgo(new Date(r.created_at))}
                       </span>
                     </div>
                     {r.context_label && (

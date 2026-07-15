@@ -17,8 +17,8 @@ import {
   ChevronUp, ArrowRight, Lightbulb, Target, ListChecks, Copy, Calendar,
   TrendingDown, Zap, Clock, Users, FileDown
 } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
-import { useDateLocale } from '@/lib/dateLocale';
+import { format } from 'date-fns';
+import { useDateLocale, timeAgo } from '@/lib/dateLocale';
 import { useTranslation } from 'react-i18next';
 import { notify } from "@/lib/notify";
 import { supabase } from '@/lib/supabaseClient';
@@ -436,7 +436,7 @@ export function FinancialModelPanel({ workspaceId, canWrite, isMentor = false }:
                       <Badge variant="outline" className="text-xs h-5">
                         {activeVersion.scenario_name}
                       </Badge>
-                      <span>{formatDistanceToNow(new Date(activeVersion.uploaded_at), { addSuffix: true })}</span>
+                      <span>{timeAgo(new Date(activeVersion.uploaded_at))}</span>
                       <Badge 
                         variant={activeVersion.status === 'parsed' ? 'default' : 
                                 activeVersion.status === 'failed' ? 'destructive' : 'secondary'}
@@ -610,7 +610,7 @@ export function FinancialModelPanel({ workspaceId, canWrite, isMentor = false }:
                         <p className="text-sm">{aiReview.summary}</p>
                         {activeVersion.ai_review_generated_at && (
                           <p className="text-xs text-muted-foreground mt-2">
-                            Generated {formatDistanceToNow(new Date(activeVersion.ai_review_generated_at), { addSuffix: true })}
+                            Generated {timeAgo(new Date(activeVersion.ai_review_generated_at))}
                           </p>
                         )}
                       </div>

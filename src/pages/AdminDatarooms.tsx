@@ -17,8 +17,8 @@ import {
   FolderLock, Users, Link2, Trash2, UserPlus, Shield, 
   CheckCircle, XCircle, Mail, Building, Eye, Copy, ExternalLink
 } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
-import { getDateLocale } from '@/lib/dateLocale';
+import { format } from 'date-fns';
+import { getDateLocale, timeAgo } from '@/lib/dateLocale';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { AccessDenied } from '@/components/ui/AccessDenied';
@@ -242,7 +242,7 @@ export default function AdminDatarooms() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-muted-foreground text-sm">
-                            {formatDistanceToNow(new Date(dr.updated_at), { locale: getDateLocale(), addSuffix: true })}
+                            {timeAgo(new Date(dr.updated_at))}
                           </TableCell>
                           <TableCell>
                             <Button variant="outline" size="sm" asChild>

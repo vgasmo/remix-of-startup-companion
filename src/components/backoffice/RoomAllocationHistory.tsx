@@ -5,8 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Clock, Building2, User, Calendar, ArrowRight } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
-import { useDateLocale } from '@/lib/dateLocale';
+import { format } from 'date-fns';
+import { useDateLocale, timeAgo } from '@/lib/dateLocale';
 import { cn } from '@/lib/utils';
 
 interface RoomAllocationHistoryProps {
@@ -133,7 +133,7 @@ export function RoomAllocationHistory({ roomId, roomName }: RoomAllocationHistor
 
                   {active && alloc.start_date && (
                     <div className="mt-2 pt-2 border-t text-xs text-muted-foreground">
-                      {t('admin.backoffice.occupiedFor', 'Occupied for')} {formatDistanceToNow(new Date(alloc.start_date))}
+                      {t('admin.backoffice.occupiedFor', 'Occupied for')} {timeAgo(new Date(alloc.start_date))}
                     </div>
                   )}
                 </CardContent>

@@ -1,3 +1,4 @@
+import { timeAgo } from '@/lib/dateLocale';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSessionFeedback, useMySessionFeedback, useSubmitFeedback } from '@/hooks/useSessionFeedback';
@@ -8,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { notify } from "@/lib/notify";
 import { Star, MessageSquare } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+
 
 interface SessionFeedbackProps {
   sessionId: string;
@@ -99,7 +100,7 @@ export function SessionFeedbackCard({ sessionId, sessionTitle }: SessionFeedback
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">{f.feedback}</p>
-                <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(new Date(f.created_at), { addSuffix: true })}</p>
+                <p className="text-xs text-muted-foreground mt-1">{timeAgo(new Date(f.created_at))}</p>
               </div>
             </div>
           ))}

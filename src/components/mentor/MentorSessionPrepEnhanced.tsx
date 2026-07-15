@@ -1,3 +1,4 @@
+import { timeAgo } from '@/lib/dateLocale';
 /**
  * Mentor Session Prep Card — Enhanced
  * Shows structured prep context for the mentor's next session.
@@ -18,7 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { HealthBadge } from '@/components/ui/HealthBadge';
 import { StageBadge } from '@/components/ui/StageBadge';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { format, formatDistanceToNow, differenceInDays, isBefore } from 'date-fns';
+import { format, differenceInDays, isBefore } from 'date-fns';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { HealthScore } from '@/types/database';
 import { cn } from '@/lib/utils';
@@ -79,7 +80,7 @@ export function MentorSessionPrepEnhanced({ workspaces }: MentorSessionPrepEnhan
       label: t('mentorPrep.lastSession', { defaultValue: 'Notas da última sessão' }),
       done: Boolean(w.lastSession),
       icon: FileText,
-      detail: w.lastSession ? formatDistanceToNow(new Date(w.lastSession.scheduled_at), { addSuffix: true }) : undefined,
+      detail: w.lastSession ? timeAgo(new Date(w.lastSession.scheduled_at)) : undefined,
       path: `/workspace/${w.id}?tab=agenda`
     },
   ];

@@ -1,3 +1,4 @@
+import { timeAgo } from '@/lib/dateLocale';
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format, subDays, isAfter, isBefore } from 'date-fns';
@@ -32,7 +33,7 @@ import {
 } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { useActivityLog } from '@/hooks/useActivityLog';
-import { formatDistanceToNow } from 'date-fns';
+
 
 const entityIcons: Record<string, typeof FileText> = {
   action_item: CheckCircle2,
@@ -267,7 +268,7 @@ export function ActivityLogViewerEnhanced({ workspaceId, maxHeight = '500px' }: 
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
+                        {timeAgo(new Date(activity.created_at))}
                       </p>
                     </div>
                   </div>

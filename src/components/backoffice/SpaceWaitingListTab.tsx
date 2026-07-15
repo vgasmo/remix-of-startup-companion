@@ -1,3 +1,4 @@
+import { timeAgo } from '@/lib/dateLocale';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -30,7 +31,7 @@ import { useWorkspaces, ALL_WORKSPACE_STATUSES } from '@/hooks/useWorkspaces';
 import { useFunnelItems } from '@/hooks/useFunnel';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 
 const REQUEST_TYPE_CONFIG: Record<string, { labelKey: string; color: string }> = {
   office: { labelKey: 'waitingList.privateOffice', color: 'bg-info' },
@@ -391,7 +392,7 @@ export function SpaceWaitingListTab() {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          {formatDistanceToNow(new Date(item.requested_at), { addSuffix: true })}
+                          {timeAgo(new Date(item.requested_at))}
                         </div>
                       </TableCell>
                       <TableCell>

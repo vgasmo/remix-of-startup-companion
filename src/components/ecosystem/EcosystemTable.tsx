@@ -1,3 +1,4 @@
+import { timeAgo } from '@/lib/dateLocale';
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -35,7 +36,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { EcosystemItem } from '@/hooks/useEcosystemItems';
-import { formatDistanceToNow } from 'date-fns';
+
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
@@ -347,7 +348,7 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
                 <span>{item.owner_name || '-'}</span>
                 <span>
                   {item.last_activity_at 
-                    ? formatDistanceToNow(new Date(item.last_activity_at), { addSuffix: true })
+                    ? timeAgo(new Date(item.last_activity_at))
                     : '-'}
                 </span>
               </div>
@@ -456,7 +457,7 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
                   {item.last_activity_at 
-                    ? formatDistanceToNow(new Date(item.last_activity_at), { addSuffix: true })
+                    ? timeAgo(new Date(item.last_activity_at))
                     : '-'}
                 </TableCell>
                 <TableCell>

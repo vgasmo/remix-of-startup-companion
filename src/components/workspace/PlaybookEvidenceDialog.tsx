@@ -1,4 +1,4 @@
-import { useDateLocale } from '@/lib/dateLocale';
+import { useDateLocale, timeAgo } from '@/lib/dateLocale';
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Upload, FileText, CheckCircle, XCircle, Clock, Send } from 'lucide-react';
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { usePlaybookEvidence, useSubmitEvidence, useReviewEvidence, PlaybookEvidence } from '@/hooks/usePlaybookEvidence';
 import { useAuth } from '@/contexts/AuthContext';
-import { formatDistanceToNow } from 'date-fns';
+
 interface PlaybookEvidenceDialogProps {
   workspaceId: string;
   playbookItemId: string;
@@ -121,7 +121,7 @@ export function PlaybookEvidenceDialog({ workspaceId, playbookItemId, playbookIt
                   <div className="flex items-center justify-between">
                     {statusBadge(ev.review_status)}
                     <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(ev.created_at), { addSuffix: true, locale })}
+                      {timeAgo(new Date(ev.created_at), { locale })}
                     </span>
                   </div>
                   {ev.notes && <p className="text-sm">{ev.notes}</p>}

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { format, formatDistanceToNow } from 'date-fns';
-import { useDateLocale } from '@/lib/dateLocale';
+import { format } from 'date-fns';
+import { useDateLocale, timeAgo } from '@/lib/dateLocale';
 import { useCreateConsultantNote } from '@/hooks/useConsultantNotes';
 import { useCreateStaffTask } from '@/hooks/useStaffTasks';
 import { useSessions } from '@/hooks/useSessions';
@@ -131,7 +131,7 @@ function SessionInsightCard({ session, canManage, onSaveAsNote, onCreateTask }: 
                     <Calendar className="h-3 w-3" />
                     {format(new Date(session.scheduled_at), 'MMM d, yyyy', { locale: dateLocale })}
                     {session.ai_generated_at && (
-                      <span className="text-xs">• AI generated {formatDistanceToNow(new Date(session.ai_generated_at), { addSuffix: true })}</span>
+                      <span className="text-xs">• AI generated {timeAgo(new Date(session.ai_generated_at))}</span>
                     )}
                   </CardDescription>
                 </div>

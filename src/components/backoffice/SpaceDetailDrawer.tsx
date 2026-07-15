@@ -30,8 +30,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { RoomAllocationHistory } from './RoomAllocationHistory';
 import { cn } from '@/lib/utils';
-import { format, formatDistanceToNow } from 'date-fns';
-import { useDateLocale } from '@/lib/dateLocale';
+import { format } from 'date-fns';
+import { useDateLocale, timeAgo } from '@/lib/dateLocale';
 import { notify } from "@/lib/notify";
 
 const fmtEUR = new Intl.NumberFormat('pt-PT', {
@@ -112,7 +112,7 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
     ?? allocation?.funnel_item?.contact_name;
 
   const tenure = allocation?.start_date
-    ? formatDistanceToNow(new Date(allocation.start_date))
+    ? timeAgo(new Date(allocation.start_date))
     : null;
 
   const handleVacate = async () => {
