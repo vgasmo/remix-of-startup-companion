@@ -890,6 +890,48 @@ export type Database = {
           },
         ]
       }
+      census_reports: {
+        Row: {
+          csv_object_path: string | null
+          duplicates: Json
+          generated_at: string
+          generated_by: string | null
+          id: string
+          notes: string | null
+          phc_extract_object_path: string | null
+          raw: Json
+          service_breakdown: Json
+          totals: Json
+          workspace_breakdown: Json
+        }
+        Insert: {
+          csv_object_path?: string | null
+          duplicates?: Json
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          notes?: string | null
+          phc_extract_object_path?: string | null
+          raw?: Json
+          service_breakdown?: Json
+          totals?: Json
+          workspace_breakdown?: Json
+        }
+        Update: {
+          csv_object_path?: string | null
+          duplicates?: Json
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          notes?: string | null
+          phc_extract_object_path?: string | null
+          raw?: Json
+          service_breakdown?: Json
+          totals?: Json
+          workspace_breakdown?: Json
+        }
+        Relationships: []
+      }
       checkin_definitions: {
         Row: {
           created_at: string
@@ -6082,6 +6124,86 @@ export type Database = {
         }
         Relationships: []
       }
+      service_programme_map: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          programme_id: string | null
+          service_classification: string
+          service_name: string
+          service_name_normalized: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          programme_id?: string | null
+          service_classification: string
+          service_name: string
+          service_name_normalized?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          programme_id?: string | null
+          service_classification?: string
+          service_name?: string
+          service_name_normalized?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_programme_map_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_programme_map_history: {
+        Row: {
+          actor: string | null
+          after_snapshot: Json | null
+          before_snapshot: Json | null
+          changed_at: string
+          id: string
+          map_id: string | null
+          operation: string
+          service_name: string
+        }
+        Insert: {
+          actor?: string | null
+          after_snapshot?: Json | null
+          before_snapshot?: Json | null
+          changed_at?: string
+          id?: string
+          map_id?: string | null
+          operation: string
+          service_name: string
+        }
+        Update: {
+          actor?: string | null
+          after_snapshot?: Json | null
+          before_snapshot?: Json | null
+          changed_at?: string
+          id?: string
+          map_id?: string | null
+          operation?: string
+          service_name?: string
+        }
+        Relationships: []
+      }
       session_exercises: {
         Row: {
           created_at: string
@@ -7762,6 +7884,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      system_settings: {
+        Row: {
+          description: string | null
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          description?: string | null
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
       }
       tag_categories: {
         Row: {
@@ -10366,6 +10512,7 @@ export type Database = {
         Args: { p_dry_run?: boolean; p_idempotency_key: string; p_row: Json }
         Returns: Json
       }
+      reconciler_write_enabled: { Args: never; Returns: boolean }
       reject_startup_claim: {
         Args: { p_claim_id: string; p_reason?: string }
         Returns: undefined
