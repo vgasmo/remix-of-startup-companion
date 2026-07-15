@@ -10,6 +10,7 @@
     "tabQuality": "Qualidade de Dados",
     "tabAdoption": "Adoção de Ferramentas",
     "errorTitle": "Falha ao carregar métricas",
+    "adoptionErrorTitle": "Falha ao carregar adoção",
     "retry": "Tentar novamente",
     "noData": "Sem dados no período selecionado.",
     "meetingsCompleted": "Sessões completadas",
@@ -8660,6 +8661,7 @@
   "stages": {
     "accelerating": "Em Aceleração",
     "archived": "Arquivado",
+    "awaiting_workspace": "A aguardar workspace",
     "contracted": "Contratado",
     "first_contact_booked": "Reunião Agendada",
     "graduated": "Graduado",

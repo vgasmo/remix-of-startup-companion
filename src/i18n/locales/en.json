@@ -10,6 +10,7 @@
     "tabQuality": "Data Quality",
     "tabAdoption": "Tool Adoption",
     "errorTitle": "Failed to load metrics",
+    "adoptionErrorTitle": "Failed to load adoption",
     "retry": "Retry",
     "noData": "No data in the selected period.",
     "meetingsCompleted": "Sessions completed",
@@ -8660,6 +8661,7 @@
   "stages": {
     "accelerating": "Accelerating",
     "archived": "Archived",
+    "awaiting_workspace": "Awaiting workspace",
     "contracted": "Contracted",
     "first_contact_booked": "Meeting Booked",
     "graduated": "Graduated",
