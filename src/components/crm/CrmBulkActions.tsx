@@ -318,6 +318,23 @@ export function CrmBulkActions({
 
           if (error) throw error;
 
+          // Audit trail: log archive as stage transitions
+          const { data: authData } = await supabase.auth.getUser();
+          const performedBy = authData.user?.id ?? null;
+          for (const id of ids) {
+            const from = stageMap.get(id) as string | undefined;
+            const { error: evErr } = await supabase.from('funnel_events').insert({
+              funnel_item_id: id,
+              event_type: 'archived',
+              from_stage: from ?? null,
+              to_stage: 'archived',
+              performed_by: performedBy,
+              metadata: { bulk_action: true } as any,
+            } as any);
+            if (evErr) logger.warn('crm_bulk_archive_event_failed', { id, error: evErr.message });
+          }
+
+
           notify.success(t('crm.bulk.archiveSuccess', { count: selectedCount }), {
             duration: 8000,
             action: {
