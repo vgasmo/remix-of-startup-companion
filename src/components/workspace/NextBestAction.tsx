@@ -101,7 +101,7 @@ export function NextBestAction({ workspaceId, programId, stage, canWrite }: Next
         description: t('nextBestAction.dueOn', { date: format(new Date(pendingCheckin.due_date), 'EEEE', { locale: dateLocale }) }),
         icon: <ClipboardList className="h-5 w-5" />,
         variant: 'warning',
-        action: () => setSearchParams({ tab: 'overview' }),
+        action: () => setSearchParams({ tab: 'overview', open: 'checkin' }),
         actionLabel: t('nextBestAction.completeCheckin'),
       });
     }
