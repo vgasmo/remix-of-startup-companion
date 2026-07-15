@@ -301,9 +301,7 @@ export function PendingApprovalsManager() {
     notify.success(t('admin.contaSuspensa'));
     queryClient.invalidateQueries({ queryKey: ['pending-user-accounts'] });
   };
-    notify.success(t('admin.contaSuspensa'));
-    queryClient.invalidateQueries({ queryKey: ['pending-user-accounts'] });
-  };
+
 
   const handleAssignClaim = async () => {
     if (!assignClaimTarget || !selectedWorkspaceId) return;
