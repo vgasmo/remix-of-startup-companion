@@ -600,6 +600,19 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SessionCompletionDialog
+        open={completionOpen}
+        onOpenChange={setCompletionOpen}
+        session={{
+          id: session.id,
+          workspace_id: workspaceId,
+          title: session.title,
+          duration: session.duration ?? null,
+          primary_consultant_id: session.primary_consultant_id ?? null,
+          session_template_id: session.session_template_id ?? null,
+        }}
+      />
     </>
   );
 }
