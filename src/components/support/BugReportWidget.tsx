@@ -111,11 +111,22 @@ export function BugReportWidget() {
     }
 
     setSubmitting(true);
-    try {
-      const reportId = crypto.randomUUID();
+    const reportId = crypto.randomUUID();
+    const uploadedPaths: string[] = [];
 
-      // Upload screenshots first (path is scoped to auth.uid()/<report_id>/…)
-      const uploadedPaths: string[] = [];
+    const cleanupUploads = async () => {
+      if (!uploadedPaths.length) return;
+      try {
+        await supabase.storage.from('bug-report-screenshots').remove(uploadedPaths);
+      } catch {
+        /* best-effort — never surface cleanup failures to the user */
+      }
+    };
+
+    try {
+      // Upload screenshots first (path is scoped to auth.uid()/<report_id>/…).
+      // If any single upload fails, remove everything uploaded in this attempt
+      // so the bucket does not accumulate orphaned screenshots.
       for (let i = 0; i < files.length; i++) {
         const f = files[i];
         const ext = (f.name.split('.').pop() || 'png').toLowerCase().slice(0, 5);
@@ -148,22 +159,13 @@ export function BugReportWidget() {
         },
       });
 
-      if (error) {
-        // Clean up orphaned uploads when the row insert fails so the bucket
-        // does not accumulate unreferenced screenshots.
-        if (uploadedPaths.length) {
-          await supabase.storage
-            .from('bug-report-screenshots')
-            .remove(uploadedPaths)
-            .catch(() => { /* best-effort */ });
-        }
-        throw error;
-      }
+      if (error) throw error;
 
       notify.success(t('bugReport.sent', 'Relatório enviado. Obrigado!'));
       resetForm();
       setOpen(false);
     } catch (err) {
+      await cleanupUploads();
       const msg = err instanceof Error ? err.message : String(err);
       notify.error(
         t('bugReport.error', { defaultValue: 'Falha ao enviar: {{msg}}', msg }),

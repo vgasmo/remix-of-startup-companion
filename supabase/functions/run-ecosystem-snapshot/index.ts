@@ -22,7 +22,10 @@ const SNAPSHOT_DOMAINS: { name: string; table: string; safe?: boolean }[] = [
   { name: 'startups', table: 'startups' },
   { name: 'workspaces', table: 'workspaces' },
   { name: 'workspace_users', table: 'workspace_users' },
-  { name: 'profiles', table: 'profiles_safe', safe: true },
+  // profiles_export is a service-role only view that bypasses profiles_safe's
+  // auth.uid() filter (which returned zero rows for the service client and
+  // caused silent-empty snapshots).
+  { name: 'profiles', table: 'profiles_export', safe: true },
   { name: 'mentor_connections', table: 'mentor_connections' },
   { name: 'funnel_items', table: 'funnel_items' },
   { name: 'contract_intakes', table: 'contract_intakes' },
@@ -143,6 +146,22 @@ Deno.serve(async (req) => {
       }
 
       log.info(`Exported ${domain.name}: ${allRows.length} records`);
+    }
+
+    // Non-empty domain assertions: catch silent-empty exports (e.g. profiles_safe
+    // returning 0 rows for the service client). Fail the snapshot before we
+    // mark it completed.
+    const REQUIRED_NONZERO: Record<string, number> = {
+      profiles: 1,
+      programs: 1,
+    };
+    for (const [domain, min] of Object.entries(REQUIRED_NONZERO)) {
+      const actual = recordCounts[domain] ?? 0;
+      if (actual < min) {
+        throw new Error(
+          `Domain ${domain} exported ${actual} rows (expected >= ${min}). Aborting snapshot.`,
+        );
+      }
     }
 
     // Compute aggregate checksum

@@ -1363,6 +1363,13 @@ export type Database = {
             foreignKeyName: "communication_log_assigned_to_fkey"
             columns: ["assigned_to"]
             isOneToOne: false
+            referencedRelation: "profiles_export"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_log_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
             referencedRelation: "profiles_safe"
             referencedColumns: ["id"]
           },
@@ -9841,6 +9848,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles_export: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          email: string | null
+          expertise: string[] | null
+          full_name: string | null
+          id: string | null
+          linkedin_url: string | null
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          email?: string | null
+          expertise?: string[] | null
+          full_name?: string | null
+          id?: string | null
+          linkedin_url?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          email?: string | null
+          expertise?: string[] | null
+          full_name?: string | null
+          id?: string | null
+          linkedin_url?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       profiles_safe: {
         Row: {
