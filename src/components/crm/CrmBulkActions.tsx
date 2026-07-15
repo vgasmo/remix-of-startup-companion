@@ -219,6 +219,22 @@ export function CrmBulkActions({
 
           if (error) throw error;
 
+          // Audit trail: log ownership changes
+          const { data: authData } = await supabase.auth.getUser();
+          const performedBy = authData.user?.id ?? null;
+          for (const id of ids) {
+            const prev = ownerMap.get(id) ?? null;
+            const { error: evErr } = await supabase.from('funnel_events').insert({
+              funnel_item_id: id,
+              event_type: 'assignee_changed',
+              performed_by: performedBy,
+              metadata: { bulk_action: true, from_owner: prev, to_owner: consultantId } as any,
+            } as any);
+            if (evErr) logger.warn('crm_bulk_assign_event_failed', { id, error: evErr.message });
+          }
+
+
+
           notify.success(t('crm.bulk.assignSuccess', { count: selectedCount, name: consultant?.full_name }), {
             duration: 8000,
             action: {
@@ -301,6 +317,23 @@ export function CrmBulkActions({
             .in('id', ids);
 
           if (error) throw error;
+
+          // Audit trail: log archive as stage transitions
+          const { data: authData } = await supabase.auth.getUser();
+          const performedBy = authData.user?.id ?? null;
+          for (const id of ids) {
+            const from = stageMap.get(id) as string | undefined;
+            const { error: evErr } = await supabase.from('funnel_events').insert({
+              funnel_item_id: id,
+              event_type: 'archived',
+              from_stage: from ?? null,
+              to_stage: 'archived',
+              performed_by: performedBy,
+              metadata: { bulk_action: true } as any,
+            } as any);
+            if (evErr) logger.warn('crm_bulk_archive_event_failed', { id, error: evErr.message });
+          }
+
 
           notify.success(t('crm.bulk.archiveSuccess', { count: selectedCount }), {
             duration: 8000,

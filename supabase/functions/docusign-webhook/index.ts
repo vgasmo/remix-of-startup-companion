@@ -10,7 +10,7 @@
  * Uses shared lifecycleSync for intake/CRM/workspace orchestration.
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { syncIntakeOnSent, syncIntakeOnCompleted } from '../_shared/lifecycleSync.ts'
+import { syncIntakeOnSent, syncIntakeOnCompleted, syncIntakeOnClosed } from '../_shared/lifecycleSync.ts'
 import { handleLifecycleSyncResult } from '../_shared/lifecycleSyncResultHandler.ts'
 import { autoCreateFounderAccount as sharedCreateFounder, enqueueFounderInviteTask } from '../_shared/founderAccount.ts'
 import { sha256Hex, claimWebhookDelivery, markInboxProcessed, TERMINAL_SIGNATURE_STATUSES, scrubWebhookPreview } from '../_shared/webhookInbox.ts'
@@ -376,6 +376,12 @@ Deno.serve(async (req) => {
       await handleLifecycleSyncResult(supabase, r, {
         contractId: contract.id, workspaceId: contract.workspace_id,
         source: 'docusign_webhook_completed', operation: 'completed',
+      })
+    } else if (status === 'declined' || status === 'voided') {
+      const r = await syncIntakeOnClosed(supabase, contract.id, status as 'declined' | 'voided', null, `docusign_webhook`)
+      await handleLifecycleSyncResult(supabase, r, {
+        contractId: contract.id, workspaceId: contract.workspace_id,
+        source: `docusign_webhook_${status}`, operation: status,
       })
     }
 
