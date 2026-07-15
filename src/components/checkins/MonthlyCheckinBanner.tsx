@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { usePendingCheckin, useSubmitCheckin, useSkipCheckin, CheckinQuestion, SubmitCheckinPayload } from '@/hooks/useCheckins';
 import { useAllKpiDefinitions, KpiDefinition } from '@/hooks/useKpis';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -19,6 +20,7 @@ interface MonthlyCheckinBannerProps {
 
 export function MonthlyCheckinBanner({ workspaceId }: MonthlyCheckinBannerProps) {
   const { t, i18n } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showForm, setShowForm] = useState(false);
   const [responses, setResponses] = useState<Record<string, string | number>>({});
   
@@ -27,6 +29,16 @@ export function MonthlyCheckinBanner({ workspaceId }: MonthlyCheckinBannerProps)
   const submitCheckin = useSubmitCheckin();
   const skipCheckin = useSkipCheckin();
   const { showQuickWin } = useQuickWinToast();
+
+  // Auto-open form when landing here from a smart nudge / one-thing-today CTA (?open=checkin)
+  useEffect(() => {
+    if (searchParams.get('open') === 'checkin' && pendingCheckin) {
+      setShowForm(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete('open');
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, pendingCheckin, setSearchParams]);
 
   // i18n-aware date formatting
   const formatDate = (date: Date) => {
