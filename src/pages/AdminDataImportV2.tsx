@@ -261,6 +261,8 @@ export default function AdminDataImportV2() {
           </AlertDescription>
         </Alert>
 
+        <ReconcilerCanaryPanel />
+
         {/* Stepper */}
         <div className="flex items-center gap-2 text-xs">
           {(['upload', 'mapping', 'reconcile', 'commit', 'results'] as Step[]).map((s, i) => (
