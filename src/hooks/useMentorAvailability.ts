@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
+import { lisbonWallClockToUtcIso } from '@/lib/dateUtils';
 
 export interface MentorAvailability {
   id: string;
