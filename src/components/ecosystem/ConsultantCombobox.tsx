@@ -112,7 +112,11 @@ export function ConsultantCombobox({
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          onClick={(e) => stopPropagation && e.stopPropagation()}
+          // Only stop click bubbling to the parent row; do NOT stop
+          // pointerdown/mousedown or Radix loses its own trigger events.
+          onClick={(e) => {
+            if (stopPropagation) e.stopPropagation();
+          }}
           className={cn(
             'justify-between font-normal',
             size === 'sm' ? 'h-8 text-xs' : 'h-10 text-sm',
@@ -128,9 +132,14 @@ export function ConsultantCombobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[260px] p-0"
-        align="start"
-        onClick={(e) => stopPropagation && e.stopPropagation()}
+        className="w-[260px] p-0 z-50"
+        align="end"
+        side="bottom"
+        sideOffset={4}
+        avoidCollisions
+        // Prevent Radix from stealing focus back to the trigger on close
+        // (which can visually "detach" the popover on rapid clicks).
+        onCloseAutoFocus={(e) => e.preventDefault()}
       >
         <Command shouldFilter={false}>
           <CommandInput
@@ -206,3 +215,4 @@ export function ConsultantCombobox({
     </Popover>
   );
 }
+
