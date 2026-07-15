@@ -250,7 +250,7 @@ export function LifecycleMismatchPanel({
       const linked = contractById.get(item.linked_contract_id);
       if (!linked) return;
       if (
-        (linked.status === 'terminated' || linked.status === 'voided' || linked.status === 'declined') &&
+        (linked.status === 'terminated' || linked.status === 'expired') &&
         !['rejected', 'archived', 'lost'].includes(item.stage)
       ) {
         out.push({
