@@ -346,7 +346,7 @@ export default function WorkspaceDetail() {
   // fall back to the latest Value Proposition canvas (short_version, then raw
   // value_prop field) so newly-imported workspaces without a filled description
   // still show a meaningful one-liner in the header.
-  const { data: valuePropArtifacts } = useValuePropArtifacts(workspace?.id);
+  // (valuePropArtifacts is fetched near the top of the component to keep hook order stable.)
   const canvasDescription =
     valuePropArtifacts?.[0]?.outputs_text?.short_version?.trim() ||
     valuePropArtifacts?.[0]?.json_fields?.value_prop?.trim() ||
