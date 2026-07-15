@@ -309,6 +309,23 @@ export default function StaffImpact() {
               <CardContent>
                 {adoption.isLoading ? (
                   <Skeleton className="h-32" />
+                ) : adoption.error ? (
+                  <div className="py-4 space-y-2 text-sm">
+                    <div className="flex items-center gap-2 text-destructive font-medium">
+                      <AlertTriangle className="h-4 w-4" />
+                      {t('impact.adoptionErrorTitle', 'Falha ao carregar adoção')}
+                    </div>
+                    <div className="text-xs text-muted-foreground break-words">
+                      {(adoption.error as Error).message}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => adoption.refetch()}
+                      className="text-xs underline text-primary"
+                    >
+                      {t('impact.retry', 'Tentar novamente')}
+                    </button>
+                  </div>
                 ) : tools.length === 0 ? (
                   <div className="text-sm text-muted-foreground py-6 text-center">
                     {t('impact.noToolEvents', 'Sem eventos de utilização no período.')}
