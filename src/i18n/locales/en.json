@@ -182,6 +182,18 @@
     "task": "Task"
   },
   "admin": {
+    "manualResolution": {
+      "title": "Manual resolution queue",
+      "description": "Records that neither the PHC reconciler nor automated provisioning can resolve. Each row requires a human decision before any write.",
+      "orphanContracts": "Contracts without workspace",
+      "unlinkedFunnel": "Contracted leads without workspace",
+      "reference": "Reference",
+      "label": "Entity",
+      "state": "State",
+      "updated": "Updated",
+      "empty": "No records pending manual resolution.",
+      "error": "Failed to load the manual resolution queue."
+    },
     "activeLinks": "Active Links",
     "activityLog": "Activity",
     "addMentor": "Add Mentor",
