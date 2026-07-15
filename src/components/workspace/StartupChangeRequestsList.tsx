@@ -88,7 +88,7 @@ export function StartupChangeRequestsList({ workspaceId, canManage = true }: Pro
                       <strong>{t('startupChangeRequests.reviewNotes', 'Nota da equipa')}:</strong> {r.review_notes}
                     </p>
                   )}
-                  <p className="text-[11px] text-muted-foreground">{timeAgo(r.created_at)}</p>
+                  <p className="text-[11px] text-muted-foreground">{timeAgo(new Date(r.created_at))}</p>
                 </div>
                 {canManage && r.status === 'pending' && (
                   <Button
