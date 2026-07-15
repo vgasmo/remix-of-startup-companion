@@ -287,26 +287,20 @@ export function PendingApprovalsManager() {
   };
 
   const handleSuspendUser = async (userId: string) => {
-    // P0 fix: same silent no-op as approve. Fall back to the RPC when
-    // available; else surface the error explicitly rather than lying.
-    const { data, error } = await supabase.rpc('suspend_user_account', {
-      p_user_id: userId,
-    } as any);
-    if (error && (error as any).code === '42883') {
-      // RPC not deployed yet — attempt direct update but VERIFY row count.
-      const { data: rows, error: updErr } = await supabase
-        .from('profiles')
-        .update({ account_status: 'suspended' })
-        .eq('id', userId)
-        .select('id');
-      if (updErr || !rows || rows.length === 0) {
-        notify.error(t('admin.erroAoSuspenderConta'));
-        return;
-      }
-    } else if (error || data === false) {
+    // P0 fix: `.update` was silently no-op'd by RLS. Perform the update and
+    // verify at least one row was affected before claiming success.
+    const { data: rows, error } = await supabase
+      .from('profiles')
+      .update({ account_status: 'suspended' })
+      .eq('id', userId)
+      .select('id');
+    if (error || !rows || rows.length === 0) {
       notify.error(t('admin.erroAoSuspenderConta'));
       return;
     }
+    notify.success(t('admin.contaSuspensa'));
+    queryClient.invalidateQueries({ queryKey: ['pending-user-accounts'] });
+  };
     notify.success(t('admin.contaSuspensa'));
     queryClient.invalidateQueries({ queryKey: ['pending-user-accounts'] });
   };

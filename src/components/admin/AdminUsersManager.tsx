@@ -123,7 +123,7 @@ export function AdminUsersManager() {
 
     // P0 guard: prevent self-suspension and suspending another admin.
     if (newStatus === 'suspended') {
-      if (suspendTarget.userId === user?.id) {
+      if (suspendTarget.userId === currentUser?.id) {
         notify.error(t('admin.userManagement.cannotSuspendSelf', { defaultValue: 'Não podes suspender a tua própria conta' }));
         setSuspendTarget(null);
         return;
