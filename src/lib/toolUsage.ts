@@ -39,15 +39,15 @@ export async function logToolUsage(tool: ToolEvent, args: LogArgs = {}): Promise
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData.user?.id;
     if (!userId) return;
-    const { error } = await supabase.from('tool_usage_events').insert({
+    const { error } = await supabase.from('tool_usage_events').insert([{
       tool,
       user_id: userId,
       workspace_id: args.workspaceId ?? null,
       session_id: args.sessionId ?? null,
       entity_type: args.entityType ?? null,
       entity_id: args.entityId ?? null,
-      metadata: args.metadata ?? {},
-    });
+      metadata: (args.metadata ?? {}) as Record<string, unknown>,
+    }]);
     if (error) logger.warn('tool_usage_insert_failed', { tool, error: error.message });
   } catch (e) {
     logger.warn('tool_usage_exception', { tool, error: (e as Error).message });
