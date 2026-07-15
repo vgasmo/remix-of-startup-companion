@@ -511,7 +511,7 @@ serve(async (req) => {
           
           // Alert: drop to critical
           if (healthLabel === "critical" && prevLabel !== "critical") {
-            await supabase.from("workspace_health_alerts").insert({
+            const { data: alertRow } = await supabase.from("workspace_health_alerts").insert({
               workspace_id: workspace.id,
               alert_type: "drop_to_critical",
               severity: "critical",
@@ -523,7 +523,7 @@ serve(async (req) => {
                 new_label: healthLabel,
                 delta: scoreDelta,
               },
-            });
+            }).select("id").single();
             alertsCreated++;
             
             // Send Teams notification for critical alerts
