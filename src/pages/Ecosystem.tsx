@@ -122,7 +122,7 @@ export default function Ecosystem() {
               <ContentSkeleton type="list" count={6} />
             ) : (
               <>
-                <ConsultorPortfolioView items={items} />
+                <ConsultorPortfolioView items={items} ownerId={filters.ownerId} />
                 {hasNextPage && (
                   <div className="flex justify-center pt-2">
                     <Button
