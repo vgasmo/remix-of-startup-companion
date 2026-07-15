@@ -33,9 +33,11 @@ export function getCorsHeaders(req: Request): Record<string, string> {
   // Check if origin is allowed
   const isAllowed = allowedOrigins.some(allowed => {
     // Support wildcard subdomains (e.g., *.lovable.app)
+    // P0 fix: `origin.endsWith('lovable.app')` matches `evil-lovable.app`.
+    // Require an exact host equal to the bare domain OR a proper `.domain` suffix.
     if (allowed.startsWith('*.')) {
       const domain = allowed.slice(2);
-      return origin.endsWith(domain) || origin.endsWith(`.${domain}`);
+      return origin === `https://${domain}` || origin.endsWith(`.${domain}`);
     }
     return origin === allowed;
   });
