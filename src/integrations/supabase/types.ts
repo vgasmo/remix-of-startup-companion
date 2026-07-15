@@ -6284,6 +6284,44 @@ export type Database = {
           },
         ]
       }
+      session_participants: {
+        Row: {
+          attendance_status: string
+          created_at: string
+          id: string
+          role: string | null
+          session_id: string
+          source: string | null
+          user_id: string
+        }
+        Insert: {
+          attendance_status?: string
+          created_at?: string
+          id?: string
+          role?: string | null
+          session_id: string
+          source?: string | null
+          user_id: string
+        }
+        Update: {
+          attendance_status?: string
+          created_at?: string
+          id?: string
+          role?: string | null
+          session_id?: string
+          source?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_tags: {
         Row: {
           created_at: string
@@ -6439,6 +6477,7 @@ export type Database = {
       }
       sessions: {
         Row: {
+          actual_duration_minutes: number | null
           agenda: string | null
           ai_action_suggestions: Json | null
           ai_decisions: Json | null
@@ -6447,6 +6486,7 @@ export type Database = {
           ai_kpi_prompts: Json | null
           ai_risks: Json | null
           ai_summary: string | null
+          completed_at: string | null
           created_at: string
           created_by: string | null
           decisions: string | null
@@ -6460,17 +6500,21 @@ export type Database = {
           outlook_sync_error: string | null
           outlook_sync_status: string | null
           outlook_synced_at: string | null
+          primary_consultant_id: string | null
           raw_transcript: string | null
           scheduled_at: string
           search_vector: unknown
+          session_template_id: string | null
           session_type: string | null
           source: string | null
+          status: string
           teams_meeting_url: string | null
           title: string
           updated_at: string
           workspace_id: string
         }
         Insert: {
+          actual_duration_minutes?: number | null
           agenda?: string | null
           ai_action_suggestions?: Json | null
           ai_decisions?: Json | null
@@ -6479,6 +6523,7 @@ export type Database = {
           ai_kpi_prompts?: Json | null
           ai_risks?: Json | null
           ai_summary?: string | null
+          completed_at?: string | null
           created_at?: string
           created_by?: string | null
           decisions?: string | null
@@ -6492,17 +6537,21 @@ export type Database = {
           outlook_sync_error?: string | null
           outlook_sync_status?: string | null
           outlook_synced_at?: string | null
+          primary_consultant_id?: string | null
           raw_transcript?: string | null
           scheduled_at: string
           search_vector?: unknown
+          session_template_id?: string | null
           session_type?: string | null
           source?: string | null
+          status?: string
           teams_meeting_url?: string | null
           title: string
           updated_at?: string
           workspace_id: string
         }
         Update: {
+          actual_duration_minutes?: number | null
           agenda?: string | null
           ai_action_suggestions?: Json | null
           ai_decisions?: Json | null
@@ -6511,6 +6560,7 @@ export type Database = {
           ai_kpi_prompts?: Json | null
           ai_risks?: Json | null
           ai_summary?: string | null
+          completed_at?: string | null
           created_at?: string
           created_by?: string | null
           decisions?: string | null
@@ -6524,11 +6574,14 @@ export type Database = {
           outlook_sync_error?: string | null
           outlook_sync_status?: string | null
           outlook_synced_at?: string | null
+          primary_consultant_id?: string | null
           raw_transcript?: string | null
           scheduled_at?: string
           search_vector?: unknown
+          session_template_id?: string | null
           session_type?: string | null
           source?: string | null
+          status?: string
           teams_meeting_url?: string | null
           title?: string
           updated_at?: string
@@ -8407,6 +8460,7 @@ export type Database = {
           description: string | null
           hours: number
           id: string
+          session_id: string | null
           updated_at: string
           user_id: string
           workspace_id: string
@@ -8418,6 +8472,7 @@ export type Database = {
           description?: string | null
           hours: number
           id?: string
+          session_id?: string | null
           updated_at?: string
           user_id: string
           workspace_id: string
@@ -8429,16 +8484,68 @@ export type Database = {
           description?: string | null
           hours?: number
           id?: string
+          session_id?: string | null
           updated_at?: string
           user_id?: string
           workspace_id?: string
         }
         Relationships: [
           {
+            foreignKeyName: "time_entries_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "time_entries_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tool_usage_events: {
+        Row: {
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          metadata: Json
+          occurred_at: string
+          session_id: string | null
+          tool: string
+          user_id: string
+          workspace_id: string | null
+        }
+        Insert: {
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          session_id?: string | null
+          tool: string
+          user_id: string
+          workspace_id?: string | null
+        }
+        Update: {
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          session_id?: string | null
+          tool?: string
+          user_id?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_usage_events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -10303,6 +10410,17 @@ export type Database = {
         Args: { _dataroom_id: string }
         Returns: string
       }
+      get_impact_aggregates: {
+        Args: {
+          p_consultant_id?: string
+          p_date_from: string
+          p_date_to: string
+          p_programme_id?: string
+          p_service?: string
+          p_startup_id?: string
+        }
+        Returns: Json
+      }
       get_kpi_percentiles: {
         Args: {
           _kpi_definition_id: string
@@ -10346,6 +10464,23 @@ export type Database = {
       get_session_workspace_id: {
         Args: { _session_id: string }
         Returns: string
+      }
+      get_tool_adoption: {
+        Args: {
+          p_date_from: string
+          p_date_to: string
+          p_tool?: string
+          p_user_id?: string
+          p_workspace_id?: string
+        }
+        Returns: {
+          distinct_users: number
+          entity_type: string
+          event_count: number
+          last_used_at: string
+          tool: string
+          workspace_id: string
+        }[]
       }
       get_workspace_role: {
         Args: { _user_id: string; _workspace_id: string }
