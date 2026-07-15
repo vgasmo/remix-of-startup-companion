@@ -437,14 +437,21 @@ export function CanvasTemplate({ type, data, onChange, disabled = false, reviewS
               const isEditing = editingSection === section.id;
               const hasContent = !!data[section.id];
 
+              // Only wrap the card with keyboard-activatable clickableProps when
+              // NOT editing — otherwise its Space/Enter preventDefault swallows
+              // spaces and newlines typed inside the Textarea.
+              const cardActivation = !disabled && !isEditing
+                ? clickableProps(() => handleEdit(section.id))
+                : {};
+
               return (
                 <div
                   key={section.id}
                   style={{ gridArea: section.gridArea }}
                   className={`relative rounded-lg border-2 p-3 transition-all ${section.color} ${
-                    !disabled ? 'hover:shadow-md cursor-pointer' : ''
+                    !disabled && !isEditing ? 'hover:shadow-md cursor-pointer' : ''
                   }`}
-                  {...clickableProps(() => !disabled && !isEditing && handleEdit(section.id))}
+                  {...cardActivation}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <h4 className="font-semibold text-xs uppercase tracking-wide text-foreground/80">
@@ -466,7 +473,11 @@ export function CanvasTemplate({ type, data, onChange, disabled = false, reviewS
                   </div>
 
                   {isEditing ? (
-                    <div className="space-y-2" {...clickableProps((e) => e.stopPropagation())}>
+                    <div
+                      className="space-y-2"
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
+                    >
                       <Textarea
                         value={editValue}
                         onChange={(e) => {
