@@ -89,7 +89,9 @@ export function MentorBookingPanel({
     if (!windows.length) return [] as { start: string; end: string; key: string }[];
 
     const dateStr = format(date, 'yyyy-MM-dd');
-    const busy = (bookings || [])
+    // Own bookings (any status) merged with cross-founder mentor busy slots
+    // returned by the SECURITY DEFINER RPC — no PII, just windows.
+    const ownBusy = (bookings || [])
       .filter(b =>
         b.mentor_id === mentorId &&
         b.requested_date === dateStr &&
@@ -99,6 +101,10 @@ export function MentorBookingPanel({
         s: timeToMin(b.requested_start_time),
         e: timeToMin(b.requested_end_time),
       }));
+    const crossFounderBusy = (mentorBusySlots || [])
+      .filter(b => b.busy_date === dateStr)
+      .map(b => ({ s: timeToMin(b.start_time), e: timeToMin(b.end_time) }));
+    const busy = [...ownBusy, ...crossFounderBusy];
 
     const slots: { start: string; end: string; key: string }[] = [];
     for (const w of windows) {
