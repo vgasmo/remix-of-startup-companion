@@ -49,6 +49,29 @@ async function sendTeamsHealthAlert(
   }
 }
 
+/**
+ * Helper to fire the health alert email edge function (non-blocking).
+ */
+async function sendHealthAlertEmail(
+  supabaseUrl: string,
+  supabaseKey: string,
+  alertId: string,
+) {
+  try {
+    await fetch(`${supabaseUrl}/functions/v1/send-health-alert-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseKey}`,
+        'x-cron-secret': Deno.env.get('CRON_SECRET') || '',
+      },
+      body: JSON.stringify({ alert_id: alertId }),
+    });
+  } catch {
+    // Non-blocking; alert is already persisted.
+  }
+}
+
 interface HealthModel {
   program_id: string;
   weights_json: {
