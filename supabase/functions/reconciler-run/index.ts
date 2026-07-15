@@ -185,6 +185,7 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({
       dry_run: dryRun,
+      diagnostics_only: true,
       total_rows: items?.length ?? 0,
       planned_writes,
       noop,
