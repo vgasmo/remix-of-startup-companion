@@ -17,13 +17,10 @@ interface RunBody {
   limit?: number;
 }
 
-const DEFAULT_SERVICE_CLASS: Record<string, string> = {
-  'Incubação Física': 'founder_journey',
-  'Incubação Virtual': 'founder_journey',
-  'Incubação de Ideias': 'founder_journey',
-  'Incubação Visa': 'founder_journey',
-  'Domiciliação': 'domiciliacao',
-};
+// Phase 1: NO hardcoded default service classification. Operators must supply
+// `service_classification_map` for every distinct service_name observed;
+// unmapped services are reported as conflicts and skipped.
+
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return handleCorsOptions(req);
