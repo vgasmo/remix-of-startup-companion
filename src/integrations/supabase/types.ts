@@ -10512,6 +10512,7 @@ export type Database = {
         Args: { p_dry_run?: boolean; p_idempotency_key: string; p_row: Json }
         Returns: Json
       }
+      reconcile_rollback: { Args: { p_row_id: string }; Returns: Json }
       reconciler_write_enabled: { Args: never; Returns: boolean }
       reject_startup_claim: {
         Args: { p_claim_id: string; p_reason?: string }
