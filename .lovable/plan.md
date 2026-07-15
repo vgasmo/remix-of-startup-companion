@@ -72,3 +72,39 @@ Scope: production-safety fixes only. No new features, no redesigns, no deletions
 - This is a very large sprint; each phase touches production semantics. All schema changes are additive + idempotent; no already-applied migration is edited.
 - Session completion RPC changes the client contract for `useSessions.completeSession` — all call sites must be updated in the same pass.
 - Reconciler stays diagnostics-only for this release; committing is deferred.
+
+---
+
+## Execution status (this session)
+
+### Shipped
+- **Phase 1 (P0) — Atomic session completion**
+  - New RPC `public.complete_session_atomic(p_session_id, p_workspace_id, p_actual_duration_minutes, p_primary_consultant_id, p_template_id, p_notes, p_decisions, p_participants, p_idempotency_key)` — SECURITY DEFINER, `search_path=public`, GRANT to `authenticated` only. Locks the session row `FOR UPDATE`, validates workspace scope, transition (`scheduled|in_progress → completed` only), duration bounds, consultant is `admin`/`consultor`, upserts attendance in the same transaction, writes `activity_log` audit, is idempotent via new `sessions.completion_idempotency_key` unique index.
+  - `SessionCompletionDialog`: `actual_duration_minutes` now initializes **blank** (no prefill from planned duration).
+  - `useSessions.useCompleteSession`: rewritten to call the atomic RPC; sequential update+upsert removed.
+- **Phase 2 (P0) — Reconciler neutralized**
+  - `supabase/functions/reconciler-run/index.ts` no longer calls the dropped `reconcile_active_customer(p_row,…)` overload. Response now carries `diagnostics_only: true`; per-row status is `diagnostic_only`. Existing dual kill-switch (env + `system_settings.reconciler.write_mode`) still returns 423 for `dry_run:false`; even if switches flip on, this function cannot write.
+- **Phase 5 (P1) — Invariant monitor**
+  - New `public.system_alerts` table (`kind`, `severity`, `dedupe_key`, `payload`), RLS admin-read.
+  - `check_ecosystem_invariants()` rewritten: writes to `system_alerts` (fixes crash on `activity_log.user_id` NOT NULL), always emits a heartbeat row (silent-cron detection), dedupes within 24h.
+- **Phase 7 partial (P1) — `?open=<id>` deep link**
+  - `AdminContracts` now consumes `?open=<contract_id>`, opens the drawer if found, shows a truthful toast if not, and clears the query param.
+- **Phase 3 (P0) — Typecheck** — canonical `npm run typecheck` exits 0.
+
+### Verification
+- `npm run typecheck` → **PASS** (0 errors)
+- `npm run lint` → **PASS**
+- `npm run test` → **PASS** (23 files / 200 tests)
+
+### Deferred to a follow-up hardening pass (not in this session)
+- Phase 4: full CSV parser rewrite + storage-bucket migration for census.
+- Phase 6: impact-completeness formula alignment + consultant `no_contact_30d` portfolio scoping + `tool_usage_events` FKs.
+- Phase 7 (rest): `ecosystem-snapshot` temp-prefix pattern and manifest-last publish.
+- Session `cancel_session_atomic` / `mark_session_no_show_atomic` RPCs (distinct actions in UI).
+- Full transactional staged-commit protocol for reconciler (kept diagnostics-only for this release).
+
+### Rollback
+- Drop `public.system_alerts` (cascades to policy).
+- Drop `public.complete_session_atomic(...)` and the `uq_sessions_completion_idempotency` unique index; drop `sessions.completion_idempotency_key` column.
+- Restore prior `check_ecosystem_invariants()` from migration `20260715211024_*.sql`.
+- Revert reconciler edge function to prior git revision (kill-switch gate remains).
