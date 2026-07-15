@@ -36,6 +36,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { EcosystemItem } from '@/hooks/useEcosystemItems';
+import { useWorkspaceTiers } from '@/hooks/useWorkspaceTiers';
+import { InlineTierSelect } from './InlineTierSelect';
 
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100];
@@ -105,6 +107,14 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
     () => sortedItems.slice(page * pageSize, (page + 1) * pageSize),
     [sortedItems, page, pageSize],
   );
+
+  // Bulk fetch tier assignments for the paginated workspaces
+  const visibleWorkspaceIds = useMemo(
+    () => paginatedItems.filter((it) => it.item_type === 'workspace' && it.workspace_id)
+      .map((it) => it.workspace_id as string),
+    [paginatedItems],
+  );
+  const { data: tierMap = {} } = useWorkspaceTiers(visibleWorkspaceIds);
 
   // Reset page when pageSize changes
   const safeSetPageSize = (size: number) => {
@@ -372,6 +382,7 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
                 <span className="inline-flex items-center gap-1">{t('workspace.stage', { defaultValue: 'Stage' })} <SortIcon k="stage" /></span>
               </TableHead>
               <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.category', { defaultValue: 'Cat.' })}</TableHead>
+              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.tier', { defaultValue: 'Tier' })}</TableHead>
               <TableHead aria-sort={ariaSortFor('health')} className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium cursor-pointer select-none" onClick={() => toggleSort('health')}>
                 <span className="inline-flex items-center gap-1">{t('workspace.healthScore', { defaultValue: 'Health' })} <SortIcon k="health" /></span>
               </TableHead>
@@ -436,6 +447,16 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
                 </TableCell>
                 <TableCell>
                   <CategoryBadge category={item.startup_category} />
+                </TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  {item.item_type === 'workspace' && item.workspace_id ? (
+                    <InlineTierSelect
+                      workspaceId={item.workspace_id}
+                      currentTier={tierMap[item.workspace_id] ?? null}
+                    />
+                  ) : (
+                    <span className="text-muted-foreground text-sm">-</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   {item.health_score ? (
