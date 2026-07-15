@@ -65,28 +65,36 @@ function MetricCard({
   trend?: 'up' | 'down' | 'neutral';
   comparison?: { prev: number | null; label: string };
 }) {
+  const { t, i18n } = useTranslation();
   if (value === null) return null;
   
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : null;
   const trendColor = trend === 'up' ? 'text-[hsl(var(--success))]' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground';
-  
+  const locale = i18n.language === 'pt' ? 'pt-PT' : 'en-US';
+  const fmt1 = (n: number) => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(n);
+  const fmtCurrency = (n: number) => new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+  const monthsLabel = Math.abs(value) === 1
+    ? t('financialPanel.month', { defaultValue: i18n.language === 'pt' ? 'mês' : 'month' })
+    : t('financialPanel.months', { defaultValue: i18n.language === 'pt' ? 'meses' : 'months' });
+
   return (
     <div className="p-3 rounded-lg border bg-card">
       <p className="text-xs text-muted-foreground mb-1">{label}</p>
       <div className="flex items-baseline gap-1">
         <span className="text-xl font-semibold">
-          {unit === '€' ? `€${value.toLocaleString()}` : 
-           unit === '%' ? `${value.toFixed(1)}%` :
-           unit === 'ratio' ? `${value.toFixed(1)}x` :
-           `${value}`}
+          {unit === '€' ? fmtCurrency(value) : 
+           unit === '%' ? `${fmt1(value)}%` :
+           unit === 'ratio' ? `${fmt1(value)}x` :
+           unit === 'months' ? fmt1(value) :
+           new Intl.NumberFormat(locale).format(value)}
         </span>
-        {unit === 'months' && <span className="text-xs text-muted-foreground">meses</span>}
+        {unit === 'months' && <span className="text-xs text-muted-foreground">{monthsLabel}</span>}
       </div>
       {TrendIcon && (
         <div className={`flex items-center gap-1 text-xs mt-1 ${trendColor}`}>
           <TrendIcon className="h-3 w-3" />
           {comparison && comparison.prev !== null && (
-            <span>vs {comparison.prev} ({comparison.label})</span>
+            <span>vs {new Intl.NumberFormat(locale).format(comparison.prev)} ({comparison.label})</span>
           )}
         </div>
       )}
