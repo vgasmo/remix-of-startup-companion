@@ -82,3 +82,22 @@ smaller than 5 are skipped). Founders read only aggregated percentiles.
 
 Config: `[functions.compute-cohort-benchmarks]` with `verify_jwt = false`.
 Runtime auth: `x-cron-secret === CRON_SECRET`.
+
+## check-mentor-nda-expiry-daily — daily 08:00 UTC
+
+Emails mentors whose NDA acceptance is within 30 days of the 365-day expiry.
+Uses the latest `mentor_nda_acceptances` row per user and skips mentors who
+already renewed.
+
+Config: `[functions.check-mentor-nda-expiry]` with `verify_jwt = false`.
+Runtime auth: `x-cron-secret === CRON_SECRET`.
+
+## send-notification-email — on-demand dispatcher (not scheduled)
+
+Unified transactional email dispatcher for event-driven notifications:
+`contract_signed`, `contract_activated`, `document_review_requested`,
+`document_review_approved`, `consultant_assigned`, `mentor_request_accepted`,
+`mentor_request_declined`, `activity_mention`. Also pushes to Slack via
+`send-slack-notification` for workspace-scoped events. Invoked from
+`pandadoc-webhook`, `docusign-webhook`, and client mutations (consultant
+assignment, mentor request, document review approval).

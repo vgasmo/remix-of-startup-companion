@@ -132,14 +132,20 @@ export function PendingMentorRequestsPanel() {
         _mentor_id: mentorId,
       });
       if (error) throw error;
-      return data;
+      return { data, requestId };
     },
-    onSuccess: () => {
+    onSuccess: ({ requestId }) => {
       queryClient.invalidateQueries({ queryKey: ['pending-mentor-requests'] });
       queryClient.invalidateQueries({ queryKey: ['admin-external-mentors'] });
       notify.success(t('mentorsPage.mentorAssigned'));
       setAssignDialogRequest(null);
       setSelectedMentorId('');
+      // Fire acceptance email to founder (best-effort).
+      supabase.functions
+        .invoke('send-notification-email', {
+          body: { type: 'mentor_request_accepted', mentor_request_id: requestId },
+        })
+        .catch(() => { /* silent */ });
     },
     onError: (err: unknown) => {
       const msg = err instanceof Error ? err.message : String(err);

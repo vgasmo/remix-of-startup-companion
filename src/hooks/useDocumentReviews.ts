@@ -88,6 +88,18 @@ export function useCreateReview() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['document-reviews', data.document_id] });
+      // Notify: a new review means a review was requested/created for staff visibility;
+      // and if it was already marked approved, notify founders.
+      supabase.functions
+        .invoke('send-notification-email', {
+          body: {
+            type: data.approval_status === 'approved' ? 'document_review_approved' : 'document_review_requested',
+            workspace_id: data.workspace_id,
+            document_id: data.document_id,
+            review_id: data.id,
+          },
+        })
+        .catch(() => { /* silent */ });
     },
   });
 }
@@ -118,8 +130,21 @@ export function useUpdateReview() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['document-reviews', variables.documentId] });
+      // If status transitioned to approved, notify founders.
+      if (variables.approval_status === 'approved' && data) {
+        supabase.functions
+          .invoke('send-notification-email', {
+            body: {
+              type: 'document_review_approved',
+              workspace_id: (data as any).workspace_id,
+              document_id: (data as any).document_id,
+              review_id: (data as any).id,
+            },
+          })
+          .catch(() => { /* silent */ });
+      }
     },
   });
 }
