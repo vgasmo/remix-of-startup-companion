@@ -31,19 +31,23 @@ function useAllConsultants() {
     queryKey: ['ecosystem-all-consultants'],
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: roles, error } = await supabase
         .from('user_roles')
-        .select('user_id, role, profile:profiles_safe!inner(id, full_name)')
+        .select('user_id, role')
         .in('role', ['admin', 'consultor']);
       if (error) throw error;
-      const map = new Map<string, string>();
-      for (const row of (data ?? []) as Array<{ user_id: string; profile: { full_name: string | null } | null }>) {
-        if (!row.user_id) continue;
-        if (!map.has(row.user_id)) {
-          map.set(row.user_id, row.profile?.full_name || 'Sem nome');
-        }
+      const ids = Array.from(new Set((roles ?? []).map(r => r.user_id).filter(Boolean))) as string[];
+      if (ids.length === 0) return [] as Array<{ id: string; name: string }>;
+      const { data: profs, error: pErr } = await supabase
+        .from('profiles_safe')
+        .select('id, full_name')
+        .in('id', ids);
+      if (pErr) throw pErr;
+      const nameById = new Map<string, string>();
+      for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null }>) {
+        nameById.set(p.id, p.full_name || 'Sem nome');
       }
-      return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+      return ids.map(id => ({ id, name: nameById.get(id) || 'Sem nome' }));
     },
   });
 }
