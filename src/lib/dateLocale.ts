@@ -25,3 +25,28 @@ export function useDateLocale(): Locale {
   const { i18n } = useTranslation();
   return getDateLocale(i18n.language);
 }
+
+/**
+ * P5: language-aware relative time helper that also strips the noisy
+ * "about"/"cerca de" prefix date-fns emits for round hour/day intervals.
+ * Prefer this over calling `formatDistanceToNow` directly.
+ */
+import { formatDistanceToNow, type FormatDistanceToNowOptions } from 'date-fns';
+
+export function timeAgo(
+  date: Date | number,
+  options: Omit<FormatDistanceToNowOptions, 'locale'> & { locale?: Locale } = {}
+): string {
+  const { locale, addSuffix = true, ...rest } = options;
+  const raw = formatDistanceToNow(date, {
+    addSuffix,
+    locale: locale ?? getDateLocale(),
+    ...rest,
+  });
+  // Strip the imprecise qualifiers ("about 2 hours ago" / "há cerca de 2 horas").
+  return raw
+    .replace(/\bcerca de\s+/gi, '')
+    .replace(/\babout\s+/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}

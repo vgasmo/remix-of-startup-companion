@@ -18,8 +18,8 @@ import {
   Target,
   BarChart3,
 } from 'lucide-react';
-import { format, formatDistanceToNow, isToday } from 'date-fns';
-import { useDateLocale } from '@/lib/dateLocale';
+import { format, isToday } from 'date-fns';
+import { useDateLocale, timeAgo } from '@/lib/dateLocale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -506,7 +506,7 @@ const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, is
                           {workspace.lastSession ? (
                             <span className="flex items-center gap-1">
                               <FileText className="h-3 w-3" />
-                              {t('mentor.lastSession', 'Última sessão')}: {formatDistanceToNow(new Date(workspace.lastSession.scheduled_at), { addSuffix: true })}
+                              {t('mentor.lastSession', 'Última sessão')}: {timeAgo(new Date(workspace.lastSession.scheduled_at))}
                             </span>
                           ) : (
                             <span className="flex items-center gap-1 text-muted-foreground/50 italic">

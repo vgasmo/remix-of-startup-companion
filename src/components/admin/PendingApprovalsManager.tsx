@@ -4,8 +4,8 @@ import i18n from '@/i18n';
 import { Check, X, Clock, Building2, User, Calendar, ExternalLink, UserCheck, Mail, Link2, Search, Plus, Rocket } from 'lucide-react';
 
 const t = i18n.t.bind(i18n);
-import { format, formatDistanceToNow } from 'date-fns';
-import { useDateLocale } from '@/lib/dateLocale';
+import { format } from 'date-fns';
+import { useDateLocale, timeAgo } from '@/lib/dateLocale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -465,7 +465,7 @@ export function PendingApprovalsManager() {
                             </Badge>
                           ))}
                           <span className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(user.created_at), { addSuffix: true })}
+                            {timeAgo(new Date(user.created_at))}
                           </span>
                         </div>
                       </div>
@@ -540,7 +540,7 @@ export function PendingApprovalsManager() {
                             {claim.match_method === 'manual_request' ? 'Pedido manual' : claim.match_method}
                           </Badge>
                           <span className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(claim.created_at), { addSuffix: true })}
+                            {timeAgo(new Date(claim.created_at))}
                           </span>
                         </div>
                       </div>

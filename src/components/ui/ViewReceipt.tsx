@@ -8,8 +8,8 @@
  */
 import { Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { formatDistanceToNow } from 'date-fns';
-import { getDateLocale } from '@/lib/dateLocale';
+
+import { getDateLocale, timeAgo } from '@/lib/dateLocale';
 import {
   Tooltip,
   TooltipContent,
@@ -31,10 +31,7 @@ export function ViewReceipt({ workspaceId, targetType, targetId, className }: Vi
   if (!views || views.length === 0) return null;
 
   const lastView = views[0];
-  const when = formatDistanceToNow(new Date(lastView.created_at), {
-    addSuffix: true,
-    locale: getDateLocale(),
-  });
+  const when = timeAgo(new Date(lastView.created_at));
 
   return (
     <Tooltip>

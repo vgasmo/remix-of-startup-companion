@@ -1,3 +1,4 @@
+import { timeAgo } from '@/lib/dateLocale';
 /**
  * Staff-facing aggregated inbox of founder → staff requests across all workspaces.
  * Staff can filter by status, view context (workspace, requester) and act on requests.
@@ -12,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Inbox, ExternalLink } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+
 import { pt, enGB } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -193,7 +194,7 @@ function RequestRow({
             <span>•</span>
             <span>{r.creatorName || r.creatorEmail || '—'}</span>
             <span>•</span>
-            <span>{formatDistanceToNow(new Date(r.created_at), { addSuffix: true, locale })}</span>
+            <span>{timeAgo(new Date(r.created_at), { locale })}</span>
             <Link
               to={`/workspace/${r.workspace_id}`}
               className="inline-flex items-center gap-0.5 text-primary hover:underline"

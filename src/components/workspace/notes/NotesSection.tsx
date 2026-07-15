@@ -1,6 +1,7 @@
+import { timeAgo } from '@/lib/dateLocale';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatDistanceToNow } from 'date-fns';
+
 import { useConsultantNotes, useCreateConsultantNote, useDeleteConsultantNote } from '@/hooks/useConsultantNotes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -101,7 +102,7 @@ export function NotesSection({ workspaceId, canManage }: NotesSectionProps) {
                           {note.is_private && <Badge variant="secondary" className="text-xs"><Lock className="h-3 w-3 mr-1" />{t('notes.private')}</Badge>}
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(note.created_at), { addSuffix: true })}</span>
+                          <span className="text-xs text-muted-foreground">{timeAgo(new Date(note.created_at))}</span>
                           {canManage && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleDelete(note.id)} aria-label={t('common.delete')}><Trash2 className="h-3 w-3" /></Button>}
                         </div>
                       </div>

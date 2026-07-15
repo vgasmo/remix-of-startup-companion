@@ -19,8 +19,8 @@ import {
   Eye, EyeOff, FileText, TrendingUp, LinkIcon, GripVertical,
   Calendar, Download, XCircle, Clock, Users, Sparkles, BookTemplate, ExternalLink
 } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
-import { useDateLocale } from '@/lib/dateLocale';
+import { format } from 'date-fns';
+import { useDateLocale, timeAgo } from '@/lib/dateLocale';
 import { getDateLocale } from '@/lib/dateLocale';
 import {
   useDataroom,
@@ -397,7 +397,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
                             {link.expires_at && (
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                {t('dataroom.expires')}: {formatDistanceToNow(new Date(link.expires_at), { locale: getDateLocale(), addSuffix: true })}
+                                {t('dataroom.expires')}: {timeAgo(new Date(link.expires_at))}
                               </span>
                             )}
                           </div>

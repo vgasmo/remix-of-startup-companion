@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMyTemplateRequests, type TemplateRequestStatus } from '@/hooks/useTemplateRequests';
 import { RequestTemplateDialog } from './RequestTemplateDialog';
-import { formatDistanceToNow } from 'date-fns';
-import { getDateLocale } from '@/lib/dateLocale';
+
+import { getDateLocale, timeAgo } from '@/lib/dateLocale';
 
 const STATUS_META: Record<TemplateRequestStatus, { labelKey: string; defaultLabel: string; icon: typeof Clock; variant: 'secondary' | 'outline' | 'default' | 'destructive' }> = {
   pending: { labelKey: 'templateRequests.status.pending', defaultLabel: 'Pendente', icon: Clock, variant: 'secondary' },
@@ -81,7 +81,7 @@ export function TemplateRequestsPanel({ workspaceId }: { workspaceId: string }) 
                         </p>
                       )}
                       <p className="text-[10px] text-muted-foreground mt-1">
-                        {formatDistanceToNow(new Date(r.created_at), { addSuffix: true, locale: getDateLocale() })}
+                        {timeAgo(new Date(r.created_at))}
                       </p>
                     </div>
                     <Badge variant={meta.variant} className="gap-1 shrink-0">

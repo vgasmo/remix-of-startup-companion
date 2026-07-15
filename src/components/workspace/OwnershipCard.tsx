@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { format, formatDistanceToNow } from 'date-fns';
-import { useDateLocale } from '@/lib/dateLocale';
+import { format } from 'date-fns';
+import { useDateLocale, timeAgo } from '@/lib/dateLocale';
 import { User, Calendar, Clock, MessageSquare, Edit2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -174,7 +174,7 @@ export function OwnershipCard({ workspaceId, compact = false }: OwnershipCardPro
           <div className="flex items-center justify-between">
             <p className="text-sm">
               {ownership?.last_contact_at
-                ? formatDistanceToNow(new Date(ownership.last_contact_at), { addSuffix: true })
+                ? timeAgo(new Date(ownership.last_contact_at))
                 : t('ownership.never')}
             </p>
             {canEdit && (
