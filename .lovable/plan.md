@@ -118,10 +118,16 @@ Scope: production-safety fixes only. No new features, no redesigns, no deletions
 - `bunx vitest run` → **PASS** (23 files / 200 tests)
 
 ### Still deferred
-- `cancel_session_atomic` / `mark_session_no_show_atomic` RPCs (distinct actions in UI).
 - Full transactional staged-commit protocol for the reconciler (kept diagnostics-only for this release).
 - `tool_usage_events` FKs (polymorphism-safe subset only).
 - Storage-bucket idempotent migration for `admin-exports` and `phc-extracts` if either is ever recreated from scratch.
+
+### Shipped (session terminal transitions)
+- Migration: `cancel_session_atomic(session, workspace, reason, key)` and `mark_session_no_show_atomic(session, workspace, notes, key)` — SECURITY DEFINER, `search_path=public`, GRANT to `authenticated`. Both lock the session row `FOR UPDATE`, enforce workspace scope + staff role, only allow `scheduled|in_progress → cancelled|no_show`, are idempotent via the existing `sessions.completion_idempotency_key` slot, and write an `activity_log` audit entry.
+- New `sessions.cancellation_reason text` column captures the reason.
+- `useCancelSession` and `useMarkSessionNoShow` hooks in `useSessions.ts` call the RPCs, invalidate the same query keys as completion (`sessions`, `calendar-sessions`, `workspace-sessions`, `impact-aggregates`). Cancel snapshots the session first and triggers the existing `notifySessionEvent('cancelled', …)` inbox+email flow so we don't lose the participants-notification behaviour that `useDeleteSession` had.
+- `SessionDetailDialog`: distinct "Cancelar sessão" and "Marcar como no-show" buttons alongside "Marcar como concluída" for staff on past, non-terminal sessions, each behind a confirm dialog with reason/notes textarea. Status badges for cancelled / no_show are also rendered.
+- PT/EN i18n keys added under `sessions.*`.
 
 ### Rollback
 - Drop `public.system_alerts` (cascades to policy).
