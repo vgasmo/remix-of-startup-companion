@@ -46,7 +46,7 @@ export async function logToolUsage(tool: ToolEvent, args: LogArgs = {}): Promise
       session_id: args.sessionId ?? null,
       entity_type: args.entityType ?? null,
       entity_id: args.entityId ?? null,
-      metadata: (args.metadata ?? {}) as Record<string, unknown>,
+      metadata: (args.metadata ?? {}) as never,
     }]);
     if (error) logger.warn('tool_usage_insert_failed', { tool, error: error.message });
   } catch (e) {
