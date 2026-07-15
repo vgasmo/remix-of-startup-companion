@@ -101,11 +101,8 @@ export default function StaffImpact() {
     queryKey: ['impact-aggregates', from, to],
     queryFn: async (): Promise<ImpactAggregates | null> => {
       const { data, error } = await supabase.rpc('get_impact_aggregates', {
-        p_from: from,
-        p_to: to,
-        p_consultant_id: null,
-        p_startup_id: null,
-        p_service: null,
+        p_date_from: from,
+        p_date_to: to,
       });
       if (error) throw error;
       return (data as unknown as ImpactAggregates) ?? null;
@@ -116,11 +113,8 @@ export default function StaffImpact() {
     queryKey: ['tool-adoption', from, to],
     queryFn: async (): Promise<ToolAdoptionRow[]> => {
       const { data, error } = await supabase.rpc('get_tool_adoption', {
-        p_from: from,
-        p_to: to,
-        p_workspace_id: null,
-        p_user_id: null,
-        p_tool: null,
+        p_date_from: from,
+        p_date_to: to,
       });
       if (error) throw error;
       return (data as unknown as ToolAdoptionRow[]) ?? [];
