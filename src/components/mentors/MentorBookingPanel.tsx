@@ -67,6 +67,10 @@ export function MentorBookingPanel({
 
   const { data: availability, isLoading: loadingAvailability } = useMentorAvailability(mentorId);
   const { data: bookings, isLoading: loadingBookings } = useMyBookings();
+  // FIX (N4): cross-founder busy slots — the RPC returns bookings for THIS
+  // mentor from every founder (no PII), so founder B can't book a slot
+  // founder A already took.
+  const { data: mentorBusySlots } = useMentorBusySlots(mentorId);
   const createBooking = useCreateBooking();
   const updateStatus = useUpdateBookingStatus();
 

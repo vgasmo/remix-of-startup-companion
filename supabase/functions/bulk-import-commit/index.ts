@@ -340,15 +340,18 @@ function parseDate(s?: string): string | null {
   return null;
 }
 
+// Map the AI extractor's vocabulary to the DB CHECK vocabulary
+// (startup_contracts.status allows: draft|pending_signature|active|suspended|terminated|expired).
 function normalizeStatus(s?: string): string | null {
   if (!s) return null;
   const v = s.toLowerCase().trim();
   if (["draft", "rascunho"].includes(v)) return "draft";
-  if (["sent", "enviado"].includes(v)) return "sent";
-  if (["signed", "assinado"].includes(v)) return "signed";
-  if (["active", "ativo", "em vigor"].includes(v)) return "active";
+  if (["sent", "enviado", "pending_signature", "pending", "awaiting_signature"].includes(v)) return "pending_signature";
+  if (["signed", "assinado", "active", "ativo", "em vigor"].includes(v)) return "active";
+  if (["suspended", "suspenso"].includes(v)) return "suspended";
   if (["terminated", "terminado", "cessado"].includes(v)) return "terminated";
-  return v;
+  if (["expired", "expirado", "caducado"].includes(v)) return "expired";
+  return "draft"; // safe fallback rather than a value the CHECK rejects
 }
 
 function combineNotes(...parts: (string | null | undefined)[]): string | null {

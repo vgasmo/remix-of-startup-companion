@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -49,6 +49,7 @@ const SIGNATURE_PROVIDERS = [
 
 export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [actionNotes, setActionNotes] = useState('');
   const [showNotes, setShowNotes] = useState<'approve' | 'changes' | 'cancel' | null>(null);
   const [sendingSignature, setSendingSignature] = useState(false);
@@ -125,6 +126,16 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
       // NOTE: Do NOT transition intake here — the edge function already
       // performed syncIntakeOnSent server-side. A duplicate client-side
       // transition would cause a false-failure or double audit event.
+
+      // FIX (N3): invalidate so the drawer flips from "Enviar" → "sent"
+      // immediately and staff can't double-send.
+      queryClient.invalidateQueries({ queryKey: ['contract-intakes'] });
+      queryClient.invalidateQueries({ queryKey: ['contract-intake'] });
+      queryClient.invalidateQueries({ queryKey: ['contract-intake-by-funnel'] });
+      queryClient.invalidateQueries({ queryKey: ['intake-events', intake.id] });
+      queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
+      queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
 
       notify.success(t('crm.contratoEnviadoParaAssinatura'));
     } catch (err: any) {

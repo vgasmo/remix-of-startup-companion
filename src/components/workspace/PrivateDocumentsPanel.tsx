@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Lock, Eye, Download, FileText, Upload, Loader2, ShieldCheck } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from '@/lib/notify';
+import { logger } from '@/lib/logger';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface PrivateDocumentsPanelProps {
@@ -66,9 +67,12 @@ export function PrivateDocumentsPanel({ workspaceId }: PrivateDocumentsPanelProp
         for (const contract of contracts || []) {
           // Onboarding folder (CC, IBAN, signatures uploaded by founder)
           const onbPrefix = `onboarding/${contract.id}`;
-          const { data: onbList } = await supabase.storage
+          const { data: onbList, error: onbErr } = await supabase.storage
             .from('contract-documents')
             .list(onbPrefix, { limit: 100 });
+          if (onbErr) {
+            logger.warn('private_docs_list_failed', { prefix: onbPrefix, error: onbErr.message });
+          }
           (onbList || [])
             .filter((f) => f.name && !f.name.endsWith('/'))
             .forEach((f) =>
@@ -89,9 +93,12 @@ export function PrivateDocumentsPanel({ workspaceId }: PrivateDocumentsPanelProp
             .eq('contract_id', contract.id);
           for (const intake of intakes || []) {
             const intakePrefix = `intake/${intake.id}`;
-            const { data: intakeList } = await supabase.storage
+            const { data: intakeList, error: intakeListErr } = await supabase.storage
               .from('contract-documents')
               .list(intakePrefix, { limit: 100 });
+            if (intakeListErr) {
+              logger.warn('private_docs_list_failed', { prefix: intakePrefix, error: intakeListErr.message });
+            }
             (intakeList || [])
               .filter((f) => f.name && !f.name.endsWith('/'))
               .forEach((f) =>

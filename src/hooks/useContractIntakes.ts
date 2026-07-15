@@ -335,23 +335,28 @@ export function useTransitionIntakeStatus() {
         // Copy frozen snapshot fields into the contract so the signing view and
         // generated PDF have all fiscal/legal identity data even if the founder
         // does not re-enter it at signing time.
-        try {
-          await supabase.from('startup_contracts')
-            .update({
-              organization_name: current.organization_name,
-              company_nif: current.company_nif,
-              company_address: current.company_address,
-              company_city: current.company_city,
-              company_postal_code: current.company_postal_code,
-              legal_representative_name: current.legal_representative_name,
-              legal_representative_email: current.legal_representative_email,
-              legal_representative_phone: current.legal_representative_phone,
-              billing_email: current.billing_email,
-              iban: current.iban,
-            } as any)
-            .eq('id', intakeFull.contract_id);
-        } catch (copyErr) {
-          logger.warn('intake_snapshot_copy_to_contract_failed', { error: String(copyErr) });
+        // FIX (N3): supabase updates RETURN errors, not throw — check explicitly
+        // and BLOCK approval on failure so the signing view can't ship without
+        // NIF / morada / representative data.
+        const { error: copyErr } = await supabase.from('startup_contracts')
+          .update({
+            organization_name: current.organization_name,
+            company_nif: current.company_nif,
+            company_address: current.company_address,
+            company_city: current.company_city,
+            company_postal_code: current.company_postal_code,
+            legal_representative_name: current.legal_representative_name,
+            legal_representative_email: current.legal_representative_email,
+            legal_representative_phone: current.legal_representative_phone,
+            billing_email: current.billing_email,
+            iban: current.iban,
+          } as any)
+          .eq('id', intakeFull.contract_id);
+        if (copyErr) {
+          logger.error('intake_snapshot_copy_to_contract_failed', { error: copyErr.message });
+          throw new Error(
+            `Falha ao copiar dados fiscais/legais para o contrato: ${copyErr.message}. Aprovação cancelada.`
+          );
         }
       }
       if (params.newStatus === 'changes_requested') {
@@ -371,14 +376,18 @@ export function useTransitionIntakeStatus() {
       if (current.funnel_item_id) {
         const crmStage = INTAKE_TO_CRM_STAGE[params.newStatus];
         if (crmStage) {
-          await supabase.from('funnel_items')
+          const { error: crmErr } = await supabase.from('funnel_items')
             .update({ stage: crmStage })
             .eq('id', current.funnel_item_id);
+          if (crmErr) {
+            logger.error('intake_crm_sync_failed', { funnelItemId: current.funnel_item_id, error: crmErr.message });
+            throw new Error(`Falha a sincronizar o CRM: ${crmErr.message}`);
+          }
         }
       }
 
-      // Audit trail
-      await supabase.from('intake_events').insert({
+      // Audit trail — never silently drop history
+      const { error: auditErr } = await supabase.from('intake_events').insert({
         intake_id: params.intakeId,
         event_type: `status_changed_to_${params.newStatus}`,
         from_status: currentStatus,
@@ -386,21 +395,32 @@ export function useTransitionIntakeStatus() {
         performed_by: user?.id,
         metadata: { notes: params.notes, ...params.metadata },
       });
+      if (auditErr) {
+        logger.error('intake_audit_insert_failed', { intakeId: params.intakeId, error: auditErr.message });
+      }
 
-      // Send changes_requested email automatically
+      // Send changes_requested email automatically — the founder MUST get it,
+      // so surface failures instead of silently warning.
       if (params.newStatus === 'changes_requested') {
-        // Fetch intake token for the email link
-        const { data: intakeData } = await supabase
+        const { data: intakeData, error: readErr } = await supabase
           .from('contract_intakes')
           .select('legal_representative_email, legal_representative_name, organization_name')
           .eq('id', params.intakeId)
-          .single();
+          .maybeSingle();
+
+        if (readErr) {
+          logger.error('changes_requested_read_failed', { error: readErr.message });
+          throw new Error(`Não foi possível carregar os contactos para enviar o pedido de correções: ${readErr.message}`);
+        }
 
         if (intakeData?.legal_representative_email) {
-          try {
-            // Rotate token so the email link is fresh and the DB only stores the hash
-            const { data: freshToken } = await supabase.rpc('staff_rotate_intake_token', { p_intake_id: params.intakeId });
-            if (freshToken) {
+          const { data: freshToken, error: tokenErr } = await supabase.rpc('staff_rotate_intake_token', { p_intake_id: params.intakeId });
+          if (tokenErr) {
+            logger.error('changes_requested_token_rotate_failed', { error: tokenErr.message });
+            throw new Error(`Falha ao gerar o novo link de intake: ${tokenErr.message}`);
+          }
+          if (freshToken) {
+            try {
               await invokeWithAuth('send-intake-email', {
                 body: {
                   type: 'changes_requested',
@@ -412,9 +432,10 @@ export function useTransitionIntakeStatus() {
                   changesNotes: params.notes,
                 },
               });
+            } catch (emailErr) {
+              logger.error('changes_requested_email_failed', { error: String(emailErr) });
+              throw new Error('O estado foi alterado, mas o email de pedido de correções não foi enviado. Reenvie manualmente.');
             }
-          } catch (emailErr) {
-            logger.warn('changes_requested_email_failed', { error: String(emailErr) });
           }
         }
       }

@@ -22,7 +22,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useSessionPrep, SessionPrepData } from '@/hooks/useSessionPrep';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
-import { SmartPrepButton, SmartPrepSheet } from '@/components/sessions/SmartPrepSheet';
 
 interface SessionPrepCardProps {
   sessionId: string;
@@ -33,7 +32,6 @@ export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps
   const { t } = useTranslation();
   const dateLocale = useDateLocale();
   const { data, isLoading } = useSessionPrep(sessionId, workspaceId);
-  const [showPrepSheet, setShowPrepSheet] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     kpis: true,
     actions: true,
@@ -82,22 +80,12 @@ export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps
             </Badge>
           )}
         </div>
-        <div className="flex items-center justify-between">
-          <CardDescription>
-            {t('sessionPrep.context')}
-          </CardDescription>
-          <SmartPrepButton onClick={() => setShowPrepSheet(true)} />
-        </div>
+        <CardDescription>
+          {t('sessionPrep.context')}
+        </CardDescription>
       </CardHeader>
 
-      {/* AI Prep Sheet Slide-over */}
-      <SmartPrepSheet
-        open={showPrepSheet}
-        onOpenChange={setShowPrepSheet}
-        workspaceName={(data as any)?.workspaceName}
-        stage={(data as any)?.workspaceStage || (data as any)?.stage}
-        health={(data as any)?.healthScore || (data as any)?.health}
-      />
+
       
       <CardContent className="space-y-4">
         {/* Tags */}

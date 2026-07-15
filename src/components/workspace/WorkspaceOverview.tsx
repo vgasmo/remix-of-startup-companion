@@ -100,7 +100,8 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
   const dateLocale = useDateLocale();
   const [, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const { roles, isConsultor, isAdmin, user, profile: authProfile } = useAuth();
+  const { roles, isConsultor, isAdmin, isBackoffice, user, profile: authProfile } = useAuth();
+  const isStaff = isConsultor || isAdmin || isBackoffice;
   const isFounder = roles.includes('founder');
   const canSetPriority = isConsultor || isAdmin;
   const { data: actions, isLoading: actionsLoading } = useWorkspaceActions(workspace.id);
@@ -547,8 +548,8 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
           <LocationContractCard workspaceId={workspace.id} />
         )}
 
-        {/* Private Documents (CC, IBAN, signatures) — staff only */}
-        {(isConsultor || isAdmin) && (
+        {/* Private Documents (CC, IBAN, signatures) — staff (incl. backoffice) */}
+        {isStaff && (
           <PrivateDocumentsPanel workspaceId={workspace.id} />
         )}
 

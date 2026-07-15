@@ -160,13 +160,22 @@ export async function syncIntakeOnCompleted(
           .single()
         if (wsErr) throw wsErr
         effectiveWorkspaceId = newWs.id
-        await supabase.from('startup_contracts')
+        const { error: contractLinkErr } = await supabase.from('startup_contracts')
           .update({ workspace_id: effectiveWorkspaceId })
           .eq('id', contractId)
+        if (contractLinkErr) {
+          console.error('[lifecycleSync] contract workspace link failed', { contractId, error: contractLinkErr.message })
+          errors.push(`contract_workspace_link: ${contractLinkErr.message}`)
+        }
         if (fallbackFunnelItemId) {
-          await supabase.from('funnel_items')
-            .update({ workspace_id: effectiveWorkspaceId })
+          // FIX (N0): funnel_items uses `linked_workspace_id`, not `workspace_id`.
+          const { error: funnelLinkErr } = await supabase.from('funnel_items')
+            .update({ linked_workspace_id: effectiveWorkspaceId })
             .eq('id', fallbackFunnelItemId)
+          if (funnelLinkErr) {
+            console.error('[lifecycleSync] funnel workspace link failed', { fallbackFunnelItemId, error: funnelLinkErr.message })
+            errors.push(`funnel_workspace_link: ${funnelLinkErr.message}`)
+          }
         }
       } catch (mintErr: any) {
         console.error('[lifecycleSync] auto-mint workspace failed', { contractId, error: mintErr?.message })
