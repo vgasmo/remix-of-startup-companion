@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
     let errors = 0;
 
     for (const it of (items ?? [])) {
-      const serviceName = (it.metadata_json?.service_hint as string) ?? (it.metadata_json?.service_name as string) ?? '';
+      const serviceName = (it.metadata_json?.phc_service as string) ?? (it.metadata_json?.service_hint as string) ?? (it.metadata_json?.service_name as string) ?? '';
       const svcClass = body.service_classification_map?.[serviceName]
         ?? (DEFAULT_SERVICE_CLASS[serviceName] as 'founder_journey' | 'domiciliacao' | 'service_only' | undefined)
         ?? 'founder_journey';
