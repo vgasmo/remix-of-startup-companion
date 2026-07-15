@@ -81,8 +81,25 @@ Deno.serve(async (req) => {
   const snapshotId = snapshot.id;
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const storagePath = `snapshots/${timestamp}`;
+  // Release-hardening Phase 7: upload data files under a temporary prefix
+  // first, verify counts + required domains, then publish the manifest at
+  // the final path as the atomic "promotion" flag. If anything fails we
+  // clean up the temp prefix so we never leave a half-baked snapshot
+  // shadowing a valid one.
+  const tmpPrefix = `${storagePath}/tmp`;
 
   log.info(`Starting ecosystem snapshot ${snapshotId}`, { storagePath, initiatedBy });
+
+  const uploadedTmpPaths: string[] = [];
+
+  const cleanupTmp = async () => {
+    if (uploadedTmpPaths.length === 0) return;
+    try {
+      await supabaseAdmin.storage.from('ecosystem-backups').remove(uploadedTmpPaths);
+    } catch (e) {
+      log.warn('Failed to clean up temp snapshot files', e as Error);
+    }
+  };
 
   try {
     const recordCounts: Record<string, number> = {};
@@ -91,7 +108,6 @@ Deno.serve(async (req) => {
     for (const domain of SNAPSHOT_DOMAINS) {
       log.info(`Exporting domain: ${domain.name}`);
 
-      // Paginate through all records (handle >1000 row limit)
       let allRows: any[] = [];
       let page = 0;
       const pageSize = 1000;
@@ -121,36 +137,34 @@ Deno.serve(async (req) => {
 
       recordCounts[domain.name] = allRows.length;
 
-      // Serialize to JSON
-      const jsonContent = JSON.stringify(allRows, null, 0); // compact for storage
+      const jsonContent = JSON.stringify(allRows, null, 0);
       const encoder = new TextEncoder();
       const contentBytes = encoder.encode(jsonContent);
 
-      // Compute checksum for this domain
       const hashBuffer = await crypto.subtle.digest('SHA-256', contentBytes);
       const hashHex = Array.from(new Uint8Array(hashBuffer))
         .map(b => b.toString(16).padStart(2, '0')).join('');
       allChecksums.push(hashHex);
 
-      // Upload to storage
-      const filePath = `${storagePath}/${domain.name}.json`;
+      // Upload to the TEMP prefix. The final storage_path remains
+      // canonical for the manifest.
+      const tmpFilePath = `${tmpPrefix}/${domain.name}.json`;
       const { error: uploadError } = await supabaseAdmin.storage
         .from('ecosystem-backups')
-        .upload(filePath, contentBytes, {
+        .upload(tmpFilePath, contentBytes, {
           contentType: 'application/json',
-          upsert: false, // No overwrite — new path each run
+          upsert: false,
         });
 
       if (uploadError) {
         throw new Error(`Failed to upload ${domain.name}: ${uploadError.message}`);
       }
+      uploadedTmpPaths.push(tmpFilePath);
 
       log.info(`Exported ${domain.name}: ${allRows.length} records`);
     }
 
-    // Non-empty domain assertions: catch silent-empty exports (e.g. profiles_safe
-    // returning 0 rows for the service client). Fail the snapshot before we
-    // mark it completed.
+    // Non-empty domain assertions.
     const REQUIRED_NONZERO: Record<string, number> = {
       profiles: 1,
       programs: 1,
@@ -163,8 +177,12 @@ Deno.serve(async (req) => {
         );
       }
     }
+    // Every declared domain must have produced a temp file.
+    const missing = SNAPSHOT_DOMAINS.filter(d => !uploadedTmpPaths.some(p => p.endsWith(`/${d.name}.json`)));
+    if (missing.length > 0) {
+      throw new Error(`Missing temp uploads for domains: ${missing.map(d => d.name).join(', ')}`);
+    }
 
-    // Compute aggregate checksum
     const aggregateInput = allChecksums.join(':');
     const aggHashBuffer = await crypto.subtle.digest(
       'SHA-256', new TextEncoder().encode(aggregateInput)
@@ -172,11 +190,15 @@ Deno.serve(async (req) => {
     const aggregateChecksum = Array.from(new Uint8Array(aggHashBuffer))
       .map(b => b.toString(16).padStart(2, '0')).join('');
 
-    // Upload manifest
+    // Promotion step: publish the manifest to the FINAL storage_path. The
+    // manifest references data files under `tmp/`; consumers must go
+    // through the manifest to discover them, so the manifest is the
+    // atomic "this snapshot is valid" marker.
     const manifest = {
       snapshot_id: snapshotId,
       timestamp,
       domains: SNAPSHOT_DOMAINS.map(d => d.name),
+      data_prefix: tmpPrefix,
       record_counts: recordCounts,
       domain_checksums: Object.fromEntries(
         SNAPSHOT_DOMAINS.map((d, i) => [d.name, allChecksums[i]])
@@ -184,12 +206,15 @@ Deno.serve(async (req) => {
       aggregate_checksum: aggregateChecksum,
     };
 
-    await supabaseAdmin.storage
+    const { error: manifestErr } = await supabaseAdmin.storage
       .from('ecosystem-backups')
       .upload(`${storagePath}/manifest.json`, new TextEncoder().encode(JSON.stringify(manifest, null, 2)), {
         contentType: 'application/json',
         upsert: false,
       });
+    if (manifestErr) {
+      throw new Error(`Failed to publish manifest: ${manifestErr.message}`);
+    }
 
     // Update snapshot record: success
     await supabaseAdmin
@@ -219,7 +244,9 @@ Deno.serve(async (req) => {
     const errorMsg = error instanceof Error ? error.message : String(error);
     log.error('Snapshot failed', error);
 
-    // Update snapshot record: failure
+    // Best-effort cleanup: never leave temp uploads hanging.
+    await cleanupTmp();
+
     await supabaseAdmin
       .from('ecosystem_snapshots')
       .update({
