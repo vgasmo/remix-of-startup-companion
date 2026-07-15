@@ -117,12 +117,12 @@ export default function Ecosystem() {
           </TabsContent>
 
           <TabsContent value="by-consultant" className="space-y-6 mt-0">
-            <EcosystemFilters filters={filters} onChange={setFilters} />
+            <EcosystemFilters filters={filters} onChange={setFilters} showOwnerFilter />
             {isLoading ? (
               <ContentSkeleton type="list" count={6} />
             ) : (
               <>
-                <ConsultorPortfolioView items={items} />
+                <ConsultorPortfolioView items={items} ownerId={filters.ownerId} />
                 {hasNextPage && (
                   <div className="flex justify-center pt-2">
                     <Button
