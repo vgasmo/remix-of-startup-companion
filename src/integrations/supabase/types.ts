@@ -449,6 +449,74 @@ export type Database = {
         }
         Relationships: []
       }
+      bug_reports: {
+        Row: {
+          console_errors: Json
+          created_at: string
+          description: string
+          id: string
+          metadata: Json
+          resolution_notes: string | null
+          resolved_at: string | null
+          route: string | null
+          screenshot_paths: string[]
+          severity: string
+          status: string
+          updated_at: string
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+          viewport: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          console_errors?: Json
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          route?: string | null
+          screenshot_paths?: string[]
+          severity?: string
+          status?: string
+          updated_at?: string
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          viewport?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          console_errors?: Json
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          route?: string | null
+          screenshot_paths?: string[]
+          severity?: string
+          status?: string
+          updated_at?: string
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          viewport?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bug_reports_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       buildings: {
         Row: {
           address: string | null
