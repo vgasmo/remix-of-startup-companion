@@ -47,7 +47,21 @@ const TabFallback = () => (
 
 // P0 fix: `enrollment` (EnrollmentControlCenter) exposes the global open_registration
 // toggle and other admin-only controls. Consultores must not see this tab.
-const ADMIN_ONLY_TABS = new Set(['users', 'data-quality', 'system-health', 'enrollment']);
+// P4: broaden to match RLS — backoffice/announcements/compliance/health/mentors/template-requests
+// require is_admin() at the data layer, so hide their tabs from non-admin staff to avoid
+// dead-end UI that renders empty or throws on mutations.
+const ADMIN_ONLY_TABS = new Set([
+  'users',
+  'data-quality',
+  'system-health',
+  'enrollment',
+  'backoffice',
+  'announcements',
+  'compliance',
+  'health',
+  'mentors',
+  'template-requests',
+]);
 
 const TAB_GROUPS_BASE: Record<string, string[]> = {
   operations: ['approvals', 'enrollment', 'backoffice', 'announcements'],
