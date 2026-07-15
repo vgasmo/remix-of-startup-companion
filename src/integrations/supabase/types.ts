@@ -573,6 +573,7 @@ export type Database = {
           notes: string | null
           package_kind: string | null
           package_manifest: Json | null
+          plan_hash: string | null
           program_id: string | null
           service_program_map: Json
           status: string
@@ -592,6 +593,7 @@ export type Database = {
           notes?: string | null
           package_kind?: string | null
           package_manifest?: Json | null
+          plan_hash?: string | null
           program_id?: string | null
           service_program_map?: Json
           status?: string
@@ -611,6 +613,7 @@ export type Database = {
           notes?: string | null
           package_kind?: string | null
           package_manifest?: Json | null
+          plan_hash?: string | null
           program_id?: string | null
           service_program_map?: Json
           status?: string
@@ -702,8 +705,8 @@ export type Database = {
           match_method: string | null
           matched_startup_id: string | null
           matched_workspace_id: string | null
-          pdf_filename: string
-          pdf_path: string
+          pdf_filename: string | null
+          pdf_path: string | null
           pdf_sha256: string | null
           pdf_verified: boolean
           rollback_state: string
@@ -735,8 +738,8 @@ export type Database = {
           match_method?: string | null
           matched_startup_id?: string | null
           matched_workspace_id?: string | null
-          pdf_filename: string
-          pdf_path: string
+          pdf_filename?: string | null
+          pdf_path?: string | null
           pdf_sha256?: string | null
           pdf_verified?: boolean
           rollback_state?: string
@@ -768,8 +771,8 @@ export type Database = {
           match_method?: string | null
           matched_startup_id?: string | null
           matched_workspace_id?: string | null
-          pdf_filename?: string
-          pdf_path?: string
+          pdf_filename?: string | null
+          pdf_path?: string | null
           pdf_sha256?: string | null
           pdf_verified?: boolean
           rollback_state?: string
@@ -10942,6 +10945,10 @@ export type Database = {
         Returns: Json
       }
       reconcile_rollback: { Args: { p_row_id: string }; Returns: Json }
+      reconciler_commit_row: {
+        Args: { p_expected_plan_hash: string; p_row_id: string }
+        Returns: Json
+      }
       reconciler_write_enabled: { Args: never; Returns: boolean }
       reject_startup_change_request: {
         Args: { _notes?: string; _request_id: string }
