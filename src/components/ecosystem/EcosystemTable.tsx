@@ -382,6 +382,7 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
                 <span className="inline-flex items-center gap-1">{t('workspace.stage', { defaultValue: 'Stage' })} <SortIcon k="stage" /></span>
               </TableHead>
               <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('workspace.category', { defaultValue: 'Cat.' })}</TableHead>
+              <TableHead className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{t('ecosystem.tier', { defaultValue: 'Tier' })}</TableHead>
               <TableHead aria-sort={ariaSortFor('health')} className="h-9 text-[11px] uppercase tracking-wider text-muted-foreground font-medium cursor-pointer select-none" onClick={() => toggleSort('health')}>
                 <span className="inline-flex items-center gap-1">{t('workspace.healthScore', { defaultValue: 'Health' })} <SortIcon k="health" /></span>
               </TableHead>
