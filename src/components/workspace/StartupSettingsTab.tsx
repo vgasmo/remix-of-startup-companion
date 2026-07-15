@@ -201,14 +201,90 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
     }
   };
 
+  // Fields that require admin approval when edited by a founder.
+  const APPROVAL_FIELDS: { key: StartupChangeRequestFieldKey; labelKey: string; fallback: string }[] = [
+    { key: 'name', labelKey: 'startupSettings.startupName', fallback: 'Startup Name' },
+    { key: 'nif', labelKey: 'nif.label', fallback: 'NIF (Tax ID)' },
+    { key: 'address', labelKey: 'startupSettings.address', fallback: 'Address' },
+    { key: 'phone', labelKey: 'startupSettings.phone', fallback: 'Phone' },
+    { key: 'website', labelKey: 'startupSettings.website', fallback: 'Website' },
+    { key: 'main_contact_name', labelKey: 'startupSettings.contactName', fallback: 'Contact name' },
+    { key: 'main_contact_email', labelKey: 'startupSettings.contactEmail', fallback: 'Contact email' },
+    { key: 'main_contact_phone', labelKey: 'startupSettings.contactPhone', fallback: 'Contact phone' },
+  ];
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
       notify.error(t('startupSettings.nameRequired', 'Name is required'));
       return;
     }
-    updateMutation.mutate(formData);
+
+    if (!requiresApproval) {
+      updateMutation.mutate(formData);
+      return;
+    }
+
+    // Founder path: diff sensitive fields → create change requests instead of writing.
+    const items: NewChangeRequestInput[] = [];
+    for (const f of APPROVAL_FIELDS) {
+      const current = ((startup as any)[f.key] ?? '') as string;
+      const next = ((formData as any)[f.key] ?? '') as string;
+      if ((current || '').trim() !== (next || '').trim()) {
+        items.push({
+          field_key: f.key,
+          field_label: t(f.labelKey, f.fallback),
+          current_value: current || null,
+          requested_value: next || null,
+        });
+      }
+    }
+
+    // Non-approval fields (description, founded_date, has_startup_portugal_status, logo, document)
+    // can still be updated directly — those aren't legal/financial.
+    const directPayload: Record<string, any> = {
+      description: formData.description || null,
+      founded_date: formData.founded_date || null,
+      has_startup_portugal_status: !!formData.has_startup_portugal_status,
+      startup_portugal_document_path: formData.startup_portugal_document_path || null,
+    };
+
+    if (items.length === 0) {
+      // Only non-sensitive changes — apply directly (unchanged behaviour for description etc.).
+      updateMutation.mutate(formData);
+      return;
+    }
+
+    if (formData.has_startup_portugal_status && !formData.startup_portugal_document_path) {
+      notify.error(t('admin.startupsManager.documentRequired'));
+      return;
+    }
+
+    submitChangeRequests.mutate(
+      {
+        workspaceId,
+        startupId,
+        items,
+        justification: justification.trim() || null,
+      },
+      {
+        onSuccess: async () => {
+          // Also persist the non-sensitive edits directly.
+          const { error } = await supabase.from('startups').update(directPayload).eq('id', startupId);
+          if (error) {
+            notify.warn(`${t('common.warning', 'Aviso')}: ${error.message}`);
+          }
+          queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] });
+          setJustification('');
+          notify.success(
+            t('startupChangeRequests.submitted', 'Pedido(s) enviado(s) para validação da equipa'),
+          );
+        },
+        onError: (err: any) => notify.error(`${t('common.error')}: ${err.message}`),
+      },
+    );
   };
+
 
   if (!canEdit) {
     return (
