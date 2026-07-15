@@ -195,7 +195,6 @@ export function useUpdateMilestone(workspaceId: string) {
           .then(({ error }) => {
             if (error) {
               // Non-critical — never surface to user.
-              // eslint-disable-next-line no-console
               console.debug('first_milestone_celebration_skip', error.message);
             }
           });

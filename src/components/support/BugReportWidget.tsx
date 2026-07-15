@@ -61,7 +61,6 @@ export function BugReportWidget() {
     };
     window.addEventListener('paste', handler);
     return () => window.removeEventListener('paste', handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, files]);
 
   const consoleErrorCount = useMemo(
