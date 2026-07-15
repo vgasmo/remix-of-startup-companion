@@ -151,6 +151,73 @@ export function LifecycleMismatchPanel({
           recordLabel: label,
         });
       }
+
+      // 3c) contract terminated/voided but workspace still active
+      if (
+        c.workspace_id &&
+        (c.status === 'terminated' || c.status === 'voided')
+      ) {
+        const ws = wsById.get(c.workspace_id);
+        if (ws && ws.status === 'active') {
+          out.push({
+            id: `contract-closed-workspace-active-${c.id}`,
+            severity: 'warn',
+            title: t('lifecycleMismatch.closedContractActiveWorkspace.title', {
+              defaultValue: 'Contrato terminado/anulado mas workspace continua activo',
+            }),
+            detail: t('lifecycleMismatch.closedContractActiveWorkspace.detail', {
+              defaultValue: 'contract.status="{{cstate}}" / workspace.status="active"',
+              cstate: c.status,
+            }),
+            recordType: 'contract',
+            recordId: c.id,
+            recordLabel: label,
+          });
+        }
+      }
+
+      // 3d) contract active but end_date in the past (expired without transition)
+      if (c.status === 'active' && c.end_date) {
+        const end = new Date(c.end_date);
+        if (!Number.isNaN(end.getTime()) && end.getTime() < Date.now()) {
+          out.push({
+            id: `contract-expired-still-active-${c.id}`,
+            severity: 'warn',
+            title: t('lifecycleMismatch.expiredStillActive.title', {
+              defaultValue: 'Contrato activo com end_date no passado',
+            }),
+            detail: t('lifecycleMismatch.expiredStillActive.detail', {
+              defaultValue: 'end_date={{end}} — necessita renovação ou encerramento.',
+              end: c.end_date,
+            }),
+            recordType: 'contract',
+            recordId: c.id,
+            recordLabel: label,
+          });
+        }
+      }
+
+      // 3e) intake still draft but contract already progressed past draft
+      if (
+        intake &&
+        intake.status === 'draft' &&
+        ['pending_signature', 'signed', 'active'].includes(c.status)
+      ) {
+        out.push({
+          id: `intake-behind-contract-${c.id}`,
+          severity: 'info',
+          title: t('lifecycleMismatch.intakeBehindContract.title', {
+            defaultValue: 'Intake em rascunho mas contrato já avançou',
+          }),
+          detail: t('lifecycleMismatch.intakeBehindContract.detail', {
+            defaultValue: 'intake.status="draft" / contract.status="{{cstate}}"',
+            cstate: c.status,
+          }),
+          recordType: 'contract',
+          recordId: c.id,
+          recordLabel: label,
+        });
+      }
     });
 
     // 4) CRM stage = contracted but no linked_contract_id
@@ -164,6 +231,35 @@ export function LifecycleMismatchPanel({
           }),
           detail: t('lifecycleMismatch.crmContractedNoLink.detail', {
             defaultValue: 'funnel_items.linked_contract_id está vazio.',
+          }),
+          recordType: 'crm',
+          recordId: item.id,
+          recordLabel: item.organization_name || item.id.slice(0, 8),
+        });
+      }
+    });
+
+    // 4b) CRM item linked to a contract that no longer exists / is terminated,
+    // but the CRM stage is not yet archived/rejected.
+    const contractById = new Map(contracts.map((c) => [c.id, c]));
+    crmItems.forEach((item) => {
+      if (!item.linked_contract_id) return;
+      const linked = contractById.get(item.linked_contract_id);
+      if (!linked) return;
+      if (
+        (linked.status === 'terminated' || linked.status === 'voided' || linked.status === 'declined') &&
+        !['rejected', 'archived', 'lost'].includes(item.stage)
+      ) {
+        out.push({
+          id: `crm-stale-linked-${item.id}`,
+          severity: 'info',
+          title: t('lifecycleMismatch.crmStaleLinkedContract.title', {
+            defaultValue: 'Lead ligada a contrato encerrado sem actualização de fase',
+          }),
+          detail: t('lifecycleMismatch.crmStaleLinkedContract.detail', {
+            defaultValue: 'contract.status="{{cstate}}" / funnel.stage="{{fstate}}"',
+            cstate: linked.status,
+            fstate: item.stage,
           }),
           recordType: 'crm',
           recordId: item.id,
