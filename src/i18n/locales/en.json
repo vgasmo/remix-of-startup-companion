@@ -7896,6 +7896,8 @@
     "title": "Session Timeout Warning"
   },
   "sessions": {
+    "markAsCompleted": "Mark as completed",
+    "statusCompleted": "Completed",
     "completion": {
       "title": "Complete session",
       "subtitle": "Record actual duration, primary consultant, and attendance. These fields power the impact report.",
