@@ -115,7 +115,7 @@ export function EnhancedNextSteps({ workspaceId, programId, stage, canWrite }: E
         icon: <ClipboardList className="h-5 w-5" />,
         variant: 'warning',
         actionLabel: t('nextSteps.completeNow'),
-        onAction: () => setSearchParams({ tab: 'overview' }),
+        onAction: () => setSearchParams({ tab: 'overview', open: 'checkin' }),
       });
     }
 
