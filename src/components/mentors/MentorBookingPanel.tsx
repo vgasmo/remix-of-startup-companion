@@ -20,6 +20,7 @@ import {
   useMyBookings, 
   useCreateBooking, 
   useUpdateBookingStatus,
+  useMentorBusySlots,
   MentorBooking 
 } from '@/hooks/useMentorAvailability';
 
