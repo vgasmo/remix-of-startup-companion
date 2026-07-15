@@ -80,6 +80,10 @@ export default function WorkspaceDetail() {
   const canWrite = isAdmin || isConsultor || isMentor || isFounder;
   const tabBadges = useWorkspaceTabBadges(id);
   const { data: workspaceTags = [] } = useWorkspaceTags(id);
+  // Must be called unconditionally before any early return — moving this below
+  // the isLoading / !workspace / isPendingWorkspace returns caused a hook-order
+  // violation and crashed the ErrorBoundary on every workspace open.
+  const { data: valuePropArtifacts } = useValuePropArtifacts(id);
 
   // Auto-materialize acceleration deliverables at page level (not tab-dependent)
   const programType = workspace?.program ? (workspace.program as { program_type?: string }).program_type : undefined;
