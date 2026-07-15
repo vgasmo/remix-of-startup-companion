@@ -346,6 +346,96 @@ export function useCreateSession(workspaceId: string) {
   });
 }
 
+// Phase 3: canonical write-side session completion.
+// Captures the fields impact reporting depends on so we never again need to
+// backfill fabricated completions. `actual_duration_minutes` MUST be provided
+// (no silent copy from planned `duration`). Participant attendance is
+// upserted per (session_id, user_id).
+export interface SessionCompletionPayload {
+  session_id: string;
+  workspace_id: string;
+  actual_duration_minutes: number;
+  primary_consultant_id: string | null;
+  session_template_id?: string | null;
+  completed_at?: string; // ISO; defaults to now
+  attendance: Array<{ user_id: string; attendance_status: 'attended' | 'absent' | 'excused' | 'unknown'; role?: string | null }>;
+  notes?: string | null;
+  decisions?: string | null;
+}
+
+export function useCompleteSession() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: SessionCompletionPayload) => {
+      if (!payload.session_id) throw new Error('session_id required');
+      if (typeof payload.actual_duration_minutes !== 'number' || payload.actual_duration_minutes <= 0) {
+        throw new Error('actual_duration_minutes must be > 0');
+      }
+      const completedAt = payload.completed_at ?? new Date().toISOString();
+
+      const updatePayload: Record<string, unknown> = {
+        status: 'completed',
+        actual_duration_minutes: payload.actual_duration_minutes,
+        completed_at: completedAt,
+        primary_consultant_id: payload.primary_consultant_id,
+      };
+      if (payload.session_template_id !== undefined) updatePayload.session_template_id = payload.session_template_id;
+      if (payload.notes != null) updatePayload.notes = payload.notes;
+      if (payload.decisions != null) updatePayload.decisions = payload.decisions;
+
+      const { data: updated, error: updErr } = await supabase
+        .from('sessions')
+        .update(updatePayload)
+        .eq('id', payload.session_id)
+        .select('id, workspace_id, title')
+        .single();
+      if (updErr) throw updErr;
+
+      // Upsert attendance per participant.
+      if (payload.attendance.length > 0) {
+        const rows = payload.attendance.map(a => ({
+          session_id: payload.session_id,
+          user_id: a.user_id,
+          attendance_status: a.attendance_status,
+          role: a.role ?? null,
+          source: 'completion_dialog',
+        }));
+        const { error: partErr } = await supabase
+          .from('session_participants')
+          .upsert(rows, { onConflict: 'session_id,user_id' });
+        if (partErr) throw partErr;
+      }
+
+      // Canonical tool usage event — powers Adoption tab.
+      const { logToolUsage, TOOL_EVENTS } = await import('@/lib/toolUsage');
+      await logToolUsage(TOOL_EVENTS.SESSION_COMPLETED, {
+        workspaceId: payload.workspace_id,
+        sessionId: payload.session_id,
+        entityType: 'session',
+        entityId: payload.session_id,
+        metadata: {
+          actual_duration_minutes: payload.actual_duration_minutes,
+          participant_count: payload.attendance.length,
+          attended_count: payload.attendance.filter(a => a.attendance_status === 'attended').length,
+          has_template: !!payload.session_template_id,
+        },
+      });
+
+      await logActivity('completed', 'session', payload.session_id, payload.workspace_id, {
+        actual_duration_minutes: payload.actual_duration_minutes,
+      });
+
+      return updated;
+    },
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['sessions', vars.workspace_id] });
+      queryClient.invalidateQueries({ queryKey: ['calendar-sessions', vars.workspace_id] });
+      queryClient.invalidateQueries({ queryKey: ['workspace-sessions', vars.workspace_id] });
+      queryClient.invalidateQueries({ queryKey: ['impact-aggregates'] });
+    },
+  });
+}
+
 export function useUpdateSession(workspaceId: string) {
   const queryClient = useQueryClient();
 
