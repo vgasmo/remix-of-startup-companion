@@ -9722,6 +9722,22 @@ export type Database = {
       }
     }
     Views: {
+      admin_manual_resolution_queue: {
+        Row: {
+          context: Json | null
+          created_at: string | null
+          funnel_item_id: string | null
+          label: string | null
+          nif: string | null
+          record_id: string | null
+          record_kind: string | null
+          reference: string | null
+          state: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Relationships: []
+      }
       contract_intakes_safe: {
         Row: {
           approved_data_snapshot: Json | null
