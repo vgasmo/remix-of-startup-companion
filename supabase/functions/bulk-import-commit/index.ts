@@ -106,13 +106,47 @@ Deno.serve(async (req) => {
     let committedCount = 0;
     let failedCount = 0;
     const errors: { row_id: string; error: string }[] = [];
+    const plannedWrites: Array<{
+      row_id: string;
+      action: "create_workspace" | "reuse_workspace" | "create_contract" | "update_contract";
+      program_id: string | null;
+      incubation_type_id: string | null;
+      startup_name: string;
+      contract_number: string | null;
+    }> = [];
 
     for (const row of rows || []) {
       try {
-        const data = (row.edited_json || row.extracted_json) as ExtractedData;
+        const data = (row.edited_json || row.extracted_json) as ExtractedData & {
+          programme_mapping?: {
+            program_id?: string | null;
+            incubation_type_id?: string | null;
+          };
+        };
         if (!data?.startup_name?.trim()) {
           throw new Error("startup_name is required");
         }
+
+        // Authorization gate — refuse rows that have not been explicitly
+        // marked commit_authorized by an operator (dry-run bypasses this,
+        // so reviewers can preview writes before flipping the flag).
+        if (!dryRun && requireAuthorization && row.commit_authorized !== true) {
+          throw new Error("commit_authorized=false — row not approved for commit");
+        }
+
+        // Per-row programme override from edited_json.programme_mapping wins
+        // over the batch-level program_id. Every row must resolve to SOME
+        // programme; otherwise we refuse to create an orphan workspace.
+        const rowProgramId =
+          (data.programme_mapping?.program_id as string | null | undefined) ??
+          batchProgramId;
+        if (!rowProgramId) {
+          throw new Error(
+            "program_required — no programme_mapping on row and batch has no program_id",
+          );
+        }
+        const rowIncubationOverride =
+          (data.programme_mapping?.incubation_type_id as string | null | undefined) ?? null;
 
         // 1) Resolve or create startup
         let startupId = row.matched_startup_id as string | null;
