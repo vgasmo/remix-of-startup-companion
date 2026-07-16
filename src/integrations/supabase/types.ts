@@ -561,6 +561,8 @@ export type Database = {
       }
       bulk_import_batches: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           committed_count: number
           completed_at: string | null
           created_at: string
@@ -569,11 +571,13 @@ export type Database = {
           extracted_count: number
           failed_count: number
           id: string
+          idempotency_key: string | null
           mapping_mode: string
           notes: string | null
           package_kind: string | null
           package_manifest: Json | null
           plan_hash: string | null
+          plan_hash_locked_at: string | null
           program_id: string | null
           service_program_map: Json
           status: string
@@ -581,6 +585,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           committed_count?: number
           completed_at?: string | null
           created_at?: string
@@ -589,11 +595,13 @@ export type Database = {
           extracted_count?: number
           failed_count?: number
           id?: string
+          idempotency_key?: string | null
           mapping_mode?: string
           notes?: string | null
           package_kind?: string | null
           package_manifest?: Json | null
           plan_hash?: string | null
+          plan_hash_locked_at?: string | null
           program_id?: string | null
           service_program_map?: Json
           status?: string
@@ -601,6 +609,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           committed_count?: number
           completed_at?: string | null
           created_at?: string
@@ -609,11 +619,13 @@ export type Database = {
           extracted_count?: number
           failed_count?: number
           id?: string
+          idempotency_key?: string | null
           mapping_mode?: string
           notes?: string | null
           package_kind?: string | null
           package_manifest?: Json | null
           plan_hash?: string | null
+          plan_hash_locked_at?: string | null
           program_id?: string | null
           service_program_map?: Json
           status?: string
@@ -690,6 +702,7 @@ export type Database = {
           ai_confidence: number | null
           batch_id: string
           before_snapshot: Json | null
+          classification: string | null
           commit_authorized: boolean
           commit_idempotency_key: string | null
           committed_at: string | null
@@ -723,6 +736,7 @@ export type Database = {
           ai_confidence?: number | null
           batch_id: string
           before_snapshot?: Json | null
+          classification?: string | null
           commit_authorized?: boolean
           commit_idempotency_key?: string | null
           committed_at?: string | null
@@ -756,6 +770,7 @@ export type Database = {
           ai_confidence?: number | null
           batch_id?: string
           before_snapshot?: Json | null
+          classification?: string | null
           commit_authorized?: boolean
           commit_idempotency_key?: string | null
           committed_at?: string | null
@@ -10535,6 +10550,10 @@ export type Database = {
       block_workspace: {
         Args: { _reason?: string; _workspace_id: string }
         Returns: undefined
+      }
+      bulk_import_approve: {
+        Args: { _batch_id: string; _plan_hash: string }
+        Returns: Json
       }
       can_access_backoffice: { Args: never; Returns: boolean }
       can_edit_financial_plan: {
