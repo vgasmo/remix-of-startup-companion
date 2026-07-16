@@ -1,7 +1,9 @@
 
 # Data Import V2 + Reconciler Canary — Safe Activation
 
-This is a multi-phase production-safety effort, not a flag flip. It must land as a sequence of reviewable migrations + edge-function/UI changes, each verified before the next. I want approval on the shape before I start writing migrations, because Phase A alone changes an RPC signature and regenerates types.
+Status: Phase A ✅ · Phase B ✅ · Phase C ⏳ · Phase D ✅ · Phase E ⏳ · Phase F ⏳
+
+This is a multi-phase production-safety effort, not a flag flip. It must land as a sequence of reviewable migrations + edge-function/UI changes, each verified before the next.
 
 ## Current state (verified)
 
