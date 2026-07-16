@@ -46,11 +46,13 @@ async function sha256Hex(input: string): Promise<string> {
 async function loadProfile(supabase: any, id: string) {
   const { data } = await supabase
     .from('profiles')
-    .select('id, email, full_name, status')
+    .select('id, email, full_name, account_status')
     .eq('id', id)
     .maybeSingle();
   return data;
 }
+
+const ACTIVE_ACCOUNT_STATUSES = new Set(['active', 'approved']);
 
 async function loadProgram(supabase: any, id: string) {
   const { data } = await supabase
