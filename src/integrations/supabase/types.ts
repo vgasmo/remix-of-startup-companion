@@ -10992,19 +10992,14 @@ export type Database = {
         Returns: Json
       }
       reconcile_rollback: { Args: { p_row_id: string }; Returns: Json }
-      reconciler_commit_row:
-        | {
-            Args: { p_expected_plan_hash: string; p_row_id: string }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_expected_plan_hash: string
-              p_idempotency_key?: string
-              p_row_id: string
-            }
-            Returns: Json
-          }
+      reconciler_commit_row: {
+        Args: {
+          p_expected_plan_hash: string
+          p_idempotency_key?: string
+          p_row_id: string
+        }
+        Returns: Json
+      }
       reconciler_write_enabled: { Args: never; Returns: boolean }
       reject_startup_change_request: {
         Args: { _notes?: string; _request_id: string }
