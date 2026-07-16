@@ -344,14 +344,21 @@ export function BookingLinksManager() {
             </TableHeader>
             <TableBody>
               {bookingLinks.map(link => (
-                <TableRow key={link.id}>
+                <TableRow key={link.id} className={link.is_canonical && link.active ? 'bg-primary/5' : undefined}>
+                  <TableCell>
+                    {link.is_canonical && link.active ? (
+                      <Star className="h-4 w-4 fill-[hsl(var(--primary))] text-[hsl(var(--primary))]" aria-label={t('admin.bookingLinks.canonical', 'Canónico') as string} />
+                    ) : null}
+                  </TableCell>
                   <TableCell>{getProgramName(link.program_id)}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{link.label || '—'}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1 text-sm">
                       <Calendar className="h-3 w-3 text-muted-foreground" />
                       {format(new Date(link.created_at), 'MMM d, yyyy', { locale: dateLocale })}
                     </div>
                   </TableCell>
+
                   <TableCell>
                     {link.expires_at 
                       ? format(new Date(link.expires_at), 'MMM d, yyyy', { locale: dateLocale })
