@@ -401,7 +401,33 @@ serve(async (req) => {
     if (action === "get_slots") {
       const slots: TimeSlot[] = [];
       const now = new Date();
-      
+
+      // CANONICAL ROUTING: pick the exact consultant that public-book-first-contact will use,
+      // so displayed availability matches the actual booking target. Failure to resolve is
+      // fail-closed (503) — never silently show slots against an arbitrary consultant.
+      try {
+        const resolved = await resolveFirstContactRoute({
+          supabase,
+          token,
+          selectedProgramId: typeof selectedProgramId === 'string' ? selectedProgramId : null,
+        });
+        consultantEmail = resolved.consultantEmail;
+        consultantName = resolved.consultantName;
+        if (resolved.programId) {
+          programId = resolved.programId;
+          programName = resolved.programName;
+        }
+      } catch (e) {
+        if (e instanceof NoRouteError) {
+          console.warn('resolveFirstContactRoute NO_ROUTE for get_slots:', e.reason, e.trace);
+          return corsJsonResponse({
+            error: 'Booking is currently unavailable. Please contact us directly.',
+            reason: e.reason,
+          }, req, 503);
+        }
+        throw e;
+      }
+
       const credentials = await getGraphCredentials(supabase);
       
       if (credentials && consultantEmail) {
