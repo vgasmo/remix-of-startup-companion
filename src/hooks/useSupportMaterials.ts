@@ -18,6 +18,7 @@ export interface SupportMaterial {
   status: 'draft' | 'approved';
   owner_user_id: string | null;
   program_id: string | null;
+  attach_to_proposal: boolean;
   created_at: string;
   updated_at: string;
 }
