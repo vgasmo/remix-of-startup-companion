@@ -377,6 +377,18 @@ export function BookingLinksManager() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
+                      {link.active && !link.is_canonical && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setCanonical.mutate(link.id)}
+                          disabled={setCanonical.isPending}
+                          title={t('admin.bookingLinks.markCanonical', 'Marcar como canónico') as string}
+                          aria-label={t('admin.bookingLinks.markCanonical', 'Marcar como canónico') as string}
+                        >
+                          <Star className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      )}
                       {link.active && (
                         <Button
                           variant="ghost"
@@ -387,6 +399,7 @@ export function BookingLinksManager() {
                           <Trash2 className="h-4 w-4 text-muted-foreground" />
                         </Button>
                       )}
+
                       {!link.active && (
                         <Button
                           variant="ghost"
