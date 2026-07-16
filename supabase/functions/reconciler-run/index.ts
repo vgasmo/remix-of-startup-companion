@@ -74,7 +74,25 @@ Deno.serve(async (req) => {
     const body = (await req.json()) as RunBody;
     const phase: Phase = body.phase ?? (body.dry_run === false ? 'commit' : 'stage');
 
-    // Kill-switch check (used for commit only; stage never writes business tables)
+    // ---- Server-side safety controls (fail-closed) ----
+    async function control(key: string): Promise<Record<string, unknown>> {
+      const { data } = await sbSvc.from('system_settings').select('value').eq('key', key).maybeSingle();
+      return ((data as { value?: Record<string, unknown> } | null)?.value ?? {});
+    }
+    const emergency = await control('reconciler.emergency_stop');
+    if ((emergency as { enabled?: boolean }).enabled === true) {
+      return new Response(JSON.stringify({ error: 'emergency_stop', message: 'Reconciler emergency stop is engaged.' }),
+        { status: 423, headers: jsonHeaders });
+    }
+    if (phase === 'stage') {
+      const dryRun = await control('reconciler.dry_run_enabled');
+      if ((dryRun as { enabled?: boolean }).enabled !== true) {
+        return new Response(JSON.stringify({ error: 'dry_run_disabled', message: 'reconciler.dry_run_enabled must be true to stage.' }),
+          { status: 423, headers: jsonHeaders });
+      }
+    }
+
+    // Commit-phase kill-switches: env AND legacy write_mode AND new writes_enabled AND allowlist AND canary cap
     const envUnlocked = (Deno.env.get('RECONCILER_WRITE_MODE') ?? '').toLowerCase() === 'enabled';
     let dbUnlocked = false;
     let killSwitchError: string | null = null;
@@ -84,7 +102,13 @@ Deno.serve(async (req) => {
       if (settingErr) killSwitchError = settingErr.message;
       else dbUnlocked = ((setting?.value ?? {}) as { enabled?: boolean }).enabled === true;
     }
-    const writesUnlocked = envUnlocked && dbUnlocked;
+    const writesFlag = await control('reconciler.writes_enabled');
+    const writesEnabled = (writesFlag as { enabled?: boolean }).enabled === true;
+    const canaryCapRaw = await control('reconciler.canary_max_rows');
+    const canaryCap = Number((canaryCapRaw as { value?: unknown }).value ?? 1);
+    const allowlistRaw = await control('reconciler.batch_allowlist');
+    const allowlist = new Set<string>(((allowlistRaw as { batch_ids?: unknown }).batch_ids as string[] | undefined) ?? []);
+    const writesUnlocked = envUnlocked && dbUnlocked && writesEnabled;
 
     // ===== PHASE: COMMIT =====
     if (phase === 'commit') {
@@ -98,9 +122,18 @@ Deno.serve(async (req) => {
       if (!body.batch_id || !body.expected_plan_hash) {
         return new Response(JSON.stringify({ error: 'invalid_input', message: 'batch_id and expected_plan_hash required' }), { status: 400, headers: jsonHeaders });
       }
+      if (allowlist.size > 0 && !allowlist.has(body.batch_id)) {
+        return new Response(JSON.stringify({ error: 'batch_not_allowlisted', batch_id: body.batch_id }),
+          { status: 423, headers: jsonHeaders });
+      }
       const authorized = new Set(body.commit_authorized_ids ?? []);
       if (authorized.size === 0) {
         return new Response(JSON.stringify({ error: 'commit_authorized_ids_required' }), { status: 400, headers: jsonHeaders });
+      }
+      if (Number.isFinite(canaryCap) && authorized.size > canaryCap) {
+        return new Response(JSON.stringify({
+          error: 'canary_cap_exceeded', authorized: authorized.size, canary_max_rows: canaryCap,
+        }), { status: 423, headers: jsonHeaders });
       }
 
       // Fetch all dry_run_ok rows in the batch, recompute plan_hash, compare.
