@@ -50,6 +50,7 @@ export function AdminUsersManager() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | Role | 'none'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'suspended'>('all');
   const [addRoleDialog, setAddRoleDialog] = useState<{ userId: string; userName: string } | null>(null);
   const [selectedRole, setSelectedRole] = useState<Role>('consultor');
   const [deleteRoleTarget, setDeleteRoleTarget] = useState<{ id: string; role: string } | null>(null);
@@ -80,9 +81,13 @@ export function AdminUsersManager() {
           return false;
         }
       }
+      if (statusFilter !== 'all') {
+        const status = (p as any).account_status || 'approved';
+        if (status !== statusFilter) return false;
+      }
       return true;
     });
-  }, [profiles, searchTerm, roleFilter, userRoles]);
+  }, [profiles, searchTerm, roleFilter, statusFilter, userRoles]);
 
   // P4: paginate the user list — the admin org has hundreds of profiles and
   // rendering them all at once tanks React reconciliation on this route.
@@ -231,9 +236,21 @@ export function AdminUsersManager() {
             <SelectItem value="none">{t('admin.userManagement.noRoleAssigned', { defaultValue: 'Sem função' })}</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue placeholder={t('admin.userManagement.filterByStatus', { defaultValue: 'Filtrar por estado' })} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('admin.userManagement.allStatuses', { defaultValue: 'Todos os estados' })}</SelectItem>
+            <SelectItem value="pending">{t('admin.userManagement.statusPending', { defaultValue: 'Pendente' })}</SelectItem>
+            <SelectItem value="approved">{t('admin.userManagement.statusApproved', { defaultValue: 'Ativo' })}</SelectItem>
+            <SelectItem value="suspended">{t('admin.userManagement.statusSuspended', { defaultValue: 'Suspenso' })}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-3">
+
         {filteredProfiles.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">

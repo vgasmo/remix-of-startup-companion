@@ -91,7 +91,7 @@ const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLo
       label: t('admin.pendingApprovals'),
       value: stats?.pendingApprovalsCount ?? 0,
       icon: Users,
-      href: '/admin?tab=users',
+      href: '/admin?tab=approvals',
       variant: 'warning' as const,
     },
     {
