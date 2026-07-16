@@ -364,9 +364,22 @@ serve(async (req) => {
     }
     
 
-    // Get the first program for the funnel item
-    const { data: programs } = await supabase.from("programs").select("id").limit(1);
-    const programId = programs?.[0]?.id || null;
+    // Determine the program for the funnel item.
+    // Priority: (1) the program the user selected on the booking page,
+    // (2) the program tied to the booking link, (3) NULL (global "Geral" —
+    // do NOT fall back to "first program" or every lead ends up tagged with
+    // whatever program happens to come first in the DB).
+    let programId: string | null = selectedProgramId;
+    if (programId) {
+      // Validate the selected program exists and is active; otherwise treat as global.
+      const { data: progRow } = await supabase
+        .from("programs")
+        .select("id")
+        .eq("id", programId)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (!progRow) programId = null;
+    }
 
     // === DUPLICATE CHECK ===
     // Only reuse an existing lead when it's still in the early commercial
