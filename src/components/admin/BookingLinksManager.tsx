@@ -267,13 +267,39 @@ export function BookingLinksManager() {
                   </Select>
                 </div>
 
-                <Button 
-                  onClick={() => generateLink.mutate()} 
+                <div className="space-y-2">
+                  <Label>{t('admin.bookingLinks.label', 'Nome interno (opcional)')}</Label>
+                  <Input
+                    value={labelInput}
+                    onChange={(e) => setLabelInput(e.target.value)}
+                    placeholder={t('admin.bookingLinks.labelPlaceholder', 'ex.: Landing site, LinkedIn Q3') as string}
+                    maxLength={80}
+                  />
+                </div>
+
+                <label className="flex items-start gap-2 text-sm cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5"
+                    checked={markCanonical}
+                    onChange={(e) => setMarkCanonical(e.target.checked)}
+                  />
+                  <span>
+                    <span className="font-medium">{t('admin.bookingLinks.markCanonical', 'Marcar como URL canónico')}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {t('admin.bookingLinks.markCanonicalHint', 'Este link passa a ser o URL público oficial. Qualquer outro link canónico ativo é desmarcado.')}
+                    </span>
+                  </span>
+                </label>
+
+                <Button
+                  onClick={() => generateLink.mutate()}
                   disabled={generateLink.isPending} loading={generateLink.isPending}
                   className="w-full"
                 >
                   {generateLink.isPending ? t('admin.generating', 'A gerar...') : t('admin.generateAndCopy', 'Gerar e Copiar Link')}
                 </Button>
+
               </div>
             </DialogContent>
           </Dialog>
