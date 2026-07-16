@@ -122,12 +122,17 @@ export function BookingLinksManager() {
       queryClient.invalidateQueries({ queryKey: ['public-booking-links'] });
       const baseUrl = window.location.origin;
       const bookingUrl = `${baseUrl}/book/${token}`;
-      navigator.clipboard.writeText(bookingUrl);
+      navigator.clipboard.writeText(bookingUrl).catch(() => { /* clipboard blocked; user still has UTM dialog */ });
 
       notify.success(
         t('admin.bookingLinkCreatedCopied', 'Link de reserva criado e copiado!'),
         { description: bookingUrl }
       );
+
+      // Immediately offer the UTM builder for external-channel distribution.
+      // We can only do this while the plaintext token is in memory — token_hash
+      // in the DB is one-way, so this UX is only reachable at creation time.
+      setUtmDialogUrl(bookingUrl);
 
       setIsDialogOpen(false);
       setSelectedProgram('');
