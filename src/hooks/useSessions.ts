@@ -159,7 +159,7 @@ export interface Session {
   session_type: string | null;
   outlook_event_id?: string | null;
   outlook_sync_status?: string | null;
-  outlook_last_synced_at?: string | null;
+  outlook_synced_at?: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -200,7 +200,7 @@ export function useSessions(workspaceId: string | undefined) {
         // B4: status/primary_consultant_id/session_template_id/outlook_* are required
         // by the UI (completed badges, hide finish/cancel buttons on terminal sessions,
         // sync indicators). Omitting them left status undefined everywhere.
-        .select('id, workspace_id, title, scheduled_at, duration, agenda, notes, decisions, location, join_url, status, primary_consultant_id, session_template_id, outlook_event_id, outlook_sync_status, outlook_last_synced_at, created_by, created_at, updated_at, source, ai_summary, ai_decisions, ai_risks, ai_action_suggestions, ai_kpi_prompts, ai_generated_at, ai_generated_by, raw_transcript, session_type')
+        .select('id, workspace_id, title, scheduled_at, duration, agenda, notes, decisions, location, join_url, status, primary_consultant_id, session_template_id, outlook_event_id, outlook_sync_status, outlook_synced_at, created_by, created_at, updated_at, source, ai_summary, ai_decisions, ai_risks, ai_action_suggestions, ai_kpi_prompts, ai_generated_at, ai_generated_by, raw_transcript, session_type')
         .eq('workspace_id', workspaceId)
         .order('scheduled_at', { ascending: false })
         .limit(200);
