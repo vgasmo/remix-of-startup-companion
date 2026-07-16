@@ -47,6 +47,8 @@ export interface EcosystemFilters {
   tagId?: string;
   needsAttention?: boolean;
   hasStartupPortugal?: boolean;
+  modality?: 'physical' | 'virtual';
+  tier?: 'A' | 'B' | 'C' | 'unclassified';
 }
 
 interface Cursor {
