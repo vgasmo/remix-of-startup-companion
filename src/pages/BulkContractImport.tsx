@@ -242,7 +242,13 @@ export default function BulkContractImport() {
   // ============ ROW EDITING ============
   const updateRow = async (rowId: string, patch: Partial<BatchRow>) => {
     setRows(prev => prev.map(r => (r.id === rowId ? { ...r, ...patch } : r)));
-    await supabase.from('bulk_import_rows').update(patch).eq('id', rowId);
+    // M5: silent write failures let the admin commit outdated contract data
+    // (e.g. a hand-corrected NIF) without warning.
+    const { error } = await supabase.from('bulk_import_rows').update(patch).eq('id', rowId);
+    if (error) {
+      logger.warn('bulk_import_row_update_failed', { rowId, error: error.message });
+      notify.error(t('bulkImport.errors.rowUpdateFailed', 'Não foi possível guardar a alteração.'));
+    }
   };
 
   const updateEditedField = async (row: BatchRow, key: string, value: string) => {
@@ -539,11 +545,16 @@ export default function BulkContractImport() {
                         <TableHead className="w-10">
                           <Checkbox
                             checked={rows.length > 0 && rows.every(r => r.selected)}
-                            onCheckedChange={(checked) => {
+                            onCheckedChange={async (checked) => {
                               const sel = !!checked;
                               setRows(prev => prev.map(r => ({ ...r, selected: sel })));
                               if (batchId) {
-                                supabase.from('bulk_import_rows').update({ selected: sel }).eq('batch_id', batchId);
+                                // M5: surface persistence failures on bulk toggle.
+                                const { error } = await supabase.from('bulk_import_rows').update({ selected: sel }).eq('batch_id', batchId);
+                                if (error) {
+                                  logger.warn('bulk_import_select_all_failed', { batchId, error: error.message });
+                                  notify.error(t('bulkImport.errors.rowUpdateFailed', 'Não foi possível guardar a alteração.'));
+                                }
                               }
                             }}
                           />

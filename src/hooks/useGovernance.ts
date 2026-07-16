@@ -210,19 +210,22 @@ export function useApproveStageGateReview() {
 
       // If approved, update workspace stage
       if (status === 'approved') {
-        await supabase
+        // M6: verify writes — otherwise the UI claims "advanced" while the stage
+        // is still stuck.
+        const { error: stageErr } = await supabase
           .from('workspaces')
           .update({ stage: review.to_stage as any })
           .eq('id', workspaceId);
+        if (stageErr) throw stageErr;
 
-        // Log stage change
-        await supabase.from('stage_history').insert({
+        const { error: histErr } = await supabase.from('stage_history').insert({
           workspace_id: workspaceId,
           from_stage: review.from_stage,
           to_stage: review.to_stage,
           changed_by: user?.id,
           notes: `Stage gate review approved`,
         });
+        if (histErr) throw histErr;
       }
 
       // Log activity

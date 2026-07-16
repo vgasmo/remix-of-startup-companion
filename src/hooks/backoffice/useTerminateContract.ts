@@ -81,6 +81,49 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
     } as any);
   } catch { /* non-fatal */ }
 
+  // M-terminate: mirror the server-side syncIntakeOnClosed(outcome='terminated')
+  // used by webhooks — otherwise the linked intake stays as 'activated' and the
+  // CRM pipeline keeps reading the row as "contracted" indefinitely.
+  try {
+    const { data: intake } = await supabase
+      .from('contract_intakes')
+      .select('id, status, funnel_item_id')
+      .eq('contract_id', contract.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (intake && !['declined', 'voided', 'terminated', 'cancelled'].includes(intake.status as string)) {
+      await (supabase as any)
+        .from('contract_intakes')
+        .update({ status: 'terminated' })
+        .eq('id', intake.id);
+      await supabase.from('intake_events').insert({
+        intake_id: intake.id,
+        event_type: 'lifecycle_sync_terminated',
+        from_status: intake.status,
+        to_status: 'terminated',
+        metadata: { source: 'useTerminateContract', contract_id: contract.id },
+      } as any);
+    }
+
+    // Resolve funnel_item_id via intake first, fall back to contract.funnel_item_id.
+    let funnelItemId: string | null = intake?.funnel_item_id ?? null;
+    if (!funnelItemId) {
+      const { data: contractRow } = await supabase
+        .from('startup_contracts')
+        .select('funnel_item_id')
+        .eq('id', contract.id)
+        .maybeSingle();
+      funnelItemId = (contractRow as any)?.funnel_item_id ?? null;
+    }
+    if (funnelItemId) {
+      await supabase.from('funnel_items')
+        .update({ stage: 'archived' })
+        .eq('id', funnelItemId);
+    }
+  } catch { /* non-fatal — logged upstream by RLS/server */ }
+
   try {
     const [{ data: staff }, { data: members }] = await Promise.all([
       supabase.from('user_roles').select('user_id').in('role', ['admin', 'consultor', 'backoffice']),

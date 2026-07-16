@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { format, startOfMonth, subMonths, addMonths } from 'date-fns';
+import { getDateLocale } from '@/lib/dateLocale';
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, CheckCircle, Save, Plus, Trash2, Settings2, Sparkles, Download, Upload, Lock, Unlock, HelpCircle, Zap, LayoutGrid, List, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -519,7 +520,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <div className="min-w-[140px] text-center">
-              <span className="font-medium">{format(selectedMonth, 'MMMM yyyy')}</span>
+              <span className="font-medium">{format(selectedMonth, 'MMMM yyyy', { locale: getDateLocale() })}</span>
               {isCurrentMonth && (
                 <Badge variant="secondary" className="ml-2 text-xs">{t('kpis.current')}</Badge>
               )}
