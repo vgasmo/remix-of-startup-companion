@@ -25,6 +25,7 @@ export interface CrmInboxItem {
   expected_close_date: string | null;
   win_probability: number | null;
   created_at: string;
+  updated_at?: string;
   owner?: { id: string; full_name: string | null } | null;
   program?: { id: string; name: string } | null;
 }
