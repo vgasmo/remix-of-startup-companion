@@ -49,6 +49,7 @@ export function AdminUsersManager() {
   const removeWorkspaceUser = useRemoveWorkspaceUser();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<'all' | Role | 'none'>('all');
   const [addRoleDialog, setAddRoleDialog] = useState<{ userId: string; userName: string } | null>(null);
   const [selectedRole, setSelectedRole] = useState<Role>('consultor');
   const [deleteRoleTarget, setDeleteRoleTarget] = useState<{ id: string; role: string } | null>(null);
@@ -66,13 +67,22 @@ export function AdminUsersManager() {
   const filteredProfiles = useMemo(() => {
     const profileList = profiles?.data || [];
     if (!profileList.length) return [];
-    if (!searchTerm.trim()) return profileList;
-    const term = searchTerm.toLowerCase();
-    return profileList.filter(p =>
-      p.full_name?.toLowerCase().includes(term) ||
-      p.email.toLowerCase().includes(term)
-    );
-  }, [profiles, searchTerm]);
+    const term = searchTerm.trim().toLowerCase();
+    return profileList.filter(p => {
+      if (term && !(p.full_name?.toLowerCase().includes(term) || p.email.toLowerCase().includes(term))) {
+        return false;
+      }
+      if (roleFilter !== 'all') {
+        const rs = userRoles?.filter(r => r.user_id === p.id) || [];
+        if (roleFilter === 'none') {
+          if (rs.length > 0) return false;
+        } else if (!rs.some(r => r.role === roleFilter)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [profiles, searchTerm, roleFilter, userRoles]);
 
   // P4: paginate the user list — the admin org has hundreds of profiles and
   // rendering them all at once tanks React reconciliation on this route.
@@ -202,12 +212,26 @@ export function AdminUsersManager() {
         <p className="text-sm text-muted-foreground">{t('admin.userManagement.description')}</p>
       </div>
 
-      <Input 
-        placeholder={t('admin.userManagement.searchPlaceholder')} 
-        value={searchTerm} 
-        onChange={e => setSearchTerm(e.target.value)}
-        className="max-w-md"
-      />
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Input
+          placeholder={t('admin.userManagement.searchPlaceholder')}
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className="max-w-md"
+        />
+        <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as typeof roleFilter)}>
+          <SelectTrigger className="w-full sm:w-56">
+            <SelectValue placeholder={t('admin.userManagement.filterByRole', { defaultValue: 'Filtrar por tipo' })} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('admin.userManagement.allRoles', { defaultValue: 'Todos os tipos' })}</SelectItem>
+            {ROLES.map(r => (
+              <SelectItem key={r} value={r}>{getRoleLabel(r)}</SelectItem>
+            ))}
+            <SelectItem value="none">{t('admin.userManagement.noRoleAssigned', { defaultValue: 'Sem função' })}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="space-y-3">
         {filteredProfiles.length === 0 ? (
