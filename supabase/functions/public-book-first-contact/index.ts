@@ -310,77 +310,58 @@ serve(async (req) => {
       }, req, 429);
     }
 
-    // Get consultant info for calendar event
+    // === CANONICAL ROUTING ===
+    // Never fall back to `.limit(1)` on user_roles. The routing resolver validates
+    // link + intake_routing + program, respects fixed_owner and round_robin,
+    // and throws NoRouteError when there is no valid destination — in which case
+    // we fail closed with a public 503 rather than committing a booking to an
+    // arbitrary consultant.
     let consultantEmail: string | null = null;
     let consultantId: string | null = null;
     let consultantName: string | null = null;
-    
-    if (token !== 'demo') {
-      try {
-        const tokenHash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
-        const tokenHex = Array.from(new Uint8Array(tokenHash)).map(b => b.toString(16).padStart(2, "0")).join("");
+    let programId: string | null = null;
+    let routingDecision: Record<string, unknown> = {};
 
-        const { data: linkData } = await supabase
-          .from("public_booking_links")
-          .select("owner_consultant_id")
-          .eq("token_hash", tokenHex)
-          .eq("active", true)
-          .maybeSingle();
-        
-        if (linkData?.owner_consultant_id) {
-          consultantId = linkData.owner_consultant_id;
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("email, full_name")
-            .eq("id", consultantId)
-            .maybeSingle();
-          
-          consultantEmail = profile?.email || null;
-          consultantName = profile?.full_name || null;
-        }
-      } catch {
-        // Table might not exist
+    try {
+      const resolved = await resolveFirstContactRoute({
+        supabase,
+        token,
+        selectedProgramId,
+      });
+      consultantId = resolved.consultantId;
+      consultantEmail = resolved.consultantEmail;
+      consultantName = resolved.consultantName;
+      programId = resolved.programId;
+      routingDecision = {
+        routing_id: resolved.routingId,
+        routing_mode: resolved.routingMode,
+        scope: resolved.scope,
+        link_id: resolved.linkId,
+        program_id: resolved.programId,
+        program_name: resolved.programName,
+        trace: resolved.decisionTrace,
+      };
+    } catch (e) {
+      if (e instanceof NoRouteError) {
+        console.warn('First-contact booking NO_ROUTE:', e.reason, e.trace);
+        // Best-effort staff alert so backoffice notices routing gaps.
+        try {
+          await supabase.from('system_alerts').insert({
+            alert_type: 'first_contact_no_route',
+            severity: 'high',
+            message: `Public booking failed to resolve a consultant (${e.reason}).`,
+            metadata: { reason: e.reason, trace: e.trace, contact_email: contact.email },
+          });
+        } catch { /* system_alerts is best-effort */ }
+        return corsJsonResponse({
+          success: false,
+          error: 'We could not assign a consultant for this booking. Please contact us directly.',
+          reason: e.reason,
+        }, req, 503);
       }
+      throw e;
     }
-    
-    // Fallback: get any consultant
-    if (!consultantEmail) {
-      const { data: consultants } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "consultor")
-        .limit(1);
-      
-      if (consultants?.[0]?.user_id) {
-        consultantId = consultants[0].user_id;
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("email, full_name")
-          .eq("id", consultantId)
-          .maybeSingle();
-        
-        consultantEmail = profile?.email || null;
-        consultantName = profile?.full_name || null;
-      }
-    }
-    
 
-    // Determine the program for the funnel item.
-    // Priority: (1) the program the user selected on the booking page,
-    // (2) the program tied to the booking link, (3) NULL (global "Geral" —
-    // do NOT fall back to "first program" or every lead ends up tagged with
-    // whatever program happens to come first in the DB).
-    let programId: string | null = selectedProgramId;
-    if (programId) {
-      // Validate the selected program exists and is active; otherwise treat as global.
-      const { data: progRow } = await supabase
-        .from("programs")
-        .select("id")
-        .eq("id", programId)
-        .eq("is_active", true)
-        .maybeSingle();
-      if (!progRow) programId = null;
-    }
 
     // === DUPLICATE CHECK ===
     // Only reuse an existing lead when it's still in the early commercial
