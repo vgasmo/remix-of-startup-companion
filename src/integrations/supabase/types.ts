@@ -5610,6 +5610,8 @@ export type Database = {
           expires_at: string | null
           id: string
           intake_route_id: string | null
+          is_canonical: boolean
+          label: string | null
           owner_consultant_id: string | null
           owner_email: string | null
           program_id: string | null
@@ -5622,6 +5624,8 @@ export type Database = {
           expires_at?: string | null
           id?: string
           intake_route_id?: string | null
+          is_canonical?: boolean
+          label?: string | null
           owner_consultant_id?: string | null
           owner_email?: string | null
           program_id?: string | null
@@ -5634,6 +5638,8 @@ export type Database = {
           expires_at?: string | null
           id?: string
           intake_route_id?: string | null
+          is_canonical?: boolean
+          label?: string | null
           owner_consultant_id?: string | null
           owner_email?: string | null
           program_id?: string | null
