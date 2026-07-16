@@ -31,27 +31,18 @@ if (typeof window !== "undefined") {
   });
 }
 
-// 🛡️ PWA service-worker guard
-// Lovable preview runs the app inside an iframe. A registered SW would
-// cache stale builds and break preview navigation. We unregister any SW
-// when running inside an iframe or on a Lovable preview host.
-const isInIframe = (() => {
-  try {
-    return window.self !== window.top;
-  } catch {
-    return true; // cross-origin block → assume iframe
-  }
-})();
+// 🛡️ Legacy PWA cache guard
+// The app must never fall back to an older deployed bundle. Earlier builds
+// registered a Workbox service worker, so purge any remaining registrations
+// and runtime caches on every host, including the custom domain.
+if (typeof window !== "undefined") {
+  navigator.serviceWorker?.getRegistrations()
+    .then((registrations) => Promise.all(registrations.map((r) => r.unregister())))
+    .catch(() => { /* noop */ });
 
-const isPreviewHost =
-  window.location.hostname.includes("id-preview--") ||
-  window.location.hostname.includes("lovableproject.com") ||
-  window.location.hostname.includes("lovable.app");
-
-if (isPreviewHost || isInIframe) {
-  navigator.serviceWorker?.getRegistrations().then((registrations) => {
-    registrations.forEach((r) => r.unregister());
-  }).catch(() => { /* noop */ });
+  window.caches?.keys()
+    .then((names) => Promise.all(names.map((name) => caches.delete(name))))
+    .catch(() => { /* noop */ });
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
