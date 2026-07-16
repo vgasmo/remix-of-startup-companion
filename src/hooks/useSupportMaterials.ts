@@ -60,7 +60,7 @@ export function useSupportMaterials(filters?: {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as SupportMaterial[];
+      return (data ?? []) as unknown as SupportMaterial[];
     },
   });
 }
