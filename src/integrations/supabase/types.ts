@@ -7863,6 +7863,7 @@ export type Database = {
       }
       support_materials: {
         Row: {
+          attach_to_proposal: boolean
           category: string | null
           content_markdown: string | null
           created_at: string
@@ -7880,6 +7881,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attach_to_proposal?: boolean
           category?: string | null
           content_markdown?: string | null
           created_at?: string
@@ -7897,6 +7899,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attach_to_proposal?: boolean
           category?: string | null
           content_markdown?: string | null
           created_at?: string
