@@ -672,14 +672,27 @@ serve(async (req) => {
     }
 
 
-    return corsJsonResponse({ 
-      success: true,
+    // Honest response: reflect what actually happened per subsystem so the client
+    // shows a partial-success UI instead of "everything confirmed" on failure.
+    const partialFailure = calendarStatus === 'failed';
+    return corsJsonResponse({
+      success: !partialFailure,
       funnelItemId,
       teamsLink,
       calendarEventId,
-      message: teamsLink 
-        ? "Your booking has been confirmed. You'll receive a calendar invite with Teams link shortly."
-        : "Your booking has been confirmed. The consultant will send you meeting details.",
+      calendar_status: calendarStatus,
+      calendar_error: calendarError,
+      routing: {
+        consultant_id: consultantId,
+        consultant_name: consultantName,
+        program_id: programId,
+        mode: (routingDecision as { routing_mode?: string })?.routing_mode ?? null,
+      },
+      message: partialFailure
+        ? 'Your slot was recorded but the calendar invite failed. The consultant will contact you shortly.'
+        : (teamsLink
+          ? "Your booking has been confirmed. You'll receive a calendar invite with Teams link shortly."
+          : 'Your booking has been confirmed. The consultant will send you meeting details.'),
     }, req);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
