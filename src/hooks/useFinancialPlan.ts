@@ -228,13 +228,40 @@ export function useSaveScenarioFromBase(workspaceId: string) {
   return useMutation({
     mutationFn: async ({ target, deltas }: { target: PlanScenario; deltas: ScenarioDelta[] }) => {
       if (target === 'base') {
-        // Persist deltas straight onto base — no copy needed.
+        // B5: the previous naive upsert had no onConflict target and swallowed
+        // the resulting 23505 (partial unique index collision) — the UI showed
+        // "Saved as Base" while the values were lost. Use the same find-then-
+        // update-or-insert path as useSaveAssumption and surface errors.
         for (const d of deltas) {
-          await supabase.from('financial_assumptions').upsert([{
-            workspace_id: workspaceId, scenario: 'base', key: d.key,
-            value_numeric: d.value_numeric, unit: d.unit, source: 'founder',
-            rationale: d.rationale, last_validated_at: new Date().toISOString(),
-          } as any]);
+          const payload = {
+            value_numeric: d.value_numeric,
+            unit: d.unit,
+            source: 'founder' as AssumptionSource,
+            rationale: d.rationale,
+            last_validated_at: new Date().toISOString(),
+          };
+          const { data: existing, error: findErr } = await supabase
+            .from('financial_assumptions')
+            .select('id')
+            .eq('workspace_id', workspaceId)
+            .eq('scenario', 'base')
+            .eq('key', d.key)
+            .is('period_index', null)
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (findErr) throw findErr;
+          if (existing?.id) {
+            const { error } = await supabase.from('financial_assumptions')
+              .update(payload as any).eq('id', existing.id);
+            if (error) throw error;
+          } else {
+            const { error } = await supabase.from('financial_assumptions').insert([{
+              workspace_id: workspaceId, scenario: 'base', key: d.key,
+              period_index: null, ...payload,
+            } as any]);
+            if (error) throw error;
+          }
         }
         return { copied: 0, applied: deltas.length };
       }
@@ -364,25 +391,44 @@ export function useResolvePrefillProposal(workspaceId: string) {
     mutationFn: async ({ proposal, action }: { proposal: FinancialPrefillProposal; action: 'accept' | 'reject' }) => {
       const { data: userRes } = await supabase.auth.getUser();
       if (action === 'accept') {
-        // Materialize into financial_assumptions with the same source.
-        const { error: upErr } = await supabase.from('financial_assumptions')
-          .upsert([{
+        // B6: the only unique indexes are PARTIAL (split on period_index null vs
+        // non-null), which Postgres cannot use as an ON CONFLICT arbiter — the
+        // old upsert failed with 42P10 on every accept. Mirror useSaveAssumption:
+        // find first (handling NULL period_index correctly), then update or insert.
+        const period = proposal.period_index ?? null;
+        const payload = {
+          value_numeric: proposal.proposed_value_numeric,
+          value_json: proposal.proposed_value_json,
+          unit: proposal.unit,
+          source: proposal.source,
+          confidence: null,
+          rationale: `Accepted from ${proposal.source}`,
+          owner_user_id: userRes.user?.id ?? null,
+          last_validated_at: new Date().toISOString(),
+        };
+        let findQ = supabase.from('financial_assumptions')
+          .select('id')
+          .eq('workspace_id', workspaceId)
+          .eq('scenario', proposal.scenario)
+          .eq('key', proposal.key);
+        findQ = period === null ? findQ.is('period_index', null) : findQ.eq('period_index', period);
+        const { data: existing, error: findErr } = await findQ
+          .order('updated_at', { ascending: false }).limit(1).maybeSingle();
+        if (findErr) throw findErr;
+        if (existing?.id) {
+          const { error } = await supabase.from('financial_assumptions')
+            .update(payload as any).eq('id', existing.id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('financial_assumptions').insert([{
             workspace_id: workspaceId,
             scenario: proposal.scenario,
             key: proposal.key,
-            period_index: proposal.period_index,
-            value_numeric: proposal.proposed_value_numeric,
-            value_json: proposal.proposed_value_json,
-            unit: proposal.unit,
-            source: proposal.source,
-            confidence: null,
-            rationale: `Accepted from ${proposal.source}`,
-            owner_user_id: userRes.user?.id ?? null,
-            last_validated_at: new Date().toISOString(),
-          } as any],
-          { onConflict: 'workspace_id,scenario,key,period_index' },
-        );
-        if (upErr) throw upErr;
+            period_index: period,
+            ...payload,
+          } as any]);
+          if (error) throw error;
+        }
       }
       const { error } = await supabase
         .from('financial_prefill_proposals')

@@ -37,7 +37,9 @@ type Role = typeof ROLES[number];
 export function AdminUsersManager() {
   const { t } = useTranslation();
   const { user: currentUser } = useAuth();
-  const { data: profiles, isLoading: loadingProfiles } = useProfiles();
+  // B8: default page size was 50 → search/pagination silently limited to the
+  // first 50 users. Load a large window so admins can find and manage anyone.
+  const { data: profiles, isLoading: loadingProfiles } = useProfiles(0, 5000);
   const { data: userRoles, isLoading: loadingRoles } = useUserRoles();
   const { data: workspaceUsers, isLoading: loadingWsUsers } = useWorkspaceUsers();
   const { data: workspaces } = useAllWorkspaces();

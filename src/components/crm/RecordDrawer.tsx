@@ -559,21 +559,25 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
                     if (createErr) throw createErr;
                     if (!newContract?.id) throw new Error('contract_id_missing');
 
-                    // Also persist the discount as a first-class contract_discounts row
-                    // so it appears in the Discounts panel and is used by the pricing engine.
+                    // B7: supabase-js returns errors — it does not throw. Silent
+                    // failures here leave the lead unlinked (duplicate contract on
+                    // next attempt) or lose the discount.
                     if (proposedDiscount > 0) {
-                      await supabase.from('contract_discounts').insert({
+                      const { error: discountErr } = await supabase.from('contract_discounts').insert({
                         contract_id: newContract.id,
                         discount_percentage: proposedDiscount,
                         start_date: today,
                         reason: (metadata?.commercial_notes as string) || 'Seeded from CRM commercial proposal',
                       } as any);
+                      if (discountErr) throw discountErr;
                     }
 
-                    await supabase
+                    const { error: linkErr } = await supabase
                       .from('funnel_items')
                       .update({ linked_contract_id: newContract.id })
                       .eq('id', item.id);
+                    if (linkErr) throw linkErr;
+
 
 
                     const { data, error } = await invokeWithAuth('public-contract-onboarding', {

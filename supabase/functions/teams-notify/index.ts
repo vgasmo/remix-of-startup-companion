@@ -272,7 +272,7 @@ Deno.serve(async (req: Request) => {
           .from('user_roles')
           .select('role')
           .eq('user_id', callerUserId)
-          .in('role', ['admin', 'consultant'])
+          .in('role', ['admin', 'consultor', 'backoffice'])
           .limit(1)
           .maybeSingle();
         if (staffErr || !staffRow) {

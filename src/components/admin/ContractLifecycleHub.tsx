@@ -849,10 +849,14 @@ function ConvertDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                {/* B3: must match the startup_stage enum exactly
+                    (ideation|validation|mvp|growth|scale) — 'product_development'
+                    was not a valid value and made staff_convert_funnel_item_to_startup fail. */}
                 <SelectItem value="ideation">{t('lifecycle.stageIdeation')}</SelectItem>
                 <SelectItem value="validation">{t('lifecycle.stageValidation')}</SelectItem>
-                <SelectItem value="product_development">{t('lifecycle.stageProductDev')}</SelectItem>
+                <SelectItem value="mvp">{t('lifecycle.stageMvp', { defaultValue: 'MVP' })}</SelectItem>
                 <SelectItem value="growth">{t('lifecycle.stageGrowth')}</SelectItem>
+                <SelectItem value="scale">{t('lifecycle.stageScale', { defaultValue: 'Scale' })}</SelectItem>
               </SelectContent>
             </Select>
           </div>
