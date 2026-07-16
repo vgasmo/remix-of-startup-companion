@@ -338,8 +338,15 @@ serve(async (req) => {
           routingOptions.push({ program_id: null, program_name: 'Incubação Geral', scope: 'global' });
         }
         
+        // Only expose programs that have an ACTIVE program-scoped routing.
+        const activeProgramRouteIds = new Set(
+          (allRoutings ?? [])
+            .filter(r => r.scope === 'program' && r.program_id)
+            .map(r => r.program_id as string),
+        );
         if (allPrograms) {
           for (const prog of allPrograms) {
+            if (!activeProgramRouteIds.has(prog.id)) continue;
             routingOptions.push({ program_id: prog.id, program_name: prog.name, scope: 'program' });
           }
         }
