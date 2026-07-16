@@ -81,9 +81,13 @@ export function AdminUsersManager() {
           return false;
         }
       }
+      if (statusFilter !== 'all') {
+        const status = (p as any).account_status || 'approved';
+        if (status !== statusFilter) return false;
+      }
       return true;
     });
-  }, [profiles, searchTerm, roleFilter, userRoles]);
+  }, [profiles, searchTerm, roleFilter, statusFilter, userRoles]);
 
   // P4: paginate the user list — the admin org has hundreds of profiles and
   // rendering them all at once tanks React reconciliation on this route.
