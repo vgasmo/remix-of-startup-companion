@@ -551,9 +551,35 @@ export function OverviewTab({
             >
               {t('crm.saveCommercialProposal', { defaultValue: 'Guardar proposta comercial' })}
             </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full h-8 text-xs"
+              onClick={() => setProposalDialogOpen(true)}
+              disabled={!item.contact_email}
+              title={
+                !item.contact_email
+                  ? t('crm.proposal.needsEmail', {
+                      defaultValue: 'Adicione um email de contacto para enviar a proposta.',
+                    })
+                  : undefined
+              }
+            >
+              <Send className="h-3.5 w-3.5 mr-1.5" />
+              {t('crm.proposal.sendButton', {
+                defaultValue: 'Enviar proposta por email',
+              })}
+            </Button>
           </div>
         </div>
       )}
+
+      <SendProposalDialog
+        open={proposalDialogOpen}
+        onOpenChange={setProposalDialogOpen}
+        item={item}
+      />
 
 
       {/* Booking Questionnaire Data */}
