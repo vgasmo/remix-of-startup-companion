@@ -116,7 +116,7 @@ export function useSupportMaterial(id: string | undefined) {
         .eq('id', id)
         .maybeSingle();
       if (error) throw error;
-      return data as SupportMaterial | null;
+      return (data ?? null) as unknown as SupportMaterial | null;
     },
     enabled: !!id,
   });
