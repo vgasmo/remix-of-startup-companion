@@ -10693,6 +10693,7 @@ export type Database = {
         Args: { _dataroom_id: string }
         Returns: string
       }
+      get_feature_control: { Args: { _key: string }; Returns: Json }
       get_impact_aggregates: {
         Args: {
           p_consultant_id?: string
