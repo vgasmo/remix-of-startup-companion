@@ -115,6 +115,10 @@ export function useEcosystemItems(filters: EcosystemFilters = {}) {
         p_cursor_activity: cursor.activity,
         p_cursor_id: cursor.id,
         p_page_size: PAGE_SIZE,
+        p_building_id: filters.buildingId && filters.buildingId !== 'all' ? filters.buildingId : null,
+        p_incubation_type_id: filters.incubationTypeId && filters.incubationTypeId !== 'all' ? filters.incubationTypeId : null,
+        p_modality: filters.modality ?? null,
+        p_tier: filters.tier ?? null,
       });
       if (error) throw error;
       const rows = (data ?? []) as Array<Record<string, unknown>>;
