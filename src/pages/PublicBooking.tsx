@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 import i18n from '@/i18n';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -342,9 +343,35 @@ export default function PublicBooking() {
     );
   }
 
+  const canonicalUrl = token
+    ? `${typeof window !== 'undefined' ? window.location.origin : 'https://fb.startupleiria.com'}/book/${token}`
+    : undefined;
+  const seoTitle = lang === 'pt'
+    ? 'Marcar primeiro contacto — Startup Leiria'
+    : 'Book your first meeting — Startup Leiria';
+  const seoDescription = lang === 'pt'
+    ? 'Reserve uma primeira reunião com a equipa Startup Leiria. Escolha o programa e a hora que melhor lhe convier.'
+    : 'Book a first meeting with the Startup Leiria team. Pick the programme and time that works for you.';
+
   return (
     <div className="min-h-dvh bg-background py-8 px-4">
+      <Helmet>
+        <html lang={lang} />
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDescription} />
+        {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDescription} />
+        {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seoTitle} />
+        <meta name="twitter:description" content={seoDescription} />
+        {/* Public booking pages are noindex — the token is per-recipient/campaign. */}
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <div className="max-w-2xl mx-auto space-y-6">
+
         {/* Back link */}
         <div className="flex items-center justify-between">
           <a

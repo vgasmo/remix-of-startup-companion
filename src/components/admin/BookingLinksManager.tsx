@@ -12,11 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { notify } from "@/lib/notify";
-import { Link2, Copy, Plus, Trash2, Calendar, ExternalLink } from 'lucide-react';
+import { Link2, Copy, Plus, Trash2, Calendar, ExternalLink, Star, Share2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useDateLocale } from '@/lib/dateLocale';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { UtmBuilderDialog } from './UtmBuilderDialog';
 
 interface BookingLink {
   id: string;
@@ -27,6 +28,8 @@ interface BookingLink {
   active: boolean;
   expires_at: string | null;
   created_at: string;
+  is_canonical: boolean;
+  label: string | null;
 }
 
 export function BookingLinksManager() {
@@ -37,6 +40,9 @@ export function BookingLinksManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<string>('');
   const [expiresInDays, setExpiresInDays] = useState<string>('30');
+  const [markCanonical, setMarkCanonical] = useState<boolean>(false);
+  const [labelInput, setLabelInput] = useState<string>('');
+  const [utmDialogUrl, setUtmDialogUrl] = useState<string | null>(null);
   const { confirm, dialogProps } = useConfirmDialog();
 
   // Fetch programs
@@ -86,6 +92,16 @@ export function BookingLinksManager() {
         ? new Date(Date.now() + parseInt(expiresInDays) * 24 * 60 * 60 * 1000).toISOString()
         : null;
 
+      // If marking canonical, deactivate the previous canonical active link
+      // first so the partial unique index (only one active canonical) holds.
+      if (markCanonical) {
+        await supabase
+          .from('public_booking_links')
+          .update({ is_canonical: false })
+          .eq('is_canonical', true)
+          .eq('active', true);
+      }
+
       const { error } = await supabase
         .from('public_booking_links')
         .insert({
@@ -95,6 +111,8 @@ export function BookingLinksManager() {
           program_id: selectedProgram || null,
           expires_at: expiresAt,
           created_by: user.id,
+          is_canonical: markCanonical,
+          label: labelInput.trim() || null,
         });
 
       if (error) throw error;
@@ -104,18 +122,49 @@ export function BookingLinksManager() {
       queryClient.invalidateQueries({ queryKey: ['public-booking-links'] });
       const baseUrl = window.location.origin;
       const bookingUrl = `${baseUrl}/book/${token}`;
-      navigator.clipboard.writeText(bookingUrl);
-      
+      navigator.clipboard.writeText(bookingUrl).catch(() => { /* clipboard blocked; user still has UTM dialog */ });
+
       notify.success(
         t('admin.bookingLinkCreatedCopied', 'Link de reserva criado e copiado!'),
         { description: bookingUrl }
       );
-      
+
+      // Immediately offer the UTM builder for external-channel distribution.
+      // We can only do this while the plaintext token is in memory — token_hash
+      // in the DB is one-way, so this UX is only reachable at creation time.
+      setUtmDialogUrl(bookingUrl);
+
       setIsDialogOpen(false);
       setSelectedProgram('');
+      setMarkCanonical(false);
+      setLabelInput('');
     },
     onError: (error: Error) => {
       notify.error(t('admin.failedToCreateLink', { message: error.message }));
+    },
+  });
+
+  // Toggle canonical flag on an existing active link. Only one active
+  // canonical link can exist at a time; unset others first when promoting.
+  const setCanonical = useMutation({
+    mutationFn: async (linkId: string) => {
+      await supabase
+        .from('public_booking_links')
+        .update({ is_canonical: false })
+        .eq('is_canonical', true)
+        .eq('active', true);
+      const { error } = await supabase
+        .from('public_booking_links')
+        .update({ is_canonical: true })
+        .eq('id', linkId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['public-booking-links'] });
+      notify.success(t('admin.bookingLinks.canonicalSet', 'Link definido como canónico'));
+    },
+    onError: (error: Error) => {
+      notify.error(error.message);
     },
   });
 
@@ -163,6 +212,13 @@ export function BookingLinksManager() {
   return (
     <>
     <ConfirmDialog {...dialogProps} />
+    <UtmBuilderDialog
+      open={utmDialogUrl !== null}
+      onOpenChange={(open) => { if (!open) setUtmDialogUrl(null); }}
+      baseUrl={utmDialogUrl ?? ''}
+      suggestedCampaign={labelInput || 'first-contact'}
+    />
+
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -218,13 +274,39 @@ export function BookingLinksManager() {
                   </Select>
                 </div>
 
-                <Button 
-                  onClick={() => generateLink.mutate()} 
+                <div className="space-y-2">
+                  <Label>{t('admin.bookingLinks.label', 'Nome interno (opcional)')}</Label>
+                  <Input
+                    value={labelInput}
+                    onChange={(e) => setLabelInput(e.target.value)}
+                    placeholder={t('admin.bookingLinks.labelPlaceholder', 'ex.: Landing site, LinkedIn Q3') as string}
+                    maxLength={80}
+                  />
+                </div>
+
+                <label className="flex items-start gap-2 text-sm cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5"
+                    checked={markCanonical}
+                    onChange={(e) => setMarkCanonical(e.target.checked)}
+                  />
+                  <span>
+                    <span className="font-medium">{t('admin.bookingLinks.markCanonical', 'Marcar como URL canónico')}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {t('admin.bookingLinks.markCanonicalHint', 'Este link passa a ser o URL público oficial. Qualquer outro link canónico ativo é desmarcado.')}
+                    </span>
+                  </span>
+                </label>
+
+                <Button
+                  onClick={() => generateLink.mutate()}
                   disabled={generateLink.isPending} loading={generateLink.isPending}
                   className="w-full"
                 >
                   {generateLink.isPending ? t('admin.generating', 'A gerar...') : t('admin.generateAndCopy', 'Gerar e Copiar Link')}
                 </Button>
+
               </div>
             </DialogContent>
           </Dialog>
@@ -250,23 +332,33 @@ export function BookingLinksManager() {
           <Table>
             <TableHeader sticky>
               <TableRow>
+                <TableHead className="w-[36px]" aria-label="canonical" />
                 <TableHead>{t('common.program', 'Programa')}</TableHead>
+                <TableHead>{t('admin.bookingLinks.label', 'Nome')}</TableHead>
                 <TableHead>{t('common.created', 'Criado')}</TableHead>
                 <TableHead>{t('common.expires', 'Expira')}</TableHead>
                 <TableHead>{t('common.status', 'Estado')}</TableHead>
-                <TableHead className="w-[100px]">{t('common.actions', 'Ações')}</TableHead>
+                <TableHead className="w-[120px]">{t('common.actions', 'Ações')}</TableHead>
               </TableRow>
+
             </TableHeader>
             <TableBody>
               {bookingLinks.map(link => (
-                <TableRow key={link.id}>
+                <TableRow key={link.id} className={link.is_canonical && link.active ? 'bg-primary/5' : undefined}>
+                  <TableCell>
+                    {link.is_canonical && link.active ? (
+                      <Star className="h-4 w-4 fill-[hsl(var(--primary))] text-[hsl(var(--primary))]" aria-label={t('admin.bookingLinks.canonical', 'Canónico') as string} />
+                    ) : null}
+                  </TableCell>
                   <TableCell>{getProgramName(link.program_id)}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{link.label || '—'}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1 text-sm">
                       <Calendar className="h-3 w-3 text-muted-foreground" />
                       {format(new Date(link.created_at), 'MMM d, yyyy', { locale: dateLocale })}
                     </div>
                   </TableCell>
+
                   <TableCell>
                     {link.expires_at 
                       ? format(new Date(link.expires_at), 'MMM d, yyyy', { locale: dateLocale })
@@ -285,6 +377,18 @@ export function BookingLinksManager() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
+                      {link.active && !link.is_canonical && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setCanonical.mutate(link.id)}
+                          disabled={setCanonical.isPending}
+                          title={t('admin.bookingLinks.markCanonical', 'Marcar como canónico') as string}
+                          aria-label={t('admin.bookingLinks.markCanonical', 'Marcar como canónico') as string}
+                        >
+                          <Star className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      )}
                       {link.active && (
                         <Button
                           variant="ghost"
@@ -295,6 +399,7 @@ export function BookingLinksManager() {
                           <Trash2 className="h-4 w-4 text-muted-foreground" />
                         </Button>
                       )}
+
                       {!link.active && (
                         <Button
                           variant="ghost"
