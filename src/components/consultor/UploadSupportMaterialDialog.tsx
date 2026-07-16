@@ -54,6 +54,7 @@ export function UploadSupportMaterialDialog({
   const [stage, setStage] = useState<string>('');
   const [tags, setTags] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [attachToProposal, setAttachToProposal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const reset = () => {
