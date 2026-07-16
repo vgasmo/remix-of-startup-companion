@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Target, Clock, X, Plus, DollarSign, CalendarDays, TrendingUp, Tag, Briefcase, Calendar, FileText, ExternalLink, Lock } from 'lucide-react';
+import { Target, Clock, X, Plus, DollarSign, CalendarDays, TrendingUp, Tag, Briefcase, Calendar, FileText, ExternalLink, Lock, Send } from 'lucide-react';
+import { SendProposalDialog } from '@/components/crm/SendProposalDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
