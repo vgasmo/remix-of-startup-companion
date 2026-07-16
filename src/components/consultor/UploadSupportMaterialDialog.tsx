@@ -65,6 +65,7 @@ export function UploadSupportMaterialDialog({
     setStage('');
     setTags('');
     setFile(null);
+    setAttachToProposal(false);
   };
 
   const handleSubmit = async () => {
