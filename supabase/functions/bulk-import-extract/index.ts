@@ -88,6 +88,16 @@ Deno.serve(async (req) => {
     }
     if (!isAdmin) return jsonResponse({ error: "Forbidden" }, 403);
 
+    // Server-side Data Import V2 feature gate + reconciler emergency stop
+    const { data: v2Setting } = await admin.from("system_settings").select("value").eq("key", "data_import_v2.enabled").maybeSingle();
+    if (((v2Setting?.value ?? {}) as { enabled?: boolean }).enabled !== true) {
+      return jsonResponse({ error: "data_import_v2_disabled", message: "Data Import V2 is disabled by server-side control." }, 423);
+    }
+    const { data: stopSetting } = await admin.from("system_settings").select("value").eq("key", "reconciler.emergency_stop").maybeSingle();
+    if (((stopSetting?.value ?? {}) as { enabled?: boolean }).enabled === true) {
+      return jsonResponse({ error: "emergency_stop", message: "Import pipeline emergency stop engaged." }, 423);
+    }
+
     const body = await req.json();
     const rowId = body?.row_id as string | undefined;
     if (!rowId) return jsonResponse({ error: "row_id required" }, 400);
