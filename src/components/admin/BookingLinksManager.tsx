@@ -212,6 +212,13 @@ export function BookingLinksManager() {
   return (
     <>
     <ConfirmDialog {...dialogProps} />
+    <UtmBuilderDialog
+      open={utmDialogUrl !== null}
+      onOpenChange={(open) => { if (!open) setUtmDialogUrl(null); }}
+      baseUrl={utmDialogUrl ?? ''}
+      suggestedCampaign={labelInput || 'first-contact'}
+    />
+
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
