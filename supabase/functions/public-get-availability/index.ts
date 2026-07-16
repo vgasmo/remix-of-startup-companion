@@ -7,6 +7,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { addDays, format } from "https://esm.sh/date-fns@3.6.0";
 import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
+import { resolveFirstContactRoute, NoRouteError } from '../_shared/first-contact-routing.ts';
 
 interface TimeSlot {
   date: string;
