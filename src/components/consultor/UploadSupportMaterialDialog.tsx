@@ -218,6 +218,35 @@ export function UploadSupportMaterialDialog({
               </p>
             )}
           </div>
+
+          <div className="flex items-start gap-2 rounded-md border p-3 bg-muted/30">
+            <input
+              type="checkbox"
+              id="attach-to-proposal"
+              className="mt-1 h-4 w-4 accent-primary"
+              checked={attachToProposal}
+              onChange={(e) => setAttachToProposal(e.target.checked)}
+              disabled={!programId}
+            />
+            <div className="grid gap-1">
+              <Label htmlFor="attach-to-proposal" className="text-sm font-medium">
+                {t('consultorTools.upload.attachToProposal', {
+                  defaultValue: 'Anexar à proposta comercial (CRM)',
+                })}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {programId
+                  ? t('consultorTools.upload.attachToProposalHint', {
+                      defaultValue:
+                        'Este documento aparece pré-selecionado ao enviar propostas para leads deste programa.',
+                    })
+                  : t('consultorTools.upload.attachToProposalNeedsProgram', {
+                      defaultValue:
+                        'Escolha um programa acima para permitir anexar automaticamente às propostas.',
+                    })}
+              </p>
+            </div>
+          </div>
         </div>
 
         <DialogFooter>
