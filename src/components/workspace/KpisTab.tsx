@@ -115,8 +115,10 @@ function useAutosave(
           return next;
         });
       }, 2000);
+      return true;
     } catch {
-      // Silent fail for autosave — user still has data in state
+      // B1: report failure so callers (handleMarkCheckin) don't wipe unsaved values.
+      return false;
     } finally {
       setSavingKpis(prev => {
         const next = new Set(prev);
@@ -327,10 +329,13 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
   };
 
   const handleMarkCheckin = async () => {
-    // Save any pending edits first
+    // B1: save pending edits and abort if any fail — never claim success while
+    // silently losing the founder's values.
     const pendingKpiIds = Object.keys(editedValues);
-    for (const kpiId of pendingKpiIds) {
-      await saveKpi(kpiId);
+    const results = await Promise.all(pendingKpiIds.map((kpiId) => saveKpi(kpiId)));
+    if (results.some((ok) => ok === false)) {
+      notify.error(t('kpis.failedToSave'));
+      return;
     }
 
     try {

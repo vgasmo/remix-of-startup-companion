@@ -153,6 +153,13 @@ export interface Session {
   decisions: string | null;
   location: string | null;
   join_url: string | null;
+  status: string;
+  primary_consultant_id: string | null;
+  session_template_id: string | null;
+  session_type: string | null;
+  outlook_event_id?: string | null;
+  outlook_sync_status?: string | null;
+  outlook_synced_at?: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -190,7 +197,10 @@ export function useSessions(workspaceId: string | undefined) {
       
       const { data: sessions, error } = await supabase
         .from('sessions')
-        .select('id, workspace_id, title, scheduled_at, duration, agenda, notes, decisions, location, join_url, created_by, created_at, updated_at, source, ai_summary, ai_decisions, ai_risks, ai_action_suggestions, ai_kpi_prompts, ai_generated_at, ai_generated_by, raw_transcript, session_type')
+        // B4: status/primary_consultant_id/session_template_id/outlook_* are required
+        // by the UI (completed badges, hide finish/cancel buttons on terminal sessions,
+        // sync indicators). Omitting them left status undefined everywhere.
+        .select('id, workspace_id, title, scheduled_at, duration, agenda, notes, decisions, location, join_url, status, primary_consultant_id, session_template_id, outlook_event_id, outlook_sync_status, outlook_synced_at, created_by, created_at, updated_at, source, ai_summary, ai_decisions, ai_risks, ai_action_suggestions, ai_kpi_prompts, ai_generated_at, ai_generated_by, raw_transcript, session_type')
         .eq('workspace_id', workspaceId)
         .order('scheduled_at', { ascending: false })
         .limit(200);
@@ -719,6 +729,10 @@ export function useCreateActionItem(workspaceId: string) {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['workspace-actions', workspaceId] });
+      // M9: MilestonesActionsTab / OneThingToday / FounderDashboard read
+      // ['action-items', workspaceId] — without invalidating it a newly created
+      // action stays missing until the tab remounts.
+      queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
       if (variables.session_id) {
         queryClient.invalidateQueries({ queryKey: ['session-action-items', variables.session_id] });
       }

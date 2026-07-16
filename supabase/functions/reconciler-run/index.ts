@@ -167,7 +167,10 @@ Deno.serve(async (req) => {
       for (const r of rows ?? []) {
         if (!authorized.has(r.id as string)) { skipped++; results.push({ row_id: r.id, skipped: 'not_authorized' }); continue; }
         const key = await idemKey(r.id as string);
-        const { data: outcome, error: rpcErr } = await sbSvc.rpc('reconciler_commit_row', {
+        // B9: reconciler_commit_row / reconcile_active_customer gate on
+        // has_role(auth.uid(),'admin'), which is NULL under service-role.
+        // Call via the caller's JWT client (admin already verified at :66-72).
+        const { data: outcome, error: rpcErr } = await sbUser.rpc('reconciler_commit_row', {
           p_row_id: r.id, p_expected_plan_hash: body.expected_plan_hash, p_idempotency_key: key,
         });
         if (rpcErr) { errored++; results.push({ row_id: r.id, error: rpcErr.message }); continue; }
@@ -240,7 +243,8 @@ Deno.serve(async (req) => {
         service_name: serviceName,
       };
 
-      const { data: staging, error: rpcErr } = await sbSvc.rpc('reconcile_active_customer', {
+      // B9: see reconciler_commit_row note above — RPC checks auth.uid() role.
+      const { data: staging, error: rpcErr } = await sbUser.rpc('reconcile_active_customer', {
         p_batch_id: batchId,
         p_input: rpcInput,
         p_service_program_map: {},

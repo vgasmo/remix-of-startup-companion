@@ -111,7 +111,12 @@ export function useCreateFunnelItem() {
       return data;
     },
     onSuccess: () => {
+      // B2: Inbox reads ['crm-inbox'] and Pipeline reads ['crm-pipeline'];
+      // without invalidating them a newly created lead is invisible and users
+      // re-submit, creating duplicates.
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
       notify.success(t('crm.leadCreated'));
     },
     onError: (e: Error) => notify.error(e.message),
