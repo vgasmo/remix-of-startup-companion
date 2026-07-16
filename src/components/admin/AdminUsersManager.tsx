@@ -212,12 +212,26 @@ export function AdminUsersManager() {
         <p className="text-sm text-muted-foreground">{t('admin.userManagement.description')}</p>
       </div>
 
-      <Input 
-        placeholder={t('admin.userManagement.searchPlaceholder')} 
-        value={searchTerm} 
-        onChange={e => setSearchTerm(e.target.value)}
-        className="max-w-md"
-      />
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Input
+          placeholder={t('admin.userManagement.searchPlaceholder')}
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className="max-w-md"
+        />
+        <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as typeof roleFilter)}>
+          <SelectTrigger className="w-full sm:w-56">
+            <SelectValue placeholder={t('admin.userManagement.filterByRole', { defaultValue: 'Filtrar por tipo' })} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('admin.userManagement.allRoles', { defaultValue: 'Todos os tipos' })}</SelectItem>
+            {ROLES.map(r => (
+              <SelectItem key={r} value={r}>{getRoleLabel(r)}</SelectItem>
+            ))}
+            <SelectItem value="none">{t('admin.userManagement.noRoleAssigned', { defaultValue: 'Sem função' })}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="space-y-3">
         {filteredProfiles.length === 0 ? (
