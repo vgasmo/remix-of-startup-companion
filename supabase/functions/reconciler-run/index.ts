@@ -122,9 +122,18 @@ Deno.serve(async (req) => {
       if (!body.batch_id || !body.expected_plan_hash) {
         return new Response(JSON.stringify({ error: 'invalid_input', message: 'batch_id and expected_plan_hash required' }), { status: 400, headers: jsonHeaders });
       }
+      if (allowlist.size > 0 && !allowlist.has(body.batch_id)) {
+        return new Response(JSON.stringify({ error: 'batch_not_allowlisted', batch_id: body.batch_id }),
+          { status: 423, headers: jsonHeaders });
+      }
       const authorized = new Set(body.commit_authorized_ids ?? []);
       if (authorized.size === 0) {
         return new Response(JSON.stringify({ error: 'commit_authorized_ids_required' }), { status: 400, headers: jsonHeaders });
+      }
+      if (Number.isFinite(canaryCap) && authorized.size > canaryCap) {
+        return new Response(JSON.stringify({
+          error: 'canary_cap_exceeded', authorized: authorized.size, canary_max_rows: canaryCap,
+        }), { status: 423, headers: jsonHeaders });
       }
 
       // Fetch all dry_run_ok rows in the batch, recompute plan_hash, compare.
