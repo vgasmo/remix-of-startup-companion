@@ -1,7 +1,7 @@
 
 # Data Import V2 + Reconciler Canary — Safe Activation
 
-Status: Phase A ✅ · Phase B ✅ · Phase C ⏳ · Phase D ✅ · Phase E ⏳ · Phase F ⏳
+Status: Phase A ✅ · Phase B ✅ · Phase C ✅ · Phase D ✅ · Phase E ⏳ · Phase F ⏳
 
 This is a multi-phase production-safety effort, not a flag flip. It must land as a sequence of reviewable migrations + edge-function/UI changes, each verified before the next.
 

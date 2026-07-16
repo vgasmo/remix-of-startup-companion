@@ -158,13 +158,28 @@ Deno.serve(async (req) => {
 
       const results: Array<Record<string, unknown>> = [];
       let committed = 0, skipped = 0, errored = 0;
+      // Deterministic idempotency key per (batch, row, plan_hash) so retries replay.
+      async function idemKey(rowId: string): Promise<string> {
+        const h = await sha256Hex(`${body.batch_id}:${rowId}:${body.expected_plan_hash}`);
+        // Format as UUID v4-ish from the hash
+        return `${h.slice(0,8)}-${h.slice(8,12)}-4${h.slice(13,16)}-8${h.slice(17,20)}-${h.slice(20,32)}`;
+      }
       for (const r of rows ?? []) {
         if (!authorized.has(r.id as string)) { skipped++; results.push({ row_id: r.id, skipped: 'not_authorized' }); continue; }
+        const key = await idemKey(r.id as string);
         const { data: outcome, error: rpcErr } = await sbSvc.rpc('reconciler_commit_row', {
-          p_row_id: r.id, p_expected_plan_hash: body.expected_plan_hash,
+          p_row_id: r.id, p_expected_plan_hash: body.expected_plan_hash, p_idempotency_key: key,
         });
         if (rpcErr) { errored++; results.push({ row_id: r.id, error: rpcErr.message }); continue; }
         committed++; results.push({ row_id: r.id, outcome });
+      }
+      if (errored > 0 && committed > 0) {
+        // Partial failure — surface an alert
+        await sbSvc.from('system_alerts').insert({
+          kind: 'reconciler_partial_failure',
+          severity: 'high',
+          payload: { batch_id: body.batch_id, committed, errored, skipped },
+        });
       }
 
       return new Response(JSON.stringify({
