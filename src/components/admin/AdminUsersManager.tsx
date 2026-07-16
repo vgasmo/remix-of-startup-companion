@@ -236,9 +236,21 @@ export function AdminUsersManager() {
             <SelectItem value="none">{t('admin.userManagement.noRoleAssigned', { defaultValue: 'Sem função' })}</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue placeholder={t('admin.userManagement.filterByStatus', { defaultValue: 'Filtrar por estado' })} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('admin.userManagement.allStatuses', { defaultValue: 'Todos os estados' })}</SelectItem>
+            <SelectItem value="pending">{t('admin.userManagement.statusPending', { defaultValue: 'Pendente' })}</SelectItem>
+            <SelectItem value="approved">{t('admin.userManagement.statusApproved', { defaultValue: 'Ativo' })}</SelectItem>
+            <SelectItem value="suspended">{t('admin.userManagement.statusSuspended', { defaultValue: 'Suspenso' })}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-3">
+
         {filteredProfiles.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
