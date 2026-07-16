@@ -10700,6 +10700,21 @@ export type Database = {
           workspace_id: string
         }[]
       }
+      ecosystem_aggregates_v2: {
+        Args: {
+          p_building_id?: string
+          p_has_startup_portugal?: boolean
+          p_health?: string
+          p_incubation_type_id?: string
+          p_modality?: string
+          p_owner_id?: string
+          p_program_id?: string
+          p_search?: string
+          p_stage?: string
+          p_tier?: string
+        }
+        Returns: Json
+      }
       ensure_dataroom_exists: {
         Args: { _workspace_id: string }
         Returns: string
@@ -10920,24 +10935,33 @@ export type Database = {
       }
       list_ecosystem_items_v2: {
         Args: {
+          p_building_id?: string
           p_cursor_activity?: string
           p_cursor_id?: string
           p_has_startup_portugal?: boolean
           p_health?: string
+          p_incubation_type_id?: string
+          p_modality?: string
           p_owner_id?: string
           p_page_size?: number
           p_program_id?: string
           p_search?: string
           p_stage?: string
+          p_tier?: string
         }
         Returns: {
+          building_id: string
+          building_name: string
           created_at: string
           funnel_item_id: string
           has_startup_portugal_status: boolean
           health_score: string
           id: string
+          incubation_type_id: string
+          incubation_type_name: string
           item_type: string
           last_activity_at: string
+          modality: string
           name: string
           next_cursor_activity: string
           next_cursor_id: string
@@ -10947,6 +10971,8 @@ export type Database = {
           priority_level: string
           program_id: string
           program_name: string
+          space_id: string
+          space_name: string
           stage: string
           startup_category: string
           startup_portugal_document_path: string
