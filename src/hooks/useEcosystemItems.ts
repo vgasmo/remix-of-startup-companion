@@ -58,10 +58,9 @@ interface Cursor {
 
 const PAGE_SIZE = 50;
 
-// Row → EcosystemItem mapper. v2 returns the same base columns as v1 plus
-// pagination markers, so client filters that rely on missing joins
-// (building/incubation_type/tags) still fall back to null — matching v1
-// behaviour so the UI does not regress.
+// Row → EcosystemItem mapper. v2 (post-2026-07 rewrite) exposes real joins
+// for incubation type, modality, building and space; previously these were
+// always null.
 function mapRow(r: Record<string, unknown>): EcosystemItem {
   return {
     id: r.id as string,
@@ -77,12 +76,12 @@ function mapRow(r: Record<string, unknown>): EcosystemItem {
     startup_category: (r.startup_category ?? null) as string | null,
     owner_id: (r.owner_id ?? null) as string | null,
     owner_name: (r.owner_name ?? null) as string | null,
-    space_id: null,
-    space_name: null,
-    building_id: null,
-    building_name: null,
-    incubation_type_id: null,
-    incubation_type_name: null,
+    space_id: (r.space_id ?? null) as string | null,
+    space_name: (r.space_name ?? null) as string | null,
+    building_id: (r.building_id ?? null) as string | null,
+    building_name: (r.building_name ?? null) as string | null,
+    incubation_type_id: (r.incubation_type_id ?? null) as string | null,
+    incubation_type_name: (r.incubation_type_name ?? null) as string | null,
     last_activity_at: (r.last_activity_at ?? null) as string | null,
     next_meeting_at: (r.next_meeting_at ?? null) as string | null,
     created_at: r.created_at as string,
