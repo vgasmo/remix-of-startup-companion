@@ -12,11 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { notify } from "@/lib/notify";
-import { Link2, Copy, Plus, Trash2, Calendar, ExternalLink } from 'lucide-react';
+import { Link2, Copy, Plus, Trash2, Calendar, ExternalLink, Star, Share2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useDateLocale } from '@/lib/dateLocale';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { UtmBuilderDialog } from './UtmBuilderDialog';
 
 interface BookingLink {
   id: string;
@@ -27,6 +28,8 @@ interface BookingLink {
   active: boolean;
   expires_at: string | null;
   created_at: string;
+  is_canonical: boolean;
+  label: string | null;
 }
 
 export function BookingLinksManager() {
