@@ -382,18 +382,23 @@ Deno.serve(async (req) => {
     // Follow-up staff_task (7 days).
     const followupOwner = item.owner_consultant_id || senderUserId;
     if (followupOwner) {
-      const due = new Date(Date.now() + FOLLOWUP_DAYS * 24 * 60 * 60 * 1000).toISOString();
+      const dueDate = new Date(Date.now() + FOLLOWUP_DAYS * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10);
       try {
         await admin.from('staff_tasks').insert({
           title: `Follow-up proposta — ${item.contact_name ?? item.contact_email}`,
           description: `Confirmar receção e responder a dúvidas sobre a proposta enviada em ${nowIso.slice(0, 10)}.`,
-          assigned_to: followupOwner,
-          due_at: due,
+          task_type: 'crm_followup',
+          assignee_id: followupOwner,
+          due_date: dueDate,
           priority: 'medium',
           status: 'open',
-          related_entity_type: 'funnel_item',
-          related_entity_id: item.id,
           created_by: senderUserId,
+          metadata: {
+            funnel_item_id: item.id,
+            kind: 'proposal_followup',
+          },
         });
       } catch (e) {
         console.warn('[send-commercial-proposal] staff_tasks insert failed', e);
