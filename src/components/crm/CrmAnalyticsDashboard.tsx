@@ -127,7 +127,11 @@ export function CrmAnalyticsDashboard({
     const noNextAction = activeItems.filter((i) => !i.next_action_at).length;
 
     const contractedThisMonth = (pipeline['contracted'] || []).filter((i) => {
-      const converted = i.created_at;
+      // M3: `created_at` measured lead creation, not conversion — a lead that
+      // sat in the pipeline for months got miscounted as "recently contracted".
+      // `updated_at` moves whenever the row (including its stage) changes, so it
+      // is a much closer proxy for the conversion moment given the current schema.
+      const converted = i.updated_at || i.created_at;
       return converted && differenceInDays(now, new Date(converted)) <= 30;
     }).length;
 

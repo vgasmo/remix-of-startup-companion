@@ -64,10 +64,25 @@ export function useSaveCrmView() {
       const filtersWithType = { ...params.filters, _viewType: params.viewType };
 
       if (params.isDefault) {
-        await supabase
+        // M7: previously cleared is_default on EVERY saved_filter for the user,
+        // wiping backoffice/ecosystem default views when setting a CRM default.
+        // Load only same-viewType rows and unset those.
+        const { data: existing, error: listErr } = await supabase
           .from('saved_filters')
-          .update({ is_default: false })
-          .eq('user_id', user.id);
+          .select('id, filters')
+          .eq('user_id', user.id)
+          .eq('is_default', true);
+        if (listErr) throw listErr;
+        const sameTypeIds = (existing || [])
+          .filter(f => (((f.filters as Record<string, unknown>)?._viewType || 'workspace') === params.viewType))
+          .map(f => f.id);
+        if (sameTypeIds.length > 0) {
+          const { error: clearErr } = await supabase
+            .from('saved_filters')
+            .update({ is_default: false })
+            .in('id', sameTypeIds);
+          if (clearErr) throw clearErr;
+        }
       }
 
       const { error } = await supabase

@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format, addDays, startOfDay } from 'date-fns';
+import { getDateLocale } from '@/lib/dateLocale';
 import {
   Search,
   Plus,
@@ -611,7 +612,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start">
                       <Calendar className="h-4 w-4 mr-2" />
-                      {selectedDate ? format(selectedDate, 'PPP') : t('sessions.pickDate', 'Pick a date')}
+                      {selectedDate ? format(selectedDate, 'PPP', { locale: getDateLocale() }) : t('sessions.pickDate', 'Pick a date')}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">

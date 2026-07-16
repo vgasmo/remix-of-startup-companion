@@ -103,8 +103,11 @@ export function useSubmitStartupChangeRequests() {
         requested_by: user.id,
         field_key: it.field_key,
         field_label: it.field_label,
-        current_value_json: (it.current_value ?? null) as any,
-        requested_value_json: (it.requested_value ?? null) as any,
+        // M1: requested_value_json is NOT NULL. When a founder clears a field
+        // we still send a jsonb payload (null-json marker) so the insert is
+        // accepted; consumers read this as "requested clear".
+        current_value_json: (it.current_value ?? { cleared: true }) as any,
+        requested_value_json: (it.requested_value ?? { cleared: true }) as any,
         justification: it.justification ?? args.justification ?? null,
         status: 'pending' as const,
       }));
