@@ -67,13 +67,22 @@ export function AdminUsersManager() {
   const filteredProfiles = useMemo(() => {
     const profileList = profiles?.data || [];
     if (!profileList.length) return [];
-    if (!searchTerm.trim()) return profileList;
-    const term = searchTerm.toLowerCase();
-    return profileList.filter(p =>
-      p.full_name?.toLowerCase().includes(term) ||
-      p.email.toLowerCase().includes(term)
-    );
-  }, [profiles, searchTerm]);
+    const term = searchTerm.trim().toLowerCase();
+    return profileList.filter(p => {
+      if (term && !(p.full_name?.toLowerCase().includes(term) || p.email.toLowerCase().includes(term))) {
+        return false;
+      }
+      if (roleFilter !== 'all') {
+        const rs = userRoles?.filter(r => r.user_id === p.id) || [];
+        if (roleFilter === 'none') {
+          if (rs.length > 0) return false;
+        } else if (!rs.some(r => r.role === roleFilter)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [profiles, searchTerm, roleFilter, userRoles]);
 
   // P4: paginate the user list — the admin org has hundreds of profiles and
   // rendering them all at once tanks React reconciliation on this route.
