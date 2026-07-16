@@ -92,6 +92,7 @@ export function UploadSupportMaterialDialog({
           .filter(Boolean),
         status: 'approved',
         external_links: [],
+        attach_to_proposal: attachToProposal,
       });
 
       // 2) Upload file to storage under <programId|global>/<material_id>/
