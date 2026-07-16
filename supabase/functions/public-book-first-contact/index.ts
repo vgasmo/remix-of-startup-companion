@@ -271,6 +271,14 @@ serve(async (req) => {
 
     const { token, slot, contact } = validation.data;
 
+    // Selected program comes from the routing step in PublicBooking.
+    // Values: null (single-option link), 'global' (Geral option), or a UUID.
+    const rawSelectedProgramId = (rawBody as { program_id?: unknown })?.program_id;
+    const selectedProgramId: string | null =
+      typeof rawSelectedProgramId === 'string' && rawSelectedProgramId !== '' && rawSelectedProgramId !== 'global'
+        ? rawSelectedProgramId
+        : null;
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
