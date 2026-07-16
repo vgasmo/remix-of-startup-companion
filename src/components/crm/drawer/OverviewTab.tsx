@@ -55,6 +55,7 @@ export function OverviewTab({
   const updateItem = useUpdateFunnelItem();
   const { data: incubationTypes } = useIncubationTypes();
   const { data: programs } = usePrograms();
+  const [proposalDialogOpen, setProposalDialogOpen] = useState(false);
 
   // Live contract pricing (source of truth) — replaces the "proposta comercial"
   // inputs whenever the lead is already linked to a startup_contracts row.
