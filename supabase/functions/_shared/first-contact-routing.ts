@@ -212,7 +212,7 @@ export async function resolveFirstContactRoute({
 
   const profile = await loadProfile(supabase, consultantId);
   if (!profile) throw new NoRouteError('consultant_profile_missing', { ...trace, consultant_id: consultantId });
-  if (profile.status !== 'active') throw new NoRouteError('consultant_inactive', { ...trace, consultant_id: consultantId });
+  if (!ACTIVE_ACCOUNT_STATUSES.has(profile.account_status)) throw new NoRouteError('consultant_inactive', { ...trace, consultant_id: consultantId, account_status: profile.account_status });
 
   let programName: string | null = null;
   if (effectiveProgramId) {
