@@ -54,6 +54,7 @@ export function UploadSupportMaterialDialog({
   const [stage, setStage] = useState<string>('');
   const [tags, setTags] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [attachToProposal, setAttachToProposal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const reset = () => {
@@ -64,6 +65,7 @@ export function UploadSupportMaterialDialog({
     setStage('');
     setTags('');
     setFile(null);
+    setAttachToProposal(false);
   };
 
   const handleSubmit = async () => {
@@ -90,6 +92,7 @@ export function UploadSupportMaterialDialog({
           .filter(Boolean),
         status: 'approved',
         external_links: [],
+        attach_to_proposal: attachToProposal,
       });
 
       // 2) Upload file to storage under <programId|global>/<material_id>/
@@ -214,6 +217,35 @@ export function UploadSupportMaterialDialog({
                 {file.name} • {(file.size / 1024 / 1024).toFixed(2)} MB
               </p>
             )}
+          </div>
+
+          <div className="flex items-start gap-2 rounded-md border p-3 bg-muted/30">
+            <input
+              type="checkbox"
+              id="attach-to-proposal"
+              className="mt-1 h-4 w-4 accent-primary"
+              checked={attachToProposal}
+              onChange={(e) => setAttachToProposal(e.target.checked)}
+              disabled={!programId}
+            />
+            <div className="grid gap-1">
+              <Label htmlFor="attach-to-proposal" className="text-sm font-medium">
+                {t('consultorTools.upload.attachToProposal', {
+                  defaultValue: 'Anexar à proposta comercial (CRM)',
+                })}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {programId
+                  ? t('consultorTools.upload.attachToProposalHint', {
+                      defaultValue:
+                        'Este documento aparece pré-selecionado ao enviar propostas para leads deste programa.',
+                    })
+                  : t('consultorTools.upload.attachToProposalNeedsProgram', {
+                      defaultValue:
+                        'Escolha um programa acima para permitir anexar automaticamente às propostas.',
+                    })}
+              </p>
+            </div>
           </div>
         </div>
 

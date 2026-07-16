@@ -18,6 +18,7 @@ export interface SupportMaterial {
   status: 'draft' | 'approved';
   owner_user_id: string | null;
   program_id: string | null;
+  attach_to_proposal: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -59,7 +60,7 @@ export function useSupportMaterials(filters?: {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as SupportMaterial[];
+      return (data ?? []) as unknown as SupportMaterial[];
     },
   });
 }
@@ -115,7 +116,7 @@ export function useSupportMaterial(id: string | undefined) {
         .eq('id', id)
         .maybeSingle();
       if (error) throw error;
-      return data as SupportMaterial | null;
+      return (data ?? null) as unknown as SupportMaterial | null;
     },
     enabled: !!id,
   });

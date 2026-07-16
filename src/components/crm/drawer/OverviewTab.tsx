@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Target, Clock, X, Plus, DollarSign, CalendarDays, TrendingUp, Tag, Briefcase, Calendar, FileText, ExternalLink, Lock } from 'lucide-react';
+import { Target, Clock, X, Plus, DollarSign, CalendarDays, TrendingUp, Tag, Briefcase, Calendar, FileText, ExternalLink, Lock, Send } from 'lucide-react';
+import { SendProposalDialog } from '@/components/crm/SendProposalDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -54,6 +55,7 @@ export function OverviewTab({
   const updateItem = useUpdateFunnelItem();
   const { data: incubationTypes } = useIncubationTypes();
   const { data: programs } = usePrograms();
+  const [proposalDialogOpen, setProposalDialogOpen] = useState(false);
 
   // Live contract pricing (source of truth) — replaces the "proposta comercial"
   // inputs whenever the lead is already linked to a startup_contracts row.
@@ -549,9 +551,35 @@ export function OverviewTab({
             >
               {t('crm.saveCommercialProposal', { defaultValue: 'Guardar proposta comercial' })}
             </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full h-8 text-xs"
+              onClick={() => setProposalDialogOpen(true)}
+              disabled={!item.contact_email}
+              title={
+                !item.contact_email
+                  ? t('crm.proposal.needsEmail', {
+                      defaultValue: 'Adicione um email de contacto para enviar a proposta.',
+                    })
+                  : undefined
+              }
+            >
+              <Send className="h-3.5 w-3.5 mr-1.5" />
+              {t('crm.proposal.sendButton', {
+                defaultValue: 'Enviar proposta por email',
+              })}
+            </Button>
           </div>
         </div>
       )}
+
+      <SendProposalDialog
+        open={proposalDialogOpen}
+        onOpenChange={setProposalDialogOpen}
+        item={item}
+      />
 
 
       {/* Booking Questionnaire Data */}
