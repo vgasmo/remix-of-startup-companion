@@ -40,6 +40,9 @@ export function BookingLinksManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<string>('');
   const [expiresInDays, setExpiresInDays] = useState<string>('30');
+  const [markCanonical, setMarkCanonical] = useState<boolean>(false);
+  const [labelInput, setLabelInput] = useState<string>('');
+  const [utmDialogUrl, setUtmDialogUrl] = useState<string | null>(null);
   const { confirm, dialogProps } = useConfirmDialog();
 
   // Fetch programs
