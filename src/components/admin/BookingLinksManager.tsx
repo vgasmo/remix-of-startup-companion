@@ -92,6 +92,16 @@ export function BookingLinksManager() {
         ? new Date(Date.now() + parseInt(expiresInDays) * 24 * 60 * 60 * 1000).toISOString()
         : null;
 
+      // If marking canonical, deactivate the previous canonical active link
+      // first so the partial unique index (only one active canonical) holds.
+      if (markCanonical) {
+        await supabase
+          .from('public_booking_links')
+          .update({ is_canonical: false })
+          .eq('is_canonical', true)
+          .eq('active', true);
+      }
+
       const { error } = await supabase
         .from('public_booking_links')
         .insert({
@@ -101,6 +111,8 @@ export function BookingLinksManager() {
           program_id: selectedProgram || null,
           expires_at: expiresAt,
           created_by: user.id,
+          is_canonical: markCanonical,
+          label: labelInput.trim() || null,
         });
 
       if (error) throw error;
@@ -111,17 +123,43 @@ export function BookingLinksManager() {
       const baseUrl = window.location.origin;
       const bookingUrl = `${baseUrl}/book/${token}`;
       navigator.clipboard.writeText(bookingUrl);
-      
+
       notify.success(
         t('admin.bookingLinkCreatedCopied', 'Link de reserva criado e copiado!'),
         { description: bookingUrl }
       );
-      
+
       setIsDialogOpen(false);
       setSelectedProgram('');
+      setMarkCanonical(false);
+      setLabelInput('');
     },
     onError: (error: Error) => {
       notify.error(t('admin.failedToCreateLink', { message: error.message }));
+    },
+  });
+
+  // Toggle canonical flag on an existing active link. Only one active
+  // canonical link can exist at a time; unset others first when promoting.
+  const setCanonical = useMutation({
+    mutationFn: async (linkId: string) => {
+      await supabase
+        .from('public_booking_links')
+        .update({ is_canonical: false })
+        .eq('is_canonical', true)
+        .eq('active', true);
+      const { error } = await supabase
+        .from('public_booking_links')
+        .update({ is_canonical: true })
+        .eq('id', linkId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['public-booking-links'] });
+      notify.success(t('admin.bookingLinks.canonicalSet', 'Link definido como canónico'));
+    },
+    onError: (error: Error) => {
+      notify.error(error.message);
     },
   });
 
