@@ -332,12 +332,15 @@ export function BookingLinksManager() {
           <Table>
             <TableHeader sticky>
               <TableRow>
+                <TableHead className="w-[36px]" aria-label="canonical" />
                 <TableHead>{t('common.program', 'Programa')}</TableHead>
+                <TableHead>{t('admin.bookingLinks.label', 'Nome')}</TableHead>
                 <TableHead>{t('common.created', 'Criado')}</TableHead>
                 <TableHead>{t('common.expires', 'Expira')}</TableHead>
                 <TableHead>{t('common.status', 'Estado')}</TableHead>
-                <TableHead className="w-[100px]">{t('common.actions', 'Ações')}</TableHead>
+                <TableHead className="w-[120px]">{t('common.actions', 'Ações')}</TableHead>
               </TableRow>
+
             </TableHeader>
             <TableBody>
               {bookingLinks.map(link => (
