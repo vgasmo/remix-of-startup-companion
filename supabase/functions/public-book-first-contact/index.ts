@@ -363,70 +363,97 @@ serve(async (req) => {
     }
 
 
-    // === DUPLICATE CHECK ===
-    // Only reuse an existing lead when it's still in the early commercial
-    // stages (new / first_contact_booked). If the previous journey already
-    // advanced beyond first contact, treat this booking as a fresh lead so it
-    // is visible to the consultant instead of being silently attached to an
-    // old row already deep in the pipeline.
-    const EARLY_STAGES = ['new', 'first_contact_booked'];
-    const { data: existingLead } = await supabase
-      .from("funnel_items")
-      .select("id, stage, contact_name")
-      .eq("contact_email", contact.email)
-      .in("stage", EARLY_STAGES)
-      .order("created_at", { ascending: false })
-      .limit(1);
+    // Deterministic idempotency key — repeated identical submissions (double clicks,
+    // retries) resolve to the same funnel item instead of creating duplicates.
+    const idempotencyKey = await deriveBookingIdempotencyKey(contact.email, slot.date, slot.time, token);
 
+    // Base booking metadata (structured — do NOT append to `notes` free text).
+    const bookingMetadata: Record<string, unknown> = {
+      idempotency_key: idempotencyKey,
+      booking_date: `${slot.date}T${slot.time}:00`,
+      slot_date: slot.date,
+      slot_time: slot.time,
+      timezone: 'Europe/Lisbon',
+      booking_source: 'public_form',
+      routing_decision: routingDecision,
+      consultant_id: consultantId,
+      consultant_email: consultantEmail,
+    };
+    if (contact.sector) bookingMetadata.sector = contact.sector;
+    if (contact.stage) bookingMetadata.startup_stage = contact.stage;
+    if (contact.referral_source) bookingMetadata.referral_source = contact.referral_source;
+    if (contact.has_team) bookingMetadata.has_team = contact.has_team;
+    if (contact.pitch_deck_path) bookingMetadata.pitch_deck_path = contact.pitch_deck_path;
+    if (contact.has_tech) bookingMetadata.has_tech = contact.has_tech;
+    if (contact.is_iies) bookingMetadata.is_iies = contact.is_iies;
+    if (contact.vertical) bookingMetadata.vertical = contact.vertical;
+    if (contact.help_expectation) bookingMetadata.help_expectation = contact.help_expectation;
+    if (contact.personal_intro) bookingMetadata.personal_intro = contact.personal_intro;
+
+    // === IDEMPOTENCY LOOKUP ===
+    // If we already committed this exact submission, reuse the row.
+    const { data: idemMatch } = await supabase
+      .from('funnel_items')
+      .select('id')
+      .eq('metadata_json->>idempotency_key', idempotencyKey)
+      .maybeSingle();
+
+    // === DUPLICATE CHECK ===
+    // Only reuse an existing lead when it's still in early commercial stages.
+    // Later-stage leads are preserved; a fresh row is created so the new booking
+    // is visible without silently mutating a converted deal.
+    const EARLY_STAGES = ['new', 'first_contact_booked'];
+    const { data: existingLead } = idemMatch
+      ? { data: null }
+      : await supabase
+          .from('funnel_items')
+          .select('id, stage, contact_name, metadata_json')
+          .eq('contact_email', contact.email)
+          .in('stage', EARLY_STAGES)
+          .order('created_at', { ascending: false })
+          .limit(1);
 
     let funnelItemId: string;
 
-    if (existingLead && existingLead.length > 0) {
-      // Update existing lead with new booking time
-      await supabase.from("funnel_items")
+    if (idemMatch?.id) {
+      funnelItemId = idemMatch.id;
+      // Nothing else to write — same submission already committed.
+    } else if (existingLead && existingLead.length > 0) {
+      const prev = existingLead[0];
+      const mergedMetadata = {
+        ...(prev.metadata_json as Record<string, unknown> ?? {}),
+        ...bookingMetadata,
+      };
+      await supabase.from('funnel_items')
         .update({
           first_contact_at: `${slot.date}T${slot.time}:00`,
-          stage: existingLead[0].stage === "new" ? "first_contact_booked" : existingLead[0].stage,
-          notes: `Reagendado em ${slot.date}. ${contact.message || ""}`.trim(),
+          stage: prev.stage === 'new' ? 'first_contact_booked' : prev.stage,
+          owner_consultant_id: consultantId,
+          program_id: programId,
           last_activity_at: new Date().toISOString(),
+          metadata_json: mergedMetadata,
         })
-        .eq("id", existingLead[0].id);
+        .eq('id', prev.id);
 
-      await supabase.from("funnel_events").insert({
-        funnel_item_id: existingLead[0].id,
-        event_type: "booking_rescheduled",
-        metadata: { date: slot.date, time: slot.time, source: "public_booking" },
+      await supabase.from('funnel_events').insert({
+        funnel_item_id: prev.id,
+        event_type: 'booking_rescheduled',
+        metadata: { date: slot.date, time: slot.time, source: 'public_booking', routing: routingDecision },
       });
 
-      funnelItemId = existingLead[0].id;
+      funnelItemId = prev.id;
     } else {
-      // === ORIGINAL: Create new funnel item (only if no existing lead) ===
-      // Build metadata from questionnaire fields
-      const bookingMetadata: Record<string, unknown> = {};
-      if (contact.sector) bookingMetadata.sector = contact.sector;
-      if (contact.stage) bookingMetadata.startup_stage = contact.stage;
-      if (contact.referral_source) bookingMetadata.referral_source = contact.referral_source;
-      if (contact.has_team) bookingMetadata.has_team = contact.has_team;
-      if (contact.pitch_deck_path) bookingMetadata.pitch_deck_path = contact.pitch_deck_path;
-      if (contact.has_tech) bookingMetadata.has_tech = contact.has_tech;
-      if (contact.is_iies) bookingMetadata.is_iies = contact.is_iies;
-      if (contact.vertical) bookingMetadata.vertical = contact.vertical;
-      if (contact.help_expectation) bookingMetadata.help_expectation = contact.help_expectation;
-      if (contact.personal_intro) bookingMetadata.personal_intro = contact.personal_intro;
-      bookingMetadata.booking_date = `${slot.date}T${slot.time}:00`;
-      bookingMetadata.booking_source = 'public_form';
-
       const { data: funnelItem, error: funnelError } = await supabase
-        .from("funnel_items")
+        .from('funnel_items')
         .insert({
-          stage: "first_contact_booked",
-          type: "lead",
+          stage: 'first_contact_booked',
+          type: 'lead',
           contact_name: contact.name,
           contact_email: contact.email,
           contact_phone: contact.phone || null,
           organization_name: contact.organization || null,
           notes: contact.message || null,
-          source: "public_booking",
+          source: 'public_booking',
           program_id: programId,
           owner_consultant_id: consultantId,
           first_contact_at: `${slot.date}T${slot.time}:00`,
@@ -437,12 +464,11 @@ serve(async (req) => {
 
       if (funnelError) throw funnelError;
 
-      // Log event
-      await supabase.from("funnel_events").insert({
+      await supabase.from('funnel_events').insert({
         funnel_item_id: funnelItem.id,
-        event_type: "created",
-        to_stage: "first_contact_booked",
-        metadata: { source: "public_booking", slot },
+        event_type: 'created',
+        to_stage: 'first_contact_booked',
+        metadata: { source: 'public_booking', slot, routing: routingDecision },
       });
 
       funnelItemId = funnelItem.id;
@@ -451,6 +477,8 @@ serve(async (req) => {
     // Create calendar event via Graph API if configured
     let teamsLink: string | null = null;
     let calendarEventId: string | null = null;
+    let calendarStatus: 'ok' | 'skipped' | 'failed' = 'skipped';
+    let calendarError: string | null = null;
 
     const credentials = await getGraphCredentials(supabase);
 
@@ -461,39 +489,48 @@ serve(async (req) => {
 
         calendarEventId = eventResult.eventId;
         teamsLink = eventResult.teamsLink;
+        calendarStatus = 'ok';
 
-        console.log("Created calendar event:", calendarEventId, "Teams link:", teamsLink);
-
-        if (teamsLink || calendarEventId) {
-          await supabase
-            .from("funnel_items")
-            .update({
-              notes: `${contact.message || ''}\n\n---\nTeams Link: ${teamsLink || 'N/A'}\nCalendar Event ID: ${calendarEventId || 'N/A'}`.trim(),
-            })
-            .eq("id", funnelItemId);
-        }
+        // Store calendar output in structured metadata — never overwrite `notes` free text.
+        await supabase
+          .from('funnel_items')
+          .update({
+            metadata_json: {
+              ...bookingMetadata,
+              calendar_event_id: calendarEventId,
+              teams_url: teamsLink,
+              calendar_status: 'ok',
+            },
+          })
+          .eq('id', funnelItemId);
       } catch (graphError) {
-        console.error("Graph API error:", graphError);
-        // Fail-closed: when strict_calendar_validation is on, a Graph failure
-        // rolls back the booking so we never confirm a slot the calendar didn't accept.
+        calendarStatus = 'failed';
+        calendarError = graphError instanceof Error ? graphError.message : 'unknown';
+        console.error('Graph API error:', graphError);
+        await supabase.from('funnel_items').update({
+          metadata_json: { ...bookingMetadata, calendar_status: 'failed', calendar_error: calendarError },
+        }).eq('id', funnelItemId);
         if (strictCalendarValidation) {
-          await supabase.from("funnel_items").delete().eq("id", funnelItemId);
           return corsJsonResponse({
             success: false,
-            error: "Calendar validation failed. Please try again or contact us directly.",
+            funnelItemId,
+            calendar_status: calendarStatus,
+            calendar_error: calendarError,
+            error: 'Calendar validation failed. Please try again or contact us directly.',
           }, req, 502);
         }
       }
     } else if (strictCalendarValidation) {
-      // Flag on but Graph not configured → fail-closed (no silent bookings).
-      await supabase.from("funnel_items").delete().eq("id", funnelItemId);
       return corsJsonResponse({
         success: false,
-        error: "Calendar validation is required but not configured. Please contact us directly.",
+        funnelItemId,
+        calendar_status: 'skipped',
+        error: 'Calendar validation is required but not configured. Please contact us directly.',
       }, req, 503);
     } else {
-      console.log("Graph API not configured, skipping calendar event creation");
+      console.log('Graph API not configured, skipping calendar event creation');
     }
+
 
     // === Internal in-app notification for the consultant (visible in CRM) ===
     try {
