@@ -49,6 +49,7 @@ export function AdminUsersManager() {
   const removeWorkspaceUser = useRemoveWorkspaceUser();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<'all' | Role | 'none'>('all');
   const [addRoleDialog, setAddRoleDialog] = useState<{ userId: string; userName: string } | null>(null);
   const [selectedRole, setSelectedRole] = useState<Role>('consultor');
   const [deleteRoleTarget, setDeleteRoleTarget] = useState<{ id: string; role: string } | null>(null);
