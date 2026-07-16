@@ -154,7 +154,7 @@ export async function resolveFirstContactRoute({
   //    (regardless of routing rules). This is the "fixed_owner" mode of the plan.
   if (link?.owner_consultant_id) {
     const profile = await loadProfile(supabase, link.owner_consultant_id);
-    if (!profile || profile.status !== 'active') {
+    if (!profile || !ACTIVE_ACCOUNT_STATUSES.has(profile.account_status)) {
       throw new NoRouteError('link_owner_inactive', trace);
     }
     let programName: string | null = null;
