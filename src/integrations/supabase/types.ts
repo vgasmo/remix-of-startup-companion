@@ -5742,6 +5742,33 @@ export type Database = {
           },
         ]
       }
+      reconciler_idempotency: {
+        Row: {
+          batch_id: string
+          created_at: string
+          idempotency_key: string
+          request_hash: string
+          result: Json
+          row_id: string
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string
+          idempotency_key: string
+          request_hash: string
+          result: Json
+          row_id: string
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string
+          idempotency_key?: string
+          request_hash?: string
+          result?: Json
+          row_id?: string
+        }
+        Relationships: []
+      }
       relationship_recaps: {
         Row: {
           created_at: string
@@ -10965,10 +10992,19 @@ export type Database = {
         Returns: Json
       }
       reconcile_rollback: { Args: { p_row_id: string }; Returns: Json }
-      reconciler_commit_row: {
-        Args: { p_expected_plan_hash: string; p_row_id: string }
-        Returns: Json
-      }
+      reconciler_commit_row:
+        | {
+            Args: { p_expected_plan_hash: string; p_row_id: string }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_expected_plan_hash: string
+              p_idempotency_key?: string
+              p_row_id: string
+            }
+            Returns: Json
+          }
       reconciler_write_enabled: { Args: never; Returns: boolean }
       reject_startup_change_request: {
         Args: { _notes?: string; _request_id: string }
