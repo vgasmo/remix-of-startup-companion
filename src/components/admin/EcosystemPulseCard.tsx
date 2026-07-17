@@ -17,10 +17,12 @@ interface Metric {
   value: number | string;
   icon: any;
   tone: string;
+  href?: string;
 }
 
 function EcosystemPulseCardInner() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-ecosystem-pulse'],
