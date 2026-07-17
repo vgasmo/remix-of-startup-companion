@@ -188,39 +188,82 @@ export function UnifiedSmartInbox({
           ) : (
             <ScrollArea  viewportClassName="max-h-[280px]">
               <div className="space-y-1.5">
-                {filteredItems.map(item => (
+                {filteredItems.map(item => {
+                  const hasBreakdown = !!(item.breakdown && item.breakdown.length > 0);
+                  const isExpanded = expandedIds.has(item.id);
+                  return (
                   <div
                     key={item.id}
                     className={cn(
-                      'group flex items-start gap-3 p-3 rounded-xl border border-border/40 border-l-2 bg-card transition-all duration-200',
-                      'hover:bg-muted/40 hover:shadow-sm cursor-pointer',
+                      'rounded-xl border border-border/40 border-l-2 bg-card transition-all duration-200',
                       priorityBorder[item.priority],
                       !item.read && 'bg-primary/[0.02]'
                     )}
-                    {...clickableProps(() => { if (item.href) navigate(item.href); })}
                   >
-
-                    <div className="mt-0.5 shrink-0">{item.icon}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground leading-tight">{item.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.subtitle}</p>
+                    <div
+                      className={cn(
+                        'group flex items-start gap-3 p-3 hover:bg-muted/40 hover:shadow-sm cursor-pointer rounded-xl'
+                      )}
+                      {...clickableProps(() => {
+                        if (hasBreakdown) {
+                          setExpandedIds(prev => {
+                            const n = new Set(prev);
+                            n.has(item.id) ? n.delete(item.id) : n.add(item.id);
+                            return n;
+                          });
+                        } else if (item.href) {
+                          navigate(item.href);
+                        }
+                      })}
+                    >
+                      <div className="mt-0.5 shrink-0">{item.icon}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground leading-tight">{item.title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.subtitle}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-[10px] text-muted-foreground whitespace-nowrap">{item.timestamp}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDismiss(item.id);
+                          }}
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[10px] text-muted-foreground whitespace-nowrap">{item.timestamp}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDismiss(item.id);
-                        }}
-                      >
-                        <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
-                      </Button>
-                    </div>
+                    {hasBreakdown && isExpanded && (
+                      <div className="border-t border-border/40 px-3 py-2 space-y-1">
+                        {item.breakdown!.map(b => (
+                          <div
+                            key={b.id}
+                            className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-md hover:bg-muted/60 cursor-pointer group/row"
+                            {...clickableProps(() => navigate(b.href))}
+                          >
+                            <span className="text-xs text-foreground truncate flex-1">{b.label}</span>
+                            <Badge variant="secondary" className="h-5 text-[10px]">
+                              {b.count}
+                            </Badge>
+                            <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover/row:opacity-100 transition-opacity" />
+                          </div>
+                        ))}
+                        {item.href && (
+                          <button
+                            className="text-[11px] text-primary hover:underline w-full text-left px-2 pt-1"
+                            onClick={(e) => { e.stopPropagation(); navigate(item.href!); }}
+                          >
+                            {t('inbox.viewAll', { defaultValue: 'Ver todas →' })}
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </ScrollArea>
           )}
