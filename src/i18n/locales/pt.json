@@ -7269,6 +7269,8 @@
     }
   },
   "publicBooking": {
+    "recordingConsentLabel": "Autorizo a gravação e transcrição desta reunião para efeitos de apoio, registo interno e melhoria do serviço (RGPD).",
+    "recordingConsentRequired": "Precisa de autorizar a gravação e transcrição para reservar.",
     "backToBook": "Voltar To Reservar",
     "backToSite": "Voltar ao site",
     "bookFirstMeeting": "Marcar Primeira Reunião",
