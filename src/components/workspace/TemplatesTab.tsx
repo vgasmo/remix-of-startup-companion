@@ -237,18 +237,20 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
           <FileText className="h-4 w-4" />
           {t('templates.title')}
         </TabsTrigger>
-        {canvasTemplates.map(({ type, template, icon }) => 
-          template && (
+        {canvasTemplates.map(({ type, template, icon }) => {
+          if (!template) return null;
+          const isHidden = hiddenTools.includes(type);
+          if (isHidden && !isStaff) return null;
+          return (
             <TabsTrigger key={type} value={type} className="gap-2">
               {icon}
               {getCanvasTabLabel(type)}
+              {isHidden && isStaff && (
+                <EyeOff className="h-3 w-3 text-muted-foreground" aria-label={t('templates.hiddenFromFounder', 'Oculto para o founder')} />
+              )}
             </TabsTrigger>
-          )
-        )}
-        <TabsTrigger value="calculator" className="gap-2">
-          <Calculator className="h-4 w-4" />
-          {t('templates.unitEconomics', 'Unit Economics')}
-        </TabsTrigger>
+          );
+        })}
       </TabsList>
 
       <TabsContent value="calculator">
