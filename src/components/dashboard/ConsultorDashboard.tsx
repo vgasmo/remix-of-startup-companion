@@ -218,6 +218,21 @@ function ConsultorDashboardInner({ workspaces, isLoading, programsCount }: Consu
             ? `/workspace/${criticalActions[0].id}?tab=milestones-actions&sub=actions`
             : '/my-workspaces?filter=attention'
         }
+        overdueBreakdown={criticalActions.map(w => ({
+          id: w.id,
+          label: w.startup?.name ?? '—',
+          count: w.overdueActionsCount,
+          href: `/workspace/${w.id}?tab=milestones-actions&sub=actions`,
+        }))}
+        missingKpiBreakdown={(workspaces || [])
+          .filter((w: any) => !w.hasCurrentMonthKpi)
+          .slice(0, 8)
+          .map((w: any) => ({
+            id: w.id,
+            label: w.startup?.name ?? '—',
+            count: 1,
+            href: `/workspace/${w.id}?tab=kpis`,
+          }))}
       />
       <WorkQueuePanel compact={false} />
 
