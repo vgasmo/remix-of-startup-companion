@@ -3426,7 +3426,7 @@
       "coldDesc": "Needs re-engagement or qualification",
       "hot": "Hot Lead",
       "hotDesc": "High engagement, ready to progress",
-      "title": "Lead Score",
+      "title": "Engagement Readiness",
       "warm": "Warm Lead",
       "warmDesc": "Good potential, needs nurturing"
     },
