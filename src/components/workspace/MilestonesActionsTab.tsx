@@ -212,25 +212,27 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
   const handleMilestoneStatusChange = async (milestone: Milestone, status: MilestoneStatus) => {
     if (!canWrite) return;
     try {
-      // Cascade: closing a gate/milestone closes all its non-terminal actions.
       if (status === 'completed') {
-        const children = (actionItems || []).filter(
-          a => a.milestone_id === milestone.id &&
-               a.status !== 'completed' &&
-               a.status !== 'cancelled',
-        );
-        if (children.length > 0) {
-          await bulkUpdate.mutateAsync({ ids: children.map(c => c.id), status: 'completed' });
+        const { data: closedCount, error } = await supabase.rpc('complete_milestone_with_actions', {
+          _workspace_id: workspaceId,
+          _milestone_id: milestone.id,
+        });
+        if (error) throw error;
+        if ((closedCount ?? 0) > 0) {
           notify.success(
             t('milestones.cascadeClosed', {
-              count: children.length,
-              defaultValue: `${children.length} ação(ões) fechada(s) com o gate`,
+              count: closedCount,
+              defaultValue: `${closedCount} ação(ões) fechada(s) com o gate`,
             }),
           );
         }
+      } else {
+        await updateMilestone.mutateAsync({ id: milestone.id, status });
       }
 
-      await updateMilestone.mutateAsync({ id: milestone.id, status });
+      queryClient.invalidateQueries({ queryKey: ['milestones', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['workspace-actions', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-tab-badges', workspaceId] });
       // Confetti is handled by useMilestones' onSuccess (single source of truth).
     } catch { notify.error(t('milestones.failedToUpdate')); }
