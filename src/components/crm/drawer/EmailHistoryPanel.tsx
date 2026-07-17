@@ -55,6 +55,7 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
   const { t, i18n } = useTranslation();
   const language = i18n.language.startsWith('pt') ? 'pt' : 'en';
   const [showAll, setShowAll] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { data: emails, isLoading } = useQuery({
     queryKey: ['crm-emails', funnelItemId, workspaceId],
