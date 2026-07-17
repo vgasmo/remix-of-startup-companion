@@ -248,17 +248,17 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <DialogTitle>{session.title}</DialogTitle>
+            <div className="flex flex-col gap-3">
+              <div className="min-w-0">
+                <DialogTitle className="break-words">{session.title}</DialogTitle>
                 <DialogDescription>
                   {format(new Date(session.scheduled_at), 'EEEE, d MMMM yyyy', { locale })} · {format(new Date(session.scheduled_at), 'HH:mm', { locale })}
                   {session.duration && ` • ${session.duration} min`}
                 </DialogDescription>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex flex-wrap items-center gap-2">
                 <Button variant="outline" size="sm" type="button" onClick={handleExportICS}
                   title={t('sessions.exportIcs', { defaultValue: 'Exportar para calendário (.ics)' })}>
                   <Download className="h-4 w-4 mr-1" />.ics
@@ -339,6 +339,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
               </div>
             </div>
           </DialogHeader>
+
 
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
