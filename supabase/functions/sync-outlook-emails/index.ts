@@ -525,37 +525,51 @@ async function syncConsultantEmails(
       log.warn(`Hit max pages (${MAX_PAGES}) for ${consultantEmail}, some older emails may be pending`);
     }
 
-    // Update sync status
+    // Success: reset consecutive_failures counter, clear error, record runtime.
+    const nowIso = new Date().toISOString();
     await supabaseAdmin.from('email_sync_status').upsert({
       consultant_user_id: consultantUserId,
       provider: 'outlook',
       mailbox_email: consultantEmail,
       sync_state: 'idle',
-      last_success_at: new Date().toISOString(),
-      last_sync_at: new Date().toISOString(),
+      last_success_at: nowIso,
+      last_sync_at: nowIso,
       last_sync_error: null,
       emails_processed: processed,
       emails_logged: logged,
       emails_unmatched: unmatched,
       emails_ignored: ignored,
-      updated_at: new Date().toISOString(),
+      consecutive_failures: 0,
+      updated_at: nowIso,
     }, { onConflict: 'consultant_user_id,provider' });
 
-    log.info('Email sync complete', { consultant: consultantEmail, processed, logged, unmatched, ignored, duplicates });
+    log.info('email_sync_ok', { consultant: consultantEmail, processed, logged, unmatched, ignored, duplicates });
 
     return { processed, logged, unmatched, ignored, duplicates };
   } catch (err) {
-    log.error(`Sync error for ${consultantEmail}`, err);
+    const errMsg = safeErrorMessage(err);
+    log.error(`email_sync_failed for ${consultantEmail}`, err);
+
+    // Read current failure count and bump. Non-atomic but acceptable — a single
+    // consultant runs sequentially per invocation.
+    const { data: prev } = await supabaseAdmin
+      .from('email_sync_status')
+      .select('consecutive_failures')
+      .eq('consultant_user_id', consultantUserId)
+      .eq('provider', 'outlook')
+      .maybeSingle();
+    const nextFailures = (prev?.consecutive_failures ?? 0) + 1;
 
     await supabaseAdmin.from('email_sync_status').upsert({
       consultant_user_id: consultantUserId,
       provider: 'outlook',
       sync_state: 'error',
-      last_sync_error: safeErrorMessage(err),
+      last_sync_error: errMsg,
+      consecutive_failures: nextFailures,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'consultant_user_id,provider' }).catch(() => {});
 
-    return { processed: 0, logged: 0, unmatched: 0, ignored: 0, duplicates: 0, error: safeErrorMessage(err) };
+    return { processed: 0, logged: 0, unmatched: 0, ignored: 0, duplicates: 0, error: errMsg };
   }
 }
 
