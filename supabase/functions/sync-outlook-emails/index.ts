@@ -560,14 +560,16 @@ async function syncConsultantEmails(
       .maybeSingle();
     const nextFailures = (prev?.consecutive_failures ?? 0) + 1;
 
-    await supabaseAdmin.from('email_sync_status').upsert({
-      consultant_user_id: consultantUserId,
-      provider: 'outlook',
-      sync_state: 'error',
-      last_sync_error: errMsg,
-      consecutive_failures: nextFailures,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'consultant_user_id,provider' }).catch(() => {});
+    try {
+      await supabaseAdmin.from('email_sync_status').upsert({
+        consultant_user_id: consultantUserId,
+        provider: 'outlook',
+        sync_state: 'error',
+        last_sync_error: errMsg,
+        consecutive_failures: nextFailures,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'consultant_user_id,provider' });
+    } catch { /* best-effort */ }
 
     return { processed: 0, logged: 0, unmatched: 0, ignored: 0, duplicates: 0, error: errMsg };
   }
@@ -611,15 +613,16 @@ Deno.serve(async (req) => {
 
       const finalizeRun = async (patch: Record<string, unknown>) => {
         if (!runId) return;
-        await supabaseAdmin
-          .from('email_sync_runs')
-          .update({
-            finished_at: new Date().toISOString(),
-            duration_ms: Date.now() - runStart,
-            ...patch,
-          })
-          .eq('id', runId)
-          .catch(() => {});
+        try {
+          await supabaseAdmin
+            .from('email_sync_runs')
+            .update({
+              finished_at: new Date().toISOString(),
+              duration_ms: Date.now() - runStart,
+              ...patch,
+            })
+            .eq('id', runId);
+        } catch { /* best-effort */ }
       };
 
       log.info('email_sync_run_started', { runId, triggeredBy });
