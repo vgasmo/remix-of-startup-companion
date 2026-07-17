@@ -220,7 +220,7 @@ function ConsultorDashboardInner({ workspaces, isLoading, programsCount }: Consu
         }
         overdueBreakdown={criticalActions.map(w => ({
           id: w.id,
-          label: w.name,
+          label: w.startup?.name ?? '—',
           count: w.overdueActionsCount,
           href: `/workspace/${w.id}?tab=milestones-actions&sub=actions`,
         }))}
@@ -229,7 +229,7 @@ function ConsultorDashboardInner({ workspaces, isLoading, programsCount }: Consu
           .slice(0, 8)
           .map((w: any) => ({
             id: w.id,
-            label: w.name,
+            label: w.startup?.name ?? '—',
             count: 1,
             href: `/workspace/${w.id}?tab=kpis`,
           }))}
