@@ -23,6 +23,13 @@ import { cn } from '@/lib/utils';
 
 type InboxCategory = 'all' | 'actions' | 'mentorship' | 'insights';
 
+export interface InboxItemBreakdown {
+  id: string;
+  label: string;
+  count: number;
+  href: string;
+}
+
 interface InboxItem {
   id: string;
   category: InboxCategory;
@@ -33,6 +40,7 @@ interface InboxItem {
   priority: 'critical' | 'high' | 'medium' | 'low';
   href?: string;
   read: boolean;
+  breakdown?: InboxItemBreakdown[];
 }
 
 interface UnifiedSmartInboxProps {
@@ -43,6 +51,9 @@ interface UnifiedSmartInboxProps {
   overdueHref?: string;
   pendingSessionsHref?: string;
   missingKpiHref?: string;
+  overdueBreakdown?: InboxItemBreakdown[];
+  pendingSessionsBreakdown?: InboxItemBreakdown[];
+  missingKpiBreakdown?: InboxItemBreakdown[];
 }
 
 export function UnifiedSmartInbox({
