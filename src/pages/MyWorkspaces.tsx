@@ -39,7 +39,7 @@ import { OnboardingTour } from '@/components/ui/OnboardingTour';
 import { SavedFiltersDropdown } from '@/components/workspace/SavedFiltersDropdown';
 import { useWorkspaces, usePrograms, useMyPendingWorkspaces, WorkspaceWithDetails, SortOption, WorkspaceFilters as WorkspaceFiltersType } from '@/hooks/useWorkspaces';
 import { useWorkspacesPaged } from '@/hooks/useWorkspacesPaged';
-import { useRealtimeWorkspaces } from '@/hooks/useRealtimeWorkspaces';
+// useRealtimeWorkspaces is mounted globally in AppLayout — no per-page subscription needed.
 import { useSavedFilters } from '@/hooks/useSavedFilters';
 import { StartupStage, HealthScore, WorkspacePriority } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
@@ -98,8 +98,7 @@ export default function MyWorkspaces() {
     setSearchParams({}, { replace: true });
   }, [searchParams, setSearchParams, attentionStatsForFilter]);
 
-  // Enable realtime updates
-  useRealtimeWorkspaces();
+  // Realtime is subscribed once in AppLayout.
 
   // Load saved filters
   const { data: savedFilters } = useSavedFilters();
