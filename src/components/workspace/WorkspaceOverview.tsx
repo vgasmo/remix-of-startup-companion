@@ -72,6 +72,7 @@ import { useWorkspaceMembers, useWorkspaceFounder } from '@/hooks/useWorkspaceMe
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 import { ProgramSwitcher } from '@/components/workspace/ProgramSwitcher';
+import { ProgramTransferDialog } from '@/components/staff/ProgramTransferDialog';
 import { PrivateDocumentsPanel } from '@/components/workspace/PrivateDocumentsPanel';
 import { PlanAssistantsCard } from '@/components/workspace/PlanAssistantsCard';
 
