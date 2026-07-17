@@ -219,7 +219,13 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
               const visibleEmails = emails.slice(0, VISIBLE_EMAIL_COUNT);
               const hiddenEmails = emails.slice(VISIBLE_EMAIL_COUNT);
               const renderRow = (email: typeof emails[number]) => (
-                <Card key={email.id} className="border-border/40 hover:bg-muted/40 transition-colors">
+                <Card
+                  key={email.id}
+                  className="border-border/40 hover:bg-muted/40 hover:border-primary/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  {...clickableProps(() => setSelectedId(email.id), {
+                    label: email.subject || t('crm.noSubject', { defaultValue: '(sem assunto)' }),
+                  })}
+                >
                   <CardContent className="p-2.5">
                     <div className="flex items-start gap-2">
                       <div className="mt-0.5">
@@ -247,6 +253,7 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
                   </CardContent>
                 </Card>
               );
+
 
               return (
                 <>
