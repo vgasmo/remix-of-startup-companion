@@ -45,9 +45,13 @@ interface TemplatesTabProps {
 
 export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: TemplatesTabProps) {
   const { t } = useTranslation();
+  const { roles } = useAuth();
+  const isStaff = roles.includes('admin') || roles.includes('consultor');
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: templates, isLoading: loadingTemplates } = useTemplates();
   const { data: instances, isLoading: loadingInstances } = useTemplateInstances(workspaceId);
+  const { data: hiddenTools = [] } = useHiddenCanvasTools(workspaceId);
+  const toggleHidden = useToggleHiddenCanvasTool(workspaceId);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [selectedInstance, setSelectedInstance] = useState<TemplateInstance | null>(null);
   const [activeTab, setActiveTab] = useState('templates');
