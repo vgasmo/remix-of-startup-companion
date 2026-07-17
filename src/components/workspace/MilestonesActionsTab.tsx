@@ -212,8 +212,6 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
   const handleMilestoneStatusChange = async (milestone: Milestone, status: MilestoneStatus) => {
     if (!canWrite) return;
     try {
-      await updateMilestone.mutateAsync({ id: milestone.id, status });
-
       // Cascade: closing a gate/milestone closes all its non-terminal actions.
       if (status === 'completed') {
         const children = (actionItems || []).filter(
@@ -222,26 +220,18 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
                a.status !== 'cancelled',
         );
         if (children.length > 0) {
-          const nowIso = new Date().toISOString();
-          const { error: cascadeError } = await supabase
-            .from('action_items')
-            .update({ status: 'completed', completed_at: nowIso })
-            .in('id', children.map(c => c.id));
-          if (cascadeError) {
-            notify.error(t('actions.failedToUpdate'));
-          } else {
-            queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
-            queryClient.invalidateQueries({ queryKey: ['milestones', workspaceId] });
-            queryClient.invalidateQueries({ queryKey: ['workspace-tab-badges', workspaceId] });
-            notify.success(
-              t('milestones.cascadeClosed', {
-                count: children.length,
-                defaultValue: `${children.length} ação(ões) fechada(s) com o gate`,
-              }),
-            );
-          }
+          await bulkUpdate.mutateAsync({ ids: children.map(c => c.id), status: 'completed' });
+          notify.success(
+            t('milestones.cascadeClosed', {
+              count: children.length,
+              defaultValue: `${children.length} ação(ões) fechada(s) com o gate`,
+            }),
+          );
         }
       }
+
+      await updateMilestone.mutateAsync({ id: milestone.id, status });
+      queryClient.invalidateQueries({ queryKey: ['workspace-tab-badges', workspaceId] });
       // Confetti is handled by useMilestones' onSuccess (single source of truth).
     } catch { notify.error(t('milestones.failedToUpdate')); }
   };
