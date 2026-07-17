@@ -2682,8 +2682,60 @@ export type Database = {
           },
         ]
       }
+      email_sync_runs: {
+        Row: {
+          consultants_failed: number
+          consultants_ok: number
+          consultants_total: number
+          details: Json
+          duration_ms: number | null
+          emails_logged: number
+          emails_processed: number
+          emails_unmatched: number
+          error_summary: string | null
+          finished_at: string | null
+          id: string
+          started_at: string
+          status: string
+          triggered_by: string
+        }
+        Insert: {
+          consultants_failed?: number
+          consultants_ok?: number
+          consultants_total?: number
+          details?: Json
+          duration_ms?: number | null
+          emails_logged?: number
+          emails_processed?: number
+          emails_unmatched?: number
+          error_summary?: string | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          triggered_by?: string
+        }
+        Update: {
+          consultants_failed?: number
+          consultants_ok?: number
+          consultants_total?: number
+          details?: Json
+          duration_ms?: number | null
+          emails_logged?: number
+          emails_processed?: number
+          emails_unmatched?: number
+          error_summary?: string | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          triggered_by?: string
+        }
+        Relationships: []
+      }
       email_sync_status: {
         Row: {
+          consecutive_failures: number
           consultant_user_id: string
           created_at: string | null
           delta_link: string | null
@@ -2692,6 +2744,8 @@ export type Database = {
           emails_processed: number | null
           emails_unmatched: number | null
           id: string
+          last_alert_at: string | null
+          last_run_ms: number | null
           last_success_at: string | null
           last_sync_at: string | null
           last_sync_error: string | null
@@ -2701,6 +2755,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          consecutive_failures?: number
           consultant_user_id: string
           created_at?: string | null
           delta_link?: string | null
@@ -2709,6 +2764,8 @@ export type Database = {
           emails_processed?: number | null
           emails_unmatched?: number | null
           id?: string
+          last_alert_at?: string | null
+          last_run_ms?: number | null
           last_success_at?: string | null
           last_sync_at?: string | null
           last_sync_error?: string | null
@@ -2718,6 +2775,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          consecutive_failures?: number
           consultant_user_id?: string
           created_at?: string | null
           delta_link?: string | null
@@ -2726,6 +2784,8 @@ export type Database = {
           emails_processed?: number | null
           emails_unmatched?: number | null
           id?: string
+          last_alert_at?: string | null
+          last_run_ms?: number | null
           last_success_at?: string | null
           last_sync_at?: string | null
           last_sync_error?: string | null
@@ -10641,6 +10701,15 @@ export type Database = {
         Returns: boolean
       }
       check_ecosystem_invariants: { Args: never; Returns: Json }
+      check_email_sync_health: {
+        Args: never
+        Returns: {
+          details: Json
+          failing_consultants: number
+          minutes_since_last_success: number
+          status: string
+        }[]
+      }
       check_signup_allowed: { Args: { p_email: string }; Returns: boolean }
       claim_startup: { Args: never; Returns: Json }
       cleanup_old_rate_limits: { Args: never; Returns: number }

@@ -16,7 +16,9 @@ export function useWorkspaceTabBadges(workspaceId: string | undefined) {
     queryKey: ['workspace-tab-badges', workspaceId, userId],
     enabled: !!workspaceId,
     staleTime: 60_000,
-    refetchInterval: 120_000,
+    // Realtime invalidation via useRealtimeWorkspaces handles action_items
+    // updates; safety-net refetch every 10 min covers missed events.
+    refetchInterval: 10 * 60_000,
     queryFn: async () => {
       if (!workspaceId) return { pendingActions: 0, unreadChat: 0 };
 

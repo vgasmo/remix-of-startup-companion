@@ -65,6 +65,8 @@ export function useAdminDashboardStats() {
       };
     },
     staleTime: 60_000,
-    refetchInterval: 120_000,
+    // Realtime invalidation via useRealtimeWorkspaces replaces polling.
+    // Keep a long safety-net refetch to catch missed events.
+    refetchInterval: 10 * 60_000,
   });
 }
