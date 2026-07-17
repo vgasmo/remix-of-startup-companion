@@ -210,7 +210,15 @@ function ConsultorDashboardInner({ workspaces, isLoading, programsCount }: Consu
         />
       </WidgetErrorBoundary>
 
-      <UnifiedSmartInbox overdueCount={stats.overdueActionsCount} missingKpiCount={stats.missingKpiCount} />
+      <UnifiedSmartInbox
+        overdueCount={stats.overdueActionsCount}
+        missingKpiCount={stats.missingKpiCount}
+        overdueHref={
+          criticalActions.length === 1
+            ? `/workspace/${criticalActions[0].id}?tab=milestones-actions&sub=actions`
+            : '/my-workspaces?filter=attention'
+        }
+      />
       <WorkQueuePanel compact={false} />
 
       <WidgetErrorBoundary name="ConsultorRiskPanel">

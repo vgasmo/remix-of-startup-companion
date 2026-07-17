@@ -40,6 +40,9 @@ interface UnifiedSmartInboxProps {
   pendingSessionsCount?: number;
   missingKpiCount?: number;
   workspaceId?: string;
+  overdueHref?: string;
+  pendingSessionsHref?: string;
+  missingKpiHref?: string;
 }
 
 export function UnifiedSmartInbox({
@@ -47,6 +50,9 @@ export function UnifiedSmartInbox({
   pendingSessionsCount = 0,
   missingKpiCount = 0,
   workspaceId,
+  overdueHref,
+  pendingSessionsHref,
+  missingKpiHref,
 }: UnifiedSmartInboxProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -65,7 +71,7 @@ export function UnifiedSmartInbox({
       subtitle: t('inbox.overdueActionsDesc', { defaultValue: 'Review and update your pending tasks to stay on track.' }),
       timestamp: t('inbox.today', { defaultValue: 'Today' }),
       priority: 'critical',
-      href: workspaceId ? `/workspace/${workspaceId}?tab=milestones-actions&sub=actions` : undefined,
+      href: overdueHref ?? (workspaceId ? `/workspace/${workspaceId}?tab=milestones-actions&sub=actions` : '/my-workspaces?filter=attention'),
       read: false,
     });
   }
@@ -79,7 +85,7 @@ export function UnifiedSmartInbox({
       subtitle: t('inbox.pendingSessionsDesc', { defaultValue: 'Confirm or reschedule your upcoming mentorship sessions.' }),
       timestamp: t('inbox.thisWeek', { defaultValue: 'This week' }),
       priority: 'high',
-      href: workspaceId ? `/workspace/${workspaceId}?tab=agenda` : undefined,
+      href: pendingSessionsHref ?? (workspaceId ? `/workspace/${workspaceId}?tab=agenda` : '/my-workspaces?filter=attention'),
       read: false,
     });
   }
@@ -93,7 +99,7 @@ export function UnifiedSmartInbox({
       subtitle: t('inbox.missingKpisDesc', { defaultValue: 'Update your metrics to keep your health score accurate.' }),
       timestamp: t('inbox.thisMonth', { defaultValue: 'This month' }),
       priority: 'medium',
-      href: workspaceId ? `/workspace/${workspaceId}?tab=kpis` : undefined,
+      href: missingKpiHref ?? (workspaceId ? `/workspace/${workspaceId}?tab=kpis` : '/my-workspaces?filter=attention'),
       read: false,
     });
   }
