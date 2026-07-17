@@ -65,7 +65,7 @@ export function UnifiedSmartInbox({
       subtitle: t('inbox.overdueActionsDesc', { defaultValue: 'Review and update your pending tasks to stay on track.' }),
       timestamp: t('inbox.today', { defaultValue: 'Today' }),
       priority: 'critical',
-      href: workspaceId ? `/workspace/${workspaceId}?tab=milestones-actions&sub=actions` : undefined,
+      href: workspaceId ? `/workspace/${workspaceId}?tab=milestones-actions&sub=actions` : '/my-workspaces?filter=attention',
       read: false,
     });
   }
