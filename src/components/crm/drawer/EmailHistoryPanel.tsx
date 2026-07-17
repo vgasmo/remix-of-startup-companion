@@ -12,11 +12,34 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { formatRelativeTime } from '@/lib/dateUtils';
 import { useRelationshipRecap, useGenerateRecap } from '@/hooks/useActivityTimeline';
+import { clickableProps } from '@/lib/clickable';
 import { cn } from '@/lib/utils';
+
+/** Convert email body (HTML or text) to safe plain text for display. */
+function emailBodyToText(body: string | null | undefined): string {
+  if (!body) return '';
+  // Strip script/style blocks then tags; decode a few common entities.
+  const stripped = body
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|li|tr|h[1-6])>/gi, '\n')
+    .replace(/<[^>]+>/g, '');
+  return stripped
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
 
 const VISIBLE_EMAIL_COUNT = 5;
 
