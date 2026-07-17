@@ -98,16 +98,24 @@ export default function StaffCockpit() {
               <Skeleton className="h-7 w-48" />
             ) : (
               <>
-                <span className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2.5 py-1 text-xs font-medium">
+                <Link
+                  to="/my-workspaces"
+                  aria-label={t('staffCockpit.pillStartupsAria', { defaultValue: 'Ver todas as startups' })}
+                  className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
                   <Building2 className="h-3.5 w-3.5 text-primary" />
                   {workspaces.length}
                   <span className="text-muted-foreground font-normal">{t('staffCockpit.pillStartups', { defaultValue: 'startups' })}</span>
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2.5 py-1 text-xs font-medium">
+                </Link>
+                <Link
+                  to="/admin?tab=programs-setup"
+                  aria-label={t('staffCockpit.pillProgramsAria', { defaultValue: 'Gerir programas' })}
+                  className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
                   <Zap className="h-3.5 w-3.5 text-primary" />
                   {programsCount}
                   <span className="text-muted-foreground font-normal">{t('staffCockpit.pillPrograms', { defaultValue: 'programas' })}</span>
-                </span>
+                </Link>
               </>
             )}
           </div>
