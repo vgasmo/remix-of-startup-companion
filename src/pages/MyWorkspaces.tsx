@@ -58,8 +58,13 @@ export default function MyWorkspaces() {
   const isExternalMentor = roles.includes('mentor_externo') && !isConsultor && !isAdmin;
   const founderState = useFounderOnboardingState();
   
-  // Consultant view mode - assigned only by default (not for admins)
-  const [showAssignedOnly, setShowAssignedOnly] = useState(isConsultor && !isAdmin);
+  // Consultant view mode - assigned only by default (not for admins).
+  // Track the user's explicit override; when unset, derive from roles so the
+  // default flips correctly once AuthContext finishes loading (otherwise a
+  // consultor sees every active workspace on first paint).
+  const [assignedOverride, setAssignedOverride] = useState<boolean | null>(null);
+  const showAssignedOnly = assignedOverride ?? (isConsultor && !isAdmin);
+  const setShowAssignedOnly = useCallback((v: boolean) => setAssignedOverride(v), []);
   // Admin can toggle between Admin dashboard and Portfolio view
   const [adminViewMode, setAdminViewMode] = useState<'admin' | 'portfolio'>('admin');
   
