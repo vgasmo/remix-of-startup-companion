@@ -99,7 +99,7 @@ export function UnifiedSmartInbox({
       subtitle: t('inbox.missingKpisDesc', { defaultValue: 'Update your metrics to keep your health score accurate.' }),
       timestamp: t('inbox.thisMonth', { defaultValue: 'This month' }),
       priority: 'medium',
-      href: workspaceId ? `/workspace/${workspaceId}?tab=kpis` : '/my-workspaces?filter=attention',
+      href: missingKpiHref ?? (workspaceId ? `/workspace/${workspaceId}?tab=kpis` : '/my-workspaces?filter=attention'),
       read: false,
     });
   }
