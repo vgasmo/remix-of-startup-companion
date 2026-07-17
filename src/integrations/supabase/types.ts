@@ -10830,6 +10830,10 @@ export type Database = {
         }
         Returns: Json
       }
+      complete_milestone_with_actions: {
+        Args: { _milestone_id: string; _workspace_id: string }
+        Returns: number
+      }
       complete_session_atomic: {
         Args: {
           p_actual_duration_minutes: number
