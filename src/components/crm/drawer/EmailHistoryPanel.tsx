@@ -283,6 +283,77 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
           </div>
         </ScrollArea>
       )}
+
+      <EmailDetailDialog
+        emailId={selectedId}
+        onClose={() => setSelectedId(null)}
+      />
     </div>
   );
 }
+
+function EmailDetailDialog({ emailId, onClose }: { emailId: string | null; onClose: () => void }) {
+  const { t } = useTranslation();
+  const { data: email, isLoading } = useQuery({
+    queryKey: ['crm-email-detail', emailId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('communication_log')
+        .select('id, subject, body, preview, from_address, direction, occurred_at, participants_json')
+        .eq('id', emailId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!emailId,
+  });
+
+  const bodyText = emailBodyToText(email?.body ?? email?.preview ?? '');
+
+  return (
+    <Dialog open={!!emailId} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="text-base break-words">
+            {email?.subject || t('crm.noSubject', { defaultValue: '(sem assunto)' })}
+          </DialogTitle>
+          {email && (
+            <DialogDescription className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+              {email.from_address && <span className="truncate">{email.from_address}</span>}
+              <span>·</span>
+              <span>{formatRelativeTime(email.occurred_at)}</span>
+              {email.direction && (
+                <>
+                  <span>·</span>
+                  <span className="uppercase tracking-wider">
+                    {email.direction === 'inbound'
+                      ? t('crm.inbound', { defaultValue: 'Recebido' })
+                      : t('crm.outbound', { defaultValue: 'Enviado' })}
+                  </span>
+                </>
+              )}
+            </DialogDescription>
+          )}
+        </DialogHeader>
+        <ScrollArea className="flex-1 min-h-0 -mx-6 px-6">
+          {isLoading ? (
+            <div className="space-y-2 py-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-4 w-4/6" />
+            </div>
+          ) : bodyText ? (
+            <pre className="whitespace-pre-wrap break-words font-sans text-sm text-foreground leading-relaxed">
+              {bodyText}
+            </pre>
+          ) : (
+            <p className="text-sm text-muted-foreground italic py-4">
+              {t('crm.emailNoBody', { defaultValue: 'Sem conteúdo disponível para este email.' })}
+            </p>
+          )}
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
