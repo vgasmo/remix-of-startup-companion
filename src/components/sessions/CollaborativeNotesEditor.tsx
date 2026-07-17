@@ -294,8 +294,8 @@ export function CollaborativeNotesEditor({
           onChange={handleInputChange}
           placeholder={placeholder}
           readOnly={readOnly}
-          rows={6}
-          className="resize-none"
+          rows={10}
+          className="resize-y min-h-[180px]"
         />
         
         {/* Mention suggestions dropdown */}
