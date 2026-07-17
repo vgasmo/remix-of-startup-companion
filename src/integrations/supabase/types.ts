@@ -1263,6 +1263,7 @@ export type Database = {
       communication_log: {
         Row: {
           activity_type: string
+          archived_at: string | null
           assigned_to: string | null
           body: string | null
           channel: string | null
@@ -1301,6 +1302,7 @@ export type Database = {
         }
         Insert: {
           activity_type?: string
+          archived_at?: string | null
           assigned_to?: string | null
           body?: string | null
           channel?: string | null
@@ -1339,6 +1341,7 @@ export type Database = {
         }
         Update: {
           activity_type?: string
+          archived_at?: string | null
           assigned_to?: string | null
           body?: string | null
           channel?: string | null

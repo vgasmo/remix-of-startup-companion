@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mail, ArrowDownLeft, ArrowUpRight, RefreshCw, Sparkles, Loader2, ChevronDown } from 'lucide-react';
+import { Mail, ArrowDownLeft, ArrowUpRight, RefreshCw, Sparkles, Loader2, ChevronDown, Archive, ArchiveRestore } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,11 +13,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { formatRelativeTime } from '@/lib/dateUtils';
 import { useRelationshipRecap, useGenerateRecap } from '@/hooks/useActivityTimeline';
 import { clickableProps } from '@/lib/clickable';
+import { notify } from '@/lib/notify';
 import { cn } from '@/lib/utils';
 
 /** Convert email body (HTML or text) to safe plain text for display. */
@@ -55,17 +56,23 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
   const { t, i18n } = useTranslation();
   const language = i18n.language.startsWith('pt') ? 'pt' : 'en';
   const [showAll, setShowAll] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: emails, isLoading } = useQuery({
-    queryKey: ['crm-emails', funnelItemId, workspaceId],
+    queryKey: ['crm-emails', funnelItemId, workspaceId, showArchived],
     queryFn: async () => {
       let query = supabase
         .from('communication_log')
-        .select('id, subject, preview, direction, channel, occurred_at, from_address, status')
+        .select('id, subject, preview, direction, channel, occurred_at, from_address, status, archived_at')
         .in('channel', ['email', 'outlook'])
         .order('occurred_at', { ascending: false })
         .limit(100);
+
+      if (!showArchived) {
+        query = query.is('archived_at', null);
+      }
 
       if (funnelItemId) {
         query = query.eq('funnel_item_id', funnelItemId);
@@ -78,6 +85,27 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
       return data;
     },
     enabled: !!(funnelItemId || workspaceId),
+  });
+
+  const archiveMutation = useMutation({
+    mutationFn: async ({ id, archive }: { id: string; archive: boolean }) => {
+      const { error } = await supabase
+        .from('communication_log')
+        .update({ archived_at: archive ? new Date().toISOString() : null })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['crm-emails'] });
+      notify.success(
+        vars.archive
+          ? t('crm.emailArchived', { defaultValue: 'Email arquivado' })
+          : t('crm.emailUnarchived', { defaultValue: 'Email restaurado' }),
+      );
+    },
+    onError: () => {
+      notify.error(t('common.errorOccurred', { defaultValue: 'Ocorreu um erro' }));
+    },
   });
 
   const { data: recap, isLoading: loadingRecap } = useRelationshipRecap({
@@ -149,6 +177,20 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
               {t('crm.sync', { defaultValue: 'Sincronizar' })}
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 text-xs gap-1"
+            onClick={() => setShowArchived((v) => !v)}
+            title={showArchived
+              ? t('crm.hideArchived', { defaultValue: 'Ocultar arquivados' })
+              : t('crm.showArchived', { defaultValue: 'Ver arquivados' })}
+          >
+            {showArchived ? <ArchiveRestore className="h-3 w-3" /> : <Archive className="h-3 w-3" />}
+            {showArchived
+              ? t('crm.hideArchived', { defaultValue: 'Ocultar arquivados' })
+              : t('crm.showArchived', { defaultValue: 'Arquivados' })}
+          </Button>
         </div>
       </div>
 
@@ -218,41 +260,68 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
             {(() => {
               const visibleEmails = emails.slice(0, VISIBLE_EMAIL_COUNT);
               const hiddenEmails = emails.slice(VISIBLE_EMAIL_COUNT);
-              const renderRow = (email: typeof emails[number]) => (
-                <Card
-                  key={email.id}
-                  className="border-border/40 hover:bg-muted/40 hover:border-primary/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  {...clickableProps(() => setSelectedId(email.id), {
-                    label: email.subject || t('crm.noSubject', { defaultValue: '(sem assunto)' }),
-                  })}
-                >
-                  <CardContent className="p-2.5">
-                    <div className="flex items-start gap-2">
-                      <div className="mt-0.5">
-                        {email.direction === 'inbound' ? (
-                          <ArrowDownLeft className="h-3.5 w-3.5 text-[hsl(var(--info))]" />
-                        ) : (
-                          <ArrowUpRight className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-xs font-medium truncate">{email.subject || t('crm.noSubject', { defaultValue: '(sem assunto)' })}</p>
-                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                            {formatRelativeTime(email.occurred_at)}
-                          </span>
+              const renderRow = (email: typeof emails[number]) => {
+                const isArchived = !!email.archived_at;
+                return (
+                  <Card
+                    key={email.id}
+                    className={cn(
+                      'group border-border/40 hover:bg-muted/40 hover:border-primary/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                      isArchived && 'opacity-60',
+                    )}
+                    {...clickableProps(() => setSelectedId(email.id), {
+                      label: email.subject || t('crm.noSubject', { defaultValue: '(sem assunto)' }),
+                    })}
+                  >
+                    <CardContent className="p-2.5">
+                      <div className="flex items-start gap-2">
+                        <div className="mt-0.5">
+                          {email.direction === 'inbound' ? (
+                            <ArrowDownLeft className="h-3.5 w-3.5 text-[hsl(var(--info))]" />
+                          ) : (
+                            <ArrowUpRight className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
+                          )}
                         </div>
-                        {email.from_address && (
-                          <p className="text-[10px] text-muted-foreground truncate">{email.from_address}</p>
-                        )}
-                        {email.preview && (
-                          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{email.preview}</p>
-                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-xs font-medium truncate flex items-center gap-1">
+                              {isArchived && <Archive className="h-3 w-3 text-muted-foreground" />}
+                              {email.subject || t('crm.noSubject', { defaultValue: '(sem assunto)' })}
+                            </p>
+                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                              {formatRelativeTime(email.occurred_at)}
+                            </span>
+                          </div>
+                          {email.from_address && (
+                            <p className="text-[10px] text-muted-foreground truncate">{email.from_address}</p>
+                          )}
+                          {email.preview && (
+                            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{email.preview}</p>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            archiveMutation.mutate({ id: email.id, archive: !isArchived });
+                          }}
+                          disabled={archiveMutation.isPending}
+                          title={isArchived
+                            ? t('crm.unarchive', { defaultValue: 'Restaurar' })
+                            : t('crm.archive', { defaultValue: 'Arquivar' })}
+                          aria-label={isArchived
+                            ? t('crm.unarchive', { defaultValue: 'Restaurar' })
+                            : t('crm.archive', { defaultValue: 'Arquivar' })}
+                        >
+                          {isArchived ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
+                        </Button>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
+                    </CardContent>
+                  </Card>
+                );
+              };
 
 
               return (
