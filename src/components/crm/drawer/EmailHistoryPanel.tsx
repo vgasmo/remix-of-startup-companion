@@ -260,41 +260,68 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
             {(() => {
               const visibleEmails = emails.slice(0, VISIBLE_EMAIL_COUNT);
               const hiddenEmails = emails.slice(VISIBLE_EMAIL_COUNT);
-              const renderRow = (email: typeof emails[number]) => (
-                <Card
-                  key={email.id}
-                  className="border-border/40 hover:bg-muted/40 hover:border-primary/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  {...clickableProps(() => setSelectedId(email.id), {
-                    label: email.subject || t('crm.noSubject', { defaultValue: '(sem assunto)' }),
-                  })}
-                >
-                  <CardContent className="p-2.5">
-                    <div className="flex items-start gap-2">
-                      <div className="mt-0.5">
-                        {email.direction === 'inbound' ? (
-                          <ArrowDownLeft className="h-3.5 w-3.5 text-[hsl(var(--info))]" />
-                        ) : (
-                          <ArrowUpRight className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-xs font-medium truncate">{email.subject || t('crm.noSubject', { defaultValue: '(sem assunto)' })}</p>
-                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                            {formatRelativeTime(email.occurred_at)}
-                          </span>
+              const renderRow = (email: typeof emails[number]) => {
+                const isArchived = !!email.archived_at;
+                return (
+                  <Card
+                    key={email.id}
+                    className={cn(
+                      'group border-border/40 hover:bg-muted/40 hover:border-primary/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                      isArchived && 'opacity-60',
+                    )}
+                    {...clickableProps(() => setSelectedId(email.id), {
+                      label: email.subject || t('crm.noSubject', { defaultValue: '(sem assunto)' }),
+                    })}
+                  >
+                    <CardContent className="p-2.5">
+                      <div className="flex items-start gap-2">
+                        <div className="mt-0.5">
+                          {email.direction === 'inbound' ? (
+                            <ArrowDownLeft className="h-3.5 w-3.5 text-[hsl(var(--info))]" />
+                          ) : (
+                            <ArrowUpRight className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
+                          )}
                         </div>
-                        {email.from_address && (
-                          <p className="text-[10px] text-muted-foreground truncate">{email.from_address}</p>
-                        )}
-                        {email.preview && (
-                          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{email.preview}</p>
-                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-xs font-medium truncate flex items-center gap-1">
+                              {isArchived && <Archive className="h-3 w-3 text-muted-foreground" />}
+                              {email.subject || t('crm.noSubject', { defaultValue: '(sem assunto)' })}
+                            </p>
+                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                              {formatRelativeTime(email.occurred_at)}
+                            </span>
+                          </div>
+                          {email.from_address && (
+                            <p className="text-[10px] text-muted-foreground truncate">{email.from_address}</p>
+                          )}
+                          {email.preview && (
+                            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{email.preview}</p>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            archiveMutation.mutate({ id: email.id, archive: !isArchived });
+                          }}
+                          disabled={archiveMutation.isPending}
+                          title={isArchived
+                            ? t('crm.unarchive', { defaultValue: 'Restaurar' })
+                            : t('crm.archive', { defaultValue: 'Arquivar' })}
+                          aria-label={isArchived
+                            ? t('crm.unarchive', { defaultValue: 'Restaurar' })
+                            : t('crm.archive', { defaultValue: 'Arquivar' })}
+                        >
+                          {isArchived ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
+                        </Button>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
+                    </CardContent>
+                  </Card>
+                );
+              };
 
 
               return (
