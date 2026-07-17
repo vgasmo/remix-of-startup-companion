@@ -13,6 +13,7 @@ import { OfflineBadge } from '@/components/ui/OfflineBadge';
 import { GlobalEcosystemCopilot } from '@/components/ai/GlobalEcosystemCopilot';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspaces } from '@/hooks/useWorkspaces';
+import { useRealtimeWorkspaces } from '@/hooks/useRealtimeWorkspaces';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { cn } from '@/lib/utils';
 
@@ -30,6 +31,9 @@ export const AppLayout = forwardRef<HTMLDivElement, AppLayoutProps>(function App
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
   useDocumentTitle(title);
+  // Subscribe to workspace/stage/health/KPI/action_items realtime updates so
+  // dashboard counts, badges and lists refresh without polling.
+  useRealtimeWorkspaces();
 
   useEffect(() => {
     setMounted(true);
