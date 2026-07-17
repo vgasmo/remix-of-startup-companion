@@ -40,6 +40,7 @@ interface BookingRequest {
     help_expectation?: string;
     personal_intro?: string;
   };
+  recording_consent?: boolean;
 }
 
 // Validate and sanitize booking request
@@ -122,12 +123,15 @@ function validateBookingRequest(body: unknown): { valid: true; data: BookingRequ
   const help_expectation = typeof contact.help_expectation === 'string' ? contact.help_expectation.trim().slice(0, MAX_MESSAGE_LENGTH) : undefined;
   const personal_intro = typeof contact.personal_intro === 'string' ? contact.personal_intro.trim().slice(0, MAX_MESSAGE_LENGTH) : undefined;
 
+  const recording_consent = req.recording_consent === true;
+
   return {
     valid: true,
     data: {
       token: req.token as string,
       slot: { date: slot.date as string, time: slot.time as string },
       contact: { name: (contact.name as string).trim(), email, phone, organization, message, sector, stage, referral_source, has_team, pitch_deck_path, has_tech, is_iies, vertical, help_expectation, personal_intro },
+      recording_consent,
     },
   };
 }
@@ -270,7 +274,7 @@ serve(async (req) => {
       return corsJsonResponse({ success: false, error: validation.error }, req, 400);
     }
 
-    const { token, slot, contact } = validation.data;
+    const { token, slot, contact, recording_consent } = validation.data;
 
     // Selected program comes from the routing step in PublicBooking.
     // Values: null (single-option link), 'global' (Geral option), or a UUID.
@@ -379,6 +383,10 @@ serve(async (req) => {
       consultant_id: consultantId,
       consultant_email: consultantEmail,
     };
+    bookingMetadata.recording_consent = recording_consent === true;
+    if (recording_consent) {
+      bookingMetadata.recording_consent_at = new Date().toISOString();
+    }
     if (contact.sector) bookingMetadata.sector = contact.sector;
     if (contact.stage) bookingMetadata.startup_stage = contact.stage;
     if (contact.referral_source) bookingMetadata.referral_source = contact.referral_source;

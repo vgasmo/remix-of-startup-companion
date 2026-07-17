@@ -8,7 +8,7 @@
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { createLogger, generateRequestId, ErrorCode, requireUser, safeErrorMessage } from '../_shared/security.ts';
+import { createLogger, generateRequestId, ErrorCode, requireUser, safeErrorMessage, timingSafeEqual } from '../_shared/security.ts';
 
 const FUNCTION_NAME = 'import-teams-transcript';
 
@@ -222,21 +222,27 @@ Deno.serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-    
-    // Create user client with auth header
-    const authHeader = req.headers.get('Authorization');
-    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader || '' } }
-    });
 
-    // Require authenticated user
-    const authResult = await requireUser(req, supabaseUser);
-    if ('error' in authResult) {
-      return authResult.error;
+    // Auth: allow cron secret OR authenticated user
+    const cronSecret = req.headers.get('x-cron-secret');
+    const expectedCronSecret = Deno.env.get('CRON_SECRET');
+    const isCronCall = !!cronSecret && !!expectedCronSecret && timingSafeEqual(cronSecret, expectedCronSecret);
+
+    let userId: string | null = null;
+    if (!isCronCall) {
+      const authHeader = req.headers.get('Authorization');
+      const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader || '' } }
+      });
+      const authResult = await requireUser(req, supabaseUser);
+      if ('error' in authResult) {
+        return authResult.error;
+      }
+      userId = authResult.user.id;
+      log.info('User authenticated', { userId });
+    } else {
+      log.info('Cron-authenticated invocation');
     }
-    const userId = authResult.user.id;
-    
-    log.info('User authenticated', { userId });
 
     const body = await req.json() as ImportRequest;
     const { session_id } = body;
@@ -249,7 +255,8 @@ Deno.serve(async (req: Request) => {
     const { data: session, error: sessionError } = await supabaseAdmin
       .from('sessions')
       .select(`
-        id, title, scheduled_at, workspace_id, teams_meeting_url, outlook_event_id, outlook_owner_email, created_by
+        id, title, scheduled_at, workspace_id, teams_meeting_url, outlook_event_id, outlook_owner_email, created_by,
+        recording_consent, online_meeting_id, session_type, transcript_import_attempts
       `)
       .eq('id', session_id)
       .single();
@@ -259,7 +266,6 @@ Deno.serve(async (req: Request) => {
       return corsJsonResponse({ success: false, error: 'Session not found', code: ErrorCode.NOT_FOUND }, req, 404);
     }
 
-    // Type the session
     const typedSession = session as {
       id: string;
       title: string;
@@ -269,16 +275,31 @@ Deno.serve(async (req: Request) => {
       outlook_event_id: string | null;
       outlook_owner_email: string | null;
       created_by: string | null;
+      recording_consent: boolean | null;
+      online_meeting_id: string | null;
+      session_type: string | null;
+      transcript_import_attempts: number | null;
     };
 
-    // Validate workspace access
-    const { data: hasAccess } = await supabaseAdmin.rpc('has_workspace_access', {
-      _user_id: userId,
-      _workspace_id: typedSession.workspace_id,
-    });
-    
-    if (!hasAccess) {
-      return corsJsonResponse({ success: false, error: 'Access denied', code: ErrorCode.FORBIDDEN }, req, 403);
+    // Consent gate — no consent, no transcript. Ever.
+    if (!typedSession.recording_consent) {
+      log.warn('Import blocked: recording_consent is false', { session_id });
+      return corsJsonResponse({
+        success: false,
+        status: 'no_consent',
+        message: 'Sem consentimento de gravação — a transcrição não pode ser importada.'
+      }, req, 403);
+    }
+
+    // Validate workspace access (skip for cron)
+    if (!isCronCall && userId) {
+      const { data: hasAccess } = await supabaseAdmin.rpc('has_workspace_access', {
+        _user_id: userId,
+        _workspace_id: typedSession.workspace_id,
+      });
+      if (!hasAccess) {
+        return corsJsonResponse({ success: false, error: 'Access denied', code: ErrorCode.FORBIDDEN }, req, 403);
+      }
     }
 
     // Get Graph credentials
@@ -347,80 +368,86 @@ Deno.serve(async (req: Request) => {
     // Get Graph access token
     const accessToken = await getGraphAccessToken(credentials, log);
 
-    // Step 1: Find online meeting by join URL
-    // FIX: Proper OData filter encoding - escape single quotes in the URL, then URL-encode the entire filter
-    const joinUrlEscaped = joinUrl.replace(/'/g, "''"); // OData single quote escaping
-    const filterString = `JoinWebUrl eq '${joinUrlEscaped}'`;
-    const meetingSearchUrl = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(organizerEmail)}/onlineMeetings?$filter=${encodeURIComponent(filterString)}`;
-    
-    log.info('Searching for online meeting', { organizerEmail });
-    
-    const meetingResponse = await fetch(meetingSearchUrl, {
-      headers: { 'Authorization': `Bearer ${accessToken}` },
-    });
+    // Resolve online meeting id — prefer cached
+    let onlineMeetingId: string | null = typedSession.online_meeting_id;
 
-    if (!meetingResponse.ok) {
-      const errorText = await meetingResponse.text();
-      log.error('Failed to search for meeting', null, { status: meetingResponse.status });
-      
-      // Check for policy error
-      if (meetingResponse.status === 403) {
-        let errorJson: { error?: { code?: string; message?: string } } = {};
-        try {
-          errorJson = JSON.parse(errorText);
-        } catch {
-          // Ignore parse error
+    if (!onlineMeetingId) {
+      // FIX: Proper OData filter encoding
+      const joinUrlEscaped = joinUrl.replace(/'/g, "''");
+      const filterString = `JoinWebUrl eq '${joinUrlEscaped}'`;
+      const meetingSearchUrl = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(organizerEmail)}/onlineMeetings?$filter=${encodeURIComponent(filterString)}`;
+
+      log.info('Searching for online meeting', { organizerEmail });
+
+      const meetingResponse = await fetch(meetingSearchUrl, {
+        headers: { 'Authorization': `Bearer ${accessToken}` },
+      });
+
+      if (!meetingResponse.ok) {
+        const errorText = await meetingResponse.text();
+        log.error('Failed to search for meeting', null, { status: meetingResponse.status });
+
+        if (meetingResponse.status === 403) {
+          let errorJson: { error?: { code?: string; message?: string } } = {};
+          try { errorJson = JSON.parse(errorText); } catch { /* ignore */ }
+
+          if (errorJson.error?.code === 'Forbidden' ||
+              errorJson.error?.message?.includes('policy') ||
+              errorJson.error?.message?.includes('application access') ||
+              errorJson.error?.message?.includes('ApplicationAccessPolicy')) {
+
+            await supabaseAdmin.from('integration_errors').insert({
+              integration_type: 'teams_transcript',
+              error_message: 'Application Access Policy required',
+              error_details: {
+                organizerEmail,
+                hint: 'Run New-CsApplicationAccessPolicy in Teams Admin PowerShell'
+              },
+              created_at: new Date().toISOString(),
+            });
+
+            return corsJsonResponse({
+              success: false,
+              status: 'forbidden_policy',
+              message: 'Falta Application Access Policy no Teams. O admin do M365 precisa executar New-CsApplicationAccessPolicy.'
+            }, req);
+          }
         }
-        
-        if (errorJson.error?.code === 'Forbidden' || 
-            errorJson.error?.message?.includes('policy') ||
-            errorJson.error?.message?.includes('application access') ||
-            errorJson.error?.message?.includes('ApplicationAccessPolicy')) {
-          
-          // Log integration error for admin visibility
-          await supabaseAdmin.from('integration_errors').insert({
-            integration_type: 'teams_transcript',
-            error_message: 'Application Access Policy required',
-            error_details: { 
-              organizerEmail,
-              hint: 'Run New-CsApplicationAccessPolicy in Teams Admin PowerShell'
-            },
-            created_at: new Date().toISOString(),
-          });
-          
-          return corsJsonResponse({ 
-            success: false, 
-            status: 'forbidden_policy',
-            message: 'Falta Application Access Policy no Teams. O admin do M365 precisa executar New-CsApplicationAccessPolicy.'
+
+        if (meetingResponse.status === 404 || errorText.includes('not found')) {
+          return corsJsonResponse({
+            success: false,
+            status: 'not_found',
+            message: 'Reunião não encontrada no Teams. Pode ter sido apagada ou o organizador é diferente.'
           }, req);
         }
+
+        throw new Error(`Failed to search for meeting: ${meetingResponse.status}`);
       }
-      
-      // Meeting not found (could be wrong organizer or meeting deleted)
-      if (meetingResponse.status === 404 || errorText.includes('not found')) {
-        return corsJsonResponse({ 
-          success: false, 
+
+      const meetingData = await meetingResponse.json();
+
+      if (!meetingData.value || meetingData.value.length === 0) {
+        log.warn('No online meeting found for join URL');
+        return corsJsonResponse({
+          success: false,
           status: 'not_found',
-          message: 'Reunião não encontrada no Teams. Pode ter sido apagada ou o organizador é diferente.'
+          message: 'Reunião não encontrada. O organizador registado pode não corresponder ao utilizador que criou a reunião no Teams.'
         }, req);
       }
-      
-      throw new Error(`Failed to search for meeting: ${meetingResponse.status}`);
-    }
 
-    const meetingData = await meetingResponse.json();
-    
-    if (!meetingData.value || meetingData.value.length === 0) {
-      log.warn('No online meeting found for join URL');
-      return corsJsonResponse({ 
-        success: false, 
-        status: 'not_found',
-        message: 'Reunião não encontrada. O organizador registado pode não corresponder ao utilizador que criou a reunião no Teams.'
-      }, req);
-    }
+      onlineMeetingId = meetingData.value[0].id;
+      log.info('Found online meeting, caching', { onlineMeetingId });
 
-    const onlineMeetingId = meetingData.value[0].id;
-    log.info('Found online meeting', { onlineMeetingId });
+      // Persist for future imports
+      const { error: cacheErr } = await supabaseAdmin
+        .from('sessions')
+        .update({ online_meeting_id: onlineMeetingId })
+        .eq('id', session_id);
+      if (cacheErr) log.warn('Failed to cache online_meeting_id', { error: cacheErr.message });
+    } else {
+      log.info('Using cached online_meeting_id', { onlineMeetingId });
+    }
 
     // Step 2: List transcripts for this meeting
     const transcriptsUrl = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(organizerEmail)}/onlineMeetings/${encodeURIComponent(onlineMeetingId)}/transcripts`;
@@ -446,26 +473,34 @@ Deno.serve(async (req: Request) => {
     const transcriptsData = await transcriptsResponse.json();
     
     if (!transcriptsData.value || transcriptsData.value.length === 0) {
-      return corsJsonResponse({ 
-        success: true, 
+      // Track attempt so the sweep can back off after N tries
+      await supabaseAdmin
+        .from('sessions')
+        .update({
+          transcript_import_attempts: (typedSession.transcript_import_attempts ?? 0) + 1,
+          transcript_last_attempt_at: new Date().toISOString(),
+          transcript_import_status: 'not_ready',
+        })
+        .eq('id', session_id);
+
+      return corsJsonResponse({
+        success: true,
         status: 'not_ready',
         message: 'Ainda não há transcrição disponível. A transcrição aparece ~10 min após a reunião terminar (com transcrição ativa).'
       }, req);
     }
 
-    // Get the most recent transcript
     const transcripts = transcriptsData.value.sort((a: { createdDateTime?: string }, b: { createdDateTime?: string }) => {
       const dateA = new Date(a.createdDateTime || 0);
       const dateB = new Date(b.createdDateTime || 0);
       return dateB.getTime() - dateA.getTime();
     });
-    
+
     const latestTranscript = transcripts[0];
     log.info('Found transcript', { transcriptId: latestTranscript.id, createdAt: latestTranscript.createdDateTime });
 
-    // Step 3: Download transcript content as VTT
     const contentUrl = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(organizerEmail)}/onlineMeetings/${encodeURIComponent(onlineMeetingId)}/transcripts/${encodeURIComponent(latestTranscript.id)}/content?$format=text/vtt`;
-    
+
     const contentResponse = await fetch(contentUrl, {
       headers: { 'Authorization': `Bearer ${accessToken}` },
     });
@@ -476,17 +511,17 @@ Deno.serve(async (req: Request) => {
     }
 
     const vttContent = await contentResponse.text();
-    log.info('Downloaded VTT content', { length: vttContent.length });
-
-    // Parse VTT to clean text
     const cleanText = parseVttToText(vttContent);
     log.info('Parsed transcript to clean text', { length: cleanText.length });
 
-    // Save to session (do NOT change source field)
+    // Save to session
     const { error: updateError } = await supabaseAdmin
       .from('sessions')
-      .update({ 
+      .update({
         raw_transcript: cleanText,
+        transcript_import_status: 'imported',
+        transcript_last_attempt_at: new Date().toISOString(),
+        transcript_import_attempts: (typedSession.transcript_import_attempts ?? 0) + 1,
         updated_at: new Date().toISOString(),
       })
       .eq('id', session_id);
@@ -496,26 +531,59 @@ Deno.serve(async (req: Request) => {
       throw updateError;
     }
 
-    // Optionally log to session_transcripts if table exists
-    try {
-      await supabaseAdmin
-        .from('session_transcripts')
-        .upsert({
-          session_id,
-          source: 'teams_graph',
-          content: cleanText,
-          created_at: new Date().toISOString(),
-        }, { onConflict: 'session_id,source' });
-    } catch {
-      // Table may not exist, ignore
+    // Persist to session_transcripts with confidentiality tier.
+    // Consultor/founder sessions → workspace-visible; everything else → staff_only.
+    const sessionType = (typedSession.session_type || '').toLowerCase();
+    const isWorkspaceTier =
+      sessionType.includes('consultor') ||
+      sessionType.includes('consultant') ||
+      sessionType === 'check_in' ||
+      sessionType === 'follow_up';
+    const confidentiality = isWorkspaceTier ? 'workspace' : 'staff_only';
+
+    const { error: transcriptError } = await supabaseAdmin
+      .from('session_transcripts')
+      .upsert({
+        session_id,
+        source: 'teams_graph',
+        transcript_text: cleanText,
+        confidentiality,
+      }, { onConflict: 'session_id,source' });
+
+    if (transcriptError) {
+      log.error('Failed to persist session_transcripts row', transcriptError);
+      await supabaseAdmin.from('integration_errors').insert({
+        integration_type: 'teams_transcript',
+        error_message: `session_transcripts upsert failed: ${transcriptError.message}`,
+        error_details: { session_id, code: transcriptError.code },
+        created_at: new Date().toISOString(),
+      });
+      // Do not throw: raw_transcript is already saved on the session.
     }
 
-    log.info('Transcript imported successfully', { session_id, textLength: cleanText.length });
+    log.info('Transcript imported successfully', { session_id, textLength: cleanText.length, confidentiality });
 
-    return corsJsonResponse({ 
-      success: true, 
+    // Chain the AI pipeline once per successful import (fire-and-forget)
+    try {
+      const genUrl = `${supabaseUrl}/functions/v1/generate-session-artifacts`;
+      fetch(genUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+          'x-cron-secret': expectedCronSecret || '',
+        },
+        body: JSON.stringify({ session_id, source: 'transcript_import' }),
+      }).catch((e) => log.warn('generate-session-artifacts fire-and-forget failed', { error: safeErrorMessage(e) }));
+    } catch (e) {
+      log.warn('Could not chain generate-session-artifacts', { error: safeErrorMessage(e) });
+    }
+
+    return corsJsonResponse({
+      success: true,
       status: 'ok',
       transcript_text: cleanText,
+      confidentiality,
       message: 'Transcrição importada com sucesso'
     }, req);
 

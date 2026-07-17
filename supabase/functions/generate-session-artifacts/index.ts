@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
+import { timingSafeEqual } from '../_shared/security.ts';
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -7,25 +8,32 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return corsJsonResponse({ error: 'Authorization required' }, req, 401);
-    }
-
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
 
-    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
+    // Auth: cron OR authenticated user
+    const cronSecret = req.headers.get('x-cron-secret');
+    const expectedCron = Deno.env.get('CRON_SECRET');
+    const isCron = !!cronSecret && !!expectedCron && timingSafeEqual(cronSecret, expectedCron);
+
+    const authHeader = req.headers.get('Authorization');
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify user
-    const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
-    if (userError || !user) {
-      return corsJsonResponse({ error: 'Invalid token' }, req, 401);
+    let userId: string | null = null;
+    if (!isCron) {
+      if (!authHeader) {
+        return corsJsonResponse({ error: 'Authorization required' }, req, 401);
+      }
+      const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } }
+      });
+      const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
+      if (userError || !user) {
+        return corsJsonResponse({ error: 'Invalid token' }, req, 401);
+      }
+      userId = user.id;
     }
 
     const { session_id } = await req.json();
@@ -44,14 +52,14 @@ Deno.serve(async (req: Request) => {
       return corsJsonResponse({ error: 'Session not found' }, req, 404);
     }
 
-    // Verify workspace access
-    const { data: hasAccess } = await supabaseAdmin.rpc('has_workspace_access', {
-      _user_id: user.id,
-      _workspace_id: session.workspace_id
-    });
-
-    if (!hasAccess) {
-      return corsJsonResponse({ error: 'Access denied' }, req, 403);
+    if (!isCron && userId) {
+      const { data: hasAccess } = await supabaseAdmin.rpc('has_workspace_access', {
+        _user_id: userId,
+        _workspace_id: session.workspace_id
+      });
+      if (!hasAccess) {
+        return corsJsonResponse({ error: 'Access denied' }, req, 403);
+      }
     }
 
     // Get transcript if available
@@ -69,16 +77,18 @@ Deno.serve(async (req: Request) => {
       return corsJsonResponse({ error: 'Insufficient content to analyze' }, req, 400);
     }
 
-    // Check rate limit
-    const { data: canProceed } = await supabaseAdmin.rpc('check_ai_rate_limit', {
-      _user_id: user.id,
-      _workspace_id: session.workspace_id,
-      _function_name: 'generate-session-artifacts',
-      _max_requests: 10
-    });
+    // Check rate limit (skip for cron invocations)
+    if (!isCron && userId) {
+      const { data: canProceed } = await supabaseAdmin.rpc('check_ai_rate_limit', {
+        _user_id: userId,
+        _workspace_id: session.workspace_id,
+        _function_name: 'generate-session-artifacts',
+        _max_requests: 10
+      });
 
-    if (!canProceed) {
-      return corsJsonResponse({ error: 'Rate limit exceeded. Please try again later.' }, req, 429);
+      if (!canProceed) {
+        return corsJsonResponse({ error: 'Rate limit exceeded. Please try again later.' }, req, 429);
+      }
     }
 
     let artifacts = {
@@ -162,7 +172,7 @@ Be concise and actionable. Focus on startup progress, mentor advice, and founder
           title: item.title,
           due_date: item.due_date || null,
           status: 'pending',
-          created_by: user.id,
+          created_by: userId,
         })
         .select('id, title')
         .single();
@@ -175,7 +185,7 @@ Be concise and actionable. Focus on startup progress, mentor advice, and founder
     // Log activity
     await supabaseAdmin.from('activity_log').insert({
       workspace_id: session.workspace_id,
-      user_id: user.id,
+      user_id: userId,
       entity_type: 'session',
       entity_id: session_id,
       action: 'artifacts_generated',

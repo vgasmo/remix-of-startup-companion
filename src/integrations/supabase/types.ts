@@ -6534,6 +6534,7 @@ export type Database = {
       }
       session_transcripts: {
         Row: {
+          confidentiality: string
           created_at: string | null
           id: string
           session_id: string
@@ -6541,6 +6542,7 @@ export type Database = {
           transcript_text: string | null
         }
         Insert: {
+          confidentiality?: string
           created_at?: string | null
           id?: string
           session_id: string
@@ -6548,6 +6550,7 @@ export type Database = {
           transcript_text?: string | null
         }
         Update: {
+          confidentiality?: string
           created_at?: string | null
           id?: string
           session_id?: string
@@ -6630,6 +6633,7 @@ export type Database = {
           join_url: string | null
           location: string | null
           notes: string | null
+          online_meeting_id: string | null
           outlook_event_id: string | null
           outlook_owner_email: string | null
           outlook_sync_error: string | null
@@ -6637,6 +6641,9 @@ export type Database = {
           outlook_synced_at: string | null
           primary_consultant_id: string | null
           raw_transcript: string | null
+          recording_consent: boolean
+          recording_consent_at: string | null
+          recording_consent_by: string | null
           scheduled_at: string
           search_vector: unknown
           session_template_id: string | null
@@ -6645,6 +6652,9 @@ export type Database = {
           status: string
           teams_meeting_url: string | null
           title: string
+          transcript_import_attempts: number
+          transcript_import_status: string | null
+          transcript_last_attempt_at: string | null
           updated_at: string
           workspace_id: string
         }
@@ -6669,6 +6679,7 @@ export type Database = {
           join_url?: string | null
           location?: string | null
           notes?: string | null
+          online_meeting_id?: string | null
           outlook_event_id?: string | null
           outlook_owner_email?: string | null
           outlook_sync_error?: string | null
@@ -6676,6 +6687,9 @@ export type Database = {
           outlook_synced_at?: string | null
           primary_consultant_id?: string | null
           raw_transcript?: string | null
+          recording_consent?: boolean
+          recording_consent_at?: string | null
+          recording_consent_by?: string | null
           scheduled_at: string
           search_vector?: unknown
           session_template_id?: string | null
@@ -6684,6 +6698,9 @@ export type Database = {
           status?: string
           teams_meeting_url?: string | null
           title: string
+          transcript_import_attempts?: number
+          transcript_import_status?: string | null
+          transcript_last_attempt_at?: string | null
           updated_at?: string
           workspace_id: string
         }
@@ -6708,6 +6725,7 @@ export type Database = {
           join_url?: string | null
           location?: string | null
           notes?: string | null
+          online_meeting_id?: string | null
           outlook_event_id?: string | null
           outlook_owner_email?: string | null
           outlook_sync_error?: string | null
@@ -6715,6 +6733,9 @@ export type Database = {
           outlook_synced_at?: string | null
           primary_consultant_id?: string | null
           raw_transcript?: string | null
+          recording_consent?: boolean
+          recording_consent_at?: string | null
+          recording_consent_by?: string | null
           scheduled_at?: string
           search_vector?: unknown
           session_template_id?: string | null
@@ -6723,6 +6744,9 @@ export type Database = {
           status?: string
           teams_meeting_url?: string | null
           title?: string
+          transcript_import_attempts?: number
+          transcript_import_status?: string | null
+          transcript_last_attempt_at?: string | null
           updated_at?: string
           workspace_id?: string
         }
@@ -8840,6 +8864,33 @@ export type Database = {
           },
         ]
       }
+      transcript_deletion_audit: {
+        Row: {
+          deleted_at: string
+          deleted_by: string | null
+          id: string
+          reason: string | null
+          session_id: string
+          workspace_id: string | null
+        }
+        Insert: {
+          deleted_at?: string
+          deleted_by?: string | null
+          id?: string
+          reason?: string | null
+          session_id: string
+          workspace_id?: string | null
+        }
+        Update: {
+          deleted_at?: string
+          deleted_by?: string | null
+          id?: string
+          reason?: string | null
+          session_id?: string
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       unit_economics_values: {
         Row: {
           arpu: number | null
@@ -9649,6 +9700,44 @@ export type Database = {
           },
           {
             foreignKeyName: "workspace_readiness_status_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspace_recording_consents: {
+        Row: {
+          accepted_at: string
+          accepted_by: string
+          consent_version: string
+          id: string
+          revoked_at: string | null
+          revoked_by: string | null
+          workspace_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          accepted_by: string
+          consent_version?: string
+          id?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          workspace_id: string
+        }
+        Update: {
+          accepted_at?: string
+          accepted_by?: string
+          consent_version?: string
+          id?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_recording_consents_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -10937,6 +11026,10 @@ export type Database = {
       has_active_workspace_access: { Args: { ws_id: string }; Returns: boolean }
       has_any_role: { Args: { _user_id: string }; Returns: boolean }
       has_program_access: { Args: { _program_id: string }; Returns: boolean }
+      has_recording_consent: {
+        Args: { _workspace_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
