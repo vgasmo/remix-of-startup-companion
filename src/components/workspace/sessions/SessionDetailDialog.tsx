@@ -494,7 +494,8 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                     value={decisions}
                     onChange={(e) => setDecisions(e.target.value)}
                     placeholder={t('sessions.keyDecisionsPlaceholder', 'Key decisions made during this session...')}
-                    rows={3}
+                    rows={5}
+                    className="resize-y min-h-[120px]"
                   />
                 ) : (
                   <p className="text-sm whitespace-pre-wrap bg-muted/50 p-3 rounded-lg min-h-[60px]">
