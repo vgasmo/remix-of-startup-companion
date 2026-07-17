@@ -40,6 +40,9 @@ interface UnifiedSmartInboxProps {
   pendingSessionsCount?: number;
   missingKpiCount?: number;
   workspaceId?: string;
+  overdueHref?: string;
+  pendingSessionsHref?: string;
+  missingKpiHref?: string;
 }
 
 export function UnifiedSmartInbox({
@@ -47,6 +50,9 @@ export function UnifiedSmartInbox({
   pendingSessionsCount = 0,
   missingKpiCount = 0,
   workspaceId,
+  overdueHref,
+  pendingSessionsHref,
+  missingKpiHref,
 }: UnifiedSmartInboxProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
