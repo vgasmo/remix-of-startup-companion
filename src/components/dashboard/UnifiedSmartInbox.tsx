@@ -64,11 +64,15 @@ export function UnifiedSmartInbox({
   overdueHref,
   pendingSessionsHref,
   missingKpiHref,
+  overdueBreakdown,
+  pendingSessionsBreakdown,
+  missingKpiBreakdown,
 }: UnifiedSmartInboxProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<InboxCategory>('all');
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(['overdue-actions']));
 
   // Build items from real props
   const items: InboxItem[] = [];
@@ -84,6 +88,7 @@ export function UnifiedSmartInbox({
       priority: 'critical',
       href: overdueHref ?? (workspaceId ? `/workspace/${workspaceId}?tab=milestones-actions&sub=actions` : '/my-workspaces?filter=attention'),
       read: false,
+      breakdown: overdueBreakdown,
     });
   }
 
@@ -98,6 +103,7 @@ export function UnifiedSmartInbox({
       priority: 'high',
       href: pendingSessionsHref ?? (workspaceId ? `/workspace/${workspaceId}?tab=agenda` : '/my-workspaces?filter=attention'),
       read: false,
+      breakdown: pendingSessionsBreakdown,
     });
   }
 
@@ -112,6 +118,7 @@ export function UnifiedSmartInbox({
       priority: 'medium',
       href: missingKpiHref ?? (workspaceId ? `/workspace/${workspaceId}?tab=kpis` : '/my-workspaces?filter=attention'),
       read: false,
+      breakdown: missingKpiBreakdown,
     });
   }
 
