@@ -227,11 +227,17 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
                 workspace={workspace}
               />
               {canSetPriority && (
-                <ProgramSwitcher
-                  workspaceId={workspace.id}
-                  currentProgramId={workspace.program_id}
-                  size="sm"
-                />
+                <>
+                  <ProgramSwitcher
+                    workspaceId={workspace.id}
+                    currentProgramId={workspace.program_id}
+                    size="sm"
+                  />
+                  <ProgramTransferDialog
+                    workspaceId={workspace.id}
+                    currentProgramId={workspace.program_id}
+                  />
+                </>
               )}
               {canWrite ? (
                 <Select value={workspace.stage} onValueChange={(v) => handleStageChange(v as StartupStage)}>
