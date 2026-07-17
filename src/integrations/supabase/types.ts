@@ -1286,10 +1286,12 @@ export type Database = {
           metadata_json: Json | null
           needs_review: boolean | null
           occurred_at: string
+          original_timestamp: string | null
           participants_json: Json | null
           preview: string | null
           priority: string | null
           provider_thread_id: string | null
+          staff_only: boolean
           status: string
           subject: string | null
           sync_error: string | null
@@ -1322,10 +1324,12 @@ export type Database = {
           metadata_json?: Json | null
           needs_review?: boolean | null
           occurred_at?: string
+          original_timestamp?: string | null
           participants_json?: Json | null
           preview?: string | null
           priority?: string | null
           provider_thread_id?: string | null
+          staff_only?: boolean
           status?: string
           subject?: string | null
           sync_error?: string | null
@@ -1358,10 +1362,12 @@ export type Database = {
           metadata_json?: Json | null
           needs_review?: boolean | null
           occurred_at?: string
+          original_timestamp?: string | null
           participants_json?: Json | null
           preview?: string | null
           priority?: string | null
           provider_thread_id?: string | null
+          staff_only?: boolean
           status?: string
           subject?: string | null
           sync_error?: string | null
@@ -11163,6 +11169,18 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: undefined
       }
+      staff_diagnose_program_mismatches: {
+        Args: never
+        Returns: {
+          contract_program_id: string
+          contract_program_name: string
+          current_program_id: string
+          current_program_name: string
+          startup_id: string
+          startup_name: string
+          workspace_id: string
+        }[]
+      }
       staff_rotate_intake_token: {
         Args: { p_intake_id: string }
         Returns: string
@@ -11170,6 +11188,14 @@ export type Database = {
       staff_rotate_onboarding_token: {
         Args: { p_contract_id: string }
         Returns: string
+      }
+      staff_transfer_workspace_program: {
+        Args: {
+          p_dry_run?: boolean
+          p_target_program_id: string
+          p_workspace_id: string
+        }
+        Returns: Json
       }
       submit_checkin: {
         Args: { p_instance_id: string; p_responses: Json }

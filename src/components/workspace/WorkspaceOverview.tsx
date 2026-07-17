@@ -72,6 +72,7 @@ import { useWorkspaceMembers, useWorkspaceFounder } from '@/hooks/useWorkspaceMe
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 import { ProgramSwitcher } from '@/components/workspace/ProgramSwitcher';
+import { ProgramTransferDialog } from '@/components/staff/ProgramTransferDialog';
 import { PrivateDocumentsPanel } from '@/components/workspace/PrivateDocumentsPanel';
 import { PlanAssistantsCard } from '@/components/workspace/PlanAssistantsCard';
 
@@ -227,11 +228,17 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
                 workspace={workspace}
               />
               {canSetPriority && (
-                <ProgramSwitcher
-                  workspaceId={workspace.id}
-                  currentProgramId={workspace.program_id}
-                  size="sm"
-                />
+                <>
+                  <ProgramSwitcher
+                    workspaceId={workspace.id}
+                    currentProgramId={workspace.program_id}
+                    size="sm"
+                  />
+                  <ProgramTransferDialog
+                    workspaceId={workspace.id}
+                    currentProgramId={workspace.program_id}
+                  />
+                </>
               )}
               {canWrite ? (
                 <Select value={workspace.stage} onValueChange={(v) => handleStageChange(v as StartupStage)}>
