@@ -386,9 +386,9 @@ async function syncConsultantEmails(
 
     while (graphUrl && pageCount < MAX_PAGES) {
       pageCount++;
-      const graphRes = await fetch(graphUrl, {
+      const graphRes = await fetchGraphWithRetry(graphUrl, {
         headers: { 'Authorization': `Bearer ${accessToken}` },
-      });
+      }, log);
 
       if (!graphRes.ok) {
         const errText = await graphRes.text();
