@@ -56,17 +56,23 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
   const { t, i18n } = useTranslation();
   const language = i18n.language.startsWith('pt') ? 'pt' : 'en';
   const [showAll, setShowAll] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: emails, isLoading } = useQuery({
-    queryKey: ['crm-emails', funnelItemId, workspaceId],
+    queryKey: ['crm-emails', funnelItemId, workspaceId, showArchived],
     queryFn: async () => {
       let query = supabase
         .from('communication_log')
-        .select('id, subject, preview, direction, channel, occurred_at, from_address, status')
+        .select('id, subject, preview, direction, channel, occurred_at, from_address, status, archived_at')
         .in('channel', ['email', 'outlook'])
         .order('occurred_at', { ascending: false })
         .limit(100);
+
+      if (!showArchived) {
+        query = query.is('archived_at', null);
+      }
 
       if (funnelItemId) {
         query = query.eq('funnel_item_id', funnelItemId);
@@ -79,6 +85,27 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
       return data;
     },
     enabled: !!(funnelItemId || workspaceId),
+  });
+
+  const archiveMutation = useMutation({
+    mutationFn: async ({ id, archive }: { id: string; archive: boolean }) => {
+      const { error } = await supabase
+        .from('communication_log')
+        .update({ archived_at: archive ? new Date().toISOString() : null })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['crm-emails'] });
+      notify.success(
+        vars.archive
+          ? t('crm.emailArchived', { defaultValue: 'Email arquivado' })
+          : t('crm.emailUnarchived', { defaultValue: 'Email restaurado' }),
+      );
+    },
+    onError: () => {
+      notify.error(t('common.errorOccurred', { defaultValue: 'Ocorreu um erro' }));
+    },
   });
 
   const { data: recap, isLoading: loadingRecap } = useRelationshipRecap({
