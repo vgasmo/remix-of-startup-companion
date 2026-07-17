@@ -613,15 +613,16 @@ Deno.serve(async (req) => {
 
       const finalizeRun = async (patch: Record<string, unknown>) => {
         if (!runId) return;
-        await supabaseAdmin
-          .from('email_sync_runs')
-          .update({
-            finished_at: new Date().toISOString(),
-            duration_ms: Date.now() - runStart,
-            ...patch,
-          })
-          .eq('id', runId)
-          .catch(() => {});
+        try {
+          await supabaseAdmin
+            .from('email_sync_runs')
+            .update({
+              finished_at: new Date().toISOString(),
+              duration_ms: Date.now() - runStart,
+              ...patch,
+            })
+            .eq('id', runId);
+        } catch { /* best-effort */ }
       };
 
       log.info('email_sync_run_started', { runId, triggeredBy });
