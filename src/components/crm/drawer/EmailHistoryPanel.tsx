@@ -12,11 +12,34 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { formatRelativeTime } from '@/lib/dateUtils';
 import { useRelationshipRecap, useGenerateRecap } from '@/hooks/useActivityTimeline';
+import { clickableProps } from '@/lib/clickable';
 import { cn } from '@/lib/utils';
+
+/** Convert email body (HTML or text) to safe plain text for display. */
+function emailBodyToText(body: string | null | undefined): string {
+  if (!body) return '';
+  // Strip script/style blocks then tags; decode a few common entities.
+  const stripped = body
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|li|tr|h[1-6])>/gi, '\n')
+    .replace(/<[^>]+>/g, '');
+  return stripped
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
 
 const VISIBLE_EMAIL_COUNT = 5;
 
@@ -32,6 +55,7 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
   const { t, i18n } = useTranslation();
   const language = i18n.language.startsWith('pt') ? 'pt' : 'en';
   const [showAll, setShowAll] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { data: emails, isLoading } = useQuery({
     queryKey: ['crm-emails', funnelItemId, workspaceId],
@@ -195,7 +219,13 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
               const visibleEmails = emails.slice(0, VISIBLE_EMAIL_COUNT);
               const hiddenEmails = emails.slice(VISIBLE_EMAIL_COUNT);
               const renderRow = (email: typeof emails[number]) => (
-                <Card key={email.id} className="border-border/40 hover:bg-muted/40 transition-colors">
+                <Card
+                  key={email.id}
+                  className="border-border/40 hover:bg-muted/40 hover:border-primary/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  {...clickableProps(() => setSelectedId(email.id), {
+                    label: email.subject || t('crm.noSubject', { defaultValue: '(sem assunto)' }),
+                  })}
+                >
                   <CardContent className="p-2.5">
                     <div className="flex items-start gap-2">
                       <div className="mt-0.5">
@@ -223,6 +253,7 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
                   </CardContent>
                 </Card>
               );
+
 
               return (
                 <>
@@ -252,6 +283,77 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
           </div>
         </ScrollArea>
       )}
+
+      <EmailDetailDialog
+        emailId={selectedId}
+        onClose={() => setSelectedId(null)}
+      />
     </div>
   );
 }
+
+function EmailDetailDialog({ emailId, onClose }: { emailId: string | null; onClose: () => void }) {
+  const { t } = useTranslation();
+  const { data: email, isLoading } = useQuery({
+    queryKey: ['crm-email-detail', emailId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('communication_log')
+        .select('id, subject, body, preview, from_address, direction, occurred_at, participants_json')
+        .eq('id', emailId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!emailId,
+  });
+
+  const bodyText = emailBodyToText(email?.body ?? email?.preview ?? '');
+
+  return (
+    <Dialog open={!!emailId} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="text-base break-words">
+            {email?.subject || t('crm.noSubject', { defaultValue: '(sem assunto)' })}
+          </DialogTitle>
+          {email && (
+            <DialogDescription className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+              {email.from_address && <span className="truncate">{email.from_address}</span>}
+              <span>·</span>
+              <span>{formatRelativeTime(email.occurred_at)}</span>
+              {email.direction && (
+                <>
+                  <span>·</span>
+                  <span className="uppercase tracking-wider">
+                    {email.direction === 'inbound'
+                      ? t('crm.inbound', { defaultValue: 'Recebido' })
+                      : t('crm.outbound', { defaultValue: 'Enviado' })}
+                  </span>
+                </>
+              )}
+            </DialogDescription>
+          )}
+        </DialogHeader>
+        <ScrollArea className="flex-1 min-h-0 -mx-6 px-6">
+          {isLoading ? (
+            <div className="space-y-2 py-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-4 w-4/6" />
+            </div>
+          ) : bodyText ? (
+            <pre className="whitespace-pre-wrap break-words font-sans text-sm text-foreground leading-relaxed">
+              {bodyText}
+            </pre>
+          ) : (
+            <p className="text-sm text-muted-foreground italic py-4">
+              {t('crm.emailNoBody', { defaultValue: 'Sem conteúdo disponível para este email.' })}
+            </p>
+          )}
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
