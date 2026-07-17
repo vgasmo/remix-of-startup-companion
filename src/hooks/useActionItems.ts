@@ -122,14 +122,30 @@ export function useUpdateActionItem(workspaceId: string) {
         .maybeSingle();
       const prevStatus = prevRow?.status as ActionStatus | undefined;
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('action_items')
         .update(updateData)
-        .eq('id', id)
-        .select('*, owner:profiles!action_items_owner_user_id_fkey(full_name)')
-        .single();
+        .eq('id', id);
 
       if (error) throw error;
+
+      const { data, error: readError } = await supabase
+        .from('action_items')
+        .select('id, title, description, status, priority, due_date, owner_user_id, session_id, milestone_id, workspace_id, created_at, updated_at, completed_at, created_by, planner_sync_status, source_deliverable_key')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (readError) {
+        logger.warn('action_update_readback_failed', { actionId: id, error: readError.message });
+      }
+
+      const actionData = data ?? {
+        id,
+        title: prevRow?.title ?? '',
+        status: updates.status ?? prevStatus ?? 'pending',
+        owner_user_id: prevRow?.owner_user_id ?? null,
+        workspace_id: prevRow?.workspace_id ?? workspaceId,
+      };
 
       // Founder → Consultant awaiting_validation notification is now handled by
       // the DB trigger `notify_action_awaiting_validation` (SECURITY DEFINER) so
@@ -147,12 +163,12 @@ export function useUpdateActionItem(workspaceId: string) {
               type: 'system',
               title: t('notifications.actionValidatedTitle', 'Ação validada'),
               message: t('notifications.actionValidatedBody', {
-                action: data.title,
-                defaultValue: `«${data.title}» foi validada ✓`,
+                action: actionData.title,
+                defaultValue: `«${actionData.title}» foi validada ✓`,
               }),
-              link: `/workspace/${workspaceId}?tab=milestones-actions&sub=actions&highlight=${data.id}`,
+              link: `/workspace/${workspaceId}?tab=milestones-actions&sub=actions&highlight=${actionData.id}`,
               entity_type: 'action_item',
-              entity_id: data.id,
+              entity_id: actionData.id,
               read: false,
             });
           }
@@ -164,7 +180,7 @@ export function useUpdateActionItem(workspaceId: string) {
 
       // Track if owner was assigned for Teams notification
       const ownerAssigned = 'owner_user_id' in updates && updates.owner_user_id;
-      return { data, ownerAssigned, title: data.title };
+      return { data: actionData, ownerAssigned, title: actionData.title };
     },
     // ── Optimistic Update ──
     onMutate: async (variables) => {
