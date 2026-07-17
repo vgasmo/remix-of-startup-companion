@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { clickableProps } from '@/lib/clickable';
-import { FileText, ChevronRight, Check, Save, FolderOpen, Calculator, Send, MessageSquare, CheckCircle2, Sparkles, LayoutGrid, Target, Users, Crosshair, TrendingUp, DollarSign, Rocket, BarChart3, Map, Upload, HelpCircle, Loader2, WifiOff, CircleCheck, CircleAlert } from 'lucide-react';
+import { FileText, ChevronRight, Check, Save, FolderOpen, Calculator, Send, MessageSquare, CheckCircle2, Sparkles, LayoutGrid, Target, Users, Crosshair, TrendingUp, DollarSign, Rocket, BarChart3, Map, Upload, HelpCircle, Loader2, WifiOff, CircleCheck, CircleAlert, Eye, EyeOff } from 'lucide-react';
+import { useHiddenCanvasTools, useToggleHiddenCanvasTool } from '@/hooks/useHiddenCanvasTools';
 import { useTemplateDraftAutosave, type AutosaveStatus } from '@/hooks/useTemplateDraftAutosave';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,9 +45,13 @@ interface TemplatesTabProps {
 
 export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: TemplatesTabProps) {
   const { t } = useTranslation();
+  const { roles } = useAuth();
+  const isStaff = roles.includes('admin') || roles.includes('consultor');
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: templates, isLoading: loadingTemplates } = useTemplates();
   const { data: instances, isLoading: loadingInstances } = useTemplateInstances(workspaceId);
+  const { data: hiddenTools = [] } = useHiddenCanvasTools(workspaceId);
+  const toggleHidden = useToggleHiddenCanvasTool(workspaceId);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [selectedInstance, setSelectedInstance] = useState<TemplateInstance | null>(null);
   const [activeTab, setActiveTab] = useState('templates');
@@ -232,14 +237,20 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
           <FileText className="h-4 w-4" />
           {t('templates.title')}
         </TabsTrigger>
-        {canvasTemplates.map(({ type, template, icon }) => 
-          template && (
+        {canvasTemplates.map(({ type, template, icon }) => {
+          if (!template) return null;
+          const isHidden = hiddenTools.includes(type);
+          if (isHidden && !isStaff) return null;
+          return (
             <TabsTrigger key={type} value={type} className="gap-2">
               {icon}
               {getCanvasTabLabel(type)}
+              {isHidden && isStaff && (
+                <EyeOff className="h-3 w-3 text-muted-foreground" aria-label={t('templates.hiddenFromFounder', 'Oculto para o founder')} />
+              )}
             </TabsTrigger>
-          )
-        )}
+          );
+        })}
         <TabsTrigger value="calculator" className="gap-2">
           <Calculator className="h-4 w-4" />
           {t('templates.unitEconomics', 'Unit Economics')}
@@ -251,9 +262,28 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
       </TabsContent>
 
       {/* Canvas Tabs */}
-      {canvasTemplates.map(({ type, template }) => 
-        template && (
+      {canvasTemplates.map(({ type, template }) => {
+        if (!template) return null;
+        const isHidden = hiddenTools.includes(type);
+        if (isHidden && !isStaff) return null;
+        return (
           <TabsContent key={type} value={type}>
+            {isStaff && (
+              <div className="mb-3 flex items-center justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => toggleHidden.mutate({ canvasType: type, hide: !isHidden })}
+                  disabled={toggleHidden.isPending}
+                  className="gap-1.5"
+                >
+                  {isHidden ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                  {isHidden
+                    ? t('templates.showToFounder', 'Mostrar ao founder')
+                    : t('templates.hideFromFounder', 'Ocultar ao founder')}
+                </Button>
+              </div>
+            )}
             <CanvasTemplateWrapper
               template={template}
               instance={instancesByTemplateId[template.id] || null}
@@ -263,8 +293,8 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
               isFounder={isFounder}
             />
           </TabsContent>
-        )
-      )}
+        );
+      })}
 
       <TabsContent value="templates" className="space-y-6">
       {categories.map(category => {

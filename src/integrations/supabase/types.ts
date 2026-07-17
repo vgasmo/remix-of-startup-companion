@@ -9443,6 +9443,38 @@ export type Database = {
           },
         ]
       }
+      workspace_hidden_canvas_tools: {
+        Row: {
+          canvas_type: string
+          created_at: string
+          hidden_by: string | null
+          id: string
+          workspace_id: string
+        }
+        Insert: {
+          canvas_type: string
+          created_at?: string
+          hidden_by?: string | null
+          id?: string
+          workspace_id: string
+        }
+        Update: {
+          canvas_type?: string
+          created_at?: string
+          hidden_by?: string | null
+          id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_hidden_canvas_tools_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspace_invitations: {
         Row: {
           accepted_at: string | null
