@@ -136,7 +136,39 @@ async function getGraphAccessToken(credentials: GraphCredentials, log: ReturnTyp
   return data.access_token;
 }
 
-async function matchEmailToCrm(
+/**
+ * Fetch with exponential-backoff retry for 429 / 5xx / network errors.
+ * Honours the Retry-After header when present. Total attempts: 3.
+ */
+async function fetchGraphWithRetry(
+  url: string,
+  init: RequestInit,
+  log: ReturnType<typeof createLogger>,
+): Promise<Response> {
+  const MAX_ATTEMPTS = 3;
+  let lastErr: unknown = null;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(url, init);
+      if (res.ok) return res;
+      const retryable = res.status === 429 || (res.status >= 500 && res.status < 600);
+      if (!retryable || attempt === MAX_ATTEMPTS) return res;
+      const retryAfter = Number(res.headers.get('retry-after')) || 0;
+      const backoffMs = retryAfter > 0 ? retryAfter * 1000 : 500 * 2 ** (attempt - 1);
+      log.warn('graph_retry', { attempt, status: res.status, waitMs: backoffMs });
+      // Drain body to avoid resource leak
+      await res.text().catch(() => {});
+      await new Promise((r) => setTimeout(r, backoffMs));
+    } catch (err) {
+      lastErr = err;
+      if (attempt === MAX_ATTEMPTS) throw err;
+      const backoffMs = 500 * 2 ** (attempt - 1);
+      log.warn('graph_retry_network', { attempt, waitMs: backoffMs, error: String(err) });
+      await new Promise((r) => setTimeout(r, backoffMs));
+    }
+  }
+  throw lastErr ?? new Error('fetchGraphWithRetry: unreachable');
+}
   supabaseAdmin: SupabaseClient,
   participantEmails: string[],
   consultantEmail: string,
