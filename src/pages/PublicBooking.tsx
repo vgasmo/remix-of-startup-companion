@@ -51,6 +51,7 @@ export default function PublicBooking() {
   const [selectedProgramName, setSelectedProgramName] = useState<string | null>(null);
   const [pitchFile, setPitchFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [recordingConsent, setRecordingConsent] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -138,6 +139,7 @@ export default function PublicBooking() {
           slot: selectedSlot,
           contact: { ...formData, pitch_deck_path: pitchDeckPath || undefined },
           program_id: selectedProgramId,
+          recording_consent: recordingConsent,
         },
       });
       
@@ -223,6 +225,10 @@ export default function PublicBooking() {
       setInvalidFields(new Set(missing));
       notify.error(t('publicBooking.fillRequired'));
       focusField(missing[0]);
+      return;
+    }
+    if (!recordingConsent) {
+      notify.error(t('publicBooking.recordingConsentRequired', { defaultValue: 'Precisa de autorizar a gravação e transcrição para reservar.' }));
       return;
     }
     setInvalidFields(new Set());
@@ -739,11 +745,25 @@ export default function PublicBooking() {
                     </Button>
                   )}
                 </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={bookMutation.isPending || uploading} loading={bookMutation.isPending}
+
+                <div className="flex items-start gap-2 rounded-md border border-input bg-muted/30 p-3">
+                  <input
+                    id="recording_consent"
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 rounded border-input"
+                    checked={recordingConsent}
+                    onChange={(e) => setRecordingConsent(e.target.checked)}
+                    required
+                  />
+                  <Label htmlFor="recording_consent" className="text-sm font-normal leading-snug cursor-pointer">
+                    {t('publicBooking.recordingConsentLabel', { defaultValue: 'Autorizo a gravação e transcrição desta reunião para efeitos de apoio, registo interno e melhoria do serviço (RGPD).' })}
+                  </Label>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={bookMutation.isPending || uploading || !recordingConsent} loading={bookMutation.isPending}
                 >
                   {(bookMutation.isPending || uploading) ? t('publicBooking.booking') : t('publicBooking.confirmBooking')}
                 </Button>
