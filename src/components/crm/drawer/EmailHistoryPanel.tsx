@@ -177,6 +177,20 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
               {t('crm.sync', { defaultValue: 'Sincronizar' })}
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 text-xs gap-1"
+            onClick={() => setShowArchived((v) => !v)}
+            title={showArchived
+              ? t('crm.hideArchived', { defaultValue: 'Ocultar arquivados' })
+              : t('crm.showArchived', { defaultValue: 'Ver arquivados' })}
+          >
+            {showArchived ? <ArchiveRestore className="h-3 w-3" /> : <Archive className="h-3 w-3" />}
+            {showArchived
+              ? t('crm.hideArchived', { defaultValue: 'Ocultar arquivados' })
+              : t('crm.showArchived', { defaultValue: 'Arquivados' })}
+          </Button>
         </div>
       </div>
 
