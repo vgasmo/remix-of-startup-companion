@@ -7269,6 +7269,8 @@
     }
   },
   "publicBooking": {
+    "recordingConsentLabel": "I authorise the recording and transcription of this meeting for support, internal records and service improvement (GDPR).",
+    "recordingConsentRequired": "You must authorise recording and transcription to book.",
     "backToBook": "Back To Book",
     "backToSite": "Back to site",
     "bookFirstMeeting": "Book Your First Meeting",
