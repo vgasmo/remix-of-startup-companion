@@ -461,7 +461,8 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder={t('sessions.addNotesPlaceholder', 'Add notes from this session...')}
-                      rows={5}
+                      rows={10}
+                      className="resize-y min-h-[180px]"
                     />
                   )
                 ) : (
