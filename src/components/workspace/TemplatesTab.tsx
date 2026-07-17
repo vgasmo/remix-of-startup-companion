@@ -251,6 +251,10 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
             </TabsTrigger>
           );
         })}
+        <TabsTrigger value="calculator" className="gap-2">
+          <Calculator className="h-4 w-4" />
+          {t('templates.unitEconomics', 'Unit Economics')}
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="calculator">
