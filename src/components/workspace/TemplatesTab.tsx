@@ -262,9 +262,28 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
       </TabsContent>
 
       {/* Canvas Tabs */}
-      {canvasTemplates.map(({ type, template }) => 
-        template && (
+      {canvasTemplates.map(({ type, template }) => {
+        if (!template) return null;
+        const isHidden = hiddenTools.includes(type);
+        if (isHidden && !isStaff) return null;
+        return (
           <TabsContent key={type} value={type}>
+            {isStaff && (
+              <div className="mb-3 flex items-center justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => toggleHidden.mutate({ canvasType: type, hide: !isHidden })}
+                  disabled={toggleHidden.isPending}
+                  className="gap-1.5"
+                >
+                  {isHidden ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                  {isHidden
+                    ? t('templates.showToFounder', 'Mostrar ao founder')
+                    : t('templates.hideFromFounder', 'Ocultar ao founder')}
+                </Button>
+              </div>
+            )}
             <CanvasTemplateWrapper
               template={template}
               instance={instancesByTemplateId[template.id] || null}
@@ -274,8 +293,8 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
               isFounder={isFounder}
             />
           </TabsContent>
-        )
-      )}
+        );
+      })}
 
       <TabsContent value="templates" className="space-y-6">
       {categories.map(category => {
