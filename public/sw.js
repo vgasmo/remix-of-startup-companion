@@ -1,8 +1,10 @@
-self.addEventListener('install', (event) => {
+/* eslint-env serviceworker */
+/* global self, caches */
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', (event) => { // eslint-disable-line no-unused-vars
   event.waitUntil((async () => {
     const names = await caches.keys();
     await Promise.all(names.map((name) => caches.delete(name)));
