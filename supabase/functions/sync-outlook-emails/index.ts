@@ -597,28 +597,52 @@ Deno.serve(async (req) => {
     const isAutoSync = bodyJson.auto_sync === true;
 
     if (isAutoSync) {
-      // AUTO SYNC MODE: Sync all consultants with @startupleiria.com emails
-      log.info('Starting auto sync for all consultants');
+      // AUTO SYNC MODE: Sync all consultants with @startupleiria.com emails.
+      // Wrapped in an email_sync_runs row for observability and alerting.
+      const runStart = Date.now();
+      const triggeredBy = typeof bodyJson.triggered_by === 'string' ? bodyJson.triggered_by : 'cron';
+
+      const { data: runRow } = await supabaseAdmin
+        .from('email_sync_runs')
+        .insert({ status: 'running', triggered_by: triggeredBy })
+        .select('id')
+        .single();
+      const runId = runRow?.id as string | undefined;
+
+      const finalizeRun = async (patch: Record<string, unknown>) => {
+        if (!runId) return;
+        await supabaseAdmin
+          .from('email_sync_runs')
+          .update({
+            finished_at: new Date().toISOString(),
+            duration_ms: Date.now() - runStart,
+            ...patch,
+          })
+          .eq('id', runId)
+          .catch(() => {});
+      };
+
+      log.info('email_sync_run_started', { runId, triggeredBy });
 
       const credentials = await getGraphCredentials(supabaseAdmin, log);
       if (!credentials) {
-        log.warn('Auto sync skipped: MS Graph not configured');
+        log.warn('email_sync_skipped', { reason: 'graph_not_configured' });
+        await finalizeRun({ status: 'skipped', error_summary: 'Graph not configured' });
         return corsJsonResponse({ status: 'skipped', reason: 'Graph not configured' }, req);
       }
 
-      // Get all consultants (admin + consultor roles)
       const { data: staffRoles } = await supabaseAdmin
         .from('user_roles')
         .select('user_id')
         .in('role', ['admin', 'consultor']);
 
       if (!staffRoles || staffRoles.length === 0) {
+        await finalizeRun({ status: 'skipped', error_summary: 'No consultants' });
         return corsJsonResponse({ status: 'ok', synced: 0, reason: 'No consultants found' }, req);
       }
 
-      const staffIds = staffRoles.map(r => r.user_id);
+      const staffIds = staffRoles.map((r) => r.user_id);
 
-      // Get their emails
       const { data: profiles } = await supabaseAdmin
         .from('profiles')
         .select('id, email')
@@ -626,28 +650,43 @@ Deno.serve(async (req) => {
         .not('email', 'is', null);
 
       if (!profiles || profiles.length === 0) {
+        await finalizeRun({ status: 'skipped', error_summary: 'No profiles' });
         return corsJsonResponse({ status: 'ok', synced: 0, reason: 'No consultant profiles found' }, req);
       }
 
       const results: Array<{ email: string; processed: number; logged: number; unmatched: number; error?: string; skipped?: boolean }> = [];
 
-      // Pre-load disabled mailboxes so we don't hammer Graph for known-invalid users
       const { data: disabledRows } = await supabaseAdmin
         .from('email_sync_status')
         .select('consultant_user_id')
         .eq('provider', 'outlook')
         .eq('sync_state', 'disabled');
-      const disabledIds = new Set((disabledRows || []).map(r => r.consultant_user_id));
+      const disabledIds = new Set((disabledRows || []).map((r) => r.consultant_user_id));
+
+      let consultantsOk = 0;
+      let consultantsFailed = 0;
+      let totalProcessed = 0;
+      let totalLogged = 0;
+      let totalUnmatched = 0;
+      const errorSamples: Array<{ email: string; error: string }> = [];
 
       for (const profile of profiles) {
         if (!profile.email) continue;
         if (disabledIds.has(profile.id)) {
-          log.info(`Skipping disabled mailbox ${profile.email}`);
+          log.info('email_sync_skip_disabled', { email: profile.email });
           results.push({ email: profile.email, processed: 0, logged: 0, unmatched: 0, skipped: true });
           continue;
         }
-        log.info(`Auto syncing for ${profile.email}`);
         const result = await syncConsultantEmails(supabaseAdmin, profile.id, profile.email, credentials, log);
+        totalProcessed += result.processed;
+        totalLogged += result.logged;
+        totalUnmatched += result.unmatched;
+        if (result.error) {
+          consultantsFailed++;
+          errorSamples.push({ email: profile.email, error: result.error });
+        } else {
+          consultantsOk++;
+        }
         results.push({
           email: profile.email,
           processed: result.processed,
@@ -657,15 +696,46 @@ Deno.serve(async (req) => {
         });
       }
 
-      log.info('Auto sync complete', { consultants: results.length });
+      const runStatus = consultantsFailed === 0
+        ? 'ok'
+        : (consultantsOk === 0 ? 'failed' : 'partial');
+
+      await finalizeRun({
+        status: runStatus,
+        consultants_total: results.length,
+        consultants_ok: consultantsOk,
+        consultants_failed: consultantsFailed,
+        emails_processed: totalProcessed,
+        emails_logged: totalLogged,
+        emails_unmatched: totalUnmatched,
+        error_summary: errorSamples.length > 0 ? errorSamples.slice(0, 3).map((e) => `${e.email}: ${e.error}`).join(' | ').slice(0, 500) : null,
+        details: { errors: errorSamples.slice(0, 20) },
+      });
+
+      // Trigger health-check + alert emission. Never fatal for the run.
+      const { error: healthErr } = await supabaseAdmin.rpc('check_email_sync_health');
+      if (healthErr) log.warn('email_sync_health_check_failed', { error: healthErr.message });
+
+      log.info('email_sync_run_finished', {
+        runId,
+        status: runStatus,
+        consultants: results.length,
+        consultantsOk,
+        consultantsFailed,
+        durationMs: Date.now() - runStart,
+      });
 
       return corsJsonResponse({
-        status: 'ok',
+        status: runStatus,
         auto_sync: true,
+        run_id: runId,
         synced: results.length,
+        consultants_ok: consultantsOk,
+        consultants_failed: consultantsFailed,
         results,
       }, req);
     }
+
 
     // MANUAL MODE: Sync for authenticated user
     const authHeader = req.headers.get('Authorization');
