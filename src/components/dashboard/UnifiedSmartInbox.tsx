@@ -79,7 +79,7 @@ export function UnifiedSmartInbox({
       subtitle: t('inbox.pendingSessionsDesc', { defaultValue: 'Confirm or reschedule your upcoming mentorship sessions.' }),
       timestamp: t('inbox.thisWeek', { defaultValue: 'This week' }),
       priority: 'high',
-      href: workspaceId ? `/workspace/${workspaceId}?tab=agenda` : undefined,
+      href: workspaceId ? `/workspace/${workspaceId}?tab=agenda` : '/my-workspaces?filter=attention',
       read: false,
     });
   }
