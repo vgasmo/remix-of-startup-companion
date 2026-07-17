@@ -169,6 +169,8 @@ async function fetchGraphWithRetry(
   }
   throw lastErr ?? new Error('fetchGraphWithRetry: unreachable');
 }
+
+async function matchEmailToCrm(
   supabaseAdmin: SupabaseClient,
   participantEmails: string[],
   consultantEmail: string,
