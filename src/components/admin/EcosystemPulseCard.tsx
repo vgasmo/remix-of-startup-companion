@@ -66,6 +66,7 @@ function EcosystemPulseCardInner() {
       value: data?.contracts ?? 0,
       icon: FileText,
       tone: 'text-primary bg-primary/10',
+      href: '/admin?tab=backoffice&section=contracts',
     },
     {
       key: 'atRisk',
@@ -73,6 +74,7 @@ function EcosystemPulseCardInner() {
       value: data?.atRisk ?? 0,
       icon: AlertTriangle,
       tone: 'text-destructive bg-destructive/10',
+      href: '/my-workspaces?filter=attention',
     },
     {
       key: 'pending',
@@ -80,6 +82,7 @@ function EcosystemPulseCardInner() {
       value: data?.pending ?? 0,
       icon: Clock,
       tone: 'text-warning bg-warning/10',
+      href: '/admin?tab=approvals',
     },
     {
       key: 'programs',
@@ -87,6 +90,7 @@ function EcosystemPulseCardInner() {
       value: data?.programs ?? 0,
       icon: Activity,
       tone: 'text-info bg-info/10',
+      href: '/admin?tab=programs-setup',
     },
   ];
 
@@ -112,8 +116,15 @@ function EcosystemPulseCardInner() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {metrics.map(m => {
             const Icon = m.icon;
+            const interactive = m.href
+              ? clickableProps<HTMLDivElement>(() => navigate(m.href!), { label: `${m.label}: ${m.value}` })
+              : {};
             return (
-              <div key={m.key} className="flex items-center gap-3">
+              <div
+                key={m.key}
+                {...interactive}
+                className={`flex items-center gap-3 rounded-md -mx-1 px-1 py-1 ${m.href ? 'cursor-pointer hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors' : ''}`}
+              >
                 <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${m.tone}`}>
                   <Icon className="h-4 w-4" />
                 </div>
