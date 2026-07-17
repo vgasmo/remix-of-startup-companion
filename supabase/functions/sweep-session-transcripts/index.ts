@@ -8,7 +8,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
+import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { createLogger, generateRequestId, requireCronSecret, safeErrorMessage } from '../_shared/security.ts';
 
 const FUNCTION_NAME = 'sweep-session-transcripts';
