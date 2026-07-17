@@ -96,7 +96,12 @@ export const ActionItemCard = memo(function ActionItemCard({
       notify.error(t('actions.onlyStaffCanComplete', 'Apenas o consultor pode marcar como concluída'));
       return;
     }
-    if ((newStatus === 'completed' || newStatus === 'awaiting_validation') && totalDeliverables > 0 && !allDeliverablesCompleted) {
+    if (
+      (newStatus === 'completed' || newStatus === 'awaiting_validation') &&
+      totalDeliverables > 0 &&
+      !allDeliverablesCompleted &&
+      !isStaff
+    ) {
       notify.error(t('actions.deliverablesRequired', 'Todos os entregáveis devem estar concluídos antes de concluir a ação'));
       return;
     }
