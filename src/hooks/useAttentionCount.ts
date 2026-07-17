@@ -53,7 +53,9 @@ export function useAttentionCount() {
         totalAttention: criticalCount + atRiskCount + (overdueCount > 0 ? 1 : 0),
       };
     },
-    staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: 60 * 1000, // Refetch every minute
+    staleTime: 30 * 1000,
+    // Realtime (useRealtimeWorkspaces) invalidates this key when
+    // workspace_health_alerts / action_items change. Long safety net only.
+    refetchInterval: 10 * 60_000,
   });
 }
