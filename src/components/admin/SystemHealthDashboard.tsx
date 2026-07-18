@@ -184,7 +184,58 @@ export function SystemHealthDashboard() {
           value={events.length}
           tone="primary"
         />
+        <StatCard
+          icon={<Zap className="h-4 w-4" />}
+          label={t('admin.systemHealth.cronFailures24h', { defaultValue: 'Falhas de cron (24h)' })}
+          value={cronFailures24h}
+          tone={cronFailures24h > 0 ? 'destructive' : 'muted'}
+        />
       </div>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            {t('admin.systemHealth.automations', { defaultValue: 'Automações agendadas (24h)' })}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {cronByJob.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">
+              {t('admin.systemHealth.noCronRuns', { defaultValue: 'Sem execuções registadas nas últimas 24h.' })}
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {cronByJob.map(row => {
+                const tone = row.failed > 0 ? 'destructive' : row.partial > 0 ? 'warning' : 'success';
+                const badgeClass =
+                  tone === 'destructive' ? 'bg-destructive/15 text-destructive border-destructive/30' :
+                  tone === 'warning' ? 'bg-warning/15 text-warning border-warning/30' :
+                  'bg-success/15 text-success border-success/30';
+                return (
+                  <div key={row.job} className="flex items-center justify-between gap-3 border-b border-border/40 pb-2 last:border-0">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-mono text-xs truncate">{row.job}</p>
+                      {row.lastError && (
+                        <p className="text-xs text-destructive truncate mt-0.5">{row.lastError}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-muted-foreground">
+                        {row.ok}/{row.total} OK
+                      </span>
+                      <Badge variant="outline" className={badgeClass}>
+                        {row.failed > 0 ? `${row.failed} falhas` : row.partial > 0 ? `${row.partial} parciais` : 'saudável'}
+                      </Badge>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
