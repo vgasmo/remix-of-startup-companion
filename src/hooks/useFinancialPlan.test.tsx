@@ -175,13 +175,22 @@ describe('useResolvePrefillProposal', () => {
     updated_at: '',
   };
 
-  it('accept: upserts into financial_assumptions AND flips proposal to accepted', async () => {
+  it('accept: materializes into financial_assumptions (insert path, no upsert due to partial unique indexes) AND flips proposal to accepted', async () => {
+    // Production intentionally does find-then-update-or-insert instead of
+    // upsert because the unique indexes on financial_assumptions are PARTIAL
+    // (split on period_index null vs non-null), which Postgres cannot use as
+    // an ON CONFLICT arbiter (error 42P10). The mock has no matching row, so
+    // the accept path takes the insert branch.
     const { result } = renderHook(() => useResolvePrefillProposal('ws-1'), { wrapper });
     await result.current.mutateAsync({ proposal, action: 'accept' });
 
-    const upsert = calls.find(c => c.op === 'upsert' && c.table === 'financial_assumptions');
-    expect(upsert, 'materialization missing').toBeDefined();
-    const payload = (upsert!.payload as any[])[0];
+    const write = calls.find(
+      c => (c.op === 'insert' || c.op === 'upsert') && c.table === 'financial_assumptions',
+    );
+    expect(write, 'materialization missing').toBeDefined();
+    const payload = Array.isArray(write!.payload)
+      ? (write!.payload as any[])[0]
+      : (write!.payload as any);
     expect(payload).toMatchObject({
       workspace_id: 'ws-1',
       scenario: 'base',

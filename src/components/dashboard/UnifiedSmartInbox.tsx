@@ -206,11 +206,15 @@ export function UnifiedSmartInbox({
                       )}
                       {...clickableProps(() => {
                         if (hasBreakdown) {
-                          setExpandedIds(prev => {
-                            const n = new Set(prev);
-                            n.has(item.id) ? n.delete(item.id) : n.add(item.id);
-                            return n;
-                          });
+                           setExpandedIds(prev => {
+                             const n = new Set(prev);
+                             if (n.has(item.id)) {
+                               n.delete(item.id);
+                             } else {
+                               n.add(item.id);
+                             }
+                             return n;
+                           });
                         } else if (item.href) {
                           navigate(item.href);
                         }
