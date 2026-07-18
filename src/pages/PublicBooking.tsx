@@ -39,8 +39,20 @@ interface BookingToken {
   expires_at: string | null;
 }
 
-export default function PublicBooking() {
-  const { token } = useParams<{ token: string }>();
+interface PublicBookingProps {
+  /**
+   * When rendered inline by `/book` (canonical resolver), the parent passes
+   * the routing token here in React memory. In that mode we keep the browser
+   * URL as `/book` — the token never appears in the URL, redirects, or
+   * browser storage.
+   */
+  tokenOverride?: string;
+  canonicalMode?: boolean;
+}
+
+export default function PublicBooking({ tokenOverride, canonicalMode = false }: PublicBookingProps = {}) {
+  const params = useParams<{ token: string }>();
+  const token = tokenOverride ?? params.token;
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [lang, setLang] = useState(i18n.language === 'en' ? 'en' : 'pt');
@@ -350,6 +362,10 @@ export default function PublicBooking() {
                   personal_intro: '',
                 });
                 setPitchFile(null);
+                if (canonicalMode) {
+                  // Stay on the same-origin `/book` URL — no token in the address bar.
+                  return;
+                }
                 if (token) navigate(`/book/${token}`, { replace: true });
               }}
             >
@@ -362,9 +378,12 @@ export default function PublicBooking() {
     );
   }
 
-  const canonicalUrl = token
-    ? `${typeof window !== 'undefined' ? window.location.origin : 'https://fb.startupleiria.com'}/book/${token}`
-    : undefined;
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://fb.startupleiria.com';
+  const canonicalUrl = canonicalMode
+    ? `${origin}/book`
+    : token
+      ? `${origin}/book/${token}`
+      : undefined;
   const seoTitle = lang === 'pt'
     ? 'Marcar primeiro contacto — Startup Leiria'
     : 'Book your first meeting — Startup Leiria';

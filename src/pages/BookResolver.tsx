@@ -4,38 +4,44 @@ import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, AlertTriangle } from 'lucide-react';
+import PublicBooking from './PublicBooking';
 
 /**
- * Public-facing `/book` route. Resolves the current canonical booking link
- * (persisted in `public_booking_links.canonical_url` when an admin marks a
- * link as canonical) and hard-redirects the visitor.
+ * Public-facing `/book` route (B1 — canonical booking architecture).
  *
- * Fail-closed: if no canonical link is configured, we show a clear message
- * instead of guessing a token — never send a real visitor to `/book/demo`.
+ * Resolves the currently active canonical link server-side via
+ * `resolve_canonical_booking_token()` and renders the booking form **inline**
+ * on the same `/book` URL. The routing token is kept in React state only —
+ * it never appears in the browser URL, navigation history, localStorage,
+ * sessionStorage, or any redirect.
+ *
+ * Fail-closed: if no canonical link is configured (or the RPC fails), we
+ * show a clear message instead of guessing a token — never send a real
+ * visitor to `/book/demo`.
  */
 export default function BookResolver() {
   const { t } = useTranslation();
-  const [state, setState] = useState<'loading' | 'not_configured' | 'error'>('loading');
+  const [state, setState] = useState<'loading' | 'ready' | 'not_configured' | 'error'>('loading');
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     void (async () => {
       try {
-        const { data, error } = await supabase.rpc('get_canonical_booking_url');
+        const { data, error } = await supabase.rpc('resolve_canonical_booking_token');
         if (cancelled) return;
         if (error) {
           setState('error');
           return;
         }
-        const target = (data as string | null) ?? null;
-        if (!target) {
+        const resolved = (data as string | null) ?? null;
+        if (!resolved) {
           setState('not_configured');
           return;
         }
-        // Prefer same-origin relative redirect to keep session storage / auth
-        // context, but the DB stores an absolute URL so use `href` for parity.
-        window.location.replace(target);
+        setToken(resolved);
+        setState('ready');
       } catch {
         if (!cancelled) setState('error');
       }
@@ -45,6 +51,12 @@ export default function BookResolver() {
       cancelled = true;
     };
   }, []);
+
+  if (state === 'ready' && token) {
+    // Render inline — the URL stays at `/book`, the token lives only in
+    // this component's memory and is passed to the child as a prop.
+    return <PublicBooking tokenOverride={token} canonicalMode />;
+  }
 
   return (
     <>
@@ -63,7 +75,7 @@ export default function BookResolver() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground">
-                {t('publicBooking.resolver.loadingDesc', 'Estamos a levar-te ao formulário de reserva.')}
+                {t('publicBooking.resolver.loadingDesc', 'Estamos a preparar o formulário de reserva.')}
               </CardContent>
             </>
           )}

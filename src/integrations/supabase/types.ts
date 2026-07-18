@@ -11421,6 +11421,7 @@ export type Database = {
         Args: { p_claim_id: string; p_reason?: string }
         Returns: undefined
       }
+      resolve_canonical_booking_token: { Args: never; Returns: string }
       revert_import_row: { Args: { p_row_id: string }; Returns: Json }
       search_workspaces_paged: {
         Args: {
