@@ -227,6 +227,18 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
             }),
           );
         }
+        // Fire the same celebration path useUpdateMilestone uses, since this
+        // RPC bypasses that mutation. Idempotent via workspace_celebrations.
+        triggerMilestoneCelebration();
+        void supabase
+          .from('workspace_celebrations')
+          .upsert(
+            { workspace_id: workspaceId, event_key: 'first_milestone_completed' },
+            { onConflict: 'workspace_id,event_key', ignoreDuplicates: true },
+          )
+          .then(({ error: celErr }) => {
+            if (celErr) console.debug('first_milestone_celebration_skip', celErr.message);
+          });
       } else {
         await updateMilestone.mutateAsync({ id: milestone.id, status });
       }
@@ -235,7 +247,6 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
       queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-actions', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-tab-badges', workspaceId] });
-      // Confetti is handled by useMilestones' onSuccess (single source of truth).
     } catch { notify.error(t('milestones.failedToUpdate')); }
   };
 
