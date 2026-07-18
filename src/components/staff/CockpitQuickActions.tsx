@@ -95,6 +95,9 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
 
       if (error) throw error;
       notify.success(t('staff.sessionScheduledSuccessfully'));
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      queryClient.invalidateQueries({ queryKey: ['work-queue'] });
+      queryClient.invalidateQueries({ queryKey: ['upcoming-sessions'] });
       setShowQuickSession(false);
       resetSessionForm();
     } catch (error) {
