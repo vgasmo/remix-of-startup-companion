@@ -93,7 +93,7 @@ export function useNotifications() {
           // INSERT/UPDATE/DELETE so dedupePendingMentorConnections re-runs
           // against fresh rows and duplicate `mentor_connection_pending`
           // items are collapsed before consumers see them.
-          queryClient.invalidateQueries({ queryKey: ['notifications', userId], refetchType: 'active' });
+          queryClient.invalidateQueries({ queryKey: ['notifications', userId], refetchType: 'active' }); queryClient.invalidateQueries({ queryKey: ['notifications-unread-count', userId] });
         }
       )
       .subscribe();
@@ -166,7 +166,7 @@ export function useMarkNotificationRead() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] }); queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
     },
   });
 }
@@ -188,7 +188,7 @@ export function useMarkAllNotificationsRead() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] }); queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
     },
   });
 }
@@ -206,7 +206,7 @@ export function useDeleteNotification() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] }); queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
     },
   });
 }
@@ -226,7 +226,7 @@ export function useCreateNotification() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] }); queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
     },
   });
 }
