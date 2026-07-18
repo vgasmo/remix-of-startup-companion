@@ -109,21 +109,34 @@ export default function PublicBooking() {
   const { data: slotsData, isLoading: slotsLoading } = useQuery({
     queryKey: ['public-slots', token, selectedProgramId],
     queryFn: async () => {
-      if (!token) return { slots: [], consultantName: null, programName: null };
-      
+      if (!token) return { slots: [], consultantName: null, programName: null, unavailable: false };
+
       const { data, error } = await supabase.functions.invoke('public-get-availability', {
         body: { token, action: 'get_slots', program_id: selectedProgramId },
       });
-      
+
+      // Fail-closed: server returns 503 { status: 'unavailable', reason } when
+      // Graph is not configured, credentials fail, or every schedule call fails.
+      // Never fabricate weekday slots on the client either.
+      if (data?.status === 'unavailable') {
+        return {
+          slots: [] as TimeSlot[],
+          consultantName: null,
+          programName: null,
+          unavailable: true,
+        };
+      }
       if (error) throw error;
       return {
         slots: (data?.slots || []) as TimeSlot[],
         consultantName: data?.consultantName as string | null,
         programName: data?.programName as string | null,
+        unavailable: false,
       };
     },
     enabled: !!tokenData && (routingOptions.length <= 1 || selectedProgramId !== null),
   });
+
 
   const slots = slotsData?.slots;
   const activeProgramName = selectedProgramName || slotsData?.programName || tokenData?.program_name;
@@ -473,6 +486,15 @@ export default function PublicBooking() {
                     <Skeleton className="h-9 w-16" />
                     <Skeleton className="h-9 w-16" />
                   </div>
+                </div>
+              ) : slotsData?.unavailable ? (
+                <div className="text-center py-8 space-y-2">
+                  <p className="text-foreground font-medium">
+                    {t('publicBooking.unavailableTitle', { defaultValue: 'A disponibilidade não pode ser confirmada de momento.' })}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t('publicBooking.unavailableDesc', { defaultValue: 'Tente novamente em breve ou contacte-nos em info@startupleiria.com.' })}
+                  </p>
                 </div>
               ) : Object.keys(slotsByDate).length === 0 ? (
                 <p className="text-center py-8 text-muted-foreground">

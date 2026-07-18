@@ -428,59 +428,117 @@ serve(async (req) => {
         throw e;
       }
 
-      const credentials = await getGraphCredentials(supabase);
-      
-      if (credentials && consultantEmail) {
+      // FAIL-CLOSED: availability MUST come from a real calendar. If Graph is not
+      // configured, credentials are missing, the token exchange fails, or every
+      // per-day free/busy call fails, we return HTTP 503 with a calm message and
+      // insert a system_alerts row for operators. We never fabricate weekday slots.
+      const failClosed = async (
+        reason: string,
+        severity: 'warning' | 'critical' = 'warning',
+        detail?: Record<string, unknown>,
+      ) => {
         try {
-          const accessToken = await getGraphAccessToken(credentials);
-          
-          for (let day = 1; day <= 14; day++) {
-            const date = addDays(now, day);
-            const dayOfWeek = date.getDay();
-            
-            if (dayOfWeek === 0 || dayOfWeek === 6) continue;
-            
-            const dateStr = format(date, "yyyy-MM-dd");
-            const startTime = `${dateStr}T09:00:00`;
-            const endTime = `${dateStr}T18:00:00`;
-            
-            const schedule = await getFreeBusySchedule(accessToken, consultantEmail, startTime, endTime);
-            
-            if (schedule?.availabilityView) {
-              const daySlots = generateSlotsFromAvailability(dateStr, schedule.availabilityView);
-              slots.push(...daySlots);
-            }
-          }
-        } catch (graphError) {
-          console.error("Graph API error:", graphError);
-          for (let day = 1; day <= 14; day++) {
-            const date = addDays(now, day);
-            const dayOfWeek = date.getDay();
-            if (dayOfWeek === 0 || dayOfWeek === 6) continue;
-
-            const dateStr = format(date, "yyyy-MM-dd");
-            const defaultTimes = ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"];
-            for (const time of defaultTimes) {
-              slots.push({ date: dateStr, time, available: true });
-            }
-          }
+          await supabase.from('system_alerts').insert({
+            kind: 'public_availability_unavailable',
+            severity,
+            dedupe_key: `public_availability:${reason}:${consultantEmail ?? 'no-consultant'}:${new Date().toISOString().slice(0, 10)}`,
+            payload: {
+              reason,
+              consultant_email: consultantEmail,
+              consultant_name: consultantName,
+              program_id: programId,
+              program_name: programName,
+              token_kind: token === 'demo' ? 'demo' : 'hashed',
+              detail: detail ?? null,
+              at: new Date().toISOString(),
+            },
+          });
+        } catch (alertErr) {
+          console.error('Failed to insert system_alerts row:', alertErr);
         }
-      } else {
-        for (let day = 1; day <= 14; day++) {
-          const date = addDays(now, day);
-          const dayOfWeek = date.getDay();
-          if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+        return corsJsonResponse(
+          {
+            status: 'unavailable',
+            reason,
+            error: 'A disponibilidade não pode ser confirmada de momento. Tente novamente em breve ou contacte-nos diretamente.',
+          },
+          req,
+          503,
+        );
+      };
 
-          const dateStr = format(date, "yyyy-MM-dd");
-          const defaultTimes = ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"];
-          for (const time of defaultTimes) {
-            slots.push({ date: dateStr, time, available: true });
-          }
+      const credentials = await getGraphCredentials(supabase);
+      if (!credentials) {
+        return failClosed('graph_not_configured');
+      }
+      if (!consultantEmail) {
+        return failClosed('consultant_email_missing');
+      }
+
+      let accessToken: string;
+      try {
+        accessToken = await getGraphAccessToken(credentials);
+      } catch (tokenErr) {
+        console.error('Graph token error:', tokenErr instanceof Error ? tokenErr.message : tokenErr);
+        return failClosed('graph_token_failed', 'critical', {
+          message: tokenErr instanceof Error ? tokenErr.message : String(tokenErr),
+        });
+      }
+
+      let scheduleCallsAttempted = 0;
+      let scheduleCallsFailed = 0;
+
+      for (let day = 1; day <= 14; day++) {
+        const date = addDays(now, day);
+        const dayOfWeek = date.getDay();
+        if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+
+        const dateStr = format(date, 'yyyy-MM-dd');
+        const startTime = `${dateStr}T09:00:00`;
+        const endTime = `${dateStr}T18:00:00`;
+
+        scheduleCallsAttempted += 1;
+        let schedule: { availabilityView: string } | null = null;
+        try {
+          schedule = await getFreeBusySchedule(accessToken, consultantEmail, startTime, endTime);
+        } catch (scheduleErr) {
+          console.error('Graph schedule threw:', scheduleErr instanceof Error ? scheduleErr.message : scheduleErr);
+          schedule = null;
+        }
+
+        if (schedule?.availabilityView) {
+          slots.push(...generateSlotsFromAvailability(dateStr, schedule.availabilityView));
+        } else {
+          scheduleCallsFailed += 1;
         }
       }
 
-      return corsJsonResponse({ slots, consultantName, programId, programName, graphEnabled: !!credentials }, req);
+      // If EVERY schedule call failed, we have no truthful data — fail closed.
+      // (Partial-day failures are logged but the remaining real slots are still
+      // returned so bookable days aren't hidden.)
+      if (scheduleCallsAttempted > 0 && scheduleCallsFailed === scheduleCallsAttempted) {
+        return failClosed('graph_schedule_all_failed', 'critical', {
+          attempted: scheduleCallsAttempted,
+          failed: scheduleCallsFailed,
+        });
+      }
+
+      return corsJsonResponse(
+        {
+          status: 'ok',
+          slots,
+          consultantName,
+          programId,
+          programName,
+          graphEnabled: true,
+          partial: scheduleCallsFailed > 0,
+          scheduleCallsAttempted,
+          scheduleCallsFailed,
+        },
+        req,
+      );
     }
+
 
     return corsJsonResponse({ error: "Invalid action" }, req, 400);
   } catch (error: unknown) {
