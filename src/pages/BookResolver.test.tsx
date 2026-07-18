@@ -1,27 +1,37 @@
 /**
  * E2E-style tests for the public `/book` resolver.
  *
- * Verifies that `/book` behaves correctly for BOTH:
+ * Verifies the resolver contract for BOTH:
  *   - "new" links (created after migration 20260718111609 — canonical_url populated)
  *   - "pre-migration" / legacy canonical links (canonical_url still NULL)
  *
- * The resolver relies on the `get_canonical_booking_url` RPC, which filters
- * out rows where canonical_url IS NULL. So the observable contract is:
+ * The `get_canonical_booking_url` RPC filters out rows where canonical_url IS NULL,
+ * so the observable contract at /book is:
  *   RPC returns URL  -> hard redirect via window.location.replace
  *   RPC returns null -> render "Agendamento indisponível" (not_configured)
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { HelmetProvider } from 'react-helmet-async';
-import BookResolver from './BookResolver';
-import { mockSupabase } from '@/test/mocks/supabase';
 
-// react-i18next stub so `t(key, fallback)` returns the fallback string.
+const rpc = vi.fn();
+
+vi.mock('@/lib/supabaseClient', () => ({
+  supabase: { rpc },
+  supabaseClient: { rpc },
+}));
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: { rpc },
+}));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (_key: string, fallback?: string) => fallback ?? _key,
   }),
 }));
+
+// Import AFTER mocks are declared so the component picks up the stubbed supabase.
+import BookResolver from './BookResolver';
 
 function renderResolver() {
   return render(
@@ -35,32 +45,27 @@ describe('BookResolver (/book)', () => {
   const originalLocation = window.location;
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    // Replace window.location with a spy-friendly stub so we can assert
-    // the redirect target without navigating the jsdom window.
+    rpc.mockReset();
     Object.defineProperty(window, 'location', {
       configurable: true,
       value: { ...originalLocation, replace: vi.fn(), href: 'http://localhost/book' },
     });
   });
 
-  it('redirects to the persisted canonical_url when a new link is canonical', async () => {
+  it('redirects to the persisted canonical_url for a new canonical link', async () => {
     const target = 'https://app.example.com/book/token-abc123';
-    mockSupabase.functions = mockSupabase.functions ?? { invoke: vi.fn() };
-    (mockSupabase as any).rpc = vi.fn().mockResolvedValue({ data: target, error: null });
+    rpc.mockResolvedValue({ data: target, error: null });
 
     renderResolver();
 
     await waitFor(() => {
-      expect((mockSupabase as any).rpc).toHaveBeenCalledWith('get_canonical_booking_url');
+      expect(rpc).toHaveBeenCalledWith('get_canonical_booking_url');
       expect((window.location.replace as any)).toHaveBeenCalledWith(target);
     });
   });
 
-  it('shows "not configured" when the canonical link is a pre-migration row (canonical_url is null)', async () => {
-    // The RPC filters WHERE canonical_url IS NOT NULL, so legacy canonical
-    // rows (is_canonical = true but canonical_url = null) resolve to null.
-    (mockSupabase as any).rpc = vi.fn().mockResolvedValue({ data: null, error: null });
+  it('shows "not configured" for a pre-migration canonical row (canonical_url null)', async () => {
+    rpc.mockResolvedValue({ data: null, error: null });
 
     renderResolver();
 
@@ -70,8 +75,8 @@ describe('BookResolver (/book)', () => {
     expect((window.location.replace as any)).not.toHaveBeenCalled();
   });
 
-  it('shows the error state when the RPC returns an error', async () => {
-    (mockSupabase as any).rpc = vi.fn().mockResolvedValue({ data: null, error: { message: 'boom' } });
+  it('shows the error state when the RPC fails', async () => {
+    rpc.mockResolvedValue({ data: null, error: { message: 'boom' } });
 
     renderResolver();
 
