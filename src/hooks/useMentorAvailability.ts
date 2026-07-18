@@ -137,21 +137,9 @@ export function useMyBookings() {
   });
 }
 
-async function safeNotify(payload: {
-  user_id: string;
-  type: string;
-  title: string;
-  message: string;
-  link?: string;
-  entity_type?: string;
-  entity_id?: string;
-}) {
-  try {
-    await supabase.from('notifications').insert({ ...payload, read: false });
-  } catch {
-    /* best-effort */
-  }
-}
+// safeNotify was removed: mentor booking notifications are now emitted
+// exclusively by the `trg_notify_mentor_booking_change` DB trigger, so the
+// client never fires duplicate rows.
 
 export function useCreateBooking() {
   const queryClient = useQueryClient();
