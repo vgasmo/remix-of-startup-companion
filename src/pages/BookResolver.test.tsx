@@ -14,7 +14,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { HelmetProvider } from 'react-helmet-async';
 
-const rpc = vi.fn();
+const { rpc } = vi.hoisted(() => ({ rpc: vi.fn() }));
 
 vi.mock('@/lib/supabaseClient', () => ({
   supabase: { rpc },
