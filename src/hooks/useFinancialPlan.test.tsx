@@ -219,8 +219,3 @@ describe('useResolvePrefillProposal', () => {
     expect((update!.payload as any).status).toBe('rejected');
   });
 });
-
-    const update = calls.find(c => c.op === 'update' && c.table === 'financial_prefill_proposals');
-    expect((update!.payload as any).status).toBe('rejected');
-  });
-});
