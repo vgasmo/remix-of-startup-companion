@@ -23,6 +23,7 @@ const MIN_ATTEMPT_INTERVAL_MIN = 15;
 Deno.serve(async (req: Request) => {
   const requestId = generateRequestId();
   const log = createLogger(FUNCTION_NAME, requestId);
+  const runStartedAt = Date.now();
 
   if (req.method === 'OPTIONS') return handleCorsOptions(req);
 
@@ -34,10 +35,28 @@ Deno.serve(async (req: Request) => {
   const cronSecret = Deno.env.get('CRON_SECRET')!;
   const admin = createClient(supabaseUrl, serviceKey);
 
+  const logRun = async (status: string, extra: Record<string, unknown> = {}, errorSummary?: string) => {
+    try {
+      await admin.rpc('log_cron_job_run', {
+        p_job_name: FUNCTION_NAME,
+        p_status: status,
+        p_duration_ms: Date.now() - runStartedAt,
+        p_error_code: null,
+        p_error_summary: errorSummary ?? null,
+        p_details: { request_id: requestId, ...extra },
+        p_triggered_by: 'cron',
+      });
+    } catch (e) {
+      log.warn('log_cron_job_run failed', { error: safeErrorMessage(e) });
+    }
+  };
+
   const nowIso = new Date().toISOString();
   const lookbackIso = new Date(Date.now() - LOOKBACK_HOURS * 60 * 60 * 1000).toISOString();
   const maxCompletedIso = new Date(Date.now() - MIN_MINUTES_AFTER_COMPLETION * 60 * 1000).toISOString();
   const attemptCutoffIso = new Date(Date.now() - MIN_ATTEMPT_INTERVAL_MIN * 60 * 1000).toISOString();
+
+  try {
 
   // Candidate sessions: consent given, online, completed recently, under max attempts,
   // last attempt (if any) older than the interval, no transcripts row yet.
