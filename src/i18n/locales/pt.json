@@ -825,7 +825,8 @@
       "labelPlaceholder": "Ex.: Primeiro contacto",
       "markCanonical": "Marcar como canónico",
       "markCanonicalHint": "Este link passa a ser o destino predefinido de /book.",
-      "canonical": "Canónico"
+      "canonical": "Canónico",
+      "cannotPromoteLegacy": "Este link foi criado antes da migração e não tem URL guardado. Crie um novo link para o marcar como canónico."
     },
     "cancel": "Cancelar",
     "claimAprovadoEFounderAssociado": "Claim aprovado e founder associado ao workspace",
@@ -889,7 +890,8 @@
       "surveysDesc": "Inquéritos e formulários",
       "templatesDesc": "Templates de sessões e documentos",
       "title": "Mission Control",
-      "usersDesc": "Gestão de utilizadores"
+      "usersDesc": "Gestão de utilizadores",
+      "systemHealthDesc": "Monitorização de automações, erros e execuções cron"
     },
     "ecosystem": {
       "title": "Vista Unificada do Ecossistema"
@@ -1423,7 +1425,13 @@
       "noneCritical": "Nenhum erro crítico nas últimas 24h.",
       "recentCritical": "Erros críticos recentes",
       "tab": "Saúde do Sistema",
-      "topErrors": "Erros mais frequentes (7d)"
+      "topErrors": "Erros mais frequentes (7d)",
+      "exportErrors": "Exportar erros (CSV)",
+      "exportEvents": "Exportar eventos (CSV)",
+      "exportCron": "Exportar execuções cron (CSV)",
+      "cronFailures24h": "Falhas cron (24h)",
+      "automations": "Automações",
+      "noCronRuns": "Sem execuções cron registadas"
     },
     "tags": {
       "addCategory": "Adicionar Categoria",
@@ -9915,7 +9923,8 @@
     },
     "updateFailed": "Falha ao atualizar a fila",
     "updated": "Fila atualizada",
-    "viewAll": "Ver todos os {{count}} itens"
+    "viewAll": "Ver todos os {{count}} itens",
+    "bulkPartialFailure": "{{ok}} concluídas, {{failed}} falharam"
   },
   "workflow": {
     "ruleUpdated": "Rule updated"

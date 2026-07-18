@@ -151,28 +151,19 @@ export function BookingLinksManager() {
     },
   });
 
-  // Toggle canonical flag on an existing active link. Only one active
-  // canonical link can exist at a time; unset others first when promoting.
+  // Atomic canonical promotion — server-side RPC does demote+promote in one tx
+  // so the partial unique index (only one active canonical) is never violated.
+  // Refuses legacy rows without canonical_url (they cannot be resolved).
   const setCanonical = useMutation({
     mutationFn: async (linkId: string) => {
-      // Guard: legacy rows created before canonical_url plumbing existed can
-      // never be promoted (get_canonical_booking_url filters canonical_url IS NOT NULL).
       const existing = (bookingLinks || []).find((l) => l.id === linkId);
       if (existing && !existing.canonical_url) {
         throw new Error(
           t('admin.bookingLinks.cannotPromoteLegacy',
-            'Este link foi criado antes da migração e não tem URL absoluto guardado. Crie um link novo para o definir como canónico.')
+            'Este link foi criado antes da migração e não tem URL guardado. Crie um novo link para o marcar como canónico.')
         );
       }
-      await supabase
-        .from('public_booking_links')
-        .update({ is_canonical: false })
-        .eq('is_canonical', true)
-        .eq('active', true);
-      const { error } = await supabase
-        .from('public_booking_links')
-        .update({ is_canonical: true })
-        .eq('id', linkId);
+      const { error } = await supabase.rpc('promote_booking_link_canonical', { p_link_id: linkId });
       if (error) throw error;
     },
     onSuccess: () => {

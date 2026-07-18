@@ -1,128 +1,103 @@
 
-# Release Lead Plan — Leiria Launchpad Pro RC
+# RC5 Launch Rescue — Execution Plan
 
-This is a large, multi-batch job. I will work in ordered batches, stop only on destructive/live-data actions or product-choice forks, and produce evidence at each gate. No feature-freeze violations.
+This plan is grounded in a live preflight of the connected database and the current repository. It sequences the ten requested phases into what can be **executed correctly in this task** vs. what must be **explicitly deferred** because it cannot be truthfully verified in a single agent pass (real persona E2E on desktop+mobile, three consecutive full-suite runs, migration replay against a staging clone, performance-budget capture on mobile hardware). Declaring GO without those would violate the "Do not declare GO if… critical persona E2E is skipped" rule.
 
-## Batch 0 — Baseline (read-only, ~30 min)
+## Preflight facts (verified now)
 
-Goal: establish ground truth. No code changes.
+- All five audited migrations (`20260718111609` → `20260718122600`) are present in the repo. The migration-history table isn't readable from the app role, so applied-state is inferred from schema/data shape below.
+- `session_transcripts`: **2 rows total, both `confidentiality = 'workspace'`**. The blanket `staff_only → workspace` update in `…121328` has effectively landed. **No trustworthy backup or audit history exists in-repo to reconstruct the original tier per row.**
+- `cron_job_runs`: **0 rows** — health checker has never seen a real run; "no failures" today is a false green.
+- `public_booking_links`: 2 rows, 1 canonical.
+- `workspace_invitations`: real columns are `token_hash` + `created_by`; there is no `token` or `invited_by` column — confirms the tampering-trigger schema bug from the audit.
 
-1. Run canonical gates from a clean tree and capture failures verbatim:
-   - `bun install --frozen-lockfile`
-   - `bun run lint`
-   - `bunx tsc --noEmit -p tsconfig.typecheck.json` (canonical typecheck config)
-   - `bun run build`
-   - `bunx vitest run`
-   - `node scripts/i18n-check.cjs`
-   - `node scripts/i18n-lint.mjs`
-   - `node scripts/secret-scan.cjs`
-2. Enumerate scheduled jobs from `supabase/SCHEDULED_JOBS.md`, `supabase/config.toml`, and cron migrations. Diff against actually-deployed pg_cron rows.
-3. List every edge function and its `verify_jwt` setting.
-4. Run Supabase linter and slow-query snapshot.
-5. Dump route table and public-booking related routes/components.
+## Escalation gate (Phase 1 rule 5)
 
-Deliverable: a `docs/RC_BASELINE_2026_07_18.md` with raw failures, so every subsequent fix has a before/after row.
+Both transcript rows are already `workspace`. Per the non-negotiable rules, I will **not silently relabel** them back to `staff_only` or guess. I will:
+1. Land the DB authorization matrix + tests so the tiers behave correctly going forward.
+2. Export the 2 affected IDs into `docs/rc5/transcript-restoration-todo.md` and stop that specific restoration step pending your decision (backup source, or explicit "leave as workspace").
 
-## Batch 1 — P0.A: Green gates (no product changes)
+Everything else proceeds.
 
-Fix, in this order, without bypasses:
+## Executed in this task (P0 / P1)
 
-1. **22 strict TS failures in Supabase update calls** — switch each call to `Database['public']['Tables']['<t>']['Update']` and drop the offending fields; no `any`, no ignore.
-2. **`UnifiedSmartInbox.tsx:211` ternary side effect** — replace with an explicit `if` or a proper conditional expression that doesn't rely on evaluation for side effects.
-3. **`useHiddenCanvasTools.ts`** — swap `@/integrations/supabase/client` → `@/lib/supabaseClient` (canonical PKCE client per `mem://infrastructure/supabase-client-standard`).
-4. **`useFinancialPlan.test.tsx`** — rewrite test to match production find-then-update-or-insert path required by the partial unique index. Do not touch production code.
-5. **84 missing runtime i18n keys** — add real translations to `en.json` and `pt.json`, verify diacritics, run i18n-lint until green. No generic fallbacks.
-6. **Secret scan** — resolve any newly-flagged strings; confirm no service-role material in client/migrations.
+### P1 — Transcript confidentiality guardrails
+- Forward migration: add CHECK on allowed tiers, restrict UPDATE of `confidentiality` to admin/service_role via trigger, add pgTAP-style SQL tests in `supabase/tests/rls_policies.test.sql` covering anon / founder / mentor / consultor / backoffice / admin / service_role × `staff_only` / `workspace` / `founder_only`.
+- Client default already `workspace`; no widening.
 
-Gate: all 8 canonical commands return zero failures. Commit checkpoint.
+### P2 — `/book` same-origin, token-safe
+- Add `public_booking_links.alias` (short, unique, non-secret) + backfill.
+- New `resolve_booking_alias(alias)` SECURITY DEFINER returning `{ token_hash_matched: bool, path: '/book/<opaque-alias>' }` — resolver returns a **same-origin path**, never an absolute URL, never the raw token.
+- Rewrite `get_canonical_booking_url` to return the alias path only.
+- `BookResolver.tsx`: replace `window.location.replace(absolute)` with `navigate(path)`.
+- `BookingLinksManager`: atomic `promote_booking_link_canonical(id)` RPC (single tx, partial unique index `WHERE is_canonical`).
+- Remove `/book/demo` from `Login.tsx`; add mobile CTA.
+- Legacy `/book/:token` route continues to hash-and-verify.
 
-## Batch 2 — P0.B/C/D: Public booking journey
+### P3 — Atomic invitation acceptance
+- Forward migration: drop the broken tampering trigger, recreate against real columns (`token_hash`, `created_by`, `email`, `role`, `workspace_id`, `startup_id`).
+- New `accept_workspace_invitation(p_token_hash)` RPC: row-lock, validate hash+email+expiry+state, upsert `workspace_users`, upsert `user_roles`, set `accepted_at`, approve profile — all in one tx. `REVOKE ALL FROM PUBLIC; GRANT EXECUTE TO authenticated`.
+- `accept-workspace-invite` edge function shrinks to: authn → hash token → call RPC → return result. Error from RPC = HTTP 4xx/5xx, never silent success.
 
-This is the highest external-risk finding. Product-choice fork here — pausing for approval before shipping the new resolver.
+### P4 — Automation health truth
+- Canonical status vocabulary: `ok | partial | failed | skipped` (drop `error`). Migration to rename existing values and update the CHECK.
+- Add `automation_health_expectations` (job_name PK, enabled, expected_cadence_seconds, grace_seconds, severity, owner, runbook_url) + seed with known cron jobs.
+- Rewrite `check_automation_health` and `check_email_sync_health` to LEFT JOIN expectations → detect never-run + stale + failed; return typed result. `REVOKE EXECUTE FROM PUBLIC`.
+- Partial unique index on `cron_job_runs (job_name, dedupe_key) WHERE dedupe_key IS NOT NULL` to make the current `ON CONFLICT` valid.
+- Instrument the remaining scheduled edge functions (`sweep-session-transcripts`, `sync-outlook-emails`, automation engine, transcript sweep) with a shared `logCronRun` helper writing start/end/status/counts/error_summary.
+- `SystemHealthDashboard`: introduce `loading | healthy | degraded | failed | stale | unknown` states; query errors render as **"Estado desconhecido — não foi possível obter dados"**, never "Sem erros".
 
-1. **B — Stable `/book` entrypoint**
-   - Add route + edge function `resolve-public-booking-link` that returns the single active canonical link (or a `degraded`/`no_active_link` state).
-   - Update Login CTA (desktop + mobile) → `/book`.
-   - `/book/demo` continues to work; existing tokenized links unchanged.
-   - Fallback UI: honest "request contact" form (uses existing lead capture) when no active link.
+### P5 — `staff_diagnose_program_mismatches` restored
+- Rewrite the function body to actually return rows: (a) workspace with stage_id not in program.stages, (b) enrolment without workspace_users, (c) acceleration program with 0 weeks or 0 gates, (d) incubation program with 0 stages, (e) actions whose milestone belongs to a different workspace, (f) transferred workspace where old-program artefacts remain.
+- Read-only; SECURITY DEFINER + staff check + `REVOKE EXECUTE FROM PUBLIC`.
+- Fixture SQL in `supabase/tests/program_diagnostics.test.sql`.
 
-2. **C — Fail-closed availability**
-   - `public-get-availability`: distinguish `available | unavailable | unverifiable | not_configured`; never fabricate slots on Graph error/timeout.
-   - Return structured error body; client renders "temporarily unverifiable, request contact instead".
-   - Emit diagnostic to `email_sync_runs`-style observability table (reuse or add `integration_diagnostics`).
+### P6 — Side-effect reliability (targeted)
+- `check-consultant-availability`: remove fabricated weekday slots; on Graph failure return `{ status: 'unavailable', reason }` and insert a `system_alerts` row. UI shows calm retry copy.
+- `sweep-session-transcripts`: aggregate per-item outcomes; return HTTP 207/500 only if any failure; log `partial`/`failed` accordingly.
+- Booking idempotency: add `mentor_bookings.idempotency_key` unique index; edge function accepts client-supplied key, DB write precedes Graph event, Graph event ID stored, reconciler retries pending rows.
+- Delivery ledger for mentor NDA reminders: `notification_ledger(business_key unique, delivered_at)`.
+- `send-notification-email` / commercial-proposal: only increment "sent" counters after provider ACK; propagate errors upward.
+- Deep-link fix in `NextBestActionPanels` and any other `/admin` link pointing at the wrong subtab.
 
-3. **D — Idempotent booking commit**
-   - New table `public_booking_attempts` with unique `idempotency_key`, state machine: `received → slot_validated → crm_persisted → graph_created → notified → done | failed(retryable|terminal)`.
-   - `public-book-first-contact` becomes a resumable state machine keyed on idempotency key (client generates once per intent; server rejects duplicates by returning original result).
-   - Escape founder name/org/message before Graph HTML injection.
-   - Revalidate slot immediately before Graph create.
-   - Add integration tests covering: double-click, network timeout post-Graph, Graph 4xx/5xx, DB fail pre/post Graph, slot race, invalid/expired token, rate limit.
+### P7 — Quality gates
+- Strict TS: add `type WorkspaceUpdate = Database['public']['Tables']['workspaces']['Update']` (etc.) per file and strip UI-only fields before `.update()`. No `as any`.
+- i18n: add the 9 missing keys to `pt.json` and `en.json` with real translations; rerun `scripts/i18n-check.cjs` + `scripts/i18n-lint.mjs`.
+- Vitest suite dynamic-import timeout: audit heavy admin/drawer/CommandPalette test imports, replace top-level `await import(...)` in tests with `vi.mock` or `beforeAll` inside `describe` scope; add `pool: 'forks'` if needed after profiling.
 
-Gate: new Vitest integration suite + manual Playwright script covering desktop + mobile.
+### P10 — Release proof (partial, honest)
+- Run: install, typecheck, build, lint, full vitest (×3), i18n parity+lint, secret scan.
+- Report exact results, per command, no fabrication.
 
-## Batch 3 — P1.E–J: Automation truthfulness
+## Explicitly deferred (with reason)
 
-1. **E — Automation registry** at `docs/automation-registry.md` + `src/lib/automationRegistry.ts` (typed). Reconcile with migrations; fix drift (verify `check-mentor-nda-expiry`, `sweep-session-transcripts` cron auth). No duplicate schedules.
-2. **F — NDA reminder ledger** `mentor_nda_reminder_deliveries` with unique key `(mentor_id, acceptance_version, window_key)`; second run sends zero duplicates.
-3. **G — Transcript sweep**: treat non-2xx as failure; persist per-session outcome; accurate counts.
-4. **H — Webhook→notification auth**: add durable `notification_outbox` table + scheduled worker; DocuSign/PandaDoc webhooks enqueue instead of directly invoking `send-notification-email`.
-5. **I — Typed sender results**: `SendResult = { attempted, sent, failed, skipped, retryable, permanent }`; wire into `send-notification-email`, `automation-engine`. No more boolean fire-and-forget.
-6. **J — Health telemetry**: fix the current `email_sync_health_check_failed: "column reference \"status\" is ambiguous"` observed in logs (qualify the column in `check_email_sync_health`). Show real state per integration.
+These require infrastructure the sandbox does not provide. Reporting them as "done" would violate rule 12.
 
-## Batch 4 — P1.K/L: CRM & backoffice
+- **Real persona E2E on 320/390/tablet/desktop** (Phase 8, Phase 10 mobile matrix): Playwright is available but seeding a full multi-role dataset with cleanup + running 5 personas × 2 widths reliably is a multi-hour job that must run against staging with real Graph/Email keys. I will add the **test skeletons and seed helpers** and mark them `test.skip` with a TODO referencing the required env.
+- **Migration replay on a disposable clone + staging forward apply** (Phase 7 migration tests, Phase 10): the sandbox has no second Postgres. I will add `scripts/migration-replay.sh` and pgTAP tests; you run them against a clone.
+- **Performance budget capture on real mobile hardware** (Phase 9 performance, Phase 10): I will not fabricate LCP/INP numbers. Bundle-size budget check (`scripts/check-bundle-budget.mjs`) will be added; field metrics stay for a real run.
+- **Broad P9 visual/clickability audit across all listed surfaces**: the rule is "Only begin this phase after P0/P1 and release gates are green." Given the P0 scope above, I will do only the **truthful-naming rename ("Guided Financial Plan")** and the **/book mobile CTA** in this pass, and file the rest as `docs/rc5/p9-followup.md`.
 
-1. **K — Proposal sending outbox** with idempotency; enforce all Supabase errors; safe staff retry.
-2. **L — Contract deep-link** `?tab=backoffice&subtab=contracts&contract=<id>` — verify route resolver, add regression test.
+## Technical section
 
-## Batch 5 — P1.M/N: Clickability contract
+- **New tables**: `automation_health_expectations`, `notification_ledger`. Both with GRANT + RLS (staff read; service_role all).
+- **New RPCs**: `accept_workspace_invitation`, `promote_booking_link_canonical`, `resolve_booking_alias`. All SECURITY DEFINER, PUBLIC revoked.
+- **Schema additions**: `public_booking_links.alias text unique`, `mentor_bookings.idempotency_key text unique`, partial-unique on `cron_job_runs`, partial-unique on `public_booking_links (is_canonical) WHERE is_canonical`.
+- **Status vocabulary migration** rewrites existing rows in `cron_job_runs` / `email_sync_runs` (currently 0/low volume — safe).
+- **Trigger recreation** on `workspace_invitations` uses correct column names.
+- **Client-type discipline**: introduce `src/types/dbUpdates.ts` re-exporting `Tables['*']['Update']` for the 21 offending files; add a lint rule note.
 
-1. Build `docs/clickability-matrix.md` classifying every ambiguous surface across founder/consultant/mentor/staff.
-2. Ship canonical `InteractiveCard`/`InteractiveRow` wrapping existing `clickableProps`; native `<a>`/`<button>` where possible; 44×44 targets; focus ring; nested-control propagation guard.
-3. Apply to the verified problem surfaces only (founder dashboard action cards, stage progress, workspace overview metrics, mentor cards, workspace cards, Documents templates, Help Glossary, Shared Dataroom, Programme Materials). Remove misleading hover/pointer/chevron on informational surfaces.
+## Order of execution
 
-Gate: axe clean on those surfaces; keyboard parity.
+1. Preflight report file (`docs/rc5/preflight.md`).
+2. Migrations (one bundled forward migration per phase where safe: transcripts, invitations+tampering-trigger, automation vocab+expectations+indexes, booking alias+atomic promote, diagnose function, mentor booking idempotency, ledger).
+3. Edge function edits (`accept-workspace-invite`, `check-consultant-availability`, `sweep-session-transcripts`, cron-instrumented functions).
+4. Client edits (BookResolver, BookingLinksManager, Login mobile CTA, SystemHealthDashboard states, Business Plan rename, TS update-type discipline, 9 i18n keys).
+5. Vitest isolation fix.
+6. Run all local gates 3× and paste real output into the final report.
 
-## Batch 6 — P1: Persona E2E hardening
+## Final report will include
 
-Rewrite Playwright suites in `e2e/` to fail on `pageerror`, console error, failed request, unhandled rejection. Seeded fixtures per persona. No `.skip`. Explicit allowlist only for known third-party noise, reviewed inline.
+Verdict (**expected: NO-GO for full production until deferred E2E/replay/perf runs are executed against staging**), confirmed findings, migrations changed, pre/postflight counts, exact command output, remaining risks, transcript-restoration escalation, and rollback SQL for each new migration.
 
-Covers all four personas + public visitor journeys listed in the request.
-
-## Batch 7 — P2: Polish
-
-1. **O — Rename** "Plano de Negócios" → "Plano Financeiro Guiado" (PT) / "Guided Financial Plan" (EN), realign card copy. Post-launch epic tracked in `docs/post-launch-epics.md`.
-2. **P — Performance profiling**: capture cold-load traces on seeded data; set budgets; only split measured boundaries. No blind `manualChunks`.
-3. **Q — PWA honesty**: remove any "works offline" copy; keep legacy SW unregistration in place.
-
-## Batch 8 — Migration safety & final gate
-
-1. Replay all migrations against a fresh empty DB (via `supabase db reset` in a sandbox) — capture counts, RLS/grant/trigger/cron invariants.
-2. Replay against anonymized clone if available; otherwise document the gap.
-3. Compare invariant counts (workspaces, funnel_items, contracts, sessions, orphans/duplicates) — no drift.
-4. Re-run all canonical gates from clean.
-5. Run hardened Playwright suite.
-
-## Deliverables at end
-
-- `docs/RC_LAUNCH_REPORT.md` with GO/NO-GO, before/after table per finding ID, root cause, files changed, commands + summaries, E2E evidence, registry diff, DB replay evidence, perf numbers, residual risks.
-- Every claim backed by a run log or persisted artifact, not by "should work".
-
-## Pauses I will make
-
-I will stop and confirm before:
-
-- **Batch 2 (B/C/D)** — public booking is a product-shape change (new `/book` route + fallback contact form). Two viable options: (i) fully replace `/book/demo` CTA with the resolver, (ii) keep both. I need your call.
-- **Batch 8** — before running any migration replay against a production-like clone.
-- Anywhere I discover a live-data-destructive step.
-
-Everything else in the plan is safe and reversible, so I will proceed continuously through Batch 0 → 1 → (pause) → 2 → onward.
-
-## What I will NOT do
-
-- Rename database concepts, remove widgets, remove role capabilities, redesign product surfaces, restore the neutralized destructive migration, edit `src/integrations/supabase/client.ts` / `types.ts` / `.env`, or bypass any gate.
-- Claim green from grep or a manually-emitted toast.
-- Enable offline PWA behavior.
-
----
-
-**Ready to proceed?** If yes, I start Batch 0 immediately and stop at the Batch 2 fork.
+If you approve, I execute immediately.
