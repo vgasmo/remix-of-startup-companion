@@ -819,7 +819,13 @@
       "generate": "Generate Link",
       "generateNew": "Generate New Booking Link",
       "program": "Program (optional)",
-      "title": "Public Booking Links"
+      "title": "Public Booking Links",
+      "canonicalSet": "Canonical booking link set.",
+      "label": "Label",
+      "labelPlaceholder": "e.g. First contact",
+      "markCanonical": "Mark as canonical",
+      "markCanonicalHint": "This link becomes the default target of /book.",
+      "canonical": "Canonical"
     },
     "cancel": "Cancel",
     "claimAprovadoEFounderAssociado": "Claim approved and founder linked to workspace",
@@ -1525,7 +1531,13 @@
       "suspended": "Conta suspensa",
       "title": "User Management",
       "workspace": "Workspace",
-      "workspaceAssignments": "Workspace Assignments"
+      "workspaceAssignments": "Workspace Assignments",
+      "filterByRole": "Filter by role",
+      "allRoles": "All roles",
+      "noRoleAssigned": "No role assigned",
+      "filterByStatus": "Filter by status",
+      "allStatuses": "All statuses",
+      "statusApproved": "Approved"
     },
     "userRemoved": "User removed from workspace",
     "userSuspended": "User suspended",
@@ -1595,6 +1607,17 @@
       "title": "Workspaces",
       "unblock": "Unblock",
       "unblocked": "Workspace unblocked"
+    },
+    "utm": {
+      "copied": "UTM link copied.",
+      "copyFailed": "Could not copy link.",
+      "title": "UTM link builder",
+      "description": "Build a tracked link for campaigns.",
+      "source": "Source",
+      "medium": "Medium",
+      "campaign": "Campaign",
+      "content": "Content",
+      "result": "Result"
     }
   },
   "adminContracts": {
@@ -2826,7 +2849,10 @@
       "titleLabel": "Title",
       "titlePlaceholder": "e.g. PPT Session 3 — Customer Discovery",
       "titleRequired": "Title required",
-      "uploading": "Uploading…"
+      "uploading": "Uploading…",
+      "attachToProposal": "Attach to next proposal",
+      "attachToProposalHint": "This file will be attached to the next commercial proposal sent for the selected program.",
+      "attachToProposalNeedsProgram": "Select a program to enable proposal attachment."
     },
     "uploadMaterial": "Carregar Material",
     "vpWizard": {
@@ -5827,7 +5853,9 @@
     "threeYearMark": "3+ Year Mark",
     "threeYearMarkDesc": "Startup has been incubating for over 3 years - review required",
     "title": "Contract Lifecycle Hub",
-    "upcomingRenewals": "Upcoming Renewals"
+    "upcomingRenewals": "Upcoming Renewals",
+    "stageMvp": "MVP",
+    "stageScale": "Scale"
   },
   "lifecycleMismatch": {
     "activeNoWorkspace": {

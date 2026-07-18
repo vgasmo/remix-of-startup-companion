@@ -819,7 +819,13 @@
       "generate": "Gerar Link",
       "generateNew": "Gerar Novo Link de Marcação",
       "program": "Programa (opcional)",
-      "title": "Links de Marcação Pública"
+      "title": "Links de Marcação Pública",
+      "canonicalSet": "Link de agendamento canónico definido.",
+      "label": "Etiqueta",
+      "labelPlaceholder": "Ex.: Primeiro contacto",
+      "markCanonical": "Marcar como canónico",
+      "markCanonicalHint": "Este link passa a ser o destino predefinido de /book.",
+      "canonical": "Canónico"
     },
     "cancel": "Cancelar",
     "claimAprovadoEFounderAssociado": "Claim aprovado e founder associado ao workspace",
@@ -1525,7 +1531,13 @@
       "suspended": "Conta suspensa",
       "title": "Gestão de Utilizadores",
       "workspace": "Workspace",
-      "workspaceAssignments": "Atribuições de Workspace"
+      "workspaceAssignments": "Atribuições de Workspace",
+      "filterByRole": "Filtrar por função",
+      "allRoles": "Todas as funções",
+      "noRoleAssigned": "Sem função atribuída",
+      "filterByStatus": "Filtrar por estado",
+      "allStatuses": "Todos os estados",
+      "statusApproved": "Aprovado"
     },
     "userRemoved": "Utilizador removido do workspace",
     "userSuspended": "Utilizador suspenso",
@@ -1595,6 +1607,17 @@
       "title": "Workspaces",
       "unblock": "Desbloquear",
       "unblocked": "Workspace desbloqueado"
+    },
+    "utm": {
+      "copied": "Link UTM copiado.",
+      "copyFailed": "Não foi possível copiar o link.",
+      "title": "Construtor de links UTM",
+      "description": "Crie um link com acompanhamento para campanhas.",
+      "source": "Origem",
+      "medium": "Meio",
+      "campaign": "Campanha",
+      "content": "Conteúdo",
+      "result": "Resultado"
     }
   },
   "adminContracts": {
@@ -2826,7 +2849,10 @@
       "titleLabel": "Título",
       "titlePlaceholder": "Ex: PPT Sessão 3 — Customer Discovery",
       "titleRequired": "Título obrigatório",
-      "uploading": "A carregar…"
+      "uploading": "A carregar…",
+      "attachToProposal": "Anexar à próxima proposta",
+      "attachToProposalHint": "Este ficheiro será anexado à próxima proposta comercial enviada para o programa selecionado.",
+      "attachToProposalNeedsProgram": "Selecione um programa para poder anexar à proposta."
     },
     "uploadMaterial": "Carregar Material",
     "vpWizard": {
@@ -5827,7 +5853,9 @@
     "threeYearMark": "Marca de 3+ Anos",
     "threeYearMarkDesc": "Startup em incubação há mais de 3 anos — revisão necessária",
     "title": "Hub do Ciclo de Contratos",
-    "upcomingRenewals": "Próximas Renovações"
+    "upcomingRenewals": "Próximas Renovações",
+    "stageMvp": "MVP",
+    "stageScale": "Escala"
   },
   "lifecycleMismatch": {
     "activeNoWorkspace": {
