@@ -29,6 +29,7 @@ interface BookingLink {
   expires_at: string | null;
   created_at: string;
   is_canonical: boolean;
+  canonical_url: string | null;
   label: string | null;
 }
 
