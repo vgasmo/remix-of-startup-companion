@@ -413,6 +413,42 @@ export type Database = {
           },
         ]
       }
+      automation_health_expectations: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          expected_cadence_seconds: number
+          grace_seconds: number
+          job_name: string
+          owner: string | null
+          runbook_url: string | null
+          severity: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          expected_cadence_seconds: number
+          grace_seconds?: number
+          job_name: string
+          owner?: string | null
+          runbook_url?: string | null
+          severity?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          expected_cadence_seconds?: number
+          grace_seconds?: number
+          job_name?: string
+          owner?: string | null
+          runbook_url?: string | null
+          severity?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       automation_runs: {
         Row: {
           automation_type: string
@@ -10772,6 +10808,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_workspace_invitation: {
+        Args: { p_token_hash: string }
+        Returns: Json
+      }
       admin_commit_crm_import_job: { Args: { p_job_id: string }; Returns: Json }
       admin_rollback_crm_import_job: {
         Args: { p_job_id: string }
@@ -11272,6 +11312,10 @@ export type Database = {
         Args: { p_draft_id: string; p_expected_revision: number; p_patch: Json }
         Returns: Json
       }
+      promote_booking_link_canonical: {
+        Args: { p_link_id: string }
+        Returns: undefined
+      }
       publish_program_setup: {
         Args: {
           p_draft_id: string
@@ -11434,13 +11478,12 @@ export type Database = {
       staff_diagnose_program_mismatches: {
         Args: never
         Returns: {
-          contract_program_id: string
-          contract_program_name: string
-          current_program_id: string
-          current_program_name: string
-          startup_id: string
-          startup_name: string
-          workspace_id: string
+          category: string
+          detail: string
+          entity_id: string
+          entity_type: string
+          program_id: string
+          severity: string
         }[]
       }
       staff_rotate_intake_token: {
