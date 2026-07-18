@@ -149,6 +149,39 @@ export function SystemHealthDashboard() {
     );
   }
 
+  const downloadCsv = (filename: string, headers: string[], rows: (string | number | null)[][]) => {
+    const escape = (v: string | number | null) => {
+      const s = v === null || v === undefined ? '' : String(v);
+      return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [headers.join(','), ...rows.map(r => r.map(escape).join(','))].join('\n');
+    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportErrors = () => downloadCsv(
+    `errors-${new Date().toISOString().slice(0, 10)}.csv`,
+    ['created_at', 'severity', 'error_id', 'message', 'url'],
+    errors.map(e => [e.created_at, e.severity, e.error_id, e.message, e.url]),
+  );
+
+  const exportEvents = () => downloadCsv(
+    `events-${new Date().toISOString().slice(0, 10)}.csv`,
+    ['created_at', 'event_name', 'role'],
+    events.map(e => [e.created_at, e.event_name, e.role]),
+  );
+
+  const exportCronRuns = () => downloadCsv(
+    `cron-runs-${new Date().toISOString().slice(0, 10)}.csv`,
+    ['started_at', 'finished_at', 'job_name', 'status', 'duration_ms', 'error_summary'],
+    cronRuns.map(r => [r.started_at, r.finished_at, r.job_name, r.status, r.duration_ms, r.error_summary]),
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
