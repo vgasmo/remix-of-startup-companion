@@ -103,9 +103,10 @@ export function BookingLinksManager() {
           .eq('active', true);
       }
 
-      const bookingUrl = markCanonical
-        ? `${window.location.origin}/book/${token}`
-        : null;
+      // Always persist the absolute booking URL so this link can later be
+      // promoted to canonical without needing the plaintext token again
+      // (token_hash is one-way and would otherwise make promotion impossible).
+      const bookingUrl = `${window.location.origin}/book/${token}`;
 
       const { error } = await supabase
         .from('public_booking_links')
