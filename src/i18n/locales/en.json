@@ -819,7 +819,13 @@
       "generate": "Generate Link",
       "generateNew": "Generate New Booking Link",
       "program": "Program (optional)",
-      "title": "Public Booking Links"
+      "title": "Public Booking Links",
+      "canonicalSet": "Canonical booking link set.",
+      "label": "Label",
+      "labelPlaceholder": "e.g. First contact",
+      "markCanonical": "Mark as canonical",
+      "markCanonicalHint": "This link becomes the default target of /book.",
+      "canonical": "Canonical"
     },
     "cancel": "Cancel",
     "claimAprovadoEFounderAssociado": "Claim approved and founder linked to workspace",
@@ -1525,7 +1531,13 @@
       "suspended": "Conta suspensa",
       "title": "User Management",
       "workspace": "Workspace",
-      "workspaceAssignments": "Workspace Assignments"
+      "workspaceAssignments": "Workspace Assignments",
+      "filterByRole": "Filter by role",
+      "allRoles": "All roles",
+      "noRoleAssigned": "No role assigned",
+      "filterByStatus": "Filter by status",
+      "allStatuses": "All statuses",
+      "statusApproved": "Approved"
     },
     "userRemoved": "User removed from workspace",
     "userSuspended": "User suspended",
@@ -1595,6 +1607,17 @@
       "title": "Workspaces",
       "unblock": "Unblock",
       "unblocked": "Workspace unblocked"
+    },
+    "utm": {
+      "copied": "UTM link copied.",
+      "copyFailed": "Could not copy link.",
+      "title": "UTM link builder",
+      "description": "Build a tracked link for campaigns.",
+      "source": "Source",
+      "medium": "Medium",
+      "campaign": "Campaign",
+      "content": "Content",
+      "result": "Result"
     }
   },
   "adminContracts": {
@@ -2121,7 +2144,8 @@
       "nothingToCommit": "No rows ready to commit",
       "previewFailed": "Cannot open PDF",
       "programRequired": "Pick a programme before uploading. New workspaces will be attached to it.",
-      "uploadFailed": "Upload failed"
+      "uploadFailed": "Upload failed",
+      "rowUpdateFailed": "Row update failed"
     },
     "extractComplete": "Extraction complete",
     "extracting": {
@@ -2568,7 +2592,8 @@
     "warning": "Warning",
     "workspace": "Workspace",
     "years": "years",
-    "yes": "Yes"
+    "yes": "Yes",
+    "errorOccurred": "An error occurred"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -2603,7 +2628,13 @@
     "noChallengesDesc": "Adjust your search or post the first challenge.",
     "searchChallenges": "Search Challenges",
     "upcomingEvents": "Upcoming Events",
-    "viewAll": "View full calendar"
+    "viewAll": "View full calendar",
+    "noAnnouncementsTitle": "No announcements yet",
+    "noAnnouncementsDesc": "Community announcements will appear here.",
+    "noChallengesTitle": "No open challenges",
+    "noChallengesDesc2": "New challenges will appear here.",
+    "noEventsTitle": "No upcoming events",
+    "noEventsDesc": "Upcoming ecosystem events will appear here."
   },
   "compliance": {
     "criticalHealth": "Critical Health",
@@ -2818,7 +2849,10 @@
       "titleLabel": "Title",
       "titlePlaceholder": "e.g. PPT Session 3 — Customer Discovery",
       "titleRequired": "Title required",
-      "uploading": "Uploading…"
+      "uploading": "Uploading…",
+      "attachToProposal": "Attach to next proposal",
+      "attachToProposalHint": "This file will be attached to the next commercial proposal sent for the selected program.",
+      "attachToProposalNeedsProgram": "Select a program to enable proposal attachment."
     },
     "uploadMaterial": "Carregar Material",
     "vpWizard": {
@@ -3620,7 +3654,44 @@
     "viewAll": "View All",
     "viewSession": "View Session",
     "weighted": "EUR",
-    "winProbability": "Probabilidade (%)"
+    "winProbability": "Probabilidade (%)",
+    "proposal": {
+      "bodyHint": "Personalize the message before sending.",
+      "attachments": "Attachments",
+      "noMaterials": "No materials available.",
+      "defaultBadge": "Default",
+      "ccOwner": "CC the account owner",
+      "send": "Send proposal",
+      "needsEmail": "Add an email to send a proposal.",
+      "sendButton": "Send proposal",
+      "title": "Send commercial proposal",
+      "description": "Review and send the proposal to the lead.",
+      "recipient": "Recipient",
+      "program": "Program",
+      "noProgram": "No program selected",
+      "subject": "Subject",
+      "body": "Message",
+      "sent": "Proposal sent",
+      "sentDesc": "The proposal was sent to the lead.",
+      "sendFailed": "Could not send proposal",
+      "bodyDocs": "Attached documents:",
+      "bodyGreeting": "Hello {{name}},",
+      "bodyGreetingFallback": "Hello,",
+      "bodyProgramFallback": "Thank you for your interest in Startup Leiria.",
+      "bodyProgramLine": "Following our conversation, I am sending the proposal for the {{program}} program.",
+      "bodySignoff": "Best regards,\nStartup Leiria team",
+      "defaultSubject": "Startup Leiria — Commercial proposal",
+      "defaultSubjectWithProgram": "Startup Leiria — Proposal for {{program}}"
+    },
+    "emailArchived": "Email archived",
+    "emailUnarchived": "Email restored",
+    "hideArchived": "Hide archived",
+    "showArchived": "Show archived",
+    "unarchive": "Restore",
+    "archive": "Archive",
+    "inbound": "Inbound",
+    "outbound": "Outbound",
+    "emailNoBody": "This message has no readable body."
   },
   "dashboard": {
     "acrossPrograms": "Across {{count}} program",
@@ -5284,7 +5355,8 @@
     "thisMonth": "This month",
     "thisWeek": "This week",
     "title": "Smart Inbox",
-    "today": "Today"
+    "today": "Today",
+    "viewAll": "View all"
   },
   "intake": {
     "changesRequested": "Changes Requested",
@@ -5781,7 +5853,9 @@
     "threeYearMark": "3+ Year Mark",
     "threeYearMarkDesc": "Startup has been incubating for over 3 years - review required",
     "title": "Contract Lifecycle Hub",
-    "upcomingRenewals": "Upcoming Renewals"
+    "upcomingRenewals": "Upcoming Renewals",
+    "stageMvp": "MVP",
+    "stageScale": "Scale"
   },
   "lifecycleMismatch": {
     "activeNoWorkspace": {
@@ -6256,7 +6330,8 @@
     "title": "Milestones",
     "titleLabel": "Title",
     "titlePlaceholder": "e.g., Launch MVP",
-    "titleRequired": "Title is required"
+    "titleRequired": "Title is required",
+    "cascadeClosed": "Milestone closed. Underlying actions were also closed."
   },
   "momentum": {
     "panelTitle": "Startup momentum",
@@ -8660,7 +8735,9 @@
     "upToDate": "Up to date",
     "viewAllStartups": "View all startups",
     "viewConsultantPortfolio": "View consultant portfolio",
-    "viewConsultantPortfolioHint": "View this consultant’s portfolio"
+    "viewConsultantPortfolioHint": "View this consultant’s portfolio",
+    "pillStartupsAria": "Open my portfolio",
+    "pillProgramsAria": "Open program setup"
   },
   "staffTasks": {
     "moreTasks": "more tasks",
@@ -9485,7 +9562,10 @@
     "unitEconomics": "Unit Economics",
     "unsavedChangesTitle": "Discard unsaved changes?",
     "unsavedChangesWarning": "You have unsaved changes. Are you sure you want to close?",
-    "useTemplate": "Use Template"
+    "useTemplate": "Use Template",
+    "hiddenFromFounder": "Hidden from founder",
+    "showToFounder": "Show to founder",
+    "hideFromFounder": "Hide from founder"
   },
   "tests": {
     "fail": "Fail",
@@ -10015,5 +10095,15 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
+  },
+  "programTransfer": {
+    "done": "Transfer completed.",
+    "action": "Transfer program",
+    "title": "Transfer to another program",
+    "desc": "Move this workspace to another program. Stage and week will be reset.",
+    "pick": "Choose target program",
+    "previewTitle": "Impact preview",
+    "simulate": "Simulate",
+    "confirm": "Confirm transfer"
   }
 }

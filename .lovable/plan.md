@@ -1,199 +1,128 @@
 
-# Operating journey overhaul — implementation plan
+# Release Lead Plan — Leiria Launchpad Pro RC
 
-This is a large, high-risk change on a live production system. It will land as a sequence of **corrective migrations and code changes**, each independently deployable, in the order below. Nothing renames or destroys existing tables; every DB change is additive or a safe RPC-level fix.
+This is a large, multi-batch job. I will work in ordered batches, stop only on destructive/live-data actions or product-choice forks, and produce evidence at each gate. No feature-freeze violations.
 
-Scope reminder: improve the canonical CRM + Ecosystem, do not create parallel systems.
+## Batch 0 — Baseline (read-only, ~30 min)
 
----
+Goal: establish ground truth. No code changes.
 
-## Phase 0 — Verify current truth (before-state matrix)
+1. Run canonical gates from a clean tree and capture failures verbatim:
+   - `bun install --frozen-lockfile`
+   - `bun run lint`
+   - `bunx tsc --noEmit -p tsconfig.typecheck.json` (canonical typecheck config)
+   - `bun run build`
+   - `bunx vitest run`
+   - `node scripts/i18n-check.cjs`
+   - `node scripts/i18n-lint.mjs`
+   - `node scripts/secret-scan.cjs`
+2. Enumerate scheduled jobs from `supabase/SCHEDULED_JOBS.md`, `supabase/config.toml`, and cron migrations. Diff against actually-deployed pg_cron rows.
+3. List every edge function and its `verify_jwt` setting.
+4. Run Supabase linter and slow-query snapshot.
+5. Dump route table and public-booking related routes/components.
 
-Deliverable: a short markdown matrix committed at `.lovable/journey-audit.md` covering, for each surface, the tables/RPCs/functions/routes/permissions in play and the observed defect. Sources: reading code + `supabase--read_query` on live schema (read-only). No writes in this phase.
+Deliverable: a `docs/RC_BASELINE_2026_07_18.md` with raw failures, so every subsequent fix has a before/after row.
 
-Focus:
+## Batch 1 — P0.A: Green gates (no product changes)
 
-- `public-get-availability`, `public-book-first-contact`, `intake_routing`, `public_booking_links`, `funnel_items`, `funnel_events`, `communication_log`, `email_log`, `notifications`.
-- `list_ecosystem_items_v2` RPC + `src/hooks/useEcosystemItems*.ts` + `Ecosystem.tsx`.
-- `startup_contracts.incubation_type_id`, `buildings`, `office_spaces`, `space_allocations`, `startups.startup_category`.
-- Programme transfer paths (client-only writes to `funnel_items.program_id` / workspace).
-- `CommunityFeed` mock arrays.
-- HubSpot import functions.
+Fix, in this order, without bypasses:
 
----
+1. **22 strict TS failures in Supabase update calls** — switch each call to `Database['public']['Tables']['<t>']['Update']` and drop the offending fields; no `any`, no ignore.
+2. **`UnifiedSmartInbox.tsx:211` ternary side effect** — replace with an explicit `if` or a proper conditional expression that doesn't rely on evaluation for side effects.
+3. **`useHiddenCanvasTools.ts`** — swap `@/integrations/supabase/client` → `@/lib/supabaseClient` (canonical PKCE client per `mem://infrastructure/supabase-client-standard`).
+4. **`useFinancialPlan.test.tsx`** — rewrite test to match production find-then-update-or-insert path required by the partial unique index. Do not touch production code.
+5. **84 missing runtime i18n keys** — add real translations to `en.json` and `pt.json`, verify diacritics, run i18n-lint until green. No generic fallbacks.
+6. **Secret scan** — resolve any newly-flagged strings; confirm no service-role material in client/migrations.
 
-## Phase 1 — Reliable first-contact booking
+Gate: all 8 canonical commands return zero failures. Commit checkpoint.
 
-### 1.1 Canonical routing resolver (shared)
-New file `supabase/functions/_shared/first-contact-routing.ts` exporting `resolveFirstContactRoute({ linkToken, programId })`. Both `public-get-availability` and `public-book-first-contact` import it. It:
+## Batch 2 — P0.B/C/D: Public booking journey
 
-1. Loads and validates `public_booking_links` (active, not deleted, feature flag on).
-2. Loads `intake_routing` rules scoped to the link (or global fallback rule if the link explicitly opts-in).
-3. Filters candidates to: `profiles.status='active'`, has `user_roles.role IN ('admin','consultant')`, has a non-null `calendar_email` (or fallback to `email` only if the routing rule allows), and is authorized on the selected programme.
-4. Applies mode: `global`, `programme_specific`, `fixed_owner`, `round_robin`.
-5. Round-robin: uses an advisory lock (`pg_advisory_xact_lock` on hash of routing_id) inside a SECURITY DEFINER RPC `pick_round_robin_consultant(routing_id, program_id)` that reads+increments a counter in a new `intake_routing_state` row (upsert).
-6. Returns `{ consultantId, programId, routingId, decisionTrace }` or throws `NO_ROUTE` — never `.limit(1)` silently.
+This is the highest external-risk finding. Product-choice fork here — pausing for approval before shipping the new resolver.
 
-Migration adds:
-- `intake_routing_state(routing_id uuid pk, program_id uuid, last_index int, updated_at timestamptz)` + GRANTs + RLS (service_role only).
-- `pick_round_robin_consultant` SECURITY DEFINER.
+1. **B — Stable `/book` entrypoint**
+   - Add route + edge function `resolve-public-booking-link` that returns the single active canonical link (or a `degraded`/`no_active_link` state).
+   - Update Login CTA (desktop + mobile) → `/book`.
+   - `/book/demo` continues to work; existing tokenized links unchanged.
+   - Fallback UI: honest "request contact" form (uses existing lead capture) when no active link.
 
-### 1.2 Availability + commit alignment
-`public-get-availability` and `public-book-first-contact` both call the resolver with the same inputs. Slot list is filtered against the resolved consultant's `graph_availability` only.
+2. **C — Fail-closed availability**
+   - `public-get-availability`: distinguish `available | unavailable | unverifiable | not_configured`; never fabricate slots on Graph error/timeout.
+   - Return structured error body; client renders "temporarily unverifiable, request contact instead".
+   - Emit diagnostic to `email_sync_runs`-style observability table (reuse or add `integration_diagnostics`).
 
-### 1.3 Booking commit hardening
-Rewrite `public-book-first-contact` to:
+3. **D — Idempotent booking commit**
+   - New table `public_booking_attempts` with unique `idempotency_key`, state machine: `received → slot_validated → crm_persisted → graph_created → notified → done | failed(retryable|terminal)`.
+   - `public-book-first-contact` becomes a resumable state machine keyed on idempotency key (client generates once per intent; server rejects duplicates by returning original result).
+   - Escape founder name/org/message before Graph HTML injection.
+   - Revalidate slot immediately before Graph create.
+   - Add integration tests covering: double-click, network timeout post-Graph, Graph 4xx/5xx, DB fail pre/post Graph, slot race, invalid/expired token, rate limit.
 
-- Re-run resolver.
-- Re-check availability against Graph for the exact slot immediately before insert.
-- Wrap all DB writes in a single Postgres transaction via RPC `commit_first_contact_booking(payload jsonb)` returning the new/updated funnel item id + correlation id.
-- Idempotency: `payload.idempotency_key` (uuid v4 from client, else derived from `sha256(email + slot_start + link_token)`). Store on `funnel_items.metadata_json.booking.idempotency_key` with a unique partial index.
-- Lead upsert: match by (email, program_id) OR existing `funnel_item_id` from link. If found and stage is later than `first_contact_booked`, do NOT overwrite core fields — only append a `funnel_events` row and merge non-destructive metadata.
-- Persist structured `metadata_json.booking = { calendar_event_id, teams_url, routing_decision, consultant_id, slot_start, slot_end, form: {...} }`.
-- Create Graph event on resolved consultant's calendar with founder as attendee. On Graph failure, store event as `pending` and return HTTP 502 with the funnel item id so the retry path can complete it.
-- Create `notifications` rows for consultant + configurable staff watchers (new setting `system_settings.first_contact_watchers uuid[]`).
-- Insert `email_log` row with `status ∈ {queued, sent, failed}`, `provider_message_id`, `retry_count`, `last_error`.
-- Response payload accurately reports `calendar_status`, `email_status`, `notification_status`. Frontend `PublicBooking.tsx` shows a partial-success UI when any is not `ok`.
+Gate: new Vitest integration suite + manual Playwright script covering desktop + mobile.
 
-### 1.4 Retry action
-New edge function `retry-first-contact-delivery` (staff-only, verify_jwt=false + in-code role check). Idempotent: skips steps already `ok`. Cannot duplicate calendar events (uses stored `calendar_event_id`) or emails (uses `idempotency_key`).
+## Batch 3 — P1.E–J: Automation truthfulness
 
-### 1.5 CRM subview `Primeiros contactos`
-New tab inside existing CRM page (`src/pages/CRM.tsx`) — not a new page. Component `src/components/crm/FirstContactsAgenda.tsx`:
+1. **E — Automation registry** at `docs/automation-registry.md` + `src/lib/automationRegistry.ts` (typed). Reconcile with migrations; fix drift (verify `check-mentor-nda-expiry`, `sweep-session-transcripts` cron auth). No duplicate schedules.
+2. **F — NDA reminder ledger** `mentor_nda_reminder_deliveries` with unique key `(mentor_id, acceptance_version, window_key)`; second run sends zero duplicates.
+3. **G — Transcript sweep**: treat non-2xx as failure; persist per-session outcome; accurate counts.
+4. **H — Webhook→notification auth**: add durable `notification_outbox` table + scheduled worker; DocuSign/PandaDoc webhooks enqueue instead of directly invoking `send-notification-email`.
+5. **I — Typed sender results**: `SendResult = { attempted, sent, failed, skipped, retryable, permanent }`; wire into `send-notification-email`, `automation-engine`. No more boolean fire-and-forget.
+6. **J — Health telemetry**: fix the current `email_sync_health_check_failed: "column reference \"status\" is ambiguous"` observed in logs (qualify the column in `check_email_sync_health`). Show real state per integration.
 
-- Views: day / week / list.
-- Segments: upcoming, completed, unassigned, delivery-failed, no-show.
-- Data source: `funnel_items` filtered by `metadata_json.booking.slot_start` + join to `email_log` / `notifications` for delivery state.
-- RLS: consultants see only rows where `owner_id = auth.uid()`; admin/backoffice see all.
-- Row click opens existing CRM drawer for that funnel item — no duplicate record view.
+## Batch 4 — P1.K/L: CRM & backoffice
 
----
+1. **K — Proposal sending outbox** with idempotency; enforce all Supabase errors; safe staff retry.
+2. **L — Contract deep-link** `?tab=backoffice&subtab=contracts&contract=<id>` — verify route resolver, add regression test.
 
-## Phase 2 — Public discovery
+## Batch 5 — P1.M/N: Clickability contract
 
-- Ensure a single canonical `public_booking_links` row flagged `is_canonical=true` (new column), never expiring, used by the public landing CTA.
-- SEO: add per-route Helmet on `PublicBooking.tsx` (title, description, canonical, og:*). Sitewide title already OK.
-- New staff tool inside `IntakeRoutingManager`: "Gerar link de campanha" — appends UTM params to the canonical URL, does NOT create a new `public_booking_links` row.
-- Return a checklist string in the final report; do not attempt to touch LinkedIn/Instagram.
+1. Build `docs/clickability-matrix.md` classifying every ambiguous surface across founder/consultant/mentor/staff.
+2. Ship canonical `InteractiveCard`/`InteractiveRow` wrapping existing `clickableProps`; native `<a>`/`<button>` where possible; 44×44 targets; focus ring; nested-control propagation guard.
+3. Apply to the verified problem surfaces only (founder dashboard action cards, stage progress, workspace overview metrics, mentor cards, workspace cards, Documents templates, Help Glossary, Shared Dataroom, Programme Materials). Remove misleading hover/pointer/chevron on informational surfaces.
 
----
+Gate: axe clean on those surfaces; keyboard parity.
 
-## Phase 3 — Ecosystem / active portfolio
+## Batch 6 — P1: Persona E2E hardening
 
-### 3.1 Fix `list_ecosystem_items_v2`
-Migration rewrites the RPC (CREATE OR REPLACE) so the SELECT actually joins and returns:
+Rewrite Playwright suites in `e2e/` to fail on `pageerror`, console error, failed request, unhandled rejection. Seeded fixtures per persona. No `.skip`. Explicit allowlist only for known third-party noise, reviewed inline.
 
-- `program_id`, `program_type` (from `programs`)
-- `incubation_type_id`, `incubation_type_name` (from active `startup_contracts` — the one with `status='active'` and no `terminated_at`)
-- `modality` (`physical` | `virtual`) derived from `incubation_types.modality` column (add column if missing, default null; migration seeds known values). Never derived from name.
-- `building_id`, `building_name`, `space_id`, `space_name` from current `space_allocations`
-- `startup_category` (A/B/C tier)
-- `owner_id` (assigned consultant) from `funnel_items` or `workspace_assignments`
-- health / last_interaction_at / next_meeting_at / attention_state already present — verify
+Covers all four personas + public visitor journeys listed in the request.
 
-All declared filters wired through the RPC signature: `p_program_ids`, `p_incubation_type_ids`, `p_modality`, `p_building_ids`, `p_tiers`, `p_consultant_ids`, `p_stage`, `p_health`, `p_attention`, `p_search`, `p_limit`, `p_cursor`.
+## Batch 7 — P2: Polish
 
-Client `Ecosystem.tsx` + hooks: remove any filter control that isn't sent to the RPC. Every visible chip must map 1:1.
+1. **O — Rename** "Plano de Negócios" → "Plano Financeiro Guiado" (PT) / "Guided Financial Plan" (EN), realign card copy. Post-launch epic tracked in `docs/post-launch-epics.md`.
+2. **P — Performance profiling**: capture cold-load traces on seeded data; set budgets; only split measured boundaries. No blind `manualChunks`.
+3. **Q — PWA honesty**: remove any "works offline" copy; keep legacy SW unregistration in place.
 
-### 3.2 Aggregates over full filtered dataset
-New RPC `ecosystem_aggregates_v2(<same filters minus limit/cursor>)` returning a single jsonb with:
-- by_incubation_type, by_tier, by_consultant, unassigned_count, by_modality, by_program, by_attention.
+## Batch 8 — Migration safety & final gate
 
-Rendered in a new `EcosystemMetrics` panel. Each aggregate card is a button that applies the corresponding filter and drills into the list.
+1. Replay all migrations against a fresh empty DB (via `supabase db reset` in a sandbox) — capture counts, RLS/grant/trigger/cron invariants.
+2. Replay against anonymized clone if available; otherwise document the gap.
+3. Compare invariant counts (workspaces, funnel_items, contracts, sessions, orphans/duplicates) — no drift.
+4. Re-run all canonical gates from clean.
+5. Run hardened Playwright suite.
 
-### 3.3 Leads vs active workspaces
-Ecosystem list header shows a hard-labeled toggle: **Portfólio ativo** (workspaces) / **Leads em pipeline** (funnel_items pre-conversion). Never mixed rows.
+## Deliverables at end
 
----
+- `docs/RC_LAUNCH_REPORT.md` with GO/NO-GO, before/after table per finding ID, root cause, files changed, commands + summaries, E2E evidence, registry diff, DB replay evidence, perf numbers, residual risks.
+- Every claim backed by a run log or persisted artifact, not by "should work".
 
-## Phase 4 — Safe programme transfer
+## Pauses I will make
 
-Migration + new RPC `staff_transfer_workspace_program(p_workspace_id, p_target_program_id, p_dry_run boolean)`:
+I will stop and confirm before:
 
-- Auth: `has_role(auth.uid(),'admin') OR has_role(auth.uid(),'consultant')`.
-- Locks workspace row (`SELECT ... FOR UPDATE`).
-- Validates source/target programmes.
-- Dry-run returns a preview jsonb: affected sessions, milestones (kept/archived), gates, deliverables, enrollments, KPIs.
-- Commit path:
-  - Updates `workspaces.program_id`, `stage` / `current_week` to target-programme defaults.
-  - Archives (soft) programme-specific milestones/gates/deliverables not present in target, remaps by canonical key when present.
-  - Preserves generic sessions/notes/documents/actions.
-  - Writes `activity_log` before/after entry with full diff.
-- Idempotent by `(workspace_id, target_program_id, transfer_id uuid)`.
+- **Batch 2 (B/C/D)** — public booking is a product-shape change (new `/book` route + fallback contact form). Two viable options: (i) fully replace `/book/demo` CTA with the resolver, (ii) keep both. I need your call.
+- **Batch 8** — before running any migration replay against a production-like clone.
+- Anywhere I discover a live-data-destructive step.
 
-UI: new staff-only action `Mover de programa` in `EcosystemItem` drawer + workspace detail — behind an admin-visible menu, hidden from founders. Diagnostic tool for "wrongly-stuck-in-Experience-Lab" scans workspaces whose current program mismatches their active contract's programme and flags them; no hardcoded startup names.
+Everything else in the plan is safe and reversible, so I will proceed continuously through Batch 0 → 1 → (pause) → 2 → onward.
 
----
+## What I will NOT do
 
-## Phase 5 — HubSpot history import
-
-New edge function `prepare-hubspot-history-import` + `commit-hubspot-history-import` (mirrors existing bulk-import pattern):
-
-- Accepts CSV/JSON exports for notes, calls, meetings, emails.
-- Preview stage inserts into `bulk_import_rows` with mapping proposals.
-- Match order: (1) `external_entity_refs.external_id`, (2) email exact, (3) domain + name exact — never fuzzy auto-match.
-- Commit inserts into `communication_log` with `external_source='hubspot'`, `external_id`, `original_timestamp`. New unique index `communication_log(external_source, external_id)`.
-- Links `funnel_item_id` and/or `workspace_id` when a canonical relationship exists.
-- Default visibility for imported internal notes: `staff_only=true`.
-- Rollback by `bulk_import_batches.id` reuses existing rollback pattern.
-- Integration card in Settings: change HubSpot section to two distinct states — "Import histórico (disponível)" and "Sync bidirecional (em breve)".
+- Rename database concepts, remove widgets, remove role capabilities, redesign product surfaces, restore the neutralized destructive migration, edit `src/integrations/supabase/client.ts` / `types.ts` / `.env`, or bypass any gate.
+- Claim green from grep or a manually-emitted toast.
+- Enable offline PWA behavior.
 
 ---
 
-## Phase 6 — Assistive AI for first contact
-
-New edge function `generate-first-contact-brief` (staff-only) taking `funnel_item_id`. Inputs:
-- booking questionnaire (`metadata_json.booking.form`)
-- pitch deck (already extracted by `analyze-pitch-deck`, reuse cache)
-- communication_log timeline
-- verified company signals (existing external enrichment if present, else skipped)
-
-Output stored in `funnel_items.metadata_json.ai_brief = { generated_at, sections: {...}, confidence, evidence }`. Sections: factual summary, confirmed vs claimed, missing info, fit signals, risks, discovery questions, recommended next step. Every bullet carries a `source` tag.
-
-Guardrails:
-- Never writes `stage`, `startup_category`, `program_id`, `owner_id`, or contract fields.
-- Any suggestion appears as a staff-approvable card in the CRM drawer.
-- Rename existing lead_score to `engagement_readiness_score` in UI labels + i18n keys (DB column keeps its name; add a comment). Show AI analysis in a separate panel.
-
----
-
-## Phase 7 — Real community value
-
-- Delete `MOCK_ANNOUNCEMENTS`, `MOCK_CHALLENGES`, `MOCK_EVENTS` from `CommunityFeed`. Wire to existing `admin_announcements` (extend with `audience`, `programme_id`, `building_id`, `starts_at`, `ends_at`, `location`, `url`, `status ∈ draft|published|expired`, `owner_id`).
-- New table `community_offers(id, workspace_id, kind need|offer, title, body, contact_consent bool, status draft|pending|published|rejected|expired, moderated_by, moderated_at, ...)` + GRANTs + RLS: workspace members insert; only staff transition to `published`.
-- Founder view filters `status='published' AND now() BETWEEN starts_at AND ends_at` (or null bounds) and audience match.
-- "Conectar" opens the existing messaging drawer to the offer owner (real action). "Ver calendário completo" links to `/comunidade/calendario`; if not implemented, button removed.
-- Empty states everywhere — no fake companies/dates.
-
----
-
-## Phase 8 — Tests & acceptance
-
-- Vitest unit: routing resolver (all 4 modes + no-route), idempotency key derivation, ecosystem aggregate math, transfer dry-run diff, HubSpot matcher levels, AI brief input assembly (mocked model).
-- Edge integration via `supabase--test_edge_functions` for `public-get-availability`, `public-book-first-contact`, `retry-first-contact-delivery`, `commit-hubspot-history-import` — all against isolated fixtures (test link tokens, `test-e2e@` emails; teardown after).
-- Playwright (headless via shell) against `http://localhost:8080`: public booking happy path + partial-failure UI; CRM "Primeiros contactos" tab; ecosystem filters + aggregate drill-down; staff programme transfer dry-run dialog; community feed empty + published state; 375px viewport pass.
-- Canonical checks: `bunx tsgo`, `bun run build`, lint, i18n parity script, secret scan, migration replay (fresh DB).
-
----
-
-## Execution order
-
-Phases 0 → 1 → 3 → 4 → 7 (mock removal is urgent) → 2 → 5 → 6 → 8. Phase 7 mock removal ships as its own migration-less patch first so production stops showing fake data ASAP.
-
-## Technical notes
-
-- All new/changed edge functions: `verify_jwt=false` with in-code auth; use `_shared/first-contact-routing.ts` helpers.
-- Every new public-schema table: `CREATE TABLE` → `GRANT` → `ENABLE RLS` → `CREATE POLICY`.
-- All migrations are additive or `CREATE OR REPLACE` for functions/RPCs; no destructive DDL. Existing legacy code paths keep working until callers migrate.
-- Feature flags: `first_contact_v2`, `ecosystem_aggregates_v2`, `hubspot_history_import`, `ai_first_contact_brief`, `community_real_data` — default off, flipped on per environment after smoke tests.
-- Any integration lacking a working credential in this environment (Graph, Resend, HubSpot) is reported UNVERIFIED in the final response; the code path remains fail-closed rather than simulating success.
-
-## Out of scope (explicit)
-
-- Live bidirectional HubSpot sync.
-- Auto-classification of startups by AI.
-- Reworking Data Import V2 or Reconciler Canary safety gates.
-- Renaming DB columns (only UI/i18n rename for `lead_score`).
-- Changes to external social profiles.
-
-Ready to proceed on approval.
+**Ready to proceed?** If yes, I start Batch 0 immediately and stop at the Batch 2 fork.

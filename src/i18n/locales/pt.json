@@ -819,7 +819,13 @@
       "generate": "Gerar Link",
       "generateNew": "Gerar Novo Link de Marcação",
       "program": "Programa (opcional)",
-      "title": "Links de Marcação Pública"
+      "title": "Links de Marcação Pública",
+      "canonicalSet": "Link de agendamento canónico definido.",
+      "label": "Etiqueta",
+      "labelPlaceholder": "Ex.: Primeiro contacto",
+      "markCanonical": "Marcar como canónico",
+      "markCanonicalHint": "Este link passa a ser o destino predefinido de /book.",
+      "canonical": "Canónico"
     },
     "cancel": "Cancelar",
     "claimAprovadoEFounderAssociado": "Claim aprovado e founder associado ao workspace",
@@ -1525,7 +1531,13 @@
       "suspended": "Conta suspensa",
       "title": "Gestão de Utilizadores",
       "workspace": "Workspace",
-      "workspaceAssignments": "Atribuições de Workspace"
+      "workspaceAssignments": "Atribuições de Workspace",
+      "filterByRole": "Filtrar por função",
+      "allRoles": "Todas as funções",
+      "noRoleAssigned": "Sem função atribuída",
+      "filterByStatus": "Filtrar por estado",
+      "allStatuses": "Todos os estados",
+      "statusApproved": "Aprovado"
     },
     "userRemoved": "Utilizador removido do workspace",
     "userSuspended": "Utilizador suspenso",
@@ -1595,6 +1607,17 @@
       "title": "Workspaces",
       "unblock": "Desbloquear",
       "unblocked": "Workspace desbloqueado"
+    },
+    "utm": {
+      "copied": "Link UTM copiado.",
+      "copyFailed": "Não foi possível copiar o link.",
+      "title": "Construtor de links UTM",
+      "description": "Crie um link com acompanhamento para campanhas.",
+      "source": "Origem",
+      "medium": "Meio",
+      "campaign": "Campanha",
+      "content": "Conteúdo",
+      "result": "Resultado"
     }
   },
   "adminContracts": {
@@ -2121,7 +2144,8 @@
       "nothingToCommit": "Sem linhas prontas para importar",
       "previewFailed": "Não foi possível abrir o PDF",
       "programRequired": "Escolha um programa antes de carregar. Os novos workspaces serão associados a esse programa.",
-      "uploadFailed": "Falha no carregamento"
+      "uploadFailed": "Falha no carregamento",
+      "rowUpdateFailed": "Falha ao atualizar linha"
     },
     "extractComplete": "Extração concluída",
     "extracting": {
@@ -2568,7 +2592,8 @@
     "warning": "Aviso",
     "workspace": "Workspace",
     "years": "anos",
-    "yes": "Sim"
+    "yes": "Sim",
+    "errorOccurred": "Ocorreu um erro"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -2603,7 +2628,13 @@
     "noChallengesDesc": "Ajusta a tua pesquisa ou publica o primeiro desafio.",
     "searchChallenges": "Pesquisar Challenges",
     "upcomingEvents": "Próximos Eventos",
-    "viewAll": "Ver calendário completo"
+    "viewAll": "Ver calendário completo",
+    "noAnnouncementsTitle": "Ainda sem anúncios",
+    "noAnnouncementsDesc": "Os anúncios da comunidade aparecem aqui.",
+    "noChallengesTitle": "Sem desafios abertos",
+    "noChallengesDesc2": "Novos desafios aparecerão aqui.",
+    "noEventsTitle": "Sem eventos previstos",
+    "noEventsDesc": "Os próximos eventos do ecossistema aparecerão aqui."
   },
   "compliance": {
     "criticalHealth": "Saúde Crítica",
@@ -2818,7 +2849,10 @@
       "titleLabel": "Título",
       "titlePlaceholder": "Ex: PPT Sessão 3 — Customer Discovery",
       "titleRequired": "Título obrigatório",
-      "uploading": "A carregar…"
+      "uploading": "A carregar…",
+      "attachToProposal": "Anexar à próxima proposta",
+      "attachToProposalHint": "Este ficheiro será anexado à próxima proposta comercial enviada para o programa selecionado.",
+      "attachToProposalNeedsProgram": "Selecione um programa para poder anexar à proposta."
     },
     "uploadMaterial": "Carregar Material",
     "vpWizard": {
@@ -3620,7 +3654,44 @@
     "viewAll": "Ver Tudo",
     "viewSession": "Ver Sessão",
     "weighted": "EUR",
-    "winProbability": "Probabilidade (%)"
+    "winProbability": "Probabilidade (%)",
+    "proposal": {
+      "bodyHint": "Personalize a mensagem antes de enviar.",
+      "attachments": "Anexos",
+      "noMaterials": "Sem materiais disponíveis.",
+      "defaultBadge": "Predefinido",
+      "ccOwner": "CC para o responsável",
+      "send": "Enviar proposta",
+      "needsEmail": "Adicione um e-mail para enviar proposta.",
+      "sendButton": "Enviar proposta",
+      "title": "Enviar proposta comercial",
+      "description": "Reveja e envie a proposta ao lead.",
+      "recipient": "Destinatário",
+      "program": "Programa",
+      "noProgram": "Sem programa selecionado",
+      "subject": "Assunto",
+      "body": "Mensagem",
+      "sent": "Proposta enviada",
+      "sentDesc": "A proposta foi enviada ao lead.",
+      "sendFailed": "Não foi possível enviar a proposta",
+      "bodyDocs": "Documentos em anexo:",
+      "bodyGreeting": "Olá {{name}},",
+      "bodyGreetingFallback": "Olá,",
+      "bodyProgramFallback": "Obrigado pelo interesse na Startup Leiria.",
+      "bodyProgramLine": "Na sequência da nossa conversa, envio a proposta para o programa {{program}}.",
+      "bodySignoff": "Com os melhores cumprimentos,\nEquipa Startup Leiria",
+      "defaultSubject": "Startup Leiria — Proposta comercial",
+      "defaultSubjectWithProgram": "Startup Leiria — Proposta para {{program}}"
+    },
+    "emailArchived": "E-mail arquivado",
+    "emailUnarchived": "E-mail restaurado",
+    "hideArchived": "Ocultar arquivados",
+    "showArchived": "Mostrar arquivados",
+    "unarchive": "Restaurar",
+    "archive": "Arquivar",
+    "inbound": "Recebido",
+    "outbound": "Enviado",
+    "emailNoBody": "Esta mensagem não tem corpo legível."
   },
   "dashboard": {
     "acrossPrograms": "Em {{count}} programa",
@@ -5284,7 +5355,8 @@
     "thisMonth": "Este mês",
     "thisWeek": "Esta semana",
     "title": "Caixa de entrada",
-    "today": "Hoje"
+    "today": "Hoje",
+    "viewAll": "Ver todos"
   },
   "intake": {
     "changesRequested": "Correções Pedidas",
@@ -5781,7 +5853,9 @@
     "threeYearMark": "Marca de 3+ Anos",
     "threeYearMarkDesc": "Startup em incubação há mais de 3 anos — revisão necessária",
     "title": "Hub do Ciclo de Contratos",
-    "upcomingRenewals": "Próximas Renovações"
+    "upcomingRenewals": "Próximas Renovações",
+    "stageMvp": "MVP",
+    "stageScale": "Escala"
   },
   "lifecycleMismatch": {
     "activeNoWorkspace": {
@@ -6256,7 +6330,8 @@
     "title": "Marcos",
     "titleLabel": "Título",
     "titlePlaceholder": "ex: Lançar MVP",
-    "titleRequired": "Título é obrigatório"
+    "titleRequired": "Título é obrigatório",
+    "cascadeClosed": "Marco fechado. As ações associadas também foram fechadas."
   },
   "momentum": {
     "panelTitle": "Momentum das startups",
@@ -8660,7 +8735,9 @@
     "upToDate": "Em dia",
     "viewAllStartups": "Ver todas as startups",
     "viewConsultantPortfolio": "Ver portefólio do consultor",
-    "viewConsultantPortfolioHint": "Ver portefólio deste consultor"
+    "viewConsultantPortfolioHint": "Ver portefólio deste consultor",
+    "pillStartupsAria": "Abrir o meu portefólio",
+    "pillProgramsAria": "Abrir configuração de programas"
   },
   "staffTasks": {
     "moreTasks": "mais tarefas",
@@ -9485,7 +9562,10 @@
     "unitEconomics": "Unit Economics",
     "unsavedChangesTitle": "Descartar alterações não guardadas?",
     "unsavedChangesWarning": "Tem alterações não guardadas. Tem a certeza que deseja fechar?",
-    "useTemplate": "Usar Template"
+    "useTemplate": "Usar Template",
+    "hiddenFromFounder": "Oculto para o founder",
+    "showToFounder": "Mostrar ao founder",
+    "hideFromFounder": "Ocultar ao founder"
   },
   "tests": {
     "fail": "Falhou",
@@ -10015,5 +10095,15 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
+  },
+  "programTransfer": {
+    "done": "Transferência concluída.",
+    "action": "Transferir programa",
+    "title": "Transferir para outro programa",
+    "desc": "Move esta startup para outro programa. Etapa e semana são reiniciadas.",
+    "pick": "Escolher programa de destino",
+    "previewTitle": "Pré-visualização do impacto",
+    "simulate": "Simular",
+    "confirm": "Confirmar transferência"
   }
 }
