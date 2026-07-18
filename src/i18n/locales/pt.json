@@ -7413,7 +7413,16 @@
     "unsure": "Não tenho a certeza",
     "uploadPitch": "Carregar apresentação (PDF, PPTX, até 10MB)",
     "whatToDiscuss": "O que gostaria de discutir?",
-    "yourDetails": "Os Seus Dados"
+    "yourDetails": "Os Seus Dados",
+    "resolver": {
+      "title": "A abrir agendamento — Startup Leiria",
+      "loadingTitle": "A abrir agendamento…",
+      "loadingDesc": "Estamos a levar-te ao formulário de reserva.",
+      "notConfiguredTitle": "Agendamento indisponível",
+      "notConfiguredDesc": "De momento não há um link público de agendamento ativo. Contacte a equipa Startup Leiria para receber um link direto.",
+      "errorTitle": "Não foi possível abrir o agendamento",
+      "errorDesc": "Ocorreu um erro. Tente novamente em instantes ou contacte info@startupleiria.com."
+    }
   },
   "publicContract": {
     "docs": {

@@ -5674,6 +5674,7 @@ export type Database = {
       public_booking_links: {
         Row: {
           active: boolean
+          canonical_url: string | null
           created_at: string
           created_by: string | null
           expires_at: string | null
@@ -5688,6 +5689,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          canonical_url?: string | null
           created_at?: string
           created_by?: string | null
           expires_at?: string | null
@@ -5702,6 +5704,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          canonical_url?: string | null
           created_at?: string
           created_by?: string | null
           expires_at?: string | null
@@ -10962,6 +10965,7 @@ export type Database = {
           linkedin_url: string
         }[]
       }
+      get_canonical_booking_url: { Args: never; Returns: string }
       get_dataroom_workspace_id: {
         Args: { _dataroom_id: string }
         Returns: string

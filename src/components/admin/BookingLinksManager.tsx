@@ -29,6 +29,7 @@ interface BookingLink {
   expires_at: string | null;
   created_at: string;
   is_canonical: boolean;
+  canonical_url: string | null;
   label: string | null;
 }
 
@@ -102,6 +103,10 @@ export function BookingLinksManager() {
           .eq('active', true);
       }
 
+      const bookingUrl = markCanonical
+        ? `${window.location.origin}/book/${token}`
+        : null;
+
       const { error } = await supabase
         .from('public_booking_links')
         .insert({
@@ -112,6 +117,7 @@ export function BookingLinksManager() {
           expires_at: expiresAt,
           created_by: user.id,
           is_canonical: markCanonical,
+          canonical_url: bookingUrl,
           label: labelInput.trim() || null,
         });
 
@@ -377,7 +383,7 @@ export function BookingLinksManager() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      {link.active && !link.is_canonical && (
+                      {link.active && !link.is_canonical && link.canonical_url && (
                         <Button
                           variant="ghost"
                           size="icon"
