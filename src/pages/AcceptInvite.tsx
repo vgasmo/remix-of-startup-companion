@@ -75,14 +75,15 @@ export default function AcceptInvite() {
       // Success!
       setStatus('success');
       setWorkspaceId(data.workspaceId);
-      
-      // (no token cleanup needed — token lives only in the URL)
-      
+
+      // Refresh profile so the pending-approval gate lifts before we navigate.
+      await refreshProfile?.();
+
       notify.success(t('invite.acceptedSuccess'));
-      
+
       // Redirect to workspace after a brief delay
       setTimeout(() => {
-        const redirectUrl = data.showOnboarding 
+        const redirectUrl = data.showOnboarding
           ? `/workspace/${data.workspaceId}?onboarding=true`
           : `/workspace/${data.workspaceId}`;
         navigate(redirectUrl);
