@@ -210,8 +210,15 @@ describe('useResolvePrefillProposal', () => {
     const { result } = renderHook(() => useResolvePrefillProposal('ws-1'), { wrapper });
     await result.current.mutateAsync({ proposal, action: 'reject' });
 
-    const upsert = calls.find(c => c.op === 'upsert' && c.table === 'financial_assumptions');
-    expect(upsert, 'reject should not materialize').toBeUndefined();
+    const write = calls.find(
+      c => (c.op === 'insert' || c.op === 'upsert') && c.table === 'financial_assumptions',
+    );
+    expect(write, 'reject should not materialize').toBeUndefined();
+
+    const update = calls.find(c => c.op === 'update' && c.table === 'financial_prefill_proposals');
+    expect((update!.payload as any).status).toBe('rejected');
+  });
+});
 
     const update = calls.find(c => c.op === 'update' && c.table === 'financial_prefill_proposals');
     expect((update!.payload as any).status).toBe('rejected');
