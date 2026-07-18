@@ -17,7 +17,7 @@ export default function AcceptInvite() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, isAuthReady } = useAuth();
+  const { user, isAuthReady, refreshProfile } = useAuth();
   
   const [status, setStatus] = useState<InviteStatus>('loading');
   const [error, setError] = useState<string | null>(null);
