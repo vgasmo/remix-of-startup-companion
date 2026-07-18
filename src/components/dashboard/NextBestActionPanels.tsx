@@ -194,7 +194,7 @@ export function NextBestActionStaff({
           count: contractsAwaitingSignatureCount,
         }),
         ctaLabel: t('nextBestAction.open', { defaultValue: 'Abrir' }),
-        to: '/backoffice?tab=contracts',
+        to: '/admin?tab=backoffice&subtab=contracts',
       };
     }
 
