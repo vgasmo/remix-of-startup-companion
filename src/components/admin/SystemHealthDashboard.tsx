@@ -184,7 +184,19 @@ export function SystemHealthDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button variant="outline" size="sm" onClick={exportErrors} disabled={errors.length === 0}>
+          <Download className="h-3.5 w-3.5 mr-1.5" />
+          {t('admin.systemHealth.exportErrors', { defaultValue: 'Exportar erros (CSV)' })}
+        </Button>
+        <Button variant="outline" size="sm" onClick={exportEvents} disabled={events.length === 0}>
+          <Download className="h-3.5 w-3.5 mr-1.5" />
+          {t('admin.systemHealth.exportEvents', { defaultValue: 'Exportar eventos (CSV)' })}
+        </Button>
+        <Button variant="outline" size="sm" onClick={exportCronRuns} disabled={cronRuns.length === 0}>
+          <Download className="h-3.5 w-3.5 mr-1.5" />
+          {t('admin.systemHealth.exportCron', { defaultValue: 'Exportar cron (CSV)' })}
+        </Button>
         <DownloadHtmlReportButton
           functionName="generate-board-pack"
           label={t('admin.systemHealth.boardPack', { defaultValue: 'Gerar Board Pack' })}
