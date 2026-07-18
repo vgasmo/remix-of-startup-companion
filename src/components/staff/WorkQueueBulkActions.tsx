@@ -53,11 +53,18 @@ export function WorkQueueBulkActions({
   const handleMarkDone = async () => {
     setIsLoading(true);
     try {
+      let succeeded = 0;
+      let failed = 0;
       if (onMarkDoneItem) {
-        // Sequential to keep side-effects (notifications) ordered and
-        // to preserve partial-failure semantics.
+        // Sequential to keep side-effects ordered. Track per-item outcome —
+        // never report a blanket success count.
         for (const id of Array.from(selectedIds)) {
-          await onMarkDoneItem(id);
+          try {
+            await onMarkDoneItem(id, { bulk: true });
+            succeeded += 1;
+          } catch (err) {
+            failed += 1;
+          }
         }
       } else {
         const { error } = await supabase
@@ -65,8 +72,10 @@ export function WorkQueueBulkActions({
           .update({ status: 'done' })
           .in('id', Array.from(selectedIds));
         if (error) throw error;
+        succeeded = selectedCount;
       }
-      notify.success(t('workQueue.bulkMarkedDone', { count: selectedCount }));
+      if (succeeded > 0) notify.success(t('workQueue.bulkMarkedDone', { count: succeeded }));
+      if (failed > 0) notify.error(t('workQueue.bulkPartialFailure', { count: failed, defaultValue: `${failed} item(ns) falharam` }));
       onDeselectAll();
       invalidate();
     } catch (e) {
