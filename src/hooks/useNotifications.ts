@@ -126,9 +126,31 @@ export function useNotifications() {
   });
 }
 
+/**
+ * Unread badge counter. Uses a HEAD/count query so the badge is accurate even
+ * when the user has more than the 50 notifications the main list caps at.
+ * Filtering `useNotifications().length` under-reported once inboxes crossed
+ * that threshold. Kept in sync via the same realtime subscription plus
+ * mark-read/mark-all/delete mutation invalidations.
+ */
 export function useUnreadNotificationCount() {
-  const { data: notifications } = useNotifications();
-  return notifications?.filter(n => !n.read).length ?? 0;
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const { data } = useQuery({
+    queryKey: ['notifications-unread-count', userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      if (!userId) return 0;
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('read', false);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+  return data ?? 0;
 }
 
 export function useMarkNotificationRead() {
