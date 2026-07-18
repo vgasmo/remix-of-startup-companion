@@ -5,10 +5,20 @@ import { subDays } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { AlertTriangle, Activity, TrendingUp, Bug } from 'lucide-react';
+import { AlertTriangle, Activity, TrendingUp, Bug, Zap } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { DownloadHtmlReportButton } from '@/components/shared/DownloadHtmlReportButton';
+
+interface CronRunRow {
+  id: string;
+  job_name: string;
+  status: string;
+  duration_ms: number | null;
+  error_summary: string | null;
+  started_at: string;
+  finished_at: string | null;
+}
 
 interface ErrorRow {
   id: string;
@@ -72,8 +82,41 @@ export function SystemHealthDashboard() {
     staleTime: 60_000,
   });
 
+  const cronRunsQuery = useQuery({
+    enabled: isAdmin,
+    queryKey: ['admin', 'system-health', 'cron-runs'],
+    queryFn: async (): Promise<CronRunRow[]> => {
+      const { data, error } = await supabase
+        .from('cron_job_runs')
+        .select('id, job_name, status, duration_ms, error_summary, started_at, finished_at')
+        .gte('started_at', since24h)
+        .order('started_at', { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return (data ?? []) as CronRunRow[];
+    },
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+
   const errors = errorsQuery.data ?? [];
   const events = eventsQuery.data ?? [];
+  const cronRuns = cronRunsQuery.data ?? [];
+
+  const cronByJob = useMemo(() => {
+    const map = new Map<string, { total: number; ok: number; failed: number; partial: number; lastStatus: string; lastAt: string; lastError: string | null }>();
+    for (const r of cronRuns) {
+      const cur = map.get(r.job_name) ?? { total: 0, ok: 0, failed: 0, partial: 0, lastStatus: r.status, lastAt: r.started_at, lastError: r.error_summary };
+      cur.total++;
+      if (r.status === 'ok') cur.ok++;
+      else if (r.status === 'failed') cur.failed++;
+      else if (r.status === 'partial') cur.partial++;
+      map.set(r.job_name, cur);
+    }
+    return Array.from(map.entries()).map(([job, s]) => ({ job, ...s })).sort((a, b) => (b.failed + b.partial) - (a.failed + a.partial));
+  }, [cronRuns]);
+
+  const cronFailures24h = cronRuns.filter(r => r.status === 'failed' || r.status === 'partial').length;
 
   const errors24h = errors.filter(e => e.created_at >= since24h).length;
   const critical24h = errors.filter(e => e.created_at >= since24h && (e.severity === 'critical' || e.severity === 'high'));
@@ -141,7 +184,58 @@ export function SystemHealthDashboard() {
           value={events.length}
           tone="primary"
         />
+        <StatCard
+          icon={<Zap className="h-4 w-4" />}
+          label={t('admin.systemHealth.cronFailures24h', { defaultValue: 'Falhas de cron (24h)' })}
+          value={cronFailures24h}
+          tone={cronFailures24h > 0 ? 'destructive' : 'muted'}
+        />
       </div>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            {t('admin.systemHealth.automations', { defaultValue: 'Automações agendadas (24h)' })}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {cronByJob.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">
+              {t('admin.systemHealth.noCronRuns', { defaultValue: 'Sem execuções registadas nas últimas 24h.' })}
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {cronByJob.map(row => {
+                const tone = row.failed > 0 ? 'destructive' : row.partial > 0 ? 'warning' : 'success';
+                const badgeClass =
+                  tone === 'destructive' ? 'bg-destructive/15 text-destructive border-destructive/30' :
+                  tone === 'warning' ? 'bg-warning/15 text-warning border-warning/30' :
+                  'bg-success/15 text-success border-success/30';
+                return (
+                  <div key={row.job} className="flex items-center justify-between gap-3 border-b border-border/40 pb-2 last:border-0">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-mono text-xs truncate">{row.job}</p>
+                      {row.lastError && (
+                        <p className="text-xs text-destructive truncate mt-0.5">{row.lastError}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-muted-foreground">
+                        {row.ok}/{row.total} OK
+                      </span>
+                      <Badge variant="outline" className={badgeClass}>
+                        {row.failed > 0 ? `${row.failed} falhas` : row.partial > 0 ? `${row.partial} parciais` : 'saudável'}
+                      </Badge>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

@@ -23,6 +23,7 @@ const MIN_ATTEMPT_INTERVAL_MIN = 15;
 Deno.serve(async (req: Request) => {
   const requestId = generateRequestId();
   const log = createLogger(FUNCTION_NAME, requestId);
+  const runStartedAt = Date.now();
 
   if (req.method === 'OPTIONS') return handleCorsOptions(req);
 
@@ -34,10 +35,28 @@ Deno.serve(async (req: Request) => {
   const cronSecret = Deno.env.get('CRON_SECRET')!;
   const admin = createClient(supabaseUrl, serviceKey);
 
+  const logRun = async (status: string, extra: Record<string, unknown> = {}, errorSummary?: string) => {
+    try {
+      await admin.rpc('log_cron_job_run', {
+        p_job_name: FUNCTION_NAME,
+        p_status: status,
+        p_duration_ms: Date.now() - runStartedAt,
+        p_error_code: null,
+        p_error_summary: errorSummary ?? null,
+        p_details: { request_id: requestId, ...extra },
+        p_triggered_by: 'cron',
+      });
+    } catch (e) {
+      log.warn('log_cron_job_run failed', { error: safeErrorMessage(e) });
+    }
+  };
+
   const nowIso = new Date().toISOString();
   const lookbackIso = new Date(Date.now() - LOOKBACK_HOURS * 60 * 60 * 1000).toISOString();
   const maxCompletedIso = new Date(Date.now() - MIN_MINUTES_AFTER_COMPLETION * 60 * 1000).toISOString();
   const attemptCutoffIso = new Date(Date.now() - MIN_ATTEMPT_INTERVAL_MIN * 60 * 1000).toISOString();
+
+  try {
 
   // Candidate sessions: consent given, online, completed recently, under max attempts,
   // last attempt (if any) older than the interval, no transcripts row yet.
@@ -55,11 +74,13 @@ Deno.serve(async (req: Request) => {
 
   if (candErr) {
     log.error('Failed to load candidate sessions', candErr);
+    await logRun('failed', { stage: 'candidates' }, candErr.message);
     return corsJsonResponse({ success: false, error: candErr.message }, req, 500);
   }
 
   if (!candidates || candidates.length === 0) {
     log.info('No candidates');
+    await logRun('ok', { processed: 0, candidates: 0 });
     return corsJsonResponse({ success: true, processed: 0 }, req);
   }
 
@@ -72,6 +93,7 @@ Deno.serve(async (req: Request) => {
 
   if (exErr) {
     log.error('Failed to load existing transcripts', exErr);
+    await logRun('failed', { stage: 'existing' }, exErr.message);
     return corsJsonResponse({ success: false, error: exErr.message }, req, 500);
   }
 
@@ -103,7 +125,6 @@ Deno.serve(async (req: Request) => {
       try { parsed = JSON.parse(bodyText); } catch { /* keep text */ }
       results.push({ session_id: s.id, status: parsed?.status || `http_${resp.status}` });
 
-      // If we've exhausted retries and still no transcript, log to integration_errors.
       if (parsed?.status === 'not_ready' && ((s.transcript_import_attempts ?? 0) + 1) >= MAX_ATTEMPTS) {
         await admin.from('integration_errors').insert({
           integration_type: 'teams_transcript',
@@ -124,5 +145,18 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  const errorCount = results.filter(r => r.status === 'error').length;
+  await logRun(errorCount > 0 ? 'partial' : 'ok', {
+    processed: results.length,
+    candidates: candidates.length,
+    errors: errorCount,
+  }, errorCount > 0 ? `${errorCount} import errors` : undefined);
+
   return corsJsonResponse({ success: true, processed: results.length, results }, req);
+  } catch (fatal) {
+    const msg = safeErrorMessage(fatal);
+    log.error('Fatal sweep error', { error: msg });
+    await logRun('failed', { stage: 'fatal' }, msg);
+    return corsJsonResponse({ success: false, error: msg }, req, 500);
+  }
 });
