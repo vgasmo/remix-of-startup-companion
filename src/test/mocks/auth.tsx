@@ -59,6 +59,7 @@ export function MockAuthProvider({
     signIn: async () => ({ error: null }),
     signUp: async () => ({ error: null }),
     signOut: async () => {},
+    refreshProfile: async () => {},
   };
 
   return (
