@@ -362,6 +362,10 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
                   personal_intro: '',
                 });
                 setPitchFile(null);
+                if (canonicalMode) {
+                  // Stay on the same-origin `/book` URL — no token in the address bar.
+                  return;
+                }
                 if (token) navigate(`/book/${token}`, { replace: true });
               }}
             >
