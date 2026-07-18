@@ -7413,7 +7413,16 @@
     "unsure": "Not sure",
     "uploadPitch": "Upload presentation (PDF, PPTX, up to 10MB)",
     "whatToDiscuss": "What would you like to discuss?",
-    "yourDetails": "Your Details"
+    "yourDetails": "Your Details",
+    "resolver": {
+      "title": "Opening booking — Startup Leiria",
+      "loadingTitle": "Opening booking…",
+      "loadingDesc": "Taking you to the booking form.",
+      "notConfiguredTitle": "Booking unavailable",
+      "notConfiguredDesc": "There is no active public booking link right now. Contact the Startup Leiria team to receive a direct link.",
+      "errorTitle": "Could not open booking",
+      "errorDesc": "An error occurred. Try again shortly or contact info@startupleiria.com."
+    }
   },
   "publicContract": {
     "docs": {
