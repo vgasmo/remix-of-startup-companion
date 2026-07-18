@@ -378,9 +378,12 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
     );
   }
 
-  const canonicalUrl = token
-    ? `${typeof window !== 'undefined' ? window.location.origin : 'https://fb.startupleiria.com'}/book/${token}`
-    : undefined;
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://fb.startupleiria.com';
+  const canonicalUrl = canonicalMode
+    ? `${origin}/book`
+    : token
+      ? `${origin}/book/${token}`
+      : undefined;
   const seoTitle = lang === 'pt'
     ? 'Marcar primeiro contacto — Startup Leiria'
     : 'Book your first meeting — Startup Leiria';
