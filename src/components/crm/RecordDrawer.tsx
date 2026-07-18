@@ -580,6 +580,13 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
                       .eq('id', item.id);
                     if (linkErr) throw linkErr;
 
+                    // Refresh CRM caches so the linked-contract block in the
+                    // still-open drawer stops showing the pre-write null state.
+                    queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
+                    queryClient.invalidateQueries({ queryKey: ['funnel-linked-contract', newContract.id] });
+                    queryClient.invalidateQueries({ queryKey: ['activity-timeline', item.id] });
+
+
 
 
                     const { data, error } = await invokeWithAuth('public-contract-onboarding', {
