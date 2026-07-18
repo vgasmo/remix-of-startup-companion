@@ -825,7 +825,8 @@
       "labelPlaceholder": "e.g. First contact",
       "markCanonical": "Mark as canonical",
       "markCanonicalHint": "This link becomes the default target of /book.",
-      "canonical": "Canonical"
+      "canonical": "Canonical",
+      "cannotPromoteLegacy": "This link was created before the migration and has no stored URL. Create a new link to mark as canonical."
     },
     "cancel": "Cancel",
     "claimAprovadoEFounderAssociado": "Claim approved and founder linked to workspace",
@@ -889,7 +890,8 @@
       "surveysDesc": "Surveys and forms",
       "templatesDesc": "Session and document templates",
       "title": "Mission Control",
-      "usersDesc": "User management"
+      "usersDesc": "User management",
+      "systemHealthDesc": "Monitor automations, errors, and scheduled cron runs"
     },
     "ecosystem": {
       "title": "Unified Ecosystem View"
@@ -1423,7 +1425,13 @@
       "noneCritical": "No critical errors in the last 24h.",
       "recentCritical": "Recent critical errors",
       "tab": "System Health",
-      "topErrors": "Erros mais frequentes (7d)"
+      "topErrors": "Erros mais frequentes (7d)",
+      "exportErrors": "Export errors (CSV)",
+      "exportEvents": "Export events (CSV)",
+      "exportCron": "Export cron runs (CSV)",
+      "cronFailures24h": "Cron failures (24h)",
+      "automations": "Automations",
+      "noCronRuns": "No cron runs recorded yet"
     },
     "tags": {
       "addCategory": "Add Category",
@@ -9915,7 +9923,8 @@
     },
     "updateFailed": "Failed to update work queue",
     "updated": "Work queue updated",
-    "viewAll": "View all {{count}} items"
+    "viewAll": "View all {{count}} items",
+    "bulkPartialFailure": "{{ok}} completed, {{failed}} failed"
   },
   "workflow": {
     "ruleUpdated": "Rule updated"
