@@ -55,7 +55,11 @@ describe('BookResolver (/book)', () => {
 
   it('renders PublicBooking inline with the resolved token — never redirects', async () => {
     rpc.mockResolvedValue({ data: 'token-abc123', error: null });
-    const replaceSpy = vi.spyOn(window.location, 'replace' as never).mockImplementation(() => undefined as never);
+    const replaceMock = vi.fn();
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...window.location, replace: replaceMock, assign: vi.fn() },
+    });
 
     renderResolver();
 
