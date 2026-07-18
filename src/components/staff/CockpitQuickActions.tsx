@@ -129,6 +129,9 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
 
       if (error) throw error;
       notify.success(t('staff.actionItemCreated'));
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      queryClient.invalidateQueries({ queryKey: ['work-queue'] });
+      queryClient.invalidateQueries({ queryKey: ['action-items', actionWorkspaceId] });
       setShowQuickAction(false);
       resetActionForm();
     } catch (error) {
