@@ -6619,24 +6619,30 @@ export type Database = {
       session_transcripts: {
         Row: {
           confidentiality: string
+          contained_at: string | null
           created_at: string | null
           id: string
+          pending_confidentiality_review: boolean
           session_id: string
           source: string | null
           transcript_text: string | null
         }
         Insert: {
           confidentiality?: string
+          contained_at?: string | null
           created_at?: string | null
           id?: string
+          pending_confidentiality_review?: boolean
           session_id: string
           source?: string | null
           transcript_text?: string | null
         }
         Update: {
           confidentiality?: string
+          contained_at?: string | null
           created_at?: string | null
           id?: string
+          pending_confidentiality_review?: boolean
           session_id?: string
           source?: string | null
           transcript_text?: string | null
@@ -8944,6 +8950,41 @@ export type Database = {
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transcript_containment_audit: {
+        Row: {
+          contained_at: string
+          id: string
+          new_confidentiality: string
+          previous_confidentiality: string
+          reason: string
+          transcript_id: string
+        }
+        Insert: {
+          contained_at?: string
+          id?: string
+          new_confidentiality: string
+          previous_confidentiality: string
+          reason: string
+          transcript_id: string
+        }
+        Update: {
+          contained_at?: string
+          id?: string
+          new_confidentiality?: string
+          previous_confidentiality?: string
+          reason?: string
+          transcript_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transcript_containment_audit_transcript_id_fkey"
+            columns: ["transcript_id"]
+            isOneToOne: false
+            referencedRelation: "session_transcripts"
             referencedColumns: ["id"]
           },
         ]
