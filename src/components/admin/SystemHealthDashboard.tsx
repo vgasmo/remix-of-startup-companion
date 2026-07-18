@@ -5,7 +5,8 @@ import { subDays } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { AlertTriangle, Activity, TrendingUp, Bug, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, Activity, TrendingUp, Bug, Zap, Download } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { DownloadHtmlReportButton } from '@/components/shared/DownloadHtmlReportButton';
@@ -148,9 +149,54 @@ export function SystemHealthDashboard() {
     );
   }
 
+  const downloadCsv = (filename: string, headers: string[], rows: (string | number | null)[][]) => {
+    const escape = (v: string | number | null) => {
+      const s = v === null || v === undefined ? '' : String(v);
+      return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [headers.join(','), ...rows.map(r => r.map(escape).join(','))].join('\n');
+    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportErrors = () => downloadCsv(
+    `errors-${new Date().toISOString().slice(0, 10)}.csv`,
+    ['created_at', 'severity', 'error_id', 'message', 'url'],
+    errors.map(e => [e.created_at, e.severity, e.error_id, e.message, e.url]),
+  );
+
+  const exportEvents = () => downloadCsv(
+    `events-${new Date().toISOString().slice(0, 10)}.csv`,
+    ['created_at', 'event_name', 'role'],
+    events.map(e => [e.created_at, e.event_name, e.role]),
+  );
+
+  const exportCronRuns = () => downloadCsv(
+    `cron-runs-${new Date().toISOString().slice(0, 10)}.csv`,
+    ['started_at', 'finished_at', 'job_name', 'status', 'duration_ms', 'error_summary'],
+    cronRuns.map(r => [r.started_at, r.finished_at, r.job_name, r.status, r.duration_ms, r.error_summary]),
+  );
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button variant="outline" size="sm" onClick={exportErrors} disabled={errors.length === 0}>
+          <Download className="h-3.5 w-3.5 mr-1.5" />
+          {t('admin.systemHealth.exportErrors', { defaultValue: 'Exportar erros (CSV)' })}
+        </Button>
+        <Button variant="outline" size="sm" onClick={exportEvents} disabled={events.length === 0}>
+          <Download className="h-3.5 w-3.5 mr-1.5" />
+          {t('admin.systemHealth.exportEvents', { defaultValue: 'Exportar eventos (CSV)' })}
+        </Button>
+        <Button variant="outline" size="sm" onClick={exportCronRuns} disabled={cronRuns.length === 0}>
+          <Download className="h-3.5 w-3.5 mr-1.5" />
+          {t('admin.systemHealth.exportCron', { defaultValue: 'Exportar cron (CSV)' })}
+        </Button>
         <DownloadHtmlReportButton
           functionName="generate-board-pack"
           label={t('admin.systemHealth.boardPack', { defaultValue: 'Gerar Board Pack' })}
