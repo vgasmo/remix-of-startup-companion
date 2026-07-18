@@ -160,4 +160,3 @@ Deno.serve(async (req: Request) => {
     return corsJsonResponse({ success: false, error: msg }, req, 500);
   }
 });
-});
