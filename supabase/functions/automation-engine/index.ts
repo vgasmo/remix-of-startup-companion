@@ -745,6 +745,13 @@ Deno.serve(async (req) => {
 
     console.log(`[automation-engine] Completed: ${totalNotifications} notifications, ${totalEmails} emails, ${totalErrors} errors`)
 
+    await logRun(totalErrors > 0 ? 'partial' : 'ok', {
+      notifications: totalNotifications,
+      emails: totalEmails,
+      errors: totalErrors,
+      checks: results.length,
+    }, totalErrors > 0 ? `${totalErrors} check errors` : undefined)
+
     return new Response(JSON.stringify({
       success: true,
       summary: { notifications: totalNotifications, emails: totalEmails, errors: totalErrors },
@@ -755,6 +762,7 @@ Deno.serve(async (req) => {
 
   } catch (err: any) {
     console.error('[automation-engine] Fatal error:', err)
+    await logRun('failed', { stage: 'fatal' }, err?.message ?? 'unknown')
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
