@@ -43,6 +43,7 @@ export function AdminMissionControlDirectory() {
     { tab: 'data-quality', label: t('dataQuality.title'), icon: Database, description: t('admin.directory.dataQualityDesc', { defaultValue: 'Integridade e qualidade dos dados' }), group: 'reports' },
     { tab: 'analytics', label: t('admin.analytics'), icon: BarChart3, description: t('admin.directory.analyticsDesc', { defaultValue: 'Análises de cohort e relatórios' }), group: 'reports' },
     { tab: 'health', label: t('admin.healthModels'), icon: Heart, description: t('admin.directory.healthDesc', { defaultValue: 'Modelos de saúde do ecossistema' }), group: 'reports' },
+    { tab: 'system-health', label: t('admin.systemHealth.tab', { defaultValue: 'Saúde do Sistema' }), icon: Activity, description: t('admin.directory.systemHealthDesc', { defaultValue: 'Automações agendadas, cron e alertas' }), group: 'reports' },
   ];
 
   const handleNavigate = (tab: string, route?: string) => {
