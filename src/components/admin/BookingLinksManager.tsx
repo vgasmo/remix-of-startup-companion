@@ -396,6 +396,20 @@ export function BookingLinksManager() {
                           <Star className="h-4 w-4 text-muted-foreground" />
                         </Button>
                       )}
+                      {link.active && !link.is_canonical && !link.canonical_url && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled
+                          title={t(
+                            'admin.bookingLinks.cannotPromoteLegacy',
+                            'Link antigo: o URL não foi guardado à criação. Crie um novo link com "Marcar como canónico" para o promover.',
+                          ) as string}
+                          aria-label={t('admin.bookingLinks.cannotPromoteLegacy', 'Não promovível') as string}
+                        >
+                          <Star className="h-4 w-4 text-muted-foreground/40" />
+                        </Button>
+                      )}
                       {link.active && (
                         <Button
                           variant="ghost"
