@@ -4,7 +4,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
   Clock, ShieldCheck, Building2, Bell, Database, Users, Users2,
   BarChart3, FileText, BookOpen, Heart, Filter, GitBranch, 
-  ClipboardList, UserPlus, ChevronDown, ChevronRight, Globe2
+  ClipboardList, UserPlus, ChevronDown, ChevronRight, Globe2, Activity
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
