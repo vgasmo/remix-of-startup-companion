@@ -383,7 +383,7 @@ export function BookingLinksManager() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      {link.active && !link.is_canonical && (
+                      {link.active && !link.is_canonical && link.canonical_url && (
                         <Button
                           variant="ghost"
                           size="icon"
