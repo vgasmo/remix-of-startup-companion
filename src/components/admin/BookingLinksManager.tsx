@@ -102,6 +102,10 @@ export function BookingLinksManager() {
           .eq('active', true);
       }
 
+      const bookingUrl = markCanonical
+        ? `${window.location.origin}/book/${token}`
+        : null;
+
       const { error } = await supabase
         .from('public_booking_links')
         .insert({
@@ -112,6 +116,7 @@ export function BookingLinksManager() {
           expires_at: expiresAt,
           created_by: user.id,
           is_canonical: markCanonical,
+          canonical_url: bookingUrl,
           label: labelInput.trim() || null,
         });
 
