@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Plus,
   Calendar,
@@ -55,6 +56,7 @@ interface CockpitQuickActionsProps {
 export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuickActionsProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [showQuickSession, setShowQuickSession] = useState(false);
   const [showQuickAction, setShowQuickAction] = useState(false);
   const [showQuickReminder, setShowQuickReminder] = useState(false);
@@ -93,6 +95,9 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
 
       if (error) throw error;
       notify.success(t('staff.sessionScheduledSuccessfully'));
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      queryClient.invalidateQueries({ queryKey: ['work-queue'] });
+      queryClient.invalidateQueries({ queryKey: ['upcoming-sessions'] });
       setShowQuickSession(false);
       resetSessionForm();
     } catch (error) {
@@ -124,6 +129,9 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
 
       if (error) throw error;
       notify.success(t('staff.actionItemCreated'));
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      queryClient.invalidateQueries({ queryKey: ['work-queue'] });
+      queryClient.invalidateQueries({ queryKey: ['action-items', actionWorkspaceId] });
       setShowQuickAction(false);
       resetActionForm();
     } catch (error) {

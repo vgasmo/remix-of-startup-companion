@@ -150,7 +150,19 @@ serve(async (req) => {
       .from('workspace_invitations')
       .update({ accepted_at: new Date().toISOString() })
       .eq('id', invitation.id);
-    
+
+    // Auto-approve the invited user's account so they aren't stuck on
+    // /pending-approval. They arrived via a valid workspace invite; staff
+    // approval is not needed for invited founders.
+    const { error: approveErr } = await supabaseService
+      .from('profiles')
+      .update({ account_status: 'approved' })
+      .eq('id', user.id)
+      .in('account_status', ['pending', 'approved']);
+    if (approveErr) {
+      console.error('Failed to auto-approve invited user profile:', approveErr);
+    }
+
     // Log activity
     await supabaseService
       .from('activity_log')

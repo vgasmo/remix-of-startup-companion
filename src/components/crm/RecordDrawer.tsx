@@ -1,5 +1,6 @@
 import { useDateLocale } from '@/lib/dateLocale';
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { useNavigate } from 'react-router-dom';
@@ -78,6 +79,7 @@ interface RecordDrawerProps {
 export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateSibling }: RecordDrawerProps) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const language = i18n.language.startsWith('pt') ? 'pt' : 'en';
   const dateLocale = useDateLocale();
@@ -577,6 +579,13 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
                       .update({ linked_contract_id: newContract.id })
                       .eq('id', item.id);
                     if (linkErr) throw linkErr;
+
+                    // Refresh CRM caches so the linked-contract block in the
+                    // still-open drawer stops showing the pre-write null state.
+                    queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
+                    queryClient.invalidateQueries({ queryKey: ['funnel-linked-contract', newContract.id] });
+                    queryClient.invalidateQueries({ queryKey: ['activity-timeline', item.id] });
+
 
 
 

@@ -119,14 +119,10 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
     }
   };
 
-  const handleMarkDone = async (itemId: string) => {
+  const handleMarkDone = async (itemId: string, opts?: { bulk?: boolean }) => {
     try {
       const item = workQueueItems?.find((i) => i.id === itemId);
       // G1: validate_actions is a review shortcut, not a closable task.
-      // Marking it "done" without acting on the underlying awaiting actions
-      // caused an infinite recompute loop. Deep-link to the workspace's
-      // awaiting-validation queue instead, and only allow closure when nothing
-      // remains awaiting.
       if (item?.type === 'validate_actions' && item.workspace_id) {
         const { supabase } = await import('@/lib/supabaseClient');
         const { count, error: countErr } = await supabase
@@ -137,6 +133,11 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
         if (countErr) throw countErr;
 
         if ((count ?? 0) > 0) {
+          // Bulk mode: don't navigate mid-loop or the rest of the selection is abandoned.
+          // Treat as a soft-failure so the bulk counter reports it as such.
+          if (opts?.bulk) {
+            throw new Error(t('workQueue.stillPendingValidation', { count, defaultValue: `Ainda há ${count} ações por validar.` }));
+          }
           notify.info(t('workQueue.stillPendingValidation', { count, defaultValue: `Ainda há ${count} ações por validar.` }));
           navigate(`/workspace/${item.workspace_id}?tab=milestones-actions&sub=actions&status=awaiting_validation`);
           return;
@@ -184,9 +185,11 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
         }
       }
       await markAsDone.mutateAsync(itemId);
-      notify.success(t('workQueue.markedDone'));
+      if (!opts?.bulk) notify.success(t('workQueue.markedDone'));
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : t('workQueue.updateFailed');
+      // Bulk mode: rethrow so the caller counts real failures instead of a blanket success.
+      if (opts?.bulk) throw error instanceof Error ? error : new Error(msg);
       notify.error(msg);
     }
   };

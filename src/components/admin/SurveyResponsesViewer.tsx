@@ -47,7 +47,13 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
   const locale = getDateLocale();
 
   const handleExportCSV = () => {
-    // Basic CSV export
+    // RFC 4180 escaping: quote every field, double any inner quotes.
+    // Prevents startup names/status containing commas, quotes, or newlines
+    // from corrupting columns downstream (Excel, GSheets).
+    const esc = (v: unknown) => {
+      const s = v === null || v === undefined ? "" : String(v);
+      return `"${s.replace(/"/g, '""')}"`;
+    };
     const headers = ["Startup", "Status", "Submitted At"];
     const rows = instances.map((inst) => [
       inst.workspace?.startups?.name || "Unknown",
@@ -55,13 +61,15 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
       inst.submitted_at ? format(new Date(inst.submitted_at), "yyyy-MM-dd HH:mm") : "",
     ]);
 
-    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    const csv = [headers.map(esc).join(","), ...rows.map((r) => r.map(esc).join(","))].join("\r\n");
+    // UTF-8 BOM so Excel opens accented characters correctly.
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `survey-responses-${campaignId}.csv`;
     a.click();
+    URL.revokeObjectURL(url);
   };
 
   if (isLoading) {
