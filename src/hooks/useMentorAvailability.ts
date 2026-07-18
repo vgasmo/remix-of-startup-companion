@@ -243,6 +243,7 @@ export function useUpdateBookingStatus() {
         } catch (e) {
           // don't fail the accept if session insert bounces
         }
+      }
       // Founder-facing notifications for accepted/declined are emitted by the
       // `trg_notify_mentor_booking_change` trigger on UPDATE — no client-side
       // duplicate here.
