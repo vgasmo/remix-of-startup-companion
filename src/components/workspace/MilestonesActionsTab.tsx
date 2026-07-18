@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { triggerMilestoneCelebration } from '@/lib/confetti';
 import { useSearchParams } from 'react-router-dom';
 import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
