@@ -39,8 +39,20 @@ interface BookingToken {
   expires_at: string | null;
 }
 
-export default function PublicBooking() {
-  const { token } = useParams<{ token: string }>();
+interface PublicBookingProps {
+  /**
+   * When rendered inline by `/book` (canonical resolver), the parent passes
+   * the routing token here in React memory. In that mode we keep the browser
+   * URL as `/book` — the token never appears in the URL, redirects, or
+   * browser storage.
+   */
+  tokenOverride?: string;
+  canonicalMode?: boolean;
+}
+
+export default function PublicBooking({ tokenOverride, canonicalMode = false }: PublicBookingProps = {}) {
+  const params = useParams<{ token: string }>();
+  const token = tokenOverride ?? params.token;
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [lang, setLang] = useState(i18n.language === 'en' ? 'en' : 'pt');
