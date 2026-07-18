@@ -189,7 +189,7 @@ function ConsultorDashboardInner({ workspaces, isLoading, programsCount }: Consu
             </h1>
             <p className="text-sm text-muted-foreground">
               {t('consultor.weekSummary', {
-                defaultValue: 'Esta semana: {{sessions}} sessões · {{actions}} ações fechadas · {{health}} startups melhoraram',
+                defaultValue: 'Esta semana: {{sessions}} sessões · {{actions}} ações em atraso · {{health}} startups melhoraram',
                 sessions: upcomingSessions.length,
                 actions: criticalActions.reduce((sum, w) => sum + w.overdueActionsCount, 0),
                 health: stats.healthCounts.healthy + stats.healthCounts.thriving,

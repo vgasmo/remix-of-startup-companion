@@ -213,6 +213,7 @@ export function useUpdateActionItem(workspaceId: string) {
     onSuccess: async (result) => {
       queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-actions', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['milestones', workspaceId] });
 
       // P1.2: Log activity
       logActivity('updated', 'action_item', result.data.id, workspaceId, { title: result.title });

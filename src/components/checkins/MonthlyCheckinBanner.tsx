@@ -92,6 +92,8 @@ export function MonthlyCheckinBanner({ workspaceId }: MonthlyCheckinBannerProps)
     await submitCheckin.mutateAsync({
       instanceId: pendingCheckin.id,
       responses: payload,
+      // Pass workspaceId so activity_log + consultant Teams notification fire.
+      workspaceId,
     });
     showQuickWin('monthly_wins_submitted');
     setShowForm(false);

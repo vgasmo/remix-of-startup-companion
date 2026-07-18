@@ -37,8 +37,9 @@ interface AuthContextType {
   isAccountPending: boolean;
   isAccountSuspended: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, fullName: string, selectedRole?: 'founder' | 'mentor_externo') => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, selectedRole?: 'founder' | 'mentor_externo', returnTo?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -185,8 +186,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error as Error | null };
   }, []);
 
-  const signUp = useCallback(async (email: string, password: string, fullName: string, selectedRole?: 'founder' | 'mentor_externo') => {
-    const redirectUrl = `${window.location.origin}/`;
+  const signUp = useCallback(async (email: string, password: string, fullName: string, selectedRole?: 'founder' | 'mentor_externo', returnTo?: string) => {
+    // Preserve invite/accept-invite return URLs so accounts created from an
+    // invitation flow land on the acceptance page instead of the generic root.
+    const redirectUrl = returnTo
+      ? `${window.location.origin}${returnTo.startsWith('/') ? returnTo : `/${returnTo}`}`
+      : `${window.location.origin}/`;
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -203,6 +208,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     return { error: error as Error | null };
   }, []);
+
+  const refreshProfile = useCallback(async () => {
+    if (!user?.id) return;
+    await fetchUserData(user.id);
+  }, [user?.id, fetchUserData]);
 
   const signOut = useCallback(async () => {
     try {
@@ -249,8 +259,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signUp,
       signOut,
+      refreshProfile,
     };
-  }, [user, session, profile, roles, isLoading, isAuthReady, signIn, signUp, signOut]);
+  }, [user, session, profile, roles, isLoading, isAuthReady, signIn, signUp, signOut, refreshProfile]);
 
   return (
     <AuthContext.Provider value={value}>

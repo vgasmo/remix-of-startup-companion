@@ -74,10 +74,11 @@ export function useAddTranscript() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ sessionId, transcriptText, source = 'manual' }: {
+    mutationFn: async ({ sessionId, transcriptText, source = 'manual', confidentiality = 'workspace' }: {
       sessionId: string;
       transcriptText: string;
       source?: string;
+      confidentiality?: 'workspace' | 'staff_only';
     }) => {
       const { data, error } = await supabase
         .from('session_transcripts')
@@ -85,10 +86,13 @@ export function useAddTranscript() {
           session_id: sessionId,
           transcript_text: transcriptText,
           source,
-        })
+          // Default to 'workspace' so founders/members can see their own recordings.
+          // Staff can opt-in to staff_only for sensitive transcripts.
+          confidentiality,
+        } as any)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },

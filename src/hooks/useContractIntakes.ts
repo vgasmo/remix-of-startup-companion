@@ -231,6 +231,9 @@ export function useCreateIntake() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contract-intakes'] });
+      // Drawer reads via ['contract-intake-by-funnel']; without this the CTA
+      // stays "Enviar Pedido" and a second click creates a duplicate intake.
+      queryClient.invalidateQueries({ queryKey: ['contract-intake-by-funnel'] });
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
       queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
     },

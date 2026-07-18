@@ -214,6 +214,8 @@ export function useSubmitCheckin() {
       queryClient.invalidateQueries({ queryKey: ['checkin-history'] });
       queryClient.invalidateQueries({ queryKey: ['all-pending-checkins'] });
       queryClient.invalidateQueries({ queryKey: ['kpi-values'] });
+      // Dashboard "Atualizar KPIs" nudge reads hasCurrentMonthKpi via ['workspaces'].
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
 
       // P1.2: Log activity
       if (result.workspaceId) {

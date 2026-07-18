@@ -155,6 +155,15 @@ export function BookingLinksManager() {
   // canonical link can exist at a time; unset others first when promoting.
   const setCanonical = useMutation({
     mutationFn: async (linkId: string) => {
+      // Guard: legacy rows created before canonical_url plumbing existed can
+      // never be promoted (get_canonical_booking_url filters canonical_url IS NOT NULL).
+      const existing = (bookingLinks || []).find((l) => l.id === linkId);
+      if (existing && !existing.canonical_url) {
+        throw new Error(
+          t('admin.bookingLinks.cannotPromoteLegacy',
+            'Este link foi criado antes da migração e não tem URL absoluto guardado. Crie um link novo para o definir como canónico.')
+        );
+      }
       await supabase
         .from('public_booking_links')
         .update({ is_canonical: false })
