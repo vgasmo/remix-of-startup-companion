@@ -185,9 +185,11 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
         }
       }
       await markAsDone.mutateAsync(itemId);
-      notify.success(t('workQueue.markedDone'));
+      if (!opts?.bulk) notify.success(t('workQueue.markedDone'));
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : t('workQueue.updateFailed');
+      // Bulk mode: rethrow so the caller counts real failures instead of a blanket success.
+      if (opts?.bulk) throw error instanceof Error ? error : new Error(msg);
       notify.error(msg);
     }
   };
