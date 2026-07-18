@@ -95,7 +95,9 @@ function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { ch
     return <Navigate to="/mentor-nda" replace />;
   }
 
-  // Claim-first gate: founders without active workspace → /claim-startup
+  // Claim-first gate: founders without active workspace → /claim-startup.
+  // No `/notifications` route exists — dead exemption removed. Add it back only
+  // when a top-level page is introduced.
   const claimExemptPaths = [
     '/claim-startup',
     '/settings',
@@ -103,7 +105,6 @@ function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { ch
     '/mentors',
     '/resources',
     '/help',
-    '/notifications',
   ];
   if (
     !founderState.isLoading &&
