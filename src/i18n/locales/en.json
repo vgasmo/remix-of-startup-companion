@@ -2121,7 +2121,8 @@
       "nothingToCommit": "No rows ready to commit",
       "previewFailed": "Cannot open PDF",
       "programRequired": "Pick a programme before uploading. New workspaces will be attached to it.",
-      "uploadFailed": "Upload failed"
+      "uploadFailed": "Upload failed",
+      "rowUpdateFailed": "Row update failed"
     },
     "extractComplete": "Extraction complete",
     "extracting": {
@@ -2568,7 +2569,8 @@
     "warning": "Warning",
     "workspace": "Workspace",
     "years": "years",
-    "yes": "Yes"
+    "yes": "Yes",
+    "errorOccurred": "An error occurred"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -2603,7 +2605,13 @@
     "noChallengesDesc": "Adjust your search or post the first challenge.",
     "searchChallenges": "Search Challenges",
     "upcomingEvents": "Upcoming Events",
-    "viewAll": "View full calendar"
+    "viewAll": "View full calendar",
+    "noAnnouncementsTitle": "No announcements yet",
+    "noAnnouncementsDesc": "Community announcements will appear here.",
+    "noChallengesTitle": "No open challenges",
+    "noChallengesDesc2": "New challenges will appear here.",
+    "noEventsTitle": "No upcoming events",
+    "noEventsDesc": "Upcoming ecosystem events will appear here."
   },
   "compliance": {
     "criticalHealth": "Critical Health",
@@ -3620,7 +3628,26 @@
     "viewAll": "View All",
     "viewSession": "View Session",
     "weighted": "EUR",
-    "winProbability": "Probabilidade (%)"
+    "winProbability": "Probabilidade (%)",
+    "proposal": {
+      "bodyHint": "Personalize the message before sending.",
+      "attachments": "Attachments",
+      "noMaterials": "No materials available.",
+      "defaultBadge": "Default",
+      "ccOwner": "CC the account owner",
+      "send": "Send proposal",
+      "needsEmail": "Add an email to send a proposal.",
+      "sendButton": "Send proposal"
+    },
+    "emailArchived": "Email archived",
+    "emailUnarchived": "Email restored",
+    "hideArchived": "Hide archived",
+    "showArchived": "Show archived",
+    "unarchive": "Restore",
+    "archive": "Archive",
+    "inbound": "Inbound",
+    "outbound": "Outbound",
+    "emailNoBody": "This message has no readable body."
   },
   "dashboard": {
     "acrossPrograms": "Across {{count}} program",
@@ -5284,7 +5311,8 @@
     "thisMonth": "This month",
     "thisWeek": "This week",
     "title": "Smart Inbox",
-    "today": "Today"
+    "today": "Today",
+    "viewAll": "View all"
   },
   "intake": {
     "changesRequested": "Changes Requested",
@@ -6256,7 +6284,8 @@
     "title": "Milestones",
     "titleLabel": "Title",
     "titlePlaceholder": "e.g., Launch MVP",
-    "titleRequired": "Title is required"
+    "titleRequired": "Title is required",
+    "cascadeClosed": "Milestone closed. Underlying actions were also closed."
   },
   "momentum": {
     "panelTitle": "Startup momentum",
@@ -8660,7 +8689,9 @@
     "upToDate": "Up to date",
     "viewAllStartups": "View all startups",
     "viewConsultantPortfolio": "View consultant portfolio",
-    "viewConsultantPortfolioHint": "View this consultant’s portfolio"
+    "viewConsultantPortfolioHint": "View this consultant’s portfolio",
+    "pillStartupsAria": "Open my portfolio",
+    "pillProgramsAria": "Open program setup"
   },
   "staffTasks": {
     "moreTasks": "more tasks",
@@ -9485,7 +9516,10 @@
     "unitEconomics": "Unit Economics",
     "unsavedChangesTitle": "Discard unsaved changes?",
     "unsavedChangesWarning": "You have unsaved changes. Are you sure you want to close?",
-    "useTemplate": "Use Template"
+    "useTemplate": "Use Template",
+    "hiddenFromFounder": "Hidden from founder",
+    "showToFounder": "Show to founder",
+    "hideFromFounder": "Hide from founder"
   },
   "tests": {
     "fail": "Fail",
@@ -10015,5 +10049,15 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
+  },
+  "programTransfer": {
+    "done": "Transfer completed.",
+    "action": "Transfer program",
+    "title": "Transfer to another program",
+    "desc": "Move this workspace to another program. Stage and week will be reset.",
+    "pick": "Choose target program",
+    "previewTitle": "Impact preview",
+    "simulate": "Simulate",
+    "confirm": "Confirm transfer"
   }
 }
