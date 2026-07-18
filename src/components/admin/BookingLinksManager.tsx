@@ -103,9 +103,10 @@ export function BookingLinksManager() {
           .eq('active', true);
       }
 
-      const bookingUrl = markCanonical
-        ? `${window.location.origin}/book/${token}`
-        : null;
+      // Always persist the absolute booking URL so this link can later be
+      // promoted to canonical without needing the plaintext token again
+      // (token_hash is one-way and would otherwise make promotion impossible).
+      const bookingUrl = `${window.location.origin}/book/${token}`;
 
       const { error } = await supabase
         .from('public_booking_links')
@@ -393,6 +394,20 @@ export function BookingLinksManager() {
                           aria-label={t('admin.bookingLinks.markCanonical', 'Marcar como canónico') as string}
                         >
                           <Star className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      )}
+                      {link.active && !link.is_canonical && !link.canonical_url && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled
+                          title={t(
+                            'admin.bookingLinks.cannotPromoteLegacy',
+                            'Link antigo: o URL não foi guardado à criação. Crie um novo link com "Marcar como canónico" para o promover.',
+                          ) as string}
+                          aria-label={t('admin.bookingLinks.cannotPromoteLegacy', 'Não promovível') as string}
+                        >
+                          <Star className="h-4 w-4 text-muted-foreground/40" />
                         </Button>
                       )}
                       {link.active && (
