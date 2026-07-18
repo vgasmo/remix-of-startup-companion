@@ -174,25 +174,11 @@ export function useCreateBooking() {
         .single();
       if (error) throw error;
 
-      // Notify mentor of new booking request
-      let founderName = '';
-      try {
-        const { data: prof } = await supabase
-          .from('profiles_safe')
-          .select('full_name, email')
-          .eq('id', user.id)
-          .maybeSingle();
-        founderName = prof?.full_name || prof?.email || 'Um fundador';
-      } catch { /* ignore */ }
-      void safeNotify({
-        user_id: booking.mentor_id,
-        type: 'system',
-        title: 'Novo pedido de sessão',
-        message: `${founderName} pediu uma sessão para ${booking.requested_date} às ${booking.requested_start_time.slice(0, 5)}`,
-        link: '/mentors',
-        entity_type: 'mentor_booking',
-        entity_id: data.id,
-      });
+      // Mentor notification for the new booking request is emitted by a
+      // database trigger on `mentor_bookings` insert. The client-side
+      // safeNotify() previously here duplicated that row and forced founders
+      // to look up the mentor's name from `profiles_safe` on every booking —
+      // an unnecessary read that occasionally showed a stale name.
       return data;
     },
     onSuccess: () => {
