@@ -172,6 +172,7 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
       queryClient.invalidateQueries({ queryKey: ['funnel-events', item.id] });
       queryClient.invalidateQueries({ queryKey: ['communication-log', item.id] });
       queryClient.invalidateQueries({ queryKey: ['staff-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['activity-timeline', item.id] });
 
       onOpenChange(false);
     } catch (err) {
