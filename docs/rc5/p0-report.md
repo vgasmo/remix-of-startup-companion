@@ -1,87 +1,123 @@
-# RC5 Launch Rescue — P0 Preflight & Deferrals
+# RC5 Launch Rescue — Status Ledger (updated)
 
-_Generated: 2026-07-18_
-
-## Preflight — verified against live DB
-
-| Signal | Value |
-|---|---|
-| `session_transcripts` rows | **2**, both `confidentiality = 'workspace'` |
-| `cron_job_runs` rows | **0** (health checker had never seen a real run — false-green) |
-| `public_booking_links` | 2 rows, 1 canonical |
-| `workspace_invitations` real columns | `token_hash`, `created_by` (NOT `token`/`invited_by`) |
-| Tampering trigger status | Referenced non-existent columns → every non-staff acceptance failed at UPDATE |
-| `check_automation_health` | Queried `status = 'error'` — status vocabulary is `ok/failed/partial/skipped/running`; error branches were dead code |
-| `staff_diagnose_program_mismatches` | Body was `RETURN;` — always reported "no mismatches" |
-
-## Executed in this pass (forward migration + code)
-
-- **Invitation tampering trigger** — recreated against real column names (`token_hash`, `created_by`, etc.) with service-role bypass.
-- **`accept_workspace_invitation(p_token_hash)` RPC** — atomic: locks row, validates hash/email/expiry/state, upserts membership + role, marks accepted, auto-approves profile. `REVOKE ALL FROM PUBLIC; GRANT EXECUTE TO authenticated`.
-- **`accept-workspace-invite` edge function** — reduced to authn → hash → single RPC call → typed HTTP mapping. No more "silent success after partial writes".
-- **`promote_booking_link_canonical(p_link_id)` RPC** — atomic demote+promote in one tx; refuses legacy rows without `canonical_url`. `BookingLinksManager` now calls it instead of the previous non-atomic client-side sequence.
-- **`check_automation_health`** — rewritten to LEFT JOIN new `automation_health_expectations` registry against real runs; correctly detects **never-run**, **stale**, and **repeatedly failed** jobs. Uses canonical `failed` status. `REVOKE PUBLIC`.
-- **`check_email_sync_health`** — status vocabulary corrected to `failed`.
-- **`automation_health_expectations`** — new registry (job_name, cadence, grace, severity, owner, runbook). Seeded for `automation-engine`, `sweep-session-transcripts`, `sync-outlook-emails`, `email_sync_status`, `check_automation_health`.
-- **`staff_diagnose_program_mismatches`** — real diagnostic logic restored: (a) workspace on stage from wrong program, (b) acceleration missing weeks, (c) acceleration missing gates, (d) incubation missing stages, (e) action whose milestone belongs to a different workspace, (f) workspace with no active members. Read-only, staff-only.
-- **Landing CTA fixed** — `Login.tsx` `/book/demo` → `/book`.
-- **i18n** — 9 missing runtime keys added to both PT and EN.
-
-## Explicit escalation gate — transcript confidentiality restoration
-
-Both `session_transcripts` rows are already `workspace`. **No trustworthy backup or audit history exists in-repo** to reconstruct the original per-row tier.
-
-Per non-negotiable rule 5, this restoration step is **stopped pending your decision**. Options:
-
-1. **Provide a backup snapshot** predating `20260718121328_71186b11-d287-43f5-bf11-9e8e243586e2.sql` — I will export the two IDs, look them up in your backup, and restore the original tiers atomically.
-2. **Confirm "leave as workspace"** — both rows stay accessible to workspace members; the new client default (already `workspace`) matches. This is the current state.
-
-Affected rows (staff-visible query — do not print outside staff context):
-
-```sql
-SELECT id, session_id, created_at, confidentiality
-FROM session_transcripts
-ORDER BY created_at;
-```
-
-Guardrails going forward (regardless of choice above): the `session_transcripts` RLS already restricts `staff_only` reads to admin/consultor/backoffice and `founder_only` to owners. Client `useAddTranscript` defaults to `workspace` (safe default; no widening of past data).
-
-## Deferred to a follow-up pass (with reason)
-
-These would violate rule 12 ("Do not declare GO if… critical persona E2E is skipped") if reported as done from a single agent turn.
-
-1. **Real persona E2E on 320/390/tablet/desktop** — Playwright is available but seeding a full multi-role dataset with cleanup + running 5 personas × 2 widths against staging with real Graph/Email keys is a multi-hour operation. Skeletons in `e2e/*.spec.ts` remain; they should be filled in with seeded fixtures and cleanup hooks.
-2. **Migration replay against a disposable clone + staging forward apply** — the sandbox has no second Postgres. `scripts/migration-replay.sh` runs against a supplied clone; not executed here.
-3. **Performance budget capture on real mobile hardware** — LCP/INP field metrics cannot be fabricated. Bundle-size budget check should be added; field metrics come from a real run.
-4. **Broad P9 visual/clickability audit** — the rule is "Only begin this phase after P0/P1 and release gates are green." Truthful naming (Business Plan → Guided Financial Plan) and mobile /book CTA are on the follow-up list.
-5. **Remaining 22 strict-TypeScript update-payload errors** — needs a per-file pass introducing `type XUpdate = Database['public']['Tables']['x']['Update']` and stripping UI-only fields. Not executed here.
-6. **Cron-instrumentation of every scheduled edge function** — the shared `logCronRun` helper wiring across `automation-engine`, `sweep-session-transcripts`, `sync-outlook-emails`, `send-notification-email` and downstream jobs.
-7. **`check-consultant-availability` fail-closed** — remove fabricated weekday slots; emit `system_alerts` on Graph failure.
-8. **Booking + notification idempotency ledgers** — `mentor_bookings.idempotency_key` unique index + `notification_ledger` business-key table.
-9. **`SystemHealthDashboard` state model** — add `loading / healthy / degraded / failed / stale / unknown`; render query errors as "unknown" not "no errors".
-10. **Vitest full-suite dynamic-import timeout isolation** — profile heavy admin/drawer/CommandPalette imports; not resolved here.
-
-## Rollback
-
-Each new function/RPC in this migration is idempotent (`CREATE OR REPLACE`) and can be reverted with:
-
-```sql
--- Restore the previous (broken) tampering trigger only if strictly required
--- (do not do this — it would re-break invitation acceptance)
-
--- Drop the new RPCs
-DROP FUNCTION IF EXISTS public.accept_workspace_invitation(text);
-DROP FUNCTION IF EXISTS public.promote_booking_link_canonical(uuid);
-
--- Drop the expectations table (safe: no data outside the seed)
-DROP TABLE IF EXISTS public.automation_health_expectations;
-
--- Revert diagnose function to its no-op stub if needed
-CREATE OR REPLACE FUNCTION public.staff_diagnose_program_mismatches() RETURNS void
-LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
-BEGIN RETURN; END $$;
-```
+_Last updated: 2026-07-18_
 
 ## Verdict
 
-**NO-GO for full production** until items 1–10 above are executed against staging with truthful command output. This pass unblocks the two hardest correctness bugs (invitation acceptance dead-on-arrival; health checker false-green) and the atomicity gaps (canonical promotion; invitation multi-step).
+**NO-GO for production.**
+
+This turn resolved two items from the previous ledger (transcript containment, strict-TS reality) and produced honest evidence for the remainder. It did not close items 2–8 of the release-lead brief; those require infrastructure and time this agent turn cannot honestly provide (real seeded persona E2E on desktop + 390px mobile with Graph/Email keys, disposable-DB migration replay, staging forward-apply, and multi-run vitest stability). Declaring GO from code inspection alone would violate the stop condition.
+
+## Verified this turn (with evidence)
+
+### 1. Strict TypeScript is clean — the previous "22 deferred TS errors" line was stale.
+
+Command executed in this turn:
+
+```bash
+$ bunx tsc --noEmit -p tsconfig.typecheck.json
+$ echo $?
+0
+```
+
+Exit code `0`, no diagnostics on stdout/stderr. The stale claim has been removed from this report. If a future refactor reintroduces update-payload errors, they must be fixed with generated `TablesUpdate` / `TablesInsert` types — never `as any` or a weakened client.
+
+### 2. Transcript fail-closed containment (authorised).
+
+Migration `20260718_transcript_containment` landed with:
+
+- Two idempotent columns on `session_transcripts`: `pending_confidentiality_review boolean` (default false), `contained_at timestamptz`.
+- CHECK constraint `session_transcripts_confidentiality_chk` restricting `confidentiality` to `staff_only | workspace | founder_only`.
+- Content-free audit table `transcript_containment_audit` (id, transcript_id, previous_confidentiality, new_confidentiality, reason, contained_at) with staff-only SELECT RLS and unique `(transcript_id, reason)` for idempotency.
+- Forward-only containment: the two known ambiguous rows moved to `staff_only` **only if** they were still `workspace` and unflagged — so a subsequent human reclassification is never silently reverted.
+
+Postflight (evidence, no content):
+
+| transcript_id                          | confidentiality | pending_review | contained |
+|----------------------------------------|-----------------|----------------|-----------|
+| aac46abd-6028-4944-bb29-86cc07999b93   | staff_only      | true           | true      |
+| 567a75f0-2837-4c59-badb-ae7fed827f74   | staff_only      | true           | true      |
+
+Audit rows (transcript IDs only, no content — as required):
+
+| transcript_id                          | previous  | new         | reason                                          |
+|----------------------------------------|-----------|-------------|-------------------------------------------------|
+| aac46abd-…                             | workspace | staff_only  | rc5_forward_containment_no_backup_provenance    |
+| 567a75f0-…                             | workspace | staff_only  | rc5_forward_containment_no_backup_provenance    |
+
+**Not claimed:** that `staff_only` is the original tier. The rows are marked `pending_confidentiality_review = true` and require manual reclassification.
+
+Under the existing RLS policy `session_transcripts_tiered_select`, `staff_only` rows are readable only when `is_staff()` returns true (admin / consultor / backoffice / mentor per the helper). Anonymous / founder / non-staff workspace member paths return no rows. A full role-matrix pgTAP test asserting this for anon, founder, mentor, workspace member, consultor, backoffice, admin, service_role is a follow-up (see deferrals) — the existing policy proves negative access by construction, but proof-by-test has not been executed this turn.
+
+### 3. Invitation acceptance RPC — inspection findings.
+
+`accept_workspace_invitation(p_token_hash text)` — read directly from `pg_proc`:
+
+- `SECURITY DEFINER`, `SET search_path TO 'public'` — pinned. ✅
+- Rejects if `auth.uid()` is null (`auth_required`). ✅
+- Loads `v_user_email` from `auth.users` — never trusts a client-supplied email. ✅
+- `SELECT … FOR UPDATE` on `workspace_invitations` before validation — protects against concurrent double-accepts. ✅
+- Idempotent path: if `accepted_at IS NOT NULL` returns `already_accepted=true` (200 success on retry). ✅
+- Expiry check before mutation. ✅
+- Case-insensitive email match against the invitation. ✅
+- Workspace membership INSERT is gated by an EXISTS check; global `user_roles` insert uses `ON CONFLICT DO NOTHING`. ✅
+- Role escalation: the workspace-scoped role is whatever the inviting staff set on the invitation; the global `user_roles` `founder` grant is added only when the invitation role is `founder`. Non-founder invitations do not touch global roles. ✅ (matches spec)
+- Raw token: the plaintext never reaches the RPC — the edge function hashes it before calling.
+
+**Not verified this turn:** integration tests exercising expired / wrong-email / role-tampering / already-accepted / concurrent double-accept / injected-write-failure paths. Inspection ≠ proof.
+
+## Landed earlier (previous turn, unchanged this turn)
+
+- Invitation tampering trigger fixed against real columns (`token_hash`, `created_by`).
+- `promote_booking_link_canonical` RPC + `BookingLinksManager` calling it.
+- `check_automation_health` rewritten against `automation_health_expectations` registry.
+- `staff_diagnose_program_mismatches` real body.
+- `Login.tsx` `/book/demo` → `/book`.
+- 9 i18n keys added to PT and EN.
+
+## Not done this turn — honest deferrals
+
+These are the items from the release-lead brief that this agent turn cannot close truthfully. Each has an owner tag and reason.
+
+| # | Item | Reason not done | Owner |
+|---|---|---|---|
+| B1 | Server-side canonical booking alias (`/book` reads `is_canonical=true` internally; deprecate plaintext token in `canonical_url`) | Multi-file architecture change (RPC, edge function, resolver, admin UI) with concurrency & rollback tests. Needs a dedicated pass; doing it in the same turn as containment risks regressing atomic promotion. | dev |
+| B2 | Booking canonical test matrix (0/1/many canonical, expired, disabled, legacy, concurrent, rollback, no-plaintext assertion, mobile + desktop) | Depends on B1 landing. | dev |
+| B3 | Invitation integration test matrix (expired / wrong-email / role-tampering / already-accepted / concurrent / injected-write-failure) | Needs seeded auth users + service-role harness. | dev |
+| A1 | `SystemHealthDashboard` state machine (`loading / healthy / degraded / failed / stale / unknown`); query error must render `unknown`, never an empty healthy list | UI + query wiring change; tests required per state. | dev |
+| A2 | Cron instrumentation of all release-critical scheduled jobs (`sweep-session-transcripts`, `sync-outlook-calendar`, `check-mentor-nda-expiry`, `send-commercial-proposal`, `send-workspace-invite`, `pandadoc-*`, `teams-notify`) via a shared `logCronRun` helper; failed logging write must be visible | Cross-cutting edge-function edits; each needs a targeted test. | dev |
+| A3 | Verify partial-unique on `cron_job_runs(job_name, dedupe_key) WHERE dedupe_key IS NOT NULL` exists or refactor the `ON CONFLICT` | Migration + verification. | dev |
+| P1 | `public-get-availability` fail-closed on Graph failure — today it still exposes a fixed weekday time list and only masks unavailable slots via availabilityView. When Graph token/schedule call fails, downstream logic can silently produce empty or fabricated slots. Must return a calm `{status:'unavailable'}` and insert a `system_alerts` row. | Confirmed in code: `getFreeBusySchedule` returns `null` on failure but `generateSlotsFromAvailability` is never gated on Graph success across all branches. Needs edge-function refactor + tests for token failure / 401 / 429 / 500 / malformed. | dev |
+| I1 | `mentor_bookings.idempotency_key` unique index + client-supplied key + Graph event ID persisted before-and-after, plus reconciler for ambiguous timeouts | Schema + edge function + tests. | dev |
+| I2 | `notification_ledger(business_key unique, delivered_at)` for mentor NDA reminders and commercial proposal sends; wire dispatchers to it | Schema + edge function edits + tests. | dev |
+| F1 | False-success cleanup: `sweep-session-transcripts` count `http_500`/timeout/parse/downstream reject as failures; `automation-engine` counters after confirmed ops; email/notification dispatch propagates provider + DB errors; DocuSign/PandaDoc notification auth explicit | Multi-function pass with targeted tests. | dev |
+| G1 | Full local release gates executed 3× (`bunx tsc`, `bun run build`, `bun run lint`, `bunx vitest run` ×3, `node scripts/i18n-check.cjs`, `node scripts/i18n-lint.mjs`, `node scripts/secret-scan.cjs`), plus fresh-DB migration replay on a disposable Postgres and staging forward-apply | Migration replay needs a second Postgres, which this sandbox does not provide. Vitest stability run needs the dynamic-import isolation fix, not a global timeout bump. | ops + dev |
+| E1 | Real seeded persona E2E (anon canonical booking, founder invite acceptance + persisted access, founder autosave across refresh, consultant CRM/session, mentor NDA/booking, admin health/diagnostic) on desktop + 390px, with cleanup | Needs seeded fixtures + real Graph/Email keys against staging. | ops + dev |
+| T1 | Role-matrix pgTAP tests for `session_transcripts` (anon / founder / mentor / workspace member / consultor / backoffice / admin / service_role × staff_only / workspace / founder_only) | To be added under `supabase/tests/rls_policies.test.sql` alongside execution harness. | dev |
+
+## Files changed this turn
+
+- `supabase/migrations/<new>__rc5_transcript_containment.sql` — see migration description.
+- `docs/rc5/p0-report.md` — this file, replacing the previous stale ledger.
+
+## Rollback
+
+Content-free rollback for the containment migration:
+
+```sql
+-- Reclassification must be done manually per row; do NOT blanket-revert to 'workspace'.
+UPDATE public.session_transcripts
+   SET pending_confidentiality_review = false, contained_at = NULL
+ WHERE id IN (
+   'aac46abd-6028-4944-bb29-86cc07999b93',
+   '567a75f0-2837-4c59-badb-ae7fed827f74'
+ );
+DROP TABLE IF EXISTS public.transcript_containment_audit;
+ALTER TABLE public.session_transcripts DROP CONSTRAINT IF EXISTS session_transcripts_confidentiality_chk;
+ALTER TABLE public.session_transcripts DROP COLUMN IF EXISTS pending_confidentiality_review;
+ALTER TABLE public.session_transcripts DROP COLUMN IF EXISTS contained_at;
+```
+
+## Stop condition
+
+Per the release-lead brief, no UX polish / visual redesign / perf work until items B1–B2, B3, A1–A3, P1, I1, I2, F1, G1, E1, T1 are closed with executed proof.
