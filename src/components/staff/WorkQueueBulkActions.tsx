@@ -23,9 +23,12 @@ interface WorkQueueBulkActionsProps {
   /**
    * G0: route bulk "mark done" through the same per-item handler used by
    * WorkQueuePanel so review_checkin side-effects (stamp reviewed_at, notify
-   * founder) are not bypassed by a raw update.
+   * founder) are not bypassed by a raw update. Handler MUST throw on failure
+   * so the loop can report an accurate success count; a swallowed error would
+   * silently mislead the operator. When called in bulk, per-item side effects
+   * like navigate() must be suppressed.
    */
-  onMarkDoneItem?: (id: string) => Promise<void>;
+  onMarkDoneItem?: (id: string, opts?: { bulk?: boolean }) => Promise<void>;
 }
 
 export function WorkQueueBulkActions({
