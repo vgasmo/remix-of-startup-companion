@@ -82,8 +82,41 @@ export function SystemHealthDashboard() {
     staleTime: 60_000,
   });
 
+  const cronRunsQuery = useQuery({
+    enabled: isAdmin,
+    queryKey: ['admin', 'system-health', 'cron-runs'],
+    queryFn: async (): Promise<CronRunRow[]> => {
+      const { data, error } = await supabase
+        .from('cron_job_runs')
+        .select('id, job_name, status, duration_ms, error_summary, started_at, finished_at')
+        .gte('started_at', since24h)
+        .order('started_at', { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return (data ?? []) as CronRunRow[];
+    },
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+
   const errors = errorsQuery.data ?? [];
   const events = eventsQuery.data ?? [];
+  const cronRuns = cronRunsQuery.data ?? [];
+
+  const cronByJob = useMemo(() => {
+    const map = new Map<string, { total: number; ok: number; failed: number; partial: number; lastStatus: string; lastAt: string; lastError: string | null }>();
+    for (const r of cronRuns) {
+      const cur = map.get(r.job_name) ?? { total: 0, ok: 0, failed: 0, partial: 0, lastStatus: r.status, lastAt: r.started_at, lastError: r.error_summary };
+      cur.total++;
+      if (r.status === 'ok') cur.ok++;
+      else if (r.status === 'failed') cur.failed++;
+      else if (r.status === 'partial') cur.partial++;
+      map.set(r.job_name, cur);
+    }
+    return Array.from(map.entries()).map(([job, s]) => ({ job, ...s })).sort((a, b) => (b.failed + b.partial) - (a.failed + a.partial));
+  }, [cronRuns]);
+
+  const cronFailures24h = cronRuns.filter(r => r.status === 'failed' || r.status === 'partial').length;
 
   const errors24h = errors.filter(e => e.created_at >= since24h).length;
   const critical24h = errors.filter(e => e.created_at >= since24h && (e.severity === 'critical' || e.severity === 'high'));
