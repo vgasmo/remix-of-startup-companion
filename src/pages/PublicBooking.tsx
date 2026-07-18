@@ -487,6 +487,15 @@ export default function PublicBooking() {
                     <Skeleton className="h-9 w-16" />
                   </div>
                 </div>
+              ) : slotsData?.unavailable ? (
+                <div className="text-center py-8 space-y-2">
+                  <p className="text-foreground font-medium">
+                    {t('publicBooking.unavailableTitle', { defaultValue: 'A disponibilidade não pode ser confirmada de momento.' })}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t('publicBooking.unavailableDesc', { defaultValue: 'Tente novamente em breve ou contacte-nos em info@startupleiria.com.' })}
+                  </p>
+                </div>
               ) : Object.keys(slotsByDate).length === 0 ? (
                 <p className="text-center py-8 text-muted-foreground">
                   {t('publicBooking.noSlotsAvailable')}
