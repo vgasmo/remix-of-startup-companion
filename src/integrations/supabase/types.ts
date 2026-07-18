@@ -2181,6 +2181,48 @@ export type Database = {
         }
         Relationships: []
       }
+      cron_job_runs: {
+        Row: {
+          created_at: string
+          details: Json
+          duration_ms: number | null
+          error_code: string | null
+          error_summary: string | null
+          finished_at: string | null
+          id: string
+          job_name: string
+          started_at: string
+          status: string
+          triggered_by: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          duration_ms?: number | null
+          error_code?: string | null
+          error_summary?: string | null
+          finished_at?: string | null
+          id?: string
+          job_name: string
+          started_at?: string
+          status?: string
+          triggered_by?: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          duration_ms?: number | null
+          error_code?: string | null
+          error_summary?: string | null
+          finished_at?: string | null
+          id?: string
+          job_name?: string
+          started_at?: string
+          status?: string
+          triggered_by?: string
+        }
+        Relationships: []
+      }
       data_import_jobs: {
         Row: {
           approved_by: string | null
@@ -10827,6 +10869,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_automation_health: {
+        Args: never
+        Returns: {
+          details: Json
+          issue: string
+          job_name: string
+        }[]
+      }
       check_ecosystem_invariants: { Args: never; Returns: Json }
       check_email_sync_health: {
         Args: never
@@ -10910,6 +10960,16 @@ export type Database = {
         Returns: {
           startup_id: string
           workspace_id: string
+        }[]
+      }
+      crm_backfill_last_contact_at: { Args: never; Returns: number }
+      crm_reconcile_orphans: {
+        Args: { p_dry_run?: boolean }
+        Returns: {
+          funnel_item_id: string
+          linked_startup_id: string
+          linked_workspace_id: string
+          resolved_via: string
         }[]
       }
       ecosystem_aggregates_v2: {
@@ -11197,6 +11257,18 @@ export type Database = {
           updated_at: string
           workspace_id: string
         }[]
+      }
+      log_cron_job_run: {
+        Args: {
+          p_details?: Json
+          p_duration_ms?: number
+          p_error_code?: string
+          p_error_summary?: string
+          p_job_name: string
+          p_status: string
+          p_triggered_by?: string
+        }
+        Returns: string
       }
       mark_session_no_show_atomic: {
         Args: {
