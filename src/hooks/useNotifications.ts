@@ -93,7 +93,7 @@ export function useNotifications() {
           // INSERT/UPDATE/DELETE so dedupePendingMentorConnections re-runs
           // against fresh rows and duplicate `mentor_connection_pending`
           // items are collapsed before consumers see them.
-          queryClient.invalidateQueries({ queryKey: ['notifications', userId], refetchType: 'active' });
+          queryClient.invalidateQueries({ queryKey: ['notifications', userId], refetchType: 'active' }); queryClient.invalidateQueries({ queryKey: ['notifications-unread-count', userId] });
         }
       )
       .subscribe();
@@ -126,9 +126,31 @@ export function useNotifications() {
   });
 }
 
+/**
+ * Unread badge counter. Uses a HEAD/count query so the badge is accurate even
+ * when the user has more than the 50 notifications the main list caps at.
+ * Filtering `useNotifications().length` under-reported once inboxes crossed
+ * that threshold. Kept in sync via the same realtime subscription plus
+ * mark-read/mark-all/delete mutation invalidations.
+ */
 export function useUnreadNotificationCount() {
-  const { data: notifications } = useNotifications();
-  return notifications?.filter(n => !n.read).length ?? 0;
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const { data } = useQuery({
+    queryKey: ['notifications-unread-count', userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      if (!userId) return 0;
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('read', false);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+  return data ?? 0;
 }
 
 export function useMarkNotificationRead() {
@@ -144,7 +166,7 @@ export function useMarkNotificationRead() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] }); queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
     },
   });
 }
@@ -166,7 +188,7 @@ export function useMarkAllNotificationsRead() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] }); queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
     },
   });
 }
@@ -184,7 +206,7 @@ export function useDeleteNotification() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] }); queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
     },
   });
 }
@@ -204,7 +226,7 @@ export function useCreateNotification() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] }); queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
     },
   });
 }
