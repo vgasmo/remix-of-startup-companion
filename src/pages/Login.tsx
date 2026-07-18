@@ -215,7 +215,7 @@ export default function Login() {
           {/* Book a Meeting CTA */}
           <div className="mb-10">
             <Link
-              to="/book/demo"
+              to="/book"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-accent-foreground font-medium hover:bg-accent/90 transition-all duration-300 hover:shadow-lg hover:shadow-accent/25 hover:scale-105"
             >
               <Calendar className="h-5 w-5" />
