@@ -243,26 +243,9 @@ export function useUpdateBookingStatus() {
         } catch (e) {
           // don't fail the accept if session insert bounces
         }
-        void safeNotify({
-          user_id: booking.founder_id,
-          type: 'system',
-          title: 'Sessão confirmada',
-          message: `A sua sessão com ${mentorName} foi confirmada para ${booking.requested_date} às ${booking.requested_start_time.slice(0, 5)}`,
-          link: booking.workspace_id ? `/workspace/${booking.workspace_id}?tab=agenda` : '/my-workspaces',
-          entity_type: 'mentor_booking',
-          entity_id: booking.id,
-        });
-      } else if (status === 'declined') {
-        void safeNotify({
-          user_id: booking.founder_id,
-          type: 'system',
-          title: 'Pedido de sessão não confirmado',
-          message: `${mentorName} não pôde confirmar o horário pedido. Escolha outra disponibilidade quando quiser.`,
-          link: '/mentors',
-          entity_type: 'mentor_booking',
-          entity_id: booking.id,
-        });
-      }
+      // Founder-facing notifications for accepted/declined are emitted by the
+      // `trg_notify_mentor_booking_change` trigger on UPDATE — no client-side
+      // duplicate here.
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-bookings'] });
