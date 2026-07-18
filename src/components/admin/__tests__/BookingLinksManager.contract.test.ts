@@ -18,7 +18,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const SOURCE = readFileSync(
-  resolve(__dirname, '../../components/admin/BookingLinksManager.tsx'),
+  resolve(__dirname, '../BookingLinksManager.tsx'),
   'utf8',
 );
 
