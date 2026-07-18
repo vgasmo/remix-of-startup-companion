@@ -5,10 +5,20 @@ import { subDays } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { AlertTriangle, Activity, TrendingUp, Bug } from 'lucide-react';
+import { AlertTriangle, Activity, TrendingUp, Bug, Zap } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { DownloadHtmlReportButton } from '@/components/shared/DownloadHtmlReportButton';
+
+interface CronRunRow {
+  id: string;
+  job_name: string;
+  status: string;
+  duration_ms: number | null;
+  error_summary: string | null;
+  started_at: string;
+  finished_at: string | null;
+}
 
 interface ErrorRow {
   id: string;
