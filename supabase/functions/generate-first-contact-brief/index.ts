@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
     if (!uid) return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: jsonHeaders });
 
     const { data: roles } = await sbSvc.from('user_roles').select('role').eq('user_id', uid);
-    const isStaff = (roles ?? []).some((r: any) => r.role === 'admin' || r.role === 'consultant');
+    const isStaff = (roles ?? []).some((r: any) => r.role === 'admin' || r.role === 'consultor');
     if (!isStaff) return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: jsonHeaders });
 
     const body = await req.json() as Body;
