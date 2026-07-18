@@ -72,7 +72,7 @@ describe('BookResolver (/book)', () => {
       expect.objectContaining({ tokenOverride: 'token-abc123', canonicalMode: true }),
     );
     // And no navigation ever happens — the URL stays at /book.
-    expect(replaceSpy).not.toHaveBeenCalled();
+    expect(replaceMock).not.toHaveBeenCalled();
     // Token must not leak into browser storage.
     expect(window.localStorage.getItem).toBeDefined();
     // Sanity: no key in storage contains the token.
