@@ -107,10 +107,29 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  const runStartedAt = Date.now()
+  let supabase: any = null
+  const logRun = async (status: string, extra: Record<string, unknown> = {}, errorSummary?: string) => {
+    if (!supabase) return
+    try {
+      await supabase.rpc('log_cron_job_run', {
+        p_job_name: 'automation-engine',
+        p_status: status,
+        p_duration_ms: Date.now() - runStartedAt,
+        p_error_code: null,
+        p_error_summary: errorSummary ?? null,
+        p_details: extra,
+        p_triggered_by: 'cron',
+      })
+    } catch (e) {
+      console.warn('[automation-engine] log_cron_job_run failed', e)
+    }
+  }
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    supabase = createClient(supabaseUrl, supabaseKey)
 
     // SECURITY: Fail-closed — accept valid CRON_SECRET (timing-safe, x-cron-secret header)
     // OR a staff JWT (admin/consultor/backoffice). Requires CRON_SECRET configured.
