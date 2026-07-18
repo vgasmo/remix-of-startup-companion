@@ -56,6 +56,7 @@ interface CockpitQuickActionsProps {
 export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuickActionsProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [showQuickSession, setShowQuickSession] = useState(false);
   const [showQuickAction, setShowQuickAction] = useState(false);
   const [showQuickReminder, setShowQuickReminder] = useState(false);
