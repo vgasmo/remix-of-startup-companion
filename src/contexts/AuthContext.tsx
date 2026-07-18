@@ -174,6 +174,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [fetchUserData]);
 
+  // Realtime: react to suspension / role changes on the current user's own
+  // profile and user_roles rows so the effect is immediate (no manual reload).
+  // Also re-check on window focus as a belt-and-braces fallback.
+  useEffect(() => {
+    if (!user?.id) return;
+    const uid = user.id;
+    const refetch = () => { void fetchUserData(uid); };
+
+    const channel = supabase
+      .channel(`self-auth-${uid}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${uid}` }, refetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_roles', filter: `user_id=eq.${uid}` }, refetch)
+      .subscribe();
+
+    const onFocus = () => refetch();
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      supabase.removeChannel(channel);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [user?.id, fetchUserData]);
+
   const signIn = useCallback(async (email: string, password: string) => {
     setIsAuthReady(false);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
