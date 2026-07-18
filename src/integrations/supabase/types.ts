@@ -10813,7 +10813,7 @@ export type Database = {
         Args: { p_claim_id: string; p_workspace_id: string }
         Returns: undefined
       }
-      approve_user_account: { Args: { p_user_id: string }; Returns: undefined }
+      approve_user_account: { Args: { p_user_id: string }; Returns: boolean }
       assign_mentor_request: {
         Args: { _mentor_id: string; _request_id: string }
         Returns: Json
@@ -10869,24 +10869,9 @@ export type Database = {
         }
         Returns: boolean
       }
-      check_automation_health: {
-        Args: never
-        Returns: {
-          details: Json
-          issue: string
-          job_name: string
-        }[]
-      }
+      check_automation_health: { Args: never; Returns: undefined }
       check_ecosystem_invariants: { Args: never; Returns: Json }
-      check_email_sync_health: {
-        Args: never
-        Returns: {
-          details: Json
-          failing_consultants: number
-          minutes_since_last_success: number
-          status: string
-        }[]
-      }
+      check_email_sync_health: { Args: never; Returns: undefined }
       check_signup_allowed: { Args: { p_email: string }; Returns: boolean }
       claim_startup: { Args: never; Returns: Json }
       cleanup_old_rate_limits: { Args: never; Returns: number }

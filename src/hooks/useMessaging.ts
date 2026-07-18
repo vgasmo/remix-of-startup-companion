@@ -235,6 +235,9 @@ export function useSendMessage() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['messages', variables.conversationId] });
+      // ChatTab reads under ['chat-messages', convId]; without this the sender
+      // depends on realtime to see their own message.
+      queryClient.invalidateQueries({ queryKey: ['chat-messages', variables.conversationId] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });

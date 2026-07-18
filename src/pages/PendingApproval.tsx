@@ -11,7 +11,7 @@ import startupLeiriaLogo from '@/assets/startup-leiria.svg';
 export default function PendingApproval() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, refreshProfile } = useAuth();
   const [isChecking, setIsChecking] = useState(false);
 
   const checkStatus = useCallback(async () => {
@@ -24,14 +24,18 @@ export default function PendingApproval() {
         .eq('id', profile.id)
         .maybeSingle();
       if (data?.account_status && data.account_status !== 'pending') {
-        navigate('/');
+        // Refresh the in-memory profile BEFORE navigating so ProtectedRoute's
+        // isAccountPending guard sees the new status; otherwise the user just
+        // bounces right back here.
+        await refreshProfile();
+        navigate('/', { replace: true });
       }
     } catch {
       // silent — next poll will retry
     } finally {
       setIsChecking(false);
     }
-  }, [profile?.id, navigate]);
+  }, [profile?.id, navigate, refreshProfile]);
 
   // Poll every 30s while tab is visible, and once on focus.
   useEffect(() => {

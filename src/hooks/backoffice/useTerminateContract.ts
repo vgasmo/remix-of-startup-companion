@@ -38,16 +38,22 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
   if (updErr) throw updErr;
 
   if (contract.workspace_id) {
-    try {
-      await (supabase as any)
-        .from('room_allocations')
-        .update({ end_date: today })
-        .eq('workspace_id', contract.workspace_id)
-        .is('end_date', null);
-    } catch { /* non-fatal */ }
+    // Close open room allocations. RLS failure here would silently leave the
+    // room allocated forever — surface the error instead of swallowing it.
+    const { error: allocErr } = await (supabase as any)
+      .from('room_allocations')
+      .update({ end_date: today })
+      .eq('workspace_id', contract.workspace_id)
+      .is('end_date', null);
+    if (allocErr) throw new Error(`Failed to close room allocation: ${allocErr.message}`);
   }
 
   if (contract.workspace_id) {
+    // Assign the cleanup task to the terminating user with status 'pending' so
+    // useMyStaffTasks (filters assignee_id = me AND status IN ('pending','in_progress'))
+    // actually surfaces it. Previous behaviour ({assignee_id: null, status: 'open'})
+    // made the task invisible to everyone.
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
     try {
       await (supabase as any).from('staff_tasks').insert({
         title: t('contractDetail.terminate.staffTaskTitle', { defaultValue: 'Cancelar sessões futuras (contrato terminado)' }),
@@ -57,8 +63,9 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
         }),
         task_type: 'contract_terminated_cleanup',
         workspace_id: contract.workspace_id,
+        assignee_id: currentUser?.id ?? null,
         priority: 'medium',
-        status: 'open',
+        status: 'pending',
         metadata: { contract_id: contract.id, reason: reason.trim() },
       });
     } catch { /* non-fatal */ }

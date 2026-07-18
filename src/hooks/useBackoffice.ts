@@ -722,8 +722,9 @@ export function useFulfillWaitingListRequest() {
       
       if (!request) throw new Error('Request not found');
       
-      // Create allocation
-      await supabase.from('room_allocations').insert({
+      // Create allocation — must not be fire-and-forget: a failed insert here
+      // would leave the request marked "fulfilled" with a ghost occupied room.
+      const { error: allocErr } = await supabase.from('room_allocations').insert({
         room_id: roomId,
         workspace_id: request.workspace_id,
         funnel_item_id: request.funnel_item_id,
@@ -731,21 +732,23 @@ export function useFulfillWaitingListRequest() {
         start_date: startDate,
         created_by: userId,
       });
-      
+      if (allocErr) throw allocErr;
+
       // Update room status
-      await supabase.from('rooms').update({ status: 'occupied' }).eq('id', roomId);
-      
+      const { error: roomErr } = await supabase.from('rooms').update({ status: 'occupied' }).eq('id', roomId);
+      if (roomErr) throw roomErr;
+
       // Mark request as fulfilled
       const { error } = await supabase
         .from('space_waiting_list')
-        .update({ 
-          status: 'fulfilled', 
+        .update({
+          status: 'fulfilled',
           fulfilled_at: new Date().toISOString(),
           fulfilled_by: userId,
           offered_room_id: roomId,
         })
         .eq('id', requestId);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -753,6 +756,8 @@ export function useFulfillWaitingListRequest() {
       queryClient.invalidateQueries({ queryKey: ['rooms'] });
       queryClient.invalidateQueries({ queryKey: ['rooms-with-allocations'] });
       queryClient.invalidateQueries({ queryKey: ['room-allocations'] });
+      queryClient.invalidateQueries({ queryKey: ['building-occupancy'] });
+      queryClient.invalidateQueries({ queryKey: ['space-operations-console'] });
       notify.success(t('backoffice.waitingListFulfilled'));
     },
     onError: () => notify.error(t('backoffice.waitingListFulfillError')),

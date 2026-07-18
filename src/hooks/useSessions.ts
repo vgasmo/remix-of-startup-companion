@@ -281,6 +281,8 @@ export function useCreateSession(workspaceId: string) {
       queryClient.invalidateQueries({ queryKey: ['sessions', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['calendar-sessions', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-sessions', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['upcoming-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
 
       // P1.2: Log activity
       logActivity('created', 'session', data.id, workspaceId, { title: data.title });
@@ -435,6 +437,8 @@ export function useCompleteSession() {
       queryClient.invalidateQueries({ queryKey: ['sessions', vars.workspace_id] });
       queryClient.invalidateQueries({ queryKey: ['calendar-sessions', vars.workspace_id] });
       queryClient.invalidateQueries({ queryKey: ['workspace-sessions', vars.workspace_id] });
+      queryClient.invalidateQueries({ queryKey: ['upcoming-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['impact-aggregates'] });
     },
   });
@@ -492,6 +496,8 @@ export function useCancelSession() {
       queryClient.invalidateQueries({ queryKey: ['sessions', vars.workspace_id] });
       queryClient.invalidateQueries({ queryKey: ['calendar-sessions', vars.workspace_id] });
       queryClient.invalidateQueries({ queryKey: ['workspace-sessions', vars.workspace_id] });
+      queryClient.invalidateQueries({ queryKey: ['upcoming-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['impact-aggregates'] });
     },
   });
@@ -516,6 +522,8 @@ export function useMarkSessionNoShow() {
       queryClient.invalidateQueries({ queryKey: ['sessions', vars.workspace_id] });
       queryClient.invalidateQueries({ queryKey: ['calendar-sessions', vars.workspace_id] });
       queryClient.invalidateQueries({ queryKey: ['workspace-sessions', vars.workspace_id] });
+      queryClient.invalidateQueries({ queryKey: ['upcoming-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['impact-aggregates'] });
     },
   });
@@ -551,6 +559,8 @@ export function useUpdateSession(workspaceId: string) {
       queryClient.invalidateQueries({ queryKey: ['sessions', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['calendar-sessions', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-sessions', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['upcoming-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
 
       // P1.2: Log activity
       logActivity('updated', 'session', result.session.id, workspaceId, { title: result.session.title });
@@ -668,6 +678,8 @@ export function useDeleteSession(workspaceId: string) {
       queryClient.invalidateQueries({ queryKey: ['sessions', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['calendar-sessions', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-sessions', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['upcoming-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
     },
   });
 }
