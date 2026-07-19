@@ -5381,8 +5381,6 @@ export type Database = {
           account_status: Database["public"]["Enums"]["account_status"] | null
           avatar_url: string | null
           bio: string | null
-          calendar_feed_token: string | null
-          calendar_token_expires_at: string | null
           created_at: string
           dismissed_prompts: Json
           email: string
@@ -5400,8 +5398,6 @@ export type Database = {
           account_status?: Database["public"]["Enums"]["account_status"] | null
           avatar_url?: string | null
           bio?: string | null
-          calendar_feed_token?: string | null
-          calendar_token_expires_at?: string | null
           created_at?: string
           dismissed_prompts?: Json
           email: string
@@ -5419,8 +5415,6 @@ export type Database = {
           account_status?: Database["public"]["Enums"]["account_status"] | null
           avatar_url?: string | null
           bio?: string | null
-          calendar_feed_token?: string | null
-          calendar_token_expires_at?: string | null
           created_at?: string
           dismissed_prompts?: Json
           email?: string
@@ -9122,6 +9116,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_calendar_tokens: {
+        Row: {
+          expires_at: string | null
+          token_hash: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          expires_at?: string | null
+          token_hash?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          expires_at?: string | null
+          token_hash?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
