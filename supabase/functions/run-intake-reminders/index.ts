@@ -14,6 +14,7 @@
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { requireCronSecret } from '../_shared/security.ts'
+import { withCronRunLogging } from '../_shared/cronRun.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -68,7 +69,7 @@ async function callSendIntakeEmail(
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCronRunLogging('run-intake-reminders', async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -263,4 +264,4 @@ Deno.serve(async (req) => {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
-})
+))

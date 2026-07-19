@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { requireCronOrStaff } from "../_shared/security.ts";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
+import { withCronRunLogging } from '../_shared/cronRun.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -15,7 +16,7 @@ interface NotificationData {
   entity_id: string;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCronRunLogging('generate-crm-notifications', async (req) => {
   if (req.method === 'OPTIONS') {
     return handleCorsOptions(req);
   }
@@ -222,4 +223,4 @@ Deno.serve(async (req) => {
     console.error('Error generating CRM notifications:', error);
     return corsJsonResponse({ error: message }, req, 500);
   }
-});
+));

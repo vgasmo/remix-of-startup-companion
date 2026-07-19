@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { requireCronSecret, generateRequestId, createLogger } from '../_shared/security.ts';
+import { withCronRunLogging } from '../_shared/cronRun.ts';
 
 const FUNCTION_NAME = 'check-missed-milestones';
 
@@ -40,7 +41,7 @@ async function sendTeamsNotification(
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCronRunLogging('check-missed-milestones', async (req) => {
   const requestId = generateRequestId();
   const log = createLogger(FUNCTION_NAME, requestId);
 
@@ -214,4 +215,4 @@ Deno.serve(async (req) => {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return corsJsonResponse({ error: message, code: 'INTERNAL_ERROR' }, req, 500);
   }
-});
+));
