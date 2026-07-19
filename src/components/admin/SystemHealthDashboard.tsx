@@ -324,18 +324,34 @@ export function SystemHealthDashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {cronByJob.length === 0 ? (
+          {cronUnknown ? (
+            <div className="flex items-start gap-2 rounded-md border border-border/60 bg-muted/40 p-3 text-sm">
+              <HelpCircle className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+              <p className="text-muted-foreground">
+                {t('admin.systemHealth.unknownState', {
+                  defaultValue: 'Estado desconhecido — não foi possível obter dados. Volte a tentar mais tarde.',
+                })}
+              </p>
+            </div>
+          ) : cronByJob.length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">
               {t('admin.systemHealth.noCronRuns', { defaultValue: 'Sem execuções registadas nas últimas 24h.' })}
             </p>
           ) : (
             <div className="space-y-2">
               {cronByJob.map(row => {
-                const tone = row.failed > 0 ? 'destructive' : row.partial > 0 ? 'warning' : 'success';
                 const badgeClass =
-                  tone === 'destructive' ? 'bg-destructive/15 text-destructive border-destructive/30' :
-                  tone === 'warning' ? 'bg-warning/15 text-warning border-warning/30' :
+                  row.status === 'failed' ? 'bg-destructive/15 text-destructive border-destructive/30' :
+                  row.status === 'degraded' ? 'bg-warning/15 text-warning border-warning/30' :
+                  row.status === 'stale' ? 'bg-warning/15 text-warning border-warning/30' :
+                  row.status === 'never_run' ? 'bg-muted text-muted-foreground border-border' :
                   'bg-success/15 text-success border-success/30';
+                const label =
+                  row.status === 'failed' ? `${row.failed} falhas` :
+                  row.status === 'degraded' ? `${row.partial} parciais` :
+                  row.status === 'stale' ? 'atrasado' :
+                  row.status === 'never_run' ? 'sem execuções' :
+                  'saudável';
                 return (
                   <div key={row.job} className="flex items-center justify-between gap-3 border-b border-border/40 pb-2 last:border-0">
                     <div className="flex-1 min-w-0">
@@ -343,13 +359,18 @@ export function SystemHealthDashboard() {
                       {row.lastError && (
                         <p className="text-xs text-destructive truncate mt-0.5">{row.lastError}</p>
                       )}
+                      {row.status === 'stale' && row.lastAt && (
+                        <p className="text-xs text-warning truncate mt-0.5">
+                          Última execução: {new Date(row.lastAt).toLocaleString()}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-xs text-muted-foreground">
                         {row.ok}/{row.total} OK
                       </span>
                       <Badge variant="outline" className={badgeClass}>
-                        {row.failed > 0 ? `${row.failed} falhas` : row.partial > 0 ? `${row.partial} parciais` : 'saudável'}
+                        {label}
                       </Badge>
                     </div>
                   </div>
