@@ -113,6 +113,28 @@ Client: `useCreateBooking` in `src/hooks/useMentorAvailability.ts` no longer ins
 
 Typecheck: `bunx tsgo --noEmit` exit 0.
 
+## F1 — False-success automation cleanup (closed)
+
+### `sweep-session-transcripts`
+
+Success is now defined by an explicit allow-list (`imported | already_imported | not_ready | gave_up | skipped`). Everything else is a failure and increments the error counter:
+
+- HTTP non-2xx from `import-teams-transcript` → `status = http_<code>`, `ok = false`, error string captured (body or parsed `error`).
+- JSON parse failures on the downstream response → `status = 'parse_error'`, `ok = false`.
+- Downstream returns a body whose `status` isn't in the allow-list → `status = <parsed.status or 'unknown'>`, `ok = false`.
+- Network / timeout throws already surfaced but now share the same `ok=false` shape.
+
+Run-level status is `ok` (all succeeded), `partial` (mix), or `failed` (all failed) instead of always-`partial`-or-`ok`. The HTTP response also flips `success` to `false` when any import failed, so `withCronRunLogging`-style wrappers upstream can no longer read a 200/`success:true` as evidence of a healthy sweep. Response shape now includes `ok`, `errors`, and per-row `{ok, status, error}` for observability.
+
+### `automation-engine`
+
+- `notify()` and `recordRun()` used to swallow `.insert().error`, so `result.notifications++` fired even when the DB write was rejected. Both helpers now throw `notify(<type>): <error>` / `recordRun(<type>): <error>` on error, which propagates to the per-category outer `catch (e) { result.errors.push(...) }` and prevents the corresponding counter increment.
+- All 8 `sendEmail` call sites that did `await sendEmail(...); result.emails++` were rewritten to `if (await sendEmail(...)) { result.emails++ }` (Resend outages / non-2xx no longer count as delivered).
+
+Typecheck after both changes: `bunx tsgo --noEmit` exit 0.
+
+
+
 
 
 ## Rollback
