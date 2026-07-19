@@ -83,6 +83,11 @@ function validateBody(raw: unknown): { valid: true; data: RequestBody } | { vali
   const ids = Array.isArray(b.support_material_ids)
     ? b.support_material_ids.filter((x): x is string => typeof x === 'string')
     : [];
+  const idempotencyKey =
+    typeof b.idempotency_key === 'string' &&
+    /^[a-zA-Z0-9-]{8,64}$/.test(b.idempotency_key)
+      ? b.idempotency_key
+      : undefined;
   return {
     valid: true,
     data: {
@@ -92,6 +97,7 @@ function validateBody(raw: unknown): { valid: true; data: RequestBody } | { vali
       body_text: bodyText,
       support_material_ids: ids.slice(0, 20),
       cc_owner: b.cc_owner === true,
+      idempotency_key: idempotencyKey,
     },
   };
 }
