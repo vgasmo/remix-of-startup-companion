@@ -70,6 +70,12 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
   const { isAdmin, isConsultor, isFounder } = useAuth();
   const isStaff = isAdmin || isConsultor;
   const canUseFacilitator = isStaff;
+  // join_url may be missing when the meeting came from Teams ingest;
+  // teams_meeting_url is the fallback set by MS Graph webhook.
+  const meetingUrl =
+    (session as { join_url?: string | null; teams_meeting_url?: string | null }).join_url ??
+    (session as { teams_meeting_url?: string | null }).teams_meeting_url ??
+    null;
 
   const [notes, setNotes] = useState(session.notes || '');
   const [decisions, setDecisions] = useState(session.decisions || '');
@@ -230,15 +236,15 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
       description: session.agenda || session.notes || '',
       startDate: new Date(session.scheduled_at),
       durationMinutes: session.duration || 60,
-      meetingLink: session.join_url || undefined,
+      meetingLink: meetingUrl || undefined,
     });
     notify.success(t('sessions.icsExported', { defaultValue: 'Sessão exportada para calendário' }));
   };
 
   const handleCopyJoinUrl = async () => {
-    if (!session.join_url) return;
+    if (!meetingUrl) return;
     try {
-      await navigator.clipboard.writeText(session.join_url);
+      await navigator.clipboard.writeText(meetingUrl);
       notify.success(t('sessions.joinUrlCopied'));
     } catch {
       notify.error(t('common.error'));
@@ -385,7 +391,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
               )}
 
               {/* Teams / online meeting join URL — populated by Outlook sync */}
-              {session.join_url ? (
+              {meetingUrl ? (
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-2 min-w-0 flex-1">
@@ -393,12 +399,12 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium">{t('sessions.teamsMeetingLabel')}</p>
                         <a
-                          href={session.join_url}
+                          href={meetingUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs text-primary hover:underline break-all block mt-0.5"
                         >
-                          {session.join_url}
+                          {meetingUrl}
                         </a>
                       </div>
                     </div>
@@ -407,7 +413,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                         <Copy className="h-4 w-4" />
                       </Button>
                       <Button asChild size="sm">
-                        <a href={session.join_url} target="_blank" rel="noopener noreferrer">
+                        <a href={meetingUrl} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-4 w-4 mr-1" />
                           {t('sessions.joinCall', 'Join meeting')}
                         </a>
@@ -504,12 +510,13 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                 )}
               </div>
 
-              {isStaff && (
-                <div className="space-y-2">
-                  <Label>{t('sessions.sessionTranscripts', 'Session Transcripts')}</Label>
-                  <SessionTranscriptsViewer sessionId={session.id} />
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label>{t('sessions.sessionTranscripts', 'Session Transcripts')}</Label>
+                {/* RLS on session_transcripts enforces tier visibility per role;
+                    rendering for all members lets workspace-tier rows reach founders. */}
+                <SessionTranscriptsViewer sessionId={session.id} />
+              </div>
+
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">

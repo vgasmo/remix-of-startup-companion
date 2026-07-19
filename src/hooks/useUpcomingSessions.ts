@@ -9,10 +9,55 @@ export interface UpcomingSession {
   duration: number | null;
   location: string | null;
   join_url: string | null;
+  teams_meeting_url: string | null;
   agenda: string | null;
   workspace_id: string;
   startup_name: string;
 }
+
+const SESSION_SELECT = `
+  id,
+  title,
+  scheduled_at,
+  duration,
+  location,
+  join_url,
+  teams_meeting_url,
+  agenda,
+  workspace_id,
+  status,
+  workspace:workspaces(
+    startup:startups(name)
+  )
+` as const;
+
+type SessionRow = {
+  id: string;
+  title: string;
+  scheduled_at: string;
+  duration: number | null;
+  location: string | null;
+  join_url: string | null;
+  teams_meeting_url: string | null;
+  agenda: string | null;
+  workspace_id: string;
+  status: string | null;
+  workspace: { startup: { name: string } | null } | null;
+};
+
+const shape = (rows: SessionRow[]): UpcomingSession[] =>
+  rows.map((s) => ({
+    id: s.id,
+    title: s.title,
+    scheduled_at: s.scheduled_at,
+    duration: s.duration,
+    location: s.location,
+    join_url: s.join_url,
+    teams_meeting_url: s.teams_meeting_url,
+    agenda: s.agenda,
+    workspace_id: s.workspace_id,
+    startup_name: s.workspace?.startup?.name || 'Unknown',
+  }));
 
 export function useUpcomingSessions() {
   return useQuery({
@@ -24,96 +69,50 @@ export function useUpcomingSessions() {
       const now = new Date().toISOString();
       const weekFromNow = addDays(new Date(), 7).toISOString();
 
-      // Get workspaces the user has access to
       const { data: workspaceIds } = await supabase
         .from('workspace_users')
         .select('workspace_id')
         .eq('user_id', user.id)
         .eq('active', true);
 
+      // Hide cancelled/no_show sessions from every "upcoming" surface.
+      const notCancelled = 'not.in.(cancelled,no_show)';
+
       if (!workspaceIds || workspaceIds.length === 0) {
-        // Check if user is admin/consultor who can see all
         const { data: roles } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id);
 
-        const isStaff = roles?.some(r => r.role === 'admin' || r.role === 'consultor');
-        
+        const isStaff = roles?.some(
+          (r) => r.role === 'admin' || r.role === 'consultor' || r.role === 'backoffice',
+        );
         if (!isStaff) return [];
 
-        // Get all sessions for staff
         const { data, error } = await supabase
           .from('sessions')
-          .select(`
-            id,
-            title,
-            scheduled_at,
-            duration,
-            location,
-            join_url,
-            agenda,
-            workspace_id,
-            workspace:workspaces(
-              startup:startups(name)
-            )
-          `)
+          .select(SESSION_SELECT)
           .gte('scheduled_at', now)
           .lte('scheduled_at', weekFromNow)
+          .or(`status.is.null,status.${notCancelled}`)
           .order('scheduled_at', { ascending: true })
           .limit(20);
-
         if (error) throw error;
-
-        return (data || []).map(session => ({
-          id: session.id,
-          title: session.title,
-          scheduled_at: session.scheduled_at,
-          duration: session.duration,
-          location: session.location,
-          join_url: session.join_url,
-          agenda: session.agenda,
-          workspace_id: session.workspace_id,
-          startup_name: (session.workspace as any)?.startup?.name || 'Unknown',
-        }));
+        return shape((data ?? []) as unknown as SessionRow[]);
       }
 
-      const ids = workspaceIds.map(w => w.workspace_id);
-
+      const ids = workspaceIds.map((w) => w.workspace_id);
       const { data, error } = await supabase
         .from('sessions')
-        .select(`
-          id,
-          title,
-          scheduled_at,
-          duration,
-          location,
-          join_url,
-          agenda,
-          workspace_id,
-          workspace:workspaces(
-            startup:startups(name)
-          )
-        `)
+        .select(SESSION_SELECT)
         .in('workspace_id', ids)
         .gte('scheduled_at', now)
         .lte('scheduled_at', weekFromNow)
+        .or(`status.is.null,status.${notCancelled}`)
         .order('scheduled_at', { ascending: true })
         .limit(20);
-
       if (error) throw error;
-
-      return (data || []).map(session => ({
-        id: session.id,
-        title: session.title,
-        scheduled_at: session.scheduled_at,
-        duration: session.duration,
-        location: session.location,
-        join_url: session.join_url,
-        agenda: session.agenda,
-        workspace_id: session.workspace_id,
-        startup_name: (session.workspace as any)?.startup?.name || 'Unknown',
-      }));
+      return shape((data ?? []) as unknown as SessionRow[]);
     },
   });
 }

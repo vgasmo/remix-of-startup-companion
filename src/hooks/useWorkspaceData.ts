@@ -126,6 +126,7 @@ export function useWorkspaceNextSession(workspaceId: string | undefined) {
         .select('*')
         .eq('workspace_id', workspaceId)
         .gte('scheduled_at', new Date().toISOString())
+        .not('status', 'in', '(cancelled,no_show)')
         .order('scheduled_at', { ascending: true })
         .limit(1)
         .maybeSingle();
@@ -136,7 +137,7 @@ export function useWorkspaceNextSession(workspaceId: string | undefined) {
           title: session.title,
           starts_at: session.scheduled_at,
           ends_at: new Date(new Date(session.scheduled_at).getTime() + (session.duration || 60) * 60000).toISOString(),
-          join_url: session.join_url,
+          join_url: session.join_url ?? session.teams_meeting_url ?? null,
           location: session.location,
         };
       }

@@ -4697,6 +4697,7 @@ export type Database = {
       }
       milestones: {
         Row: {
+          archived_at: string | null
           completed_at: string | null
           created_at: string
           created_by: string | null
@@ -4713,6 +4714,7 @@ export type Database = {
           workspace_id: string
         }
         Insert: {
+          archived_at?: string | null
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
@@ -4729,6 +4731,7 @@ export type Database = {
           workspace_id: string
         }
         Update: {
+          archived_at?: string | null
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
@@ -11037,6 +11040,10 @@ export type Database = {
           p_workspace_id: string
         }
         Returns: Json
+      }
+      complete_workspace_onboarding: {
+        Args: { p_workspace_id: string }
+        Returns: undefined
       }
       create_conversation: {
         Args: {
