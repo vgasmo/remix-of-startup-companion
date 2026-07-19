@@ -151,22 +151,30 @@ export function useCreateBooking() {
       requested_start_time: string;
       requested_end_time: string;
       message?: string;
+      idempotency_key?: string;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
-        .from('mentor_bookings')
-        .insert([{ ...booking, founder_id: user.id }])
-        .select()
-        .single();
+      // I1: idempotent booking via server RPC. Double-clicks, retries or
+      // network races cannot produce duplicate rows because
+      // `create_mentor_booking_idempotent` returns the existing booking on
+      // repeated (founder_id, idempotency_key) or overlapping active slots.
+      const key = booking.idempotency_key
+        ?? (crypto.randomUUID?.() ?? `${user.id}-${booking.mentor_id}-${booking.requested_date}-${booking.requested_start_time}-${Date.now()}`);
+
+      const { data, error } = await supabase.rpc('create_mentor_booking_idempotent', {
+        p_mentor_id: booking.mentor_id,
+        p_workspace_id: booking.workspace_id ?? null,
+        p_requested_date: booking.requested_date,
+        p_requested_start_time: booking.requested_start_time,
+        p_requested_end_time: booking.requested_end_time,
+        p_message: booking.message ?? null,
+        p_idempotency_key: key,
+      });
       if (error) throw error;
 
-      // Mentor notification for the new booking request is emitted by a
-      // database trigger on `mentor_bookings` insert. The client-side
-      // safeNotify() previously here duplicated that row and forced founders
-      // to look up the mentor's name from `profiles_safe` on every booking —
-      // an unnecessary read that occasionally showed a stale name.
+      // Mentor notification is still emitted by the DB trigger on insert.
       return data;
     },
     onSuccess: () => {

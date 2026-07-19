@@ -4454,6 +4454,7 @@ export type Database = {
           created_at: string
           founder_id: string
           id: string
+          idempotency_key: string | null
           mentor_id: string
           message: string | null
           requested_date: string
@@ -4467,6 +4468,7 @@ export type Database = {
           created_at?: string
           founder_id: string
           id?: string
+          idempotency_key?: string | null
           mentor_id: string
           message?: string | null
           requested_date: string
@@ -4480,6 +4482,7 @@ export type Database = {
           created_at?: string
           founder_id?: string
           id?: string
+          idempotency_key?: string | null
           mentor_id?: string
           message?: string | null
           requested_date?: string
@@ -11009,6 +11012,37 @@ export type Database = {
           participant_ids: string[]
         }
         Returns: string
+      }
+      create_mentor_booking_idempotent: {
+        Args: {
+          p_idempotency_key: string
+          p_mentor_id: string
+          p_message: string
+          p_requested_date: string
+          p_requested_end_time: string
+          p_requested_start_time: string
+          p_workspace_id: string
+        }
+        Returns: {
+          created_at: string
+          founder_id: string
+          id: string
+          idempotency_key: string | null
+          mentor_id: string
+          message: string | null
+          requested_date: string
+          requested_end_time: string
+          requested_start_time: string
+          status: string
+          updated_at: string
+          workspace_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "mentor_bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       create_startup_application: {
         Args: {
