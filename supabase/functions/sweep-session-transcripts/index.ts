@@ -106,7 +106,9 @@ Deno.serve(async (req: Request) => {
 
   log.info('Sweeping sessions', { candidates: candidates.length, toProcess: toProcess.length });
 
-  const results: Array<{ session_id: string; status: string; error?: string }> = [];
+  const OK_STATUSES = new Set(['imported', 'already_imported', 'not_ready', 'gave_up', 'skipped']);
+  type SweepResult = { session_id: string; status: string; ok: boolean; error?: string };
+  const results: SweepResult[] = [];
   const importUrl = `${supabaseUrl}/functions/v1/import-teams-transcript`;
 
   for (const s of toProcess) {
@@ -121,9 +123,32 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({ session_id: s.id }),
       });
       const bodyText = await resp.text();
-      let parsed: any = {};
-      try { parsed = JSON.parse(bodyText); } catch { /* keep text */ }
-      results.push({ session_id: s.id, status: parsed?.status || `http_${resp.status}` });
+      let parsed: any = null;
+      let parseError: string | undefined;
+      try { parsed = JSON.parse(bodyText); } catch (e) { parseError = safeErrorMessage(e); }
+
+      // F1: HTTP non-2xx, parse failures and downstream rejects are FAILURES,
+      // never silent successes. Only a whitelisted parsed.status counts as ok.
+      let status: string;
+      let ok: boolean;
+      let errMsg: string | undefined;
+      if (!resp.ok) {
+        status = `http_${resp.status}`;
+        ok = false;
+        errMsg = parsed?.error ?? bodyText.slice(0, 200);
+      } else if (parseError) {
+        status = 'parse_error';
+        ok = false;
+        errMsg = parseError;
+      } else if (parsed?.status && OK_STATUSES.has(parsed.status)) {
+        status = parsed.status;
+        ok = true;
+      } else {
+        status = parsed?.status ?? 'unknown';
+        ok = false;
+        errMsg = parsed?.error ?? `downstream returned ${status}`;
+      }
+      results.push({ session_id: s.id, status, ok, error: errMsg });
 
       if (parsed?.status === 'not_ready' && ((s.transcript_import_attempts ?? 0) + 1) >= MAX_ATTEMPTS) {
         await admin.from('integration_errors').insert({
@@ -139,20 +164,27 @@ Deno.serve(async (req: Request) => {
           .eq('id', s.id);
       }
     } catch (e) {
+      // Network/timeout errors — count as failure, not silent success.
       const msg = safeErrorMessage(e);
       log.warn('Import invocation failed', { session_id: s.id, error: msg });
-      results.push({ session_id: s.id, status: 'error', error: msg });
+      results.push({ session_id: s.id, status: 'error', ok: false, error: msg });
     }
   }
 
-  const errorCount = results.filter(r => r.status === 'error').length;
-  await logRun(errorCount > 0 ? 'partial' : 'ok', {
+  const errorCount = results.filter(r => !r.ok).length;
+  const okCount = results.length - errorCount;
+  // F1: partial only when at least one succeeded; if all failed, mark 'failed'.
+  const runStatus = errorCount === 0
+    ? 'ok'
+    : (okCount === 0 ? 'failed' : 'partial');
+  await logRun(runStatus, {
     processed: results.length,
+    ok: okCount,
     candidates: candidates.length,
     errors: errorCount,
-  }, errorCount > 0 ? `${errorCount} import errors` : undefined);
+  }, errorCount > 0 ? `${errorCount}/${results.length} imports failed` : undefined);
 
-  return corsJsonResponse({ success: true, processed: results.length, results }, req);
+  return corsJsonResponse({ success: errorCount === 0, processed: results.length, ok: okCount, errors: errorCount, results }, req);
   } catch (fatal) {
     const msg = safeErrorMessage(fatal);
     log.error('Fatal sweep error', { error: msg });
