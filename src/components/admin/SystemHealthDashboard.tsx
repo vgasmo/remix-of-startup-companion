@@ -100,24 +100,102 @@ export function SystemHealthDashboard() {
     refetchInterval: 60_000,
   });
 
+  const expectationsQuery = useQuery({
+    enabled: isAdmin,
+    queryKey: ['admin', 'system-health', 'automation-expectations'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('automation_health_expectations')
+        .select('job_name, expected_cadence_seconds, grace_seconds, severity, enabled')
+        .eq('enabled', true);
+      if (error) throw error;
+      return (data ?? []) as Array<{
+        job_name: string;
+        expected_cadence_seconds: number;
+        grace_seconds: number;
+        severity: string;
+        enabled: boolean;
+      }>;
+    },
+    staleTime: 60_000,
+  });
+
   const errors = errorsQuery.data ?? [];
   const events = eventsQuery.data ?? [];
   const cronRuns = cronRunsQuery.data ?? [];
+  const expectations = expectationsQuery.data ?? [];
 
-  const cronByJob = useMemo(() => {
-    const map = new Map<string, { total: number; ok: number; failed: number; partial: number; lastStatus: string; lastAt: string; lastError: string | null }>();
+  const cronUnknown = cronRunsQuery.isError || expectationsQuery.isError;
+
+  type JobStatus = 'healthy' | 'degraded' | 'failed' | 'stale' | 'never_run' | 'unknown';
+  interface JobRow {
+    job: string;
+    total: number;
+    ok: number;
+    failed: number;
+    partial: number;
+    lastStatus: string | null;
+    lastAt: string | null;
+    lastError: string | null;
+    status: JobStatus;
+    severity: string;
+  }
+
+  const cronByJob = useMemo<JobRow[]>(() => {
+    if (cronUnknown) return [];
+    const map = new Map<string, JobRow>();
+    // Seed from expectations so never-run jobs are visible
+    for (const exp of expectations) {
+      map.set(exp.job_name, {
+        job: exp.job_name,
+        total: 0, ok: 0, failed: 0, partial: 0,
+        lastStatus: null, lastAt: null, lastError: null,
+        status: 'never_run', severity: exp.severity,
+      });
+    }
     for (const r of cronRuns) {
-      const cur = map.get(r.job_name) ?? { total: 0, ok: 0, failed: 0, partial: 0, lastStatus: r.status, lastAt: r.started_at, lastError: r.error_summary };
+      const cur = map.get(r.job_name) ?? {
+        job: r.job_name, total: 0, ok: 0, failed: 0, partial: 0,
+        lastStatus: null, lastAt: null, lastError: null,
+        status: 'healthy' as JobStatus, severity: 'warning',
+      };
       cur.total++;
       if (r.status === 'ok') cur.ok++;
       else if (r.status === 'failed') cur.failed++;
       else if (r.status === 'partial') cur.partial++;
+      if (!cur.lastAt || r.started_at > cur.lastAt) {
+        cur.lastAt = r.started_at;
+        cur.lastStatus = r.status;
+        cur.lastError = r.error_summary;
+      }
       map.set(r.job_name, cur);
     }
-    return Array.from(map.entries()).map(([job, s]) => ({ job, ...s })).sort((a, b) => (b.failed + b.partial) - (a.failed + a.partial));
-  }, [cronRuns]);
+    // Compute status per job
+    const now = Date.now();
+    for (const [name, row] of map) {
+      const exp = expectations.find(e => e.job_name === name);
+      if (row.total === 0) {
+        row.status = 'never_run';
+      } else if (row.failed > 0) {
+        row.status = 'failed';
+      } else if (row.partial > 0) {
+        row.status = 'degraded';
+      } else if (exp && row.lastAt) {
+        const ageSec = (now - new Date(row.lastAt).getTime()) / 1000;
+        if (ageSec > exp.expected_cadence_seconds + exp.grace_seconds) {
+          row.status = 'stale';
+        } else {
+          row.status = 'healthy';
+        }
+      } else {
+        row.status = 'healthy';
+      }
+    }
+    const rank: Record<JobStatus, number> = { failed: 0, stale: 1, never_run: 2, degraded: 3, unknown: 4, healthy: 5 };
+    return Array.from(map.values()).sort((a, b) => rank[a.status] - rank[b.status]);
+  }, [cronRuns, expectations, cronUnknown]);
 
-  const cronFailures24h = cronRuns.filter(r => r.status === 'failed' || r.status === 'partial').length;
+  const cronFailures24h = cronByJob.filter(r => r.status === 'failed' || r.status === 'degraded' || r.status === 'stale' || r.status === 'never_run').length;
 
   const errors24h = errors.filter(e => e.created_at >= since24h).length;
   const critical24h = errors.filter(e => e.created_at >= since24h && (e.severity === 'critical' || e.severity === 'high'));
