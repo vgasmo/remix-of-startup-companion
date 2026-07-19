@@ -7,6 +7,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { requireCronSecret, generateRequestId, createLogger } from '../_shared/security.ts';
 import { resolveLocalesByUserIds, type Locale } from '../_shared/i18n.ts';
+import { withCronRunLogging } from '../_shared/cronRun.ts';
 
 const FUNCTION_NAME = 'check-mentor-nda-expiry';
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
@@ -63,7 +64,7 @@ function render(locale: Locale, name: string, days: number): string {
 </html>`;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCronRunLogging('check-mentor-nda-expiry', async (req) => {
   const requestId = generateRequestId();
   const log = createLogger(FUNCTION_NAME, requestId);
   if (req.method === 'OPTIONS') return handleCorsOptions(req);
@@ -158,4 +159,4 @@ Deno.serve(async (req) => {
     log.error('fatal', e);
     return corsJsonResponse({ error: e instanceof Error ? e.message : 'Unknown' }, req, 500);
   }
-});
+}));

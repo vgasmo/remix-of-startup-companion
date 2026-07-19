@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions } from "../_shared/cors.ts";
 import { requireCronOrStaff } from "../_shared/security.ts";
+import { withCronRunLogging } from '../_shared/cronRun.ts';
 
 /**
  * Helper to send Teams notification for health alerts (non-blocking)
@@ -109,7 +110,7 @@ function getHealthLabel(score: number, thresholds: HealthModel["thresholds_json"
   return "critical";
 }
 
-serve(async (req) => {
+serve(withCronRunLogging('recompute-health-scores', async (req) => {
   if (req.method === "OPTIONS") {
     return handleCorsOptions(req);
   }
@@ -638,4 +639,4 @@ serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}));

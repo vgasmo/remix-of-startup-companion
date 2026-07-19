@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { requireCronSecret, generateRequestId, createLogger } from '../_shared/security.ts';
+import { withCronRunLogging } from '../_shared/cronRun.ts';
 
 const FUNCTION_NAME = 'send-email-digest';
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
@@ -58,7 +59,7 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (char) => htmlEntities[char] || char);
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCronRunLogging('send-email-digest', async (req) => {
   const requestId = generateRequestId();
   const log = createLogger(FUNCTION_NAME, requestId);
 
@@ -204,7 +205,7 @@ Deno.serve(async (req) => {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return corsJsonResponse({ error: message, code: 'INTERNAL_ERROR' }, req, 500);
   }
-});
+}));
 
 function buildDigestEmail(data: DigestData): string {
   const s = STRINGS[data.locale];

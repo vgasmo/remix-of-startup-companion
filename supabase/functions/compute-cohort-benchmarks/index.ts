@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from "../_shared/cors.ts";
 import { requireCronOrGovernance } from "../_shared/security.ts";
+import { withCronRunLogging } from '../_shared/cronRun.ts';
 
 /**
  * compute-cohort-benchmarks
@@ -22,7 +23,7 @@ function percentile(sorted: number[], p: number): number | null {
   return sorted[lo] + (sorted[hi] - sorted[lo]) * (rank - lo);
 }
 
-serve(async (req) => {
+serve(withCronRunLogging('compute-cohort-benchmarks', async (req) => {
   if (req.method === 'OPTIONS') return handleCorsOptions(req);
 
   try {
@@ -158,4 +159,4 @@ serve(async (req) => {
     console.error('[compute-cohort-benchmarks] error', err);
     return corsJsonResponse({ error: err?.message || 'Failed' }, req, 500);
   }
-});
+}));

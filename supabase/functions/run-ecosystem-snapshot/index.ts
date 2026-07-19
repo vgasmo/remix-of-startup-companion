@@ -14,6 +14,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { requireCronOrGovernance, createLogger, generateRequestId } from '../_shared/security.ts';
+import { withCronRunLogging } from '../_shared/cronRun.ts';
 
 const FUNCTION_NAME = 'run-ecosystem-snapshot';
 
@@ -34,7 +35,7 @@ const SNAPSHOT_DOMAINS: { name: string; table: string; safe?: boolean }[] = [
   { name: 'programs', table: 'programs' },
 ];
 
-Deno.serve(async (req) => {
+Deno.serve(withCronRunLogging('run-ecosystem-snapshot', async (req) => {
   const requestId = generateRequestId();
   const log = createLogger(FUNCTION_NAME, requestId);
 
@@ -262,4 +263,4 @@ Deno.serve(async (req) => {
       error: errorMsg.slice(0, 200),
     }, req, 500);
   }
-});
+}));

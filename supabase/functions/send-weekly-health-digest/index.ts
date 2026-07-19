@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@4.0.0";
 import { requireCronSecret } from "../_shared/security.ts";
 import { resolveLocalesByUserIds, type Locale } from "../_shared/i18n.ts";
+import { withCronRunLogging } from '../_shared/cronRun.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -46,7 +47,7 @@ const STRINGS = {
   },
 } as const;
 
-serve(async (req) => {
+serve(withCronRunLogging('send-weekly-health-digest', async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const cronAuth = requireCronSecret(req);
@@ -235,4 +236,4 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
-});
+}));

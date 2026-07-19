@@ -15,6 +15,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { requireCronOrGovernance, createLogger, generateRequestId } from '../_shared/security.ts';
 import { getGraphCredentials, getGraphAccessToken, callGraphWithRetry } from '../_shared/graphAuth.ts';
+import { withCronRunLogging } from '../_shared/cronRun.ts';
 
 const FUNCTION_NAME = 'archive-contracts-to-sharepoint';
 const MAX_ATTEMPTS = 5;
@@ -27,7 +28,7 @@ interface ArchiveResult {
   archiveUrl?: string;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCronRunLogging('archive-contracts-to-sharepoint', async (req) => {
   const requestId = generateRequestId();
   const log = createLogger(FUNCTION_NAME, requestId);
 
@@ -139,7 +140,7 @@ Deno.serve(async (req) => {
     log.error('Fatal error in archive job', error);
     return corsJsonResponse({ error: 'Internal error', archived: 0, failed: 0 }, req, 500);
   }
-});
+}));
 
 async function archiveContract(
   supabase: any,

@@ -20,6 +20,7 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { createLogger, generateRequestId, safeErrorMessage } from '../_shared/security.ts';
+import { withCronRunLogging } from '../_shared/cronRun.ts';
 
 const FUNCTION_NAME = 'sync-outlook-emails';
 
@@ -575,7 +576,7 @@ async function syncConsultantEmails(
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCronRunLogging('sync-outlook-emails', async (req) => {
   if (req.method === 'OPTIONS') {
     return handleCorsOptions(req);
   }
@@ -810,4 +811,4 @@ Deno.serve(async (req) => {
     log.error('Sync error', err);
     return corsJsonResponse({ error: safeErrorMessage(err) }, req, 500);
   }
-});
+}));
