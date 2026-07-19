@@ -56,11 +56,12 @@ async function wasAlreadyRun(
   return (count ?? 0) > 0
 }
 
-// Record that automation was run
+// Record that automation was run. Throws on DB error so callers do not
+// increment success counters for a write that never landed (F1).
 async function recordRun(
   supabase: any, type: string, entityId: string | null, entityType: string, userId: string, today: string, channel: string
 ) {
-  await supabase.from('automation_runs').insert({
+  const { error } = await supabase.from('automation_runs').insert({
     automation_type: type,
     entity_id: entityId,
     entity_type: entityType,
@@ -68,13 +69,15 @@ async function recordRun(
     run_date: today,
     channel,
   })
+  if (error) throw new Error(`recordRun(${type}): ${error.message}`)
 }
 
-// Create in-app notification
+// Create in-app notification. Throws on DB error so callers do not increment
+// success counters for a write that never landed (F1).
 async function notify(
   supabase: any, userId: string, type: string, title: string, message: string, link?: string, entityType?: string, entityId?: string
 ) {
-  await supabase.from('notifications').insert({
+  const { error } = await supabase.from('notifications').insert({
     user_id: userId,
     type,
     title,
@@ -84,6 +87,7 @@ async function notify(
     entity_type: entityType || null,
     entity_id: entityId || null,
   })
+  if (error) throw new Error(`notify(${type}): ${error.message}`)
 }
 
 // Get staff user IDs (admin + consultor)
