@@ -351,10 +351,15 @@ serve(async (req) => {
         // Best-effort staff alert so backoffice notices routing gaps.
         try {
           await supabase.from('system_alerts').insert({
-            alert_type: 'first_contact_no_route',
+            kind: 'first_contact_no_route',
             severity: 'high',
-            message: `Public booking failed to resolve a consultant (${e.reason}).`,
-            metadata: { reason: e.reason, trace: e.trace, contact_email: contact.email },
+            dedupe_key: `first_contact_no_route:${e.reason}:${contact.email}`,
+            payload: {
+              reason: e.reason,
+              trace: e.trace,
+              contact_email: contact.email,
+              message: `Public booking failed to resolve a consultant (${e.reason}).`,
+            },
           });
         } catch { /* system_alerts is best-effort */ }
         return corsJsonResponse({
