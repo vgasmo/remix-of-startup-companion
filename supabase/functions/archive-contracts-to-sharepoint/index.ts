@@ -275,7 +275,7 @@ async function archiveContract(
       .update({
         archive_status: 'failed',
         last_archive_error: errorMsg.slice(0, 500),
-      ))
+      })
       .eq('id', contractId);
 
     return { contractId, success: false, error: errorMsg };
