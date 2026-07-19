@@ -205,7 +205,7 @@ Deno.serve(withCronRunLogging('send-email-digest', async (req) => {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return corsJsonResponse({ error: message, code: 'INTERNAL_ERROR' }, req, 500);
   }
-));
+}));
 
 function buildDigestEmail(data: DigestData): string {
   const s = STRINGS[data.locale];

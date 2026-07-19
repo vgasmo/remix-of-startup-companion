@@ -140,7 +140,7 @@ Deno.serve(withCronRunLogging('archive-contracts-to-sharepoint', async (req) => 
     log.error('Fatal error in archive job', error);
     return corsJsonResponse({ error: 'Internal error', archived: 0, failed: 0 }, req, 500);
   }
-});
+}));
 
 async function archiveContract(
   supabase: any,
