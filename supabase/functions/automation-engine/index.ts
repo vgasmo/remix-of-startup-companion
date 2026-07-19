@@ -56,11 +56,12 @@ async function wasAlreadyRun(
   return (count ?? 0) > 0
 }
 
-// Record that automation was run
+// Record that automation was run. Throws on DB error so callers do not
+// increment success counters for a write that never landed (F1).
 async function recordRun(
   supabase: any, type: string, entityId: string | null, entityType: string, userId: string, today: string, channel: string
 ) {
-  await supabase.from('automation_runs').insert({
+  const { error } = await supabase.from('automation_runs').insert({
     automation_type: type,
     entity_id: entityId,
     entity_type: entityType,
@@ -68,13 +69,15 @@ async function recordRun(
     run_date: today,
     channel,
   })
+  if (error) throw new Error(`recordRun(${type}): ${error.message}`)
 }
 
-// Create in-app notification
+// Create in-app notification. Throws on DB error so callers do not increment
+// success counters for a write that never landed (F1).
 async function notify(
   supabase: any, userId: string, type: string, title: string, message: string, link?: string, entityType?: string, entityId?: string
 ) {
-  await supabase.from('notifications').insert({
+  const { error } = await supabase.from('notifications').insert({
     user_id: userId,
     type,
     title,
@@ -84,6 +87,7 @@ async function notify(
     entity_type: entityType || null,
     entity_id: entityId || null,
   })
+  if (error) throw new Error(`notify(${type}): ${error.message}`)
 }
 
 // Get staff user IDs (admin + consultor)
@@ -180,10 +184,11 @@ Deno.serve(async (req) => {
 
             const email = await getUserEmail(supabase, staffId)
             if (email) {
-              await sendEmail(email,
+              if (await sendEmail(email,
                 `[Startup Leiria] Desconto ${startupName} expira em ${daysLeft} dias`,
-                `<p>O desconto de ${d.discount_percentage}% da <strong>${startupName}</strong> expira em <strong>${daysLeft} dias</strong> (${d.end_date}).</p><p><a href="${SITE_URL}/workspace/${(d as any).contract?.workspace_id}?tab=contract">Ver contrato</a></p>`)
-              result.emails++
+                `<p>O desconto de ${d.discount_percentage}% da <strong>${startupName}</strong> expira em <strong>${daysLeft} dias</strong> (${d.end_date}).</p><p><a href="${SITE_URL}/workspace/${(d as any).contract?.workspace_id}?tab=contract">Ver contrato</a></p>`)) {
+                result.emails++
+              }
             }
           }
         }
@@ -225,10 +230,11 @@ Deno.serve(async (req) => {
 
             const email = await getUserEmail(supabase, staffId)
             if (email) {
-              await sendEmail(email,
+              if (await sendEmail(email,
                 `[Startup Leiria] ${startupName} — ${years}º aniversário de contrato`,
-                `<p>Hoje a <strong>${startupName}</strong> celebra <strong>${years} ano(s)</strong> de contrato no ecossistema.</p><p><a href="${SITE_URL}/workspace/${c.workspace_id}?tab=contract">Ver contrato</a></p>`)
-              result.emails++
+                `<p>Hoje a <strong>${startupName}</strong> celebra <strong>${years} ano(s)</strong> de contrato no ecossistema.</p><p><a href="${SITE_URL}/workspace/${c.workspace_id}?tab=contract">Ver contrato</a></p>`)) {
+                result.emails++
+              }
             }
           }
         }
@@ -276,10 +282,11 @@ Deno.serve(async (req) => {
 
               const email = await getUserEmail(supabase, wu.user_id)
               if (email) {
-                await sendEmail(email,
+                if (await sendEmail(email,
                   `[Startup Leiria] Sentimos a tua falta!`,
-                  `<p>Olá! Não registámos atividade na <strong>${startupName}</strong> há mais de 30 dias.</p><p>Precisas de ajuda ou tens alguma questão? A equipa de consultores está disponível.</p><p><a href="${SITE_URL}/workspace/${ws.id}">Aceder ao workspace</a></p>`)
-                result.emails++
+                  `<p>Olá! Não registámos atividade na <strong>${startupName}</strong> há mais de 30 dias.</p><p>Precisas de ajuda ou tens alguma questão? A equipa de consultores está disponível.</p><p><a href="${SITE_URL}/workspace/${ws.id}">Aceder ao workspace</a></p>`)) {
+                  result.emails++
+                }
               }
             }
 
@@ -302,10 +309,11 @@ Deno.serve(async (req) => {
 
               const email = await getUserEmail(supabase, c.user_id)
               if (email) {
-                await sendEmail(email,
+                if (await sendEmail(email,
                   `[Startup Leiria] Founder inativo — ${startupName}`,
-                  `<p>O founder da <strong>${startupName}</strong> não tem atividade registada há mais de 30 dias.</p><p><a href="${SITE_URL}/workspace/${ws.id}">Ver workspace</a></p>`)
-                result.emails++
+                  `<p>O founder da <strong>${startupName}</strong> não tem atividade registada há mais de 30 dias.</p><p><a href="${SITE_URL}/workspace/${ws.id}">Ver workspace</a></p>`)) {
+                  result.emails++
+                }
               }
             }
           }
@@ -347,10 +355,11 @@ Deno.serve(async (req) => {
 
             const email = await getUserEmail(supabase, m.user_id)
             if (email) {
-              await sendEmail(email,
+              if (await sendEmail(email,
                 `[Startup Leiria] Contrato ${startupName} expira em ${daysLeft} dias`,
-                `<p>O contrato da <strong>${startupName}</strong> expira em <strong>${daysLeft} dias</strong> (${c.end_date}).</p><p><a href="${SITE_URL}/workspace/${c.workspace_id}?tab=contract">Ver contrato</a></p>`)
-              result.emails++
+                `<p>O contrato da <strong>${startupName}</strong> expira em <strong>${daysLeft} dias</strong> (${c.end_date}).</p><p><a href="${SITE_URL}/workspace/${c.workspace_id}?tab=contract">Ver contrato</a></p>`)) {
+                result.emails++
+              }
             }
           }
         }
@@ -426,10 +435,11 @@ Deno.serve(async (req) => {
 
             const email = await getUserEmail(supabase, m.user_id)
             if (email) {
-              await sendEmail(email,
+              if (await sendEmail(email,
                 `[Startup Leiria] KPIs desatualizados — ${startupName}`,
-                `<p>A <strong>${startupName}</strong> não tem dados de KPIs registados nos últimos 2 meses.</p><p><a href="${SITE_URL}/workspace/${ws.id}?tab=kpis">Atualizar KPIs</a></p>`)
-              result.emails++
+                `<p>A <strong>${startupName}</strong> não tem dados de KPIs registados nos últimos 2 meses.</p><p><a href="${SITE_URL}/workspace/${ws.id}?tab=kpis">Atualizar KPIs</a></p>`)) {
+                result.emails++
+              }
             }
           }
         }
@@ -526,10 +536,11 @@ Deno.serve(async (req) => {
 
             const email = await getUserEmail(supabase, adminId)
             if (email) {
-              await sendEmail(email,
+              if (await sendEmail(email,
                 `[Startup Leiria] Conta por aprovar — ${p.full_name || p.email}`,
-                `<p>O utilizador <strong>${p.full_name || p.email}</strong> aguarda aprovação da conta há mais de 48 horas.</p><p><a href="${SITE_URL}/admin?tab=users">Gerir utilizadores</a></p>`)
-              result.emails++
+                `<p>O utilizador <strong>${p.full_name || p.email}</strong> aguarda aprovação da conta há mais de 48 horas.</p><p><a href="${SITE_URL}/admin?tab=users">Gerir utilizadores</a></p>`)) {
+                result.emails++
+              }
             }
           }
         }
@@ -564,10 +575,11 @@ Deno.serve(async (req) => {
 
               const email = await getUserEmail(supabase, intake.assigned_to)
               if (email) {
-                await sendEmail(email,
+                if (await sendEmail(email,
                   `[Startup Leiria] Intake incompleto — ${intake.organization_name || 'Processo'}`,
-                  `<p>O intake de <strong>${intake.organization_name || 'um processo'}</strong> está pendente há mais de 7 dias.</p><p><a href="${SITE_URL}/admin?tab=contracts">Ver intakes</a></p>`)
-                result.emails++
+                  `<p>O intake de <strong>${intake.organization_name || 'um processo'}</strong> está pendente há mais de 7 dias.</p><p><a href="${SITE_URL}/admin?tab=contracts">Ver intakes</a></p>`)) {
+                  result.emails++
+                }
               }
             }
           }
