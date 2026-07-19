@@ -130,6 +130,7 @@ Deno.serve(withCronRunLogging('check-mentor-nda-expiry', async (req) => {
       .in('id', targetIds);
 
     let warned = 0;
+    let skipped_duplicate = 0;
     for (const p of (profiles ?? []) as any[]) {
       if (!p.email) continue;
       const latest = latestByUser.get(p.id)!;
@@ -139,6 +140,21 @@ Deno.serve(withCronRunLogging('check-mentor-nda-expiry', async (req) => {
       const s = T[locale];
       if (!RESEND_API_KEY) {
         log.warn('resend_missing');
+        continue;
+      }
+      // Idempotency: one warning per (user, nda_version, expiry-day bucket).
+      // A retried cron on the same day will hit the unique constraint and skip.
+      const expiryDayBucket = Math.floor((now + daysLeft * 86_400_000) / 86_400_000);
+      const businessKey = `mentor_nda_warning:${p.id}:${latest.nda_version}:${expiryDayBucket}`;
+      const claim = await claimLedgerKey(supabase, {
+        businessKey,
+        channel: 'email',
+        subjectKind: 'mentor_nda_warning',
+        metadata: { user_id: p.id, nda_version: latest.nda_version, days_left: daysLeft },
+      });
+      if (!claim.claimed) {
+        if (claim.reason === 'already_delivered') skipped_duplicate++;
+        else log.warn('ledger_claim_failed', { error: claim.error });
         continue;
       }
       const res = await fetch('https://api.resend.com/emails', {
@@ -151,11 +167,20 @@ Deno.serve(withCronRunLogging('check-mentor-nda-expiry', async (req) => {
           html: render(locale, p.full_name || (locale === 'pt' ? 'Mentor' : 'Mentor'), daysLeft),
         }),
       });
-      if (res.ok) warned++;
-      else log.warn('resend_fail', { status: res.status });
+      if (res.ok) {
+        warned++;
+        try {
+          const body = await res.clone().json();
+          await stampLedgerDelivery(supabase, businessKey, body?.id ?? null);
+        } catch { /* provider id optional */ }
+      } else {
+        log.warn('resend_fail', { status: res.status });
+        // Roll back the claim so a future run can retry.
+        await releaseLedgerKey(supabase, businessKey);
+      }
     }
 
-    return corsJsonResponse({ success: true, warned }, req);
+    return corsJsonResponse({ success: true, warned, skipped_duplicate }, req);
   } catch (e) {
     log.error('fatal', e);
     return corsJsonResponse({ error: e instanceof Error ? e.message : 'Unknown' }, req, 500);
