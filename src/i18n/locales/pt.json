@@ -1431,7 +1431,8 @@
       "exportCron": "Exportar execuções cron (CSV)",
       "cronFailures24h": "Falhas cron (24h)",
       "automations": "Automações",
-      "noCronRuns": "Sem execuções cron registadas"
+      "noCronRuns": "Sem execuções cron registadas",
+      "unknownState": "Estado desconhecido — não foi possível obter dados"
     },
     "tags": {
       "addCategory": "Adicionar Categoria",
