@@ -104,5 +104,35 @@ SELECT is(
 SELECT col_not_null('public', 'action_items', 'workspace_id', 'action_items.workspace_id is NOT NULL');
 SELECT col_not_null('public', 'invoices', 'workspace_id', 'invoices.workspace_id is NOT NULL');
 
+-- ============================================================
+-- Gate 5: session_transcripts tiered confidentiality (T1)
+-- ============================================================
+
+SELECT has_table('public', 'session_transcripts', 'session_transcripts table exists');
+SELECT row_eq(
+  $$SELECT relrowsecurity FROM pg_class WHERE relname = 'session_transcripts'$$,
+  ROW(true),
+  'RLS is enabled on session_transcripts'
+);
+
+-- Confidentiality CHECK constraint restricts to allowed tiers
+SELECT is(
+  (SELECT count(*)::int FROM public.session_transcripts
+   WHERE confidentiality NOT IN ('staff_only','workspace','founder_only')),
+  0,
+  'No session_transcripts row has an illegal confidentiality tier'
+);
+
+-- Containment column exists (fail-closed marker)
+SELECT has_column('public', 'session_transcripts', 'pending_confidentiality_review',
+  'session_transcripts.pending_confidentiality_review exists');
+
+-- Audit table exists and is content-free (no transcript body columns)
+SELECT has_table('public', 'transcript_containment_audit', 'transcript_containment_audit exists');
+SELECT hasnt_column('public', 'transcript_containment_audit', 'content',
+  'transcript_containment_audit does not store transcript content');
+SELECT hasnt_column('public', 'transcript_containment_audit', 'body',
+  'transcript_containment_audit does not store transcript body');
+
 SELECT * FROM finish();
 ROLLBACK;
