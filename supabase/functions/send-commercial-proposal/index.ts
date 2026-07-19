@@ -27,6 +27,15 @@ const SUPPORT_MATERIALS_BUCKET = 'support-materials';
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
 const FOLLOWUP_DAYS = 7;
 
+async function sha256Hex(input: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+
+
 function escapeHtml(text: string): string {
   const entities: Record<string, string> = {
     '&': '&amp;',
