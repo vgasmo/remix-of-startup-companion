@@ -159,4 +159,4 @@ Deno.serve(withCronRunLogging('check-mentor-nda-expiry', async (req) => {
     log.error('fatal', e);
     return corsJsonResponse({ error: e instanceof Error ? e.message : 'Unknown' }, req, 500);
   }
-));
+}));

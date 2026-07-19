@@ -159,4 +159,4 @@ serve(withCronRunLogging('compute-cohort-benchmarks', async (req) => {
     console.error('[compute-cohort-benchmarks] error', err);
     return corsJsonResponse({ error: err?.message || 'Failed' }, req, 500);
   }
-));
+}));

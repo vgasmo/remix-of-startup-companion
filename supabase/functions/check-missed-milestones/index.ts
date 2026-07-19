@@ -215,4 +215,4 @@ Deno.serve(withCronRunLogging('check-missed-milestones', async (req) => {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return corsJsonResponse({ error: message, code: 'INTERNAL_ERROR' }, req, 500);
   }
-));
+}));

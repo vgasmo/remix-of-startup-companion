@@ -811,4 +811,4 @@ Deno.serve(withCronRunLogging('sync-outlook-emails', async (req) => {
     log.error('Sync error', err);
     return corsJsonResponse({ error: safeErrorMessage(err) }, req, 500);
   }
-));
+}));

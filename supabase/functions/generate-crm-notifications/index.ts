@@ -223,4 +223,4 @@ Deno.serve(withCronRunLogging('generate-crm-notifications', async (req) => {
     console.error('Error generating CRM notifications:', error);
     return corsJsonResponse({ error: message }, req, 500);
   }
-));
+}));

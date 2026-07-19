@@ -263,4 +263,4 @@ Deno.serve(withCronRunLogging('run-ecosystem-snapshot', async (req) => {
       error: errorMsg.slice(0, 200),
     }, req, 500);
   }
-));
+}));
