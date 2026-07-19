@@ -100,6 +100,21 @@ These are the items from the release-lead brief that this agent turn cannot clos
 - `supabase/migrations/<new>__rc5_transcript_containment.sql` — see migration description.
 - `docs/rc5/p0-report.md` — this file, replacing the previous stale ledger.
 
+## I1 — Mentor booking idempotency (closed)
+
+Migration `20260719_mentor_booking_idempotency` landed:
+
+- `mentor_bookings.idempotency_key text` (nullable).
+- Partial unique index `mentor_bookings_idempotency_key_uidx (founder_id, idempotency_key) WHERE idempotency_key IS NOT NULL` — the same key from the same founder can never produce two rows.
+- Partial unique index `mentor_bookings_active_slot_uidx (mentor_id, founder_id, requested_date, requested_start_time) WHERE status IN ('pending','accepted')` — same founder cannot double-book the same slot with the same mentor while the previous booking is still live.
+- RPC `create_mentor_booking_idempotent(mentor, workspace, date, start, end, message, idempotency_key)` — SECURITY INVOKER, pinned `search_path=public`, `EXECUTE` granted to `authenticated` only, revoked from `anon`/`PUBLIC`. Requires a client key ≥ 8 chars, returns the winning row on both fast-path (matching key), slot-dedupe (matching active slot), and race (`unique_violation` caught → SELECT winner).
+
+Client: `useCreateBooking` in `src/hooks/useMentorAvailability.ts` no longer inserts directly — it generates a `crypto.randomUUID()` per submission and calls the RPC. Double-clicks / retries / racing tabs converge to the same booking row; the existing DB trigger `trg_notify_mentor_booking_change` still emits the mentor notification once per real insert.
+
+Typecheck: `bunx tsgo --noEmit` exit 0.
+
+
+
 ## Rollback
 
 Content-free rollback for the containment migration:
