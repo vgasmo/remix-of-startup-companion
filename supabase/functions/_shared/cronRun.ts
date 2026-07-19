@@ -105,3 +105,79 @@ export async function recordCronRun(
     result.errorCode,
   );
 }
+
+/**
+ * Wrap a Deno.serve/serve handler to automatically log a cron_job_runs row on
+ * every non-OPTIONS invocation. Status is inferred from the HTTP response:
+ *   - 2xx  → 'ok'  (unless response JSON contains {status:'partial'|'failed'})
+ *   - 4xx  → 'skipped' (client/auth failure — not the job's fault)
+ *   - 5xx  → 'failed'
+ * Thrown errors are re-thrown after being logged as 'failed'.
+ *
+ * The helper reads the response body via clone(), so the original response is
+ * still returned to the caller untouched.
+ */
+export function withCronRunLogging(
+  jobName: string,
+  handler: (req: Request) => Promise<Response>,
+): (req: Request) => Promise<Response> {
+  return async (req: Request): Promise<Response> => {
+    if (req.method === 'OPTIONS') return handler(req);
+
+    const requestId = crypto.randomUUID();
+    const triggeredBy: 'cron' | 'manual' = req.headers.get('x-cron-secret') ? 'cron' : 'manual';
+    const started = Date.now();
+
+    try {
+      const resp = await handler(req);
+      let status: CronRunStatus = 'ok';
+      let errorSummary: string | undefined;
+      let details: Record<string, unknown> = { http_status: resp.status };
+
+      if (resp.status >= 500) {
+        status = 'failed';
+      } else if (resp.status >= 400) {
+        status = 'skipped';
+      }
+
+      try {
+        const cloned = resp.clone();
+        const ct = cloned.headers.get('content-type') ?? '';
+        if (ct.includes('application/json')) {
+          const body = await cloned.json();
+          if (body && typeof body === 'object') {
+            if (body.status === 'partial' || body.status === 'failed' || body.status === 'ok') {
+              status = body.status;
+            } else if (body.success === false && status === 'ok') {
+              status = 'failed';
+            }
+            if (typeof body.error === 'string') errorSummary = body.error;
+            details = { ...details, ...(body as Record<string, unknown>) };
+          }
+        }
+      } catch {
+        /* body already consumed or not JSON — ignore */
+      }
+
+      await writeRun(
+        { jobName, requestId, triggeredBy },
+        status,
+        Date.now() - started,
+        details,
+        errorSummary,
+      );
+      return resp;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      await writeRun(
+        { jobName, requestId, triggeredBy },
+        'failed',
+        Date.now() - started,
+        { stage: 'unhandled_exception' },
+        msg,
+        'unhandled_exception',
+      );
+      throw err;
+    }
+  };
+}
