@@ -134,5 +134,144 @@ SELECT hasnt_column('public', 'transcript_containment_audit', 'content',
 SELECT hasnt_column('public', 'transcript_containment_audit', 'body',
   'transcript_containment_audit does not store transcript body');
 
+-- ============================================================
+-- Gate 6: session_transcripts RLS role×tier matrix (T1)
+--
+-- Seeds 6 personas (anon / founder-in-ws / founder-out-ws / mentor-no-nda /
+-- consultor / admin) and 3 transcript tiers (staff_only / workspace /
+-- founder_only), then simulates each authenticated persona via JWT claims and
+-- asserts the row count each may SELECT. Runs inside the outer transaction so
+-- all seeded rows are rolled back at the end.
+-- ============================================================
+
+-- ---- Seed fixtures ----
+DO $seed$
+DECLARE
+  v_admin uuid := '00000000-0000-0000-0000-0000000000a1';
+  v_consultor uuid := '00000000-0000-0000-0000-0000000000c1';
+  v_founder_in uuid := '00000000-0000-0000-0000-0000000000f1';
+  v_founder_out uuid := '00000000-0000-0000-0000-0000000000f2';
+  v_mentor uuid := '00000000-0000-0000-0000-0000000000e1';
+  v_ws uuid := '00000000-0000-0000-0000-0000000000b1';
+  v_session uuid := '00000000-0000-0000-0000-0000000000d1';
+BEGIN
+  -- auth.users (test-only; rolled back)
+  INSERT INTO auth.users(id, email, instance_id, aud, role)
+  SELECT u, u::text || '@t.invalid', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated'
+  FROM unnest(ARRAY[v_admin, v_consultor, v_founder_in, v_founder_out, v_mentor]) u
+  ON CONFLICT DO NOTHING;
+
+  INSERT INTO public.profiles(id, email, account_status)
+  SELECT u, u::text || '@t.invalid', 'approved'
+  FROM unnest(ARRAY[v_admin, v_consultor, v_founder_in, v_founder_out, v_mentor]) u
+  ON CONFLICT (id) DO UPDATE SET account_status = 'approved';
+
+  INSERT INTO public.user_roles(user_id, role) VALUES
+    (v_admin, 'admin'),
+    (v_consultor, 'consultor'),
+    (v_mentor, 'mentor_externo')
+  ON CONFLICT DO NOTHING;
+
+  INSERT INTO public.workspaces(id, name, status)
+  VALUES (v_ws, 'T1 Matrix Workspace', 'active')
+  ON CONFLICT (id) DO NOTHING;
+
+  INSERT INTO public.workspace_users(user_id, workspace_id, active)
+  VALUES (v_founder_in, v_ws, true)
+  ON CONFLICT DO NOTHING;
+
+  INSERT INTO public.sessions(id, workspace_id, title, scheduled_at)
+  VALUES (v_session, v_ws, 'T1 Matrix Session', now())
+  ON CONFLICT (id) DO NOTHING;
+
+  INSERT INTO public.session_transcripts(session_id, confidentiality, transcript_text) VALUES
+    (v_session, 'staff_only',    'staff tier'),
+    (v_session, 'workspace',     'ws tier'),
+    (v_session, 'founder_only',  'founder tier');
+END
+$seed$;
+
+-- Helper: switch to authenticated role with a given sub
+CREATE OR REPLACE FUNCTION pg_temp.as_user(_uid uuid) RETURNS void
+LANGUAGE plpgsql AS $$
+BEGIN
+  PERFORM set_config('role', 'authenticated', true);
+  PERFORM set_config('request.jwt.claims',
+    json_build_object('sub', _uid, 'role', 'authenticated')::text, true);
+  EXECUTE 'SET LOCAL ROLE authenticated';
+END $$;
+
+CREATE OR REPLACE FUNCTION pg_temp.as_anon() RETURNS void
+LANGUAGE plpgsql AS $$
+BEGIN
+  PERFORM set_config('request.jwt.claims', '', true);
+  EXECUTE 'SET LOCAL ROLE anon';
+END $$;
+
+CREATE OR REPLACE FUNCTION pg_temp.reset_role() RETURNS void
+LANGUAGE plpgsql AS $$ BEGIN EXECUTE 'RESET ROLE'; END $$;
+
+-- ---- Anon: sees zero transcripts (no policy grants anon) ----
+SELECT pg_temp.as_anon();
+SELECT is((SELECT count(*)::int FROM public.session_transcripts
+           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'), 0,
+  'anon sees 0 transcripts (fail-closed)');
+SELECT pg_temp.reset_role();
+
+-- ---- Admin: sees all 3 tiers ----
+SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000a1');
+SELECT is((SELECT count(*)::int FROM public.session_transcripts
+           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'), 3,
+  'admin sees all 3 transcript tiers');
+SELECT is((SELECT count(*)::int FROM public.session_transcripts
+           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'
+             AND confidentiality = 'staff_only'), 1,
+  'admin sees staff_only tier');
+SELECT is((SELECT count(*)::int FROM public.session_transcripts
+           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'
+             AND confidentiality = 'founder_only'), 1,
+  'admin sees founder_only tier');
+SELECT pg_temp.reset_role();
+
+-- ---- Consultor: sees all 3 tiers (staff bypass) ----
+SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+SELECT is((SELECT count(*)::int FROM public.session_transcripts
+           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'), 3,
+  'consultor sees all 3 transcript tiers (staff bypass)');
+SELECT pg_temp.reset_role();
+
+-- ---- Founder in workspace: sees ONLY workspace tier ----
+SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000f1');
+SELECT is((SELECT count(*)::int FROM public.session_transcripts
+           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'), 1,
+  'founder-in-ws sees exactly 1 transcript (workspace tier only)');
+SELECT is((SELECT count(*)::int FROM public.session_transcripts
+           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'
+             AND confidentiality = 'workspace'), 1,
+  'founder-in-ws sees workspace tier');
+SELECT is((SELECT count(*)::int FROM public.session_transcripts
+           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'
+             AND confidentiality = 'staff_only'), 0,
+  'founder-in-ws does NOT see staff_only tier');
+SELECT is((SELECT count(*)::int FROM public.session_transcripts
+           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'
+             AND confidentiality = 'founder_only'), 0,
+  'founder-in-ws does NOT see founder_only tier (fail-closed containment)');
+SELECT pg_temp.reset_role();
+
+-- ---- Founder out of workspace: sees zero ----
+SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000f2');
+SELECT is((SELECT count(*)::int FROM public.session_transcripts
+           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'), 0,
+  'founder-out-of-ws sees 0 transcripts');
+SELECT pg_temp.reset_role();
+
+-- ---- Mentor without NDA: sees zero even for workspace tier ----
+SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000e1');
+SELECT is((SELECT count(*)::int FROM public.session_transcripts
+           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'), 0,
+  'mentor without NDA sees 0 transcripts (NDA gate)');
+SELECT pg_temp.reset_role();
+
 SELECT * FROM finish();
 ROLLBACK;
