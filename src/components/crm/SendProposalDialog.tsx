@@ -141,6 +141,13 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
   const handleSend = async () => {
     if (!canSend) return;
     setSending(true);
+    // Stable idempotency key per dialog-send attempt. If the user retries the
+    // same click (network hiccup, double-tap) the edge function short-circuits
+    // via notification_ledger and returns duplicate=true instead of double-sending.
+    const idempotencyKey =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `${item.id}-${Date.now()}`;
     try {
       const { data, error } = await invokeWithAuth<{
         success: boolean;
@@ -154,6 +161,7 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
           body_text: bodyText.trim(),
           support_material_ids: Array.from(selectedIds),
           cc_owner: ccOwner,
+          idempotency_key: idempotencyKey,
         },
       });
       if (error) throw error;
