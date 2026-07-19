@@ -4768,6 +4768,39 @@ export type Database = {
           },
         ]
       }
+      notification_ledger: {
+        Row: {
+          business_key: string
+          channel: string
+          created_at: string
+          delivered_at: string
+          id: string
+          metadata: Json
+          provider_message_id: string | null
+          subject_kind: string
+        }
+        Insert: {
+          business_key: string
+          channel: string
+          created_at?: string
+          delivered_at?: string
+          id?: string
+          metadata?: Json
+          provider_message_id?: string | null
+          subject_kind: string
+        }
+        Update: {
+          business_key?: string
+          channel?: string
+          created_at?: string
+          delivered_at?: string
+          id?: string
+          metadata?: Json
+          provider_message_id?: string | null
+          subject_kind?: string
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           calendar_sync_enabled: boolean | null
