@@ -61,6 +61,7 @@ interface RequestBody {
   body_text: string;
   support_material_ids: string[];
   cc_owner?: boolean;
+  idempotency_key?: string;
 }
 
 function validateBody(raw: unknown): { valid: true; data: RequestBody } | { valid: false; error: string } {
