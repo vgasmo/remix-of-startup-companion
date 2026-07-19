@@ -1431,7 +1431,8 @@
       "exportCron": "Export cron runs (CSV)",
       "cronFailures24h": "Cron failures (24h)",
       "automations": "Automations",
-      "noCronRuns": "No cron runs recorded yet"
+      "noCronRuns": "No cron runs recorded yet",
+      "unknownState": "Unknown state — could not fetch data"
     },
     "tags": {
       "addCategory": "Add Category",
@@ -7352,6 +7353,8 @@
     }
   },
   "publicBooking": {
+    "unavailableTitle": "Availability unavailable",
+    "unavailableDesc": "We could not confirm available slots right now. The team has been alerted — please try again in a few minutes.",
     "recordingConsentLabel": "I authorise the recording and transcription of this meeting for support, internal records and service improvement (GDPR).",
     "recordingConsentRequired": "You must authorise recording and transcription to book.",
     "backToBook": "Back To Book",

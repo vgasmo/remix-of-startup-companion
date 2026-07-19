@@ -38,13 +38,16 @@ describe('BookingLinksManager — canonical link contracts', () => {
     );
   });
 
-  it('promote mutation flips is_canonical without nulling canonical_url', () => {
+  it('promote mutation delegates to atomic RPC and never nulls canonical_url', () => {
     const promoteBlock = SOURCE.split('setCanonical = useMutation')[1]?.split('});')[0] ?? '';
 
-    expect(promoteBlock).toContain(".update({ is_canonical: true })");
-    expect(promoteBlock).toContain(".update({ is_canonical: false })");
-    // A defensive check: no code path in the promote mutation clears the URL.
+    // Since B1 the promotion is atomic via a SECURITY DEFINER RPC, not two
+    // sequential UPDATEs that could leave zero or two canonical rows on error.
+    expect(promoteBlock).toContain("promote_booking_link_canonical");
+    // Defensive: no code path in the promote mutation clears the URL.
     expect(promoteBlock).not.toMatch(/canonical_url:\s*null/);
+    // Defensive: must not fall back to a raw multi-statement UPDATE path.
+    expect(promoteBlock).not.toMatch(/\.update\(\{\s*is_canonical:\s*false\s*\}\)/);
   });
 
   it('renders a disabled promote affordance for legacy rows (canonical_url = null)', () => {

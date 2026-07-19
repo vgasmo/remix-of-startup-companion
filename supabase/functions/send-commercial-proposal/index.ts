@@ -15,6 +15,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from 'npm:resend@4.0.0';
 import { requireCronOrStaff } from '../_shared/security.ts';
+import { claimLedgerKey, releaseLedgerKey, stampLedgerDelivery } from '../_shared/notificationLedger.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,6 +26,15 @@ const corsHeaders = {
 const SUPPORT_MATERIALS_BUCKET = 'support-materials';
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
 const FOLLOWUP_DAYS = 7;
+
+async function sha256Hex(input: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+
 
 function escapeHtml(text: string): string {
   const entities: Record<string, string> = {
@@ -61,6 +71,7 @@ interface RequestBody {
   body_text: string;
   support_material_ids: string[];
   cc_owner?: boolean;
+  idempotency_key?: string;
 }
 
 function validateBody(raw: unknown): { valid: true; data: RequestBody } | { valid: false; error: string } {
@@ -82,6 +93,11 @@ function validateBody(raw: unknown): { valid: true; data: RequestBody } | { vali
   const ids = Array.isArray(b.support_material_ids)
     ? b.support_material_ids.filter((x): x is string => typeof x === 'string')
     : [];
+  const idempotencyKey =
+    typeof b.idempotency_key === 'string' &&
+    /^[a-zA-Z0-9-]{8,64}$/.test(b.idempotency_key)
+      ? b.idempotency_key
+      : undefined;
   return {
     valid: true,
     data: {
@@ -91,6 +107,7 @@ function validateBody(raw: unknown): { valid: true; data: RequestBody } | { vali
       body_text: bodyText,
       support_material_ids: ids.slice(0, 20),
       cc_owner: b.cc_owner === true,
+      idempotency_key: idempotencyKey,
     },
   };
 }
@@ -283,6 +300,35 @@ Deno.serve(async (req) => {
       programName,
     });
 
+    // Idempotency claim BEFORE Resend send. Uses the client-supplied
+    // idempotency_key when present; otherwise derives a stable key from
+    // (funnel_item, sender, subject, body). A retried request within the
+    // same content window hits the unique constraint and short-circuits.
+    const derivedKey = await sha256Hex(
+      `${item.id}|${senderUserId}|${body.subject}|${body.body_text}`,
+    );
+    const businessKey = `commercial_proposal:${item.id}:${
+      body.idempotency_key ?? derivedKey.slice(0, 32)
+    }`;
+    const claim = await claimLedgerKey(admin, {
+      businessKey,
+      channel: 'email',
+      subjectKind: 'commercial_proposal',
+      metadata: { funnel_item_id: item.id, sender: senderUserId, subject: body.subject },
+    });
+    if (!claim.claimed) {
+      if (claim.reason === 'already_delivered') {
+        return new Response(
+          JSON.stringify({ ok: true, duplicate: true, business_key: businessKey }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        );
+      }
+      return new Response(
+        JSON.stringify({ error: 'ledger_unavailable', details: claim.error }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
     const toList = [item.contact_email];
     const cc = body.cc_owner && senderEmail ? [senderEmail] : undefined;
@@ -298,11 +344,16 @@ Deno.serve(async (req) => {
 
     if (emailErr) {
       console.error('[send-commercial-proposal] Resend error', emailErr);
+      // Roll back ledger claim so a future retry is allowed.
+      await releaseLedgerKey(admin, businessKey);
       return new Response(
         JSON.stringify({ error: 'Failed to send email', details: emailErr }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
+
+    await stampLedgerDelivery(admin, businessKey, emailResult?.id ?? null);
+
 
     const nowIso = new Date().toISOString();
 
