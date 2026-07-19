@@ -291,6 +291,35 @@ Deno.serve(async (req) => {
       programName,
     });
 
+    // Idempotency claim BEFORE Resend send. Uses the client-supplied
+    // idempotency_key when present; otherwise derives a stable key from
+    // (funnel_item, sender, subject, body). A retried request within the
+    // same content window hits the unique constraint and short-circuits.
+    const derivedKey = await sha256Hex(
+      `${item.id}|${senderUserId}|${body.subject}|${body.body_text}`,
+    );
+    const businessKey = `commercial_proposal:${item.id}:${
+      body.idempotency_key ?? derivedKey.slice(0, 32)
+    }`;
+    const claim = await claimLedgerKey(admin, {
+      businessKey,
+      channel: 'email',
+      subjectKind: 'commercial_proposal',
+      metadata: { funnel_item_id: item.id, sender: senderUserId, subject: body.subject },
+    });
+    if (!claim.claimed) {
+      if (claim.reason === 'already_delivered') {
+        return new Response(
+          JSON.stringify({ ok: true, duplicate: true, business_key: businessKey }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        );
+      }
+      return new Response(
+        JSON.stringify({ error: 'ledger_unavailable', details: claim.error }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
     const toList = [item.contact_email];
     const cc = body.cc_owner && senderEmail ? [senderEmail] : undefined;
@@ -306,11 +335,16 @@ Deno.serve(async (req) => {
 
     if (emailErr) {
       console.error('[send-commercial-proposal] Resend error', emailErr);
+      // Roll back ledger claim so a future retry is allowed.
+      await releaseLedgerKey(admin, businessKey);
       return new Response(
         JSON.stringify({ error: 'Failed to send email', details: emailErr }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
+
+    await stampLedgerDelivery(admin, businessKey, emailResult?.id ?? null);
+
 
     const nowIso = new Date().toISOString();
 
