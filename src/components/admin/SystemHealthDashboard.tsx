@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Activity, TrendingUp, Bug, Zap, Download } from 'lucide-react';
+import { AlertTriangle, Activity, TrendingUp, Bug, Zap, Download, HelpCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { DownloadHtmlReportButton } from '@/components/shared/DownloadHtmlReportButton';
