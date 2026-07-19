@@ -319,11 +319,15 @@ Deno.serve(async (req) => {
         // Notify founders + assigned consultant that the contract is signed & activated.
         if (contract.workspace_id) {
           try {
+            const cronSecret = Deno.env.get('CRON_SECRET') ?? ''
+            const invokeOpts = { headers: { 'x-cron-secret': cronSecret } }
             await supabase.functions.invoke('send-notification-email', {
               body: { type: 'contract_signed', workspace_id: contract.workspace_id, contract_id: contract.id },
+              ...invokeOpts,
             })
             await supabase.functions.invoke('send-notification-email', {
               body: { type: 'contract_activated', workspace_id: contract.workspace_id, contract_id: contract.id },
+              ...invokeOpts,
             })
           } catch (e) {
             console.warn('pandadoc-webhook: contract_signed/activated notification failed', String(e))

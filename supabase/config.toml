@@ -87,6 +87,19 @@ verify_jwt = false
 [functions.test-graph-api]
 verify_jwt = false
 
+# Signature provider webhooks — HMAC validated at runtime, no Supabase JWT.
+[functions.docusign-webhook]
+verify_jwt = false
+
+[functions.pandadoc-webhook]
+verify_jwt = false
+
+# Cron sweep — cron secret validated at runtime.
+[functions.sweep-session-transcripts]
+verify_jwt = false
+
+
+
 # ============================================
 # PUBLIC FUNCTIONS (Token-based auth)
 # No JWT - uses token/secret validation internally

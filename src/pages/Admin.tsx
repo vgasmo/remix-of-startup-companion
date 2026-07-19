@@ -55,7 +55,6 @@ const ADMIN_ONLY_TABS = new Set([
   'data-quality',
   'system-health',
   'enrollment',
-  'backoffice',
   'announcements',
   'compliance',
   'health',
@@ -63,9 +62,13 @@ const ADMIN_ONLY_TABS = new Set([
   'template-requests',
 ]);
 
+// Tabs that require any staff role (admin, consultor, backoffice) but not
+// admin-only. `backoffice` (contracts / pricing / spaces) is one of those:
+// backoffice operators need it, admins too. Consultants stay locked out.
+const STAFF_ONLY_TABS = new Set(['backoffice']);
+
 const TAB_GROUPS_BASE: Record<string, string[]> = {
   operations: ['approvals', 'enrollment', 'backoffice', 'announcements'],
-  // CRM is accessed directly via /crm (no inline tab)
   programs: ['programs-setup', 'kpis', 'templates', 'template-requests', 'support-materials', 'surveys'],
   reports: ['analytics', 'health', 'compliance', 'data-quality', 'system-health'],
   users: ['users', 'mentors'],
@@ -73,17 +76,22 @@ const TAB_GROUPS_BASE: Record<string, string[]> = {
 
 export default function Admin() {
   const { t } = useTranslation();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isBackoffice } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const TAB_GROUPS = useMemo(() => {
     const filtered: Record<string, string[]> = {};
     for (const [group, tabs] of Object.entries(TAB_GROUPS_BASE)) {
-      const visibleTabs = tabs.filter(tab => isAdmin || !ADMIN_ONLY_TABS.has(tab));
+      const visibleTabs = tabs.filter(tab => {
+        if (ADMIN_ONLY_TABS.has(tab)) return isAdmin;
+        if (STAFF_ONLY_TABS.has(tab)) return isAdmin || isBackoffice;
+        return true;
+      });
       if (visibleTabs.length > 0) filtered[group] = visibleTabs;
     }
     return filtered;
-  }, [isAdmin]);
+  }, [isAdmin, isBackoffice]);
+
 
   const validTabs = useMemo(() => {
     const tabs = new Set<string>();

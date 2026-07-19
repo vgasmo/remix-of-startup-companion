@@ -31,28 +31,31 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid token' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    // Internal service-role calls (public-contract-onboarding, staff dispatch, etc.)
+    // bypass user resolution — the service key has no `sub`. Staff gate is enforced
+    // upstream in those callers.
+    const isInternalServiceCall = token === supabaseKey
+    if (!isInternalServiceCall) {
+      const { data: { user }, error: userError } = await supabase.auth.getUser(token)
+      if (userError || !user) {
+        return new Response(JSON.stringify({ error: 'Invalid token' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      const { data: staffRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+      const isStaff = (staffRoles ?? []).some((r: { role: string }) =>
+        r.role === 'admin' || r.role === 'consultor' || r.role === 'backoffice'
+      )
+      if (!isStaff) {
+        return new Response(JSON.stringify({ error: 'Staff access required' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
     }
 
-    // Authorization: only staff may dispatch a contract for PandaDoc signing.
-    // Prevents any authenticated user from redirecting another startup's
-    // contract to an attacker-controlled email.
-    const { data: staffRoles } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-    const isStaff = (staffRoles ?? []).some((r: { role: string }) =>
-      r.role === 'admin' || r.role === 'consultor' || r.role === 'backoffice'
-    )
-    if (!isStaff) {
-      return new Response(JSON.stringify({ error: 'Staff access required' }), {
-        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
 
 
     const body = await req.json().catch(() => ({}))

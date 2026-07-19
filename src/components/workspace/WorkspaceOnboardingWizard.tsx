@@ -527,10 +527,11 @@ export function WorkspaceOnboardingWizard({
   const handleCompleteOnboarding = async () => {
     if (isFounderOnboarding) {
       try {
-        await supabase
-          .from('workspaces')
-          .update({ needs_onboarding: false })
-          .eq('id', workspaceId);
+        // RPC bypasses the missing UPDATE policy on workspaces for founders.
+        const { error } = await supabase.rpc('complete_workspace_onboarding', {
+          p_workspace_id: workspaceId,
+        });
+        if (error) throw error;
         logger.debug('onboarding_completed', { workspaceId });
       } catch (err) {
         logger.error('onboarding_completion_failed', { workspaceId }, err);
