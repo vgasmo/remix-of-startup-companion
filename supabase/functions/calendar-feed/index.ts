@@ -80,17 +80,16 @@ Deno.serve(async (req: Request) => {
         .map(b => b.toString(16).padStart(2, '0'))
         .join('');
       
-      // Validate token hash and check expiration
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('id, calendar_token_expires_at')
-        .eq('calendar_feed_token', tokenHashHex)
+      // Validate token hash and check expiration (owner-only table; service role bypasses RLS)
+      const { data: tokenRow, error } = await supabase
+        .from('user_calendar_tokens')
+        .select('user_id, expires_at')
+        .eq('token_hash', tokenHashHex)
         .maybeSingle();
-      
-      if (profile && !error) {
-        // Check if token is expired
-        if (profile.calendar_token_expires_at) {
-          const expiresAt = new Date(profile.calendar_token_expires_at);
+
+      if (tokenRow && !error) {
+        if (tokenRow.expires_at) {
+          const expiresAt = new Date(tokenRow.expires_at);
           if (expiresAt < new Date()) {
             log.warn('Calendar token expired');
             return new Response('Token expired. Please generate a new calendar token.', {
@@ -99,9 +98,9 @@ Deno.serve(async (req: Request) => {
             });
           }
         }
-        
-        authenticatedUserId = profile.id;
-        log.info('Token validated for user', { userId: profile.id });
+
+        authenticatedUserId = tokenRow.user_id;
+        log.info('Token validated for user', { userId: tokenRow.user_id });
       } else {
         log.warn('Invalid calendar token');
         return new Response('Invalid or expired token', {
