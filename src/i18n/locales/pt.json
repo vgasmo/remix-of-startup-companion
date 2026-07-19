@@ -7353,6 +7353,8 @@
     }
   },
   "publicBooking": {
+    "unavailableTitle": "Disponibilidade indisponível",
+    "unavailableDesc": "Não foi possível confirmar horários disponíveis neste momento. A equipa já foi alertada — por favor tente novamente em alguns minutos.",
     "recordingConsentLabel": "Autorizo a gravação e transcrição desta reunião para efeitos de apoio, registo interno e melhoria do serviço (RGPD).",
     "recordingConsentRequired": "Precisa de autorizar a gravação e transcrição para reservar.",
     "backToBook": "Voltar To Reservar",
