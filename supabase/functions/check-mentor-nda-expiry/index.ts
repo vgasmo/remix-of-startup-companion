@@ -8,6 +8,7 @@ import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/
 import { requireCronSecret, generateRequestId, createLogger } from '../_shared/security.ts';
 import { resolveLocalesByUserIds, type Locale } from '../_shared/i18n.ts';
 import { withCronRunLogging } from '../_shared/cronRun.ts';
+import { claimLedgerKey, releaseLedgerKey, stampLedgerDelivery } from '../_shared/notificationLedger.ts';
 
 const FUNCTION_NAME = 'check-mentor-nda-expiry';
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
