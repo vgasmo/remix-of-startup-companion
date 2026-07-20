@@ -28,6 +28,7 @@ import { ContractDetailDrawer } from './contracts/ContractDetailDrawer';
 import { ContractStatusBadge } from './contracts/ContractStatusBadge';
 import { ProvenanceBadge } from '@/components/shared/ProvenanceBadge';
 import { LifecycleMismatchPanel } from '@/components/staff/LifecycleMismatchPanel';
+import { AssignWorkspaceDialog } from './contracts/AssignWorkspaceDialog';
 import { useContractIntakes } from '@/hooks/useContractIntakes';
 import { useFunnelItems } from '@/hooks/useFunnel';
 import { useUrlParam } from '@/hooks/useUrlParam';
