@@ -313,3 +313,6 @@ verify_jwt = true
 
 [functions.send-message-email-alert]
 verify_jwt = true
+
+[functions.staff-assign-workspace-to-contract]
+verify_jwt = false
