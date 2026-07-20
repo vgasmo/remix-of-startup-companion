@@ -92,6 +92,9 @@ export function ContractDiscountsPanel({ contractId, monthlyFee, currency = 'EUR
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contract-discounts', contractId] });
+      queryClient.invalidateQueries({ queryKey: ['funnel-linked-contract', contractId] });
+      queryClient.invalidateQueries({ queryKey: ['contract', contractId] });
+      queryClient.invalidateQueries({ queryKey: ['contracts'] });
       notify.success(t('discounts.removed'));
     },
     onError: () => notify.error(t('discounts.removeError')),
