@@ -1,20 +1,19 @@
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { 
-  Flame, 
-  ThermometerSun, 
+import {
+  Flame,
+  ThermometerSun,
   Snowflake,
   TrendingUp,
   Clock,
   Mail,
-  Phone,
   Building2,
-  CheckCircle
+  CheckCircle,
+  type LucideIcon,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { differenceInDays } from 'date-fns';
+import { ReadinessCard, type ReadinessItem, type ReadinessTone } from '@/components/shared/ReadinessCard';
 
 interface LeadScoreProps {
   item: {
@@ -47,8 +46,7 @@ export function calculateLeadScore(item: LeadScoreProps['item']): {
 } {
   const breakdown: ScoreBreakdown[] = [];
   const now = new Date();
-  
-  // Contact Completeness (max 25 points)
+
   let contactScore = 0;
   if (item.contact_name) contactScore += 8;
   if (item.contact_email) contactScore += 10;
@@ -57,20 +55,20 @@ export function calculateLeadScore(item: LeadScoreProps['item']): {
     category: 'Contact Data',
     score: contactScore,
     maxScore: 25,
-    details: `${[item.contact_name && 'Name', item.contact_email && 'Email', item.contact_phone && 'Phone'].filter(Boolean).join(', ') || 'None'}`
+    details: `${[item.contact_name && 'Name', item.contact_email && 'Email', item.contact_phone && 'Phone']
+      .filter(Boolean)
+      .join(', ') || 'None'}`,
   });
 
-  // Organization Info (max 15 points)
   let orgScore = 0;
   if (item.organization_name) orgScore += 15;
   breakdown.push({
     category: 'Organization',
     score: orgScore,
     maxScore: 15,
-    details: item.organization_name || 'Not provided'
+    details: item.organization_name || 'Not provided',
   });
 
-  // Engagement Recency (max 30 points)
   let engagementScore = 0;
   if (item.last_activity_at) {
     const daysSinceActivity = differenceInDays(now, new Date(item.last_activity_at));
@@ -83,12 +81,11 @@ export function calculateLeadScore(item: LeadScoreProps['item']): {
     category: 'Engagement',
     score: engagementScore,
     maxScore: 30,
-    details: item.last_activity_at 
+    details: item.last_activity_at
       ? `${differenceInDays(now, new Date(item.last_activity_at))} days ago`
-      : 'No activity'
+      : 'No activity',
   });
 
-  // Pipeline Progress (max 20 points)
   let stageScore = 0;
   const stageScores: Record<string, number> = {
     new: 5,
@@ -104,28 +101,27 @@ export function calculateLeadScore(item: LeadScoreProps['item']): {
     category: 'Pipeline Stage',
     score: stageScore,
     maxScore: 20,
-    details: item.stage.replace(/_/g, ' ')
+    details: item.stage.replace(/_/g, ' '),
   });
 
-  // Next Action Planned (max 10 points)
   let actionScore = 0;
   if (item.next_action_at) {
     const daysUntilAction = differenceInDays(new Date(item.next_action_at), now);
     if (daysUntilAction >= 0 && daysUntilAction <= 7) actionScore = 10;
-    else if (daysUntilAction < 0 && daysUntilAction >= -3) actionScore = 5; // Slightly overdue
+    else if (daysUntilAction < 0 && daysUntilAction >= -3) actionScore = 5;
     else if (daysUntilAction > 7) actionScore = 7;
   }
   breakdown.push({
     category: 'Next Action',
     score: actionScore,
     maxScore: 10,
-    details: item.next_action_at 
+    details: item.next_action_at
       ? `Scheduled ${differenceInDays(new Date(item.next_action_at), now)} days`
-      : 'None planned'
+      : 'None planned',
   });
 
   const totalScore = breakdown.reduce((sum, b) => sum + b.score, 0);
-  
+
   let temperature: 'hot' | 'warm' | 'cold' = 'cold';
   if (totalScore >= 70) temperature = 'hot';
   else if (totalScore >= 40) temperature = 'warm';
@@ -133,52 +129,72 @@ export function calculateLeadScore(item: LeadScoreProps['item']): {
   return { totalScore, temperature, breakdown };
 }
 
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  'Contact Data': Mail,
+  Organization: Building2,
+  Engagement: Clock,
+  'Pipeline Stage': TrendingUp,
+  'Next Action': CheckCircle,
+};
+
 export function LeadScoreCard({ item, compact = false }: LeadScoreProps) {
   const { t } = useTranslation();
   const { totalScore, temperature, breakdown } = calculateLeadScore(item);
 
-  const getTemperatureConfig = () => {
-    switch (temperature) {
-      case 'hot':
-        return {
-          icon: Flame,
-          color: 'text-destructive',
-          bgColor: 'bg-destructive/10',
-          label: t('crm.leadScore.hot', 'Hot Lead'),
-          description: t('crm.leadScore.hotDesc', 'High engagement, ready to progress')
-        };
-      case 'warm':
-        return {
-          icon: ThermometerSun,
-          color: 'text-[hsl(var(--warning))]',
-          bgColor: 'bg-[hsl(var(--warning))]/10',
-          label: t('crm.leadScore.warm', 'Warm Lead'),
-          description: t('crm.leadScore.warmDesc', 'Good potential, needs nurturing')
-        };
-      default:
-        return {
-          icon: Snowflake,
-          color: 'text-[hsl(var(--info))]',
-          bgColor: 'bg-[hsl(var(--info))]/10',
-          label: t('crm.leadScore.cold', 'Cold Lead'),
-          description: t('crm.leadScore.coldDesc', 'Needs re-engagement or qualification')
-        };
-    }
+  const tempConfig: Record<'hot' | 'warm' | 'cold', {
+    icon: LucideIcon;
+    tone: ReadinessTone;
+    label: string;
+    description: string;
+  }> = {
+    hot: {
+      icon: Flame,
+      tone: 'warning',
+      label: t('crm.leadScore.hot', 'Hot Lead'),
+      description: t('crm.leadScore.hotDesc', 'High engagement, ready to progress'),
+    },
+    warm: {
+      icon: ThermometerSun,
+      tone: 'warning',
+      label: t('crm.leadScore.warm', 'Warm Lead'),
+      description: t('crm.leadScore.warmDesc', 'Good potential, needs nurturing'),
+    },
+    cold: {
+      icon: Snowflake,
+      tone: 'info',
+      label: t('crm.leadScore.cold', 'Cold Lead'),
+      description: t('crm.leadScore.coldDesc', 'Needs re-engagement or qualification'),
+    },
   };
-
-  const config = getTemperatureConfig();
+  const config = tempConfig[temperature];
   const Icon = config.icon;
 
   if (compact) {
     return (
       <div className="flex items-center gap-2">
-        <div className={cn('h-8 w-8 rounded-full flex items-center justify-center', config.bgColor)}>
-          <Icon className={cn('h-4 w-4', config.color)} />
+        <div
+          className={cn(
+            'h-8 w-8 rounded-full flex items-center justify-center',
+            temperature === 'cold' ? 'bg-[hsl(var(--info))]/10' : 'bg-[hsl(var(--warning))]/10',
+          )}
+        >
+          <Icon
+            className={cn(
+              'h-4 w-4',
+              temperature === 'cold' ? 'text-[hsl(var(--info))]' : 'text-[hsl(var(--warning))]',
+            )}
+          />
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-semibold">{totalScore}</span>
-            <Badge variant="outline" className={cn('text-xs', config.color)}>
+            <span className="font-semibold tabular-nums">{totalScore}</span>
+            <Badge
+              variant="outline"
+              className={cn(
+                'text-xs',
+                temperature === 'cold' ? 'text-[hsl(var(--info))]' : 'text-[hsl(var(--warning))]',
+              )}
+            >
               {config.label}
             </Badge>
           </div>
@@ -187,51 +203,26 @@ export function LeadScoreCard({ item, compact = false }: LeadScoreProps) {
     );
   }
 
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-primary" />
-            {t('crm.leadScore.title', 'Lead Score')}
-          </span>
-          <div className="flex items-center gap-2">
-            <div className={cn('h-8 w-8 rounded-full flex items-center justify-center', config.bgColor)}>
-              <Icon className={cn('h-4 w-4', config.color)} />
-            </div>
-            <span className="text-2xl font-bold">{totalScore}</span>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Badge variant="outline" className={cn('gap-1', config.color)}>
-            <Icon className="h-3 w-3" />
-            {config.label}
-          </Badge>
-          <span className="text-xs text-muted-foreground">{config.description}</span>
-        </div>
+  const items: ReadinessItem[] = breakdown.map((b) => ({
+    key: b.category,
+    label: b.category,
+    score: b.score,
+    maxScore: b.maxScore,
+    detail: b.details,
+    icon: CATEGORY_ICONS[b.category],
+  }));
 
-        <div className="space-y-3">
-          {breakdown.map((item) => (
-            <div key={item.category}>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-muted-foreground flex items-center gap-1">
-                  {item.category === 'Contact Data' && <Mail className="h-3 w-3" />}
-                  {item.category === 'Organization' && <Building2 className="h-3 w-3" />}
-                  {item.category === 'Engagement' && <Clock className="h-3 w-3" />}
-                  {item.category === 'Pipeline Stage' && <TrendingUp className="h-3 w-3" />}
-                  {item.category === 'Next Action' && <CheckCircle className="h-3 w-3" />}
-                  {item.category}
-                </span>
-                <span className="font-medium">{item.score}/{item.maxScore}</span>
-              </div>
-              <Progress value={(item.score / item.maxScore) * 100} className="h-1.5" />
-              <p className="text-xs text-muted-foreground mt-0.5">{item.details}</p>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+  return (
+    <ReadinessCard
+      titleIcon={TrendingUp}
+      title={t('crm.leadScore.title', 'Prontidão de Engajamento')}
+      items={items}
+      score={totalScore}
+      maxScore={100}
+      statusLabel={config.label}
+      statusDescription={config.description}
+      statusIcon={Icon}
+      statusTone={config.tone}
+    />
   );
 }
