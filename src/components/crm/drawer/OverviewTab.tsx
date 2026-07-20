@@ -455,15 +455,15 @@ export function OverviewTab({
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">{t('crm.activeDiscount', { defaultValue: 'Desconto ativo' })}</span>
               <span className="font-medium">
-                {Number(linkedContract.discount_percentage || 0) > 0
-                  ? `${Number(linkedContract.discount_percentage).toFixed(0)}%`
+                {effectiveDiscount && effectiveDiscount.effectivePct > 0
+                  ? `${effectiveDiscount.effectivePct.toFixed(0)}%${effectiveDiscount.reason ? ` — ${effectiveDiscount.reason}` : ''}`
                   : '—'}
               </span>
             </div>
-            {linkedContract.discount_end_date && Number(linkedContract.discount_percentage || 0) > 0 && (
+            {discountEndDate && effectiveDiscount && effectiveDiscount.effectivePct > 0 && (
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">{t('crm.discountUntil', { defaultValue: 'Desconto até' })}</span>
-                <span className="font-medium">{new Date(linkedContract.discount_end_date).toLocaleDateString()}</span>
+                <span className="font-medium">{new Date(discountEndDate).toLocaleDateString()}</span>
               </div>
             )}
           </div>
