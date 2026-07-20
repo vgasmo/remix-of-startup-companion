@@ -362,7 +362,7 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
                 {t('crm.proposal.attachments', { defaultValue: 'Documentos em anexo (links)' })}
               </Label>
               <Badge variant="outline" className="text-[10px]">
-                {selectedIds.size}
+                {selectedIds.size + adHocFiles.length}
               </Badge>
             </div>
 
@@ -373,47 +373,102 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
                     <p className="text-xs text-muted-foreground p-2">
                       {t('common.loading', { defaultValue: 'A carregar…' })}
                     </p>
-                  ) : materials.length === 0 ? (
+                  ) : materials.length === 0 && adHocFiles.length === 0 ? (
                     <p className="text-xs text-muted-foreground p-2">
-                      {t('crm.proposal.noMaterials', {
+                      {t('crm.proposal.noMaterialsUploadHint', {
                         defaultValue:
-                          'Nenhum documento configurado para este programa. Adicione materiais em Consultor → Materiais de Apoio e marque "Anexar à proposta comercial".',
+                          'Sem materiais configurados para este programa. Use "Adicionar ficheiro" para anexar documentos a este envio.',
                       })}
                     </p>
                   ) : (
-                    materials.map((m) => (
-                      <label
-                        key={m.id}
-                        className="flex items-start gap-2 rounded-sm px-2 py-1.5 hover:bg-muted/60 cursor-pointer"
-                      >
-                        <Checkbox
-                          checked={selectedIds.has(m.id)}
-                          onCheckedChange={() => toggleMaterial(m.id)}
-                          className="mt-0.5"
-                        />
-                        <div className="grid gap-0.5 flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 text-sm">
-                            <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                            <span className="truncate font-medium">{m.title}</span>
-                            {m.attach_to_proposal && (
-                              <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
-                                {t('crm.proposal.defaultBadge', { defaultValue: 'padrão' })}
-                              </Badge>
+                    <>
+                      {materials.map((m) => (
+                        <label
+                          key={m.id}
+                          className="flex items-start gap-2 rounded-sm px-2 py-1.5 hover:bg-muted/60 cursor-pointer"
+                        >
+                          <Checkbox
+                            checked={selectedIds.has(m.id)}
+                            onCheckedChange={() => toggleMaterial(m.id)}
+                            className="mt-0.5"
+                          />
+                          <div className="grid gap-0.5 flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 text-sm">
+                              <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                              <span className="truncate font-medium">{m.title}</span>
+                              {m.attach_to_proposal && (
+                                <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
+                                  {t('crm.proposal.defaultBadge', { defaultValue: 'padrão' })}
+                                </Badge>
+                              )}
+                            </div>
+                            {m.description && (
+                              <span className="text-[11px] text-muted-foreground truncate">
+                                {m.description}
+                              </span>
                             )}
                           </div>
-                          {m.description && (
-                            <span className="text-[11px] text-muted-foreground truncate">
-                              {m.description}
+                        </label>
+                      ))}
+                      {adHocFiles.map((f) => (
+                        <div
+                          key={f.path}
+                          className="flex items-center gap-2 rounded-sm px-2 py-1.5 bg-muted/40"
+                        >
+                          <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <div className="grid gap-0.5 flex-1 min-w-0">
+                            <span className="truncate text-sm font-medium">{f.title}</span>
+                            <span className="text-[11px] text-muted-foreground">
+                              {(f.size / 1024).toFixed(0)} KB ·{' '}
+                              {t('crm.proposal.adHocBadge', { defaultValue: 'anexado agora' })}
                             </span>
-                          )}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => removeAdHoc(f.path)}
+                            disabled={sending}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
-                      </label>
-                    ))
+                      ))}
+                    </>
                   )}
                 </div>
               </ScrollArea>
             </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => handleFilesSelected(e.target.files)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || sending}
+                loading={uploading}
+              >
+                <Upload className="h-3.5 w-3.5 mr-2" />
+                {t('crm.proposal.uploadFiles', { defaultValue: 'Adicionar ficheiro' })}
+              </Button>
+              <span className="text-[11px] text-muted-foreground">
+                {t('crm.proposal.uploadHint', {
+                  defaultValue: 'PDF, DOCX, imagens — até {{max}}MB por ficheiro.',
+                  max: MAX_UPLOAD_MB,
+                })}
+              </span>
+            </div>
           </div>
+
 
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             <Checkbox checked={ccOwner} onCheckedChange={(v) => setCcOwner(v === true)} />
