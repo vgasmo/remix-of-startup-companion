@@ -123,6 +123,9 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [ccOwner, setCcOwner] = useState(true);
   const [sending, setSending] = useState(false);
+  const [adHocFiles, setAdHocFiles] = useState<AdHocFile[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Refresh templated content when dialog opens or program changes.
   useEffect(() => {
@@ -137,6 +140,11 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
     setSelectedIds(new Set(materials.filter((m) => m.attach_to_proposal).map((m) => m.id)));
   }, [materials, open]);
 
+  // Reset ad-hoc files when dialog closes.
+  useEffect(() => {
+    if (!open) setAdHocFiles([]);
+  }, [open]);
+
   const toggleMaterial = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -146,8 +154,69 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
     });
   };
 
+  const handleFilesSelected = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const uploaded: AdHocFile[] = [];
+      for (const file of Array.from(files)) {
+        if (file.size > MAX_UPLOAD_BYTES) {
+          notify.error(
+            t('crm.proposal.fileTooLarge', {
+              defaultValue: 'Ficheiro demasiado grande (máx. {{max}}MB): {{name}}',
+              max: MAX_UPLOAD_MB,
+              name: file.name,
+            }),
+          );
+          continue;
+        }
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const uid =
+          typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const path = `proposals/${item.id}/${uid}-${safeName}`;
+        const { error: upErr } = await supabase.storage
+          .from('support-materials')
+          .upload(path, file, { contentType: file.type || 'application/octet-stream', upsert: false });
+        if (upErr) {
+          logger.error('Ad-hoc proposal upload failed', { path }, upErr as Error);
+          notify.error(
+            t('crm.proposal.uploadFailed', {
+              defaultValue: 'Falha ao carregar {{name}}',
+              name: file.name,
+            }),
+            { description: (upErr as Error).message },
+          );
+          continue;
+        }
+        uploaded.push({ path, title: file.name, size: file.size });
+      }
+      if (uploaded.length > 0) {
+        setAdHocFiles((prev) => [...prev, ...uploaded]);
+      }
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const removeAdHoc = async (path: string) => {
+    // Best-effort storage cleanup.
+    try {
+      await supabase.storage.from('support-materials').remove([path]);
+    } catch {
+      /* ignore */
+    }
+    setAdHocFiles((prev) => prev.filter((f) => f.path !== path));
+  };
+
   const canSend =
-    !sending && subject.trim().length >= 3 && bodyText.trim().length >= 10 && !!item.contact_email;
+    !sending &&
+    !uploading &&
+    subject.trim().length >= 3 &&
+    bodyText.trim().length >= 10 &&
+    !!item.contact_email;
 
   const handleSend = async () => {
     if (!canSend) return;
@@ -171,11 +240,13 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
           subject: subject.trim(),
           body_text: bodyText.trim(),
           support_material_ids: Array.from(selectedIds),
+          ad_hoc_attachments: adHocFiles.map((f) => ({ path: f.path, title: f.title })),
           cc_owner: ccOwner,
           idempotency_key: idempotencyKey,
         },
       });
       if (error) throw error;
+
 
       notify.success(
         t('crm.proposal.sent', { defaultValue: 'Proposta enviada' }),
