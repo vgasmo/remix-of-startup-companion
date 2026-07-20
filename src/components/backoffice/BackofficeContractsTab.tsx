@@ -159,6 +159,7 @@ export function BackofficeContractsTab() {
   const [isArchiving, setIsArchiving] = useState(false);
   const [bulkTerminateOpen, setBulkTerminateOpen] = useState(false);
   const [detailContract, setDetailContract] = useState<StartupContract | null>(null);
+  const [assignWorkspaceContract, setAssignWorkspaceContract] = useState<StartupContract | null>(null);
   const [contractIdFromUrl, setContractIdInUrl] = useUrlParam('contract');
 
   const openContractDrawer = useCallback((contract: StartupContract | null) => {
