@@ -326,7 +326,7 @@ export function LifecycleMismatchPanel({
               const clickable =
                 m.recordType === 'contract' && (canAssign || !!onOpenContract);
               const actionLabel = isNoWorkspace
-                ? t('lifecycleMismatch.assignWorkspace', { defaultValue: 'Atribuir workspace' })
+                ? t('lifecycleMismatch.assignOrCreate', { defaultValue: 'Atribuir ou criar workspace' })
                 : t('lifecycleMismatch.open', { defaultValue: 'Abrir' });
               const handleOpen = () => {
                 if (canAssign) onAssignWorkspace?.(m.recordId);
