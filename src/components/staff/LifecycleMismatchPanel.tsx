@@ -318,33 +318,61 @@ export function LifecycleMismatchPanel({
             })}
           </p>
           <ul className="space-y-2">
-            {mismatches.map((m) => (
-              <li
-                key={m.id}
-                className="rounded-md border border-warning/30 bg-warning/5 p-2.5"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium leading-snug">{m.title}</div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">
-                      {m.recordLabel ? `${m.recordLabel} — ` : ''}{m.detail}
-                    </div>
-
-                  </div>
-                  {m.recordType === 'contract' && onOpenContract && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs flex-shrink-0"
-                      onClick={() => onOpenContract(m.recordId)}
-                    >
-                      {t('lifecycleMismatch.open', { defaultValue: 'Abrir' })}
-                      <ExternalLink className="h-3 w-3 ml-1" />
-                    </Button>
+            {mismatches.map((m) => {
+              const clickable = m.recordType === 'contract' && !!onOpenContract;
+              const isNoWorkspace = m.id.startsWith('contract-active-no-workspace-');
+              const actionLabel = isNoWorkspace
+                ? t('lifecycleMismatch.assignWorkspace', { defaultValue: 'Atribuir workspace' })
+                : t('lifecycleMismatch.open', { defaultValue: 'Abrir' });
+              const handleOpen = () => {
+                if (clickable) onOpenContract?.(m.recordId);
+              };
+              return (
+                <li
+                  key={m.id}
+                  className={cn(
+                    'rounded-md border border-warning/30 bg-warning/5 p-2.5 transition-colors',
+                    clickable && 'cursor-pointer hover:bg-warning/10 focus-within:ring-2 focus-within:ring-warning/40',
                   )}
-                </div>
-              </li>
-            ))}
+                  onClick={clickable ? handleOpen : undefined}
+                  onKeyDown={
+                    clickable
+                      ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleOpen();
+                          }
+                        }
+                      : undefined
+                  }
+                  role={clickable ? 'button' : undefined}
+                  tabIndex={clickable ? 0 : undefined}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium leading-snug">{m.title}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">
+                        {m.recordLabel ? `${m.recordLabel} — ` : ''}{m.detail}
+                      </div>
+                    </div>
+                    {clickable && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs flex-shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpen();
+                        }}
+                      >
+                        {actionLabel}
+                        <ExternalLink className="h-3 w-3 ml-1" />
+                      </Button>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </CardContent>
       )}
