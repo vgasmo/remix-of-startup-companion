@@ -11468,6 +11468,10 @@ export type Database = {
         }
         Returns: Json
       }
+      reconcile_contract_founders: {
+        Args: { p_contract_id?: string }
+        Returns: Json
+      }
       reconcile_rollback: { Args: { p_row_id: string }; Returns: Json }
       reconciler_commit_row: {
         Args: {
