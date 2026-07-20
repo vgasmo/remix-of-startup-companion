@@ -301,6 +301,26 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Sign ad-hoc attachments uploaded by the consultant for this send.
+    for (const ah of body.ad_hoc_attachments) {
+      // Extra safety: enforce that the path is scoped to this funnel item.
+      if (!ah.path.startsWith(`proposals/${item.id}/`)) continue;
+      const { data: signed, error: signErr } = await admin.storage
+        .from(SUPPORT_MATERIALS_BUCKET)
+        .createSignedUrl(ah.path, SIGNED_URL_TTL_SECONDS);
+      if (signErr || !signed?.signedUrl) {
+        console.warn('[send-commercial-proposal] Failed to sign ad-hoc', ah.path, signErr);
+        continue;
+      }
+      const filename = ah.path.split('/').pop() ?? null;
+      attachments.push({
+        id: `adhoc:${ah.path}`,
+        title: ah.title,
+        url: signed.signedUrl,
+        filename,
+      });
+    }
+
     // Resolve sender identity (fallback to Startup Leiria).
     let senderName = 'Equipa Startup Leiria';
     let senderEmail = 'contacto@startupleiria.com';
