@@ -36,6 +36,7 @@ interface LifecycleMismatchPanelProps {
   crmItems?: CrmItemLite[];
   workspaces?: WorkspaceLite[];
   onOpenContract?: (contractId: string) => void;
+  onAssignWorkspace?: (contractId: string) => void;
   className?: string;
 }
 
