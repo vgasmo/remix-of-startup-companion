@@ -21,6 +21,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { notify } from "@/lib/notify";
 import { useIncubationTypes } from '@/hooks/backoffice/useIncubationTypes';
 import { usePrograms } from '@/hooks/useAdminData';
+import { computeEffectiveDiscount, type ContractDiscountRow } from '@/lib/contractLifecycle';
 
 
 interface OverviewTabProps {
@@ -65,13 +66,33 @@ export function OverviewTab({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('startup_contracts')
-        .select('id, contract_number, status, monthly_fee, currency, discount_percentage, discount_start_date, discount_end_date, incubation_type_id, incubation_type:incubation_types(name)')
+        .select('id, contract_number, status, monthly_fee, currency, discount_percentage, discount_reason, discount_start_date, discount_end_date, incubation_type_id, incubation_type:incubation_types(name), contract_discounts(id, discount_percentage, start_date, end_date, reason)')
         .eq('id', item.linked_contract_id!)
         .maybeSingle();
       if (error) throw error;
       return data;
     },
   });
+
+  // Canonical resolver: prefers active `contract_discounts` rows over the
+  // legacy `startup_contracts.discount_percentage` column, so discounts added
+  // in the backoffice discounts panel show up here without drift.
+  const effectiveDiscount = linkedContract
+    ? computeEffectiveDiscount(
+        (linkedContract.contract_discounts as ContractDiscountRow[] | null) ?? null,
+        linkedContract.discount_percentage as number | null,
+        (linkedContract as any).discount_reason ?? null,
+      )
+    : null;
+  const activeDiscountRow = linkedContract
+    ? ((linkedContract.contract_discounts as ContractDiscountRow[] | null) ?? []).find(d => {
+        const now = new Date();
+        const start = new Date(d.start_date);
+        const end = d.end_date ? new Date(d.end_date) : null;
+        return start <= now && (!end || end >= now);
+      })
+    : null;
+  const discountEndDate = activeDiscountRow?.end_date ?? linkedContract?.discount_end_date ?? null;
 
 
   const [editingDeal, setEditingDeal] = useState(false);
@@ -434,15 +455,15 @@ export function OverviewTab({
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">{t('crm.activeDiscount', { defaultValue: 'Desconto ativo' })}</span>
               <span className="font-medium">
-                {Number(linkedContract.discount_percentage || 0) > 0
-                  ? `${Number(linkedContract.discount_percentage).toFixed(0)}%`
+                {effectiveDiscount && effectiveDiscount.effectivePct > 0
+                  ? `${effectiveDiscount.effectivePct.toFixed(0)}%${effectiveDiscount.reason ? ` — ${effectiveDiscount.reason}` : ''}`
                   : '—'}
               </span>
             </div>
-            {linkedContract.discount_end_date && Number(linkedContract.discount_percentage || 0) > 0 && (
+            {discountEndDate && effectiveDiscount && effectiveDiscount.effectivePct > 0 && (
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">{t('crm.discountUntil', { defaultValue: 'Desconto até' })}</span>
-                <span className="font-medium">{new Date(linkedContract.discount_end_date).toLocaleDateString()}</span>
+                <span className="font-medium">{new Date(discountEndDate).toLocaleDateString()}</span>
               </div>
             )}
           </div>
