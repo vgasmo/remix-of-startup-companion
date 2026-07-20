@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
     const contractId = String(body.contract_id || '').trim();
     const workspaceId = String(body.workspace_id || '').trim();
     if (!contractId || !workspaceId) {
-      return errorResponse(req, 'contract_id and workspace_id required', ErrorCode.VALIDATION_ERROR, 400);
+      return errorResponse(req, 'contract_id and workspace_id required', ErrorCode.BAD_REQUEST, 400);
     }
 
     const { data: contract, error: cErr } = await admin
@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       return errorResponse(
         req,
         'Contract already linked to a different workspace',
-        ErrorCode.VALIDATION_ERROR,
+        ErrorCode.BAD_REQUEST,
         409,
       );
     }
