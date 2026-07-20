@@ -47,20 +47,29 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const contractId = String(body.contract_id || '').trim();
-    const workspaceId = String(body.workspace_id || '').trim();
-    if (!contractId || !workspaceId) {
-      return errorResponse(req, 'contract_id and workspace_id required', ErrorCode.BAD_REQUEST, 400);
+    let workspaceId = String(body.workspace_id || '').trim();
+    const create = body.create as
+      | { startup_name?: string; program_id?: string | null; stage?: string | null }
+      | undefined;
+
+    if (!contractId || (!workspaceId && !create)) {
+      return errorResponse(
+        req,
+        'contract_id and workspace_id (or create) required',
+        ErrorCode.BAD_REQUEST,
+        400,
+      );
     }
 
     const { data: contract, error: cErr } = await admin
       .from('startup_contracts')
-      .select('id, status, workspace_id, legal_representative_email, legal_representative_name')
+      .select('id, status, workspace_id, organization_name, legal_representative_email, legal_representative_name')
       .eq('id', contractId)
       .single();
     if (cErr || !contract) {
       return errorResponse(req, 'Contract not found', ErrorCode.NOT_FOUND, 404);
     }
-    if (contract.workspace_id && contract.workspace_id !== workspaceId) {
+    if (contract.workspace_id && workspaceId && contract.workspace_id !== workspaceId) {
       return errorResponse(
         req,
         'Contract already linked to a different workspace',
@@ -68,14 +77,50 @@ Deno.serve(async (req) => {
         409,
       );
     }
+    if (contract.workspace_id && !workspaceId) {
+      workspaceId = contract.workspace_id;
+    }
 
-    const { data: ws, error: wsErr } = await admin
-      .from('workspaces')
-      .select('id, startup_id, status')
-      .eq('id', workspaceId)
-      .single();
-    if (wsErr || !ws) {
-      return errorResponse(req, 'Workspace not found', ErrorCode.NOT_FOUND, 404);
+    // Create mode: build new startup + workspace
+    if (!workspaceId && create) {
+      const startupName = String(create.startup_name || contract.organization_name || '').trim();
+      if (!startupName) {
+        return errorResponse(req, 'startup_name required to create workspace', ErrorCode.BAD_REQUEST, 400);
+      }
+      const { data: newStartup, error: sErr } = await admin
+        .from('startups')
+        .insert({
+          name: startupName,
+          main_contact_email: contract.legal_representative_email || null,
+          main_contact_name: contract.legal_representative_name || null,
+        })
+        .select('id')
+        .single();
+      if (sErr || !newStartup) throw new Error(`Startup create failed: ${sErr?.message}`);
+
+      const { data: newWs, error: wErr } = await admin
+        .from('workspaces')
+        .insert({
+          startup_id: newStartup.id,
+          program_id: create.program_id || null,
+          status: 'active',
+          needs_onboarding: true,
+          stage: create.stage || 'ideation',
+        })
+        .select('id')
+        .single();
+      if (wErr || !newWs) throw new Error(`Workspace create failed: ${wErr?.message}`);
+      workspaceId = newWs.id;
+      log.info('workspace_created_for_contract', { contractId, workspaceId, startupId: newStartup.id });
+    } else {
+      const { data: ws, error: wsErr } = await admin
+        .from('workspaces')
+        .select('id, startup_id, status')
+        .eq('id', workspaceId)
+        .single();
+      if (wsErr || !ws) {
+        return errorResponse(req, 'Workspace not found', ErrorCode.NOT_FOUND, 404);
+      }
     }
 
     // Update contract
