@@ -36,6 +36,7 @@ interface LifecycleMismatchPanelProps {
   crmItems?: CrmItemLite[];
   workspaces?: WorkspaceLite[];
   onOpenContract?: (contractId: string) => void;
+  onAssignWorkspace?: (contractId: string) => void;
   className?: string;
 }
 
@@ -55,6 +56,7 @@ export function LifecycleMismatchPanel({
   crmItems = [],
   workspaces = [],
   onOpenContract,
+  onAssignWorkspace,
   className,
 }: LifecycleMismatchPanelProps) {
   const { t } = useTranslation();
@@ -319,13 +321,16 @@ export function LifecycleMismatchPanel({
           </p>
           <ul className="space-y-2">
             {mismatches.map((m) => {
-              const clickable = m.recordType === 'contract' && !!onOpenContract;
               const isNoWorkspace = m.id.startsWith('contract-active-no-workspace-');
+              const canAssign = isNoWorkspace && !!onAssignWorkspace;
+              const clickable =
+                m.recordType === 'contract' && (canAssign || !!onOpenContract);
               const actionLabel = isNoWorkspace
                 ? t('lifecycleMismatch.assignWorkspace', { defaultValue: 'Atribuir workspace' })
                 : t('lifecycleMismatch.open', { defaultValue: 'Abrir' });
               const handleOpen = () => {
-                if (clickable) onOpenContract?.(m.recordId);
+                if (canAssign) onAssignWorkspace?.(m.recordId);
+                else if (onOpenContract) onOpenContract(m.recordId);
               };
               return (
                 <li

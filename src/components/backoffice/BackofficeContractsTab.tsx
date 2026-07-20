@@ -28,6 +28,7 @@ import { ContractDetailDrawer } from './contracts/ContractDetailDrawer';
 import { ContractStatusBadge } from './contracts/ContractStatusBadge';
 import { ProvenanceBadge } from '@/components/shared/ProvenanceBadge';
 import { LifecycleMismatchPanel } from '@/components/staff/LifecycleMismatchPanel';
+import { AssignWorkspaceDialog } from './contracts/AssignWorkspaceDialog';
 import { useContractIntakes } from '@/hooks/useContractIntakes';
 import { useFunnelItems } from '@/hooks/useFunnel';
 import { useUrlParam } from '@/hooks/useUrlParam';
@@ -158,6 +159,7 @@ export function BackofficeContractsTab() {
   const [isArchiving, setIsArchiving] = useState(false);
   const [bulkTerminateOpen, setBulkTerminateOpen] = useState(false);
   const [detailContract, setDetailContract] = useState<StartupContract | null>(null);
+  const [assignWorkspaceContract, setAssignWorkspaceContract] = useState<StartupContract | null>(null);
   const [contractIdFromUrl, setContractIdInUrl] = useUrlParam('contract');
 
   const openContractDrawer = useCallback((contract: StartupContract | null) => {
@@ -408,6 +410,10 @@ export function BackofficeContractsTab() {
         onOpenContract={(id) => {
           const c = (contracts || []).find((x) => x.id === id) || null;
           openContractDrawer(c);
+        }}
+        onAssignWorkspace={(id) => {
+          const c = (contracts || []).find((x) => x.id === id) || null;
+          if (c) setAssignWorkspaceContract(c);
         }}
       />
 
@@ -820,6 +826,18 @@ export function BackofficeContractsTab() {
         buildings={buildings}
         open={!!detailContract}
         onOpenChange={(open) => { if (!open) openContractDrawer(null); }}
+      />
+
+      {/* Assign Workspace Dialog (from lifecycle mismatch panel) */}
+      <AssignWorkspaceDialog
+        open={!!assignWorkspaceContract}
+        onOpenChange={(o) => { if (!o) setAssignWorkspaceContract(null); }}
+        contract={assignWorkspaceContract}
+        workspaces={(workspaces || []).map((w: any) => ({
+          id: w.id,
+          status: w.status,
+          startup: w.startup ? { name: w.startup.name } : null,
+        }))}
       />
     </div>
   );
