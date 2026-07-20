@@ -56,6 +56,7 @@ export function LifecycleMismatchPanel({
   crmItems = [],
   workspaces = [],
   onOpenContract,
+  onAssignWorkspace,
   className,
 }: LifecycleMismatchPanelProps) {
   const { t } = useTranslation();
