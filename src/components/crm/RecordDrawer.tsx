@@ -35,7 +35,7 @@ import {
   Phone,
   Calendar,
 } from 'lucide-react';
-import { FunnelItem, FunnelStage, useUpdateFunnelItem } from '@/hooks/useFunnel';
+import { FunnelItem, FunnelStage, useUpdateFunnelItem, useConvertToStartup } from '@/hooks/useFunnel';
 import { useActivityTimeline, useRelationshipRecap, useGenerateRecap, useSyncEmails, useAddActivity, ActivityType, ActivityEntry } from '@/hooks/useActivityTimeline';
 import { useAddTask, useCompleteTask, useReopenTask, useCancelTask, useUpdateTask, TaskPriority } from '@/hooks/useCrmTasks';
 import { useUpdateNextAction, useClearNextAction } from '@/hooks/useNextAction';
