@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
-import { Send, Paperclip, FileText } from 'lucide-react';
+import { Send, Paperclip, FileText, Upload, X } from 'lucide-react';
 
 import {
   Dialog,
@@ -30,8 +30,19 @@ import { usePrograms } from '@/hooks/useAdminData';
 import { useProposalMaterials } from '@/hooks/useProposalMaterials';
 import type { FunnelItem } from '@/hooks/useFunnel';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { notify } from '@/lib/notify';
 import { logger } from '@/lib/logger';
+
+const MAX_UPLOAD_MB = 15;
+const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
+
+interface AdHocFile {
+  path: string;
+  title: string;
+  size: number;
+}
+
 
 interface SendProposalDialogProps {
   open: boolean;
@@ -112,6 +123,9 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [ccOwner, setCcOwner] = useState(true);
   const [sending, setSending] = useState(false);
+  const [adHocFiles, setAdHocFiles] = useState<AdHocFile[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Refresh templated content when dialog opens or program changes.
   useEffect(() => {
@@ -126,6 +140,11 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
     setSelectedIds(new Set(materials.filter((m) => m.attach_to_proposal).map((m) => m.id)));
   }, [materials, open]);
 
+  // Reset ad-hoc files when dialog closes.
+  useEffect(() => {
+    if (!open) setAdHocFiles([]);
+  }, [open]);
+
   const toggleMaterial = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -135,8 +154,69 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
     });
   };
 
+  const handleFilesSelected = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const uploaded: AdHocFile[] = [];
+      for (const file of Array.from(files)) {
+        if (file.size > MAX_UPLOAD_BYTES) {
+          notify.error(
+            t('crm.proposal.fileTooLarge', {
+              defaultValue: 'Ficheiro demasiado grande (máx. {{max}}MB): {{name}}',
+              max: MAX_UPLOAD_MB,
+              name: file.name,
+            }),
+          );
+          continue;
+        }
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const uid =
+          typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const path = `proposals/${item.id}/${uid}-${safeName}`;
+        const { error: upErr } = await supabase.storage
+          .from('support-materials')
+          .upload(path, file, { contentType: file.type || 'application/octet-stream', upsert: false });
+        if (upErr) {
+          logger.error('Ad-hoc proposal upload failed', { path }, upErr as Error);
+          notify.error(
+            t('crm.proposal.uploadFailed', {
+              defaultValue: 'Falha ao carregar {{name}}',
+              name: file.name,
+            }),
+            { description: (upErr as Error).message },
+          );
+          continue;
+        }
+        uploaded.push({ path, title: file.name, size: file.size });
+      }
+      if (uploaded.length > 0) {
+        setAdHocFiles((prev) => [...prev, ...uploaded]);
+      }
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const removeAdHoc = async (path: string) => {
+    // Best-effort storage cleanup.
+    try {
+      await supabase.storage.from('support-materials').remove([path]);
+    } catch {
+      /* ignore */
+    }
+    setAdHocFiles((prev) => prev.filter((f) => f.path !== path));
+  };
+
   const canSend =
-    !sending && subject.trim().length >= 3 && bodyText.trim().length >= 10 && !!item.contact_email;
+    !sending &&
+    !uploading &&
+    subject.trim().length >= 3 &&
+    bodyText.trim().length >= 10 &&
+    !!item.contact_email;
 
   const handleSend = async () => {
     if (!canSend) return;
@@ -160,11 +240,13 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
           subject: subject.trim(),
           body_text: bodyText.trim(),
           support_material_ids: Array.from(selectedIds),
+          ad_hoc_attachments: adHocFiles.map((f) => ({ path: f.path, title: f.title })),
           cc_owner: ccOwner,
           idempotency_key: idempotencyKey,
         },
       });
       if (error) throw error;
+
 
       notify.success(
         t('crm.proposal.sent', { defaultValue: 'Proposta enviada' }),
@@ -280,7 +362,7 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
                 {t('crm.proposal.attachments', { defaultValue: 'Documentos em anexo (links)' })}
               </Label>
               <Badge variant="outline" className="text-[10px]">
-                {selectedIds.size}
+                {selectedIds.size + adHocFiles.length}
               </Badge>
             </div>
 
@@ -291,47 +373,102 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
                     <p className="text-xs text-muted-foreground p-2">
                       {t('common.loading', { defaultValue: 'A carregar…' })}
                     </p>
-                  ) : materials.length === 0 ? (
+                  ) : materials.length === 0 && adHocFiles.length === 0 ? (
                     <p className="text-xs text-muted-foreground p-2">
-                      {t('crm.proposal.noMaterials', {
+                      {t('crm.proposal.noMaterialsUploadHint', {
                         defaultValue:
-                          'Nenhum documento configurado para este programa. Adicione materiais em Consultor → Materiais de Apoio e marque "Anexar à proposta comercial".',
+                          'Sem materiais configurados para este programa. Use "Adicionar ficheiro" para anexar documentos a este envio.',
                       })}
                     </p>
                   ) : (
-                    materials.map((m) => (
-                      <label
-                        key={m.id}
-                        className="flex items-start gap-2 rounded-sm px-2 py-1.5 hover:bg-muted/60 cursor-pointer"
-                      >
-                        <Checkbox
-                          checked={selectedIds.has(m.id)}
-                          onCheckedChange={() => toggleMaterial(m.id)}
-                          className="mt-0.5"
-                        />
-                        <div className="grid gap-0.5 flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 text-sm">
-                            <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                            <span className="truncate font-medium">{m.title}</span>
-                            {m.attach_to_proposal && (
-                              <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
-                                {t('crm.proposal.defaultBadge', { defaultValue: 'padrão' })}
-                              </Badge>
+                    <>
+                      {materials.map((m) => (
+                        <label
+                          key={m.id}
+                          className="flex items-start gap-2 rounded-sm px-2 py-1.5 hover:bg-muted/60 cursor-pointer"
+                        >
+                          <Checkbox
+                            checked={selectedIds.has(m.id)}
+                            onCheckedChange={() => toggleMaterial(m.id)}
+                            className="mt-0.5"
+                          />
+                          <div className="grid gap-0.5 flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 text-sm">
+                              <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                              <span className="truncate font-medium">{m.title}</span>
+                              {m.attach_to_proposal && (
+                                <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
+                                  {t('crm.proposal.defaultBadge', { defaultValue: 'padrão' })}
+                                </Badge>
+                              )}
+                            </div>
+                            {m.description && (
+                              <span className="text-[11px] text-muted-foreground truncate">
+                                {m.description}
+                              </span>
                             )}
                           </div>
-                          {m.description && (
-                            <span className="text-[11px] text-muted-foreground truncate">
-                              {m.description}
+                        </label>
+                      ))}
+                      {adHocFiles.map((f) => (
+                        <div
+                          key={f.path}
+                          className="flex items-center gap-2 rounded-sm px-2 py-1.5 bg-muted/40"
+                        >
+                          <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <div className="grid gap-0.5 flex-1 min-w-0">
+                            <span className="truncate text-sm font-medium">{f.title}</span>
+                            <span className="text-[11px] text-muted-foreground">
+                              {(f.size / 1024).toFixed(0)} KB ·{' '}
+                              {t('crm.proposal.adHocBadge', { defaultValue: 'anexado agora' })}
                             </span>
-                          )}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => removeAdHoc(f.path)}
+                            disabled={sending}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
-                      </label>
-                    ))
+                      ))}
+                    </>
                   )}
                 </div>
               </ScrollArea>
             </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => handleFilesSelected(e.target.files)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || sending}
+                loading={uploading}
+              >
+                <Upload className="h-3.5 w-3.5 mr-2" />
+                {t('crm.proposal.uploadFiles', { defaultValue: 'Adicionar ficheiro' })}
+              </Button>
+              <span className="text-[11px] text-muted-foreground">
+                {t('crm.proposal.uploadHint', {
+                  defaultValue: 'PDF, DOCX, imagens — até {{max}}MB por ficheiro.',
+                  max: MAX_UPLOAD_MB,
+                })}
+              </span>
+            </div>
           </div>
+
 
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             <Checkbox checked={ccOwner} onCheckedChange={(v) => setCcOwner(v === true)} />

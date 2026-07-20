@@ -64,12 +64,18 @@ interface Attachment {
   filename: string | null;
 }
 
+interface AdHocInput {
+  path: string;
+  title: string;
+}
+
 interface RequestBody {
   funnel_item_id: string;
   program_id: string | null;
   subject: string;
   body_text: string;
   support_material_ids: string[];
+  ad_hoc_attachments: AdHocInput[];
   cc_owner?: boolean;
   idempotency_key?: string;
 }
@@ -93,6 +99,21 @@ function validateBody(raw: unknown): { valid: true; data: RequestBody } | { vali
   const ids = Array.isArray(b.support_material_ids)
     ? b.support_material_ids.filter((x): x is string => typeof x === 'string')
     : [];
+  const adHoc: AdHocInput[] = Array.isArray(b.ad_hoc_attachments)
+    ? (b.ad_hoc_attachments as unknown[])
+        .map((x) => {
+          if (!x || typeof x !== 'object') return null;
+          const o = x as Record<string, unknown>;
+          const path = typeof o.path === 'string' ? o.path : '';
+          const title = typeof o.title === 'string' ? o.title : '';
+          if (!path || !title) return null;
+          // Only allow paths inside our reserved ad-hoc prefix.
+          if (!path.startsWith('proposals/')) return null;
+          return { path, title: title.slice(0, 200) };
+        })
+        .filter((x): x is AdHocInput => x !== null)
+        .slice(0, 10)
+    : [];
   const idempotencyKey =
     typeof b.idempotency_key === 'string' &&
     /^[a-zA-Z0-9-]{8,64}$/.test(b.idempotency_key)
@@ -106,11 +127,13 @@ function validateBody(raw: unknown): { valid: true; data: RequestBody } | { vali
       subject,
       body_text: bodyText,
       support_material_ids: ids.slice(0, 20),
+      ad_hoc_attachments: adHoc,
       cc_owner: b.cc_owner === true,
       idempotency_key: idempotencyKey,
     },
   };
 }
+
 
 function renderEmailHtml(opts: {
   contactName: string;
@@ -276,6 +299,26 @@ Deno.serve(async (req) => {
         const filename = m.file_path.split('/').pop() ?? null;
         attachments.push({ id: m.id, title: m.title, url: signed.signedUrl, filename });
       }
+    }
+
+    // Sign ad-hoc attachments uploaded by the consultant for this send.
+    for (const ah of body.ad_hoc_attachments) {
+      // Extra safety: enforce that the path is scoped to this funnel item.
+      if (!ah.path.startsWith(`proposals/${item.id}/`)) continue;
+      const { data: signed, error: signErr } = await admin.storage
+        .from(SUPPORT_MATERIALS_BUCKET)
+        .createSignedUrl(ah.path, SIGNED_URL_TTL_SECONDS);
+      if (signErr || !signed?.signedUrl) {
+        console.warn('[send-commercial-proposal] Failed to sign ad-hoc', ah.path, signErr);
+        continue;
+      }
+      const filename = ah.path.split('/').pop() ?? null;
+      attachments.push({
+        id: `adhoc:${ah.path}`,
+        title: ah.title,
+        url: signed.signedUrl,
+        filename,
+      });
     }
 
     // Resolve sender identity (fallback to Startup Leiria).
