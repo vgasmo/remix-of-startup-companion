@@ -89,10 +89,20 @@ export async function autoCreateFounderAccount(
       }
     }
 
+    // Ensure a profile row exists so the founder shows up in the user list
+    // even if the auth account pre-existed (in which case the on_auth_user_created
+    // trigger has already fired and won't fire again).
+    await supabase
+      .from('profiles')
+      .upsert(
+        { id: userId, email, full_name: fullName, account_status: 'approved' },
+        { onConflict: 'id' },
+      )
 
     await supabase
       .from('user_roles')
       .upsert({ user_id: userId, role: 'founder' }, { onConflict: 'user_id,role' })
+
 
     await supabase
       .from('workspace_users')
