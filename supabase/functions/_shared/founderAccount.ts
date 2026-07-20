@@ -131,18 +131,23 @@ export async function enqueueFounderInviteTask(
   reason: string,
 ) {
   try {
+    if (!contract.workspace_id) return
     await supabase.from('staff_work_queue_items').insert({
-      item_type: 'invite_founder',
+      workspace_id: contract.workspace_id,
+      type: 'triage',
       title: `Convidar founder — ${contract.legal_representative_name || contract.legal_representative_email || contract.id.slice(0, 8)}`,
       description: `Auto-criação de conta falhou (${reason}). Convite manual necessário.`,
-      entity_type: 'contract',
-      entity_id: contract.id,
-      workspace_id: contract.workspace_id,
       priority: 'high',
       status: 'open',
-      metadata: { reason, email: contract.legal_representative_email },
+      evidence_json: {
+        purpose: 'invite_founder',
+        contract_id: contract.id,
+        reason,
+        email: contract.legal_representative_email,
+      },
     })
   } catch (err) {
     console.warn('[founderAccount] enqueue work-queue failed (non-fatal):', err)
   }
 }
+
