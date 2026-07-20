@@ -43,8 +43,19 @@ export async function autoCreateFounderAccount(
   const fullName = contract.legal_representative_name || 'Founder'
 
   try {
-    const { data: existingUsers } = await supabase.auth.admin.listUsers()
-    const existingUser = existingUsers?.users?.find((u: any) => u.email?.toLowerCase() === email)
+    // Paginated lookup: listUsers() defaults to 50 rows per page. Iterate
+    // until we find the email or exhaust results, so pre-existing auth
+    // accounts are always detected (otherwise createUser throws email_exists
+    // and we lose the link between the auth user and the workspace).
+    let existingUser: any = null;
+    for (let page = 1; page <= 20; page++) {
+      const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 200 });
+      if (error) throw error;
+      const users = data?.users || [];
+      existingUser = users.find((u: any) => u.email?.toLowerCase() === email);
+      if (existingUser) break;
+      if (users.length < 200) break;
+    }
 
     let userId: string
     if (existingUser) {
@@ -77,6 +88,7 @@ export async function autoCreateFounderAccount(
         console.warn('[founderAccount] recovery link failed (non-fatal):', linkErr)
       }
     }
+
 
     await supabase
       .from('user_roles')
