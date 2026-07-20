@@ -411,6 +411,10 @@ export function BackofficeContractsTab() {
           const c = (contracts || []).find((x) => x.id === id) || null;
           openContractDrawer(c);
         }}
+        onAssignWorkspace={(id) => {
+          const c = (contracts || []).find((x) => x.id === id) || null;
+          if (c) setAssignWorkspaceContract(c);
+        }}
       />
 
       {/* Upload Hero Section */}
