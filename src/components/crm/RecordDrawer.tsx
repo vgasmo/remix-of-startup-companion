@@ -98,25 +98,62 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
     setLocalNextAction(null);
   }, [item?.id]);
 
-  // E1: Listen for lead-contracted events to suggest workspace creation
+  const convertToStartup = useConvertToStartup();
+
+  // E1: Auto-create workspace when lead is moved to "contracted".
+  // If the lead already has a program_id we run the conversion RPC directly
+  // (single atomic call). Otherwise we open ConvertLeadDialog so staff picks
+  // the program before the workspace is minted. Never creates duplicates —
+  // useConvertToStartup rejects when linked_workspace_id is already set.
   useEffect(() => {
-    const handler = (e: Event) => {
+    const handler = async (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (detail?.itemId === item?.id) {
-        notify.info(t('crm.leadContracted', { name: detail.name, defaultValue: '{{name}} contratado! Criar workspace?' }), {
-          action: {
-            label: t('crm.createWorkspace', 'Criar Workspace'),
-            onClick: () => {
-              navigate(`/admin?tab=backoffice&subtab=contracts&action=create&funnel=${detail.itemId}&org=${encodeURIComponent(detail.name)}`);
-            }
-          },
-          duration: 10000,
-        });
+      if (detail?.itemId !== item?.id || !item) return;
+      if (item.linked_workspace_id) return;
+
+      const inferredStage =
+        ((item.metadata_json as any)?.stage as string | undefined)?.toLowerCase();
+      const validStages = ['ideation', 'validation', 'mvp', 'growth', 'scale'];
+      const startupStage = inferredStage && validStages.includes(inferredStage) ? inferredStage : 'ideation';
+
+      if (item.program_id) {
+        try {
+          const result = await convertToStartup.mutateAsync({
+            funnelItemId: item.id,
+            programId: item.program_id,
+            stage: startupStage,
+          });
+          notify.success(
+            t('crm.workspaceCreated', {
+              name: detail.name,
+              defaultValue: 'Workspace criado para {{name}}',
+            }),
+            {
+              action: {
+                label: t('crm.openWorkspace', 'Abrir Workspace'),
+                onClick: () => navigate(`/workspace/${result.workspace.id}`),
+              },
+              duration: 10000,
+            },
+          );
+        } catch {
+          // Hook already surfaced the error; fall back to manual dialog.
+          setConvertDialog(true);
+        }
+      } else {
+        notify.info(
+          t('crm.leadContractedPickProgram', {
+            name: detail.name,
+            defaultValue: '{{name}} contratado — escolhe o programa para criar o workspace.',
+          }),
+          { duration: 6000 },
+        );
+        setConvertDialog(true);
       }
     };
     window.addEventListener('crm:lead-contracted', handler);
     return () => window.removeEventListener('crm:lead-contracted', handler);
-  }, [item?.id, t, navigate]);
+  }, [item, t, navigate, convertToStartup]);
   
   const emailSyncEnabled = useFeatureFlag('crm_graph_email_sync');
   const aiRecapEnabled = useFeatureFlag('crm_ai_recap');
