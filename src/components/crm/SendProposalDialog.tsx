@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
-import { Send, Paperclip, FileText } from 'lucide-react';
+import { Send, Paperclip, FileText, Upload, X } from 'lucide-react';
 
 import {
   Dialog,
@@ -30,8 +30,19 @@ import { usePrograms } from '@/hooks/useAdminData';
 import { useProposalMaterials } from '@/hooks/useProposalMaterials';
 import type { FunnelItem } from '@/hooks/useFunnel';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { notify } from '@/lib/notify';
 import { logger } from '@/lib/logger';
+
+const MAX_UPLOAD_MB = 15;
+const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
+
+interface AdHocFile {
+  path: string;
+  title: string;
+  size: number;
+}
+
 
 interface SendProposalDialogProps {
   open: boolean;
