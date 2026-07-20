@@ -112,19 +112,25 @@ export function AssignWorkspaceDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {contract && (
-          <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
-            <div className="font-medium">
-              {contract.organization_name || contract.contract_number || contract.id.slice(0, 8)}
-            </div>
-            {contract.legal_representative_email && (
-              <div className="text-muted-foreground mt-0.5">
-                {t('lifecycleMismatch.founderLabel', { defaultValue: 'Founder' })}:{' '}
-                {contract.legal_representative_name || contract.legal_representative_email}
+        {contract && (() => {
+          const c = contract as StartupContract & {
+            legal_representative_email?: string | null;
+            legal_representative_name?: string | null;
+          };
+          return (
+            <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
+              <div className="font-medium">
+                {c.organization_name || c.contract_number || c.id.slice(0, 8)}
               </div>
-            )}
-          </div>
-        )}
+              {c.legal_representative_email && (
+                <div className="text-muted-foreground mt-0.5">
+                  {t('lifecycleMismatch.founderLabel', { defaultValue: 'Founder' })}:{' '}
+                  {c.legal_representative_name || c.legal_representative_email}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         <div className="space-y-2">
           <Label htmlFor="ws-search" className="text-xs">
