@@ -58,16 +58,27 @@ export function FocusModeToggle({ className }: { className?: string }) {
     ? t('dashboard.fullView', 'Full View')
     : t('dashboard.focusView', 'Focus View');
 
+  const handleClick = () => {
+    toggle();
+    const next = !isFocused;
+    notify.info(
+      next
+        ? t('dashboard.focusEnabled', 'Vista de Foco ativa — apenas prioridades visíveis')
+        : t('dashboard.fullViewEnabled', 'Vista Completa ativa — todas as secções visíveis'),
+    );
+  };
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
           variant="outline"
           size="sm"
-          onClick={toggle}
+          onClick={handleClick}
           className={cn('gap-2 h-8', className)}
           data-testid="focus-mode-toggle"
           aria-label={targetLabel}
+          aria-pressed={isFocused}
         >
           {isFocused ? (
             <>
