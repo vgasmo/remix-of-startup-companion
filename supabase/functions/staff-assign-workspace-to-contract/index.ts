@@ -87,22 +87,51 @@ Deno.serve(async (req) => {
       if (!startupName) {
         return errorResponse(req, 'startup_name required to create workspace', ErrorCode.BAD_REQUEST, 400);
       }
-      const { data: newStartup, error: sErr } = await admin
-        .from('startups')
-        .insert({
-          name: startupName,
-          main_contact_email: contract.legal_representative_email || null,
-          main_contact_name: contract.legal_representative_name || null,
-        })
-        .select('id')
-        .single();
-      if (sErr || !newStartup) throw new Error(`Startup create failed: ${sErr?.message}`);
+      const programId = create.program_id || null;
+
+      // Duplicate guard: same startup name + program already has a non-archived workspace.
+      const { data: existingMatches, error: dupErr } = await admin
+        .from('workspaces')
+        .select('id, status, program_id, startup:startups!inner(id, name)')
+        .eq('startups.name', startupName)
+        .is('archived_at', null);
+      if (dupErr) throw new Error(`Duplicate check failed: ${dupErr.message}`);
+      const conflict = (existingMatches || []).find(
+        (w: any) => (w.program_id ?? null) === programId,
+      );
+      if (conflict) {
+        return errorResponse(
+          req,
+          `Já existe um workspace para "${startupName}" neste programa. Use "Atribuir existente".`,
+          ErrorCode.BAD_REQUEST,
+          409,
+        );
+      }
+
+      // Reuse existing startup with same name if present, otherwise create new.
+      let startupId: string;
+      const existingStartup = (existingMatches || [])[0]?.startup as { id: string } | undefined;
+      if (existingStartup?.id) {
+        startupId = existingStartup.id;
+      } else {
+        const { data: newStartup, error: sErr } = await admin
+          .from('startups')
+          .insert({
+            name: startupName,
+            main_contact_email: contract.legal_representative_email || null,
+            main_contact_name: contract.legal_representative_name || null,
+          })
+          .select('id')
+          .single();
+        if (sErr || !newStartup) throw new Error(`Startup create failed: ${sErr?.message}`);
+        startupId = newStartup.id;
+      }
 
       const { data: newWs, error: wErr } = await admin
         .from('workspaces')
         .insert({
-          startup_id: newStartup.id,
-          program_id: create.program_id || null,
+          startup_id: startupId,
+          program_id: programId,
           status: 'active',
           needs_onboarding: true,
           stage: create.stage || 'ideation',
@@ -111,7 +140,8 @@ Deno.serve(async (req) => {
         .single();
       if (wErr || !newWs) throw new Error(`Workspace create failed: ${wErr?.message}`);
       workspaceId = newWs.id;
-      log.info('workspace_created_for_contract', { contractId, workspaceId, startupId: newStartup.id });
+      log.info('workspace_created_for_contract', { contractId, workspaceId, startupId });
+
     } else {
       const { data: ws, error: wsErr } = await admin
         .from('workspaces')
