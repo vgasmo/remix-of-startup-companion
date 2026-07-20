@@ -43,8 +43,19 @@ export async function autoCreateFounderAccount(
   const fullName = contract.legal_representative_name || 'Founder'
 
   try {
-    const { data: existingUsers } = await supabase.auth.admin.listUsers()
-    const existingUser = existingUsers?.users?.find((u: any) => u.email?.toLowerCase() === email)
+    // Paginated lookup: listUsers() defaults to 50 rows per page. Iterate
+    // until we find the email or exhaust results, so pre-existing auth
+    // accounts are always detected (otherwise createUser throws email_exists
+    // and we lose the link between the auth user and the workspace).
+    let existingUser: any = null;
+    for (let page = 1; page <= 20; page++) {
+      const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 200 });
+      if (error) throw error;
+      const users = data?.users || [];
+      existingUser = users.find((u: any) => u.email?.toLowerCase() === email);
+      if (existingUser) break;
+      if (users.length < 200) break;
+    }
 
     let userId: string
     if (existingUser) {
@@ -78,9 +89,20 @@ export async function autoCreateFounderAccount(
       }
     }
 
+    // Ensure a profile row exists so the founder shows up in the user list
+    // even if the auth account pre-existed (in which case the on_auth_user_created
+    // trigger has already fired and won't fire again).
+    await supabase
+      .from('profiles')
+      .upsert(
+        { id: userId, email, full_name: fullName, account_status: 'approved' },
+        { onConflict: 'id' },
+      )
+
     await supabase
       .from('user_roles')
       .upsert({ user_id: userId, role: 'founder' }, { onConflict: 'user_id,role' })
+
 
     await supabase
       .from('workspace_users')
@@ -119,18 +141,23 @@ export async function enqueueFounderInviteTask(
   reason: string,
 ) {
   try {
+    if (!contract.workspace_id) return
     await supabase.from('staff_work_queue_items').insert({
-      item_type: 'invite_founder',
+      workspace_id: contract.workspace_id,
+      type: 'triage',
       title: `Convidar founder — ${contract.legal_representative_name || contract.legal_representative_email || contract.id.slice(0, 8)}`,
       description: `Auto-criação de conta falhou (${reason}). Convite manual necessário.`,
-      entity_type: 'contract',
-      entity_id: contract.id,
-      workspace_id: contract.workspace_id,
       priority: 'high',
       status: 'open',
-      metadata: { reason, email: contract.legal_representative_email },
+      evidence_json: {
+        purpose: 'invite_founder',
+        contract_id: contract.id,
+        reason,
+        email: contract.legal_representative_email,
+      },
     })
   } catch (err) {
     console.warn('[founderAccount] enqueue work-queue failed (non-fatal):', err)
   }
 }
+
