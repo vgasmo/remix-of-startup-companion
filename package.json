@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "test:e2e": "bunx playwright test",
     "release-check": "bash scripts/release-check.sh",
-    "rc5:verify": "bash scripts/rc5/verify.sh"
+    "rc5:verify": "bash scripts/rc5/verify.sh",
+    "size": "size-limit"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
