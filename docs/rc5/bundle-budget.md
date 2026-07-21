@@ -31,6 +31,14 @@ committing the visualizer HTML to `docs/rc5/bundle-report.html` on each RC.
 
 ## Status
 
-**Budget documented.** Enforcement via CI bundle-size check is NOT PROVEN in
-this cycle — requires wiring `size-limit` or equivalent in
-`.github/workflows/ci.yml`. Owner: platform team, follow-up ticket.
+**Enforced via `size-limit`** — config at `.size-limit.json`, wired into
+`.github/workflows/ci.yml` (`bunx size-limit` step after build). CI fails
+when initial JS exceeds 900 KB gzip or CSS exceeds 120 KB gzip. Run
+`bun run size` locally after `bun run build` to check.
+
+Lazy-loading is enforced at the route level in `src/App.tsx` via
+`lazyWithRetry` — heavy recharts-using pages (Analytics, KPIs, Funding,
+Backoffice) are already isolated in their route chunks. `pdf-lib`,
+`@react-pdf/renderer`, `papaparse`, and `xlsx` are **not** current
+dependencies; if reintroduced, gate them behind dynamic `import()` and
+re-run `bun run size`.
