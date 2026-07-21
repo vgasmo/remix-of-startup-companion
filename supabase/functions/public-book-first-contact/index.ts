@@ -345,9 +345,8 @@ serve(async (req) => {
           },
           { onConflict: "email_normalized,bucket_start", ignoreDuplicates: false },
         );
-      // Best-effort atomic increment (upsert without ignoreDuplicates keeps attempts=1;
-      // increment the row so retries within the same hour count towards the cap)
-      await supabase.rpc as unknown; // no-op typing helper; increment below
+      // Increment the current-hour bucket so retries within the same hour count toward the cap.
+
       await supabase
         .from("public_booking_rate_limits")
         .update({ attempts: (hourlyCount || 0) + 1, last_attempt_at: new Date().toISOString() })
