@@ -811,7 +811,7 @@ Deno.serve(async (req) => {
         square_meters, signature_status, signature_provider, legal_representative_name,
         legal_representative_email, legal_representative_phone, company_nif, company_address,
         company_city, company_postal_code, project_name,
-        document_url,
+        document_url, documents_json,
         certidao_permanente_code, additional_representatives,
         onboarding_token_expires_at, updated_at,
         regulation_accepted_at, regulation_version,
@@ -821,6 +821,7 @@ Deno.serve(async (req) => {
       `)
       .eq('onboarding_token_hash', onboardingTokenHash)
       .single()
+
 
     if (fetchErr || !contract) {
       return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
