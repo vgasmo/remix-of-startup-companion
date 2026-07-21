@@ -2128,6 +2128,117 @@ export type Database = {
           },
         ]
       }
+      crm_lead_import_batches: {
+        Row: {
+          committed_at: string | null
+          committed_rows: number
+          created_at: string
+          created_by: string
+          id: string
+          invalid_rows: number
+          plan_hash: string | null
+          source_filename: string | null
+          status: string
+          total_rows: number
+          valid_rows: number
+        }
+        Insert: {
+          committed_at?: string | null
+          committed_rows?: number
+          created_at?: string
+          created_by: string
+          id?: string
+          invalid_rows?: number
+          plan_hash?: string | null
+          source_filename?: string | null
+          status?: string
+          total_rows?: number
+          valid_rows?: number
+        }
+        Update: {
+          committed_at?: string | null
+          committed_rows?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          invalid_rows?: number
+          plan_hash?: string | null
+          source_filename?: string | null
+          status?: string
+          total_rows?: number
+          valid_rows?: number
+        }
+        Relationships: []
+      }
+      crm_lead_import_rows: {
+        Row: {
+          batch_id: string
+          committed_funnel_item_id: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          deal_value: number | null
+          error: string | null
+          id: string
+          notes: string | null
+          organization_name: string | null
+          row_hash: string
+          row_index: number
+          source: string | null
+          valid: boolean
+        }
+        Insert: {
+          batch_id: string
+          committed_funnel_item_id?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          deal_value?: number | null
+          error?: string | null
+          id?: string
+          notes?: string | null
+          organization_name?: string | null
+          row_hash: string
+          row_index: number
+          source?: string | null
+          valid?: boolean
+        }
+        Update: {
+          batch_id?: string
+          committed_funnel_item_id?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          deal_value?: number | null
+          error?: string | null
+          id?: string
+          notes?: string | null
+          organization_name?: string | null
+          row_hash?: string
+          row_index?: number
+          source?: string | null
+          valid?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_lead_import_rows_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "crm_lead_import_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_lead_import_rows_committed_funnel_item_id_fkey"
+            columns: ["committed_funnel_item_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_stage_email_log: {
         Row: {
           created_at: string | null
@@ -3448,6 +3559,53 @@ export type Database = {
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      first_contact_outbox: {
+        Row: {
+          attempts: number
+          completed_at: string | null
+          created_at: string
+          funnel_item_id: string | null
+          id: string
+          kind: string
+          last_error: string | null
+          next_attempt_at: string
+          payload_json: Json
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          funnel_item_id?: string | null
+          id?: string
+          kind: string
+          last_error?: string | null
+          next_attempt_at?: string
+          payload_json?: Json
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          funnel_item_id?: string | null
+          id?: string
+          kind?: string
+          last_error?: string | null
+          next_attempt_at?: string
+          payload_json?: Json
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "first_contact_outbox_funnel_item_id_fkey"
+            columns: ["funnel_item_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_items"
             referencedColumns: ["id"]
           },
         ]
@@ -5858,6 +6016,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      public_booking_rate_limits: {
+        Row: {
+          attempts: number
+          bucket_start: string
+          created_at: string
+          email_normalized: string
+          id: string
+          ip_hash: string | null
+          last_attempt_at: string
+        }
+        Insert: {
+          attempts?: number
+          bucket_start?: string
+          created_at?: string
+          email_normalized: string
+          id?: string
+          ip_hash?: string | null
+          last_attempt_at?: string
+        }
+        Update: {
+          attempts?: number
+          bucket_start?: string
+          created_at?: string
+          email_normalized?: string
+          id?: string
+          ip_hash?: string | null
+          last_attempt_at?: string
+        }
+        Relationships: []
       }
       quality_check_results: {
         Row: {
@@ -11430,6 +11618,7 @@ export type Database = {
         Args: { _startup_id: string }
         Returns: boolean
       }
+      jsonb_deep_merge: { Args: { a: Json; b: Json }; Returns: Json }
       launch_survey_campaign: {
         Args: { p_campaign_id: string; p_workspace_ids?: string[] }
         Returns: {
