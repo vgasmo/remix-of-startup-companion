@@ -10,6 +10,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { createLogger, generateRequestId, requireCronSecret, safeErrorMessage } from '../_shared/security.ts';
+import { withCronRunLogging } from '../_shared/cronRun.ts';
 
 const FUNCTION_NAME = 'sweep-session-transcripts';
 const MAX_ATTEMPTS = 8;
@@ -20,7 +21,7 @@ const MIN_MINUTES_AFTER_COMPLETION = 5;
 // Minimum spacing between attempts on the same session (in minutes)
 const MIN_ATTEMPT_INTERVAL_MIN = 15;
 
-Deno.serve(async (req: Request) => {
+Deno.serve(withCronRunLogging('sweep-session-transcripts', async (req: Request) => {
   const requestId = generateRequestId();
   const log = createLogger(FUNCTION_NAME, requestId);
   const runStartedAt = Date.now();
