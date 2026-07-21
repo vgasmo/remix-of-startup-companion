@@ -128,6 +128,28 @@ Deno.serve(async (req) => {
       })
     }
 
+    // B1: Idempotency guard — refuse to create a second envelope once a
+    // provider document already exists in a live/terminal state. Only allow
+    // resend for pre-dispatch states (draft / ready_to_send / failed /
+    // pending_manual). Callers that need to force a re-issue must first
+    // void the existing envelope explicitly.
+    if (
+      (contract.docusign_envelope_id || contract.provider_document_id) &&
+      contract.signature_status &&
+      !['draft', 'failed', 'ready_to_send', 'pending_manual'].includes(contract.signature_status)
+    ) {
+      return new Response(JSON.stringify({
+        error: 'Contract already sent for signature. Cannot resend without voiding.',
+        currentProvider: contract.signature_provider,
+        currentEnvelope: contract.docusign_envelope_id || contract.provider_document_id,
+        currentStatus: contract.signature_status,
+      }), {
+        status: 409,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+
     // Generate the contract PDF first
     let documentBase64 = ''
     try {
