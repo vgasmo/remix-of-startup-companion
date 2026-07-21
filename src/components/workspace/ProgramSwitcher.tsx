@@ -55,38 +55,21 @@ export function ProgramSwitcher({
     if (!pendingProgramId) return;
     setSaving(true);
     try {
-      const targetType = (targetProgram as any)?.program_type ?? null;
-      const patch: Record<string, unknown> = {
-        program_id: pendingProgramId,
-        stage_id: null, // stages are program-scoped
-      };
-      if (targetType === 'acceleration') patch.current_week = 1;
-      else patch.current_week = null;
-
-      const { error } = await supabase
-        .from('workspaces')
-        .update(patch)
-        .eq('id', workspaceId);
+      // C1: route ALL transfers through the canonical RPC. The RPC handles
+      // stage_id/current_week reset, milestone archival, lifecycle logging
+      // and staff authorization in a single transaction — no shadow writes.
+      const { data, error } = await supabase.rpc(
+        'staff_transfer_workspace_program' as any,
+        {
+          p_workspace_id: workspaceId,
+          p_target_program_id: pendingProgramId,
+          p_dry_run: false,
+        },
+      );
       if (error) throw error;
-
-      // Best-effort lifecycle log (silent on failure)
-      try {
-        const { data: userData } = await supabase.auth.getUser();
-        await supabase.from('activity_log').insert({
-          workspace_id: workspaceId,
-          user_id: userData.user?.id ?? null,
-          action: 'workspace.program_changed',
-          entity_type: 'workspace',
-          entity_id: workspaceId,
-          metadata: {
-            from_program_id: currentProgramId,
-            to_program_id: pendingProgramId,
-            from_program_name: (currentProgram as any)?.name ?? null,
-            to_program_name: (targetProgram as any)?.name ?? null,
-          },
-        } as any);
-      } catch {
-        /* non-critical */
+      const action = (data as any)?.action;
+      if (action && action !== 'committed' && action !== 'noop') {
+        throw new Error(`unexpected transfer action: ${action}`);
       }
 
       notify.success(
@@ -97,7 +80,6 @@ export function ProgramSwitcher({
       queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces-paged'] });
-      // Force re-materialization check so the new program's deliverables show up.
       queryClient.invalidateQueries({ queryKey: ['acceleration-materialized', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-milestones', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspace-actions', workspaceId] });
