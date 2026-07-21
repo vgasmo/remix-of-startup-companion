@@ -4943,6 +4943,56 @@ export type Database = {
           },
         ]
       }
+      notification_attempts: {
+        Row: {
+          attempt_no: number
+          channel: string
+          client_command_id: string | null
+          created_at: string
+          error_message: string | null
+          event_key: string | null
+          id: string
+          metadata: Json
+          notification_id: string | null
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          attempt_no?: number
+          channel: string
+          client_command_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          event_key?: string | null
+          id?: string
+          metadata?: Json
+          notification_id?: string | null
+          state: string
+          updated_at?: string
+        }
+        Update: {
+          attempt_no?: number
+          channel?: string
+          client_command_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          event_key?: string | null
+          id?: string
+          metadata?: Json
+          notification_id?: string | null
+          state?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_attempts_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_ledger: {
         Row: {
           business_key: string
@@ -11921,6 +11971,45 @@ export type Database = {
       }
       resolve_canonical_booking_token: { Args: never; Returns: string }
       revert_import_row: { Args: { p_row_id: string }; Returns: Json }
+      save_financial_scenario_atomic: {
+        Args: {
+          p_expected_updated_at: string
+          p_key_metrics: Json
+          p_scenario_name?: string
+          p_snapshot: Json
+          p_version_id: string
+        }
+        Returns: {
+          ai_review_generated_at: string | null
+          ai_review_generated_by: string | null
+          ai_review_json: Json | null
+          content_sha256: string | null
+          coverage_pct: number | null
+          created_at: string
+          document_id: string
+          formula_cache_stale: boolean
+          id: string
+          key_metrics_json: Json | null
+          parse_error: string | null
+          parse_status: string | null
+          parse_warnings: Json
+          scenario_name: string
+          snapshot_json: Json | null
+          source_asset_id: string | null
+          status: string
+          template_schema_version: number | null
+          updated_at: string
+          uploaded_at: string
+          uploaded_by: string | null
+          workspace_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "financial_model_versions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       search_workspaces_paged: {
         Args: {
           _assigned_to?: string

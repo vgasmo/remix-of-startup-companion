@@ -53,7 +53,7 @@ export default defineConfig({
   webServer: process.env.CI
     ? undefined
     : {
-        command: 'npm run dev',
+        command: 'bun run dev',
         url: BASE_URL,
         reuseExistingServer: true,
         timeout: 30_000,

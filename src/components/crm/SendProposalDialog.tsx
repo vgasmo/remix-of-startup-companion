@@ -30,7 +30,7 @@ import { usePrograms } from '@/hooks/useAdminData';
 import { useProposalMaterials } from '@/hooks/useProposalMaterials';
 import type { FunnelItem } from '@/hooks/useFunnel';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabaseClient';
 import { notify } from '@/lib/notify';
 import { logger } from '@/lib/logger';
 
