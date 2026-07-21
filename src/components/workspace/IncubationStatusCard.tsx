@@ -49,6 +49,7 @@ export const IncubationStatusCard = memo(function IncubationStatusCard({
         .from('milestones')
         .select('id, title, target_date, status')
         .eq('workspace_id', workspaceId)
+        .is('archived_at', null)
         .in('status', ['not_started', 'in_progress'])
         .order('target_date', { ascending: true, nullsFirst: false })
         .limit(3);

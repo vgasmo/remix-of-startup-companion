@@ -115,6 +115,7 @@ export function useSessionPrep(sessionId: string | undefined, workspaceId: strin
           .from('milestones')
           .select('id, title, status, target_date')
           .eq('workspace_id', workspaceId)
+          .is('archived_at', null)
           .neq('status', 'completed')
           .order('target_date', { ascending: true, nullsFirst: false })
           .limit(5),

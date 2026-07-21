@@ -33,6 +33,7 @@ export function useMilestones(workspaceId: string | undefined) {
         .from('milestones')
         .select('*')
         .eq('workspace_id', workspaceId)
+        .is('archived_at', null)
         .order('position', { ascending: true });
 
       if (error) throw error;

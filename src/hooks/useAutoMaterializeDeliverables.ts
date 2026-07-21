@@ -33,6 +33,7 @@ export function useAutoMaterializeDeliverables(
         .from('milestones')
         .select('id, source_gate:program_gates!milestones_source_gate_id_fkey(program_id)')
         .eq('workspace_id', workspaceId)
+        .is('archived_at', null)
         .not('source_gate_id', 'is', null);
       if (error) {
         logger.error('materialize_deliverables_check_failed', { workspaceId, error: error.message });
