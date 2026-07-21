@@ -728,10 +728,58 @@ serve(async (req) => {
       console.error('Consultant alert email error:', mailErr);
     }
 
+    // === Durable outbox trace (E3) ===
+    // Record every subsystem attempt so ops can replay / audit even when the
+    // inline delivery already completed. `completed` rows are audit trail;
+    // `failed`/`pending` rows are candidates for a future retry worker.
+    try {
+      const outboxRows = [
+        {
+          funnel_item_id: funnelItemId,
+          kind: 'graph_event',
+          payload_json: {
+            calendar_event_id: calendarEventId,
+            teams_url: teamsLink,
+            slot,
+            consultant_email: consultantEmail,
+          },
+          status: calendarStatus === 'ok' ? 'completed' : (calendarStatus === 'failed' ? 'failed' : 'skipped'),
+          attempts: 1,
+          last_error: calendarError,
+          completed_at: calendarStatus === 'ok' ? new Date().toISOString() : null,
+        },
+        {
+          funnel_item_id: funnelItemId,
+          kind: 'consultant_notification',
+          payload_json: { consultant_id: consultantId, slot },
+          status: consultantId ? 'completed' : 'skipped',
+          attempts: 1,
+          completed_at: consultantId ? new Date().toISOString() : null,
+        },
+        {
+          funnel_item_id: funnelItemId,
+          kind: 'founder_notification',
+          payload_json: { contact_email: contact.email, slot },
+          status: 'pending', // resolved by founder-notification block above; not authoritative
+          attempts: 1,
+        },
+        {
+          funnel_item_id: funnelItemId,
+          kind: 'consultant_email',
+          payload_json: { consultant_email: consultantEmail, slot },
+          status: consultantEmail ? 'pending' : 'skipped',
+          attempts: 1,
+        },
+      ];
+      await supabase.from('first_contact_outbox').insert(outboxRows);
+    } catch (outErr) {
+      console.warn('first_contact_outbox insert failed (non-fatal):', outErr);
+    }
 
     // Honest response: reflect what actually happened per subsystem so the client
     // shows a partial-success UI instead of "everything confirmed" on failure.
     const partialFailure = calendarStatus === 'failed';
+
     return corsJsonResponse({
       success: !partialFailure,
       funnelItemId,
