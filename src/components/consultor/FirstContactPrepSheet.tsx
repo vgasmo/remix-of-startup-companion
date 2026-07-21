@@ -42,7 +42,7 @@ function usePrepData(workspaceId: string) {
         supabase.from('kpi_values').select('id, kpi_definition_id, value, period_month, kpi_definitions(name, unit)').eq('workspace_id', workspaceId).order('period_month', { ascending: false }).limit(10),
         supabase.from('workspace_users').select('user_id, role, profiles_safe(full_name, email)').eq('workspace_id', workspaceId).eq('active', true),
         supabase.from('action_items').select('id, title, status, due_date').eq('workspace_id', workspaceId).limit(20),
-        supabase.from('milestones').select('id, title, status, target_date').eq('workspace_id', workspaceId).limit(10),
+        supabase.from('milestones').select('id, title, status, target_date').eq('workspace_id', workspaceId).is('archived_at', null).limit(10),
         supabase.from('sessions').select('id, title, scheduled_at').eq('workspace_id', workspaceId).order('scheduled_at', { ascending: false }).limit(3),
       ]);
 
