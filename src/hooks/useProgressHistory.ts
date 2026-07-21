@@ -46,6 +46,7 @@ export function useMilestoneHistory(workspaceId: string) {
         .from('milestones')
         .select('id, title, description, status, completed_at, created_at')
         .eq('workspace_id', workspaceId)
+        .is('archived_at', null)
         .eq('status', 'completed')
         .order('completed_at', { ascending: false })
         .limit(20);
