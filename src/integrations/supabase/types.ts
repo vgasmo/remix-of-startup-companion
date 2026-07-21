@@ -6851,6 +6851,51 @@ export type Database = {
           },
         ]
       }
+      session_transcript_audit: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          id: string
+          new_confidentiality: string
+          old_confidentiality: string | null
+          reason: string | null
+          transcript_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          new_confidentiality: string
+          old_confidentiality?: string | null
+          reason?: string | null
+          transcript_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          new_confidentiality?: string
+          old_confidentiality?: string | null
+          reason?: string | null
+          transcript_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_transcript_audit_transcript_id_fkey"
+            columns: ["transcript_id"]
+            isOneToOne: false
+            referencedRelation: "session_transcripts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_transcript_audit_transcript_id_fkey"
+            columns: ["transcript_id"]
+            isOneToOne: false
+            referencedRelation: "session_transcripts_review_queue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_transcripts: {
         Row: {
           confidentiality: string
@@ -9229,6 +9274,13 @@ export type Database = {
             referencedRelation: "session_transcripts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "transcript_containment_audit_transcript_id_fkey"
+            columns: ["transcript_id"]
+            isOneToOne: false
+            referencedRelation: "session_transcripts_review_queue"
+            referencedColumns: ["id"]
+          },
         ]
       }
       transcript_deletion_audit: {
@@ -10565,6 +10617,21 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_health_summary: {
+        Row: {
+          enabled: boolean | null
+          expected_cadence_seconds: number | null
+          expected_severity: string | null
+          failures_24h: number | null
+          grace_seconds: number | null
+          health_state: string | null
+          job_name: string | null
+          last_failed: string | null
+          last_ok: string | null
+          last_started: string | null
+        }
+        Relationships: []
+      }
       contract_intakes_safe: {
         Row: {
           approved_data_snapshot: Json | null
@@ -10819,6 +10886,47 @@ export type Database = {
           role_display?: never
         }
         Relationships: []
+      }
+      session_transcripts_review_queue: {
+        Row: {
+          confidentiality: string | null
+          contained_at: string | null
+          created_at: string | null
+          id: string | null
+          pending_confidentiality_review: boolean | null
+          review_reason: string | null
+          session_id: string | null
+          source: string | null
+        }
+        Insert: {
+          confidentiality?: string | null
+          contained_at?: string | null
+          created_at?: string | null
+          id?: string | null
+          pending_confidentiality_review?: boolean | null
+          review_reason?: never
+          session_id?: string | null
+          source?: string | null
+        }
+        Update: {
+          confidentiality?: string | null
+          contained_at?: string | null
+          created_at?: string | null
+          id?: string | null
+          pending_confidentiality_review?: boolean | null
+          review_reason?: never
+          session_id?: string | null
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_transcripts_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       startup_contracts_safe: {
         Row: {
@@ -11917,6 +12025,29 @@ export type Database = {
           program_id: string
           severity: string
         }[]
+      }
+      staff_reclassify_transcript_confidentiality: {
+        Args: {
+          p_new_confidentiality: string
+          p_reason?: string
+          p_transcript_id: string
+        }
+        Returns: {
+          confidentiality: string
+          contained_at: string | null
+          created_at: string | null
+          id: string
+          pending_confidentiality_review: boolean
+          session_id: string
+          source: string | null
+          transcript_text: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "session_transcripts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       staff_rotate_intake_token: {
         Args: { p_intake_id: string }
