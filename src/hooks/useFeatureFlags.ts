@@ -16,6 +16,7 @@ export const FEATURE_FLAG_KEYS = [
   'open_registration',
   'financial_business_plan_coach_v1',
   'hubspot_importer_v2',
+  'founder_monthly_pulse',
 ] as const;
 
 export type FeatureFlagKey = typeof FEATURE_FLAG_KEYS[number];

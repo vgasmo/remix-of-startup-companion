@@ -55,6 +55,7 @@ import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
 import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
 import { MySupportTeamCard } from '@/components/founder/MySupportTeamCard';
 import { FounderPulseCard } from '@/components/dashboard/FounderPulseCard';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
 import { BrandSurface } from '@/components/ui/BrandSurface';
 import { WelcomeSplash } from '@/components/founder/WelcomeSplash';
 import { useIsFirstWeek } from '@/hooks/useIsFirstWeek';
@@ -95,6 +96,8 @@ export const FounderDashboard = memo(function FounderDashboard({
   // Multi-workspace affordance: default to first but allow switching
   const [selectedWorkspaceIdx, setSelectedWorkspaceIdx] = useState(0);
   const workspace = workspaces[selectedWorkspaceIdx] || workspaces[0];
+  // Kill-switch: Monthly Founder Pulse is OFF by default. Flag `founder_monthly_pulse` gates the card.
+  const pulseFlagEnabled = useFeatureFlag('founder_monthly_pulse', undefined, workspace?.id);
   const nudges = useSmartNudges(workspace?.id);
   const { data: kpiAnomaly } = useKpiAnomalyNudge(workspace?.id);
   
@@ -406,7 +409,7 @@ export const FounderDashboard = memo(function FounderDashboard({
       {/* 2.6 Monthly Founder Pulse */}
       <div className="animate-fade-in-up stagger-3">
         <WidgetErrorBoundary>
-          <FounderPulseCard workspaceId={workspace.id} />
+          {pulseFlagEnabled && <FounderPulseCard workspaceId={workspace.id} />}
         </WidgetErrorBoundary>
       </div>
 
