@@ -8043,6 +8043,7 @@ export type Database = {
           document_url: string | null
           docusign_envelope_id: string | null
           end_date: string | null
+          envelope_command_id: string | null
           equity_percentage: number | null
           founder_signer_status: string | null
           funnel_item_id: string | null
@@ -8131,6 +8132,7 @@ export type Database = {
           document_url?: string | null
           docusign_envelope_id?: string | null
           end_date?: string | null
+          envelope_command_id?: string | null
           equity_percentage?: number | null
           founder_signer_status?: string | null
           funnel_item_id?: string | null
@@ -8219,6 +8221,7 @@ export type Database = {
           document_url?: string | null
           docusign_envelope_id?: string | null
           end_date?: string | null
+          envelope_command_id?: string | null
           equity_percentage?: number | null
           founder_signer_status?: string | null
           funnel_item_id?: string | null
