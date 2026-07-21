@@ -54,6 +54,7 @@ import { useUpcomingSessions } from '@/hooks/useUpcomingSessions';
 import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
 import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
 import { MySupportTeamCard } from '@/components/founder/MySupportTeamCard';
+import { FounderPulseCard } from '@/components/dashboard/FounderPulseCard';
 import { BrandSurface } from '@/components/ui/BrandSurface';
 import { WelcomeSplash } from '@/components/founder/WelcomeSplash';
 import { useIsFirstWeek } from '@/hooks/useIsFirstWeek';
@@ -401,6 +402,13 @@ export const FounderDashboard = memo(function FounderDashboard({
           />
         </div>
       )}
+
+      {/* 2.6 Monthly Founder Pulse */}
+      <div className="animate-fade-in-up stagger-3">
+        <WidgetErrorBoundary>
+          <FounderPulseCard workspaceId={workspace.id} />
+        </WidgetErrorBoundary>
+      </div>
 
       {/* 3. Consultant / next session */}
       <div className="animate-fade-in-up stagger-4">
