@@ -96,6 +96,8 @@ export const FounderDashboard = memo(function FounderDashboard({
   // Multi-workspace affordance: default to first but allow switching
   const [selectedWorkspaceIdx, setSelectedWorkspaceIdx] = useState(0);
   const workspace = workspaces[selectedWorkspaceIdx] || workspaces[0];
+  // Kill-switch: Monthly Founder Pulse is OFF by default. Flag `founder_monthly_pulse` gates the card.
+  const pulseFlagEnabled = useFeatureFlag('founder_monthly_pulse', undefined, workspace?.id);
   const nudges = useSmartNudges(workspace?.id);
   const { data: kpiAnomaly } = useKpiAnomalyNudge(workspace?.id);
   
