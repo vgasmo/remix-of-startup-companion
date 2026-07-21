@@ -5124,11 +5124,20 @@ export type Database = {
           channel: string
           client_command_id: string | null
           created_at: string
+          delivered_at: string | null
           error_message: string | null
           event_key: string | null
+          failed_at: string | null
           id: string
+          last_error_class: string | null
+          lease_expires_at: string | null
+          lease_owner: string | null
+          max_attempts: number
           metadata: Json
+          next_attempt_at: string
           notification_id: string | null
+          provider_message_id: string | null
+          scheduled_at: string
           state: string
           updated_at: string
         }
@@ -5137,11 +5146,20 @@ export type Database = {
           channel: string
           client_command_id?: string | null
           created_at?: string
+          delivered_at?: string | null
           error_message?: string | null
           event_key?: string | null
+          failed_at?: string | null
           id?: string
+          last_error_class?: string | null
+          lease_expires_at?: string | null
+          lease_owner?: string | null
+          max_attempts?: number
           metadata?: Json
+          next_attempt_at?: string
           notification_id?: string | null
+          provider_message_id?: string | null
+          scheduled_at?: string
           state: string
           updated_at?: string
         }
@@ -5150,11 +5168,20 @@ export type Database = {
           channel?: string
           client_command_id?: string | null
           created_at?: string
+          delivered_at?: string | null
           error_message?: string | null
           event_key?: string | null
+          failed_at?: string | null
           id?: string
+          last_error_class?: string | null
+          lease_expires_at?: string | null
+          lease_owner?: string | null
+          max_attempts?: number
           metadata?: Json
+          next_attempt_at?: string
           notification_id?: string | null
+          provider_message_id?: string | null
+          scheduled_at?: string
           state?: string
           updated_at?: string
         }
@@ -11673,6 +11700,37 @@ export type Database = {
       check_ecosystem_invariants: { Args: never; Returns: Json }
       check_email_sync_health: { Args: never; Returns: undefined }
       check_signup_allowed: { Args: { p_email: string }; Returns: boolean }
+      claim_notification_attempts: {
+        Args: { p_lease_seconds?: number; p_limit?: number; p_owner: string }
+        Returns: {
+          attempt_no: number
+          channel: string
+          client_command_id: string | null
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          event_key: string | null
+          failed_at: string | null
+          id: string
+          last_error_class: string | null
+          lease_expires_at: string | null
+          lease_owner: string | null
+          max_attempts: number
+          metadata: Json
+          next_attempt_at: string
+          notification_id: string | null
+          provider_message_id: string | null
+          scheduled_at: string
+          state: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "notification_attempts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       claim_startup: { Args: never; Returns: Json }
       cleanup_old_rate_limits: { Args: never; Returns: number }
       commit_import_funnel_item: {
@@ -12109,6 +12167,23 @@ export type Database = {
           p_triggered_by?: string
         }
         Returns: string
+      }
+      mark_notification_delivered: {
+        Args: {
+          p_id: string
+          p_metadata?: Json
+          p_provider_message_id?: string
+        }
+        Returns: undefined
+      }
+      mark_notification_failed: {
+        Args: {
+          p_error_class: string
+          p_error_message: string
+          p_id: string
+          p_retryable?: boolean
+        }
+        Returns: undefined
       }
       mark_session_no_show_atomic: {
         Args: {
