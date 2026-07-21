@@ -154,8 +154,37 @@ Deno.serve(async (req) => {
       })
     }
 
+    // B1: Deterministic envelope command id — sha256(contractId || template_version || 'send').
+    // Persisted on the contract with a unique-when-set index so concurrent retries
+    // collapse to the same envelope. If a previous attempt already stamped this
+    // key AND left an envelope id in place, return it instead of re-sending.
+    const templateVersion = String(contract.contract_template_version ?? 'v0')
+    const commandSource = `${contractId}::${templateVersion}::send`
+    const commandDigest = await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(commandSource),
+    )
+    const envelopeCommandId = Array.from(new Uint8Array(commandDigest))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
 
-    // Generate the contract PDF first
+    if (
+      contract.envelope_command_id === envelopeCommandId &&
+      (contract.docusign_envelope_id || contract.provider_document_id)
+    ) {
+      return new Response(JSON.stringify({
+        status: 'already_sent',
+        idempotent: true,
+        envelopeId: contract.docusign_envelope_id || contract.provider_document_id,
+        envelopeCommandId,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Generate the contract PDF first — B1 fail-closed policy: if the PDF
+    // cannot be produced we refuse to dispatch to the provider rather than
+    // sending a placeholder document that the signer would need to redo.
     let documentBase64 = ''
     try {
       const pdfRes = await fetch(`${supabaseUrl}/functions/v1/generate-contract-pdf`, {
@@ -166,15 +195,34 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({ contractId }),
       })
-      if (pdfRes.ok) {
-        const pdfData = await pdfRes.json()
-        documentBase64 = pdfData.documentBase64 || ''
-      } else {
-        console.warn('PDF generation failed, proceeding with placeholder')
+      if (!pdfRes.ok) {
+        const errText = await pdfRes.text().catch(() => '')
+        throw new Error(`generate-contract-pdf ${pdfRes.status}: ${errText.slice(0, 200)}`)
+      }
+      const pdfData = await pdfRes.json()
+      documentBase64 = pdfData.documentBase64 || ''
+      if (!documentBase64) {
+        throw new Error('generate-contract-pdf returned empty documentBase64')
       }
     } catch (pdfErr) {
-      console.warn('PDF generation error:', pdfErr)
+      console.error('PDF generation failed — refusing to send envelope', pdfErr)
+      await supabase
+        .from('startup_contracts')
+        .update({
+          signature_status: 'failed',
+          provider_last_error: `pdf_generation_failed: ${(pdfErr as Error).message ?? 'unknown'}`,
+          provider_last_sync_at: new Date().toISOString(),
+        })
+        .eq('id', contractId)
+      return new Response(JSON.stringify({
+        error: 'Contract PDF generation failed; envelope not sent.',
+        details: (pdfErr as Error).message ?? 'unknown',
+      }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
+
 
     // Check if DocuSign keys are configured
     const integrationKey = Deno.env.get('DOCUSIGN_INTEGRATION_KEY')
