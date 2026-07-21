@@ -300,19 +300,63 @@ serve(async (req) => {
     }
     const strictCalendarValidation = flagMap.get("strict_calendar_validation") === true;
 
-    // Rate limiting - check if this email has booked recently (max 2 per 24h)
-    const { data: recentBookings } = await supabase
-      .from("funnel_items")
-      .select("id, created_at")
-      .eq("contact_email", contact.email)
-      .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+    // DB-enforced rate limiting: max 5 attempts / hour per email + 10 / 24h
+    // Uses public_booking_rate_limits (server-only) instead of counting funnel_items,
+    // so retries and invalid attempts also count and cannot be evaded by never committing.
+    try {
+      const emailNormalized = contact.email;
+      const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-    if (recentBookings && recentBookings.length >= 2) {
-      return corsJsonResponse({ 
-        success: false, 
-        error: "Too many booking attempts. Please try again later." 
-      }, req, 429);
+      const [{ data: hourly }, { data: daily }] = await Promise.all([
+        supabase
+          .from("public_booking_rate_limits")
+          .select("attempts")
+          .eq("email_normalized", emailNormalized)
+          .gte("last_attempt_at", hourAgo),
+        supabase
+          .from("public_booking_rate_limits")
+          .select("attempts")
+          .eq("email_normalized", emailNormalized)
+          .gte("last_attempt_at", dayAgo),
+      ]);
+
+      const hourlyCount = (hourly ?? []).reduce((s, r: { attempts: number }) => s + (r.attempts ?? 0), 0);
+      const dailyCount = (daily ?? []).reduce((s, r: { attempts: number }) => s + (r.attempts ?? 0), 0);
+
+      if (hourlyCount >= 5 || dailyCount >= 10) {
+        return corsJsonResponse({
+          success: false,
+          error: "Too many booking attempts. Please try again later.",
+        }, req, 429);
+      }
+
+      // Upsert current-hour bucket
+      const bucketStart = new Date();
+      bucketStart.setMinutes(0, 0, 0);
+      await supabase
+        .from("public_booking_rate_limits")
+        .upsert(
+          {
+            email_normalized: emailNormalized,
+            bucket_start: bucketStart.toISOString(),
+            attempts: 1,
+            last_attempt_at: new Date().toISOString(),
+          },
+          { onConflict: "email_normalized,bucket_start", ignoreDuplicates: false },
+        );
+      // Best-effort atomic increment (upsert without ignoreDuplicates keeps attempts=1;
+      // increment the row so retries within the same hour count towards the cap)
+      await supabase.rpc as unknown; // no-op typing helper; increment below
+      await supabase
+        .from("public_booking_rate_limits")
+        .update({ attempts: (hourlyCount || 0) + 1, last_attempt_at: new Date().toISOString() })
+        .eq("email_normalized", emailNormalized)
+        .eq("bucket_start", bucketStart.toISOString());
+    } catch (rlErr) {
+      console.warn("public_booking rate-limit check failed (fail-open):", rlErr);
     }
+
 
     // === CANONICAL ROUTING ===
     // Never fall back to `.limit(1)` on user_roles. The routing resolver validates
