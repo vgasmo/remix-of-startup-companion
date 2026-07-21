@@ -172,6 +172,13 @@ export type Database = {
             foreignKeyName: "action_items_milestone_id_fkey"
             columns: ["milestone_id"]
             isOneToOne: false
+            referencedRelation: "active_milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_items_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
             referencedRelation: "milestones"
             referencedColumns: ["id"]
           },
@@ -4683,6 +4690,13 @@ export type Database = {
             foreignKeyName: "milestone_reminders_milestone_id_fkey"
             columns: ["milestone_id"]
             isOneToOne: false
+            referencedRelation: "active_milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestone_reminders_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
             referencedRelation: "milestones"
             referencedColumns: ["id"]
           },
@@ -7302,6 +7316,13 @@ export type Database = {
             foreignKeyName: "staff_work_queue_items_related_milestone_id_fkey"
             columns: ["related_milestone_id"]
             isOneToOne: false
+            referencedRelation: "active_milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_work_queue_items_related_milestone_id_fkey"
+            columns: ["related_milestone_id"]
+            isOneToOne: false
             referencedRelation: "milestones"
             referencedColumns: ["id"]
           },
@@ -9848,6 +9869,13 @@ export type Database = {
             foreignKeyName: "workspace_playbook_links_milestone_id_fkey"
             columns: ["milestone_id"]
             isOneToOne: false
+            referencedRelation: "active_milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_playbook_links_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
             referencedRelation: "milestones"
             referencedColumns: ["id"]
           },
@@ -10257,6 +10285,82 @@ export type Database = {
       }
     }
     Views: {
+      active_milestones: {
+        Row: {
+          archived_at: string | null
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string | null
+          position: number | null
+          search_vector: unknown
+          source_gate_id: string | null
+          source_week_id: string | null
+          status: Database["public"]["Enums"]["milestone_status"] | null
+          target_date: string | null
+          title: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string | null
+          position?: number | null
+          search_vector?: unknown
+          source_gate_id?: string | null
+          source_week_id?: string | null
+          status?: Database["public"]["Enums"]["milestone_status"] | null
+          target_date?: string | null
+          title?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string | null
+          position?: number | null
+          search_vector?: unknown
+          source_gate_id?: string | null
+          source_week_id?: string | null
+          status?: Database["public"]["Enums"]["milestone_status"] | null
+          target_date?: string | null
+          title?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestones_source_gate_id_fkey"
+            columns: ["source_gate_id"]
+            isOneToOne: false
+            referencedRelation: "program_gates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_source_week_id_fkey"
+            columns: ["source_week_id"]
+            isOneToOne: false
+            referencedRelation: "program_weeks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_manual_resolution_queue: {
         Row: {
           context: Json | null
