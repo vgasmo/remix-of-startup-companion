@@ -770,8 +770,15 @@ Deno.serve(async (req) => {
         })
       }
 
-      const currentDocs = intakeRow.documents_json && typeof intakeRow.documents_json === 'object'
-        ? intakeRow.documents_json as Record<string, any>
+      // B2: refetch fresh documents_json immediately before merging to defeat
+      // read-modify-write races between concurrent uploads for distinct keys.
+      const { data: freshIntake } = await supabase
+        .from('contract_intakes')
+        .select('documents_json')
+        .eq('id', intakeRow.id)
+        .single()
+      const currentDocs = freshIntake?.documents_json && typeof freshIntake.documents_json === 'object'
+        ? freshIntake.documents_json as Record<string, any>
         : {}
       const nextDocs = {
         ...currentDocs,
@@ -787,8 +794,15 @@ Deno.serve(async (req) => {
         .update({ documents_json: nextDocs })
         .eq('id', intakeRow.id)
       if (persistErr) {
-        console.warn('intake documents_json update failed:', persistErr)
+        console.error('intake documents_json update failed:', persistErr)
+        return new Response(JSON.stringify({
+          success: true, path, warning: 'metadata_persist_failed',
+        }), {
+          status: 207,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
       }
+
 
       return new Response(JSON.stringify({ success: true, path }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
