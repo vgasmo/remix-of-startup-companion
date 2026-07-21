@@ -315,6 +315,62 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
 
     setIsSending(true);
     try {
+      // ---- Log a past off-platform meeting -----------------------------------
+      // Uses the atomic RPC so the row is written together with attendance and
+      // activity logging, guarded by an idempotency command_id.
+      if (logPast) {
+        const consultantId =
+          meetingWith === 'consultor' ? (participantId || assignedConsultant?.user_id || null) : null;
+        const mentorId =
+          meetingWith === 'mentor_externo' ? (participantId || null) : null;
+        const attendance: Array<{ user_id: string; role: string; attendance_status: string }> = [];
+        if (consultantId) attendance.push({ user_id: consultantId, role: 'consultor', attendance_status: 'attended' });
+        if (mentorId) attendance.push({ user_id: mentorId, role: 'mentor', attendance_status: 'attended' });
+
+        const { data: rpcData, error: rpcError } = await supabase.rpc('log_completed_session_atomic', {
+          p_command_id: commandIdRef.current,
+          p_workspace_id: workspaceId,
+          p_title: title.trim(),
+          p_occurred_at: scheduledAtISO,
+          p_actual_duration_minutes: parseInt(duration, 10),
+          p_primary_consultant_id: consultantId,
+          p_primary_mentor_id: mentorId,
+          p_session_type: 'general',
+          p_source: 'off_platform',
+          p_notes: notes.trim() || null,
+          p_decisions: decisions.trim() || null,
+          p_location: location.trim() || null,
+          p_attendance: attendance,
+        });
+
+        if (rpcError) {
+          logger.error('log_completed_session_atomic failed', {}, rpcError);
+          notify.error(rpcError.message || t('common.error'));
+          return;
+        }
+
+        // Rotate the command_id so the next submission is a fresh command.
+        commandIdRef.current =
+          typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `cmd-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+        queryClient.invalidateQueries({ queryKey: ['sessions', workspaceId] });
+        queryClient.invalidateQueries({ queryKey: ['calendar-sessions', workspaceId] });
+        queryClient.invalidateQueries({ queryKey: ['workspace-sessions', workspaceId] });
+        queryClient.invalidateQueries({ queryKey: ['upcoming-sessions'] });
+
+        const wasIdempotent = (rpcData as { idempotent?: boolean } | null)?.idempotent === true;
+        notify.success(
+          wasIdempotent
+            ? t('sessions.logPastAlreadyRecorded', 'Reunião já tinha sido registada.')
+            : t('sessions.logPastRecorded', 'Reunião registada com sucesso.'),
+        );
+        onOpenChange(false);
+        resetForm();
+        return;
+      }
+
       const session = await createMutation.mutateAsync({
         title: title.trim(),
         scheduled_at: scheduledAtISO,
