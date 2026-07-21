@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
-import { lisbonWallClockToUtcIso } from '@/lib/dateUtils';
+// (D1) lisbonWallClockToUtcIso no longer needed here — session creation moved into `mentor_transition_booking` RPC.
 
 export interface MentorAvailability {
   id: string;
