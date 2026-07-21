@@ -98,13 +98,20 @@ export function BackofficeInvoicesTab() {
             <p className="text-xs text-muted-foreground">{t('admin.backoffice.totalInvoices')}</p>
           </CardContent>
         </Card>
-        <Card>
+        <ClickableCard
+          ariaLabel={t('admin.backoffice.pendingPayment')}
+          onActivate={() => setStatusFilter('sent')}
+        >
           <CardContent className="pt-4">
             <div className="text-2xl font-bold text-info">{stats.pending}</div>
             <p className="text-xs text-muted-foreground">{t('admin.backoffice.pendingPayment')}</p>
           </CardContent>
-        </Card>
-        <Card className={cn(stats.overdue > 0 && 'border-warning/50')}>
+        </ClickableCard>
+        <ClickableCard
+          className={cn(stats.overdue > 0 && 'border-warning/50')}
+          ariaLabel={t('admin.backoffice.overdueInvoices')}
+          onActivate={() => setStatusFilter('overdue')}
+        >
           <CardContent className="pt-4">
             <div className="text-2xl font-bold text-warning flex items-center gap-1">
               {stats.overdue}
@@ -112,7 +119,7 @@ export function BackofficeInvoicesTab() {
             </div>
             <p className="text-xs text-muted-foreground">{t('admin.backoffice.overdueInvoices')}</p>
           </CardContent>
-        </Card>
+        </ClickableCard>
         <Card>
           <CardContent className="pt-4">
             <div className="text-2xl font-bold">€{stats.outstanding.toFixed(2)}</div>
