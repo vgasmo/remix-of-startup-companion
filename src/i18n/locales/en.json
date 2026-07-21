@@ -6964,17 +6964,17 @@
   },
   "planAssistants": {
     "businessPlan": {
-      "description": "Perguntas passo-a-passo para estruturar proposta de valor, mercado e go-to-market.",
-      "title": "Plano de Negócios"
+      "description": "Step-by-step questions to structure assumptions, market and financial projections.",
+      "title": "Guided Financial Plan"
     },
-    "description": "Wizards guiados de Plano de Negócios e Modelo Financeiro com apoio de IA.",
+    "description": "Guided wizards for Financial Plan and Financial Model with AI support.",
     "financial": {
-      "description": "Cenários, burn, runway, LTV/CAC e revisão automática das projeções.",
-      "title": "Modelo Financeiro"
+      "description": "Scenarios, burn, runway, LTV/CAC and automatic review of projections.",
+      "title": "Financial Model"
     },
-    "goToSection": "Ir para Documentos → Financeiro",
-    "open": "Abrir assistente",
-    "title": "Assistentes de Plano"
+    "goToSection": "Go to Documents → Financial",
+    "open": "Open assistant",
+    "title": "Plan Assistants"
   },
   "playbookProgress": {
     "activateToTrack": "Activate a playbook to track your progress",
