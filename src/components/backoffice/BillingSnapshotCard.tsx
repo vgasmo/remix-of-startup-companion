@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Wallet, AlertCircle, CalendarClock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { ClickableCard } from '@/components/ui/clickable-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
 import { supabase } from '@/lib/supabaseClient';
@@ -16,6 +18,7 @@ const fmtEUR = new Intl.NumberFormat('pt-PT', {
 
 function BillingSnapshotCardInner() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
     queryKey: ['backoffice-billing-snapshot'],
@@ -62,7 +65,11 @@ function BillingSnapshotCardInner() {
   });
 
   return (
-    <Card className="border-border/60 rounded-xl">
+    <ClickableCard
+      className="border-border/60 rounded-xl"
+      ariaLabel={t('backoffice.billing.mrr', { defaultValue: 'MRR previsto' })}
+      onActivate={() => navigate('/admin?tab=backoffice&subtab=contracts')}
+    >
       <CardContent className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* MRR */}
@@ -134,7 +141,7 @@ function BillingSnapshotCardInner() {
           </div>
         </div>
       </CardContent>
-    </Card>
+    </ClickableCard>
   );
 }
 
