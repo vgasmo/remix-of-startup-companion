@@ -8153,6 +8153,8 @@
     "logPastDesc": "Registar uma sessão que já ocorreu fora da plataforma.",
     "logPastHelp": "Não serão enviados convites.",
     "logPastTitle": "Registar sessão passada",
+    "logPastRecorded": "Reunião registada com sucesso.",
+    "logPastAlreadyRecorded": "Reunião já tinha sido registada.",
     "loggedOffPlatform": "Registada fora da plataforma",
     "manualTime": "Manual Hora",
     "markAsCompleted": "Marcar como concluída",
