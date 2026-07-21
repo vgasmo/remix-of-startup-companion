@@ -316,3 +316,16 @@ verify_jwt = true
 
 [functions.staff-assign-workspace-to-contract]
 verify_jwt = true
+
+# ============================================
+# SCHEDULED / BACKGROUND (Category C)
+# JWT NOT verified at gateway; auth enforced in handler
+# ============================================
+
+# A2: sync-outlook-emails performs a global auto-sync when body.auto_sync=true.
+# The handler enforces:
+#   - timing-safe compare of x-cron-secret against CRON_SECRET, OR
+#   - admin Bearer token (validated at runtime via getUser + user_roles).
+# Manual mode still requires an authenticated staff user.
+[functions.sync-outlook-emails]
+verify_jwt = false

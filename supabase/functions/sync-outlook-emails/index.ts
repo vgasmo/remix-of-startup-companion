@@ -600,6 +600,43 @@ Deno.serve(withCronRunLogging('sync-outlook-emails', async (req) => {
     const isAutoSync = bodyJson.auto_sync === true;
 
     if (isAutoSync) {
+      // A2: authorize BEFORE doing any work. Global sync accepts only:
+      //  (a) a timing-safe match on x-cron-secret against CRON_SECRET, or
+      //  (b) an authenticated admin user (Bearer token).
+      // Never leak mailbox addresses or provider errors to unauthorized callers.
+      const providedSecret = req.headers.get('x-cron-secret') ?? '';
+      const expectedSecret = Deno.env.get('CRON_SECRET') ?? '';
+      const timingSafeEqual = (a: string, b: string): boolean => {
+        if (a.length !== b.length) return false;
+        let out = 0;
+        for (let i = 0; i < a.length; i++) out |= a.charCodeAt(i) ^ b.charCodeAt(i);
+        return out === 0;
+      };
+      let authorized = false;
+      if (expectedSecret && providedSecret && timingSafeEqual(providedSecret, expectedSecret)) {
+        authorized = true;
+      } else {
+        const authHeader = req.headers.get('Authorization') ?? '';
+        if (authHeader.startsWith('Bearer ')) {
+          const t = authHeader.slice(7);
+          const { data: { user } } = await supabaseAdmin.auth.getUser(t);
+          if (user) {
+            const { data: adminRole } = await supabaseAdmin
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', user.id)
+              .eq('role', 'admin')
+              .maybeSingle();
+            if (adminRole) authorized = true;
+          }
+        }
+      }
+      if (!authorized) {
+        log.warn('email_sync_global_unauthorized', { hasSecret: providedSecret.length > 0 });
+        // Do NOT reveal whether CRON_SECRET is configured or which condition failed.
+        return corsJsonResponse({ error: 'Unauthorized' }, req, 401);
+      }
+
       // AUTO SYNC MODE: Sync all consultants with @startupleiria.com emails.
       // Wrapped in an email_sync_runs row for observability and alerting.
       const runStart = Date.now();

@@ -1,0 +1,30 @@
+# A4 baseline allowlist for scripts/ci/scan-migrations.mjs
+#
+# Every entry here represents applied migration history that predates the A4
+# rule and therefore cannot be rewritten without breaking replay. New migrations
+# MUST NOT be added to this list — the scanner is now baseline-frozen.
+# Move any new person-specific data operation into a forward-only operational
+# RPC (see docs/rc5/migration-policy.md).
+
+# Seed data: canonical KPI definitions, pricing table v1, program setup drafts.
+20260101132649_a40d995b-6708-4920-96ee-2f0f4c042b6f.sql
+20260325170031_29bca59c-09da-4b63-9dd3-d341a7bdfb80.sql
+20260413211847_54600428-7529-4901-a84b-a2056906a108.sql
+
+# System noreply address embedded in one legacy notification template migration.
+20260126161906_b594040f-c698-478a-96dd-3f7f31811938.sql
+
+# Historical person-specific data ops (contract archive resets, staged rollout
+# fixes, user reconciliation). Applied to production. Not to be re-run.
+20260401002408_62810ec3-75ce-404e-819d-a455282a178f.sql
+20260410130125_8f4a3221-3aae-4e73-ae86-7383c44d0971.sql
+20260410132536_c20da724-2fdc-4b46-99ed-72dfa5c41bb0.sql
+20260410141500_8561af0d-6d01-4f41-a481-f7ff00337530.sql
+20260411212621_a521248f-67e6-4a8d-a1b1-6d259cb2f12d.sql
+20260413215554_e59679ce-3e65-4191-9e17-272d022209f4.sql
+20260415224948_e0c5edd7-530e-4a9a-8e9e-4167ae60a8a5.sql
+20260429192821_322dc596-883c-487d-b4a5-3010d1827a7c.sql
+20260715085753_bfd2ba4d-daa3-48c1-88a1-3ef9466e0423.sql
+20260715201400_1bc4bbf0-0c04-4093-8f44-c73da0622910.sql
+20260720155323_1efcc8be-a71c-4985-8e1b-fab345c0ce15.sql
+20260720155354_dcb21712-0e88-4daf-8494-dad25e667f1c.sql
