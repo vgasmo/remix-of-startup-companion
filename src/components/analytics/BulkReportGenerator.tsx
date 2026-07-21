@@ -58,7 +58,7 @@ export function BulkReportGenerator({ programId }: BulkReportGeneratorProps) {
           ? supabase.from('action_items').select('*').in('workspace_id', workspaceIds)
           : Promise.resolve({ data: [] }),
         includeMilestones 
-          ? supabase.from('milestones').select('*').in('workspace_id', workspaceIds)
+          ? supabase.from('milestones').select('*').in('workspace_id', workspaceIds).is('archived_at', null)
           : Promise.resolve({ data: [] }),
         includeKpis 
           ? supabase.from('kpi_values').select('*, kpi_definition:kpi_definitions(name, unit)').in('workspace_id', workspaceIds)
