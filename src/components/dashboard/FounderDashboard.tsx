@@ -54,6 +54,7 @@ import { useUpcomingSessions } from '@/hooks/useUpcomingSessions';
 import { FounderHelpNudge } from '@/components/founder/FounderHelpNudge';
 import { useWorkspaceOwner } from '@/hooks/useWorkspaceOwner';
 import { MySupportTeamCard } from '@/components/founder/MySupportTeamCard';
+import { FounderPulseCard } from '@/components/dashboard/FounderPulseCard';
 import { BrandSurface } from '@/components/ui/BrandSurface';
 import { WelcomeSplash } from '@/components/founder/WelcomeSplash';
 import { useIsFirstWeek } from '@/hooks/useIsFirstWeek';
