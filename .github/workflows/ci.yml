@@ -50,6 +50,10 @@ jobs:
           fi
           echo "✅ Build successful"
 
+      - name: Bundle size budget (900 KB gzip initial JS)
+        run: bunx size-limit
+        continue-on-error: false
+
   # ──────────────────────────────────────────────
   # Gate 2: Vitest unit/integration tests
   # ──────────────────────────────────────────────
