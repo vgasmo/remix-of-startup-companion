@@ -192,4 +192,4 @@ Deno.serve(withCronRunLogging('sweep-session-transcripts', async (req: Request) 
     await logRun('failed', { stage: 'fatal' }, msg);
     return corsJsonResponse({ success: false, error: msg }, req, 500);
   }
-});
+}));
