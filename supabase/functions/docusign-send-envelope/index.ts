@@ -283,11 +283,11 @@ Deno.serve(async (req) => {
     }
 
     // If still no counter-signer, try to get from the user who triggered the send (staff member)
-    if (!counterSignerEmail) {
+    if (!counterSignerEmail && actorUserId) {
       const { data: staffProfile } = await supabase
         .from('profiles')
         .select('full_name, email')
-        .eq('id', user.id)
+        .eq('id', actorUserId)
         .single()
 
       if (staffProfile?.email) {
