@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
-import { lisbonWallClockToUtcIso } from '@/lib/dateUtils';
+// (D1) lisbonWallClockToUtcIso no longer needed here — session creation moved into `mentor_transition_booking` RPC.
 
 export interface MentorAvailability {
   id: string;
@@ -187,59 +187,16 @@ export function useUpdateBookingStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      // Fetch booking pre-update
-      const { data: booking, error: fetchErr } = await supabase
-        .from('mentor_bookings')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
-      if (fetchErr) throw fetchErr;
-
-      const { error } = await supabase
-        .from('mentor_bookings')
-        .update({ status })
-        .eq('id', id);
+      // D1: All state transitions go through the atomic RPC. It validates
+      // actor + transition, overlap-checks on accept, and creates the linked
+      // session in the same transaction. Client no longer writes `status`
+      // directly — the RLS UPDATE policy remains as a defence-in-depth net.
+      const { data, error } = await supabase.rpc('mentor_transition_booking', {
+        p_booking_id: id,
+        p_target_state: status,
+      });
       if (error) throw error;
-
-      if (!booking) return;
-
-      // Mentor name lookup
-      let mentorName = 'o mentor';
-      try {
-        const { data: prof } = await supabase
-          .from('profiles_safe')
-          .select('full_name, email')
-          .eq('id', booking.mentor_id)
-          .maybeSingle();
-        mentorName = prof?.full_name || prof?.email || mentorName;
-      } catch { /* ignore */ }
-
-      if (status === 'accepted') {
-        // Create session row so it appears in calendars/prep. Interpret the
-        // booking wall-clock as Europe/Lisbon (canonical) so the session and
-        // any downstream Outlook/Teams sync land at the exact requested time,
-        // regardless of the mentor's browser locale.
-        try {
-          const startTime = booking.requested_start_time.slice(0, 5); // HH:mm
-          const startIso = lisbonWallClockToUtcIso(`${booking.requested_date}T${startTime}`);
-          const [sh, sm] = booking.requested_start_time.split(':').map(Number);
-          const [eh, em] = booking.requested_end_time.split(':').map(Number);
-          const durationMin = Math.max(15, (eh * 60 + em) - (sh * 60 + sm));
-          if (booking.workspace_id) {
-            await supabase.from('sessions').insert({
-              workspace_id: booking.workspace_id,
-              title: `Sessão de mentoria com ${mentorName}`,
-              scheduled_at: startIso,
-              duration: durationMin,
-              created_by: booking.mentor_id,
-              source: 'mentor_booking',
-              session_type: 'mentoring',
-            });
-          }
-        } catch (e) {
-          // don't fail the accept if session insert bounces
-        }
-      }
+      return data as { booking_id: string; status: string; session_id: string | null };
       // Founder-facing notifications for accepted/declined are emitted by the
       // `trg_notify_mentor_booking_change` trigger on UPDATE — no client-side
       // duplicate here.

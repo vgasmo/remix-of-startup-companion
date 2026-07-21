@@ -63,18 +63,27 @@ serve(async (req) => {
       .eq('active', true);
     const workspaceIds = (ws ?? []).map((w: any) => w.workspace_id);
 
-    // Sessions led by mentor
+    // D2: Only count sessions the mentor actually attended (participation row)
+    // with a recorded duration. `duration_minutes` never existed on sessions —
+    // the truth column is `actual_duration_minutes`, set on completion.
     const { data: sessions } = workspaceIds.length
       ? await supabase
           .from('sessions')
-          .select('id, title, scheduled_at, duration_minutes, workspace_id, status')
+          .select('id, title, scheduled_at, actual_duration_minutes, workspace_id, status, session_participants!inner(user_id)')
           .in('workspace_id', workspaceIds)
+          .eq('status', 'completed')
+          .not('actual_duration_minutes', 'is', null)
+          .gt('actual_duration_minutes', 0)
+          .eq('session_participants.user_id', mentorId)
           .order('scheduled_at', { ascending: false })
           .limit(500)
       : { data: [] as any[] };
 
-    const completedSessions = (sessions ?? []).filter((s: any) => s.status === 'completed' || new Date(s.scheduled_at) < new Date());
-    const totalMinutes = completedSessions.reduce((sum: number, s: any) => sum + (s.duration_minutes ?? 60), 0);
+    const completedSessions = sessions ?? [];
+    const totalMinutes = completedSessions.reduce(
+      (sum: number, s: any) => sum + (s.actual_duration_minutes ?? 0),
+      0,
+    );
     const totalHours = Math.round(totalMinutes / 60);
 
     // Workspace names
