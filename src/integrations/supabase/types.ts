@@ -3715,6 +3715,107 @@ export type Database = {
           },
         ]
       }
+      founder_pulse_cycles: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          id: string
+          opened_at: string
+          period_month: string
+          status: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          opened_at?: string
+          period_month: string
+          status?: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          opened_at?: string
+          period_month?: string
+          status?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "founder_pulse_cycles_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      founder_pulse_responses: {
+        Row: {
+          ask: string | null
+          blockers: string | null
+          confidence: number
+          created_at: string
+          cycle_id: string
+          id: string
+          mood: number
+          respondent_id: string
+          submitted_at: string
+          updated_at: string
+          wins: string | null
+          workspace_id: string
+        }
+        Insert: {
+          ask?: string | null
+          blockers?: string | null
+          confidence: number
+          created_at?: string
+          cycle_id: string
+          id?: string
+          mood: number
+          respondent_id: string
+          submitted_at?: string
+          updated_at?: string
+          wins?: string | null
+          workspace_id: string
+        }
+        Update: {
+          ask?: string | null
+          blockers?: string | null
+          confidence?: number
+          created_at?: string
+          cycle_id?: string
+          id?: string
+          mood?: number
+          respondent_id?: string
+          submitted_at?: string
+          updated_at?: string
+          wins?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "founder_pulse_responses_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "founder_pulse_cycles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "founder_pulse_responses_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       founder_staff_requests: {
         Row: {
           created_at: string
@@ -12026,6 +12127,7 @@ export type Database = {
         Args: { p_booking_id: string; p_target_state: string }
         Returns: Json
       }
+      open_monthly_founder_pulse_cycles: { Args: never; Returns: number }
       patch_program_setup: {
         Args: { p_draft_id: string; p_expected_revision: number; p_patch: Json }
         Returns: Json
