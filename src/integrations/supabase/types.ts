@@ -11542,6 +11542,10 @@ export type Database = {
         Args: { p_program_id: string; p_workspace_id: string }
         Returns: Json
       }
+      mentor_transition_booking: {
+        Args: { p_booking_id: string; p_target_state: string }
+        Returns: Json
+      }
       patch_program_setup: {
         Args: { p_draft_id: string; p_expected_revision: number; p_patch: Json }
         Returns: Json
