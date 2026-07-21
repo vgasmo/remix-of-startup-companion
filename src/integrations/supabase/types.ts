@@ -4620,6 +4620,7 @@ export type Database = {
           founder_id: string
           id: string
           idempotency_key: string | null
+          linked_session_id: string | null
           mentor_id: string
           message: string | null
           requested_date: string
@@ -4634,6 +4635,7 @@ export type Database = {
           founder_id: string
           id?: string
           idempotency_key?: string | null
+          linked_session_id?: string | null
           mentor_id: string
           message?: string | null
           requested_date: string
@@ -4648,6 +4650,7 @@ export type Database = {
           founder_id?: string
           id?: string
           idempotency_key?: string | null
+          linked_session_id?: string | null
           mentor_id?: string
           message?: string | null
           requested_date?: string
@@ -4658,6 +4661,13 @@ export type Database = {
           workspace_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "mentor_bookings_linked_session_id_fkey"
+            columns: ["linked_session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "mentor_bookings_workspace_id_fkey"
             columns: ["workspace_id"]
@@ -7043,6 +7053,7 @@ export type Database = {
           ai_risks: Json | null
           ai_summary: string | null
           cancellation_reason: string | null
+          command_id: string | null
           completed_at: string | null
           completion_idempotency_key: string | null
           created_at: string
@@ -7089,6 +7100,7 @@ export type Database = {
           ai_risks?: Json | null
           ai_summary?: string | null
           cancellation_reason?: string | null
+          command_id?: string | null
           completed_at?: string | null
           completion_idempotency_key?: string | null
           created_at?: string
@@ -7135,6 +7147,7 @@ export type Database = {
           ai_risks?: Json | null
           ai_summary?: string | null
           cancellation_reason?: string | null
+          command_id?: string | null
           completed_at?: string | null
           completion_idempotency_key?: string | null
           created_at?: string
@@ -11533,6 +11546,7 @@ export type Database = {
           founder_id: string
           id: string
           idempotency_key: string | null
+          linked_session_id: string | null
           mentor_id: string
           message: string | null
           requested_date: string
@@ -11863,6 +11877,24 @@ export type Database = {
           updated_at: string
           workspace_id: string
         }[]
+      }
+      log_completed_session_atomic: {
+        Args: {
+          p_actual_duration_minutes: number
+          p_attendance?: Json
+          p_command_id: string
+          p_decisions?: string
+          p_location?: string
+          p_notes?: string
+          p_occurred_at: string
+          p_primary_consultant_id?: string
+          p_primary_mentor_id?: string
+          p_session_type?: string
+          p_source?: string
+          p_title: string
+          p_workspace_id: string
+        }
+        Returns: Json
       }
       log_cron_job_run: {
         Args: {
