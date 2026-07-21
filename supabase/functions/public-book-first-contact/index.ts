@@ -300,19 +300,62 @@ serve(async (req) => {
     }
     const strictCalendarValidation = flagMap.get("strict_calendar_validation") === true;
 
-    // Rate limiting - check if this email has booked recently (max 2 per 24h)
-    const { data: recentBookings } = await supabase
-      .from("funnel_items")
-      .select("id, created_at")
-      .eq("contact_email", contact.email)
-      .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+    // DB-enforced rate limiting: max 5 attempts / hour per email + 10 / 24h
+    // Uses public_booking_rate_limits (server-only) instead of counting funnel_items,
+    // so retries and invalid attempts also count and cannot be evaded by never committing.
+    try {
+      const emailNormalized = contact.email;
+      const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-    if (recentBookings && recentBookings.length >= 2) {
-      return corsJsonResponse({ 
-        success: false, 
-        error: "Too many booking attempts. Please try again later." 
-      }, req, 429);
+      const [{ data: hourly }, { data: daily }] = await Promise.all([
+        supabase
+          .from("public_booking_rate_limits")
+          .select("attempts")
+          .eq("email_normalized", emailNormalized)
+          .gte("last_attempt_at", hourAgo),
+        supabase
+          .from("public_booking_rate_limits")
+          .select("attempts")
+          .eq("email_normalized", emailNormalized)
+          .gte("last_attempt_at", dayAgo),
+      ]);
+
+      const hourlyCount = (hourly ?? []).reduce((s, r: { attempts: number }) => s + (r.attempts ?? 0), 0);
+      const dailyCount = (daily ?? []).reduce((s, r: { attempts: number }) => s + (r.attempts ?? 0), 0);
+
+      if (hourlyCount >= 5 || dailyCount >= 10) {
+        return corsJsonResponse({
+          success: false,
+          error: "Too many booking attempts. Please try again later.",
+        }, req, 429);
+      }
+
+      // Upsert current-hour bucket
+      const bucketStart = new Date();
+      bucketStart.setMinutes(0, 0, 0);
+      await supabase
+        .from("public_booking_rate_limits")
+        .upsert(
+          {
+            email_normalized: emailNormalized,
+            bucket_start: bucketStart.toISOString(),
+            attempts: 1,
+            last_attempt_at: new Date().toISOString(),
+          },
+          { onConflict: "email_normalized,bucket_start", ignoreDuplicates: false },
+        );
+      // Increment the current-hour bucket so retries within the same hour count toward the cap.
+
+      await supabase
+        .from("public_booking_rate_limits")
+        .update({ attempts: (hourlyCount || 0) + 1, last_attempt_at: new Date().toISOString() })
+        .eq("email_normalized", emailNormalized)
+        .eq("bucket_start", bucketStart.toISOString());
+    } catch (rlErr) {
+      console.warn("public_booking rate-limit check failed (fail-open):", rlErr);
     }
+
 
     // === CANONICAL ROUTING ===
     // Never fall back to `.limit(1)` on user_roles. The routing resolver validates
@@ -593,7 +636,8 @@ serve(async (req) => {
           type: 'first_contact_booked',
           title: 'Marcação de Primeiro Contacto confirmada',
           message: `A tua reunião está agendada para ${dt} (Europe/Lisbon).${teamsLink ? ' Convite do Teams enviado por email.' : ''}`,
-          link: `/crm?open=${funnelItemId}`,
+          link: `/dashboard`,
+
           entity_type: 'funnel_item',
           entity_id: funnelItemId,
           event_key: `first_contact_booked_founder:${funnelItemId}:${slot.date}T${slot.time}`,
@@ -684,10 +728,58 @@ serve(async (req) => {
       console.error('Consultant alert email error:', mailErr);
     }
 
+    // === Durable outbox trace (E3) ===
+    // Record every subsystem attempt so ops can replay / audit even when the
+    // inline delivery already completed. `completed` rows are audit trail;
+    // `failed`/`pending` rows are candidates for a future retry worker.
+    try {
+      const outboxRows = [
+        {
+          funnel_item_id: funnelItemId,
+          kind: 'graph_event',
+          payload_json: {
+            calendar_event_id: calendarEventId,
+            teams_url: teamsLink,
+            slot,
+            consultant_email: consultantEmail,
+          },
+          status: calendarStatus === 'ok' ? 'completed' : (calendarStatus === 'failed' ? 'failed' : 'skipped'),
+          attempts: 1,
+          last_error: calendarError,
+          completed_at: calendarStatus === 'ok' ? new Date().toISOString() : null,
+        },
+        {
+          funnel_item_id: funnelItemId,
+          kind: 'consultant_notification',
+          payload_json: { consultant_id: consultantId, slot },
+          status: consultantId ? 'completed' : 'skipped',
+          attempts: 1,
+          completed_at: consultantId ? new Date().toISOString() : null,
+        },
+        {
+          funnel_item_id: funnelItemId,
+          kind: 'founder_notification',
+          payload_json: { contact_email: contact.email, slot },
+          status: 'pending', // resolved by founder-notification block above; not authoritative
+          attempts: 1,
+        },
+        {
+          funnel_item_id: funnelItemId,
+          kind: 'consultant_email',
+          payload_json: { consultant_email: consultantEmail, slot },
+          status: consultantEmail ? 'pending' : 'skipped',
+          attempts: 1,
+        },
+      ];
+      await supabase.from('first_contact_outbox').insert(outboxRows);
+    } catch (outErr) {
+      console.warn('first_contact_outbox insert failed (non-fatal):', outErr);
+    }
 
     // Honest response: reflect what actually happened per subsystem so the client
     // shows a partial-success UI instead of "everything confirmed" on failure.
     const partialFailure = calendarStatus === 'failed';
+
     return corsJsonResponse({
       success: !partialFailure,
       funnelItemId,
