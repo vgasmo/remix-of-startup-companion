@@ -446,89 +446,31 @@ serve(async (req) => {
     if (contact.help_expectation) bookingMetadata.help_expectation = contact.help_expectation;
     if (contact.personal_intro) bookingMetadata.personal_intro = contact.personal_intro;
 
-    // === IDEMPOTENCY LOOKUP ===
-    // If we already committed this exact submission, reuse the row.
-    const { data: idemMatch } = await supabase
-      .from('funnel_items')
-      .select('id')
-      .eq('metadata_json->>idempotency_key', idempotencyKey)
-      .maybeSingle();
-
-    // === DUPLICATE CHECK ===
-    // Only reuse an existing lead when it's still in early commercial stages.
-    // Later-stage leads are preserved; a fresh row is created so the new booking
-    // is visible without silently mutating a converted deal.
-    const EARLY_STAGES = ['new', 'first_contact_booked'];
-    const { data: existingLead } = idemMatch
-      ? { data: null }
-      : await supabase
-          .from('funnel_items')
-          .select('id, stage, contact_name, metadata_json')
-          .eq('contact_email', contact.email)
-          .in('stage', EARLY_STAGES)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-    let funnelItemId: string;
-
-    if (idemMatch?.id) {
-      funnelItemId = idemMatch.id;
-      // Nothing else to write — same submission already committed.
-    } else if (existingLead && existingLead.length > 0) {
-      const prev = existingLead[0];
-      const mergedMetadata = {
-        ...(prev.metadata_json as Record<string, unknown> ?? {}),
-        ...bookingMetadata,
-      };
-      await supabase.from('funnel_items')
-        .update({
-          first_contact_at: `${slot.date}T${slot.time}:00`,
-          stage: prev.stage === 'new' ? 'first_contact_booked' : prev.stage,
-          owner_consultant_id: consultantId,
-          program_id: programId,
-          last_activity_at: new Date().toISOString(),
-          metadata_json: mergedMetadata,
-        })
-        .eq('id', prev.id);
-
-      await supabase.from('funnel_events').insert({
-        funnel_item_id: prev.id,
-        event_type: 'booking_rescheduled',
-        metadata: { date: slot.date, time: slot.time, source: 'public_booking', routing: routingDecision },
-      });
-
-      funnelItemId = prev.id;
-    } else {
-      const { data: funnelItem, error: funnelError } = await supabase
-        .from('funnel_items')
-        .insert({
-          stage: 'first_contact_booked',
-          type: 'lead',
-          contact_name: contact.name,
-          contact_email: contact.email,
-          contact_phone: contact.phone || null,
-          organization_name: contact.organization || null,
-          notes: contact.message || null,
-          source: 'public_booking',
-          program_id: programId,
-          owner_consultant_id: consultantId,
-          first_contact_at: `${slot.date}T${slot.time}:00`,
-          metadata_json: bookingMetadata,
-        })
-        .select()
-        .single();
-
-      if (funnelError) throw funnelError;
-
-      await supabase.from('funnel_events').insert({
-        funnel_item_id: funnelItem.id,
-        event_type: 'created',
-        to_stage: 'first_contact_booked',
-        metadata: { source: 'public_booking', slot, routing: routingDecision },
-      });
-
-      funnelItemId = funnelItem.id;
-    }
+    // === ATOMIC COMMIT (C3) ===
+    // Single-transaction RPC does idempotency lookup, early-stage reuse or
+    // fresh insert, and event log. Prevents partial writes on interrupt.
+    const { data: commitResult, error: commitErr } = await supabase.rpc(
+      'commit_first_contact_booking_atomic',
+      {
+        p_idempotency_key: idempotencyKey,
+        p_contact: {
+          name: contact.name,
+          email: contact.email,
+          phone: contact.phone ?? null,
+          organization: contact.organization ?? null,
+          message: contact.message ?? null,
+        },
+        p_slot: { date: slot.date, time: slot.time },
+        p_consultant_id: consultantId,
+        p_program_id: programId,
+        p_metadata: bookingMetadata,
+        p_routing_decision: routingDecision,
+      },
+    );
+    if (commitErr) throw commitErr;
+    const commitRow = Array.isArray(commitResult) ? commitResult[0] : commitResult;
+    const funnelItemId: string = commitRow?.funnel_item_id;
+    if (!funnelItemId) throw new Error('commit_first_contact_booking_atomic returned no id');
 
     // Create calendar event via Graph API if configured
     let teamsLink: string | null = null;

@@ -220,68 +220,27 @@ serve(async (req) => {
       }, req);
     }
 
-    // ===== COMMIT =====
+    // ===== COMMIT (C4: atomic via RPC) =====
     const batchId: string = String(body?.batch_id ?? "");
     if (!batchId) return corsJsonResponse({ error: "batch_id required" }, req, 400);
     const authorizedIds: string[] | null = Array.isArray(body?.authorized_row_ids) && body.authorized_row_ids.length > 0
       ? body.authorized_row_ids.map((v: unknown) => String(v))
       : null;
 
-    const { data: batch, error: batchFetchErr } = await sbSvc
-      .from("crm_lead_import_batches")
-      .select("id, status, created_by")
-      .eq("id", batchId)
-      .single();
-    if (batchFetchErr || !batch) return corsJsonResponse({ error: "batch not found" }, req, 404);
-    if (batch.status !== "staged") return corsJsonResponse({ error: `batch not in staged state (${batch.status})` }, req, 409);
-
-    await sbSvc.from("crm_lead_import_batches").update({ status: "committing" }).eq("id", batchId);
-
-    let q = sbSvc.from("crm_lead_import_rows")
-      .select("id, contact_name, contact_email, contact_phone, organization_name, source, notes, deal_value, valid, committed_funnel_item_id")
-      .eq("batch_id", batchId)
-      .eq("valid", true)
-      .is("committed_funnel_item_id", null);
-    if (authorizedIds) q = q.in("id", authorizedIds);
-
-    const { data: rows, error: rowsErr } = await q;
-    if (rowsErr) throw rowsErr;
-
-    let committed = 0;
-    const errors: Array<{ row_id: string; error: string }> = [];
-
-    for (const row of rows ?? []) {
-      const payload = {
-        contact_name: row.contact_name,
-        contact_email: row.contact_email,
-        contact_phone: row.contact_phone,
-        organization_name: row.organization_name,
-        source: row.source ?? "csv_import",
-        notes: row.notes,
-        deal_value: row.deal_value,
-        stage: "new",
-        type: "lead",
-        owner_consultant_id: batch.created_by,
-      };
-      const { data: inserted, error: insErr } = await sbSvc
-        .from("funnel_items")
-        .insert(payload)
-        .select("id")
-        .single();
-      if (insErr) { errors.push({ row_id: row.id, error: insErr.message }); continue; }
-      await sbSvc.from("crm_lead_import_rows")
-        .update({ committed_funnel_item_id: inserted.id })
-        .eq("id", row.id);
-      committed++;
+    const { data: rpcData, error: rpcErr } = await sbSvc.rpc(
+      "commit_crm_lead_import_batch_atomic",
+      { p_batch_id: batchId, p_authorized_row_ids: authorizedIds },
+    );
+    if (rpcErr) {
+      const msg = rpcErr.message || "commit_failed";
+      const status = /batch_not_found/.test(msg) ? 404
+        : /batch_not_in_staged_state/.test(msg) ? 409
+        : 500;
+      return corsJsonResponse({ error: msg }, req, status);
     }
-
-    await sbSvc.from("crm_lead_import_batches")
-      .update({
-        status: errors.length > 0 && committed === 0 ? "failed" : "committed",
-        committed_rows: committed,
-        committed_at: new Date().toISOString(),
-      })
-      .eq("id", batchId);
+    const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+    const committed = Number(row?.committed ?? 0);
+    const errors = Array.isArray(row?.errors) ? row.errors : [];
 
     return corsJsonResponse({
       mode: "commit",

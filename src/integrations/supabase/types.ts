@@ -11733,6 +11733,28 @@ export type Database = {
       }
       claim_startup: { Args: never; Returns: Json }
       cleanup_old_rate_limits: { Args: never; Returns: number }
+      commit_crm_lead_import_batch_atomic: {
+        Args: { p_authorized_row_ids?: string[]; p_batch_id: string }
+        Returns: {
+          committed: number
+          errors: Json
+        }[]
+      }
+      commit_first_contact_booking_atomic: {
+        Args: {
+          p_consultant_id: string
+          p_contact: Json
+          p_idempotency_key: string
+          p_metadata: Json
+          p_program_id: string
+          p_routing_decision: Json
+          p_slot: Json
+        }
+        Returns: {
+          funnel_item_id: string
+          mode: string
+        }[]
+      }
       commit_import_funnel_item: {
         Args: {
           p_expected_updated_at: string
