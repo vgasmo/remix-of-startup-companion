@@ -81,6 +81,9 @@ Deno.serve(async (req) => {
     // etc.) skip the user resolution because the service key has no `sub`. Staff
     // gate is enforced upstream in those callers.
     const isInternalServiceCall = token === supabaseKey
+    // B1: hoist actor identity to top scope so activity logging and profile
+    // lookups can reference it regardless of the auth branch taken.
+    let actorUserId: string | null = null
     if (!isInternalServiceCall) {
       const { data: { user }, error: userError } = await supabase.auth.getUser(token)
       if (userError || !user) {
@@ -102,7 +105,9 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
+      actorUserId = user.id
     }
+
 
 
     const { contractId, signerEmail, signerName, companyNif } = await req.json()
