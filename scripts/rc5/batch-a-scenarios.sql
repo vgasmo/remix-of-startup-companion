@@ -18,13 +18,11 @@ DECLARE
   v_mentor   uuid := '00000000-0000-0000-0000-00000000a012';
   v_other    uuid := '00000000-0000-0000-0000-00000000a013';
 BEGIN
+  INSERT INTO auth.users(id) VALUES (v_staff),(v_member),(v_mentor),(v_other);
   INSERT INTO public.startups(id, name) VALUES (v_startup, 'RC5-A Startup');
   INSERT INTO public.programs(id, name) VALUES (v_program, 'RC5-A Program');
   INSERT INTO public.workspaces(id, startup_id, program_id)
     VALUES (v_ws, v_startup, v_program);
-
-  -- Fake auth.users rows are not required; profiles+user_roles are all we need
-  -- because the RPC only calls has_role() + workspace membership checks.
   INSERT INTO public.user_roles(user_id, role) VALUES (v_staff, 'admin');
   INSERT INTO public.workspace_users(workspace_id, user_id, role, active, status)
     VALUES (v_ws, v_member, 'founder', true, 'active');
