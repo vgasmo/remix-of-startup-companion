@@ -371,6 +371,7 @@ Deno.serve(async (req) => {
         provider_last_event: 'envelope-sent',
         provider_last_sync_at: new Date().toISOString(),
         provider_last_error: null,
+        envelope_command_id: envelopeCommandId,
         // Bilateral fields
         founder_signer_status: 'sent',
         counter_signer_name: counterSignerName || null,
@@ -381,12 +382,14 @@ Deno.serve(async (req) => {
 
     // Log activity
     await supabase.from('activity_log').insert({
-      user_id: user.id,
+      user_id: actorUserId,
       entity_type: 'contract',
       entity_id: contractId,
       action: 'sent_for_signature',
       metadata: {
         envelope_id: envelope.envelopeId,
+        envelope_command_id: envelopeCommandId,
+        actor: actorUserId ? 'user' : 'service_role',
         founder_signer: signerEmail,
         counter_signer: counterSignerEmail || 'none',
         bilateral: !!counterSignerEmail,
