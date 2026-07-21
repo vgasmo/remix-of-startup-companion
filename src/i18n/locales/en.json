@@ -8153,6 +8153,8 @@
     "logPastDesc": "Record a session that already happened off-platform.",
     "logPastHelp": "No invites will be sent.",
     "logPastTitle": "Log past session",
+    "logPastRecorded": "Session recorded successfully.",
+    "logPastAlreadyRecorded": "Session was already recorded.",
     "loggedOffPlatform": "Logged off-platform",
     "manualTime": "Manual Time",
     "markAsCompleted": "Mark as completed",
