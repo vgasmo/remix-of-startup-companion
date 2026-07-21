@@ -246,6 +246,7 @@ export function useGlobalSearch(filters: SearchFilters) {
           let query = supabase
             .from('milestones')
             .select('id, workspace_id, title, description, updated_at, workspaces!inner(startup:startups(name))')
+            .is('archived_at', null)
             .or(`title.ilike.${ilikeTerm},description.ilike.${ilikeTerm}`)
             .limit(20);
 
