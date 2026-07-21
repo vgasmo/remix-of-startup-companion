@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Wallet, AlertCircle, CalendarClock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { ClickableCard } from '@/components/ui/clickable-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
 import { supabase } from '@/lib/supabaseClient';
