@@ -6964,10 +6964,10 @@
   },
   "planAssistants": {
     "businessPlan": {
-      "description": "Perguntas passo-a-passo para estruturar proposta de valor, mercado e go-to-market.",
-      "title": "Plano de Negócios"
+      "description": "Perguntas passo-a-passo para estruturar pressupostos, mercado e projeções financeiras.",
+      "title": "Plano Financeiro Guiado"
     },
-    "description": "Wizards guiados de Plano de Negócios e Modelo Financeiro com apoio de IA.",
+    "description": "Wizards guiados de Plano Financeiro e Modelo Financeiro com apoio de IA.",
     "financial": {
       "description": "Cenários, burn, runway, LTV/CAC e revisão automática das projeções.",
       "title": "Modelo Financeiro"

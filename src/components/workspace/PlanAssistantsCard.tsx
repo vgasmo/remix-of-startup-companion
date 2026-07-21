@@ -58,7 +58,7 @@ export function PlanAssistantsCard({ workspaceId, programId }: PlanAssistantsCar
             </CardTitle>
             <CardDescription>
               {t('planAssistants.description', {
-                defaultValue: 'Wizards guiados de Plano de Negócios e Modelo Financeiro com apoio de IA.',
+                defaultValue: 'Wizards guiados de Plano Financeiro e Modelo Financeiro com apoio de IA.',
               })}
             </CardDescription>
           </div>
@@ -74,12 +74,12 @@ export function PlanAssistantsCard({ workspaceId, programId }: PlanAssistantsCar
             <div className="flex items-center gap-2 mb-1.5">
               <ClipboardList className="h-4 w-4 text-primary" />
               <span className="font-semibold text-sm">
-                {t('planAssistants.businessPlan.title', { defaultValue: 'Plano de Negócios' })}
+                {t('planAssistants.businessPlan.title', { defaultValue: 'Plano Financeiro Guiado' })}
               </span>
             </div>
             <p className="text-xs text-muted-foreground mb-3">
               {t('planAssistants.businessPlan.description', {
-                defaultValue: 'Perguntas passo-a-passo para estruturar proposta de valor, mercado e go-to-market.',
+                defaultValue: 'Perguntas passo-a-passo para estruturar pressupostos, mercado e projeções financeiras.',
               })}
             </p>
             <span className="inline-flex items-center gap-1 text-xs font-medium text-primary group-hover:gap-2 transition-all">
