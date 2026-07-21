@@ -909,10 +909,19 @@ Deno.serve(async (req) => {
 
       if (uploadErr) throw uploadErr
 
-      // Persist into documents_json so UI can show "uploaded" badge across reloads
+      // Persist into documents_json so UI can show "uploaded" badge across reloads.
+      // B2: refetch `documents_json` immediately before merging to defeat the
+      // classic read-modify-write race where two concurrent uploads for
+      // distinct docKeys would each wipe the other. The initial `contract`
+      // snapshot fetched at request start is NOT authoritative here.
       try {
-        const currentDocs = (contract as any).documents_json && typeof (contract as any).documents_json === 'object'
-          ? (contract as any).documents_json
+        const { data: fresh } = await supabase
+          .from('startup_contracts')
+          .select('documents_json')
+          .eq('id', contract.id)
+          .single()
+        const currentDocs = fresh?.documents_json && typeof fresh.documents_json === 'object'
+          ? fresh.documents_json as Record<string, any>
           : {}
         const nextDocs = {
           ...currentDocs,
@@ -923,13 +932,32 @@ Deno.serve(async (req) => {
             uploaded_at: new Date().toISOString(),
           },
         }
-        await supabase
+        const { error: persistErr } = await supabase
           .from('startup_contracts')
           .update({ documents_json: nextDocs })
           .eq('id', contract.id)
+        if (persistErr) {
+          // Storage upload already succeeded — surface metadata failure so the
+          // caller knows the badge won't render and can retry, rather than
+          // silently swallowing.
+          console.error('documents_json update failed:', persistErr)
+          return new Response(JSON.stringify({
+            success: true, path, warning: 'metadata_persist_failed',
+          }), {
+            status: 207,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
       } catch (persistErr) {
-        console.warn('documents_json update failed (non-blocking):', persistErr)
+        console.error('documents_json update failed:', persistErr)
+        return new Response(JSON.stringify({
+          success: true, path, warning: 'metadata_persist_failed',
+        }), {
+          status: 207,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
       }
+
 
       return new Response(JSON.stringify({ success: true, path }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
