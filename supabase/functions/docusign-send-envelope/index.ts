@@ -81,6 +81,9 @@ Deno.serve(async (req) => {
     // etc.) skip the user resolution because the service key has no `sub`. Staff
     // gate is enforced upstream in those callers.
     const isInternalServiceCall = token === supabaseKey
+    // B1: hoist actor identity to top scope so activity logging and profile
+    // lookups can reference it regardless of the auth branch taken.
+    let actorUserId: string | null = null
     if (!isInternalServiceCall) {
       const { data: { user }, error: userError } = await supabase.auth.getUser(token)
       if (userError || !user) {
@@ -102,7 +105,9 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
+      actorUserId = user.id
     }
+
 
 
     const { contractId, signerEmail, signerName, companyNif } = await req.json()
@@ -149,8 +154,37 @@ Deno.serve(async (req) => {
       })
     }
 
+    // B1: Deterministic envelope command id — sha256(contractId || template_version || 'send').
+    // Persisted on the contract with a unique-when-set index so concurrent retries
+    // collapse to the same envelope. If a previous attempt already stamped this
+    // key AND left an envelope id in place, return it instead of re-sending.
+    const templateVersion = String(contract.contract_template_version ?? 'v0')
+    const commandSource = `${contractId}::${templateVersion}::send`
+    const commandDigest = await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(commandSource),
+    )
+    const envelopeCommandId = Array.from(new Uint8Array(commandDigest))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
 
-    // Generate the contract PDF first
+    if (
+      contract.envelope_command_id === envelopeCommandId &&
+      (contract.docusign_envelope_id || contract.provider_document_id)
+    ) {
+      return new Response(JSON.stringify({
+        status: 'already_sent',
+        idempotent: true,
+        envelopeId: contract.docusign_envelope_id || contract.provider_document_id,
+        envelopeCommandId,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Generate the contract PDF first — B1 fail-closed policy: if the PDF
+    // cannot be produced we refuse to dispatch to the provider rather than
+    // sending a placeholder document that the signer would need to redo.
     let documentBase64 = ''
     try {
       const pdfRes = await fetch(`${supabaseUrl}/functions/v1/generate-contract-pdf`, {
@@ -161,15 +195,34 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({ contractId }),
       })
-      if (pdfRes.ok) {
-        const pdfData = await pdfRes.json()
-        documentBase64 = pdfData.documentBase64 || ''
-      } else {
-        console.warn('PDF generation failed, proceeding with placeholder')
+      if (!pdfRes.ok) {
+        const errText = await pdfRes.text().catch(() => '')
+        throw new Error(`generate-contract-pdf ${pdfRes.status}: ${errText.slice(0, 200)}`)
+      }
+      const pdfData = await pdfRes.json()
+      documentBase64 = pdfData.documentBase64 || ''
+      if (!documentBase64) {
+        throw new Error('generate-contract-pdf returned empty documentBase64')
       }
     } catch (pdfErr) {
-      console.warn('PDF generation error:', pdfErr)
+      console.error('PDF generation failed — refusing to send envelope', pdfErr)
+      await supabase
+        .from('startup_contracts')
+        .update({
+          signature_status: 'failed',
+          provider_last_error: `pdf_generation_failed: ${(pdfErr as Error).message ?? 'unknown'}`,
+          provider_last_sync_at: new Date().toISOString(),
+        })
+        .eq('id', contractId)
+      return new Response(JSON.stringify({
+        error: 'Contract PDF generation failed; envelope not sent.',
+        details: (pdfErr as Error).message ?? 'unknown',
+      }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
+
 
     // Check if DocuSign keys are configured
     const integrationKey = Deno.env.get('DOCUSIGN_INTEGRATION_KEY')
@@ -230,11 +283,11 @@ Deno.serve(async (req) => {
     }
 
     // If still no counter-signer, try to get from the user who triggered the send (staff member)
-    if (!counterSignerEmail) {
+    if (!counterSignerEmail && actorUserId) {
       const { data: staffProfile } = await supabase
         .from('profiles')
         .select('full_name, email')
-        .eq('id', user.id)
+        .eq('id', actorUserId)
         .single()
 
       if (staffProfile?.email) {
@@ -318,6 +371,7 @@ Deno.serve(async (req) => {
         provider_last_event: 'envelope-sent',
         provider_last_sync_at: new Date().toISOString(),
         provider_last_error: null,
+        envelope_command_id: envelopeCommandId,
         // Bilateral fields
         founder_signer_status: 'sent',
         counter_signer_name: counterSignerName || null,
@@ -328,12 +382,14 @@ Deno.serve(async (req) => {
 
     // Log activity
     await supabase.from('activity_log').insert({
-      user_id: user.id,
+      user_id: actorUserId,
       entity_type: 'contract',
       entity_id: contractId,
       action: 'sent_for_signature',
       metadata: {
         envelope_id: envelope.envelopeId,
+        envelope_command_id: envelopeCommandId,
+        actor: actorUserId ? 'user' : 'service_role',
         founder_signer: signerEmail,
         counter_signer: counterSignerEmail || 'none',
         bilateral: !!counterSignerEmail,
