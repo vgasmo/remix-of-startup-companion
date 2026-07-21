@@ -65,7 +65,11 @@ function BillingSnapshotCardInner() {
   });
 
   return (
-    <Card className="border-border/60 rounded-xl">
+    <ClickableCard
+      className="border-border/60 rounded-xl"
+      ariaLabel={t('backoffice.billing.mrr', { defaultValue: 'MRR previsto' })}
+      onActivate={() => navigate('/admin?tab=backoffice&subtab=contracts')}
+    >
       <CardContent className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* MRR */}
