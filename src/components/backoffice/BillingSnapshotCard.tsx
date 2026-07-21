@@ -141,7 +141,7 @@ function BillingSnapshotCardInner() {
           </div>
         </div>
       </CardContent>
-    </Card>
+    </ClickableCard>
   );
 }
 
