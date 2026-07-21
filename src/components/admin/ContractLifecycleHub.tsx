@@ -376,7 +376,11 @@ export function ContractLifecycleHub() {
         
         {/* Quick Stats */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="border-l-4 border-l-green-500">
+          <ClickableCard
+            className="border-l-4 border-l-green-500"
+            ariaLabel={t('lifecycle.activeContracts')}
+            onActivate={() => navigate('/admin?tab=backoffice&contractStatus=active')}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {t('lifecycle.activeContracts')}
@@ -388,9 +392,13 @@ export function ContractLifecycleHub() {
                 {stats.pendingSignature > 0 && t('lifecycle.pendingSignature', { count: stats.pendingSignature })}
               </p>
             </CardContent>
-          </Card>
+          </ClickableCard>
           
-          <Card className="border-l-4 border-l-amber-500">
+          <ClickableCard
+            className="border-l-4 border-l-amber-500"
+            ariaLabel={t('lifecycle.expiringContracts')}
+            onActivate={() => navigate('/admin?tab=backoffice&contractStatus=expiring')}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {t('lifecycle.expiringContracts')}
@@ -402,9 +410,13 @@ export function ContractLifecycleHub() {
                 {t('lifecycle.expiringIn90', { count: stats.expiringIn90 })}
               </p>
             </CardContent>
-          </Card>
+          </ClickableCard>
           
-          <Card className="border-l-4 border-l-blue-500">
+          <ClickableCard
+            className="border-l-4 border-l-blue-500"
+            ariaLabel={t('lifecycle.readyForContract')}
+            onActivate={() => navigate('/crm?stage=contracted')}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {t('lifecycle.readyForContract')}
@@ -416,9 +428,13 @@ export function ContractLifecycleHub() {
                 {t('lifecycle.leadsInContracted')}
               </p>
             </CardContent>
-          </Card>
+          </ClickableCard>
           
-          <Card className="border-l-4 border-l-slate-500">
+          <ClickableCard
+            className="border-l-4 border-l-slate-500"
+            ariaLabel={t('lifecycle.drafts')}
+            onActivate={() => navigate('/admin?tab=backoffice&contractStatus=draft')}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {t('lifecycle.drafts')}
@@ -430,7 +446,7 @@ export function ContractLifecycleHub() {
                 {t('lifecycle.awaitingCompletion')}
               </p>
             </CardContent>
-          </Card>
+          </ClickableCard>
         </div>
         
         {/* Pipeline Visualization */}
