@@ -406,7 +406,7 @@ export const FounderDashboard = memo(function FounderDashboard({
       {/* 2.6 Monthly Founder Pulse */}
       <div className="animate-fade-in-up stagger-3">
         <WidgetErrorBoundary>
-          <FounderPulseCard workspaceId={workspace.id} />
+          {pulseFlagEnabled && <FounderPulseCard workspaceId={workspace.id} />}
         </WidgetErrorBoundary>
       </div>
 

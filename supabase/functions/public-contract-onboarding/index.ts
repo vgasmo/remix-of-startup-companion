@@ -827,6 +827,7 @@ Deno.serve(async (req) => {
         company_city, company_postal_code, project_name,
         document_url, documents_json,
         certidao_permanente_code, additional_representatives,
+        counter_signer_email, counter_signer_name, counter_signer_status,
         onboarding_token_expires_at, updated_at,
         regulation_accepted_at, regulation_version,
         workspace:workspaces(id, startup:startups(id, name, nif, main_contact_name, main_contact_email, address)),
