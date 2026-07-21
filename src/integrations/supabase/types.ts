@@ -1440,6 +1440,13 @@ export type Database = {
             foreignKeyName: "communication_log_assigned_to_fkey"
             columns: ["assigned_to"]
             isOneToOne: false
+            referencedRelation: "profiles_peer_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_log_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
             referencedRelation: "profiles_safe"
             referencedColumns: ["id"]
           },
@@ -1982,6 +1989,63 @@ export type Database = {
           },
           {
             foreignKeyName: "contract_reminders_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "startup_contracts_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_signature_events: {
+        Row: {
+          actor_user_id: string | null
+          command_id: string
+          contract_id: string
+          created_at: string
+          evidence_json: Json
+          from_status: string | null
+          id: string
+          ip_hash: string | null
+          party: string
+          to_status: string
+          user_agent: string | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          command_id: string
+          contract_id: string
+          created_at?: string
+          evidence_json?: Json
+          from_status?: string | null
+          id?: string
+          ip_hash?: string | null
+          party: string
+          to_status: string
+          user_agent?: string | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          command_id?: string
+          contract_id?: string
+          created_at?: string
+          evidence_json?: Json
+          from_status?: string | null
+          id?: string
+          ip_hash?: string | null
+          party?: string
+          to_status?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_signature_events_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "startup_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_signature_events_contract_id_fkey"
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "startup_contracts_safe"
@@ -10864,6 +10928,27 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles_peer_view: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          id: string | null
+          role_public: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string | null
+          role_public?: never
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string | null
+          role_public?: never
+        }
+        Relationships: []
+      }
       profiles_safe: {
         Row: {
           avatar_url: string | null
@@ -11380,6 +11465,19 @@ export type Database = {
       }
       apply_contract_patch: {
         Args: { _contract_id: string; _patch: Json; _source: string }
+        Returns: Json
+      }
+      apply_contract_signature_atomic: {
+        Args: {
+          p_actor_user_id?: string
+          p_command_id: string
+          p_contract_id: string
+          p_evidence?: Json
+          p_ip_hash?: string
+          p_party: string
+          p_to_status: string
+          p_user_agent?: string
+        }
         Returns: Json
       }
       approve_startup_change_request: {
