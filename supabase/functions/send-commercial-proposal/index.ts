@@ -455,7 +455,7 @@ Deno.serve(async (req) => {
         funnel_item_id: item.id,
         direction: 'outbound',
         channel: 'email',
-        activity_type: 'commercial_proposal_sent',
+        activity_type: 'email',
         subject: body.subject,
         body: body.body_text,
         preview: body.body_text.slice(0, 200),
