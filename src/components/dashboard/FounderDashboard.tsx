@@ -403,6 +403,13 @@ export const FounderDashboard = memo(function FounderDashboard({
         </div>
       )}
 
+      {/* 2.6 Monthly Founder Pulse */}
+      <div className="animate-fade-in-up stagger-3">
+        <WidgetErrorBoundary>
+          <FounderPulseCard workspaceId={workspace.id} />
+        </WidgetErrorBoundary>
+      </div>
+
       {/* 3. Consultant / next session */}
       <div className="animate-fade-in-up stagger-4">
         <FounderBookingCTA workspaceId={workspace.id} isFirstWeek={isFirstWeek} />
