@@ -73,6 +73,13 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
 
 
   const createMutation = useCreateSession(workspaceId);
+  const queryClient = useQueryClient();
+  // Idempotency key for logPast RPC: regenerated each successful attempt.
+  const commandIdRef = useRef<string>(
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `cmd-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+  );
   const { data: members } = useWorkspaceMembers(workspaceId);
   const { data: sessionTemplates } = useSessionTemplates();
 
