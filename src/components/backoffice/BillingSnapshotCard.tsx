@@ -18,6 +18,7 @@ const fmtEUR = new Intl.NumberFormat('pt-PT', {
 
 function BillingSnapshotCardInner() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
     queryKey: ['backoffice-billing-snapshot'],
