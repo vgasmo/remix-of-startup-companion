@@ -636,7 +636,8 @@ serve(async (req) => {
           type: 'first_contact_booked',
           title: 'Marcação de Primeiro Contacto confirmada',
           message: `A tua reunião está agendada para ${dt} (Europe/Lisbon).${teamsLink ? ' Convite do Teams enviado por email.' : ''}`,
-          link: `/crm?open=${funnelItemId}`,
+          link: `/dashboard`,
+
           entity_type: 'funnel_item',
           entity_id: funnelItemId,
           event_key: `first_contact_booked_founder:${funnelItemId}:${slot.date}T${slot.time}`,
