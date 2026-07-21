@@ -1,131 +1,165 @@
+# RC5 Stabilization + Monthly Founder Pulse — Execution Plan
 
-# RC5 Rescue — Source-Truth Map & Execution Plan
+This is a reliability rescue, not a redesign. All changes are forward-only, feature-flagged where risky, and gated on evidence. No feature removals. No client-side privileged writes. No fabricated data.
 
-Two-phase engagement. Phase 1 (this document) publishes the source-truth map and the batched execution plan. Phase 2 executes A→G in agent mode, batch by batch, without further prompts.
+## Operating invariants (apply to every batch)
 
-## Scope reality check (read this first)
+- Forward-only migrations. No edits to already-applied migrations. Every constraint change enumerates the full canonical vocabulary.
+- All multi-write business operations execute in a single SECURITY DEFINER RPC with `SET search_path = public`, internal authorization, least-privilege grants, and `REVOKE ... FROM PUBLIC, anon` where inappropriate.
+- Idempotency: every command accepts a client `command_id uuid`, enforced by unique index; retries return the original result and do NOT replay side effects.
+- Notifications/emails go through an outbox with `queued → leased → delivered | failed_retryable | failed_terminal`. Delivered is stamped ONLY after provider confirms.
+- Every new automation writes both a `started` and terminal `cron_job_runs` row via the shared wrapper, has a kill switch (feature flag or `enabled` column in registry), and is scheduled from the canonical registry.
+- Truthful states: never turn a provider error into success. Ambiguous provider timeouts go through reconciliation.
+- I18n: PT-PT + EN reviewed keys, no `defaultValue` in core flows, strict lint stays green.
+- No item is marked "fixed" without: (a) a failing repro before, (b) a passing behavior test after, (c) file/line evidence in the ledger.
+- Anything requiring staging providers (Graph, DocuSign, email, cron) is marked `NOT PROVEN` with the exact command needed.
 
-The full scope above (7 batches, ~30 sub-items, a full harness rebuild, staging census, fresh-replay in disposable Supabase, seeded Playwright at 4 viewports, pgTAP matrix, bundle profiling, live reconciliation) cannot honestly be completed in a single autonomous session inside this sandbox for two hard reasons:
+## Phase 0 — Inspection & Evidence Ledger
 
-1. **No staging Supabase, no Docker, no MS Graph test tenant, no Mailtrap key are injected.** Every "prove behavior" gate (fresh replay, forward apply, seeded E2E across 4 viewports, failure-injection for Graph/email/storage/signature) requires infra I cannot provision. Per your own rule #2, those items must be reported **NOT PROVEN** with a non-zero release gate — not silently skipped, not fake-passed.
-2. **Person-specific production repair migrations already exist in history** (A4). Per your rule #3, I will not rewrite applied migration history. I will inspect, document, and add forward-only reconciliation + CI guardrails.
+Deliverable: `docs/rc5/evidence-ledger.md` with one row per acceptance item and one row per Batch A–G subtask, status ∈ {confirmed, already-correct-with-proof, fixed, blocked, not-proven}.
 
-Everything **locally executable** — code fixes, new migrations (forward-only, idempotent), RPCs, RLS tightening, unit/pgTAP test files, i18n keys, harness scripts, config — I will land. Everything requiring live infra will ship as executable scripts + explicit NOT PROVEN entries in `docs/rc5/results.md`. The final verdict will therefore be **NO-GO until ops runs the staging harness**, exactly as rule #1 requires.
+Read/enumerate (no writes):
 
-## Source-truth map (per domain)
+1. Migrations already applied touching: `sessions`, `session_participants`, `mentor_bookings`, `startup_contracts`, `contracts`, `profiles`, `funnel_items`, `communication_log`, `automation_health_expectations`, `cron_job_runs`, `notification_ledger`, `notification_attempts`, `feature_flags`, `financial_*`, `programs`, `stages`, `program_weeks`, `program_gates`.
+2. Every writer of the state fields listed by the user (grep + AST walk of `supabase/functions/**` and `src/**`). Produce `docs/rc5/state-writers.md` with file:line and whether the writer goes through an RPC or writes directly.
+3. Canonical state machines: session lifecycle, mentor booking lifecycle, contract signing/activation, CRM import batch/row, programme publish/version. Draw as tables in `docs/rc5/state-machines.md`.
+4. Reconcile `automation_health_expectations` rows against `pg_cron` jobs and wrapper call sites; list every drift.
 
-### 1. Contracts — signing, dispatch, documents, autosave
+Repro scripts (read-only): stored under `scripts/rc5/repro/` with a `README` mapping each P0 to its repro.
 
-| Operation | UI caller | Edge/RPC | Tables | Auth | Idempotency | Txn | Test |
-|---|---|---|---|---|---|---|---|
-| Inline eIDAS sign | `PublicContractSigning.tsx` | `public-contract-onboarding` (`action=sign_inline`) | `startup_contracts`, `contract_lifecycle_events` | Public token (SHA-256) | Token single-use (missing enforcement) | Non-atomic: SELECT → UPDATE | none |
-| Provider dispatch | `ContractDetailDrawer` "Send" | `send-contract-for-signature` (DocuSign/PandaDoc) | `startup_contracts.envelope_id/pandadoc_id`, `contract_lifecycle_events` | Staff RLS | None — retry duplicates envelopes | UI marks `sent` before provider ack | none |
-| Manual mark sent/signed | `ContractDetailDrawer` | `mark_contract_sent`, `mark_contract_signed` RPCs | `startup_contracts`, intake/funnel | Staff | ok | ok | partial |
-| Document upload | `ContractOnboarding`, `PublicContractIntake` | `upload-contract-document` | `startup_contracts.documents_json`, storage `contract-documents` | Staff / signed token | None — last-write-wins on `documents_json` | Two-step (storage then metadata), no rollback | none |
-| Intake autosave | `PublicContractIntake`, `ContractOnboarding` | `useContractDraftAutosave` → `public-contract-onboarding action=save_draft` | `contract_intakes` / `startup_contracts` | Token | Debounced local; no CAS | No revision guard; prefill can retrigger save | none |
+## Batch A — Session & Meeting Integrity (P0)
 
-**Shadow paths:** `ContractDiscountsPanel` writes `contract_discounts` directly; CRM `OverviewTab` writes overlapping discount rows — see B/C.
+### A1. `log_completed_session_atomic(p_command_id uuid, ...)` RPC
+- Inputs: workspace, title, occurred_at (must be `<= now()`), actual_duration_minutes (>0, <=1440), meeting_type, primary_consultant_id (nullable when mentor is attribution), primary_mentor_id (nullable), attendance jsonb[], notes, decisions, location, evidence_url.
+- Auth matrix inside RPC: staff/admin always; consultant if assigned to workspace; founder if member; mentor only via active `mentor_connections` with the workspace.
+- Writes in one transaction: `sessions` row (`source='off_platform'`, `status='completed'`, `outlook_sync_status='not_applicable'`, actual_duration, primary attribution), `session_participants` upserts (`attendance_status`), one `tool_usage_events` row `session_completed`, one `activity_log` row. NO `session_scheduled`, NO Outlook enqueue.
+- Idempotency: unique index on `sessions(command_id)` (new nullable column, backfilled NULL). Retry with same `p_command_id` returns the existing session id.
+- UI: `CreateSessionDialog` past-meeting branch becomes a distinct form calling the RPC via `invokeWithAuth`. Future date → route to normal scheduling.
+- Tests (Vitest + pgTAP): unauthorized actor, past vs future timestamp, consultant vs mentor attribution, attendance persistence, duplicate command_id, no provider sync, metrics.
 
-### 2. Programmes — publish + workspace transfer
+### A2. Session-source vocabulary correction
+- Enumerate every writer of `sessions.source`. Build the canonical set `{ manual, teams_import, webhook, off_platform, mentor_booking, public_booking }` (adjusted to actual grep results).
+- Forward-only migration drops+recreates `sessions_source_check` with the full set. Vitest + pgTAP test: `mentor_transition_booking` accepts and creates a linked session with `source='mentor_booking'`.
+- Read-only impact query in `docs/rc5/queries/mentor-booking-stuck.sql` — no auto-repair.
 
-| Operation | UI | Backend | Tables | Notes |
-|---|---|---|---|---|
-| Publish programme | `ProgramSetupWizard.publish()` | Multiple sequential Supabase calls | `programs`, `kpi_definitions`, `program_weeks`, `program_gates`, `stages`, `playbook_items` | **Not one txn** — snapshot failure leaves orphans. C2 target. |
-| Transfer workspace programme | `ProgramSwitcher`, `staff_transfer_workspace_program` | RPC (canonical) + legacy direct updates in `ProgramSwitcher` code path | `workspaces`, `milestones`, `action_items`, `program_weeks` | Shadow write in `ProgramSwitcher.tsx` bypasses RPC. C1 target. |
+### A3. Mentor booking ↔ session lifecycle
+- Add `mentor_bookings.linked_session_id uuid references sessions(id)` + unique partial index on `(mentor_id, linked_session_id) where linked_session_id is not null`.
+- `mentor_transition_booking` becomes the only writer. Acceptance: creates or returns existing linked session atomically. Completion: calls `log_completed_session_atomic` internally (`p_command_id = md5(booking_id||'complete')::uuid`).
+- Availability query considers accepted bookings + normal sessions + configured busy times.
+- Impact report already filters completed+duration; add explicit "active assignments" vs "startups helped" split.
 
-### 3. Mentors — availability → booking → session → impact
+## Batch B — Contract & Privacy Safety (P0)
 
-| Operation | UI | Backend | Idempotency |
-|---|---|---|---|
-| Public availability | `PublicBooking.tsx` | `public-first-contact-availability` | Returns [] on error (**A2/E3 verify: fail-closed already partially landed**) |
-| Create booking | `MentorBookingDialog` | `mentor_book_slot` RPC | Slot advisory lock — verified |
-| Accept/decline/cancel | Client-side status update in `MentorBookings.tsx` | Direct `mentor_bookings.update` | **No transition RPC** — D1 target |
-| Impact metrics | `MentorImpact.tsx`, `mentor-impact-pdf` | Selects `sessions.duration_minutes` (nonexistent) | **D2 target** |
+### B1. DocuSign atomicity
+- Hoist `actorUserId` to top scope with `null` default; log service-actor vs user-actor explicitly.
+- Deterministic `envelope_command_id = sha256(contract_id || document_version || 'send')`. Unique index on `startup_contracts(envelope_command_id)`.
+- States: `preparing → provider_pending → sent | ambiguous | failed`. Reconciliation edge function `reconcile-docusign-envelopes` looks up ambiguous by our command id via DocuSign search.
+- PDF failure = fail-closed (no envelope send). Add function typecheck to CI.
 
-### 4. CRM / import / reconciler
+### B2. `apply_contract_signature_atomic(p_command_id, p_token_hash, p_signer_kind, p_consent jsonb, p_evidence jsonb)` RPC
+- Locks contract row (`FOR UPDATE`), re-validates token hash, expiry, purpose, document version.
+- Consent read from request; no hardcoded `true`. Rejects if required consent flags absent.
+- Bilateral: sets one signer's state; only activates when BOTH required signatures present. Immutable evidence log appended.
+- Public function becomes a thin edge that hashes the token and delegates. Do NOT claim eIDAS in code/UI; add legal-review ledger item.
 
-| Path | Command | Issue |
-|---|---|---|
-| Import leads CSV | `LeadsImporter.tsx` → client `split(',')` → direct `funnel_items` insert | **Unsafe. E1 target.** Canonical is `bulk-import-leads` edge + `bulk_import_batches`. |
-| Reconciler | `admin/ReconcilerPanel` → `run-reconciler` | Empty allowlist path exists (E2 target) |
-| Public first-contact | `PublicBooking.tsx` → `public-book-first-contact` | Idempotency + outbox partial (E3 target) |
+### B3. `profiles_peer_view` (security invoker view or SECURITY DEFINER RPC)
+- Exposes `{id, full_name, avatar_url, role_public}` only. Base `profiles` restricted to self + staff. Update all peer readers (workspace members list, chat, mentor gallery) to use the peer view. RLS matrix tests: founder-of-A cannot see profile fields of founder-of-B beyond peer view.
 
-### 5. Automations vs. cron
+## Batch C — Automation & Notification Truth
 
-Expectations in `automation_health_expectations`: automation-engine, sync-outlook-emails, check_automation_health, generate-crm-notifications, check-missed-milestones, check-mentor-nda-expiry, recompute-health-scores, email_sync_status, reconcile-contract-founders.
+### C1. Canonical automation registry
+- Table `automation_registry(job_key, edge_endpoint, schedule_cron, tz, expected_interval, stale_after, log_key, enabled, owner, severity, required_secrets text[])`.
+- Migration seeds real jobs: `automation-engine`, `sync-outlook-emails`, `check-missed-milestones`, `check-mentor-nda-expiry`, `generate-crm-notifications`, `recompute-health-scores`, `check_automation_health`, `check_email_sync_health`, `reconcile-contract-founders-hourly`, new `monthly-founder-pulse-dispatch`, `monthly-founder-pulse-reminder`.
+- Verifier RPC `verify_automation_registry()` returns drift vs `cron.job`. Health view distinguishes `healthy | never_run | stale | failing | disabled | configuration_missing`.
 
-Actual `pg_cron` (from `cron.job`): sync-outlook-emails (5m), automation-engine (hourly), reconcile-contract-founders (hourly). Others: **unscheduled or phantom**. F1 target.
+### C2. Notification outbox
+- Repurpose `notification_attempts` (already exists) as the true outbox with states above, `lease_owner`, `lease_expires_at`, `next_attempt_at`, `provider_message_id`, `last_error_class`, `delivered_at`.
+- Keep `notification_ledger` as the unique-business-key dedup index. Migrate NDA + commercial proposal callers first (behind a flag), then broader.
 
-### 6. Profiles / RLS
+### C3. Public first-contact booking
+- Wrap CRM+funnel+Graph+email+notify in `public_book_first_contact_atomic(p_command_id, ...)` RPC + outbox rows. Deep-merge metadata via existing `jsonb_deep_merge`. Retries return existing booking.
 
-Migration `20260719145244` added a peer SELECT on base `profiles` — must be reverted; use `profiles_safe` view. A3 target.
+### C4. CRM staged import
+- Enforce `crm_lead_import_batches.created_by` must equal the committer OR committer has explicit `admin`. Require `target_consultant_id` (not inferred).
+- Per-row commit RPC `commit_crm_lead_row(batch_id, row_id, decision, target_consultant_id)`, idempotent. Partial batch retryable. Consolidate importer UI to one path; keep dry-run + validation export.
 
-### 7. Harness
+## Batch D — Programme & Financial Truth
 
-`scripts/rc5/verify.mjs` correctly fails when `RC5_ALLOW_STAGING_TESTS != 'true'`. Placeholder scripts: `migrate-fresh-replay.mjs`, `migrate-forward.mjs`, `probe-graph.mjs`, `probe-email.mjs`. Playwright specs exist but not run against staging. Cleanup script exists.
+### D1. Atomic programme publish
+- One RPC `publish_program_version(program_id, expected_version)` with `FOR UPDATE`. Writes program version snapshot + weeks/gates/stages + KPIs + templates in one tx. Incubation omitted stages → versioned deactivate (not delete). Preflight blocks type conversion when references exist without operator remap.
 
-## Execution plan (agent mode, batch by batch)
+### D2. Financial scenario save
+- Trace real writers (`useFinancialPlan`, `financial_plan_sessions`, `financial_assumptions`, `financial_model_versions`, `financial_prefill_proposals`). Implement `save_financial_scenario_atomic(session_id, expected_version, assumptions jsonb, cell_map jsonb, metric_map jsonb)` that matches the real model. Wire the guided UI to it. Retire the unused stub only after all callers migrated.
 
-Order optimizes safety: A (P0 containment) → B (contracts) → C (programmes) → D (mentors) → E (CRM/booking) → F (automations/health) → G (delivery + UX + gates). Each batch closes with build + typecheck + vitest.
+### D3. Business Plan naming truth
+- Rename current tile to "Plano Financeiro Guiado" / "Guided Financial Plan". Register `business_plan_assistant_v2` in typed flag registry (default OFF). Assistant surface only mounted when flag ON.
 
-### Batch A — P0 containment (this session, high confidence)
-- A1: New `sign_contract_atomic(contract_id, token, actor_role, evidence)` SECURITY DEFINER RPC. Row-level lock, full field load, explicit consent asserts, immutable `contract_lifecycle_events` write with `evidence_json` (regulation ver, doc SHA-256, IP hash, UA, idempotency key). Token single-use via `used_at`. Bilateral: founder → `partially_signed`; counter-signer required for `signed`. Replace inline path in `public-contract-onboarding`. Remove "eIDAS compliant" wording where legal review marker is absent.
-- A2: Reorder `sync-outlook-emails` to auth before `auto_sync`. Timing-safe compare of `x-cron-secret`. Strip mailbox addresses from unauthorized error responses. Add `supabase/config.toml` entry. Unit tests: 4 personas × cron secret variants.
-- A3: Migration revokes peer SELECT on `profiles`, restores prior view usage. pgTAP for founder/mentor/consultant/backoffice/admin/unrelated.
-- A4: CI script `scripts/ci/scan-migrations.mjs` — regex for email addresses + bare UUID DML in `supabase/migrations/*.sql` with an allowlist file. Add to `.github/workflows/ci.yml`. Document forward-only reconciliation policy in `docs/rc5/migration-policy.md`. Do NOT rewrite applied history.
+## Batch E — Monthly Founder Pulse
 
-### Batch B — Contract reliability
-- B1: `signature_dispatch` table (queued/dispatching/provider_accepted/failed/manual/signed) + `dispatch_contract_signature(contract_id, provider)` RPC + edge outbox worker. Reconcile provider IDs before retry; DocuSign & PandaDoc list-by-metadata guard. UI states derived from dispatch, not stale `status`.
-- B2: `contract_documents` normalized table with `(contract_id, doc_key)` unique. `upsert_contract_document` RPC with atomic JSONB merge fallback for legacy readers. Storage-then-metadata saga with cleanup RPC. Tests for the 6 scenarios listed.
-- B3: `useContractDraftAutosave` — add `hydratedRef` guard, revision (`updated_at` CAS), 409 conflict dialog, retain localDraft until server confirms same payload+revision. Apply to all 3 forms.
+### E1–E3. Data model + candidate resolution
+- Migration: `founder_monthly_pulses` per spec + `founder_monthly_pulse_tokens(pulse_id, token_hash, purpose, expires_at, used_at)` with hashed single-use tokens (SHA-256, 32-byte random).
+- RLS: founder self via `auth.uid()`; consultant via `workspaces.assigned_consultor_id`; staff via `has_role`. Anonymous access strictly via `redeem_pulse_action(p_token_plain, p_response)` RPC that hashes and validates.
+- Candidate resolver SQL function `resolve_monthly_pulse_candidates(period date)` returning eligible rows + exception reasons (`no_consultant`, `ambiguous_consultant`, `opted_out`, `invalid_email`, `inactive`).
 
-### Batch C — Programmes
-- C1: Delete direct-update path in `ProgramSwitcher`; call `staff_transfer_workspace_program` only. Add `active_milestones` view (`archived_at IS NULL`); repoint dashboards/reports/session-prep/investor-updates/shared workspace. Tests both directions + retry.
-- C2: `publish_program(payload jsonb)` SECURITY DEFINER RPC — single txn writes program, KPIs, weeks, gates, stages, playbook items, audit event. Idempotent by draft key.
+### E4. Schedule & delivery
+- Daily UTC cron `monthly-founder-pulse-dispatch`. Function checks: is today the first business day of the local (Europe/Lisbon) month at ~10:00? If yes, atomically claim the period per candidate (unique `(workspace_id, founder_user_id, period_month, template_version)`).
+- Enqueue via outbox. Provider is existing email infra (`send-transactional-email`). Reminder job runs daily; sends one reminder after 5 business days if no response, then stops.
+- Kill switch: feature flag `founder_monthly_pulse` default OFF + registry `enabled=false`.
 
-### Batch D — Mentors
-- D1: `mentor_transition_booking(booking_id, target_state, actor)` RPC — pending→accepted creates session + notification outbox in one txn. Overlap check inside txn.
-- D2: `mentor_impact_metrics(mentor_id, workspace_id?)` view. Selects only completed sessions with participation row + `actual_duration_minutes IS NOT NULL`. Repoint `MentorImpact.tsx`, PDF, staff analytics. Fix nonexistent `duration_minutes` reference. Tests: two-mentor workspace, no-show, cancelled, past-scheduled-uncompleted.
+### E5. Response behavior
+- `redeem_pulse_action` records response once (unique index prevents dupes). `needs_help` creates one `staff_work_queue_items` row + one `notifications` row via outbox. `book_meeting` returns booking URL scoped to consultant/workspace. Optional comment: 1000 char cap, sanitized.
 
-### Batch E — CRM / booking
-- E1: Server-side CSV parse in `bulk-import-leads` (papaparse-style, quoted-field aware). Client `LeadsImporter` uploads raw CSV; review step reads `bulk_import_rows`; commit stays idempotent by `(batch_id, row_hash)`. Remove `split(',')`.
-- E2: `run-reconciler` fails closed on empty allowlist; requires `batch_id`, `plan_hash`, `authorized_row_ids[]`, `canary_cap`. `workspace_alerts` severity fixed enum.
-- E3: `book_first_contact_atomic` RPC + `first_contact_outbox` table for Graph event + email + notification. Idempotency arbiter on `(email_normalized, slot_start, program_id)`. Merge CRM `metadata_json` via `jsonb_deep_merge` server-side. Remove founder `/crm` link. DB rate-limit table `public_booking_rate_limits`.
+### E6. Operational UX
+- Consultant dashboard card: "Pulses do mês" with counts + drilldown.
+- Staff admin surface under `/admin` with dry-run, test-send-to-internal, exceptions list, per-consultant metrics (aggregate, not ranking).
+- Founder response page `/pulse/:token` — mobile-first, no login, invalid token → generic recovery, no data leakage.
 
-### Batch F — Automations / health
-- F1: Reconcile `automation_health_expectations` with real `cron.job` list. Drop `email_sync_status` expectation (no emitter). Schedule missing jobs with `x-cron-secret`. Every scheduled edge wraps with `withCronRunLogging`.
-- F2: Single severity enum migration (`alert_severity`). Dedupe `system_alerts` before adding unique index on `(kind, entity_ref, day)`. `SystemHealthDashboard` states: OK/UNKNOWN/NEVER_RUN/STALE/RECOVERED/FAILED. Instrument health checks themselves.
-- F3: Transcript containment — include NULL source in analysis; default ambiguous → `staff_only`; add `transcript_review_queue` + `reclassify_transcript(id, tier, reason)` staff RPC. Align vocabulary between `import-teams-transcript` and `teams_graph`.
+### E7. Rollout
+- Phase 1 dry-run only. Phases 2–4 gated on evidence review. Kill switch documented in `docs/rc5/rollback-runbook.md`.
+- Legal/DPO ledger item added and marked BLOCKING until sign-off.
 
-### Batch G — Delivery, product truth, UX, gates
-- G1: `notifications` outbox states (queued/leased/delivered/failed) + `notification_attempts`. Proposal send reuses `client_command_id`.
-- G2: Rename Business Plan tile → "Guided Financial Plan". Add separate "Business Plan Template (DOCX)" tile linking to existing PT/EN templates. Keep BP-assistant behind `feature_flags.business_plan_assistant_v2` (off).
-- G3: `save_financial_scenario_atomic` RPC. Local draft preserved until server confirm.
-- G4: Add `ClickableCard` primitive using `clickableProps`. Audit + convert offending Card/div click handlers on the 7 listed surfaces.
-- G5: Fix `SendProposalDialog` restricted import (use `@/lib/supabaseClient`). Fill all 30 missing i18n keys in PT+EN. Add bundle profile script; lazy-load `pdf`, chart, import, persona-only routes; document 900KB initial JS budget in `docs/rc5/bundle-budget.md`. Confirm Bun 1.2.0 in `playwright.config.ts` webServer. Add `.env` to release-wrapper export ignore.
+## Batch F — UX, i18n, Clickability
 
-### Harness
-- Namespace seed with `rc5-e2e-<runId>` prefix everywhere.
-- `finally { cleanup() }` in every seeded spec; cleanup asserts zero rows.
-- `migrate-fresh-replay.mjs` uses `supabase db start` (disposable local Supabase) — script ready; execution requires Docker (**NOT PROVEN** here).
-- Playwright specs already exist at 4 viewports; harness will ship, execution requires staging (**NOT PROVEN** here).
-- Suppressive `catch` and toast-based assertions purged.
+### F1. i18n
+- Resolve all 66 strict-lint failing keys with reviewed PT-PT + EN copy. Remove `defaultValue` from core flows. Rerun `scripts/i18n-lint.mjs`.
 
-### Live census
-- `scripts/rc5/census.sql` + `scripts/rc5/census.mjs` running read-only against staging URL when provided. Outputs `docs/rc5/census-<ts>.md` + exception CSVs under `docs/rc5/exceptions/`. In this session: **NOT PROVEN** (no staging URL).
+### F2. Clickability sweep
+- Convert to `ClickableCard` / native links: `SessionCard`, `WorkspaceOverview` KPI blocks, `StageProgressCard`, `ConsultorTools` tiles, `SupportMaterialsTab` items, setup/review wizard cards. Accessibility test per element (keyboard, focus ring, SR name).
 
-## Technical notes
+### F3. Draft reliability E2E
+- Playwright specs `e2e/template-autosave.spec.ts` + `e2e/contract-autosave.spec.ts` covering the 8 scenarios listed. Investigate `useTemplateDraftAutosave` for stale-closure; only consolidate to `useSingleFlightDraft` if parity tests pass.
 
-- Every new RPC: `SECURITY DEFINER`, `SET search_path = public`, explicit auth check by JWT claims, `RAISE EXCEPTION` on unauthorized. `GRANT EXECUTE` limited to `authenticated`/`service_role` per surface.
-- Every new public-schema table: `CREATE TABLE` → `GRANT` → `ENABLE RLS` → `CREATE POLICY` in the same migration.
-- All migrations forward-only, additive, idempotent (`IF NOT EXISTS`, `ON CONFLICT DO NOTHING`).
-- Types regenerated after each migration approval.
-- No feature removal. Business Plan tile is **renamed and split**, not removed.
+## Batch G — CI, Migrations, Staging Proof
 
-## Final response format (Phase 2 deliverable)
+### G1. CI
+- Pin Bun to exact `packageManager` version. Add `deno lint`/`deno check` for `supabase/functions/**`. Keep existing i18n/secret/size gates. Add `bunx vitest run` + `bunx playwright test`.
 
-The report will strictly follow the 10-point format you specified, with honest GO/NO-GO and explicit NOT PROVEN entries for anything requiring live infra.
+### G2. Migration truth
+- `scripts/rc5/migrate-fresh-replay.mjs` proves fresh replay green. `scripts/rc5/migrate-forward.mjs` from staging snapshot. RLS/DEFINER audit `docs/rc5/queries/definer-audit.sql`. NO destructive writes replayed.
 
----
+### G3. Persona E2E
+- Seeded Playwright journeys per persona at 320/375/768/1440 with cleanup fixtures. Provider-integrated tests marked `NOT PROVEN` until staging creds injected.
 
-**Approval requested to begin Phase 2 (Batch A).** I will proceed batch by batch without further prompts once approved.
+## Deliverables per batch (mandatory)
+
+For each batch, ship:
+1. Code + forward-only migration.
+2. Vitest unit tests + pgTAP tests where DB behavior.
+3. Ledger update with file:line evidence + repro before/after.
+4. Read-only impact query for any suggested backfill; NO auto-mutation.
+
+## Stop-and-ask gates (human required)
+
+- Any production data mutation / backfill.
+- eIDAS / DPO legal wording sign-off.
+- Migration baseline reconciliation strategy for production DB.
+- Rollout phase transitions for Monthly Founder Pulse beyond Phase 1 dry-run.
+- Removal of any existing feature or narrowing of any existing permission.
+
+## Sequencing
+
+Batch order: Phase 0 → A → B → C → E (data+dispatch, flag OFF) → D → F → G. Batches A, B are P0 and land first. Batch E lands with flag OFF so it ships without user impact and is proven before rollout.
+
+## Final report shape
+
+The final message at GO/CONDITIONAL-GO/NO-GO will contain all 14 required sections. Every acceptance criterion links to (a) the failing repro, (b) the passing test, (c) the file:line where behavior lives.
