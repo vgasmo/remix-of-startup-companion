@@ -2657,16 +2657,16 @@
   },
   "consultor": {
     "actions": {
-      "allClear": "Todos Limpar",
-      "overdueCount": "Atrasado Count",
-      "resolve": "Resolve",
-      "title": "Título"
+      "allClear": "Tudo tratado",
+      "overdueCount": "{{count}} atrasadas",
+      "resolve": "Resolver",
+      "title": "Ações Críticas"
     },
     "agenda": {
-      "empty": "Empty",
-      "prep": "Prep",
+      "empty": "Sem sessões agendadas",
+      "prep": "Preparar",
       "schedule": "Agendar",
-      "title": "Título"
+      "title": "Sessões de Hoje"
     },
     "aiBriefing": {
       "cta": "Briefing",
@@ -2677,17 +2677,17 @@
       "unavailableHint": "Briefing IA indisponível — clique para tentar novamente"
     },
     "alerts": {
-      "missingKpis": "Missing KPIs",
-      "noRecentSessions": "No Recent Sessões"
+      "missingKpis": "KPIs em falta",
+      "noRecentSessions": "Sem sessões recentes"
     },
-    "copiedToClipboard": "Copied to clipboard",
+    "copiedToClipboard": "Copiado para o clipboard",
     "dataQuality": {
-      "title": "Título"
+      "title": "Qualidade dos Dados"
     },
-    "exerciseCreated": "Exercise created",
-    "exerciseUpdated": "Exercise updated",
-    "failedToSave": "Failed to save",
-    "failedToSaveExercise": "Failed to save exercise",
+    "exerciseCreated": "Exercício criado",
+    "exerciseUpdated": "Exercício atualizado",
+    "failedToSave": "Falha ao guardar",
+    "failedToSaveExercise": "Falha ao guardar exercício",
     "healthMatrix": {
       "title": "Matriz de Saúde do Portfólio"
     },
@@ -2697,17 +2697,17 @@
       "noPriorities": "Nenhuma startup precisa de atenção urgente neste momento.",
       "subtitle": "Startups que requerem ação imediata",
       "title": "Precisa de Atenção",
-      "triageHint": "Triage diária — foque-se no que precisa de atenção hoje. Para gestão aprofundada, use o portefólio."
+      "triageHint": "Triagem diária — foque-se no que precisa de atenção hoje. Para gestão aprofundada, use o portefólio."
     },
     "nudgeFounder": "Nudge",
     "pipeline": {
-      "contracted": "Contracted",
-      "empty": "Empty",
-      "needsAction": "Needs Ação",
-      "newLeads": "New Leads",
+      "contracted": "Contratados",
+      "empty": "Sem leads no pipeline",
+      "needsAction": "{{count}} a precisar de ação",
+      "newLeads": "Novos Leads",
       "open": "Abrir",
-      "title": "Título",
-      "totalLeads": "total Leads"
+      "title": "Pipeline Comercial",
+      "totalLeads": "Total de Leads"
     },
     "portfolioSection": "Gestão de Portefólio",
     "portfolioTable": {
