@@ -11700,6 +11700,10 @@ export type Database = {
       check_ecosystem_invariants: { Args: never; Returns: Json }
       check_email_sync_health: { Args: never; Returns: undefined }
       check_signup_allowed: { Args: { p_email: string }; Returns: boolean }
+      claim_docusign_envelope: {
+        Args: { p_command_id: string; p_contract_id: string }
+        Returns: Json
+      }
       claim_notification_attempts: {
         Args: { p_lease_seconds?: number; p_limit?: number; p_owner: string }
         Returns: {
@@ -11893,6 +11897,17 @@ export type Database = {
         Returns: string
       }
       ensure_founder_role: { Args: never; Returns: undefined }
+      finalize_docusign_envelope: {
+        Args: {
+          p_command_id: string
+          p_contract_id: string
+          p_counter_signer_email?: string
+          p_counter_signer_name?: string
+          p_envelope_id: string
+          p_signer_email?: string
+        }
+        Returns: Json
+      }
       fuzzy_search_leads: {
         Args: { p_limit?: number; p_query: string }
         Returns: {
@@ -12300,6 +12315,10 @@ export type Database = {
       reject_startup_claim: {
         Args: { p_claim_id: string; p_reason?: string }
         Returns: undefined
+      }
+      release_docusign_envelope_command: {
+        Args: { p_command_id: string; p_contract_id: string; p_error?: string }
+        Returns: Json
       }
       resolve_canonical_booking_token: { Args: never; Returns: string }
       revert_import_row: { Args: { p_row_id: string }; Returns: Json }
