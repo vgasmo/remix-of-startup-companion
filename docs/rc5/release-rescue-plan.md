@@ -27,7 +27,7 @@ Legend: `FAILING REPRO` · `FIXED + PASS` · `FIXED IN SOURCE / RUNTIME NOT PROV
 | G1 | Automation truth manifest | `FIXED IN SOURCE / RUNTIME NOT PROVEN` | `docs/rc5/automation-manifest.md` lists 17 automations (trigger / cadence / owner / flag / health). `scripts/rc5/reconcile-automations.mjs` refuses prod, joins `cron.job × automation_health_expectations × manifest`, fails on missing_schedule / dead_cron / missing_registry / unregistered_cron. Live pg_cron capture + dead-cron migration deferred to staging. |
 | G2 | UX / accessibility / clickability | `FIXED IN SOURCE / RUNTIME NOT PROVEN` | `scripts/rc5/persona-widths.mjs` captures 4 personas × 4 widths into `scripts/rc5/artifacts/g2/`; refuses prod without opt-in. UI diffs held pending harness screenshots (evidence-first). |
 | G3 | Measured performance | `FIXED IN SOURCE / RUNTIME NOT PROVEN` | `scripts/rc5/perf-baseline.mjs` captures nav timing + request counts + duplicates + long tasks per persona@390. `docs/rc5/performance-baseline.md` scaffolds before/after tables; no optimization ships without measured deltas. |
-| H | Release engineering | `NOT PROVEN` | |
+| H | Release engineering | `FIXED IN SOURCE / RUNTIME NOT PROVEN` | Bun pinned to 1.2.0 across CI; `deno-check-edge` job + `scripts/rc5/deno-check-changed.mjs` wired into `rc5:verify`; see `docs/rc5/failing-repros/batch-h.md`. |
 
 ## Mandatory runtime gates still BLOCKED
 
