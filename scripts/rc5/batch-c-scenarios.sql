@@ -105,14 +105,17 @@ BEGIN
   IF (SELECT count(*) FROM public.startup_contracts WHERE envelope_command_id = v_cmd_c) <> 1 THEN
     RAISE EXCEPTION 'S3 same command_id must appear on exactly one row';
   END IF;
-  -- Also verify unique index: attempting to stamp v_cmd_c on a *different*
-  -- contract must fail.
+  -- Also verify unique index: routing the same command_id at a *different*
+  -- contract through the RPC must raise unique_violation from inside the
+  -- SECURITY DEFINER UPDATE, proving the DB-level guard is enforced even if
+  -- application logic ever races past the row-lock branch.
   BEGIN
-    UPDATE public.startup_contracts SET envelope_command_id = v_cmd_c WHERE id = v_c2;
-    RAISE EXCEPTION 'S3 unique index should have blocked cross-contract command_id reuse';
+    r := public.claim_docusign_envelope(v_c2, v_cmd_c);
+    RAISE EXCEPTION 'S3 unique index should have blocked cross-contract command_id reuse, got %', r;
   EXCEPTION WHEN unique_violation THEN
     NULL;
   END;
+
 
   -- ---- Scenario 4: different command claim on already-claimed contract --------
   -- c4 gets claimed with v_cmd_d1 first, then a worker with v_cmd_d2 tries.
