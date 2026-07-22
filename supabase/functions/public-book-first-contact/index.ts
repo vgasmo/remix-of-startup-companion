@@ -740,6 +740,13 @@ serve(async (req) => {
         if (!resp.ok) {
           const errText = await resp.text();
           console.warn('Consultant alert email failed', resp.status, errText.slice(0, 200));
+          if (outboxIds.consultant_email) {
+            await supabase.rpc('mark_first_contact_outbox_failed', {
+              p_id: outboxIds.consultant_email,
+              p_error: `resend_${resp.status}:${errText.slice(0, 200)}`,
+              p_backoff_seconds: 300,
+            });
+          }
         } else {
           try {
             await supabase.from('email_log').insert({
@@ -750,34 +757,35 @@ serve(async (req) => {
               sent_at: new Date().toISOString(),
             });
           } catch { /* email_log optional */ }
+          if (outboxIds.consultant_email) {
+            await supabase.rpc('mark_first_contact_outbox_completed', { p_id: outboxIds.consultant_email });
+          }
         }
       } else if (!RESEND_API_KEY) {
         console.warn('RESEND_API_KEY not configured; skipping consultant alert email');
+        if (outboxIds.consultant_email) {
+          await supabase
+            .from('first_contact_outbox')
+            .update({ status: 'skipped', last_error: 'resend_not_configured' })
+            .eq('id', outboxIds.consultant_email);
+        }
       }
     } catch (mailErr) {
       console.error('Consultant alert email error:', mailErr);
+      if (outboxIds.consultant_email) {
+        await supabase.rpc('mark_first_contact_outbox_failed', {
+          p_id: outboxIds.consultant_email,
+          p_error: mailErr instanceof Error ? mailErr.message : 'unknown',
+          p_backoff_seconds: 300,
+        });
+      }
     }
 
-    // === Durable outbox trace (E3) ===
-    // Record every subsystem attempt so ops can replay / audit even when the
-    // inline delivery already completed. `completed` rows are audit trail;
-    // `failed`/`pending` rows are candidates for a future retry worker.
+    // Best-effort trace of the in-app notification side-effects (already fired above).
+    // The two authoritative outbox rows (graph_event, consultant_email) were inserted
+    // pre-flight and updated in place; these two are audit-only.
     try {
-      const outboxRows = [
-        {
-          funnel_item_id: funnelItemId,
-          kind: 'graph_event',
-          payload_json: {
-            calendar_event_id: calendarEventId,
-            teams_url: teamsLink,
-            slot,
-            consultant_email: consultantEmail,
-          },
-          status: calendarStatus === 'ok' ? 'completed' : (calendarStatus === 'failed' ? 'failed' : 'skipped'),
-          attempts: 1,
-          last_error: calendarError,
-          completed_at: calendarStatus === 'ok' ? new Date().toISOString() : null,
-        },
+      await supabase.from('first_contact_outbox').insert([
         {
           funnel_item_id: funnelItemId,
           kind: 'consultant_notification',
@@ -790,20 +798,13 @@ serve(async (req) => {
           funnel_item_id: funnelItemId,
           kind: 'founder_notification',
           payload_json: { contact_email: contact.email, slot },
-          status: 'pending', // resolved by founder-notification block above; not authoritative
+          status: 'completed',
           attempts: 1,
+          completed_at: new Date().toISOString(),
         },
-        {
-          funnel_item_id: funnelItemId,
-          kind: 'consultant_email',
-          payload_json: { consultant_email: consultantEmail, slot },
-          status: consultantEmail ? 'pending' : 'skipped',
-          attempts: 1,
-        },
-      ];
-      await supabase.from('first_contact_outbox').insert(outboxRows);
+      ]);
     } catch (outErr) {
-      console.warn('first_contact_outbox insert failed (non-fatal):', outErr);
+      console.warn('first_contact_outbox trace insert failed (non-fatal):', outErr);
     }
 
     // Honest response: reflect what actually happened per subsystem so the client
