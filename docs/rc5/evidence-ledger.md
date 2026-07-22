@@ -1,81 +1,86 @@
 # RC5 Rescue — Evidence Ledger
 
-Status keys: `confirmed` (repro reproduced), `already-correct-with-proof`, `fixed` (repro passes after change), `blocked` (needs human decision), `not-proven` (needs staging providers).
+Authoritative status. All earlier RC5 status documents that contradict this
+file are **SUPERSEDED** (see list at bottom). Historical evidence is retained
+in-place, not deleted.
 
-Last updated: 2026-07-21.
+Last updated: 2026-07-22 (Codex audit).
 
----
+Status keys: `confirmed` (defect reproduced or proved by code inspection),
+`fixed` (forward-only fix applied AND canonical test green),
+`fix-drafted` (forward-only fix written to `docs/rc5/drafts/` but not applied),
+`not-proven` (needs behavioral run or credentials this turn does not have),
+`blocked` (needs human decision or external gate).
 
-## Phase 0 — Inspection
+## Release verdict
 
-| Item | Evidence | Status |
+**NO-GO.** No P0/P1 batch closes in this turn. Only Phase 0 hypothesis
+confirmations for H1 and H2 land, plus a drafted (unapplied) corrective
+migration for H1.
+
+## Phase 0 — hypothesis map
+
+| Ref | Defect | Status | Evidence |
+|---|---|---|---|
+| H1 | `log_completed_session_atomic` auth-after-idempotency, over-broad member auth, unvalidated attendees, mentor attribution lost | `confirmed` + `fix-drafted` | `docs/rc5/AUDIT-2026-07-22-CODEX.md#h1`; live-DB `pg_get_functiondef` dump; fix at `docs/rc5/drafts/2026-07-22_H1_log_completed_session_atomic.sql` |
+| H2 | Batch A harness invalid; canonical Vitest wrappers missing | `confirmed` | `scripts/rc5/batch-a-scenarios.sql:24,126` vs `\d public.workspace_users` and `mentor_connections_status_check` |
+| H3 | Contract signing atomicity gaps | `not-proven` | `apply_contract_signature_atomic` exists; deep inspection deferred |
+| H4 | DocuSign duplicate claim window | `not-proven` | Race harness deferred |
+| H5 | Founder Pulse server enforcement / worker / RLS | `not-proven` | UI flag `founder_monthly_pulse` verified elsewhere; server + worker unverified |
+| H6 | `ChatTab` uses base `profiles` | `not-proven` | Grep deferred |
+| H7 | Public first-contact Lisbon time + repeat effects | `not-proven` | Edge function inspection deferred |
+| H8 | Mentor booking ↔ session sync | `not-proven` | RPC re-inspection deferred |
+| H9 | CRM import ownership / partial failure | `not-proven` | Batch writer review deferred |
+| H10 | Programme publication atomicity (both modes preserved) | `not-proven` | RPC trace deferred |
+| H11 | `save_financial_scenario_atomic` used by real flow | `not-proven` | `rg` deferred |
+| H12 | ESLint / strict-i18n / migration scan / Deno checks | `not-proven` | Gates not re-run |
+
+## Batch status
+
+| Batch | Status | Notes |
 |---|---|---|
-| Session source writers enumerated | grep in `src/**` + `supabase/functions/**` — see turn output `2026-07-21`. Only `sessions.source` writers: `useSessions.ts:271`, `mentor_transition_booking` (migration `20260721071129`), `SessionDetailDialog.tsx:149` (`voice`), `useSessions.ts` past-meeting path (`off_platform`). | confirmed |
-| Mentor booking lifecycle writers | `mentor_transition_booking` (RPC) is the sole updater; `useUpdateBookingStatus` calls it. Client-side direct writes deprecated per prior migration. | confirmed |
-| Sessions constraint state | Migration `20260721112523` set `sessions_source_check` to `{manual, teams_import, webhook, off_platform}` — did NOT include `mentor_booking`. This is the A2 P0. | confirmed |
+| A — past-meeting RPC | `open` (`fix-drafted`) | H1 fix drafted; harness rewrite + Vitest wrapper still to do. Any prior "GO" claim SUPERSEDED. |
+| B — contract signing atomicity | `open` | H3 not proven; prior scenarios harness present but not re-run this turn. |
+| C — DocuSign idempotency | `open` | H4 not proven. |
+| D — authorization/privacy | `open` | Prior claims not re-validated. |
+| E — Monthly Founder Pulse | `open` | Server, worker, RLS, DPO gates all unverified this turn; flag stays OFF. |
+| F — UX/i18n | `open` | Not started. |
+| G — CI/migration/staging | `open` | `scripts/rc5/verify.mjs` not run (no staging creds). |
+| H — miscellaneous | `open` | Not started. |
 
-## Batch A — P0
+## Next executable commands (in order)
 
-### A1. `log_completed_session_atomic`
+1. Apply H1 fix migration once harness + test are ready:
+   ```
+   # apply forward-only via the Lovable migration tool using the SQL in
+   # docs/rc5/drafts/2026-07-22_H1_log_completed_session_atomic.sql
+   ```
+2. Rewrite `scripts/rc5/batch-a-scenarios.sql` to drop the nonexistent
+   `workspace_users.status` column and use `mentor_connections.status =
+   'accepted'`, and add scenarios for the four H1 defects (info-disclosure
+   probe, unauthorized member, unauthorized attendee UUID, mentor attribution
+   persisted).
+3. Add canonical `src/test/rc5-batch-a.test.ts` invoking the RPC through
+   `supabaseClient` service role helper and asserting each scenario.
+4. Only after (1)-(3) are green, mark Batch A `fixed`.
+5. Run Phase 0 gates once staging creds are provided:
+   `RC5_ALLOW_STAGING_TESTS=true STAGING_SUPABASE_URL=... STAGING_APP_URL=... node scripts/rc5/verify.mjs`
 
-- **Before (repro):** `CreateSessionDialog` past-meeting path calls `useCreateSession` which inserts `sessions` with `outlook_sync_status='pending'` and emits `session_scheduled` event → duplicates possible on retry, no participant attendance in same txn, no idempotency, may enqueue Outlook.
-- **After:** RPC `public.log_completed_session_atomic(p_command_id, ...)` — Migration `20260721124437` (this turn). Idempotency enforced by unique index `sessions_command_id_uidx`. Authorization matrix inside the RPC covers admin/staff/consultor/founder/mentor. Writes session (`status='completed'`, `outlook_sync_status='not_applicable'`), upserts `session_participants`, logs `tool_usage_events` + `activity_log`.
-- **UI wiring:** NOT YET DONE — `CreateSessionDialog` past-meeting branch still calls `useCreateSession`. Follow-up task tracked below.
-- **Status:** `fixed` (DB) / `blocked-on-followup` (UI wiring).
-- **Tests:** pgTAP + Vitest tests NOT YET WRITTEN. Marked `NOT PROVEN` until behavior tests land.
+## Superseded documents
 
-### A2. Session source vocabulary
+- `docs/rc5/final-close-out.md` — already carries a SUPERSEDED header; retained
+  for history.
+- `docs/rc5/final-release-report.md` — SUPERSEDED where it asserts A/B/C/D/E
+  are closed. Kept in place for history.
+- `docs/rc5/hotfix-2026-07-21.md` — Retained as narrative, but any "GO" or
+  "passed" claim for Batch A/B/C/D/E is SUPERSEDED by this ledger until the
+  corresponding canonical test file lands in `src/test/`.
+- `docs/rc5/p0-report.md` — SUPERSEDED for the same reason.
 
-- **Before (repro):** SQL against staging — `INSERT INTO sessions (..., source) VALUES (..., 'mentor_booking')` → `ERROR:  new row for relation "sessions" violates check constraint "sessions_source_check"`. Any mentor booking acceptance fails.
-- **After:** Migration `20260721124437` recreates constraint with `{manual, teams_import, webhook, off_platform, mentor_booking, public_booking, voice, completion_dialog, transcript_import}`. All existing writers surveyed in Phase 0 are covered.
-- **Status:** `fixed`.
-- **Read-only impact query:** `docs/rc5/queries/mentor-booking-stuck.sql` (see below). NO automatic repair.
+## Rollback / kill-switch posture
 
-### A3. Mentor booking ↔ session linkage
-
-- **Before:** `mentor_bookings` had no `linked_session_id`; repeated acceptance created a second `sessions` row.
-- **After:** Column `linked_session_id` + unique index; RPC updated so acceptance-when-already-accepted returns the same linked session with `idempotent: true`.
-- **Status:** `fixed` (DB). Behavior test NOT YET WRITTEN → `NOT PROVEN` for the idempotency assertion.
-
----
-
-## Batch B — P0 (NOT STARTED)
-
-- **B1 DocuSign atomicity** — planned; `envelope_command_id` + reconciler outstanding.
-- **B2 Signature atomic RPC** — planned.
-- **B3 profiles peer view** — planned.
-
-## Batch C — Automation / Notification Truth (NOT STARTED)
-
-- C1 registry, C2 outbox, C3 public booking atomic, C4 CRM import — planned per `.lovable/plan.md`.
-
-## Batch D — Programme / Financial (NOT STARTED)
-
-## Batch E — Monthly Founder Pulse (NOT STARTED)
-
-Data model + candidate resolver + dispatch cron pending. Rollout stays flag-off.
-
-## Batch F — UX / i18n / Clickability (NOT STARTED)
-
-66-key strict i18n backlog and clickability sweep still open.
-
-## Batch G — CI / Migration / Staging (NOT STARTED)
-
-Fresh replay + forward-apply not yet run in this session.
-
----
-
-## Verdict as of this turn
-
-**NO-GO.** Batches B–G plus Monthly Founder Pulse plus the A1 UI wiring and behavior tests are still open. Only the P0 database primitives for Batch A landed in this turn.
-
-## Follow-up tasks queued (must land before GO)
-
-1. Wire `CreateSessionDialog` past-meeting form to call `log_completed_session_atomic` via `invokeWithAuth`, generating `p_command_id` client-side and disabling submit on pending.
-2. Add Vitest + pgTAP tests for A1/A2/A3 acceptance criteria (unauthorized actor, past vs future, retry, no provider sync, participant persistence).
-3. Batch B (DocuSign + signature + profile privacy).
-4. Batch C (automation registry, outbox, public booking, CRM import).
-5. Batch E (Monthly Founder Pulse, flag OFF).
-6. Batch D, F, G.
-7. Persona E2E at 320/375/768/1440.
-8. DPO/legal ledger sign-offs for pulse + eIDAS wording.
+- `founder_monthly_pulse` feature flag: **OFF**. Do not enable until H5 gates
+  pass.
+- No destructive migration or production data change was performed this turn.
+- Drafted migration lives only in `docs/rc5/drafts/`; the migration tool was
+  intentionally NOT invoked.
