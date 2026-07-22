@@ -15,7 +15,7 @@ Legend: `FAILING REPRO` · `FIXED + PASS` · `FIXED IN SOURCE / RUNTIME NOT PROV
 | Batch | Scope | Status | Notes |
 |---|---|---|---|
 | A | Past-meeting RPC integrity + canonical proof + command fingerprint | `FIXED IN SOURCE / RUNTIME NOT PROVEN` | RPC hardened; pgTAP + true-concurrency test authored and wired into `rc5:verify`. Fingerprint-binding migration added. Behavioral proof requires staging. |
-| B | Contract-signing integrity | `FAILING REPRO` | Repro documented under §Batch B. Fix pending. |
+| B | Contract-signing integrity | `FIXED IN SOURCE / RUNTIME NOT PROVEN` | Forward migration drafted (grants + fingerprint + RESTRICT + narrowed RLS). Edge function: explicit consent block required, honest "advanced electronic signature per eIDAS Art. 26" copy, canonical `staff_work_queue_items` insert. pgTAP suite authored. Runtime proof BLOCKED on staging. |
 | C | DocuSign exactly-once | `NOT PROVEN` | Existing atomic RPCs from prior batch review present; lease-ownership + reconciliation gaps unresolved. |
 | D | Monthly Founder Pulse (flag OFF) | `NOT PROVEN` | Flag remains OFF. OFF-state test pending. |
 | E | Privacy / role boundaries (`profiles_safe`) | `NOT PROVEN` | Persona audit pending; no blind global replacement. |
