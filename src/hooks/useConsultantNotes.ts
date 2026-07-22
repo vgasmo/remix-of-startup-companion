@@ -32,10 +32,12 @@ export function useConsultantNotes(workspaceId: string | undefined) {
       if (error) throw error;
       if (!data?.length) return [];
 
-      // Get author profiles using profiles table directly (profiles_safe may block cross-staff visibility)
+      // Author lookup goes through profiles_safe. RLS on consultant_notes already restricts
+      // reads to staff, and profiles_safe returns email only for self/staff — so peer callers
+      // that ever slip past the notes RLS still get a masked payload.
       const authorIds = [...new Set(data.map(n => n.author_id))];
       const { data: profiles } = await supabase
-        .from('profiles')
+        .from('profiles_safe')
         .select('id, full_name, email, avatar_url')
         .in('id', authorIds);
 

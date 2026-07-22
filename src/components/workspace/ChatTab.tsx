@@ -88,7 +88,7 @@ export function ChatTab({ workspaceId }: ChatTabProps) {
     queryFn: async () => {
       if (senderIds.length === 0) return [];
       const { data, error } = await supabase
-        .from('profiles')
+        .from('profiles_safe')
         .select('id, full_name, avatar_url')
         .in('id', senderIds);
       if (error) throw error;
@@ -112,7 +112,7 @@ export function ChatTab({ workspaceId }: ChatTabProps) {
       if (!members || members.length === 0) return [];
       const ids = members.map(m => m.user_id);
       const { data: profs, error: pErr } = await supabase
-        .from('profiles')
+        .from('profiles_safe')
         .select('id, full_name, avatar_url')
         .in('id', ids);
       if (pErr) throw pErr;
