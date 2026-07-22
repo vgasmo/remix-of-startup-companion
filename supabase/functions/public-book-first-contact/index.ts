@@ -572,6 +572,9 @@ serve(async (req) => {
             },
           })
           .eq('id', funnelItemId);
+        if (outboxIds.graph_event) {
+          await supabase.rpc('mark_first_contact_outbox_completed', { p_id: outboxIds.graph_event });
+        }
       } catch (graphError) {
         calendarStatus = 'failed';
         calendarError = graphError instanceof Error ? graphError.message : 'unknown';
@@ -579,6 +582,13 @@ serve(async (req) => {
         await supabase.from('funnel_items').update({
           metadata_json: { ...bookingMetadata, calendar_status: 'failed', calendar_error: calendarError },
         }).eq('id', funnelItemId);
+        if (outboxIds.graph_event) {
+          await supabase.rpc('mark_first_contact_outbox_failed', {
+            p_id: outboxIds.graph_event,
+            p_error: calendarError,
+            p_backoff_seconds: 300,
+          });
+        }
         if (strictCalendarValidation) {
           return corsJsonResponse({
             success: false,
@@ -598,6 +608,13 @@ serve(async (req) => {
       }, req, 503);
     } else {
       console.log('Graph API not configured, skipping calendar event creation');
+      if (outboxIds.graph_event) {
+        // Not configured is a terminal skip, not a retryable failure.
+        await supabase
+          .from('first_contact_outbox')
+          .update({ status: 'skipped', last_error: 'graph_not_configured' })
+          .eq('id', outboxIds.graph_event);
+      }
     }
 
 
