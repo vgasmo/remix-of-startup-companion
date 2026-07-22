@@ -100,6 +100,7 @@ run('vitest:run:3', 'bunx', ['vitest', 'run']);
 run('i18n:parity', 'node', ['scripts/i18n-check.cjs']);
 run('i18n:lint', 'node', ['scripts/i18n-lint.mjs']);
 run('secret:scan', 'node', ['scripts/secret-scan.cjs']);
+run('deno:check-changed', 'node', ['scripts/rc5/deno-check-changed.mjs']);
 
 // ---------- STAGING GATES ----------
 // Strict: absence of RC5_ALLOW_STAGING_TESTS => overall fail (NO-GO).
