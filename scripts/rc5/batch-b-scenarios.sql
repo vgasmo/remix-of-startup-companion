@@ -23,6 +23,7 @@ DECLARE
   v_status text;
   v_founder text;
   v_counter text;
+  v_bool boolean;
 BEGIN
   -- ---- Fixtures ----
   INSERT INTO public.startup_contracts (id, start_date, signature_status, founder_signer_status, counter_signer_status, counter_signer_email)
