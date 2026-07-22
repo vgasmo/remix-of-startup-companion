@@ -133,31 +133,10 @@ Deno.serve(async (req) => {
       })
     }
 
-    // B1: Idempotency guard — refuse to create a second envelope once a
-    // provider document already exists in a live/terminal state. Only allow
-    // resend for pre-dispatch states (draft / ready_to_send / failed /
-    // pending_manual). Callers that need to force a re-issue must first
-    // void the existing envelope explicitly.
-    if (
-      (contract.docusign_envelope_id || contract.provider_document_id) &&
-      contract.signature_status &&
-      !['draft', 'failed', 'ready_to_send', 'pending_manual'].includes(contract.signature_status)
-    ) {
-      return new Response(JSON.stringify({
-        error: 'Contract already sent for signature. Cannot resend without voiding.',
-        currentProvider: contract.signature_provider,
-        currentEnvelope: contract.docusign_envelope_id || contract.provider_document_id,
-        currentStatus: contract.signature_status,
-      }), {
-        status: 409,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    // B1: Deterministic envelope command id — sha256(contractId || template_version || 'send').
-    // Persisted on the contract with a unique-when-set index so concurrent retries
-    // collapse to the same envelope. If a previous attempt already stamped this
-    // key AND left an envelope id in place, return it instead of re-sending.
+    // B1/C: Deterministic envelope command id — sha256(contractId || template_version || 'send').
+    // Two concurrent workers with the same digest will race on the atomic claim
+    // RPC below; only one can leave with `claimed=true`, so at most one envelope
+    // is ever dispatched per (contract, template_version).
     const templateVersion = String(contract.contract_template_version ?? 'v0')
     const commandSource = `${contractId}::${templateVersion}::send`
     const commandDigest = await crypto.subtle.digest(
@@ -168,19 +147,49 @@ Deno.serve(async (req) => {
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('')
 
-    if (
-      contract.envelope_command_id === envelopeCommandId &&
-      (contract.docusign_envelope_id || contract.provider_document_id)
-    ) {
+    // Atomically claim the command id under a row lock BEFORE calling DocuSign.
+    // Idempotent replay short-circuits here; concurrent calls collapse to one
+    // claim; already-live contracts return a 409 without touching the provider.
+    const { data: claimData, error: claimError } = await supabase.rpc(
+      'claim_docusign_envelope',
+      { p_contract_id: contractId, p_command_id: envelopeCommandId },
+    )
+    if (claimError) {
+      console.error('claim_docusign_envelope failed', claimError)
+      return new Response(JSON.stringify({ error: 'claim_failed', details: claimError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const claim = (claimData ?? {}) as {
+      claimed?: boolean
+      idempotent?: boolean
+      conflict?: string
+      envelope_id?: string | null
+      signature_status?: string | null
+    }
+    if (claim.idempotent && claim.envelope_id) {
       return new Response(JSON.stringify({
         status: 'already_sent',
         idempotent: true,
-        envelopeId: contract.docusign_envelope_id || contract.provider_document_id,
+        envelopeId: claim.envelope_id,
         envelopeCommandId,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
+    if (!claim.claimed) {
+      return new Response(JSON.stringify({
+        error: 'Contract already dispatched or in a non-resendable state.',
+        conflict: claim.conflict ?? 'unknown',
+        currentEnvelope: claim.envelope_id ?? null,
+        currentStatus: claim.signature_status ?? null,
+      }), {
+        status: 409,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
 
     // Generate the contract PDF first — B1 fail-closed policy: if the PDF
     // cannot be produced we refuse to dispatch to the provider rather than
@@ -205,15 +214,12 @@ Deno.serve(async (req) => {
         throw new Error('generate-contract-pdf returned empty documentBase64')
       }
     } catch (pdfErr) {
-      console.error('PDF generation failed — refusing to send envelope', pdfErr)
-      await supabase
-        .from('startup_contracts')
-        .update({
-          signature_status: 'failed',
-          provider_last_error: `pdf_generation_failed: ${(pdfErr as Error).message ?? 'unknown'}`,
-          provider_last_sync_at: new Date().toISOString(),
-        })
-        .eq('id', contractId)
+      console.error('PDF generation failed — releasing envelope claim', pdfErr)
+      await supabase.rpc('release_docusign_envelope_command', {
+        p_contract_id: contractId,
+        p_command_id: envelopeCommandId,
+        p_error: `pdf_generation_failed: ${(pdfErr as Error).message ?? 'unknown'}`,
+      })
       return new Response(JSON.stringify({
         error: 'Contract PDF generation failed; envelope not sent.',
         details: (pdfErr as Error).message ?? 'unknown',
@@ -227,6 +233,14 @@ Deno.serve(async (req) => {
     // Check if DocuSign keys are configured
     const integrationKey = Deno.env.get('DOCUSIGN_INTEGRATION_KEY')
     if (!integrationKey) {
+      // Release the claim: manual-signature route is not a provider dispatch,
+      // and the reconciler must be able to re-enter dispatch later if staff
+      // configures DocuSign.
+      await supabase.rpc('release_docusign_envelope_command', {
+        p_contract_id: contractId,
+        p_command_id: envelopeCommandId,
+        p_error: 'docusign_not_configured',
+      })
       await supabase
         .from('startup_contracts')
         .update({
@@ -234,6 +248,7 @@ Deno.serve(async (req) => {
           signature_requested_at: new Date().toISOString(),
         })
         .eq('id', contractId)
+
 
       const { data: staffUsers } = await supabase
         .from('user_roles')
@@ -342,43 +357,65 @@ Deno.serve(async (req) => {
       }],
     }
 
-    const envRes = await fetch(`${baseUrl}/v2.1/accounts/${accountId}/envelopes`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(envelopeBody),
-    })
-
-    if (!envRes.ok) {
-      const errText = await envRes.text()
-      throw new Error(`DocuSign API error: ${errText}`)
+    let envelope: { envelopeId?: string } | null = null
+    try {
+      const envRes = await fetch(`${baseUrl}/v2.1/accounts/${accountId}/envelopes`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(envelopeBody),
+      })
+      if (!envRes.ok) {
+        const errText = await envRes.text()
+        throw new Error(`DocuSign API error: ${errText.slice(0, 500)}`)
+      }
+      envelope = await envRes.json()
+      if (!envelope?.envelopeId) {
+        throw new Error('DocuSign response missing envelopeId')
+      }
+    } catch (dispatchErr) {
+      // Provider dispatch failed after we owned the claim — release so the
+      // reconciler / staff can retry, then surface the error.
+      await supabase.rpc('release_docusign_envelope_command', {
+        p_contract_id: contractId,
+        p_command_id: envelopeCommandId,
+        p_error: `docusign_dispatch_failed: ${(dispatchErr as Error).message ?? 'unknown'}`,
+      })
+      throw dispatchErr
     }
 
-    const envelope = await envRes.json()
+    // Finalize the claim: stamp envelope id + provider metadata atomically.
+    // Only the row still holding envelope_command_id can be finalized, so a
+    // stale worker whose claim was released can never overwrite a fresh one.
+    const { data: finalizeData, error: finalizeError } = await supabase.rpc(
+      'finalize_docusign_envelope',
+      {
+        p_contract_id: contractId,
+        p_command_id: envelopeCommandId,
+        p_envelope_id: envelope.envelopeId,
+        p_signer_email: signerEmail,
+        p_counter_signer_name: counterSignerName || null,
+        p_counter_signer_email: counterSignerEmail || null,
+      },
+    )
+    if (finalizeError) {
+      console.error('finalize_docusign_envelope failed', finalizeError)
+      // Envelope exists at provider but we could not stamp it — flag for reconciler.
+      await supabase
+        .from('startup_contracts')
+        .update({
+          provider_last_error: `finalize_failed: ${finalizeError.message}`,
+          provider_last_sync_at: new Date().toISOString(),
+        })
+        .eq('id', contractId)
+    }
+    const finalized = (finalizeData ?? {}) as { finalized?: boolean; reason?: string }
+    if (!finalized.finalized) {
+      console.warn('envelope finalize was a no-op', { contractId, envelopeId: envelope.envelopeId, reason: finalized.reason })
+    }
 
-    // Update contract with envelope ID and bilateral signing info
-    await supabase
-      .from('startup_contracts')
-      .update({
-        docusign_envelope_id: envelope.envelopeId,
-        signature_provider: 'docusign',
-        provider_document_id: envelope.envelopeId,
-        signature_status: 'sent_for_signature',
-        signature_requested_at: new Date().toISOString(),
-        provider_sent_at: new Date().toISOString(),
-        provider_last_event: 'envelope-sent',
-        provider_last_sync_at: new Date().toISOString(),
-        provider_last_error: null,
-        envelope_command_id: envelopeCommandId,
-        // Bilateral fields
-        founder_signer_status: 'sent',
-        counter_signer_name: counterSignerName || null,
-        counter_signer_email: counterSignerEmail || null,
-        counter_signer_status: counterSignerEmail ? 'pending' : null,
-      })
-      .eq('id', contractId)
 
     // Log activity
     await supabase.from('activity_log').insert({
