@@ -1335,20 +1335,25 @@ Deno.serve(async (req) => {
       const isFullySigned = overallStatus === 'completed'
 
       if (!isFullySigned && hasCounterSigner) {
-        // Enqueue counter-sign work item; do NOT activate the workspace yet.
-        try {
-          await supabase.from('staff_work_queue_items').insert({
-            item_type: 'counter_sign_contract',
-            title: `Contra-assinar contrato — ${(contract as any).workspace?.startup?.name || contract.id.slice(0, 8)}`,
-            description: 'Founder assinou digitalmente. Contra-assinatura por Startup Leiria pendente.',
-            entity_type: 'contract',
-            entity_id: contract.id,
-            workspace_id: (contract as any).workspace?.id ?? null,
-            priority: 'high',
-            status: 'open',
-          })
-        } catch (qErr) {
-          console.warn('counter-sign work-queue insert failed (non-fatal):', qErr)
+        // Enqueue counter-sign work item using the canonical schema. If we
+        // have no workspace_id yet (pre-link CRM lead), skip and let the
+        // reconciler pick it up — staff_work_queue_items.workspace_id is
+        // NOT NULL.
+        const wsForQueue = (contract as any).workspace?.id ?? null
+        if (wsForQueue) {
+          try {
+            await supabase.from('staff_work_queue_items').insert({
+              workspace_id: wsForQueue,
+              type: 'counter_sign_contract',
+              title: `Contra-assinar contrato — ${(contract as any).workspace?.startup?.name || contract.id.slice(0, 8)}`,
+              description: 'Founder assinou digitalmente. Contra-assinatura por Startup Leiria pendente.',
+              priority: 'high',
+              status: 'open',
+              evidence_json: { contract_id: contract.id, purpose: 'counter_sign_contract' },
+            })
+          } catch (qErr) {
+            console.warn('counter-sign work-queue insert failed (non-fatal):', qErr)
+          }
         }
         return new Response(JSON.stringify({
           status: 'partially_signed',
