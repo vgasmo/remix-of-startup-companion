@@ -1242,34 +1242,50 @@ Deno.serve(async (req) => {
       })
     }
 
-    // === Digital Sign (simple electronic signature, eIDAS compliant) ===
+    // === Digital Sign (advanced electronic signature per eIDAS Art. 26) ===
+    // NOTE: we do NOT claim "eIDAS compliant" — that requires a QTSP.
     if (action === 'digital_sign') {
-      const { signatureData } = body
-      
+      const { signatureData, consent } = body
+
       if (!signatureData?.typed_name || signatureData.typed_name.length < 3) {
-        return new Response(JSON.stringify({ error: 'Invalid signature name' }), {
+        return new Response(JSON.stringify({ error: 'invalid_signature_name' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
-      
-      // Get client IP and hash for privacy
-      const clientIp = req.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() || 
+
+      // Batch B: require an explicit consent block from the client. Server
+      // MUST NOT infill eidas_ack / timestamp / ip on behalf of the signer.
+      if (!consent || consent.eidas_ack !== true
+          || typeof consent.timestamp !== 'string'
+          || typeof consent.ip !== 'string') {
+        return new Response(JSON.stringify({
+          error: 'consent_required',
+          message: 'Explicit consent block required: { eidas_ack: true, timestamp, ip }',
+        }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      // Server observed IP (still hashed) for correlation with client-declared IP.
+      const clientIp = req.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() ||
                        req.headers.get('CF-Connecting-IP') || 'unknown'
       const encoder = new TextEncoder()
       const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(clientIp + 'eidas-salt'))
       const ipHash = Array.from(new Uint8Array(hashBuffer)).slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('')
-      
-      // Build legal proof record
+
+      // Build legal proof record — labels the method honestly.
       const signatureProof = {
-        method: 'simple_electronic_signature',
-        regulation: 'eIDAS EU 910/2014',
+        method: 'advanced_electronic_signature',
+        regulation_reference: 'eIDAS EU 910/2014, Article 26',
+        qualified: false,
         typed_name: signatureData.typed_name,
         signer_email: signatureData.signer_email,
         signer_nif: signatureData.signer_nif,
-        accepted_terms: true,
-        accepted_eidas_disclaimer: true,
+        consent: {
+          eidas_ack: consent.eidas_ack,
+          client_timestamp: consent.timestamp,
+          client_declared_ip: consent.ip,
+        },
         signed_at: new Date().toISOString(),
-        ip_hash: ipHash,
+        server_ip_hash: ipHash,
         user_agent: signatureData.user_agent || req.headers.get('User-Agent'),
       }
       
@@ -1319,20 +1335,25 @@ Deno.serve(async (req) => {
       const isFullySigned = overallStatus === 'completed'
 
       if (!isFullySigned && hasCounterSigner) {
-        // Enqueue counter-sign work item; do NOT activate the workspace yet.
-        try {
-          await supabase.from('staff_work_queue_items').insert({
-            item_type: 'counter_sign_contract',
-            title: `Contra-assinar contrato — ${(contract as any).workspace?.startup?.name || contract.id.slice(0, 8)}`,
-            description: 'Founder assinou digitalmente. Contra-assinatura por Startup Leiria pendente.',
-            entity_type: 'contract',
-            entity_id: contract.id,
-            workspace_id: (contract as any).workspace?.id ?? null,
-            priority: 'high',
-            status: 'open',
-          })
-        } catch (qErr) {
-          console.warn('counter-sign work-queue insert failed (non-fatal):', qErr)
+        // Enqueue counter-sign work item using the canonical schema. If we
+        // have no workspace_id yet (pre-link CRM lead), skip and let the
+        // reconciler pick it up — staff_work_queue_items.workspace_id is
+        // NOT NULL.
+        const wsForQueue = (contract as any).workspace?.id ?? null
+        if (wsForQueue) {
+          try {
+            await supabase.from('staff_work_queue_items').insert({
+              workspace_id: wsForQueue,
+              type: 'counter_sign_contract',
+              title: `Contra-assinar contrato — ${(contract as any).workspace?.startup?.name || contract.id.slice(0, 8)}`,
+              description: 'Founder assinou digitalmente. Contra-assinatura por Startup Leiria pendente.',
+              priority: 'high',
+              status: 'open',
+              evidence_json: { contract_id: contract.id, purpose: 'counter_sign_contract' },
+            })
+          } catch (qErr) {
+            console.warn('counter-sign work-queue insert failed (non-fatal):', qErr)
+          }
         }
         return new Response(JSON.stringify({
           status: 'partially_signed',

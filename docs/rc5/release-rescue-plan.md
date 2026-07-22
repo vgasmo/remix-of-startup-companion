@@ -15,7 +15,7 @@ Legend: `FAILING REPRO` · `FIXED + PASS` · `FIXED IN SOURCE / RUNTIME NOT PROV
 | Batch | Scope | Status | Notes |
 |---|---|---|---|
 | A | Past-meeting RPC integrity + canonical proof + command fingerprint | `FIXED IN SOURCE / RUNTIME NOT PROVEN` | RPC hardened; pgTAP + true-concurrency test authored and wired into `rc5:verify`. Fingerprint-binding migration added. Behavioral proof requires staging. |
-| B | Contract-signing integrity | `FAILING REPRO` | Repro documented under §Batch B. Fix pending. |
+| B | Contract-signing integrity | `FIXED IN SOURCE / RUNTIME NOT PROVEN` | Forward migration drafted (grants + fingerprint + RESTRICT + narrowed RLS). Edge function: explicit consent block required, honest "advanced electronic signature per eIDAS Art. 26" copy, canonical `staff_work_queue_items` insert. pgTAP suite authored. Runtime proof BLOCKED on staging. |
 | C | DocuSign exactly-once | `NOT PROVEN` | Existing atomic RPCs from prior batch review present; lease-ownership + reconciliation gaps unresolved. |
 | D | Monthly Founder Pulse (flag OFF) | `NOT PROVEN` | Flag remains OFF. OFF-state test pending. |
 | E | Privacy / role boundaries (`profiles_safe`) | `NOT PROVEN` | Persona audit pending; no blind global replacement. |
@@ -72,6 +72,22 @@ Edge-level reproduction captured by inspection of `supabase/functions/public-con
 - Race: two concurrent submissions with same token and different payloads both pass token validation (no `SELECT … FOR UPDATE`) before either sets `signed_at`. → **concurrency race**.
 
 Fix to be implemented next turn under Batch B source work.
+
+### Batch B — source landed this turn
+
+1. `docs/rc5/drafts/2026-07-22_batch-b_signing_integrity.sql` — forward-only, additive, idempotent migration draft (held, not applied):
+   - `public.contract_signing_grants` table with partial unique index `(contract_id, party_role) WHERE consumed_at IS NULL`, RLS scoped to admin/backoffice/consultor read + admin/backoffice write.
+   - `public.issue_contract_signing_grant(contract_id, party_role, signer_email, document_sha256, document_version, ttl_minutes=15)` SECURITY DEFINER; rejects non-staff with `42501`; revokes any live grant for the pair before issuing a fresh 32-byte hex nonce.
+   - Extended `public.apply_contract_signature_atomic` — adds optional `p_grant_nonce`, `p_document_sha256`, `p_canonical_payload_sha256`; consumes the grant in the same tx; rejects wrong/expired/reused nonce or document-hash mismatch with `42501`; computes and persists `command_fingerprint = sha256(contract || party || document_sha256 || payload_sha256)` inside `evidence_json`; keeps the prior FOR UPDATE lock, terminal-state guard, and idempotent replay short-circuit.
+   - `contract_signature_events` FK moved from `ON DELETE CASCADE` → `ON DELETE RESTRICT`; mirror `contract_signature_events_archive` table (staff-read RLS).
+   - `contract_signature_events` RLS narrowed: admin/backoffice read, consultor read only when `has_workspace_access(contract.workspace_id, auth.uid())`; writes via service_role/SECURITY DEFINER only; anon denied.
+2. `supabase/tests/apply_contract_signature_atomic.test.sql` — 14 pgTAP assertions covering: non-staff grant issuance rejection, legacy grant-bypass path, happy-path grant issue+consume, reused nonce rejection, document hash mismatch, expired grant, bilateral counter-signer completion, terminal state regression rejection, idempotent replay + no duplicate event, FK is RESTRICT, anon denial on events and grants. Runs under `rc5:pgtap` via `scripts/rc5/run-pgtap.mjs` (already wired into `rc5:verify`).
+3. `supabase/functions/public-contract-onboarding/index.ts` (`action === 'digital_sign'`):
+   - Requires an explicit `consent: { eidas_ack: true, timestamp, ip }` block; returns `400 consent_required` otherwise. Server no longer infills consent.
+   - Signature proof now labels `method: 'advanced_electronic_signature'`, `regulation_reference: 'eIDAS EU 910/2014, Article 26'`, `qualified: false`. Removed the unsupported "eIDAS compliant" claim.
+   - Counter-signer work-queue insert uses the canonical schema (`type`, `workspace_id`, `evidence_json`) and skips gracefully when `workspace_id` is not yet linked (reconciler picks it up) — the previous insert referenced non-existent `item_type`/`entity_type`/`entity_id` columns and could crash silently.
+4. Runtime gate: pgTAP + counter-signer bilateral concurrency remain `NOT PROVEN` — `scripts/rc5/run-pgtap.mjs` refuses to execute against the production project ref `apxzuslwhjujgrcsfzqw`. Migration itself is held as a draft until staging replays it.
+5. Local checks executed this turn: `bunx tsgo -p tsconfig.typecheck.json --noEmit` → exit 0.
 
 ## Production reads/writes this session
 
