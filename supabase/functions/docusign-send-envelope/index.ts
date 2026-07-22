@@ -133,31 +133,10 @@ Deno.serve(async (req) => {
       })
     }
 
-    // B1: Idempotency guard — refuse to create a second envelope once a
-    // provider document already exists in a live/terminal state. Only allow
-    // resend for pre-dispatch states (draft / ready_to_send / failed /
-    // pending_manual). Callers that need to force a re-issue must first
-    // void the existing envelope explicitly.
-    if (
-      (contract.docusign_envelope_id || contract.provider_document_id) &&
-      contract.signature_status &&
-      !['draft', 'failed', 'ready_to_send', 'pending_manual'].includes(contract.signature_status)
-    ) {
-      return new Response(JSON.stringify({
-        error: 'Contract already sent for signature. Cannot resend without voiding.',
-        currentProvider: contract.signature_provider,
-        currentEnvelope: contract.docusign_envelope_id || contract.provider_document_id,
-        currentStatus: contract.signature_status,
-      }), {
-        status: 409,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    // B1: Deterministic envelope command id — sha256(contractId || template_version || 'send').
-    // Persisted on the contract with a unique-when-set index so concurrent retries
-    // collapse to the same envelope. If a previous attempt already stamped this
-    // key AND left an envelope id in place, return it instead of re-sending.
+    // B1/C: Deterministic envelope command id — sha256(contractId || template_version || 'send').
+    // Two concurrent workers with the same digest will race on the atomic claim
+    // RPC below; only one can leave with `claimed=true`, so at most one envelope
+    // is ever dispatched per (contract, template_version).
     const templateVersion = String(contract.contract_template_version ?? 'v0')
     const commandSource = `${contractId}::${templateVersion}::send`
     const commandDigest = await crypto.subtle.digest(
@@ -168,19 +147,49 @@ Deno.serve(async (req) => {
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('')
 
-    if (
-      contract.envelope_command_id === envelopeCommandId &&
-      (contract.docusign_envelope_id || contract.provider_document_id)
-    ) {
+    // Atomically claim the command id under a row lock BEFORE calling DocuSign.
+    // Idempotent replay short-circuits here; concurrent calls collapse to one
+    // claim; already-live contracts return a 409 without touching the provider.
+    const { data: claimData, error: claimError } = await supabase.rpc(
+      'claim_docusign_envelope',
+      { p_contract_id: contractId, p_command_id: envelopeCommandId },
+    )
+    if (claimError) {
+      console.error('claim_docusign_envelope failed', claimError)
+      return new Response(JSON.stringify({ error: 'claim_failed', details: claimError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const claim = (claimData ?? {}) as {
+      claimed?: boolean
+      idempotent?: boolean
+      conflict?: string
+      envelope_id?: string | null
+      signature_status?: string | null
+    }
+    if (claim.idempotent && claim.envelope_id) {
       return new Response(JSON.stringify({
         status: 'already_sent',
         idempotent: true,
-        envelopeId: contract.docusign_envelope_id || contract.provider_document_id,
+        envelopeId: claim.envelope_id,
         envelopeCommandId,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
+    if (!claim.claimed) {
+      return new Response(JSON.stringify({
+        error: 'Contract already dispatched or in a non-resendable state.',
+        conflict: claim.conflict ?? 'unknown',
+        currentEnvelope: claim.envelope_id ?? null,
+        currentStatus: claim.signature_status ?? null,
+      }), {
+        status: 409,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
 
     // Generate the contract PDF first — B1 fail-closed policy: if the PDF
     // cannot be produced we refuse to dispatch to the provider rather than
