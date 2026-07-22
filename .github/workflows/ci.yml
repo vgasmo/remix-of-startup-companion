@@ -209,6 +209,31 @@ jobs:
       - name: Scan migrations for person-specific data operations
         run: node scripts/ci/scan-migrations.mjs
 
+  # ──────────────────────────────────────────────
+  # Gate H: Deno check for changed edge functions
+  # ──────────────────────────────────────────────
+  deno-check-edge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v1.x
+
+      - name: Deno check changed edge functions
+        run: node scripts/rc5/deno-check-changed.mjs
+
+
 
   # ──────────────────────────────────────────────
   # Gates 3, 7, 8, 9: Playwright E2E tests
