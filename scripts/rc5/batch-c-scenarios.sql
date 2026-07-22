@@ -45,24 +45,22 @@ DECLARE
   v_status text;
   v_stamp text;
 BEGIN
-  -- Fixtures: eight fresh contracts in dispatchable states.
-  INSERT INTO public.startup_contracts (id, start_date, signature_status, founder_signer_status, counter_signer_status, counter_signer_email)
+  -- Fixtures: eight fresh contracts in dispatchable states. Scenario 6 is
+  -- pre-populated with a live envelope so the already_live branch has data.
+  INSERT INTO public.startup_contracts
+    (id, start_date, signature_status, founder_signer_status, counter_signer_status, counter_signer_email,
+     docusign_envelope_id, provider_document_id, envelope_command_id)
   VALUES
-    (v_c1, CURRENT_DATE, 'draft', 'pending', NULL, NULL),
-    (v_c2, CURRENT_DATE, 'draft', 'pending', NULL, NULL),
-    (v_c3, CURRENT_DATE, 'draft', 'pending', NULL, NULL),
-    (v_c4, CURRENT_DATE, 'draft', 'pending', NULL, NULL),
-    (v_c5, CURRENT_DATE, 'draft', 'pending', NULL, NULL),
-    (v_c6, CURRENT_DATE, 'signed',    'signed',  NULL, NULL),
-    (v_c7, CURRENT_DATE, 'draft', 'pending', NULL, NULL),
-    (v_c8, CURRENT_DATE, 'draft', 'pending', NULL, NULL);
+    (v_c1, CURRENT_DATE, 'draft',  'pending', NULL, NULL,                  NULL,           NULL,           NULL),
+    (v_c2, CURRENT_DATE, 'draft',  'pending', NULL, NULL,                  NULL,           NULL,           NULL),
+    (v_c3, CURRENT_DATE, 'draft',  'pending', NULL, NULL,                  NULL,           NULL,           NULL),
+    (v_c4, CURRENT_DATE, 'draft',  'pending', NULL, NULL,                  NULL,           NULL,           NULL),
+    (v_c5, CURRENT_DATE, 'draft',  'pending', NULL, NULL,                  NULL,           NULL,           NULL),
+    (v_c6, CURRENT_DATE, 'signed', 'signed',  NULL, NULL,                  'ENV-EXISTING', 'ENV-EXISTING', 'stale-command-id'),
+    (v_c7, CURRENT_DATE, 'draft',  'pending', NULL, NULL,                  NULL,           NULL,           NULL),
+    (v_c8, CURRENT_DATE, 'draft',  'pending', NULL, NULL,                  NULL,           NULL,           NULL);
 
-  -- Give scenario 6 a live envelope so it looks provider-tracked.
-  UPDATE public.startup_contracts
-    SET docusign_envelope_id = 'ENV-EXISTING',
-        provider_document_id = 'ENV-EXISTING',
-        envelope_command_id = 'stale-command-id'
-    WHERE id = v_c6;
+
 
   -- ---- Scenario 1: cold claim -------------------------------------------------
   r := public.claim_docusign_envelope(v_c1, v_cmd_a);
