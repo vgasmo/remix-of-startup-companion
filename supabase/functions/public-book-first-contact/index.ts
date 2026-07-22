@@ -479,7 +479,69 @@ serve(async (req) => {
     if (commitErr) throw commitErr;
     const commitRow = Array.isArray(commitResult) ? commitResult[0] : commitResult;
     const funnelItemId: string = commitRow?.funnel_item_id;
+    const commitMode: string = commitRow?.mode ?? 'created';
     if (!funnelItemId) throw new Error('commit_first_contact_booking_atomic returned no id');
+
+    // === IDEMPOTENT-REUSE SHORT-CIRCUIT ===
+    // The RPC already found an equivalent booking. Firing Graph/email again would
+    // duplicate the calendar invite and the consultant/founder alerts. Return the
+    // stored funnel item and skip all external side-effects.
+    if (commitMode === 'idempotent_reuse') {
+      const { data: existing } = await supabase
+        .from('funnel_items')
+        .select('metadata_json')
+        .eq('id', funnelItemId)
+        .maybeSingle();
+      const existingMeta = (existing?.metadata_json ?? {}) as Record<string, unknown>;
+      return corsJsonResponse({
+        success: true,
+        funnelItemId,
+        idempotent: true,
+        mode: commitMode,
+        teamsLink: (existingMeta.teams_url as string | null) ?? null,
+        calendarEventId: (existingMeta.calendar_event_id as string | null) ?? null,
+        calendar_status: (existingMeta.calendar_status as string) ?? 'skipped',
+        message: 'Your booking was already recorded. No additional invite was sent.',
+      }, req);
+    }
+
+    // === OUTBOX-FIRST INTENT (E5) ===
+    // Record every side-effect intent BEFORE we call the external providers.
+    // A crash between here and the external call leaves a `pending` outbox row
+    // for the retry worker; a crash *after* the external call still marks the
+    // row `completed`/`failed` so ops can reconcile. Storing after-the-fact
+    // (previous behaviour) leaked real Graph events with no outbox record.
+    const outboxIds: { graph_event?: string; consultant_email?: string } = {};
+    try {
+      const { data: outboxIntents } = await supabase
+        .from('first_contact_outbox')
+        .insert([
+          {
+            funnel_item_id: funnelItemId,
+            kind: 'graph_event',
+            payload_json: { slot, consultant_email: consultantEmail },
+            status: 'in_progress',
+            attempts: 1,
+          },
+          {
+            funnel_item_id: funnelItemId,
+            kind: 'consultant_email',
+            payload_json: { consultant_email: consultantEmail, slot },
+            status: 'in_progress',
+            attempts: 1,
+          },
+        ])
+        .select('id, kind');
+      for (const row of (outboxIntents ?? []) as Array<{ id: string; kind: string }>) {
+        if (row.kind === 'graph_event') outboxIds.graph_event = row.id;
+        if (row.kind === 'consultant_email') outboxIds.consultant_email = row.id;
+      }
+    } catch (outErr) {
+      // Outbox insert failing is a real problem — we lose the retry safety net —
+      // but the funnel item is already durable, so we surface a partial-success
+      // response rather than losing the lead.
+      console.error('first_contact_outbox intent insert failed:', outErr);
+    }
 
     // Create calendar event via Graph API if configured
     let teamsLink: string | null = null;
