@@ -353,7 +353,16 @@ serve(async (req) => {
         .eq("email_normalized", emailNormalized)
         .eq("bucket_start", bucketStart.toISOString());
     } catch (rlErr) {
-      console.warn("public_booking rate-limit check failed (fail-open):", rlErr);
+      // Fail-CLOSED when strict validation is on so an unreachable DB cannot be used
+      // to bypass throttling. Fail-open only for the non-strict default so the public
+      // form doesn't blackhole during transient blips.
+      console.warn("public_booking rate-limit check failed:", rlErr);
+      if (strictCalendarValidation) {
+        return corsJsonResponse({
+          success: false,
+          error: "Booking service is temporarily degraded. Please try again in a few minutes.",
+        }, req, 503);
+      }
     }
 
 
