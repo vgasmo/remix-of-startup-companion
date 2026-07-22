@@ -31,7 +31,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function StaffCockpit() {
   const { t } = useTranslation();
   const { profile, roles } = useAuth();
-  const { data: workspaces = [], isLoading: workspacesLoading } = useWorkspaces();
+  // Consultants should only see their own portfolio here; admins/backoffice see the full ecosystem.
+  const isConsultorOnly = roles?.includes('consultor') && !roles?.includes('admin') && !roles?.includes('backoffice');
+  const { data: workspaces = [], isLoading: workspacesLoading } = useWorkspaces({}, isConsultorOnly);
+
 
   // Real ecosystem-wide programs count (matches Admin Dashboard)
   const { data: programsCount = 0, isLoading: programsLoading } = useQuery({
