@@ -30,7 +30,7 @@ Deno.serve(withCronRunLogging('open-monthly-founder-pulse', async (req) => {
   const authCheck = await requireCronOrStaff(req, userClient, admin)
   if ('error' in authCheck) return authCheck.error
 
-  const { data, error } = await admin.rpc('open_monthly_founder_pulse_cycles')
+  const { data, error } = await admin.rpc('open_and_notify_monthly_founder_pulse_cycles')
   if (error) {
     console.error('[open-monthly-founder-pulse] rpc error', error)
     return new Response(JSON.stringify({ ok: false, error: error.message }), {
@@ -39,7 +39,8 @@ Deno.serve(withCronRunLogging('open-monthly-founder-pulse', async (req) => {
     })
   }
 
-  return new Response(JSON.stringify({ ok: true, opened: data ?? 0 }), {
+  const payload = (data ?? {}) as { opened?: number; enqueued?: number; period_month?: string }
+  return new Response(JSON.stringify({ ok: true, ...payload }), {
     status: 200,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
