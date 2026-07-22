@@ -7,7 +7,7 @@
  * only dispatch when it returns `{ claimed: true }`.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// deno-lint-ignore no-explicit-any
 type SupabaseAdmin = any;
 
 export interface ClaimOptions {

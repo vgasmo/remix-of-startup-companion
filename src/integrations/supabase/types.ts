@@ -12272,24 +12272,6 @@ export type Database = {
         Args: { p_gates: Json; p_program_id: string; p_weeks: Json }
         Returns: Json
       }
-      rc5_run_batch_d: {
-        Args: never
-        Returns: {
-          expected: boolean
-          got: boolean
-          ok: boolean
-          scenario: string
-        }[]
-      }
-      rc5_run_batch_e: {
-        Args: never
-        Returns: {
-          expected: string
-          got: string
-          ok: boolean
-          scenario: string
-        }[]
-      }
       reconcile_active_customer: {
         Args: {
           p_batch_id: string

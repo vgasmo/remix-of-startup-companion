@@ -4,7 +4,7 @@ Authoritative status. All earlier RC5 status documents that contradict this
 file are **SUPERSEDED** (see list at bottom). Historical evidence is retained
 in-place, not deleted.
 
-Last updated: 2026-07-22 (Codex audit, Batch A closed).
+Last updated: 2026-07-22 (Phase 0 rerun; test-harness RPCs dropped from production).
 
 Status keys: `confirmed` (defect reproduced or proved by code inspection),
 `fixed` (forward-only fix applied AND canonical test green against the live
