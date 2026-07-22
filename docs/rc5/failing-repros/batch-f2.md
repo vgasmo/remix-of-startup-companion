@@ -1,34 +1,17 @@
-# Batch F2 — Mentor Lifecycle & Operational Reporting (FAILING REPRO)
+# Batch F2 — source landed 2026-07-22
 
-Source: `mentor_bookings`, `mentor_connections`, `sessions`,
-`session_participants`, staff KPI views.
+Draft: `docs/rc5/drafts/2026-07-22_batch-f2_sessions_view.sql`.
+pgTAP: `supabase/tests/mentor_booking_transition.test.sql`.
 
-## Defects
+- `v_sessions_operational` (security_invoker) attributes minutes to exactly
+  one participant role per (session, user). Consultant + mentor + founder
+  no longer double-count when a session has both a consultant and a mentor.
+- `effective_minutes` = COALESCE(actual, ended_at - occurred_at, scheduled)
+  so KPIs are Graph-truth first, slot only as a last resort.
+- `transition_mentor_booking_atomic(booking, status, reason, cmd_id)` is
+  SECURITY DEFINER with FOR UPDATE lock, terminal-state guard, and
+  idempotent replay (`mode='idempotent_reuse'`). Cancellation/no-show
+  propagate to the linked `sessions` row inside the same tx.
 
-1. On acceptance, founder + mentor are not both inserted as canonical
-   `session_participants` rows; some flows rely on `sessions.host_id`
-   only.
-2. Cancellation on a mentor booking does not synchronize the linked
-   session row.
-3. Actual duration is derived from scheduled slot, not from Graph
-   event end / attendance.
-4. External calendar events created but never reconciled if the
-   provider event is deleted.
-5. Overlap detection considers only mentor_bookings — misses ordinary
-   sessions + Graph busy time.
-6. Idempotent transitions missing on booking status machine.
-7. Reporting: consultant hours double-counted when a session has both
-   consultant and mentor host attribution.
-
-## Required KPI truth
-
-- Meetings per consultant, meetings per startup, consultant hours,
-  mentor hours, cancellations, no-shows, tools used, mentor impact.
-- Single canonical view `v_sessions_operational` that de-duplicates on
-  `(workspace_id, session_id)` and attributes hours by explicit
-  participant role.
-
-## Next action
-
-Author `supabase/migrations/*_batch_f2_sessions_view.sql` (draft) and
-scenario tests.
+Runtime proof gate: staging pgTAP + 4-persona clicks — `NOT PROVEN`.
+Local typecheck: pass.

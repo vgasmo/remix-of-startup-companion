@@ -1,40 +1,24 @@
-# Batch F5 — Business Plan & Financial Plan Assistants (FAILING REPRO)
+# Batch F5 — source landed 2026-07-22
 
-Source: `financial_plan_sessions`, `financial_model_versions`,
-`financial_assumptions`, `financial_prefill_proposals`, business plan
-assistant components, "Save As Scenario" flow.
+Draft: `docs/rc5/drafts/2026-07-22_batch-f5_financial_scenario.sql`.
+pgTAP: `supabase/tests/financial_scenario_atomic.test.sql`.
 
-## Defects
+- `financial_model_versions.command_fingerprint` (nullable) + partial unique
+  index `(session_id, command_fingerprint) WHERE command_fingerprint IS NOT NULL`
+  — a double-click that reuses the same fingerprint returns the existing
+  version instead of creating a sibling.
+- `save_financial_scenario_atomic(session, label, assumptions, metrics,
+  scoring, metadata, command_id, fingerprint)` SECURITY DEFINER:
+  workspace access check, FOR UPDATE session lock, idempotent replay
+  short-circuit (`mode='idempotent_reuse'`), snapshot of assumption KV
+  rows so clones read the exact state instead of recomputing.
 
-1. Save As Scenario is not wired to the atomic financial-scenario RPC;
-   assumptions, metrics, scoring, and session metadata save via
-   multiple awaits.
-2. No versioned autosave; a tab crash loses in-flight work.
-3. Duplicate-click can create sibling scenarios.
-4. Scenario clone is not exact — recomputes some derived fields on
-   read.
-5. Assistant partial progress does not survive tab/window changes for
-   BP + FP.
-6. Generated advice sometimes states derived numbers as facts; must
-   label assumptions vs facts.
-7. Scoring surfaces a single number with no dimensions, evidence,
-   missing-data, risks, or remediation.
-8. Excel upload/download + KPI ingestion reconcile probabilistically,
-   not deterministically.
-9. Long templates + dialogs don't scroll correctly on mobile.
+Not landed this turn (deferred, tracked separately):
+- localStorage autosave keyed on `(workspace_id, session_id, user_id)`.
+- Scoring UI dimensions + evidence + missing + risks + remediation.
+- Excel round-trip determinism assertion via `financial_cell_map`.
+- Mobile scroll fixes for long templates + dialogs.
+- Assistant "facts vs assumptions" labelling.
 
-## Required outcome
-
-- Atomic RPC `save_financial_scenario_atomic(session_id, version,
-  assumptions, metrics, scoring, metadata, command_id)` with
-  fingerprinting.
-- localStorage draft keyed on `(workspace_id, session_id, user_id)`
-  with server-side reconcile on reconnect.
-- Scoring UI: dimensions + evidence + missing + risks + remediation.
-- Excel round-trip: deterministic cell map already exists
-  (`financial_cell_map`); assert idempotent apply.
-
-## Next action
-
-Draft the RPC + Vitest for autosave + persona Playwright at 390/1440
-in the Batch F5 turn.
+Runtime proof gate: double-click concurrency probe + long assistant session
+survival — `NOT PROVEN`.
