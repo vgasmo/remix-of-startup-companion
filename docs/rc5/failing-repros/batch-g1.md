@@ -1,31 +1,18 @@
-# Batch G1 — Automation Truth Manifest (FAILING REPRO)
+# Batch G1 — source landed 2026-07-22
 
-Sources: `automation_health_expectations`, `automation_runs`,
-`cron_job_runs`, `pg_cron.job`, `supabase/functions/*`,
-edge-function health registry.
+- `docs/rc5/automation-manifest.md` — canonical manifest of every
+  automation (17 rows) with trigger / cadence / owner / flag / health.
+- `scripts/rc5/reconcile-automations.mjs` — read-only reconciler that
+  refuses to run against the production project ref, joins
+  `cron.job` × `automation_health_expectations` × the manifest, and
+  exits non-zero on any drift (missing_schedule, dead_cron,
+  missing_registry, unregistered_cron).
 
-## Defects
+Not landed (require live pg_cron catalogue capture from staging):
+- Forward migration to drop dead cron rows for event/manual functions.
+- Fix for `sweep-session-transcripts` double-log — current source does
+  not write to `automation_runs`, so the historical duplicate is
+  already gone; reconciler will verify against pg_cron on staging.
 
-1. There is no single manifest reconciling scheduler ↔ wrapper ↔
-   health registry.
-2. Duplicate transcript-sweep logging (`sweep-session-transcripts`
-   writes two health-registry rows).
-3. Missing-schedule / missing-registry / never-run jobs report
-   `healthy` because absence is treated as OK.
-4. Event-driven and manual functions have cron schedules that never
-   fire, giving false "unhealthy" alerts.
-
-## Required outcome
-
-`docs/rc5/automation-manifest.md` listing, per job:
-`name | trigger (cron|event|manual) | cadence | owner | edge target |
-feature flag | health expectation | last-run source`. Reconciliation
-script asserts every scheduled job appears in the manifest and every
-manifest job with `trigger=cron` has a matching `pg_cron.job` row.
-
-## Next action
-
-Generate the manifest by joining `pg_cron.job` +
-`automation_health_expectations` + a code scan of
-`supabase/functions`. Then remove the duplicate transcript-sweep log
-and drop dead cron rows for event/manual functions.
+Runtime proof gate: staging execution of `reconcile-automations.mjs` —
+`NOT PROVEN`.
