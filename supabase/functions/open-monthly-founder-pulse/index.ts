@@ -30,6 +30,28 @@ Deno.serve(withCronRunLogging('open-monthly-founder-pulse', async (req) => {
   const authCheck = await requireCronOrStaff(req, userClient, admin)
   if ('error' in authCheck) return authCheck.error
 
+  // Batch D: kill switch is enforced server-side. Fail-closed if the flag is
+  // absent or disabled — no cycle rows, no notifications, no emails.
+  const { data: flagRow, error: flagErr } = await admin
+    .from('feature_flags')
+    .select('enabled')
+    .eq('key', 'founder_monthly_pulse')
+    .eq('scope', 'global')
+    .maybeSingle()
+  if (flagErr) {
+    console.error('[open-monthly-founder-pulse] flag lookup failed', flagErr)
+    return new Response(JSON.stringify({ ok: false, error: 'flag_lookup_failed' }), {
+      status: 503,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+  if (!flagRow?.enabled) {
+    return new Response(JSON.stringify({ ok: true, skipped: 'flag_off' }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
   const { data, error } = await admin.rpc('open_and_notify_monthly_founder_pulse_cycles')
   if (error) {
     console.error('[open-monthly-founder-pulse] rpc error', error)
