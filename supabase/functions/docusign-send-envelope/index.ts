@@ -357,43 +357,65 @@ Deno.serve(async (req) => {
       }],
     }
 
-    const envRes = await fetch(`${baseUrl}/v2.1/accounts/${accountId}/envelopes`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(envelopeBody),
-    })
-
-    if (!envRes.ok) {
-      const errText = await envRes.text()
-      throw new Error(`DocuSign API error: ${errText}`)
+    let envelope: { envelopeId?: string } | null = null
+    try {
+      const envRes = await fetch(`${baseUrl}/v2.1/accounts/${accountId}/envelopes`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(envelopeBody),
+      })
+      if (!envRes.ok) {
+        const errText = await envRes.text()
+        throw new Error(`DocuSign API error: ${errText.slice(0, 500)}`)
+      }
+      envelope = await envRes.json()
+      if (!envelope?.envelopeId) {
+        throw new Error('DocuSign response missing envelopeId')
+      }
+    } catch (dispatchErr) {
+      // Provider dispatch failed after we owned the claim — release so the
+      // reconciler / staff can retry, then surface the error.
+      await supabase.rpc('release_docusign_envelope_command', {
+        p_contract_id: contractId,
+        p_command_id: envelopeCommandId,
+        p_error: `docusign_dispatch_failed: ${(dispatchErr as Error).message ?? 'unknown'}`,
+      })
+      throw dispatchErr
     }
 
-    const envelope = await envRes.json()
+    // Finalize the claim: stamp envelope id + provider metadata atomically.
+    // Only the row still holding envelope_command_id can be finalized, so a
+    // stale worker whose claim was released can never overwrite a fresh one.
+    const { data: finalizeData, error: finalizeError } = await supabase.rpc(
+      'finalize_docusign_envelope',
+      {
+        p_contract_id: contractId,
+        p_command_id: envelopeCommandId,
+        p_envelope_id: envelope.envelopeId,
+        p_signer_email: signerEmail,
+        p_counter_signer_name: counterSignerName || null,
+        p_counter_signer_email: counterSignerEmail || null,
+      },
+    )
+    if (finalizeError) {
+      console.error('finalize_docusign_envelope failed', finalizeError)
+      // Envelope exists at provider but we could not stamp it — flag for reconciler.
+      await supabase
+        .from('startup_contracts')
+        .update({
+          provider_last_error: `finalize_failed: ${finalizeError.message}`,
+          provider_last_sync_at: new Date().toISOString(),
+        })
+        .eq('id', contractId)
+    }
+    const finalized = (finalizeData ?? {}) as { finalized?: boolean; reason?: string }
+    if (!finalized.finalized) {
+      console.warn('envelope finalize was a no-op', { contractId, envelopeId: envelope.envelopeId, reason: finalized.reason })
+    }
 
-    // Update contract with envelope ID and bilateral signing info
-    await supabase
-      .from('startup_contracts')
-      .update({
-        docusign_envelope_id: envelope.envelopeId,
-        signature_provider: 'docusign',
-        provider_document_id: envelope.envelopeId,
-        signature_status: 'sent_for_signature',
-        signature_requested_at: new Date().toISOString(),
-        provider_sent_at: new Date().toISOString(),
-        provider_last_event: 'envelope-sent',
-        provider_last_sync_at: new Date().toISOString(),
-        provider_last_error: null,
-        envelope_command_id: envelopeCommandId,
-        // Bilateral fields
-        founder_signer_status: 'sent',
-        counter_signer_name: counterSignerName || null,
-        counter_signer_email: counterSignerEmail || null,
-        counter_signer_status: counterSignerEmail ? 'pending' : null,
-      })
-      .eq('id', contractId)
 
     // Log activity
     await supabase.from('activity_log').insert({
