@@ -1,28 +1,13 @@
-# Batch G3 — Measured Performance (FAILING REPRO)
+# Batch G3 — source landed 2026-07-22
 
-Rule: measure before optimizing. No speculative rewrites.
+- `scripts/rc5/perf-baseline.mjs` — Playwright + Navigation Timing +
+  long-task harness. Emits `baseline_<stamp>.json` under
+  `scripts/rc5/artifacts/g3/`. Refuses production hosts by default.
+- `docs/rc5/performance-baseline.md` — baseline scaffold with method,
+  metric table, targets, and after-numbers slot.
 
-## Metrics to capture
+Rule: numbers are measured, not asserted. No optimization ships until
+the baseline row exists AND the after-row shows a measurable win on
+the same route + metric.
 
-- Authenticated route load (staff dashboard, founder home, consultant
-  cockpit, mentor gallery).
-- Query count per route.
-- Duplicate requests within one navigation.
-- N+1 patterns (list → per-row fetch).
-- Long tasks > 50 ms.
-- Mobile Web Vitals (LCP, INP, CLS) at 390 width, throttled 4G.
-- Bundle/chunk use per persona.
-
-## Deliverable
-
-`docs/rc5/performance-baseline.md` with before-numbers, then targeted
-changes:
-
-- Parallelize confirmed-independent queries.
-- Remove confirmed N+1 requests.
-- Lazy-load persona-only/admin-heavy features.
-- Record after-numbers.
-
-## Next action
-
-Playwright + Chrome perf trace harness under `scripts/rc5/perf/`.
+Runtime proof gate: staging harness run — `NOT PROVEN`.
