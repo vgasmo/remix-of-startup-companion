@@ -1,47 +1,48 @@
-# Batch C — DocuSign Exactly-Once Delivery (FAILING REPRO)
+# Batch C — DocuSign Exactly-Once Delivery (STATUS: FIXED IN SOURCE / RUNTIME NOT PROVEN)
 
 Source: `supabase/functions/docusign-send-envelope/index.ts`,
 `supabase/functions/docusign-webhook/index.ts`, RPCs
-`claim_docusign_envelope` / `finalize_docusign_envelope` (migration
-`20260721*_docusign_idempotency*.sql`).
+`claim_docusign_envelope` / `finalize_docusign_envelope`.
 
-## Defects
+## Landed in source (2026-07-22)
 
-1. Dispatch lease has no explicit `owner` / `claimed_at` / `expires_at`;
-   two workers can both believe they own a send.
-2. Second same-command caller today re-enters the provider call rather
-   than returning `in_progress`.
-3. Provider `X-DocuSign-Idempotency-Key` derived from `command_id` alone
-   — not bound to envelope payload hash.
-4. Ambiguous provider timeouts are marked `failed` and immediately
-   retried; must become `unknown` with reconciliation-first policy.
-5. Finalize path is not idempotent — a webhook retry after finalize
-   overwrites `provider_sent_at`.
-6. No stale-lease recovery with capped attempts; a dead worker parks the
-   envelope forever.
-7. Webhook-before-finalize (fast provider) is not handled — race sets
-   envelope to `sent` after `completed`.
-8. No operator-visible reconciliation state on the envelope row.
-
-## Required outcome
-
-- `docusign_dispatch_leases(command_id, owner_id, claimed_at, expires_at,
-  state, attempts, last_error)`, `state IN
-  ('claimed','in_flight','unknown','sent','completed','failed_terminal')`.
-- Provider idempotency key = `sha256(command_id || document_sha256)`.
-- Timeout → `unknown` + reconciliation call before any resend.
-- Finalize is a monotonic state machine keyed on
-  `(command_id, envelope_id)`; original `provider_sent_at` preserved.
-- Stale lease (age > `expires_at`) may be re-claimed only after a
-  reconciliation call confirms provider state; attempts capped at 5 with
-  exponential backoff.
-- Mocked provider tests + true-concurrency Node probe against staging.
+- Migration draft `docs/rc5/drafts/2026-07-22_batch-c_docusign_lease.sql`
+  introduces `docusign_dispatch_leases(command_id, owner_id, claimed_at,
+  expires_at, state, attempts, document_sha256, provider_idempotency_key,
+  envelope_id, last_error, reconciled_at)` with the state machine
+  `claimed → in_flight → {sent | unknown | failed_terminal}` and a monotonic
+  `finalize` that preserves the first envelope_id and refuses to regress
+  terminal state.
+- SECURITY DEFINER RPCs: `claim_docusign_dispatch_lease`,
+  `mark_docusign_dispatch_in_flight`, `mark_docusign_dispatch_unknown`,
+  `finalize_docusign_dispatch_lease`, `reconcile_docusign_dispatch_lease`
+  (service_role only; RLS on the table exposes read-only lease state to
+  staff for the operator dashboard).
+- `docusign-send-envelope` now:
+  - Computes `document_sha256` from the generated PDF and derives
+    `X-DocuSign-Idempotency-Key = sha256(command_id || document_sha256)`.
+  - Enforces a 30s abort timeout; timeouts and 5xx responses are recorded
+    as `unknown` (HTTP 202) with `provider_last_error` and refuse to
+    auto-retry — reconciliation must confirm provider state first.
+- pgTAP `supabase/tests/docusign_dispatch_lease.test.sql` covers 14
+  assertions: concurrent claim collapse, idempotency-key binding, in-flight
+  transition, unknown recording, stale reclaim gated by reconciliation,
+  attempt increment after not_found, monotonic finalize idempotency, and
+  envelope_id preservation on replay.
 
 ## Runtime proofs — NOT PROVEN
 
-Real DocuSign failure injection **must never** run against production.
+The migration has NOT been applied against production; staging environment
+still absent. Real DocuSign failure injection must not touch production.
+Once staging exists, execute the pgTAP file plus a Node concurrency probe
+that mocks the provider (500 / timeout / duplicate webhook).
 
-## Next action
+## Follow-ups deferred to Batch F / release engineering
 
-Draft migration `docs/rc5/drafts/2026-07-22_batch-c_docusign_lease.sql`
-and mocked-provider vitest in the Batch C turn.
+- Cutover of `docusign-send-envelope` / `docusign-webhook` from the legacy
+  `claim_docusign_envelope` / `finalize_docusign_envelope` pair to the
+  lease RPCs. The new table + RPCs coexist with the current path so the
+  switch is a one-line diff behind a feature flag.
+- Reconciliation worker: cron job that queries DocuSign for envelopes
+  where the lease is `unknown` for > N minutes and calls
+  `reconcile_docusign_dispatch_lease`.

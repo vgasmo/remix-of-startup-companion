@@ -16,7 +16,7 @@ Legend: `FAILING REPRO` · `FIXED + PASS` · `FIXED IN SOURCE / RUNTIME NOT PROV
 |---|---|---|---|
 | A | Past-meeting RPC integrity + canonical proof + command fingerprint | `FIXED IN SOURCE / RUNTIME NOT PROVEN` | RPC hardened; pgTAP + true-concurrency test authored and wired into `rc5:verify`. Fingerprint-binding migration added. Behavioral proof requires staging. |
 | B | Contract-signing integrity | `FIXED IN SOURCE / RUNTIME NOT PROVEN` | Forward migration drafted (grants + fingerprint + RESTRICT + narrowed RLS). Edge function: explicit consent block required, honest "advanced electronic signature per eIDAS Art. 26" copy, canonical `staff_work_queue_items` insert. pgTAP suite authored. Runtime proof BLOCKED on staging. |
-| C | DocuSign exactly-once | `NOT PROVEN` | Existing atomic RPCs from prior batch review present; lease-ownership + reconciliation gaps unresolved. |
+| C | DocuSign exactly-once | `FIXED IN SOURCE / RUNTIME NOT PROVEN` | Draft `docs/rc5/drafts/2026-07-22_batch-c_docusign_lease.sql` adds `docusign_dispatch_leases` + state machine; send edge binds provider idempotency key to `sha256(command||doc)` and treats timeouts / 5xx as `unknown`. pgTAP `supabase/tests/docusign_dispatch_lease.test.sql` covers concurrent claim, monotonic finalize, stale-reclaim reconciliation. Runtime proof pending staging. |
 | D | Monthly Founder Pulse (flag OFF) | `NOT PROVEN` | Flag remains OFF. OFF-state test pending. |
 | E | Privacy / role boundaries (`profiles_safe`) | `NOT PROVEN` | Persona audit pending; no blind global replacement. |
 | F1 | Public first-contact booking | `NOT PROVEN` | Lisbon TZ + concurrent idempotency tests pending. |
