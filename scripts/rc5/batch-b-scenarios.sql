@@ -73,8 +73,8 @@ BEGIN
   IF (v_r2->>'signature_status') <> 'completed' THEN
     RAISE EXCEPTION 'S4 expected completed, got %', v_r2;
   END IF;
-  SELECT signed_at IS NOT NULL INTO v_cnt FROM public.startup_contracts WHERE id = v_c_bi;
-  IF v_cnt = 0 THEN RAISE EXCEPTION 'S4 signed_at not stamped'; END IF;
+  SELECT signed_at IS NOT NULL INTO v_bool FROM public.startup_contracts WHERE id = v_c_bi;
+  IF NOT v_bool THEN RAISE EXCEPTION 'S4 signed_at not stamped'; END IF;
 
   -- ---- Scenario 5: state regression blocked (signed → sent must raise) ----
   BEGIN
