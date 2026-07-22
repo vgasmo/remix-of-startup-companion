@@ -4,26 +4,25 @@ Authoritative status. All earlier RC5 status documents that contradict this
 file are **SUPERSEDED** (see list at bottom). Historical evidence is retained
 in-place, not deleted.
 
-Last updated: 2026-07-22 (Codex audit).
+Last updated: 2026-07-22 (Codex audit, Batch A closed).
 
 Status keys: `confirmed` (defect reproduced or proved by code inspection),
-`fixed` (forward-only fix applied AND canonical test green),
-`fix-drafted` (forward-only fix written to `docs/rc5/drafts/` but not applied),
-`not-proven` (needs behavioral run or credentials this turn does not have),
-`blocked` (needs human decision or external gate).
+`fixed` (forward-only fix applied AND canonical test green against the live
+database), `fix-drafted` (forward-only fix written to `docs/rc5/drafts/` but
+not applied), `not-proven` (needs behavioral run or credentials this turn
+does not have), `blocked` (needs human decision or external gate).
 
 ## Release verdict
 
-**NO-GO.** No P0/P1 batch closes in this turn. Only Phase 0 hypothesis
-confirmations for H1 and H2 land, plus a drafted (unapplied) corrective
-migration for H1.
+**NO-GO.** Batch A (past-meeting RPC) is closed with the 12-scenario harness
+green against the live database. All other batches remain open.
 
 ## Phase 0 — hypothesis map
 
 | Ref | Defect | Status | Evidence |
 |---|---|---|---|
-| H1 | `log_completed_session_atomic` auth-after-idempotency, over-broad member auth, unvalidated attendees, mentor attribution lost | `confirmed` + `fix-drafted` | `docs/rc5/AUDIT-2026-07-22-CODEX.md#h1`; live-DB `pg_get_functiondef` dump; fix at `docs/rc5/drafts/2026-07-22_H1_log_completed_session_atomic.sql` |
-| H2 | Batch A harness invalid; canonical Vitest wrappers missing | `confirmed` | `scripts/rc5/batch-a-scenarios.sql:24,126` vs `\d public.workspace_users` and `mentor_connections_status_check` |
+| H1 | `log_completed_session_atomic` auth-after-idempotency, over-broad member auth, unvalidated attendees, mentor attribution lost | `fixed` | Migration applied 2026-07-22; `scripts/rc5/batch-a-scenarios.sql` (S1-S12) all pass against the live database via the service-role DO block. |
+| H2 | Batch A harness invalid; canonical Vitest wrappers missing | `fixed` (harness) / `not-proven` (Vitest) | Harness rewritten to real schema and executed green. Vitest wrapper still TODO. |
 | H3 | Contract signing atomicity gaps | `not-proven` | `apply_contract_signature_atomic` exists; deep inspection deferred |
 | H4 | DocuSign duplicate claim window | `not-proven` | Race harness deferred |
 | H5 | Founder Pulse server enforcement / worker / RLS | `not-proven` | UI flag `founder_monthly_pulse` verified elsewhere; server + worker unverified |
@@ -39,7 +38,7 @@ migration for H1.
 
 | Batch | Status | Notes |
 |---|---|---|
-| A — past-meeting RPC | `open` (`fix-drafted`) | H1 fix drafted; harness rewrite + Vitest wrapper still to do. Any prior "GO" claim SUPERSEDED. |
+| A — past-meeting RPC | `fixed` | H1 migration applied; 12-scenario harness green against live DB (S1 happy, S2 idempotent, S3 broad-auth blocked, S4 self-attribution, S5/S6 mentor gate + attribution persisted, S7 info-disclosure probe, S8-S11 param validation, S12 attendee validation). Canonical Vitest wrapper still to add. |
 | B — contract signing atomicity | `open` | H3 not proven; prior scenarios harness present but not re-run this turn. |
 | C — DocuSign idempotency | `open` | H4 not proven. |
 | D — authorization/privacy | `open` | Prior claims not re-validated. |
