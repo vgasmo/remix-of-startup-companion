@@ -1,6 +1,8 @@
 # RC5 Release-Rescue Plan — Persistent Ledger
 
-_Last updated: 2026-07-22 · Owner: release-rescue agent · Sole source of truth for RC5 batches. All contradictory historical documents are SUPERSEDED._
+_Last updated: 2026-07-22 (failing-repros bundle) · Owner: release-rescue agent · Sole source of truth for RC5 batches. All contradictory historical documents are SUPERSEDED._
+
+Per-batch failing repros with concrete defect lists and next executable actions live under [`docs/rc5/failing-repros/`](./failing-repros/README.md). Nothing there has been shipped.
 
 ## Verdict
 
