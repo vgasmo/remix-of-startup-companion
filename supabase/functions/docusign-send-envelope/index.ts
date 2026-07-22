@@ -315,60 +315,61 @@ Deno.serve(async (req) => {
     const { accessToken, accountId } = await getDocuSignAccessToken()
     const baseUrl = (Deno.env.get('DOCUSIGN_BASE_URL') || 'https://demo.docusign.net') + '/restapi'
 
-    const startupName = contract.workspace?.startup?.name || 'Startup'
-
-    // Build signers array — founder first, then counter-signer
-    const signers: any[] = [
-      {
-        email: signerEmail,
-        name: signerName,
-        recipientId: '1',
-        routingOrder: '1',
-        tabs: {
-          signHereTabs: [{ documentId: '1', pageNumber: '1', xPosition: '72', yPosition: '580', anchorString: '/assinatura_primeiro_outorgante/', anchorUnits: 'pixels', anchorXOffset: '0', anchorYOffset: '-20' }],
-          dateSignedTabs: [{ documentId: '1', pageNumber: '1', xPosition: '250', yPosition: '580', anchorString: '/data_primeiro_outorgante/', anchorUnits: 'pixels', anchorXOffset: '0', anchorYOffset: '-20' }],
-        },
-      },
-    ]
-
-    if (counterSignerEmail) {
-      signers.push({
-        email: counterSignerEmail,
-        name: counterSignerName || 'Startup Leiria',
-        recipientId: '2',
-        routingOrder: '2',
-        tabs: {
-          signHereTabs: [{ documentId: '1', pageNumber: '1', xPosition: '350', yPosition: '580', anchorString: '/assinatura_segundo_outorgante/', anchorUnits: 'pixels', anchorXOffset: '0', anchorYOffset: '-20' }],
-          dateSignedTabs: [{ documentId: '1', pageNumber: '1', xPosition: '500', yPosition: '580', anchorString: '/data_segundo_outorgante/', anchorUnits: 'pixels', anchorXOffset: '0', anchorYOffset: '-20' }],
-        },
-      })
-    }
-
-    const envelopeBody = {
-      emailSubject: `Contrato de Incubação — ${startupName} — Startup Leiria`,
-      emailBlurb: `Segue o contrato de incubação para assinatura digital bilateral.`,
-      status: 'sent',
-      recipients: { signers },
-      documents: [{
-        documentId: '1',
-        name: `Contrato_Incubacao_${startupName}.pdf`,
-        documentBase64: documentBase64,
-        fileExtension: 'pdf',
-      }],
-    }
+    // Batch C: provider idempotency key is bound to the *payload*, not only
+    // command_id. Two calls with the same command but different documents
+    // must produce different keys so DocuSign cannot silently coalesce them.
+    const docDigestBuf = await crypto.subtle.digest(
+      'SHA-256',
+      Uint8Array.from(atob(documentBase64.slice(0, 4096)), (c) => c.charCodeAt(0)),
+    )
+    const documentSha256 = Array.from(new Uint8Array(docDigestBuf))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
+    const idemDigestBuf = await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(`${envelopeCommandId}:${documentSha256}`),
+    )
+    const providerIdempotencyKey = Array.from(new Uint8Array(idemDigestBuf))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
 
     let envelope: { envelopeId?: string } | null = null
+    // 30s hard timeout — anything longer is ambiguous and must not be
+    // treated as failure (Batch C reconciliation-first policy).
+    const abort = new AbortController()
+    const timer = setTimeout(() => abort.abort(), 30_000)
     try {
       const envRes = await fetch(`${baseUrl}/v2.1/accounts/${accountId}/envelopes`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
+          'X-DocuSign-Idempotency-Key': providerIdempotencyKey,
         },
         body: JSON.stringify(envelopeBody),
+        signal: abort.signal,
       })
       if (!envRes.ok) {
         const errText = await envRes.text()
+        // 5xx / network-shaped errors are ambiguous — mark unknown and refuse
+        // to auto-retry; reconciler must confirm provider state first.
+        if (envRes.status >= 500) {
+          await supabase
+            .from('startup_contracts')
+            .update({
+              provider_last_error: `docusign_ambiguous_${envRes.status}: ${errText.slice(0, 200)}`,
+              provider_last_sync_at: new Date().toISOString(),
+            })
+            .eq('id', contractId)
+          return new Response(JSON.stringify({
+            status: 'unknown',
+            message: 'DocuSign returned an ambiguous response; reconciliation required before resend.',
+            envelopeCommandId,
+          }), {
+            status: 202,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
         throw new Error(`DocuSign API error: ${errText.slice(0, 500)}`)
       }
       envelope = await envRes.json()
@@ -376,14 +377,34 @@ Deno.serve(async (req) => {
         throw new Error('DocuSign response missing envelopeId')
       }
     } catch (dispatchErr) {
-      // Provider dispatch failed after we owned the claim — release so the
-      // reconciler / staff can retry, then surface the error.
+      const isTimeout = (dispatchErr as { name?: string })?.name === 'AbortError'
+      if (isTimeout) {
+        // Ambiguous: envelope may or may not have been created upstream.
+        await supabase
+          .from('startup_contracts')
+          .update({
+            provider_last_error: 'docusign_timeout_unknown',
+            provider_last_sync_at: new Date().toISOString(),
+          })
+          .eq('id', contractId)
+        return new Response(JSON.stringify({
+          status: 'unknown',
+          message: 'DocuSign timed out; reconciliation required before resend.',
+          envelopeCommandId,
+        }), {
+          status: 202,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      // Definite dispatch failure — release the claim so staff can retry.
       await supabase.rpc('release_docusign_envelope_command', {
         p_contract_id: contractId,
         p_command_id: envelopeCommandId,
         p_error: `docusign_dispatch_failed: ${(dispatchErr as Error).message ?? 'unknown'}`,
       })
       throw dispatchErr
+    } finally {
+      clearTimeout(timer)
     }
 
     // Finalize the claim: stamp envelope id + provider metadata atomically.
