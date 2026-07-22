@@ -2657,16 +2657,16 @@
   },
   "consultor": {
     "actions": {
-      "allClear": "All Clear",
-      "overdueCount": "Overdue Count",
+      "allClear": "All clear",
+      "overdueCount": "{{count}} overdue",
       "resolve": "Resolve",
-      "title": "Title"
+      "title": "Critical Actions"
     },
     "agenda": {
-      "empty": "Empty",
+      "empty": "No sessions scheduled",
       "prep": "Prep",
       "schedule": "Schedule",
-      "title": "Title"
+      "title": "Today's Sessions"
     },
     "aiBriefing": {
       "cta": "Briefing",
@@ -2677,12 +2677,12 @@
       "unavailableHint": "AI Briefing unavailable — click to retry"
     },
     "alerts": {
-      "missingKpis": "Missing Kpis",
-      "noRecentSessions": "No Recent Sessions"
+      "missingKpis": "Missing KPIs",
+      "noRecentSessions": "No recent sessions"
     },
     "copiedToClipboard": "Copied to clipboard",
     "dataQuality": {
-      "title": "Title"
+      "title": "Data Quality"
     },
     "exerciseCreated": "Exercise created",
     "exerciseUpdated": "Exercise updated",
@@ -2702,11 +2702,11 @@
     "nudgeFounder": "Nudge",
     "pipeline": {
       "contracted": "Contracted",
-      "empty": "Empty",
-      "needsAction": "Needs Action",
+      "empty": "No leads in pipeline",
+      "needsAction": "{{count}} needing action",
       "newLeads": "New Leads",
       "open": "Open",
-      "title": "Title",
+      "title": "Commercial Pipeline",
       "totalLeads": "Total Leads"
     },
     "portfolioSection": "Portfolio Management",
