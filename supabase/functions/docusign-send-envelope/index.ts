@@ -214,15 +214,12 @@ Deno.serve(async (req) => {
         throw new Error('generate-contract-pdf returned empty documentBase64')
       }
     } catch (pdfErr) {
-      console.error('PDF generation failed — refusing to send envelope', pdfErr)
-      await supabase
-        .from('startup_contracts')
-        .update({
-          signature_status: 'failed',
-          provider_last_error: `pdf_generation_failed: ${(pdfErr as Error).message ?? 'unknown'}`,
-          provider_last_sync_at: new Date().toISOString(),
-        })
-        .eq('id', contractId)
+      console.error('PDF generation failed — releasing envelope claim', pdfErr)
+      await supabase.rpc('release_docusign_envelope_command', {
+        p_contract_id: contractId,
+        p_command_id: envelopeCommandId,
+        p_error: `pdf_generation_failed: ${(pdfErr as Error).message ?? 'unknown'}`,
+      })
       return new Response(JSON.stringify({
         error: 'Contract PDF generation failed; envelope not sent.',
         details: (pdfErr as Error).message ?? 'unknown',
@@ -236,6 +233,14 @@ Deno.serve(async (req) => {
     // Check if DocuSign keys are configured
     const integrationKey = Deno.env.get('DOCUSIGN_INTEGRATION_KEY')
     if (!integrationKey) {
+      // Release the claim: manual-signature route is not a provider dispatch,
+      // and the reconciler must be able to re-enter dispatch later if staff
+      // configures DocuSign.
+      await supabase.rpc('release_docusign_envelope_command', {
+        p_contract_id: contractId,
+        p_command_id: envelopeCommandId,
+        p_error: 'docusign_not_configured',
+      })
       await supabase
         .from('startup_contracts')
         .update({
@@ -243,6 +248,7 @@ Deno.serve(async (req) => {
           signature_requested_at: new Date().toISOString(),
         })
         .eq('id', contractId)
+
 
       const { data: staffUsers } = await supabase
         .from('user_roles')
