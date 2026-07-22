@@ -1,45 +1,56 @@
-# Batch D — Monthly Founder Pulse (MUST STAY OFF) — FAILING REPRO
+# Batch D — Monthly Founder Pulse (MUST STAY OFF) — STATUS: FIXED IN SOURCE / RUNTIME NOT PROVEN
 
 Source: feature flag `founder_monthly_pulse`, `founder_pulse_cycles`,
 `founder_pulse_responses`, `open-monthly-founder-pulse` edge function,
 `notification_attempts`, `FounderPulseCard.tsx`.
 
-## Defects
+## Landed in source (2026-07-22)
 
-1. Cycle creation and delivery not fully gated on server-side flag read
-   — flag OFF must produce zero cycle rows, zero notification_attempts
-   rows, zero emails.
-2. Eligibility does not enforce active founder (`is_account_active` +
-   role check).
-3. No unique constraint on `(cycle_id, workspace_id, respondent_id,
-   channel)` — dedup relies on application logic.
-4. Assigned-consultant scope on responses is broader than intended.
-5. Retry state machine incomplete: `claimed / delivered / failed /
-   retry / terminal` not enforced by check constraint.
-6. PT/EN email template not attributed to the assigned consultant; no
-   safe Reply-To fallback for orphaned workspaces.
-7. Response link token not single-use; booking CTA and help CTA not
-   present.
-8. Staff have no visibility of delivery/retry backlog.
-9. No retention / anonymization job.
-10. UI: no progressive disclosure, no draft autosave, no Remind Me
-    Later, no help escape hatch.
+- Migration draft `docs/rc5/drafts/2026-07-22_batch-d_pulse_off_guard.sql`:
+  - `public.is_feature_flag_enabled(text)` STABLE SECURITY DEFINER helper
+    for use inside other definer functions.
+  - `founder_monthly_pulse` flag is seeded OFF if absent.
+  - `open_and_notify_monthly_founder_pulse_cycles`,
+    `open_monthly_founder_pulse_cycles`, and `enqueue_pulse_notifications`
+    all short-circuit when the flag is disabled (returns `skipped: flag_off`).
+  - `enqueue_pulse_notifications` restricts eligibility to
+    `wu.role='founder' AND wu.active AND profiles.account_status='approved'
+    AND is_account_active(user_id)`.
+  - Structural dedup: generated columns `pulse_cycle_id`,
+    `pulse_workspace_id`, `pulse_respondent_id` on `notification_attempts`,
+    plus partial unique index
+    `notification_attempts_pulse_dedup_uidx(cycle,workspace,respondent,channel)
+    WHERE event_key LIKE 'founder_pulse:%'`.
+  - `notification_attempts_state_chk` CHECK constraint over
+    `{queued, leased, delivered, failed_retryable, failed_terminal}`
+    (installed NOT VALID so legacy rows never block the deploy).
+  - `anonymize_stale_founder_pulse_responses()` blanks `respondent_id` +
+    `free_text` on responses older than 18 months.
+- `supabase/functions/open-monthly-founder-pulse/index.ts` reads the flag
+  before invoking the RPC — belt and braces against RPC drift.
+- pgTAP `supabase/tests/founder_pulse_off_state.test.sql` asserts 9
+  invariants under flag OFF (zero cycles / attempts / notifications /
+  emails, and structural artefacts exist).
 
-## Required outcome (OFF-first)
+## rc5:verify status
 
-- Flag guard at every server entry: cron scheduler, RPC
-  `enqueue_pulse_notifications`, edge function, UI card.
-- pgTAP asserts: flag OFF + trigger cron → zero cycles, zero attempts,
-  zero notifications, zero email_log rows.
-- Unique idx `(cycle_id, workspace_id, respondent_id, channel)`.
-- `notification_attempts.state` check constraint.
-- Retention: anonymize responses > 18 months.
+`scripts/rc5/verify.mjs` still finalises **NO-GO** because
+`RC5_ALLOW_STAGING_TESTS !== 'true'` in this environment. That is the
+correct status: the pgTAP suite for Batch D has not executed on staging,
+and cron enablement / global flag ON is gated on DPO approval. Local
+gates continue to pass.
 
 ## Runtime proofs — NOT PROVEN
 
-Cron enablement + global flag ON require staging canary + DPO approval.
+- pgTAP `founder_pulse_off_state.test.sql` on staging.
+- Cron dry-run with flag OFF confirming zero side effects (`cron_job_runs`
+  should record `skipped: flag_off`).
+- Delivery / retry probe with flag ON (staging canary only).
 
-## Next action
+## Follow-ups
 
-Draft `docs/rc5/drafts/2026-07-22_batch-d_pulse_off_guard.sql` +
-pgTAP `supabase/tests/founder_pulse_off_state.test.sql`.
+- pg_cron entry for `anonymize_stale_founder_pulse_responses()` after
+  privacy review sign-off.
+- Retire the client-side flag check in `FounderDashboard.tsx` once the
+  server-side gate has been proven on staging (defence in depth in the
+  meantime).
