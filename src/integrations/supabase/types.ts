@@ -7263,6 +7263,7 @@ export type Database = {
           outlook_sync_status: string | null
           outlook_synced_at: string | null
           primary_consultant_id: string | null
+          primary_mentor_id: string | null
           raw_transcript: string | null
           recording_consent: boolean
           recording_consent_at: string | null
@@ -7310,6 +7311,7 @@ export type Database = {
           outlook_sync_status?: string | null
           outlook_synced_at?: string | null
           primary_consultant_id?: string | null
+          primary_mentor_id?: string | null
           raw_transcript?: string | null
           recording_consent?: boolean
           recording_consent_at?: string | null
@@ -7357,6 +7359,7 @@ export type Database = {
           outlook_sync_status?: string | null
           outlook_synced_at?: string | null
           primary_consultant_id?: string | null
+          primary_mentor_id?: string | null
           raw_transcript?: string | null
           recording_consent?: boolean
           recording_consent_at?: string | null
