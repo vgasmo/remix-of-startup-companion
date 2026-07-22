@@ -1273,36 +1273,52 @@ Deno.serve(async (req) => {
         user_agent: signatureData.user_agent || req.headers.get('User-Agent'),
       }
       
-      // Update contract: mark founder as signed.
-      // BILATERAL GAP FIX: if a counter-signer is configured we do NOT activate
-      // on the founder alone — set counter_signer_status='pending' and enqueue a
-      // work-queue item so staff can counter-sign. Only single-party contracts
-      // proceed to full activation via lifecycleSync below.
+      // BATCH B — atomic signing via apply_contract_signature_atomic RPC.
+      // The RPC:
+      //   • is idempotent on (contract_id, command_id) — retries return the prior effect
+      //   • locks the contract row FOR UPDATE — concurrent parties cannot clobber each other
+      //   • enforces monotonic state transitions (signed cannot regress to sent)
+      //   • writes an auditable row into contract_signature_events atomically
+      //   • recomputes signature_status: 'completed' when both parties signed (or single-party),
+      //     'partially_signed' when only one party signed, 'declined'/'voided' on kill paths.
+      //
+      // command_id is deterministic per (contract, party, target status, signer email) so
+      // an accidental double-submit from the founder produces the same command → same event.
       const hasCounterSigner = !!(contract as any).counter_signer_email
-      const founderPatch: Record<string, unknown> = {
-        signature_status: hasCounterSigner ? 'partially_signed' : 'signed',
-        founder_signer_status: 'signed',
-        signature_proof_json: signatureProof,
-      }
-      if (!hasCounterSigner) {
-        founderPatch.signed_at = new Date().toISOString()
-      } else {
-        founderPatch.counter_signer_status = 'pending'
-      }
+      const commandSeed = `${contract.id}:founder:signed:${(signatureData.signer_email ?? '').toLowerCase().trim()}`
+      const cmdBuf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(commandSeed))
+      const cmdHex = Array.from(new Uint8Array(cmdBuf), b => b.toString(16).padStart(2, '0')).join('')
+      // Format as RFC-4122 UUID (v4-shaped, deterministic).
+      const commandId = `${cmdHex.slice(0,8)}-${cmdHex.slice(8,12)}-4${cmdHex.slice(13,16)}-8${cmdHex.slice(17,20)}-${cmdHex.slice(20,32)}`
 
-      const { error: updateError } = await supabase
-        .from('startup_contracts')
-        .update(founderPatch)
-        .eq('id', contract.id)
+      const { data: rpcResult, error: rpcErr } = await supabase.rpc('apply_contract_signature_atomic', {
+        p_command_id: commandId,
+        p_contract_id: contract.id,
+        p_party: 'founder',
+        p_to_status: 'signed',
+        p_actor_user_id: null,
+        p_evidence: signatureProof,
+        p_ip_hash: ipHash,
+        p_user_agent: signatureProof.user_agent ?? null,
+      })
 
-      if (updateError) {
-        console.error('Signature update error:', updateError)
-        return new Response(JSON.stringify({ error: 'Failed to record signature' }), {
+      if (rpcErr) {
+        console.error('apply_contract_signature_atomic failed:', rpcErr)
+        return new Response(JSON.stringify({ error: 'Failed to record signature', details: rpcErr.message }), {
           status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
 
-      if (hasCounterSigner) {
+      // Persist the eIDAS proof snapshot on the contract as well (auditable copy).
+      await supabase
+        .from('startup_contracts')
+        .update({ signature_proof_json: signatureProof })
+        .eq('id', contract.id)
+
+      const overallStatus = (rpcResult as any)?.signature_status ?? null
+      const isFullySigned = overallStatus === 'completed'
+
+      if (!isFullySigned && hasCounterSigner) {
         // Enqueue counter-sign work item; do NOT activate the workspace yet.
         try {
           await supabase.from('staff_work_queue_items').insert({
@@ -1320,6 +1336,7 @@ Deno.serve(async (req) => {
         }
         return new Response(JSON.stringify({
           status: 'partially_signed',
+          idempotent: (rpcResult as any)?.idempotent === true,
           message: 'Assinatura registada. Aguardando contra-assinatura.',
         }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
