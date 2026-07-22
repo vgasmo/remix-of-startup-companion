@@ -1242,34 +1242,50 @@ Deno.serve(async (req) => {
       })
     }
 
-    // === Digital Sign (simple electronic signature, eIDAS compliant) ===
+    // === Digital Sign (advanced electronic signature per eIDAS Art. 26) ===
+    // NOTE: we do NOT claim "eIDAS compliant" — that requires a QTSP.
     if (action === 'digital_sign') {
-      const { signatureData } = body
-      
+      const { signatureData, consent } = body
+
       if (!signatureData?.typed_name || signatureData.typed_name.length < 3) {
-        return new Response(JSON.stringify({ error: 'Invalid signature name' }), {
+        return new Response(JSON.stringify({ error: 'invalid_signature_name' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
-      
-      // Get client IP and hash for privacy
-      const clientIp = req.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() || 
+
+      // Batch B: require an explicit consent block from the client. Server
+      // MUST NOT infill eidas_ack / timestamp / ip on behalf of the signer.
+      if (!consent || consent.eidas_ack !== true
+          || typeof consent.timestamp !== 'string'
+          || typeof consent.ip !== 'string') {
+        return new Response(JSON.stringify({
+          error: 'consent_required',
+          message: 'Explicit consent block required: { eidas_ack: true, timestamp, ip }',
+        }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      // Server observed IP (still hashed) for correlation with client-declared IP.
+      const clientIp = req.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() ||
                        req.headers.get('CF-Connecting-IP') || 'unknown'
       const encoder = new TextEncoder()
       const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(clientIp + 'eidas-salt'))
       const ipHash = Array.from(new Uint8Array(hashBuffer)).slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('')
-      
-      // Build legal proof record
+
+      // Build legal proof record — labels the method honestly.
       const signatureProof = {
-        method: 'simple_electronic_signature',
-        regulation: 'eIDAS EU 910/2014',
+        method: 'advanced_electronic_signature',
+        regulation_reference: 'eIDAS EU 910/2014, Article 26',
+        qualified: false,
         typed_name: signatureData.typed_name,
         signer_email: signatureData.signer_email,
         signer_nif: signatureData.signer_nif,
-        accepted_terms: true,
-        accepted_eidas_disclaimer: true,
+        consent: {
+          eidas_ack: consent.eidas_ack,
+          client_timestamp: consent.timestamp,
+          client_declared_ip: consent.ip,
+        },
         signed_at: new Date().toISOString(),
-        ip_hash: ipHash,
+        server_ip_hash: ipHash,
         user_agent: signatureData.user_agent || req.headers.get('User-Agent'),
       }
       
