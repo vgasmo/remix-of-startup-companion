@@ -186,7 +186,7 @@ export function BugReportWidget() {
         size="sm"
         onClick={() => setOpen(true)}
         aria-label={t('bugReport.openLabel', 'Reportar problema')}
-        className="fixed bottom-4 right-4 z-40 shadow-md gap-1.5 h-9 rounded-full pl-3 pr-4 print:hidden"
+        className="fixed bottom-6 right-24 z-40 shadow-md gap-1.5 h-9 rounded-full pl-3 pr-4 print:hidden"
       >
         <Bug className="h-4 w-4" aria-hidden />
         <span className="text-xs font-medium">
