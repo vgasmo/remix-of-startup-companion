@@ -353,7 +353,16 @@ serve(async (req) => {
         .eq("email_normalized", emailNormalized)
         .eq("bucket_start", bucketStart.toISOString());
     } catch (rlErr) {
-      console.warn("public_booking rate-limit check failed (fail-open):", rlErr);
+      // Fail-CLOSED when strict validation is on so an unreachable DB cannot be used
+      // to bypass throttling. Fail-open only for the non-strict default so the public
+      // form doesn't blackhole during transient blips.
+      console.warn("public_booking rate-limit check failed:", rlErr);
+      if (strictCalendarValidation) {
+        return corsJsonResponse({
+          success: false,
+          error: "Booking service is temporarily degraded. Please try again in a few minutes.",
+        }, req, 503);
+      }
     }
 
 
@@ -470,7 +479,69 @@ serve(async (req) => {
     if (commitErr) throw commitErr;
     const commitRow = Array.isArray(commitResult) ? commitResult[0] : commitResult;
     const funnelItemId: string = commitRow?.funnel_item_id;
+    const commitMode: string = commitRow?.mode ?? 'created';
     if (!funnelItemId) throw new Error('commit_first_contact_booking_atomic returned no id');
+
+    // === IDEMPOTENT-REUSE SHORT-CIRCUIT ===
+    // The RPC already found an equivalent booking. Firing Graph/email again would
+    // duplicate the calendar invite and the consultant/founder alerts. Return the
+    // stored funnel item and skip all external side-effects.
+    if (commitMode === 'idempotent_reuse') {
+      const { data: existing } = await supabase
+        .from('funnel_items')
+        .select('metadata_json')
+        .eq('id', funnelItemId)
+        .maybeSingle();
+      const existingMeta = (existing?.metadata_json ?? {}) as Record<string, unknown>;
+      return corsJsonResponse({
+        success: true,
+        funnelItemId,
+        idempotent: true,
+        mode: commitMode,
+        teamsLink: (existingMeta.teams_url as string | null) ?? null,
+        calendarEventId: (existingMeta.calendar_event_id as string | null) ?? null,
+        calendar_status: (existingMeta.calendar_status as string) ?? 'skipped',
+        message: 'Your booking was already recorded. No additional invite was sent.',
+      }, req);
+    }
+
+    // === OUTBOX-FIRST INTENT (E5) ===
+    // Record every side-effect intent BEFORE we call the external providers.
+    // A crash between here and the external call leaves a `pending` outbox row
+    // for the retry worker; a crash *after* the external call still marks the
+    // row `completed`/`failed` so ops can reconcile. Storing after-the-fact
+    // (previous behaviour) leaked real Graph events with no outbox record.
+    const outboxIds: { graph_event?: string; consultant_email?: string } = {};
+    try {
+      const { data: outboxIntents } = await supabase
+        .from('first_contact_outbox')
+        .insert([
+          {
+            funnel_item_id: funnelItemId,
+            kind: 'graph_event',
+            payload_json: { slot, consultant_email: consultantEmail },
+            status: 'in_progress',
+            attempts: 1,
+          },
+          {
+            funnel_item_id: funnelItemId,
+            kind: 'consultant_email',
+            payload_json: { consultant_email: consultantEmail, slot },
+            status: 'in_progress',
+            attempts: 1,
+          },
+        ])
+        .select('id, kind');
+      for (const row of (outboxIntents ?? []) as Array<{ id: string; kind: string }>) {
+        if (row.kind === 'graph_event') outboxIds.graph_event = row.id;
+        if (row.kind === 'consultant_email') outboxIds.consultant_email = row.id;
+      }
+    } catch (outErr) {
+      // Outbox insert failing is a real problem — we lose the retry safety net —
+      // but the funnel item is already durable, so we surface a partial-success
+      // response rather than losing the lead.
+      console.error('first_contact_outbox intent insert failed:', outErr);
+    }
 
     // Create calendar event via Graph API if configured
     let teamsLink: string | null = null;
@@ -501,6 +572,9 @@ serve(async (req) => {
             },
           })
           .eq('id', funnelItemId);
+        if (outboxIds.graph_event) {
+          await supabase.rpc('mark_first_contact_outbox_completed', { p_id: outboxIds.graph_event });
+        }
       } catch (graphError) {
         calendarStatus = 'failed';
         calendarError = graphError instanceof Error ? graphError.message : 'unknown';
@@ -508,6 +582,13 @@ serve(async (req) => {
         await supabase.from('funnel_items').update({
           metadata_json: { ...bookingMetadata, calendar_status: 'failed', calendar_error: calendarError },
         }).eq('id', funnelItemId);
+        if (outboxIds.graph_event) {
+          await supabase.rpc('mark_first_contact_outbox_failed', {
+            p_id: outboxIds.graph_event,
+            p_error: calendarError,
+            p_backoff_seconds: 300,
+          });
+        }
         if (strictCalendarValidation) {
           return corsJsonResponse({
             success: false,
@@ -527,6 +608,13 @@ serve(async (req) => {
       }, req, 503);
     } else {
       console.log('Graph API not configured, skipping calendar event creation');
+      if (outboxIds.graph_event) {
+        // Not configured is a terminal skip, not a retryable failure.
+        await supabase
+          .from('first_contact_outbox')
+          .update({ status: 'skipped', last_error: 'graph_not_configured' })
+          .eq('id', outboxIds.graph_event);
+      }
     }
 
 
@@ -652,6 +740,13 @@ serve(async (req) => {
         if (!resp.ok) {
           const errText = await resp.text();
           console.warn('Consultant alert email failed', resp.status, errText.slice(0, 200));
+          if (outboxIds.consultant_email) {
+            await supabase.rpc('mark_first_contact_outbox_failed', {
+              p_id: outboxIds.consultant_email,
+              p_error: `resend_${resp.status}:${errText.slice(0, 200)}`,
+              p_backoff_seconds: 300,
+            });
+          }
         } else {
           try {
             await supabase.from('email_log').insert({
@@ -662,34 +757,35 @@ serve(async (req) => {
               sent_at: new Date().toISOString(),
             });
           } catch { /* email_log optional */ }
+          if (outboxIds.consultant_email) {
+            await supabase.rpc('mark_first_contact_outbox_completed', { p_id: outboxIds.consultant_email });
+          }
         }
       } else if (!RESEND_API_KEY) {
         console.warn('RESEND_API_KEY not configured; skipping consultant alert email');
+        if (outboxIds.consultant_email) {
+          await supabase
+            .from('first_contact_outbox')
+            .update({ status: 'skipped', last_error: 'resend_not_configured' })
+            .eq('id', outboxIds.consultant_email);
+        }
       }
     } catch (mailErr) {
       console.error('Consultant alert email error:', mailErr);
+      if (outboxIds.consultant_email) {
+        await supabase.rpc('mark_first_contact_outbox_failed', {
+          p_id: outboxIds.consultant_email,
+          p_error: mailErr instanceof Error ? mailErr.message : 'unknown',
+          p_backoff_seconds: 300,
+        });
+      }
     }
 
-    // === Durable outbox trace (E3) ===
-    // Record every subsystem attempt so ops can replay / audit even when the
-    // inline delivery already completed. `completed` rows are audit trail;
-    // `failed`/`pending` rows are candidates for a future retry worker.
+    // Best-effort trace of the in-app notification side-effects (already fired above).
+    // The two authoritative outbox rows (graph_event, consultant_email) were inserted
+    // pre-flight and updated in place; these two are audit-only.
     try {
-      const outboxRows = [
-        {
-          funnel_item_id: funnelItemId,
-          kind: 'graph_event',
-          payload_json: {
-            calendar_event_id: calendarEventId,
-            teams_url: teamsLink,
-            slot,
-            consultant_email: consultantEmail,
-          },
-          status: calendarStatus === 'ok' ? 'completed' : (calendarStatus === 'failed' ? 'failed' : 'skipped'),
-          attempts: 1,
-          last_error: calendarError,
-          completed_at: calendarStatus === 'ok' ? new Date().toISOString() : null,
-        },
+      await supabase.from('first_contact_outbox').insert([
         {
           funnel_item_id: funnelItemId,
           kind: 'consultant_notification',
@@ -702,20 +798,13 @@ serve(async (req) => {
           funnel_item_id: funnelItemId,
           kind: 'founder_notification',
           payload_json: { contact_email: contact.email, slot },
-          status: 'pending', // resolved by founder-notification block above; not authoritative
+          status: 'completed',
           attempts: 1,
+          completed_at: new Date().toISOString(),
         },
-        {
-          funnel_item_id: funnelItemId,
-          kind: 'consultant_email',
-          payload_json: { consultant_email: consultantEmail, slot },
-          status: consultantEmail ? 'pending' : 'skipped',
-          attempts: 1,
-        },
-      ];
-      await supabase.from('first_contact_outbox').insert(outboxRows);
+      ]);
     } catch (outErr) {
-      console.warn('first_contact_outbox insert failed (non-fatal):', outErr);
+      console.warn('first_contact_outbox trace insert failed (non-fatal):', outErr);
     }
 
     // Honest response: reflect what actually happened per subsystem so the client
