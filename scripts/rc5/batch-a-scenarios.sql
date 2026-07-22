@@ -1,7 +1,9 @@
 -- RC5 Batch A canonical harness for public.log_completed_session_atomic.
--- Runs via the supabase insert tool (service_role) as a single DO block with
--- explicit cleanup at the end so no test rows are left behind even on partial
--- failure. Any assertion failure RAISEs and the whole DO block aborts.
+-- ⚠ DO NOT RUN AGAINST PRODUCTION. Intended for isolated non-production DBs
+--   only; superseded by supabase/tests/log_completed_session_atomic.test.sql
+--   (pgTAP) + scripts/rc5/concurrency-log-session.mjs for canonical proof.
+-- Emits `[<iso>] S<n> PASS expected=… actual=…` notices per scenario and a
+-- final cleanup-verification block. Any assertion failure RAISEs and aborts.
 --
 -- Scenarios:
 --   S1  staff happy path

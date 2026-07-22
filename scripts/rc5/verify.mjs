@@ -113,6 +113,7 @@ run('migrate:fresh-replay', 'node', ['scripts/rc5/migrate-fresh-replay.mjs']);
 run('migrate:forward', 'node', ['scripts/rc5/migrate-forward.mjs']);
 run('seed', 'node', ['scripts/rc5/seed.mjs']);
 run('pgtap:rls', 'node', ['scripts/rc5/run-pgtap.mjs']);
+run('rc5:concurrency', 'node', ['scripts/rc5/concurrency-log-session.mjs']);
 run('e2e:personas', 'bunx', ['playwright', 'test', '--project=staging-personas']);
 run('e2e:failure-inj', 'bunx', ['playwright', 'test', '--project=failure-injection']);
 run('probe:graph', 'node', ['scripts/rc5/probe-graph.mjs']);
