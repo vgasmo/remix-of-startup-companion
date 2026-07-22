@@ -11892,6 +11892,10 @@ export type Database = {
         }
         Returns: Json
       }
+      enqueue_pulse_notifications: {
+        Args: { p_cycle_id: string }
+        Returns: number
+      }
       ensure_dataroom_exists: {
         Args: { _workspace_id: string }
         Returns: string
@@ -12239,6 +12243,10 @@ export type Database = {
         Args: { p_booking_id: string; p_target_state: string }
         Returns: Json
       }
+      open_and_notify_monthly_founder_pulse_cycles: {
+        Args: never
+        Returns: Json
+      }
       open_monthly_founder_pulse_cycles: { Args: never; Returns: number }
       patch_program_setup: {
         Args: { p_draft_id: string; p_expected_revision: number; p_patch: Json }
@@ -12266,6 +12274,15 @@ export type Database = {
         Returns: {
           expected: boolean
           got: boolean
+          ok: boolean
+          scenario: string
+        }[]
+      }
+      rc5_run_batch_e: {
+        Args: never
+        Returns: {
+          expected: string
+          got: string
           ok: boolean
           scenario: string
         }[]
