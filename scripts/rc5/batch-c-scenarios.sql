@@ -56,7 +56,7 @@ BEGIN
     (v_c3, CURRENT_DATE, 'draft',  'pending', NULL, NULL,                  NULL,           NULL,           NULL),
     (v_c4, CURRENT_DATE, 'draft',  'pending', NULL, NULL,                  NULL,           NULL,           NULL),
     (v_c5, CURRENT_DATE, 'draft',  'pending', NULL, NULL,                  NULL,           NULL,           NULL),
-    (v_c6, CURRENT_DATE, 'signed', 'signed',  NULL, NULL,                  'ENV-EXISTING', 'ENV-EXISTING', 'stale-command-id'),
+    (v_c6, CURRENT_DATE, 'signed', 'signed',  NULL, NULL,                  'ENV-EXISTING', 'ENV-EXISTING', NULL),
     (v_c7, CURRENT_DATE, 'draft',  'pending', NULL, NULL,                  NULL,           NULL,           NULL),
     (v_c8, CURRENT_DATE, 'draft',  'pending', NULL, NULL,                  NULL,           NULL,           NULL);
 
@@ -166,7 +166,7 @@ BEGIN
   END IF;
   -- No writes: stamp still points to the original stale command.
   SELECT envelope_command_id INTO v_stamp FROM public.startup_contracts WHERE id = v_c6;
-  IF v_stamp <> 'stale-command-id' THEN
+  IF v_stamp IS NOT NULL THEN
     RAISE EXCEPTION 'S6 stamp should be untouched, got %', v_stamp;
   END IF;
 
