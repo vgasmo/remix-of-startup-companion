@@ -14,15 +14,18 @@ does not have), `blocked` (needs human decision or external gate).
 
 ## Release verdict
 
-**NO-GO.** Batch A (past-meeting RPC) is closed with the 12-scenario harness
-green against the live database. All other batches remain open.
+**NO-GO.** Batch A closure audit (2026-07-22, `docs/rc5/batch-a-closure-audit.md`)
+downgrades the earlier "PASS" claim: the deployed RPC body is correct and
+production has zero fixture residue, but per-scenario S1..S12 evidence,
+true-concurrency proof, fresh-replay proof, pgTAP coverage, and CI wiring are
+**NOT PROVEN**. Batch B is not started.
 
 ## Phase 0 — hypothesis map
 
 | Ref | Defect | Status | Evidence |
 |---|---|---|---|
-| H1 | `log_completed_session_atomic` auth-after-idempotency, over-broad member auth, unvalidated attendees, mentor attribution lost | `fixed` | Migration applied 2026-07-22; `scripts/rc5/batch-a-scenarios.sql` (S1-S12) all pass against the live database via the service-role DO block. |
-| H2 | Batch A harness invalid; canonical Vitest wrappers missing | `fixed` (harness) / `not-proven` (Vitest) | Harness rewritten to real schema and executed green. Vitest wrapper still TODO. |
+| H1 | `log_completed_session_atomic` auth-after-idempotency, over-broad member auth, unvalidated attendees, mentor attribution lost | `fixed (code)` / `not-proven (runners)` | Migration `20260722113303…24710c31` applied; live `pg_get_functiondef` md5 matches disk body. No pgTAP / true-concurrency / CI runner yet. See `batch-a-closure-audit.md`. |
+| H2 | Batch A harness invalid; canonical automated runners missing | `partial` | Harness rewritten and executed once via service-role DO block; no per-scenario evidence captured, no pgTAP, not wired into `rc5:verify` or CI. |
 | H3 | Contract signing atomicity gaps | `not-proven` | `apply_contract_signature_atomic` exists; deep inspection deferred |
 | H4 | DocuSign duplicate claim window | `not-proven` | Race harness deferred |
 | H5 | Founder Pulse server enforcement / worker / RLS | `not-proven` | UI flag `founder_monthly_pulse` verified elsewhere; server + worker unverified |
