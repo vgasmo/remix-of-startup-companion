@@ -256,6 +256,17 @@ export default function PublicContractSigning() {
     setIsSubmitting(true);
     setSigningError(null);
     try {
+      // Best-effort client IP fetch — server also captures & hashes the observed IP.
+      let clientIp = '';
+      try {
+        const ipRes = await fetch('https://api.ipify.org?format=json');
+        if (ipRes.ok) {
+          const ipJson = await ipRes.json();
+          if (typeof ipJson?.ip === 'string') clientIp = ipJson.ip;
+        }
+      } catch {
+        // Non-fatal — server will still hash the observed IP.
+      }
       const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
         body: {
           action: 'digital_sign',
@@ -268,7 +279,12 @@ export default function PublicContractSigning() {
             accepted_eidas: true,
             signed_at: new Date().toISOString(),
             user_agent: navigator.userAgent,
-          }
+          },
+          consent: {
+            eidas_ack: true,
+            timestamp: new Date().toISOString(),
+            ip: clientIp,
+          },
         }
       });
       if (error) throw error;
