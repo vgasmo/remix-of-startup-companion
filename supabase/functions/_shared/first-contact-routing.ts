@@ -135,9 +135,10 @@ export async function resolveFirstContactRoute({
     if (!data.active) throw new NoRouteError('inactive_link', trace);
     if (data.expires_at && new Date(data.expires_at) < new Date()) throw new NoRouteError('expired_link', trace);
     link = data;
-    trace.link_id = link.id;
-    trace.link_owner_consultant_id = link.owner_consultant_id;
-    trace.link_program_id = link.program_id;
+    trace.link_id = data.id;
+    trace.link_owner_consultant_id = data.owner_consultant_id;
+    trace.link_program_id = data.program_id;
+
   }
 
   // 2. Normalize selected program

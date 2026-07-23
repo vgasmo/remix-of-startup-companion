@@ -75,7 +75,7 @@ async function assertStaff(sbUser: ReturnType<typeof createClient>, sbSvc: Retur
   const uid = userData.user?.id;
   if (!uid) return { ok: false as const, status: 401, error: "unauthorized" };
   const { data: roles } = await sbSvc.from("user_roles").select("role").eq("user_id", uid);
-  const isStaff = (roles ?? []).some((r: { role: string }) => r.role === "admin" || r.role === "consultor");
+  const isStaff = (roles ?? []).some((r: { role: unknown }) => r.role === "admin" || r.role === "consultor");
   if (!isStaff) return { ok: false as const, status: 403, error: "forbidden" };
   return { ok: true as const, uid };
 }
@@ -93,7 +93,7 @@ serve(async (req) => {
     const sbUser = createClient(url, anon, { global: { headers: { Authorization: auth } } });
     const sbSvc = createClient(url, svcKey);
 
-    const staff = await assertStaff(sbUser, sbSvc);
+    const staff = await assertStaff(sbUser as any, sbSvc as any);
     if (!staff.ok) return corsJsonResponse({ error: staff.error }, req, staff.status);
 
     const body = await req.json().catch(() => ({}));

@@ -38,7 +38,7 @@ serve(withCronRunLogging('compute-cohort-benchmarks', async (req) => {
     );
 
     // SECURITY: Fail-closed — timing-safe cron secret OR governance JWT (admin/backoffice).
-    const authCheck = await requireCronOrGovernance(req, supabaseUserClient, supabase);
+    const authCheck = await requireCronOrGovernance(req, supabaseUserClient as any, supabase as any);
     if ('error' in authCheck) {
       console.error('[compute-cohort-benchmarks] Unauthorized invocation');
       return authCheck.error;
@@ -104,9 +104,10 @@ serve(withCronRunLogging('compute-cohort-benchmarks', async (req) => {
     }
 
     // Also: health_score per program+stage
-    for (const w of active) {
-      if (w.health_score_numeric == null) continue;
+    for (const w of active as Array<Record<string, unknown>>) {
+      if ((w as { health_score_numeric?: number | null }).health_score_numeric == null) continue;
     }
+
     // (health requires the column — fetch explicitly)
     const { data: healthRows } = await supabase
       .from('workspaces')

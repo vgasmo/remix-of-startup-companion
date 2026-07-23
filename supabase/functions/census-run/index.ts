@@ -214,11 +214,12 @@ Deno.serve(async (req) => {
 
     // ----- Aggregate reads (no writes) ---------------------------------
     const errors: Array<{ source: string; message: string }> = [];
-    async function safeCount(source: string, q: Promise<{ count: number | null; error: unknown }>): Promise<number | null> {
-      const { count, error } = await q;
+    async function safeCount(source: string, q: PromiseLike<{ count: number | null; error: unknown }>): Promise<number | null> {
+      const { count, error } = await (q as PromiseLike<{ count: number | null; error: unknown }>);
       if (error) { errors.push({ source, message: (error as { message?: string }).message ?? 'unknown_error' }); return null; }
       return count ?? 0;
     }
+
 
     const funnelTotal = await safeCount('funnel_items.total',
       sbSvc.from('funnel_items').select('*', { count: 'exact', head: true }));

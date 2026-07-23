@@ -98,7 +98,7 @@ Deno.serve(withCronRunLogging('run-ecosystem-snapshot', async (req) => {
     try {
       await supabaseAdmin.storage.from('ecosystem-backups').remove(uploadedTmpPaths);
     } catch (e) {
-      log.warn('Failed to clean up temp snapshot files', e as Error);
+      log.warn('Failed to clean up temp snapshot files', { error: e instanceof Error ? e.message : String(e) });
     }
   };
 

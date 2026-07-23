@@ -93,12 +93,13 @@ async function notify(
 // Get staff user IDs (admin + consultor)
 async function getStaffIds(supabase: any): Promise<string[]> {
   const { data } = await supabase.from('user_roles').select('user_id').in('role', ['admin', 'consultor'])
-  return [...new Set((data || []).map((r: any) => r.user_id))]
+  return [...new Set((data || []).map((r: any) => r.user_id as string))] as string[]
+
 }
 
 async function getAdminIds(supabase: any): Promise<string[]> {
   const { data } = await supabase.from('user_roles').select('user_id').eq('role', 'admin')
-  return [...new Set((data || []).map((r: any) => r.user_id))]
+  return [...new Set((data || []).map((r: any) => r.user_id as string))] as string[]
 }
 
 async function getUserEmail(supabase: any, userId: string): Promise<string | null> {
@@ -666,7 +667,7 @@ Deno.serve(async (req) => {
             .select('user_id')
             .eq('role', 'mentor_externo')
 
-          const mentorIds = [...new Set((mentorRoles || []).map((r: any) => r.user_id))]
+          const mentorIds: string[] = Array.from(new Set(((mentorRoles as { user_id: string }[] | null) || []).map((r) => r.user_id)))
 
           for (const mentorId of mentorIds) {
             try {
