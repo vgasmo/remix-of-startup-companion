@@ -1,0 +1,66 @@
+{
+  "started_at": "2026-07-23T10:13:15.875Z",
+  "finished_at": "2026-07-23T10:14:47.845Z",
+  "overall": "fail",
+  "reason": "Step \"vitest:run:3\" exited 1.",
+  "source": {
+    "git_sha": "3696c77ab9c15b7d2cb346f9c18fd2024f1a44f2",
+    "git_branch": "edit/edt-04686d64-47bb-46c7-ae7f-0dce9d239eb2"
+  },
+  "target": {
+    "staging_project_ref_redacted": null,
+    "staging_app_url_set": false
+  },
+  "env_mode": "local-only",
+  "steps": [
+    {
+      "name": "install",
+      "status": "pass",
+      "exit_code": 0,
+      "duration_ms": 92,
+      "note": null
+    },
+    {
+      "name": "typecheck",
+      "status": "pass",
+      "exit_code": 0,
+      "duration_ms": 7651,
+      "note": null
+    },
+    {
+      "name": "lint",
+      "status": "pass",
+      "exit_code": 0,
+      "duration_ms": 17931,
+      "note": null
+    },
+    {
+      "name": "build",
+      "status": "pass",
+      "exit_code": 0,
+      "duration_ms": 25588,
+      "note": null
+    },
+    {
+      "name": "vitest:run:1",
+      "status": "pass",
+      "exit_code": 0,
+      "duration_ms": 12607,
+      "note": null
+    },
+    {
+      "name": "vitest:run:2",
+      "status": "pass",
+      "exit_code": 0,
+      "duration_ms": 11919,
+      "note": null
+    },
+    {
+      "name": "vitest:run:3",
+      "status": "fail",
+      "exit_code": 1,
+      "duration_ms": 16139,
+      "note": null
+    }
+  ]
+}
