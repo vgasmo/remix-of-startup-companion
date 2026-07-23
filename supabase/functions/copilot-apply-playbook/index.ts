@@ -95,20 +95,22 @@ serve(async (req: Request) => {
 
     const baseDate = new Date();
     const actionRows = playbook.actions.map((a, idx) => {
+      const action = a as { title: string; offset_days?: number; priority?: string; description?: string };
       const due = new Date(baseDate);
-      due.setUTCDate(baseDate.getUTCDate() + (a.offset_days ?? dueOffsetDays));
+      due.setUTCDate(baseDate.getUTCDate() + (action.offset_days ?? dueOffsetDays));
       return {
         workspace_id: workspaceId,
         milestone_id: milestone.id,
-        title: a.title,
-        description: a.description ?? null,
+        title: action.title,
+        description: action.description ?? null,
         status: "pending" as const,
-        priority: a.priority ?? "medium",
+        priority: action.priority ?? "medium",
         due_date: due.toISOString().slice(0, 10),
         created_by: user.id,
         source_deliverable_key: `playbook:${playbookKey}:${idx}`,
       };
     });
+
 
     const { data: actions, error: aiErr } = await supabase
       .from("action_items")
