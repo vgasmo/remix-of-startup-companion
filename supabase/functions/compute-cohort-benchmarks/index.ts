@@ -38,7 +38,7 @@ serve(withCronRunLogging('compute-cohort-benchmarks', async (req) => {
     );
 
     // SECURITY: Fail-closed — timing-safe cron secret OR governance JWT (admin/backoffice).
-    const authCheck = await requireCronOrGovernance(req, supabaseUserClient, supabase);
+    const authCheck = await requireCronOrGovernance(req, supabaseUserClient as any, supabase as any);
     if ('error' in authCheck) {
       console.error('[compute-cohort-benchmarks] Unauthorized invocation');
       return authCheck.error;
