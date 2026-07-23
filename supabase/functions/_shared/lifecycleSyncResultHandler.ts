@@ -19,7 +19,7 @@ export async function handleLifecycleSyncResult(
     contractId: string
     workspaceId: string | null
     source: string            // e.g. 'docusign_webhook_completed'
-    operation: 'sent' | 'completed'
+    operation: 'sent' | 'completed' | 'declined' | 'voided'
   },
 ): Promise<boolean> {
   // Empty errors OR no intake found at all = nothing to surface.
