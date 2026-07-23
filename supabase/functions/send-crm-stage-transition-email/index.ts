@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
       const emailResult = await resend.emails.send({
         from: rule.from_email || "Startup Leiria <noreply@startupleiria.com>",
         to: [funnelItem.contact_email],
-        reply_to: rule.reply_to || undefined,
+        replyTo: rule.reply_to || undefined,
         subject,
         html: bodyHtml,
       });
