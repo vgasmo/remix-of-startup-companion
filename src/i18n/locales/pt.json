@@ -3084,7 +3084,10 @@
     "providerLockTitle": "Prestador bloqueado para troca silenciosa",
     "sentLock": "Não trocar prestador silenciosamente após envio",
     "sentLockWarning": "Já enviado. Mudar de prestador exige cancelar e reenviar manualmente.",
-    "title": "Prontidão do contrato"
+    "title": "Prontidão do contrato",
+    "statusReady": "Pronto",
+    "statusSent": "Enviado",
+    "statusPending": "Pendente"
   },
   "contracts": {
     "aiAnalysis": "Análise IA",
@@ -3445,7 +3448,10 @@
       "success": "Sucesso",
       "title": "Importar Leads via CSV",
       "valid": "válidos",
-      "value": "Valor"
+      "value": "Valor",
+      "partial": "Importação parcial",
+      "staging": "Em preparação",
+      "total": "Total"
     },
     "inboxZero": {
       "description": "Todas as tarefas estão em dia. Bom trabalho!",
@@ -3690,7 +3696,13 @@
       "bodyProgramLine": "Na sequência da nossa conversa, envio a proposta para o programa {{program}}.",
       "bodySignoff": "Com os melhores cumprimentos,\nEquipa Startup Leiria",
       "defaultSubject": "Startup Leiria — Proposta comercial",
-      "defaultSubjectWithProgram": "Startup Leiria — Proposta para {{program}}"
+      "defaultSubjectWithProgram": "Startup Leiria — Proposta para {{program}}",
+      "uploadFiles": "Carregar ficheiros",
+      "uploadHint": "Arraste ficheiros ou clique para procurar",
+      "fileTooLarge": "Ficheiro demasiado grande",
+      "uploadFailed": "Falha ao carregar",
+      "noMaterialsUploadHint": "Sem materiais aprovados — pode anexar ficheiros pontualmente.",
+      "adHocBadge": "Pontual"
     },
     "emailArchived": "E-mail arquivado",
     "emailUnarchived": "E-mail restaurado",
@@ -3700,7 +3712,10 @@
     "archive": "Arquivar",
     "inbound": "Recebido",
     "outbound": "Enviado",
-    "emailNoBody": "Esta mensagem não tem corpo legível."
+    "emailNoBody": "Esta mensagem não tem corpo legível.",
+    "workspaceCreated": "Workspace criado",
+    "openWorkspace": "Abrir workspace",
+    "leadContractedPickProgram": "Escolha um programa para ativar esta lead"
   },
   "dashboard": {
     "acrossPrograms": "Em {{count}} programa",
@@ -3743,7 +3758,9 @@
     "todaysMeetings": "Reuniões de Hoje",
     "totalStartups": "Total de Startups",
     "upcomingSessions": "Próximas Sessões",
-    "viewAll": "Ver Todas"
+    "viewAll": "Ver Todas",
+    "focusEnabled": "Modo foco ativado",
+    "fullViewEnabled": "Vista completa ativada"
   },
   "dataImport": {
     "adminOnly": "Only administrators e consultants can access this page.",
@@ -5906,7 +5923,23 @@
       "detail": "O contrato está pendente de assinatura mas ainda não tem prestador de assinatura configurado.",
       "title": "Contrato pendente sem prestador de assinatura"
     },
-    "title": "Inconsistências de ciclo de vida"
+    "title": "Inconsistências de ciclo de vida",
+    "assignOrCreate": "Atribuir ou criar workspace",
+    "assignOrCreateTitle": "Atribuir workspace ao contrato",
+    "assignOrCreateDescription": "Associe este contrato a um workspace existente ou crie um novo.",
+    "tabAssign": "Atribuir existente",
+    "tabCreate": "Criar novo",
+    "searchWorkspacePlaceholder": "Procurar workspaces…",
+    "noWorkspacesFound": "Nenhum workspace encontrado",
+    "newStartupName": "Nome da startup",
+    "newProgram": "Programa",
+    "newStage": "Fase",
+    "founderLabel": "Fundador",
+    "assignConfirm": "Atribuir workspace",
+    "createConfirm": "Criar workspace",
+    "assignSuccess": "Workspace atribuído",
+    "createSuccess": "Workspace criado",
+    "founderCreated": "Conta de fundador criada"
   },
   "loading": {
     "almostThere": "Quase lá...",
@@ -6414,7 +6447,8 @@
       "quickGuide": "Guia Rápido",
       "reports": "Relatórios",
       "sessions": "Sessões",
-      "startups": "Startups"
+      "startups": "Startups",
+      "sessionsActions": "Sessões & ações"
     },
     "consultorTools": "Ferramentas do Consultor",
     "crm": "CRM",

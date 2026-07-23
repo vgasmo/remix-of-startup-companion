@@ -318,10 +318,10 @@ Deno.serve(async (req) => {
     // Batch C: provider idempotency key is bound to the *payload*, not only
     // command_id. Two calls with the same command but different documents
     // must produce different keys so DocuSign cannot silently coalesce them.
-    const docDigestBuf = await crypto.subtle.digest(
-      'SHA-256',
-      Uint8Array.from(atob(documentBase64.slice(0, 4096)), (c) => c.charCodeAt(0)),
-    )
+    // Hash the full document, not a prefix (audit finding: prefix-hash was
+    // insufficient to detect substituted PDFs).
+    const documentBytes = Uint8Array.from(atob(documentBase64), (c) => c.charCodeAt(0))
+    const docDigestBuf = await crypto.subtle.digest('SHA-256', documentBytes)
     const documentSha256 = Array.from(new Uint8Array(docDigestBuf))
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('')
@@ -332,6 +332,66 @@ Deno.serve(async (req) => {
     const providerIdempotencyKey = Array.from(new Uint8Array(idemDigestBuf))
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('')
+
+    // Construct DocuSign envelope body (Batch C fix: previously referenced
+    // an undefined `envelopeBody` variable — audit finding P0).
+    const contractLabel = contract.workspace?.startup?.name || `Contract ${contractId.slice(0, 8)}`
+    const envelopeBody = {
+      emailSubject: `Contrato Startup Leiria — ${contractLabel}`,
+      emailBlurb: 'Por favor reveja e assine o contrato em anexo.',
+      status: 'sent',
+      documents: [
+        {
+          documentBase64,
+          name: `${contractLabel}.pdf`,
+          fileExtension: 'pdf',
+          documentId: '1',
+        },
+      ],
+      recipients: {
+        signers: [
+          {
+            email: signerEmail,
+            name: signerName,
+            recipientId: '1',
+            routingOrder: '1',
+            tabs: {
+              signHereTabs: [
+                { anchorString: '/founder_sig/', anchorUnits: 'pixels', anchorXOffset: '0', anchorYOffset: '0' },
+              ],
+              dateSignedTabs: [
+                { anchorString: '/founder_date/', anchorUnits: 'pixels', anchorXOffset: '0', anchorYOffset: '0' },
+              ],
+            },
+          },
+          ...(counterSignerEmail
+            ? [{
+              email: counterSignerEmail,
+              name: counterSignerName || 'Startup Leiria',
+              recipientId: '2',
+              routingOrder: '2',
+              tabs: {
+                signHereTabs: [
+                  { anchorString: '/sl_sig/', anchorUnits: 'pixels', anchorXOffset: '0', anchorYOffset: '0' },
+                ],
+                dateSignedTabs: [
+                  { anchorString: '/sl_date/', anchorUnits: 'pixels', anchorXOffset: '0', anchorYOffset: '0' },
+                ],
+              },
+            }]
+            : []),
+        ],
+      },
+      customFields: {
+        textCustomFields: [
+          { name: 'contractId', value: contractId, required: 'false', show: 'false' },
+          { name: 'commandId', value: envelopeCommandId, required: 'false', show: 'false' },
+          { name: 'documentSha256', value: documentSha256, required: 'false', show: 'false' },
+          ...(companyNif ? [{ name: 'companyNif', value: String(companyNif), required: 'false', show: 'false' }] : []),
+        ],
+      },
+    }
+
 
     let envelope: { envelopeId?: string } | null = null
     // 30s hard timeout — anything longer is ambiguous and must not be
@@ -465,7 +525,7 @@ Deno.serve(async (req) => {
 
   } catch (err) {
     console.error('DocuSign error:', err)
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

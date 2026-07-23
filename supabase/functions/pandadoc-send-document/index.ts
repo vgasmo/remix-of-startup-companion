@@ -35,6 +35,7 @@ Deno.serve(async (req) => {
     // bypass user resolution — the service key has no `sub`. Staff gate is enforced
     // upstream in those callers.
     const isInternalServiceCall = token === supabaseKey
+    let actorUserId: string | null = null
     if (!isInternalServiceCall) {
       const { data: { user }, error: userError } = await supabase.auth.getUser(token)
       if (userError || !user) {
@@ -54,7 +55,9 @@ Deno.serve(async (req) => {
           status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
+      actorUserId = user.id
     }
+
 
 
 
@@ -161,7 +164,7 @@ Deno.serve(async (req) => {
       const { data: staffProfile } = await supabase
         .from('profiles')
         .select('full_name, email')
-        .eq('id', user.id)
+        .eq('id', actorUserId ?? '')
         .single()
 
       if (staffProfile?.email) {
@@ -384,7 +387,7 @@ Deno.serve(async (req) => {
     }).eq('id', contractId)
 
     await supabase.from('activity_log').insert({
-      user_id: user.id,
+      user_id: actorUserId,
       entity_type: 'contract',
       entity_id: contractId,
       action: 'sent_for_signature_pandadoc',
