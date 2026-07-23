@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
       const { data: lines } = await supabase
         .from('pricing_lines')
         .select('*')
-        .eq('pricing_version_id', currentVersion.id)
+        .eq('pricing_version_id', (currentVersion as { id: string }).id)
       pricingLines = lines || []
     }
 
