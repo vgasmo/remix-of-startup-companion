@@ -164,7 +164,7 @@ Deno.serve(async (req) => {
       const { data: staffProfile } = await supabase
         .from('profiles')
         .select('full_name, email')
-        .eq('id', user.id)
+        .eq('id', actorUserId ?? '')
         .single()
 
       if (staffProfile?.email) {
@@ -387,7 +387,7 @@ Deno.serve(async (req) => {
     }).eq('id', contractId)
 
     await supabase.from('activity_log').insert({
-      user_id: user.id,
+      user_id: actorUserId,
       entity_type: 'contract',
       entity_id: contractId,
       action: 'sent_for_signature_pandadoc',
