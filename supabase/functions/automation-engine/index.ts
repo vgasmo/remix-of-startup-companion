@@ -99,7 +99,7 @@ async function getStaffIds(supabase: any): Promise<string[]> {
 
 async function getAdminIds(supabase: any): Promise<string[]> {
   const { data } = await supabase.from('user_roles').select('user_id').eq('role', 'admin')
-  return [...new Set((data || []).map((r: any) => r.user_id))]
+  return [...new Set((data || []).map((r: any) => r.user_id as string))] as string[]
 }
 
 async function getUserEmail(supabase: any, userId: string): Promise<string | null> {
