@@ -93,7 +93,8 @@ async function notify(
 // Get staff user IDs (admin + consultor)
 async function getStaffIds(supabase: any): Promise<string[]> {
   const { data } = await supabase.from('user_roles').select('user_id').in('role', ['admin', 'consultor'])
-  return [...new Set((data || []).map((r: any) => r.user_id))]
+  return [...new Set((data || []).map((r: any) => r.user_id as string))] as string[]
+
 }
 
 async function getAdminIds(supabase: any): Promise<string[]> {
