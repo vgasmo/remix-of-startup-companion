@@ -450,7 +450,9 @@ Deno.serve(async (req: Request) => {
     }
 
     // Step 2: List transcripts for this meeting
+    if (!onlineMeetingId) throw new Error('onlineMeetingId unresolved');
     const transcriptsUrl = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(organizerEmail)}/onlineMeetings/${encodeURIComponent(onlineMeetingId)}/transcripts`;
+
     
     const transcriptsResponse = await fetch(transcriptsUrl, {
       headers: { 'Authorization': `Bearer ${accessToken}` },
