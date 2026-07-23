@@ -110,7 +110,11 @@ Deno.serve(async (req) => {
 
       // Reuse existing startup with same name if present, otherwise create new.
       let startupId: string;
-      const existingStartup = (existingMatches || [])[0]?.startup as { id: string } | undefined;
+      const rawStartup = ((existingMatches || [])[0] as { startup?: unknown } | undefined)?.startup;
+      const existingStartup = Array.isArray(rawStartup)
+        ? (rawStartup[0] as { id: string } | undefined)
+        : (rawStartup as { id: string } | undefined);
+
       if (existingStartup?.id) {
         startupId = existingStartup.id;
       } else {
