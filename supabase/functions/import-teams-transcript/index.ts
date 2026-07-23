@@ -501,7 +501,9 @@ Deno.serve(async (req: Request) => {
     const latestTranscript = transcripts[0];
     log.info('Found transcript', { transcriptId: latestTranscript.id, createdAt: latestTranscript.createdDateTime });
 
+    if (!latestTranscript?.id) throw new Error('latest transcript id missing');
     const contentUrl = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(organizerEmail)}/onlineMeetings/${encodeURIComponent(onlineMeetingId)}/transcripts/${encodeURIComponent(latestTranscript.id)}/content?$format=text/vtt`;
+
 
     const contentResponse = await fetch(contentUrl, {
       headers: { 'Authorization': `Bearer ${accessToken}` },
