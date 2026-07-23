@@ -1,10 +1,10 @@
 {
-  "started_at": "2026-07-23T10:13:15.875Z",
-  "finished_at": "2026-07-23T10:14:47.845Z",
+  "started_at": "2026-07-23T10:14:59.696Z",
+  "finished_at": "2026-07-23T10:16:42.889Z",
   "overall": "fail",
-  "reason": "Step \"vitest:run:3\" exited 1.",
+  "reason": "Staging gates were not executed. RC5_ALLOW_STAGING_TESTS must be 'true' to prove behavioral invariants. Local gates PASS but overall is NO-GO.",
   "source": {
-    "git_sha": "3696c77ab9c15b7d2cb346f9c18fd2024f1a44f2",
+    "git_sha": "7251814e56588536deba4fd5001bc27c9c6d5c27",
     "git_branch": "edit/edt-04686d64-47bb-46c7-ae7f-0dce9d239eb2"
   },
   "target": {
@@ -17,50 +17,85 @@
       "name": "install",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 92,
+      "duration_ms": 77,
       "note": null
     },
     {
       "name": "typecheck",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 7651,
+      "duration_ms": 7562,
       "note": null
     },
     {
       "name": "lint",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 17931,
+      "duration_ms": 17225,
       "note": null
     },
     {
       "name": "build",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 25588,
+      "duration_ms": 28519,
       "note": null
     },
     {
       "name": "vitest:run:1",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 12607,
+      "duration_ms": 16823,
       "note": null
     },
     {
       "name": "vitest:run:2",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 11919,
+      "duration_ms": 16409,
       "note": null
     },
     {
       "name": "vitest:run:3",
-      "status": "fail",
-      "exit_code": 1,
-      "duration_ms": 16139,
+      "status": "pass",
+      "exit_code": 0,
+      "duration_ms": 15365,
       "note": null
+    },
+    {
+      "name": "i18n:parity",
+      "status": "pass",
+      "exit_code": 0,
+      "duration_ms": 152,
+      "note": null
+    },
+    {
+      "name": "i18n:lint",
+      "status": "pass",
+      "exit_code": 0,
+      "duration_ms": 267,
+      "note": null
+    },
+    {
+      "name": "secret:scan",
+      "status": "pass",
+      "exit_code": 0,
+      "duration_ms": 592,
+      "note": null
+    },
+    {
+      "name": "deno:check-changed",
+      "status": "pass",
+      "exit_code": 0,
+      "duration_ms": 154,
+      "note": null
+    },
+    {
+      "name": "staging:gate",
+      "status": "fail",
+      "exit_code": 2,
+      "duration_ms": 0,
+      "note": "RC5_ALLOW_STAGING_TESTS != 'true' — staging gates not executed"
     }
   ]
 }
