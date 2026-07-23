@@ -70,13 +70,15 @@ Deno.serve(async (req) => {
     // Validate UUID format for Graph API settings
     if (body.integration_type === 'graph_api') {
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (body.settings.tenant_id && !uuidRegex.test(body.settings.tenant_id)) {
+      const settings = (body.settings ?? {}) as { tenant_id?: string; client_id?: string };
+      if (settings.tenant_id && !uuidRegex.test(settings.tenant_id)) {
         return corsJsonResponse({ error: 'Invalid tenant_id format' }, req, 400);
       }
-      if (body.settings.client_id && !uuidRegex.test(body.settings.client_id)) {
+      if (settings.client_id && !uuidRegex.test(settings.client_id)) {
         return corsJsonResponse({ error: 'Invalid client_id format' }, req, 400);
       }
     }
+
 
     // SECURITY: Never store client_secret in database
     // Accept both 'settings' and 'settings_json' from client
