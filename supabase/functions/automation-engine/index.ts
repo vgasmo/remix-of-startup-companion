@@ -667,7 +667,7 @@ Deno.serve(async (req) => {
             .select('user_id')
             .eq('role', 'mentor_externo')
 
-          const mentorIds = [...new Set((mentorRoles || []).map((r: any) => r.user_id))]
+          const mentorIds: string[] = [...new Set((mentorRoles || []).map((r: any) => r.user_id as string))]
 
           for (const mentorId of mentorIds) {
             try {
