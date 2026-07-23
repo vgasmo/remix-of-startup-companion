@@ -78,7 +78,7 @@ serve(async (req) => {
       const pdf = await getDocumentProxy(pdfBytes);
       pageCount = pdf.numPages;
       const result = await extractText(pdf, { mergePages: true });
-      extracted = (typeof result.text === "string" ? result.text : (result.text || []).join("\n\n")).trim();
+      extracted = (typeof result.text === "string" ? result.text : ((result.text as unknown as string[]) || []).join("\n\n")).trim();
     } catch (e) {
       console.error("PDF parse failed:", e);
       return new Response(JSON.stringify({ error: "Could not parse PDF. Make sure it is a text-based (not scanned image) PDF." }), {
