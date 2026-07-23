@@ -145,10 +145,11 @@ Deno.serve(async (req) => {
         const { error: notifErr } = await supabaseAdmin
           .from('notifications')
           .upsert(rows, { onConflict: 'user_id,event_key', ignoreDuplicates: true });
-        if (notifErr) logger.warn('notifications insert failed', notifErr);
+        if (notifErr) logger.warn('notifications insert failed', { error: (notifErr as { message?: string }).message ?? String(notifErr) });
       }
     } catch (notifyErr) {
-      logger.warn('Playbook notification step failed', notifyErr);
+      logger.warn('Playbook notification step failed', { error: notifyErr instanceof Error ? notifyErr.message : String(notifyErr) });
+
     }
 
     logger.info('Playbook request created', { userId: user.id, workspaceId, playbookId });
