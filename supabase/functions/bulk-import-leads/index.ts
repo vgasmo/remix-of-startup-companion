@@ -93,7 +93,7 @@ serve(async (req) => {
     const sbUser = createClient(url, anon, { global: { headers: { Authorization: auth } } });
     const sbSvc = createClient(url, svcKey);
 
-    const staff = await assertStaff(sbUser, sbSvc);
+    const staff = await assertStaff(sbUser as any, sbSvc as any);
     if (!staff.ok) return corsJsonResponse({ error: staff.error }, req, staff.status);
 
     const body = await req.json().catch(() => ({}));
