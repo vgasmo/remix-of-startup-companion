@@ -28,3 +28,21 @@
 20260715201400_1bc4bbf0-0c04-4093-8f44-c73da0622910.sql
 20260720155323_1efcc8be-a71c-4985-8e1b-fab345c0ce15.sql
 20260720155354_dcb21712-0e88-4daf-8494-dad25e667f1c.sql
+
+# ------------------------------------------------------------------
+# RC5 Batch D/E test-harness residue — accepted exception.
+#
+# The following applied migrations embedded fixture emails (@rc5-d.test,
+# @rc5-e.test) inside SECURITY DEFINER test-harness functions
+# (rc5_run_batch_d, rc5_run_batch_e). Those functions were dropped from
+# production by the forward cleanup migration
+# 20260722214915_5c3a70f2-215d-435b-bb7e-68c3d816a4fb.sql (verified:
+# pg_proc no longer contains rc5_run_batch_d/e). The historical files
+# below cannot be edited without breaking replay; they contain no live
+# data operations after the cleanup migration. New RC5 tests live under
+# supabase/tests/ and are executed by pgTAP, not by numbered migrations.
+20260722071418_f7221904-f5f7-4e2a-84d3-c60e883c16c6.sql
+20260722071747_858550df-0497-477a-b84e-1383ad9fdd18.sql
+20260722071841_f10874a8-5d87-4cc4-9f00-7e4fe70e55d9.sql
+20260722071918_1c4bab29-4788-41ea-ac88-d98d7daaddcf.sql
+20260722072018_d3d78cde-3274-4dfa-857c-0b8a43943034.sql
