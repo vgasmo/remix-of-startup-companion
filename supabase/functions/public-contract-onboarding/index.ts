@@ -665,7 +665,7 @@ Deno.serve(async (req) => {
         }
 
         if (recipientIds.size > 0) {
-          const orgName = intakeMeta?.organization_name || intake.organization_name || 'Lead'
+          const orgName = intakeMeta?.organization_name || (intake as { organization_name?: string }).organization_name || 'Lead'
           const title = isResubmission
             ? `Correções submetidas: ${orgName}`
             : `Novo intake submetido: ${orgName}`
