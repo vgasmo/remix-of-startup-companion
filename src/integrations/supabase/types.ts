@@ -2053,6 +2053,117 @@ export type Database = {
           },
         ]
       }
+      contract_signature_events_archive: {
+        Row: {
+          actor_user_id: string | null
+          archived_at: string
+          archived_reason: string | null
+          command_id: string
+          contract_id: string
+          created_at: string
+          evidence_json: Json
+          from_status: string | null
+          id: string
+          ip_hash: string | null
+          party: string
+          to_status: string
+          user_agent: string | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          archived_at?: string
+          archived_reason?: string | null
+          command_id: string
+          contract_id: string
+          created_at?: string
+          evidence_json?: Json
+          from_status?: string | null
+          id?: string
+          ip_hash?: string | null
+          party: string
+          to_status: string
+          user_agent?: string | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          archived_at?: string
+          archived_reason?: string | null
+          command_id?: string
+          contract_id?: string
+          created_at?: string
+          evidence_json?: Json
+          from_status?: string | null
+          id?: string
+          ip_hash?: string | null
+          party?: string
+          to_status?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      contract_signing_grants: {
+        Row: {
+          consumed_at: string | null
+          consumed_by_command_id: string | null
+          contract_id: string
+          created_at: string
+          document_sha256: string
+          document_version: number
+          expires_at: string
+          id: string
+          issued_at: string
+          issued_by_user_id: string | null
+          nonce: string
+          party_role: string
+          signer_email_at_issue: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          consumed_by_command_id?: string | null
+          contract_id: string
+          created_at?: string
+          document_sha256: string
+          document_version?: number
+          expires_at: string
+          id?: string
+          issued_at?: string
+          issued_by_user_id?: string | null
+          nonce: string
+          party_role: string
+          signer_email_at_issue: string
+        }
+        Update: {
+          consumed_at?: string | null
+          consumed_by_command_id?: string | null
+          contract_id?: string
+          created_at?: string
+          document_sha256?: string
+          document_version?: number
+          expires_at?: string
+          id?: string
+          issued_at?: string
+          issued_by_user_id?: string | null
+          nonce?: string
+          party_role?: string
+          signer_email_at_issue?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_signing_grants_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "startup_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_signing_grants_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "startup_contracts_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contracts: {
         Row: {
           contract_type: string | null
@@ -11598,19 +11709,36 @@ export type Database = {
         Args: { _contract_id: string; _patch: Json; _source: string }
         Returns: Json
       }
-      apply_contract_signature_atomic: {
-        Args: {
-          p_actor_user_id?: string
-          p_command_id: string
-          p_contract_id: string
-          p_evidence?: Json
-          p_ip_hash?: string
-          p_party: string
-          p_to_status: string
-          p_user_agent?: string
-        }
-        Returns: Json
-      }
+      apply_contract_signature_atomic:
+        | {
+            Args: {
+              p_actor_user_id?: string
+              p_command_id: string
+              p_contract_id: string
+              p_evidence?: Json
+              p_ip_hash?: string
+              p_party: string
+              p_to_status: string
+              p_user_agent?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_actor_user_id: string
+              p_canonical_payload_sha256?: string
+              p_command_id: string
+              p_contract_id: string
+              p_document_sha256?: string
+              p_evidence: Json
+              p_grant_nonce?: string
+              p_ip_hash?: string
+              p_party: string
+              p_to_status: string
+              p_user_agent?: string
+            }
+            Returns: Json
+          }
       approve_startup_change_request: {
         Args: { _notes?: string; _request_id: string }
         Returns: {
@@ -12093,6 +12221,21 @@ export type Database = {
       is_team_member_of_startup: {
         Args: { _startup_id: string }
         Returns: boolean
+      }
+      issue_contract_signing_grant: {
+        Args: {
+          p_contract_id: string
+          p_document_sha256: string
+          p_document_version?: number
+          p_party_role: string
+          p_signer_email: string
+          p_ttl_minutes?: number
+        }
+        Returns: {
+          expires_at: string
+          grant_id: string
+          nonce: string
+        }[]
       }
       jsonb_deep_merge: { Args: { a: Json; b: Json }; Returns: Json }
       launch_survey_campaign: {
