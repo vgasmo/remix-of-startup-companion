@@ -3084,7 +3084,10 @@
     "providerLockTitle": "Provider locked against silent switch",
     "sentLock": "Do not silently switch provider after sending",
     "sentLockWarning": "Already sent. Switching provider requires cancelling and resending manually.",
-    "title": "Contract readiness"
+    "title": "Contract readiness",
+    "statusReady": "Ready",
+    "statusSent": "Sent",
+    "statusPending": "Pending"
   },
   "contracts": {
     "aiAnalysis": "AI Analysis",
@@ -3445,7 +3448,10 @@
       "success": "Success",
       "title": "Importar Leads via CSV",
       "valid": "valid",
-      "value": "Valor"
+      "value": "Valor",
+      "partial": "Partially imported",
+      "staging": "Staging",
+      "total": "Total"
     },
     "inboxZero": {
       "description": "All tasks are up to date. Great work!",
@@ -3690,7 +3696,13 @@
       "bodyProgramLine": "Following our conversation, I am sending the proposal for the {{program}} program.",
       "bodySignoff": "Best regards,\nStartup Leiria team",
       "defaultSubject": "Startup Leiria — Commercial proposal",
-      "defaultSubjectWithProgram": "Startup Leiria — Proposal for {{program}}"
+      "defaultSubjectWithProgram": "Startup Leiria — Proposal for {{program}}",
+      "uploadFiles": "Upload files",
+      "uploadHint": "Drag files here or click to browse",
+      "fileTooLarge": "File is too large",
+      "uploadFailed": "Upload failed",
+      "noMaterialsUploadHint": "No approved materials — you can attach files ad-hoc.",
+      "adHocBadge": "Ad-hoc"
     },
     "emailArchived": "Email archived",
     "emailUnarchived": "Email restored",
@@ -3700,7 +3712,10 @@
     "archive": "Archive",
     "inbound": "Inbound",
     "outbound": "Outbound",
-    "emailNoBody": "This message has no readable body."
+    "emailNoBody": "This message has no readable body.",
+    "workspaceCreated": "Workspace created",
+    "openWorkspace": "Open workspace",
+    "leadContractedPickProgram": "Pick a program to activate this lead"
   },
   "dashboard": {
     "acrossPrograms": "Across {{count}} program",
@@ -3743,7 +3758,9 @@
     "todaysMeetings": "Today's Meetings",
     "totalStartups": "Total Startups",
     "upcomingSessions": "Upcoming Sessions",
-    "viewAll": "View All"
+    "viewAll": "View All",
+    "focusEnabled": "Focus mode enabled",
+    "fullViewEnabled": "Full view enabled"
   },
   "dataImport": {
     "adminOnly": "Only administrators and consultants can access this page.",
@@ -5906,7 +5923,23 @@
       "detail": "The contract is pending signature but no signature provider has been set.",
       "title": "Pending contract without a signature provider"
     },
-    "title": "Lifecycle inconsistencies"
+    "title": "Lifecycle inconsistencies",
+    "assignOrCreate": "Assign or create workspace",
+    "assignOrCreateTitle": "Assign workspace to contract",
+    "assignOrCreateDescription": "Link this contract to an existing workspace or create a new one.",
+    "tabAssign": "Assign existing",
+    "tabCreate": "Create new",
+    "searchWorkspacePlaceholder": "Search workspaces…",
+    "noWorkspacesFound": "No workspaces found",
+    "newStartupName": "Startup name",
+    "newProgram": "Program",
+    "newStage": "Stage",
+    "founderLabel": "Founder",
+    "assignConfirm": "Assign workspace",
+    "createConfirm": "Create workspace",
+    "assignSuccess": "Workspace assigned",
+    "createSuccess": "Workspace created",
+    "founderCreated": "Founder account created"
   },
   "loading": {
     "almostThere": "Almost there...",
@@ -6414,7 +6447,8 @@
       "quickGuide": "Quick Guide",
       "reports": "Reports",
       "sessions": "Sessions",
-      "startups": "Startups"
+      "startups": "Startups",
+      "sessionsActions": "Sessions & actions"
     },
     "consultorTools": "Consultant Tools",
     "crm": "CRM",
