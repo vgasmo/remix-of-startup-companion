@@ -41,6 +41,7 @@
 # below cannot be edited without breaking replay; they contain no live
 # data operations after the cleanup migration. New RC5 tests live under
 # supabase/tests/ and are executed by pgTAP, not by numbered migrations.
+20260722071323_9b4d7ac6-ada5-419e-ae00-93996e4a628f.sql
 20260722071418_f7221904-f5f7-4e2a-84d3-c60e883c16c6.sql
 20260722071747_858550df-0497-477a-b84e-1383ad9fdd18.sql
 20260722071841_f10874a8-5d87-4cc4-9f00-7e4fe70e55d9.sql
