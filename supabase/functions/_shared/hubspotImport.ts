@@ -281,6 +281,10 @@ export async function matchRow(n: NormalizedRow, ctx: MatchCtx): Promise<MatchRe
 
 // ---- File hash (SHA-256 of Uint8Array) -----------------------------------
 export async function fileSha256(bytes: Uint8Array): Promise<string> {
-  const buf = await crypto.subtle.digest('SHA-256', bytes);
+  // Copy into a fresh ArrayBuffer view to satisfy strict BufferSource typing (ArrayBuffer, not ArrayBufferLike).
+  const view = new Uint8Array(new ArrayBuffer(bytes.byteLength));
+  view.set(bytes);
+  const buf = await crypto.subtle.digest('SHA-256', view);
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
+
