@@ -2945,6 +2945,75 @@ export type Database = {
           },
         ]
       }
+      docusign_dispatch_leases: {
+        Row: {
+          attempts: number
+          claimed_at: string
+          command_id: string
+          contract_id: string
+          created_at: string
+          document_sha256: string | null
+          envelope_id: string | null
+          expires_at: string
+          id: string
+          last_error: string | null
+          owner_id: string
+          provider_idempotency_key: string | null
+          reconciled_at: string | null
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          claimed_at?: string
+          command_id: string
+          contract_id: string
+          created_at?: string
+          document_sha256?: string | null
+          envelope_id?: string | null
+          expires_at: string
+          id?: string
+          last_error?: string | null
+          owner_id: string
+          provider_idempotency_key?: string | null
+          reconciled_at?: string | null
+          state: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          claimed_at?: string
+          command_id?: string
+          contract_id?: string
+          created_at?: string
+          document_sha256?: string | null
+          envelope_id?: string | null
+          expires_at?: string
+          id?: string
+          last_error?: string | null
+          owner_id?: string
+          provider_idempotency_key?: string | null
+          reconciled_at?: string | null
+          state?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "docusign_dispatch_leases_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "startup_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "docusign_dispatch_leases_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "startup_contracts_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ecosystem_snapshots: {
         Row: {
           checksum: string | null
@@ -11831,6 +11900,16 @@ export type Database = {
       check_ecosystem_invariants: { Args: never; Returns: Json }
       check_email_sync_health: { Args: never; Returns: undefined }
       check_signup_allowed: { Args: { p_email: string }; Returns: boolean }
+      claim_docusign_dispatch_lease: {
+        Args: {
+          p_command_id: string
+          p_contract_id: string
+          p_document_sha256?: string
+          p_lease_seconds?: number
+          p_owner_id: string
+        }
+        Returns: Json
+      }
       claim_docusign_envelope: {
         Args: { p_command_id: string; p_contract_id: string }
         Returns: Json
@@ -12032,6 +12111,14 @@ export type Database = {
         Returns: string
       }
       ensure_founder_role: { Args: never; Returns: undefined }
+      finalize_docusign_dispatch_lease: {
+        Args: {
+          p_command_id: string
+          p_envelope_id: string
+          p_owner_id: string
+        }
+        Returns: Json
+      }
       finalize_docusign_envelope: {
         Args: {
           p_command_id: string
@@ -12355,6 +12442,14 @@ export type Database = {
         }
         Returns: string
       }
+      mark_docusign_dispatch_in_flight: {
+        Args: { p_command_id: string; p_owner_id: string }
+        Returns: boolean
+      }
+      mark_docusign_dispatch_unknown: {
+        Args: { p_command_id: string; p_error: string; p_owner_id: string }
+        Returns: boolean
+      }
       mark_notification_delivered: {
         Args: {
           p_id: string
@@ -12426,6 +12521,14 @@ export type Database = {
       }
       reconcile_contract_founders: {
         Args: { p_contract_id?: string }
+        Returns: Json
+      }
+      reconcile_docusign_dispatch_lease: {
+        Args: {
+          p_command_id: string
+          p_envelope_id: string
+          p_provider_state: string
+        }
         Returns: Json
       }
       reconcile_rollback: { Args: { p_row_id: string }; Returns: Json }
