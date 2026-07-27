@@ -6319,6 +6319,41 @@ export type Database = {
           },
         ]
       }
+      program_publish_snapshots: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          program_id: string
+          reason: string | null
+          snapshot_json: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          program_id: string
+          reason?: string | null
+          snapshot_json: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          program_id?: string
+          reason?: string | null
+          snapshot_json?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_publish_snapshots_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       program_setup_drafts: {
         Row: {
           created_at: string
@@ -12635,6 +12670,10 @@ export type Database = {
         Args: { p_link_id: string }
         Returns: undefined
       }
+      publish_program_atomic: {
+        Args: { p_program_id: string; p_reason?: string }
+        Returns: string
+      }
       publish_program_setup: {
         Args: {
           p_draft_id: string
@@ -12791,6 +12830,7 @@ export type Database = {
           updated_at: string
         }[]
       }
+      serialize_program_tree: { Args: { p_program_id: string }; Returns: Json }
       set_my_calendar_token: {
         Args: { _expires_at: string; _token_hash: string }
         Returns: undefined
