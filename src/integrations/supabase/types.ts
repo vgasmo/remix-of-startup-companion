@@ -5317,6 +5317,9 @@ export type Database = {
           next_attempt_at: string
           notification_id: string | null
           provider_message_id: string | null
+          pulse_cycle_id: string | null
+          pulse_respondent_id: string | null
+          pulse_workspace_id: string | null
           scheduled_at: string
           state: string
           updated_at: string
@@ -5339,6 +5342,9 @@ export type Database = {
           next_attempt_at?: string
           notification_id?: string | null
           provider_message_id?: string | null
+          pulse_cycle_id?: string | null
+          pulse_respondent_id?: string | null
+          pulse_workspace_id?: string | null
           scheduled_at?: string
           state: string
           updated_at?: string
@@ -5361,6 +5367,9 @@ export type Database = {
           next_attempt_at?: string
           notification_id?: string | null
           provider_message_id?: string | null
+          pulse_cycle_id?: string | null
+          pulse_respondent_id?: string | null
+          pulse_workspace_id?: string | null
           scheduled_at?: string
           state?: string
           updated_at?: string
@@ -11774,6 +11783,7 @@ export type Database = {
         Args: { p_job_id: string }
         Returns: Json
       }
+      anonymize_stale_founder_pulse_responses: { Args: never; Returns: number }
       apply_contract_patch: {
         Args: { _contract_id: string; _patch: Json; _source: string }
         Returns: Json
@@ -11934,6 +11944,9 @@ export type Database = {
           next_attempt_at: string
           notification_id: string | null
           provider_message_id: string | null
+          pulse_cycle_id: string | null
+          pulse_respondent_id: string | null
+          pulse_workspace_id: string | null
           scheduled_at: string
           state: string
           updated_at: string
@@ -12301,6 +12314,7 @@ export type Database = {
         Returns: boolean
       }
       is_external_mentor: { Args: { _user_id: string }; Returns: boolean }
+      is_feature_flag_enabled: { Args: { p_key: string }; Returns: boolean }
       is_founder: { Args: { _workspace_id: string }; Returns: boolean }
       is_founder_user: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
