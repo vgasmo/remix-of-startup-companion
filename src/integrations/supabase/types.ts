@@ -2303,6 +2303,73 @@ export type Database = {
           },
         ]
       }
+      crm_import_conflicts: {
+        Row: {
+          batch_id: string | null
+          created_at: string
+          existing_funnel_item_id: string | null
+          id: string
+          incoming_json: Json
+          match_kind: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          row_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          batch_id?: string | null
+          created_at?: string
+          existing_funnel_item_id?: string | null
+          id?: string
+          incoming_json: Json
+          match_kind: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          row_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          batch_id?: string | null
+          created_at?: string
+          existing_funnel_item_id?: string | null
+          id?: string
+          incoming_json?: Json
+          match_kind?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          row_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_import_conflicts_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "crm_lead_import_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_import_conflicts_existing_funnel_item_id_fkey"
+            columns: ["existing_funnel_item_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_import_conflicts_row_id_fkey"
+            columns: ["row_id"]
+            isOneToOne: false
+            referencedRelation: "crm_lead_import_rows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_lead_import_batches: {
         Row: {
           committed_at: string | null
@@ -2311,6 +2378,7 @@ export type Database = {
           created_by: string
           id: string
           invalid_rows: number
+          lifecycle_state: string
           plan_hash: string | null
           source_filename: string | null
           status: string
@@ -2324,6 +2392,7 @@ export type Database = {
           created_by: string
           id?: string
           invalid_rows?: number
+          lifecycle_state?: string
           plan_hash?: string | null
           source_filename?: string | null
           status?: string
@@ -2337,6 +2406,7 @@ export type Database = {
           created_by?: string
           id?: string
           invalid_rows?: number
+          lifecycle_state?: string
           plan_hash?: string | null
           source_filename?: string | null
           status?: string
@@ -4152,6 +4222,7 @@ export type Database = {
       }
       funnel_items: {
         Row: {
+          company_normalized: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
@@ -4159,6 +4230,7 @@ export type Database = {
           created_at: string
           deal_currency: string | null
           deal_value: number | null
+          email_normalized: string | null
           expected_close_date: string | null
           first_contact_at: string | null
           hubspot_company_id: string | null
@@ -4190,6 +4262,7 @@ export type Database = {
           win_probability: number | null
         }
         Insert: {
+          company_normalized?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
@@ -4197,6 +4270,7 @@ export type Database = {
           created_at?: string
           deal_currency?: string | null
           deal_value?: number | null
+          email_normalized?: string | null
           expected_close_date?: string | null
           first_contact_at?: string | null
           hubspot_company_id?: string | null
@@ -4228,6 +4302,7 @@ export type Database = {
           win_probability?: number | null
         }
         Update: {
+          company_normalized?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
@@ -4235,6 +4310,7 @@ export type Database = {
           created_at?: string
           deal_currency?: string | null
           deal_value?: number | null
+          email_normalized?: string | null
           expected_close_date?: string | null
           first_contact_at?: string | null
           hubspot_company_id?: string | null
@@ -5317,6 +5393,9 @@ export type Database = {
           next_attempt_at: string
           notification_id: string | null
           provider_message_id: string | null
+          pulse_cycle_id: string | null
+          pulse_respondent_id: string | null
+          pulse_workspace_id: string | null
           scheduled_at: string
           state: string
           updated_at: string
@@ -5339,6 +5418,9 @@ export type Database = {
           next_attempt_at?: string
           notification_id?: string | null
           provider_message_id?: string | null
+          pulse_cycle_id?: string | null
+          pulse_respondent_id?: string | null
+          pulse_workspace_id?: string | null
           scheduled_at?: string
           state: string
           updated_at?: string
@@ -5361,6 +5443,9 @@ export type Database = {
           next_attempt_at?: string
           notification_id?: string | null
           provider_message_id?: string | null
+          pulse_cycle_id?: string | null
+          pulse_respondent_id?: string | null
+          pulse_workspace_id?: string | null
           scheduled_at?: string
           state?: string
           updated_at?: string
@@ -6227,6 +6312,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "program_health_model_versions_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      program_publish_snapshots: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          program_id: string
+          reason: string | null
+          snapshot_json: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          program_id: string
+          reason?: string | null
+          snapshot_json: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          program_id?: string
+          reason?: string | null
+          snapshot_json?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_publish_snapshots_program_id_fkey"
             columns: ["program_id"]
             isOneToOne: false
             referencedRelation: "programs"
@@ -11763,6 +11883,20 @@ export type Database = {
           },
         ]
       }
+      v_sessions_operational: {
+        Row: {
+          effective_minutes: number | null
+          occurred_at: string | null
+          participant_role: string | null
+          participant_user_id: string | null
+          session_id: string | null
+          session_type: string | null
+          source: string | null
+          status: string | null
+          workspace_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_workspace_invitation: {
@@ -11774,6 +11908,7 @@ export type Database = {
         Args: { p_job_id: string }
         Returns: Json
       }
+      anonymize_stale_founder_pulse_responses: { Args: never; Returns: number }
       apply_contract_patch: {
         Args: { _contract_id: string; _patch: Json; _source: string }
         Returns: Json
@@ -11914,6 +12049,27 @@ export type Database = {
         Args: { p_command_id: string; p_contract_id: string }
         Returns: Json
       }
+      claim_first_contact_outbox_batch: {
+        Args: { p_batch_size?: number; p_lease_seconds?: number }
+        Returns: {
+          attempts: number
+          completed_at: string | null
+          created_at: string
+          funnel_item_id: string | null
+          id: string
+          kind: string
+          last_error: string | null
+          next_attempt_at: string
+          payload_json: Json
+          status: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "first_contact_outbox"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       claim_notification_attempts: {
         Args: { p_lease_seconds?: number; p_limit?: number; p_owner: string }
         Returns: {
@@ -11934,6 +12090,9 @@ export type Database = {
           next_attempt_at: string
           notification_id: string | null
           provider_message_id: string | null
+          pulse_cycle_id: string | null
+          pulse_respondent_id: string | null
+          pulse_workspace_id: string | null
           scheduled_at: string
           state: string
           updated_at: string
@@ -12111,6 +12270,10 @@ export type Database = {
         Returns: string
       }
       ensure_founder_role: { Args: never; Returns: undefined }
+      finalize_crm_import_batch: {
+        Args: { p_batch_id: string }
+        Returns: string
+      }
       finalize_docusign_dispatch_lease: {
         Args: {
           p_command_id: string
@@ -12301,6 +12464,7 @@ export type Database = {
         Returns: boolean
       }
       is_external_mentor: { Args: { _user_id: string }; Returns: boolean }
+      is_feature_flag_enabled: { Args: { p_key: string }; Returns: boolean }
       is_founder: { Args: { _workspace_id: string }; Returns: boolean }
       is_founder_user: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
@@ -12450,6 +12614,14 @@ export type Database = {
         Args: { p_command_id: string; p_error: string; p_owner_id: string }
         Returns: boolean
       }
+      mark_first_contact_outbox_completed: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
+      mark_first_contact_outbox_failed: {
+        Args: { p_backoff_seconds?: number; p_error: string; p_id: string }
+        Returns: undefined
+      }
       mark_notification_delivered: {
         Args: {
           p_id: string
@@ -12484,6 +12656,7 @@ export type Database = {
         Args: { p_booking_id: string; p_target_state: string }
         Returns: Json
       }
+      normalize_ident: { Args: { _v: string }; Returns: string }
       open_and_notify_monthly_founder_pulse_cycles: {
         Args: never
         Returns: Json
@@ -12496,6 +12669,10 @@ export type Database = {
       promote_booking_link_canonical: {
         Args: { p_link_id: string }
         Returns: undefined
+      }
+      publish_program_atomic: {
+        Args: { p_program_id: string; p_reason?: string }
+        Returns: string
       }
       publish_program_setup: {
         Args: {
@@ -12653,6 +12830,7 @@ export type Database = {
           updated_at: string
         }[]
       }
+      serialize_program_tree: { Args: { p_program_id: string }; Returns: Json }
       set_my_calendar_token: {
         Args: { _expires_at: string; _token_hash: string }
         Returns: undefined
@@ -12772,6 +12950,19 @@ export type Database = {
           instance_id: string
           responses_saved: number
           status: string
+        }[]
+      }
+      transition_mentor_booking_atomic: {
+        Args: {
+          p_booking_id: string
+          p_command_id?: string
+          p_next_status: string
+          p_reason?: string
+        }
+        Returns: {
+          booking_id: string
+          mode: string
+          session_id: string
         }[]
       }
       unblock_workspace: { Args: { _workspace_id: string }; Returns: undefined }
