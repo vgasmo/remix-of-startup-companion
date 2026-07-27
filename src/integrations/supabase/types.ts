@@ -11924,6 +11924,27 @@ export type Database = {
         Args: { p_command_id: string; p_contract_id: string }
         Returns: Json
       }
+      claim_first_contact_outbox_batch: {
+        Args: { p_batch_size?: number; p_lease_seconds?: number }
+        Returns: {
+          attempts: number
+          completed_at: string | null
+          created_at: string
+          funnel_item_id: string | null
+          id: string
+          kind: string
+          last_error: string | null
+          next_attempt_at: string
+          payload_json: Json
+          status: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "first_contact_outbox"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       claim_notification_attempts: {
         Args: { p_lease_seconds?: number; p_limit?: number; p_owner: string }
         Returns: {
@@ -12463,6 +12484,14 @@ export type Database = {
       mark_docusign_dispatch_unknown: {
         Args: { p_command_id: string; p_error: string; p_owner_id: string }
         Returns: boolean
+      }
+      mark_first_contact_outbox_completed: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
+      mark_first_contact_outbox_failed: {
+        Args: { p_backoff_seconds?: number; p_error: string; p_id: string }
+        Returns: undefined
       }
       mark_notification_delivered: {
         Args: {
