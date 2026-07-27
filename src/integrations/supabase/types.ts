@@ -2303,6 +2303,73 @@ export type Database = {
           },
         ]
       }
+      crm_import_conflicts: {
+        Row: {
+          batch_id: string | null
+          created_at: string
+          existing_funnel_item_id: string | null
+          id: string
+          incoming_json: Json
+          match_kind: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          row_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          batch_id?: string | null
+          created_at?: string
+          existing_funnel_item_id?: string | null
+          id?: string
+          incoming_json: Json
+          match_kind: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          row_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          batch_id?: string | null
+          created_at?: string
+          existing_funnel_item_id?: string | null
+          id?: string
+          incoming_json?: Json
+          match_kind?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          row_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_import_conflicts_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "crm_lead_import_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_import_conflicts_existing_funnel_item_id_fkey"
+            columns: ["existing_funnel_item_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_import_conflicts_row_id_fkey"
+            columns: ["row_id"]
+            isOneToOne: false
+            referencedRelation: "crm_lead_import_rows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_lead_import_batches: {
         Row: {
           committed_at: string | null
@@ -2311,6 +2378,7 @@ export type Database = {
           created_by: string
           id: string
           invalid_rows: number
+          lifecycle_state: string
           plan_hash: string | null
           source_filename: string | null
           status: string
@@ -2324,6 +2392,7 @@ export type Database = {
           created_by: string
           id?: string
           invalid_rows?: number
+          lifecycle_state?: string
           plan_hash?: string | null
           source_filename?: string | null
           status?: string
@@ -2337,6 +2406,7 @@ export type Database = {
           created_by?: string
           id?: string
           invalid_rows?: number
+          lifecycle_state?: string
           plan_hash?: string | null
           source_filename?: string | null
           status?: string
@@ -4152,6 +4222,7 @@ export type Database = {
       }
       funnel_items: {
         Row: {
+          company_normalized: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
@@ -4159,6 +4230,7 @@ export type Database = {
           created_at: string
           deal_currency: string | null
           deal_value: number | null
+          email_normalized: string | null
           expected_close_date: string | null
           first_contact_at: string | null
           hubspot_company_id: string | null
@@ -4190,6 +4262,7 @@ export type Database = {
           win_probability: number | null
         }
         Insert: {
+          company_normalized?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
@@ -4197,6 +4270,7 @@ export type Database = {
           created_at?: string
           deal_currency?: string | null
           deal_value?: number | null
+          email_normalized?: string | null
           expected_close_date?: string | null
           first_contact_at?: string | null
           hubspot_company_id?: string | null
@@ -4228,6 +4302,7 @@ export type Database = {
           win_probability?: number | null
         }
         Update: {
+          company_normalized?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
@@ -4235,6 +4310,7 @@ export type Database = {
           created_at?: string
           deal_currency?: string | null
           deal_value?: number | null
+          email_normalized?: string | null
           expected_close_date?: string | null
           first_contact_at?: string | null
           hubspot_company_id?: string | null
@@ -12159,6 +12235,10 @@ export type Database = {
         Returns: string
       }
       ensure_founder_role: { Args: never; Returns: undefined }
+      finalize_crm_import_batch: {
+        Args: { p_batch_id: string }
+        Returns: string
+      }
       finalize_docusign_dispatch_lease: {
         Args: {
           p_command_id: string
@@ -12541,6 +12621,7 @@ export type Database = {
         Args: { p_booking_id: string; p_target_state: string }
         Returns: Json
       }
+      normalize_ident: { Args: { _v: string }; Returns: string }
       open_and_notify_monthly_founder_pulse_cycles: {
         Args: never
         Returns: Json
