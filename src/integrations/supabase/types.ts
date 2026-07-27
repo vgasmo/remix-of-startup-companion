@@ -11772,6 +11772,20 @@ export type Database = {
           },
         ]
       }
+      v_sessions_operational: {
+        Row: {
+          effective_minutes: number | null
+          occurred_at: string | null
+          participant_role: string | null
+          participant_user_id: string | null
+          session_id: string | null
+          session_type: string | null
+          source: string | null
+          status: string | null
+          workspace_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_workspace_invitation: {
@@ -12815,6 +12829,19 @@ export type Database = {
           instance_id: string
           responses_saved: number
           status: string
+        }[]
+      }
+      transition_mentor_booking_atomic: {
+        Args: {
+          p_booking_id: string
+          p_command_id?: string
+          p_next_status: string
+          p_reason?: string
+        }
+        Returns: {
+          booking_id: string
+          mode: string
+          session_id: string
         }[]
       }
       unblock_workspace: { Args: { _workspace_id: string }; Returns: undefined }
