@@ -132,6 +132,9 @@ SELECT lives_ok(
   format($q$SELECT public.complete_workspace_onboarding(%L::uuid)$q$, current_setting('rc5.wsp_id')),
   'founder can complete onboarding'
 );
+-- Read back as owner: RLS visibility is asserted separately above, this
+-- assertion is about the write the RPC performed.
+RESET role;
 SELECT is(
   (SELECT needs_onboarding FROM public.workspaces WHERE id = current_setting('rc5.wsp_id')::uuid),
   false,

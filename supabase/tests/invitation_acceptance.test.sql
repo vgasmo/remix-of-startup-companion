@@ -83,9 +83,10 @@ VALUES
   -- addressed to another email
   ('00000000-0000-0000-0000-0000000b3512', '00000000-0000-0000-0000-0000000b3523',
    'someone-else@example.com', 'hash-wrong-email', 'founder', now() + interval '7 days', NULL),
-  -- mentor role (must not escalate to founder)
+  -- non-founder role (must not escalate to founder). 'mentor' is NOT an
+  -- app_role label — the canonical external-mentor label is 'mentor_externo'.
   ('00000000-0000-0000-0000-0000000b3513', '00000000-0000-0000-0000-0000000b3533',
-   'invitee-b3@example.com', 'hash-mentor', 'mentor', now() + interval '7 days', NULL),
+   'invitee-b3@example.com', 'hash-mentor', 'mentor_externo', now() + interval '7 days', NULL),
   -- already accepted
   ('00000000-0000-0000-0000-0000000b3514', '00000000-0000-0000-0000-0000000b3543',
    'invitee-b3@example.com', 'hash-already', 'founder', now() + interval '7 days',
