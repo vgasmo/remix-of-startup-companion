@@ -99,6 +99,7 @@ run('vitest:run:2', 'bunx', ['vitest', 'run']);
 run('vitest:run:3', 'bunx', ['vitest', 'run']);
 run('i18n:parity', 'node', ['scripts/i18n-check.cjs']);
 run('i18n:lint', 'node', ['scripts/i18n-lint.mjs']);
+run('i18n:quality', 'node', ['scripts/rc5/i18n-quality.mjs']);
 run('secret:scan', 'node', ['scripts/secret-scan.cjs']);
 run('migration:scan', 'node', ['scripts/ci/scan-migrations.mjs']);
 run('size-limit', 'bunx', ['size-limit']);
