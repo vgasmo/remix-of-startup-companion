@@ -100,7 +100,12 @@ run('vitest:run:3', 'bunx', ['vitest', 'run']);
 run('i18n:parity', 'node', ['scripts/i18n-check.cjs']);
 run('i18n:lint', 'node', ['scripts/i18n-lint.mjs']);
 run('secret:scan', 'node', ['scripts/secret-scan.cjs']);
-run('deno:check-changed', 'node', ['scripts/rc5/deno-check-changed.mjs']);
+run('migration:scan', 'node', ['scripts/ci/scan-migrations.mjs']);
+run('size-limit', 'bunx', ['size-limit']);
+// Batch 0: full-tree Deno assurance replaces the changed-only check, which could
+// not observe pre-existing errors in _shared/**.
+run('deno:check-all', 'node', ['scripts/rc5/deno-check-all.mjs']);
+
 
 // ---------- STAGING GATES ----------
 // Strict: absence of RC5_ALLOW_STAGING_TESTS => overall fail (NO-GO).
