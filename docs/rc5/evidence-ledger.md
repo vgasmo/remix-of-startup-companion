@@ -197,3 +197,35 @@ labelled "exists / not proven"; they are in fact **broken or failing** and are n
 
 Batch 4 scope is therefore fixed: repair these suites one by one and fix whatever production defects
 they expose — exactly as test 21 exposed the missing session fingerprint.
+
+## Batch 4 — local pgTAP harness green-up (2026-08-06)
+
+Harness: `scripts/rc5/local-pg-harness.sh` (ephemeral PG17 + pgTAP + Supabase shim),
+now mirrors production privileges (platform default privileges grant anon/authenticated/
+service_role on every public table; RLS is the only boundary) and no longer aborts a whole
+legacy migration file on a single shim gap.
+
+Suite status (ok/fail/errors):
+- rls_policies 39/0/0, booking_canonical 15/0/0, log_completed_session_atomic 22/0/0,
+  docusign_dispatch_lease 14/0/0, public_booking_dst 9/0/0, founder_pulse_off_state 9/0/0,
+  crm_import_dedupe 7/0/0, mentor_booking_transition 6/0/0, program_publish_atomic 5/0/0
+- apply_contract_signature_atomic 15/1/0 — remaining fail is a repo/prod drift: the staff
+  guard on `issue_contract_signing_grant` exists in production but not in the replayed
+  migration tree.
+- profiles_peer_boundary 10/1/0 — post-onboarding read returns NULL under
+  `has_workspace_access`; needs policy-level follow-up.
+- invitation_acceptance 5/0/18 — `unique_workspace_email` + the field-immutability trigger
+  require one workspace per scenario (fixture rework pending).
+- financial_scenario_atomic 1/3/0 — Batch F5 (`save_financial_scenario_atomic` + fingerprint
+  column) is still not landed in production.
+
+### Production defects found by the harness and FIXED this turn
+1. `apply_contract_signature_atomic`, `issue_contract_signing_grant`,
+   `staff_rotate_onboarding_token`, `claim_docusign_dispatch_lease` all called pgcrypto
+   (`digest`, `gen_random_bytes`) with `search_path=public`, but pgcrypto lives in
+   `extensions` — every call raised 42883. Contract signing, signing-grant issuance,
+   onboarding-token rotation and DocuSign dispatch were all broken at runtime.
+   Fix: `SET search_path = public, extensions` on all four.
+2. `complete_workspace_onboarding` compared `workspace_users.role` against `'owner'`,
+   which is not an `app_role` label → 22P02 for every caller, founders and staff included.
+   Fix: compare against `'founder'` only, staff override unchanged.
