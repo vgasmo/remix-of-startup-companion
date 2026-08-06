@@ -1307,6 +1307,48 @@ Deno.serve(async (req) => {
       // Format as RFC-4122 UUID (v4-shaped, deterministic).
       const commandId = `${cmdHex.slice(0,8)}-${cmdHex.slice(8,12)}-4${cmdHex.slice(13,16)}-8${cmdHex.slice(17,20)}-${cmdHex.slice(20,32)}`
 
+      // RC5 Batch 1 (P0-A) — the signature is bound to the exact document the
+      // signer saw. We hash a canonical projection of the contract terms and
+      // mint a single-use signing grant for that hash; the RPC refuses any
+      // signature without a valid, unconsumed, unexpired grant for it.
+      const canonicalDocument = JSON.stringify({
+        contract_id: contract.id,
+        contract_number: (contract as any).contract_number ?? null,
+        start_date: (contract as any).start_date ?? null,
+        end_date: (contract as any).end_date ?? null,
+        monthly_fee: (contract as any).monthly_fee ?? null,
+        currency: (contract as any).currency ?? null,
+        square_meters: (contract as any).square_meters ?? null,
+        company_nif: (contract as any).company_nif ?? null,
+        legal_representative_name: (contract as any).legal_representative_name ?? null,
+        legal_representative_email: (contract as any).legal_representative_email ?? null,
+        counter_signer_email: (contract as any).counter_signer_email ?? null,
+        regulation_version: (contract as any).regulation_version ?? null,
+        document_url: (contract as any).document_url ?? null,
+      })
+      const documentSha256 = await sha256Hex(canonicalDocument)
+      const canonicalPayloadSha256 = await sha256Hex(
+        `${commandId}|${documentSha256}|${JSON.stringify(signatureProof)}`
+      )
+
+      const { data: grantRows, error: grantErr } = await supabase.rpc('issue_contract_signing_grant', {
+        p_contract_id: contract.id,
+        p_party_role: 'founder',
+        p_signer_email: signatureData.signer_email ?? (contract as any).legal_representative_email ?? '',
+        p_document_sha256: documentSha256,
+        p_document_version: 1,
+        p_ttl_minutes: 15,
+      })
+
+      const grantNonce = Array.isArray(grantRows) ? (grantRows[0] as any)?.nonce : (grantRows as any)?.nonce
+
+      if (grantErr || !grantNonce) {
+        console.error('issue_contract_signing_grant failed:', grantErr)
+        return new Response(JSON.stringify({ error: 'Failed to authorize signature', details: grantErr?.message ?? 'no_grant' }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
       const { data: rpcResult, error: rpcErr } = await supabase.rpc('apply_contract_signature_atomic', {
         p_command_id: commandId,
         p_contract_id: contract.id,
@@ -1316,14 +1358,24 @@ Deno.serve(async (req) => {
         p_evidence: signatureProof,
         p_ip_hash: ipHash,
         p_user_agent: signatureProof.user_agent ?? null,
+        p_grant_nonce: grantNonce,
+        p_document_sha256: documentSha256,
+        p_canonical_payload_sha256: canonicalPayloadSha256,
       })
 
       if (rpcErr) {
         console.error('apply_contract_signature_atomic failed:', rpcErr)
-        return new Response(JSON.stringify({ error: 'Failed to record signature', details: rpcErr.message }), {
-          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        // Already-signed replays surface as a state-regression / consumed-grant
+        // refusal; report the current state instead of a hard 500.
+        const isRefusal = /state_regression_forbidden|signing_grant_already_consumed/.test(rpcErr.message ?? '')
+        return new Response(JSON.stringify({
+          error: isRefusal ? 'signature_already_recorded' : 'Failed to record signature',
+          details: rpcErr.message,
+        }), {
+          status: isRefusal ? 409 : 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
+
 
       // Persist the eIDAS proof snapshot on the contract as well (auditable copy).
       await supabase

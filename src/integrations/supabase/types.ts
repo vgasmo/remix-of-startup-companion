@@ -11913,36 +11913,22 @@ export type Database = {
         Args: { _contract_id: string; _patch: Json; _source: string }
         Returns: Json
       }
-      apply_contract_signature_atomic:
-        | {
-            Args: {
-              p_actor_user_id?: string
-              p_command_id: string
-              p_contract_id: string
-              p_evidence?: Json
-              p_ip_hash?: string
-              p_party: string
-              p_to_status: string
-              p_user_agent?: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_actor_user_id: string
-              p_canonical_payload_sha256?: string
-              p_command_id: string
-              p_contract_id: string
-              p_document_sha256?: string
-              p_evidence: Json
-              p_grant_nonce?: string
-              p_ip_hash?: string
-              p_party: string
-              p_to_status: string
-              p_user_agent?: string
-            }
-            Returns: Json
-          }
+      apply_contract_signature_atomic: {
+        Args: {
+          p_actor_user_id: string
+          p_canonical_payload_sha256?: string
+          p_command_id: string
+          p_contract_id: string
+          p_document_sha256?: string
+          p_evidence: Json
+          p_grant_nonce?: string
+          p_ip_hash?: string
+          p_party: string
+          p_to_status: string
+          p_user_agent?: string
+        }
+        Returns: Json
+      }
       approve_startup_change_request: {
         Args: { _notes?: string; _request_id: string }
         Returns: {
