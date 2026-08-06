@@ -460,6 +460,20 @@ Deno.serve(async (req) => {
     // treated as failure (Batch C reconciliation-first policy).
     const abort = new AbortController()
     const timer = setTimeout(() => abort.abort(), 30_000)
+    // P0-B: the lease enters `in_flight` immediately before the provider call so
+    // any crash between here and finalization is observable as ambiguous.
+    const { error: inFlightError } = await supabase.rpc('mark_docusign_dispatch_in_flight', {
+      p_command_id: envelopeCommandId,
+      p_owner_id: leaseOwnerId,
+    })
+    if (inFlightError) {
+      clearTimeout(timer)
+      console.error('mark_docusign_dispatch_in_flight failed', inFlightError)
+      return new Response(JSON.stringify({ error: 'lease_transition_failed', details: inFlightError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
     try {
       const envRes = await fetch(`${baseUrl}/v2.1/accounts/${accountId}/envelopes`, {
         method: 'POST',
@@ -476,6 +490,11 @@ Deno.serve(async (req) => {
         // 5xx / network-shaped errors are ambiguous — mark unknown and refuse
         // to auto-retry; reconciler must confirm provider state first.
         if (envRes.status >= 500) {
+          await supabase.rpc('mark_docusign_dispatch_unknown', {
+            p_command_id: envelopeCommandId,
+            p_owner_id: leaseOwnerId,
+            p_error: `docusign_ambiguous_${envRes.status}: ${errText.slice(0, 200)}`,
+          })
           await supabase
             .from('startup_contracts')
             .update({
@@ -502,6 +521,11 @@ Deno.serve(async (req) => {
       const isTimeout = (dispatchErr as { name?: string })?.name === 'AbortError'
       if (isTimeout) {
         // Ambiguous: envelope may or may not have been created upstream.
+        await supabase.rpc('mark_docusign_dispatch_unknown', {
+          p_command_id: envelopeCommandId,
+          p_owner_id: leaseOwnerId,
+          p_error: 'docusign_timeout_unknown',
+        })
         await supabase
           .from('startup_contracts')
           .update({
@@ -518,7 +542,14 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
-      // Definite dispatch failure — release the claim so staff can retry.
+      // Definite dispatch failure (4xx / no envelope created). Reconcile the
+      // lease as `not_found` so a later attempt may legitimately reclaim it,
+      // then release the contract-level claim so staff can retry.
+      await supabase.rpc('reconcile_docusign_dispatch_lease', {
+        p_command_id: envelopeCommandId,
+        p_envelope_id: null,
+        p_provider_state: 'not_found',
+      })
       await supabase.rpc('release_docusign_envelope_command', {
         p_contract_id: contractId,
         p_command_id: envelopeCommandId,
@@ -529,9 +560,26 @@ Deno.serve(async (req) => {
       clearTimeout(timer)
     }
 
-    // Finalize the claim: stamp envelope id + provider metadata atomically.
-    // Only the row still holding envelope_command_id can be finalized, so a
-    // stale worker whose claim was released can never overwrite a fresh one.
+    // Finalize the lease first: only the owner still holding it may stamp the
+    // envelope id, so a stale worker can never overwrite a fresh dispatch.
+    const { data: leaseFinalData, error: leaseFinalError } = await supabase.rpc(
+      'finalize_docusign_dispatch_lease',
+      {
+        p_command_id: envelopeCommandId,
+        p_owner_id: leaseOwnerId,
+        p_envelope_id: envelope.envelopeId,
+      },
+    )
+    if (leaseFinalError) {
+      console.error('finalize_docusign_dispatch_lease failed', leaseFinalError)
+    } else {
+      const leaseFinal = (leaseFinalData ?? {}) as { finalized?: boolean; reason?: string }
+      if (!leaseFinal.finalized) {
+        console.warn('dispatch lease finalize was a no-op', { envelopeCommandId, reason: leaseFinal.reason })
+      }
+    }
+
+    // Stamp envelope id + provider metadata on the contract row atomically.
     const { data: finalizeData, error: finalizeError } = await supabase.rpc(
       'finalize_docusign_envelope',
       {
@@ -554,6 +602,7 @@ Deno.serve(async (req) => {
         })
         .eq('id', contractId)
     }
+
     const finalized = (finalizeData ?? {}) as { finalized?: boolean; reason?: string }
     if (!finalized.finalized) {
       console.warn('envelope finalize was a no-op', { contractId, envelopeId: envelope.envelopeId, reason: finalized.reason })
