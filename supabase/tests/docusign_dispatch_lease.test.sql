@@ -4,8 +4,8 @@ BEGIN;
 SELECT plan(14);
 
 -- Fixture contract
-INSERT INTO public.startup_contracts (id, contract_number, status)
-VALUES ('11111111-1111-1111-1111-111111111111', 'TEST-C-001', 'draft')
+INSERT INTO public.startup_contracts (id, contract_number, status, start_date)
+VALUES ('11111111-1111-1111-1111-111111111111', 'TEST-C-001', 'draft', current_date)
 ON CONFLICT DO NOTHING;
 
 -- 1. Fresh claim succeeds
@@ -23,7 +23,7 @@ SELECT is(
 -- 3. Provider idempotency key is bound to command_id + document sha
 SELECT ok(
   (SELECT provider_idempotency_key FROM public.docusign_dispatch_leases WHERE command_id = 'cmd-a')
-    = encode(digest('cmd-a:docsha-1', 'sha256'), 'hex'),
+    = encode(extensions.digest('cmd-a:docsha-1', 'sha256'), 'hex'),
   'idempotency key = sha256(command_id || document_sha256)');
 
 -- 4. Mark in-flight transitions state

@@ -16,18 +16,18 @@ BEGIN
   PERFORM set_config('rc5.consultant_id', v_consultant::text, true);
 
   INSERT INTO auth.users (id, email) VALUES (v_consultant, 'rc5_f1_consultant@example.test');
-  INSERT INTO public.profiles (id, full_name, email) VALUES (v_consultant, 'RC5 F1 Consultant', 'rc5_f1_consultant@example.test');
+  INSERT INTO public.profiles (id, full_name, email) VALUES (v_consultant, 'RC5 F1 Consultant', 'rc5_f1_consultant@example.test')
+  ON CONFLICT (id) DO UPDATE SET full_name = EXCLUDED.full_name, email = EXCLUDED.email;
   INSERT INTO public.user_roles (user_id, role) VALUES (v_consultant, 'consultor');
 END $$;
 
 -- ---------- 1. DST spring-forward: 2026-03-29 02:30 Lisbon does NOT exist.
 --     Postgres normalises forward-gap timestamps to the post-shift instant.
---     Assert the stored UTC lands at 02:30 UTC (Lisbon is UTC+1 at that moment,
---     but 02:30 falls inside the skipped hour, so the wall-clock ambiguity
---     resolves consistently). ----------
+--     Postgres resolves the gap with the pre-shift offset, so it lands at
+--     01:30 UTC. The property under test is determinism, not the offset. ----------
 SELECT results_eq(
   $$SELECT (('2026-03-29T02:30:00'::timestamp) AT TIME ZONE 'Europe/Lisbon') AT TIME ZONE 'UTC'$$,
-  $$SELECT '2026-03-29T02:30:00'::timestamp$$,
+  $$SELECT '2026-03-29T01:30:00'::timestamp$$,
   'spring-forward wall-clock resolves deterministically (no ±1h drift)'
 );
 

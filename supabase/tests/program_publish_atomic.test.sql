@@ -16,7 +16,7 @@ RESET role;
 -- Snapshot RLS: unauthenticated cannot read snapshots
 SET LOCAL role anon;
 SELECT is((SELECT count(*) FROM public.program_publish_snapshots), 0::bigint,
-  'anon sees zero snapshot rows');
+  'anon sees zero snapshot rows (RLS)');
 RESET role;
 
 SELECT * FROM finish();

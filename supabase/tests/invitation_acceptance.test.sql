@@ -28,8 +28,19 @@ VALUES
   ('00000000-0000-0000-0000-0000000000b4', 'other-b3@example.com', 'pending')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO public.workspaces (id, name, slug, active)
-VALUES ('00000000-0000-0000-0000-0000000b3ws1', 'B3 Test WS', 'b3-test-ws', true)
+-- workspaces has no name/slug/active columns: it is a join of startup x program.
+INSERT INTO public.startups (id, name)
+VALUES ('00000000-0000-0000-0000-0000000b3501', 'B3 Test Startup')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.programs (id, name)
+VALUES ('00000000-0000-0000-0000-0000000b3502', 'B3 Test Program')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.workspaces (id, startup_id, program_id, status)
+VALUES ('00000000-0000-0000-0000-0000000b3503',
+        '00000000-0000-0000-0000-0000000b3501',
+        '00000000-0000-0000-0000-0000000b3502', 'active')
 ON CONFLICT (id) DO NOTHING;
 
 -- Helper: impersonate a user
@@ -71,9 +82,11 @@ SELECT throws_ok(
 -- ============================================================
 -- B3.3: expired invitation => invitation_expired
 -- ============================================================
+SELECT pg_temp.reset_role();
 INSERT INTO public.workspace_invitations (id, workspace_id, email, token_hash, role, expires_at)
-VALUES ('00000000-0000-0000-0000-0000000b3in1', '00000000-0000-0000-0000-0000000b3ws1',
+VALUES ('00000000-0000-0000-0000-0000000b3511', '00000000-0000-0000-0000-0000000b3503',
         'invitee-b3@example.com', 'hash-expired', 'founder', now() - interval '1 day');
+SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000b3');
 
 SELECT throws_ok(
   $$SELECT public.accept_workspace_invitation('hash-expired')$$,
@@ -85,7 +98,7 @@ SELECT throws_ok(
 -- Nothing was written:
 SELECT is(
   (SELECT count(*)::int FROM public.workspace_users
-    WHERE workspace_id = '00000000-0000-0000-0000-0000000b3ws1'
+    WHERE workspace_id = '00000000-0000-0000-0000-0000000b3503'
       AND user_id = '00000000-0000-0000-0000-0000000000b3'),
   0,
   'expired invitation produced no membership row (atomic fail)'
@@ -94,9 +107,11 @@ SELECT is(
 -- ============================================================
 -- B3.4: wrong email (caller does not match invitation.email) => forbidden
 -- ============================================================
+SELECT pg_temp.reset_role();
 INSERT INTO public.workspace_invitations (id, workspace_id, email, token_hash, role, expires_at)
-VALUES ('00000000-0000-0000-0000-0000000b3in2', '00000000-0000-0000-0000-0000000b3ws1',
+VALUES ('00000000-0000-0000-0000-0000000b3512', '00000000-0000-0000-0000-0000000b3503',
         'someone-else@example.com', 'hash-wrong-email', 'founder', now() + interval '7 days');
+SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000b3');
 
 SELECT throws_ok(
   $$SELECT public.accept_workspace_invitation('hash-wrong-email')$$,
@@ -108,9 +123,11 @@ SELECT throws_ok(
 -- ============================================================
 -- B3.5: role tampering — a mentor invite must NOT grant founder global role
 -- ============================================================
-INSERT INTO public.workspace_invitations (id, workspace_id, email, token_hash, role, expires_at)
-VALUES ('00000000-0000-0000-0000-0000000b3in3', '00000000-0000-0000-0000-0000000b3ws1',
-        'invitee-b3@example.com', 'hash-mentor', 'mentor', now() + interval '7 days');
+SELECT pg_temp.reset_role();
+UPDATE public.workspace_invitations
+   SET token_hash = 'hash-mentor', role = 'mentor', expires_at = now() + interval '7 days'
+ WHERE id = '00000000-0000-0000-0000-0000000b3511';
+SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000b3');
 
 -- Ensure no pre-existing founder role:
 DELETE FROM public.user_roles
@@ -131,9 +148,12 @@ SELECT is(
 -- ============================================================
 -- B3.6: already accepted => idempotent success (no duplicate membership)
 -- ============================================================
-INSERT INTO public.workspace_invitations (id, workspace_id, email, token_hash, role, expires_at, accepted_at)
-VALUES ('00000000-0000-0000-0000-0000000b3in4', '00000000-0000-0000-0000-0000000b3ws1',
-        'invitee-b3@example.com', 'hash-already', 'founder', now() + interval '7 days', now() - interval '1 hour');
+SELECT pg_temp.reset_role();
+UPDATE public.workspace_invitations
+   SET token_hash = 'hash-already', role = 'founder',
+       expires_at = now() + interval '7 days', accepted_at = now() - interval '1 hour'
+ WHERE id = '00000000-0000-0000-0000-0000000b3511';
+SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000b3');
 
 SELECT lives_ok(
   $$SELECT public.accept_workspace_invitation('hash-already')$$,
@@ -143,13 +163,16 @@ SELECT lives_ok(
 -- ============================================================
 -- B3.7: happy path — founder invite creates membership + founder role
 -- ============================================================
-INSERT INTO public.workspace_invitations (id, workspace_id, email, token_hash, role, expires_at)
-VALUES ('00000000-0000-0000-0000-0000000b3in5', '00000000-0000-0000-0000-0000000b3ws1',
-        'invitee-b3@example.com', 'hash-happy', 'founder', now() + interval '7 days');
+SELECT pg_temp.reset_role();
+UPDATE public.workspace_invitations
+   SET token_hash = 'hash-happy', role = 'founder',
+       expires_at = now() + interval '7 days', accepted_at = NULL
+ WHERE id = '00000000-0000-0000-0000-0000000b3511';
+SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000b3');
 
 -- Clean any prior membership from B3.5:
 DELETE FROM public.workspace_users
- WHERE workspace_id = '00000000-0000-0000-0000-0000000b3ws1'
+ WHERE workspace_id = '00000000-0000-0000-0000-0000000b3503'
    AND user_id = '00000000-0000-0000-0000-0000000000b3';
 
 SELECT lives_ok(
@@ -159,7 +182,7 @@ SELECT lives_ok(
 
 SELECT is(
   (SELECT count(*)::int FROM public.workspace_users
-    WHERE workspace_id = '00000000-0000-0000-0000-0000000b3ws1'
+    WHERE workspace_id = '00000000-0000-0000-0000-0000000b3503'
       AND user_id = '00000000-0000-0000-0000-0000000000b3'
       AND active = true),
   1,

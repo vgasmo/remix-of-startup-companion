@@ -16,7 +16,7 @@ SELECT
   (SELECT COUNT(*) FROM public.founder_pulse_cycles WHERE period_month = date_trunc('month', now())::date) AS cycles,
   (SELECT COUNT(*) FROM public.notification_attempts WHERE event_key LIKE 'founder_pulse:%') AS attempts,
   (SELECT COUNT(*) FROM public.notifications WHERE type = 'founder_pulse') AS notifs,
-  (SELECT COUNT(*) FROM public.email_log WHERE template_key = 'founder_pulse') AS emails;
+  (SELECT COUNT(*) FROM public.email_log WHERE email_type = 'founder_pulse') AS emails;
 
 -- 1. Cron RPC short-circuits with flag_off marker.
 SELECT is(
@@ -45,7 +45,7 @@ SELECT is(
 
 -- 5. Zero emails logged.
 SELECT is(
-  (SELECT COUNT(*)::int FROM public.email_log WHERE template_key = 'founder_pulse'),
+  (SELECT COUNT(*)::int FROM public.email_log WHERE email_type = 'founder_pulse'),
   (SELECT emails::int FROM _pulse_baseline),
   'no pulse emails when flag OFF');
 

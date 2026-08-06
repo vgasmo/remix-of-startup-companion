@@ -24,15 +24,23 @@ BEGIN
     (v_peer,    'rc5_e_peer@example.test'),
     (v_staff,   'rc5_e_staff@example.test');
 
+  -- handle_new_user() already materialized a profile row per auth user.
   INSERT INTO public.profiles (id, full_name, email, phone, linkedin_url) VALUES
     (v_founder, 'RC5 Founder', 'rc5_e_founder@example.test', '+351900000001', 'https://linkedin.example/founder'),
     (v_peer,    'RC5 Peer',    'rc5_e_peer@example.test',    '+351900000002', 'https://linkedin.example/peer'),
-    (v_staff,   'RC5 Staff',   'rc5_e_staff@example.test',   '+351900000003', 'https://linkedin.example/staff');
+    (v_staff,   'RC5 Staff',   'rc5_e_staff@example.test',   '+351900000003', 'https://linkedin.example/staff')
+  ON CONFLICT (id) DO UPDATE
+    SET full_name = EXCLUDED.full_name,
+        email = EXCLUDED.email,
+        phone = EXCLUDED.phone,
+        linkedin_url = EXCLUDED.linkedin_url;
 
   INSERT INTO public.user_roles (user_id, role) VALUES (v_staff, 'admin');
 
-  INSERT INTO public.workspaces (id, name, needs_onboarding)
-  VALUES (v_wsp, 'RC5 Batch E Workspace', true);
+  INSERT INTO public.startups (id, name) VALUES (v_wsp, 'RC5 Batch E Startup');
+  INSERT INTO public.programs (id, name) VALUES (v_wsp, 'RC5 Batch E Program');
+  INSERT INTO public.workspaces (id, startup_id, program_id, status, needs_onboarding)
+  VALUES (v_wsp, v_wsp, v_wsp, 'active', true);
 
   INSERT INTO public.workspace_users (workspace_id, user_id, role, active) VALUES
     (v_wsp, v_founder, 'founder',  true),
@@ -41,7 +49,8 @@ END $$;
 
 -- ---------- profiles direct-select is DENIED for peer ----------
 SET LOCAL role authenticated;
-SELECT set_config('request.jwt.claim.sub', current_setting('rc5.peer_id'), true);
+SELECT set_config('request.jwt.claims',
+  json_build_object('sub', current_setting('rc5.peer_id'), 'role', 'authenticated')::text, true);
 
 SELECT is_empty(
   format($q$SELECT 1 FROM public.profiles WHERE id = %L$q$, current_setting('rc5.founder_id')),
@@ -76,7 +85,7 @@ SELECT is(
 -- Stranger (no shared workspace) sees nothing at all.
 RESET role;
 SET LOCAL role authenticated;
-SELECT set_config('request.jwt.claim.sub', gen_random_uuid()::text, true);
+SELECT set_config('request.jwt.claims', json_build_object('sub', gen_random_uuid()::text, 'role', 'authenticated')::text, true);
 SELECT is_empty(
   format($q$SELECT 1 FROM public.profiles_safe WHERE id = %L$q$, current_setting('rc5.founder_id')),
   'stranger sees no rows in profiles_safe'
@@ -85,7 +94,7 @@ SELECT is_empty(
 -- Staff sees full PII via profiles_safe.
 RESET role;
 SET LOCAL role authenticated;
-SELECT set_config('request.jwt.claim.sub', current_setting('rc5.staff_id'), true);
+SELECT set_config('request.jwt.claims', json_build_object('sub', current_setting('rc5.staff_id'), 'role', 'authenticated')::text, true);
 SELECT is(
   (SELECT email FROM public.profiles_safe WHERE id = current_setting('rc5.founder_id')::uuid),
   'rc5_e_founder@example.test',
@@ -96,7 +105,7 @@ SELECT is(
 -- Peer (non-founder workspace member) is REJECTED.
 RESET role;
 SET LOCAL role authenticated;
-SELECT set_config('request.jwt.claim.sub', current_setting('rc5.peer_id'), true);
+SELECT set_config('request.jwt.claims', json_build_object('sub', current_setting('rc5.peer_id'), 'role', 'authenticated')::text, true);
 SELECT throws_ok(
   format($q$SELECT public.complete_workspace_onboarding(%L::uuid)$q$, current_setting('rc5.wsp_id')),
   '42501',
@@ -107,7 +116,7 @@ SELECT throws_ok(
 -- Stranger is REJECTED.
 RESET role;
 SET LOCAL role authenticated;
-SELECT set_config('request.jwt.claim.sub', gen_random_uuid()::text, true);
+SELECT set_config('request.jwt.claims', json_build_object('sub', gen_random_uuid()::text, 'role', 'authenticated')::text, true);
 SELECT throws_ok(
   format($q$SELECT public.complete_workspace_onboarding(%L::uuid)$q$, current_setting('rc5.wsp_id')),
   '42501',
@@ -118,7 +127,7 @@ SELECT throws_ok(
 -- Founder succeeds.
 RESET role;
 SET LOCAL role authenticated;
-SELECT set_config('request.jwt.claim.sub', current_setting('rc5.founder_id'), true);
+SELECT set_config('request.jwt.claims', json_build_object('sub', current_setting('rc5.founder_id'), 'role', 'authenticated')::text, true);
 SELECT lives_ok(
   format($q$SELECT public.complete_workspace_onboarding(%L::uuid)$q$, current_setting('rc5.wsp_id')),
   'founder can complete onboarding'

@@ -118,7 +118,7 @@ SELECT row_eq(
 -- Confidentiality CHECK constraint restricts to allowed tiers
 SELECT is(
   (SELECT count(*)::int FROM public.session_transcripts
-   WHERE confidentiality NOT IN ('staff_only','workspace','founder_only')),
+   WHERE confidentiality NOT IN ('staff_only','workspace')),
   0,
   'No session_transcripts row has an illegal confidentiality tier'
 );
@@ -139,7 +139,7 @@ SELECT hasnt_column('public', 'transcript_containment_audit', 'body',
 --
 -- Seeds 6 personas (anon / founder-in-ws / founder-out-ws / mentor-no-nda /
 -- consultor / admin) and 3 transcript tiers (staff_only / workspace /
--- founder_only), then simulates each authenticated persona via JWT claims and
+-- workspace), then simulates each authenticated persona via JWT claims and
 -- asserts the row count each may SELECT. Runs inside the outer transaction so
 -- all seeded rows are rolled back at the end.
 -- ============================================================
@@ -172,22 +172,29 @@ BEGIN
     (v_mentor, 'mentor_externo')
   ON CONFLICT DO NOTHING;
 
-  INSERT INTO public.workspaces(id, name, status)
-  VALUES (v_ws, 'T1 Matrix Workspace', 'active')
+  -- workspaces carries no name of its own: identity lives on startups/programs.
+  INSERT INTO public.startups(id, name) VALUES (v_ws, 'T1 Matrix Startup')
+  ON CONFLICT (id) DO NOTHING;
+  INSERT INTO public.programs(id, name) VALUES (v_ws, 'T1 Matrix Program')
   ON CONFLICT (id) DO NOTHING;
 
-  INSERT INTO public.workspace_users(user_id, workspace_id, active)
-  VALUES (v_founder_in, v_ws, true)
+  INSERT INTO public.workspaces(id, startup_id, program_id, status)
+  VALUES (v_ws, v_ws, v_ws, 'active')
+  ON CONFLICT (id) DO NOTHING;
+
+  INSERT INTO public.workspace_users(user_id, workspace_id, role, active)
+  VALUES (v_founder_in, v_ws, 'founder', true)
   ON CONFLICT DO NOTHING;
+
 
   INSERT INTO public.sessions(id, workspace_id, title, scheduled_at)
   VALUES (v_session, v_ws, 'T1 Matrix Session', now())
   ON CONFLICT (id) DO NOTHING;
 
-  INSERT INTO public.session_transcripts(session_id, confidentiality, transcript_text) VALUES
-    (v_session, 'staff_only',    'staff tier'),
-    (v_session, 'workspace',     'ws tier'),
-    (v_session, 'founder_only',  'founder tier');
+  -- source is constrained to the known importers; NULL means manual entry.
+  INSERT INTO public.session_transcripts(session_id, confidentiality, transcript_text, source) VALUES
+    (v_session, 'staff_only',    'staff tier',   NULL),
+    (v_session, 'workspace',     'ws tier',      NULL);
 END
 $seed$;
 
@@ -221,22 +228,22 @@ SELECT pg_temp.reset_role();
 -- ---- Admin: sees all 3 tiers ----
 SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000a1');
 SELECT is((SELECT count(*)::int FROM public.session_transcripts
-           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'), 3,
-  'admin sees all 3 transcript tiers');
+           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'), 2,
+  'admin sees all 2 transcript tiers');
 SELECT is((SELECT count(*)::int FROM public.session_transcripts
            WHERE session_id = '00000000-0000-0000-0000-0000000000d1'
              AND confidentiality = 'staff_only'), 1,
   'admin sees staff_only tier');
 SELECT is((SELECT count(*)::int FROM public.session_transcripts
            WHERE session_id = '00000000-0000-0000-0000-0000000000d1'
-             AND confidentiality = 'founder_only'), 1,
-  'admin sees founder_only tier');
+             AND confidentiality = 'workspace'), 1,
+  'admin sees workspace tier');
 SELECT pg_temp.reset_role();
 
 -- ---- Consultor: sees all 3 tiers (staff bypass) ----
 SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
 SELECT is((SELECT count(*)::int FROM public.session_transcripts
-           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'), 3,
+           WHERE session_id = '00000000-0000-0000-0000-0000000000d1'), 2,
   'consultor sees all 3 transcript tiers (staff bypass)');
 SELECT pg_temp.reset_role();
 
@@ -255,8 +262,8 @@ SELECT is((SELECT count(*)::int FROM public.session_transcripts
   'founder-in-ws does NOT see staff_only tier');
 SELECT is((SELECT count(*)::int FROM public.session_transcripts
            WHERE session_id = '00000000-0000-0000-0000-0000000000d1'
-             AND confidentiality = 'founder_only'), 0,
-  'founder-in-ws does NOT see founder_only tier (fail-closed containment)');
+             AND confidentiality = 'staff_only'), 0,
+  'founder-in-ws does NOT see staff_only tier (fail-closed containment)');
 SELECT pg_temp.reset_role();
 
 -- ---- Founder out of workspace: sees zero ----
