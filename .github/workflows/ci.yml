@@ -121,6 +121,9 @@ jobs:
       - name: i18n lint (strict)
         run: node scripts/i18n-lint.mjs
 
+      - name: i18n semantic quality (PT-PT leakage / placeholders)
+        run: node scripts/rc5/i18n-quality.mjs
+
   # ──────────────────────────────────────────────
   # Gate: i18n sync must be committed (no drift)
   # ──────────────────────────────────────────────
@@ -228,10 +231,14 @@ jobs:
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
-          deno-version: v1.x
+          deno-version: v2.x
 
-      - name: Deno check changed edge functions
-        run: node scripts/rc5/deno-check-changed.mjs
+      - name: Install edge function dependencies (deterministic)
+        run: deno install
+        working-directory: supabase/functions
+
+      - name: Deno check ALL edge TypeScript files (full tree)
+        run: node scripts/rc5/deno-check-all.mjs
 
 
 
