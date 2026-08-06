@@ -18,7 +18,9 @@ const TEMPLATE_PATH = "/tmp/tpl.xlsm";
 const EXPECTED_SHA = "1a843d03fdef830b8129e76689563eee7622f04073a47bfbff9a985a60ebec4e";
 
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
-  const buf = await crypto.subtle.digest("SHA-256", bytes);
+  const view = new Uint8Array(bytes);
+  const src = view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength) as ArrayBuffer;
+  const buf = await crypto.subtle.digest("SHA-256", src);
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
