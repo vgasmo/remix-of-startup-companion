@@ -7545,6 +7545,7 @@ export type Database = {
           ai_risks: Json | null
           ai_summary: string | null
           cancellation_reason: string | null
+          command_fingerprint: string | null
           command_id: string | null
           completed_at: string | null
           completion_idempotency_key: string | null
@@ -7593,6 +7594,7 @@ export type Database = {
           ai_risks?: Json | null
           ai_summary?: string | null
           cancellation_reason?: string | null
+          command_fingerprint?: string | null
           command_id?: string | null
           completed_at?: string | null
           completion_idempotency_key?: string | null
@@ -7641,6 +7643,7 @@ export type Database = {
           ai_risks?: Json | null
           ai_summary?: string | null
           cancellation_reason?: string | null
+          command_fingerprint?: string | null
           command_id?: string | null
           completed_at?: string | null
           completion_idempotency_key?: string | null
