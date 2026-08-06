@@ -99,8 +99,14 @@ run('vitest:run:2', 'bunx', ['vitest', 'run']);
 run('vitest:run:3', 'bunx', ['vitest', 'run']);
 run('i18n:parity', 'node', ['scripts/i18n-check.cjs']);
 run('i18n:lint', 'node', ['scripts/i18n-lint.mjs']);
+run('i18n:quality', 'node', ['scripts/rc5/i18n-quality.mjs']);
 run('secret:scan', 'node', ['scripts/secret-scan.cjs']);
-run('deno:check-changed', 'node', ['scripts/rc5/deno-check-changed.mjs']);
+run('migration:scan', 'node', ['scripts/ci/scan-migrations.mjs']);
+run('size-limit', 'bunx', ['size-limit']);
+// Batch 0: full-tree Deno assurance replaces the changed-only check, which could
+// not observe pre-existing errors in _shared/**.
+run('deno:check-all', 'node', ['scripts/rc5/deno-check-all.mjs']);
+
 
 // ---------- STAGING GATES ----------
 // Strict: absence of RC5_ALLOW_STAGING_TESTS => overall fail (NO-GO).
@@ -115,10 +121,12 @@ run('migrate:forward', 'node', ['scripts/rc5/migrate-forward.mjs']);
 run('seed', 'node', ['scripts/rc5/seed.mjs']);
 run('pgtap:rls', 'node', ['scripts/rc5/run-pgtap.mjs']);
 run('rc5:concurrency', 'node', ['scripts/rc5/concurrency-log-session.mjs']);
+run('automation:reconcile', 'node', ['scripts/rc5/reconcile-automations.mjs']);
 run('e2e:personas', 'bunx', ['playwright', 'test', '--project=staging-personas']);
 run('e2e:failure-inj', 'bunx', ['playwright', 'test', '--project=failure-injection']);
 run('probe:graph', 'node', ['scripts/rc5/probe-graph.mjs']);
 run('probe:email', 'node', ['scripts/rc5/probe-email.mjs']);
 run('cleanup', 'node', ['scripts/rc5/cleanup.mjs']);
+
 
 finalise('pass', null);

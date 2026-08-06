@@ -2,23 +2,38 @@
 
 Authoritative status. All earlier RC5 status documents that contradict this
 file are **SUPERSEDED** (see list at bottom). Historical evidence is retained
-in-place, not deleted.
+in-place, not deleted. Candidate identity and Batch 0 detail live in
+`docs/rc5/AUDIT-2026-08-06-FINAL-CODEX.md`.
 
-Last updated: 2026-07-22 (Phase 0 rerun; test-harness RPCs dropped from production).
+Last updated: 2026-08-06 (Batch 0 closed: full-tree Deno green, CI/verify gates
+wired, PT-PT i18n quality gate added).
 
-Status keys: `confirmed` (defect reproduced or proved by code inspection),
-`fixed` (forward-only fix applied AND canonical test green against the live
-database), `fix-drafted` (forward-only fix written to `docs/rc5/drafts/` but
-not applied), `not-proven` (needs behavioral run or credentials this turn
-does not have), `blocked` (needs human decision or external gate).
+Status keys: `FAILING REPRO` (defect reproduced or proved by code inspection),
+`FIXED + PASS` (forward-only fix applied AND a canonical test green),
+`NOT PROVEN` (needs a behavioral run or credentials this environment lacks),
+`BLOCKED` (needs a human decision or external gate).
 
 ## Release verdict
 
-**NO-GO.** Batch A closure audit (2026-07-22, `docs/rc5/batch-a-closure-audit.md`)
-downgrades the earlier "PASS" claim: the deployed RPC body is correct and
-production has zero fixture residue, but per-scenario S1..S12 evidence,
-true-concurrency proof, fresh-replay proof, pgTAP coverage, and CI wiring are
-**NOT PROVEN**. Batch B is not started.
+**NO-GO.** Batch 0 is closed and every local gate is green (TypeScript, ESLint,
+206 tests, build, size, i18n parity + quality, secret scan, migration scan,
+**full-tree Deno 131 files**). Mandatory gates 7-14 - fresh replay, staging
+forward apply, pgTAP role matrix, true concurrency, provider failure injection,
+authenticated persona E2E, automation reconciliation, Founder Pulse canary/DPO -
+remain `NOT PROVEN` because only the production database is reachable.
+
+## Batch 0 - evidence truthfulness (CLOSED 2026-08-06)
+
+| Item | Status | Evidence |
+|---|---|---|
+| Full-tree Deno check (replaces changed-only) | `FIXED + PASS` | `scripts/rc5/deno-check-all.mjs` -> `PASS - 131 files typecheck clean` |
+| `_shared/xlsxFingerprint.ts` dead SHA module URL | `FIXED + PASS` | unused `deno.land/std@0.224.0/hash/sha256.ts` import removed; file already used Web Crypto |
+| `_shared/xlsmCanonical_e2e_test.ts` `BufferSource` mismatch | `FIXED + PASS` | digest now receives a concrete `ArrayBuffer` slice |
+| Deterministic Deno dependency resolution | `FIXED + PASS` | `deno install` + `--config supabase/functions/deno.json`, wired in CI |
+| `rc5:verify` missing gates (size-limit, migration scan, automation reconcile, full Deno, i18n quality) | `FIXED + PASS` | `scripts/rc5/verify.mjs` |
+| PT-PT mixed-language copy (P2) | `FIXED + PASS` | 56 strings rewritten; `scripts/rc5/i18n-quality.mjs` gate PASS |
+| Stale/contradictory RC5 documents | `FIXED + PASS` | superseded list below; audit file is the single candidate-truth doc |
+| Applied-migration list from this environment | `NOT PROVEN` | exec DB role denied `supabase_migrations`; per-object presence verified instead |
 
 ## Phase 0 — hypothesis map
 
