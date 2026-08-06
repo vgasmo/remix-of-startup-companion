@@ -4,7 +4,7 @@
 -- staging (RC5_ALLOW_STAGING_TESTS=true, non-production STAGING_DATABASE_URL).
 
 BEGIN;
-SELECT plan(14);
+SELECT plan(15);
 
 -- ---- Fixtures ----------------------------------------------------------
 DO $fx$
@@ -29,22 +29,27 @@ SELECT throws_ok(
 -- exercised through the pgTAP session; role gates covered above).
 SET LOCAL role = 'postgres';
 
--- ---- 2. apply w/o grant records grant_bypass ---------------------------
-SELECT ok(
-  (public.apply_contract_signature_atomic(
-      gen_random_uuid(), '11111111-1111-1111-1111-111111111111', 'founder',
-      'signed', NULL, '{}'::jsonb, NULL, NULL, NULL, NULL, NULL
-   ) ->> 'signature_status') = 'partially_signed',
-  'legacy call without grant still signs founder → partially_signed'
+-- ---- 2. RC5 Batch 1: no grant → fail closed (no bypass) -----------------
+SELECT throws_ok(
+  $$ SELECT public.apply_contract_signature_atomic(
+       gen_random_uuid(), '11111111-1111-1111-1111-111111111111'::uuid, 'founder',
+       'signed', NULL, '{}'::jsonb, NULL, NULL, NULL, NULL, NULL
+     ) $$,
+  '42501', 'signing_grant_required', 'signature without a grant is refused'
 );
 
-SELECT ok(
-  EXISTS(
-    SELECT 1 FROM public.contract_signature_events
-     WHERE contract_id = '11111111-1111-1111-1111-111111111111'
-       AND evidence_json ? 'grant_bypass'
-  ),
-  'grant_bypass flag persisted on legacy call'
+SELECT is(
+  (SELECT count(*)::int FROM public.contract_signature_events
+     WHERE contract_id = '11111111-1111-1111-1111-111111111111'),
+  0, 'no evidence row written for an ungranted attempt'
+);
+
+-- ---- 2b. legacy 8-arg overload no longer exists -------------------------
+SELECT is(
+  (SELECT count(*)::int FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname='public' AND p.proname='apply_contract_signature_atomic'
+      AND p.pronargs = 8),
+  0, 'legacy 8-argument bypass overload dropped'
 );
 
 -- ---- 3. Issue + consume grant happy path -------------------------------
@@ -143,18 +148,30 @@ BEGIN
 END $bi$;
 
 SELECT is(
-  (public.apply_contract_signature_atomic(
+  (WITH g AS (
+     SELECT * FROM public.issue_contract_signing_grant(
+       '55555555-5555-5555-5555-555555555555'::uuid,
+       'counter_signer', 'c@e.com', repeat('e',64), 1, 15)
+   )
+   SELECT public.apply_contract_signature_atomic(
      gen_random_uuid(), '55555555-5555-5555-5555-555555555555'::uuid,
-     'counter_signer', 'signed', NULL, '{}'::jsonb, NULL, NULL, NULL, NULL, NULL
-   ) ->> 'signature_status'),
+     'counter_signer', 'signed', NULL, '{}'::jsonb, NULL, NULL,
+     (SELECT nonce FROM g), repeat('e',64), 'payload-sha'
+   ) ->> 'signature_status' FROM g),
   'completed', 'bilateral counter-sign → completed'
 );
 
 -- ---- 8. Terminal state regression rejected -----------------------------
 SELECT throws_ok(
-  $$ SELECT public.apply_contract_signature_atomic(
+  $$ WITH g AS (
+       SELECT * FROM public.issue_contract_signing_grant(
+         '55555555-5555-5555-5555-555555555555'::uuid,
+         'founder', 'f5@example.com', repeat('f',64), 1, 15)
+     )
+     SELECT public.apply_contract_signature_atomic(
        gen_random_uuid(), '55555555-5555-5555-5555-555555555555'::uuid,
-       'founder', 'declined', NULL, '{}'::jsonb, NULL, NULL, NULL, NULL, NULL) $$,
+       'founder', 'declined', NULL, '{}'::jsonb, NULL, NULL,
+       (SELECT nonce FROM g), repeat('f',64), 'p') FROM g $$,
   '55000', NULL, 'completed → declined regression rejected'
 );
 
@@ -166,16 +183,25 @@ BEGIN
   INSERT INTO public.startup_contracts (id, start_date, signature_status, founder_signer_status)
   VALUES (v_c, CURRENT_DATE, 'sent_for_signature', 'pending')
   ON CONFLICT (id) DO NOTHING;
-  PERFORM public.apply_contract_signature_atomic(v_cmd, v_c, 'founder', 'signed', NULL, '{}'::jsonb, NULL, NULL, NULL, NULL, NULL);
+  PERFORM public.apply_contract_signature_atomic(
+    v_cmd, v_c, 'founder', 'signed', NULL, '{}'::jsonb, NULL, NULL,
+    (SELECT nonce FROM public.issue_contract_signing_grant(v_c, 'founder', 'f6@example.com', repeat('g',64), 1, 15)),
+    repeat('g',64), 'p');
   PERFORM set_config('rc5.replay_cmd', v_cmd::text, false);
 END $rep$;
 
 SELECT is(
-  (public.apply_contract_signature_atomic(
+  (WITH g AS (
+     SELECT * FROM public.issue_contract_signing_grant(
+       '66666666-6666-6666-6666-666666666666'::uuid,
+       'founder', 'f6@example.com', repeat('g',64), 1, 15)
+   )
+   SELECT public.apply_contract_signature_atomic(
      current_setting('rc5.replay_cmd')::uuid,
      '66666666-6666-6666-6666-666666666666'::uuid,
-     'founder', 'signed', NULL, '{}'::jsonb, NULL, NULL, NULL, NULL, NULL
-   ) ->> 'idempotent'),
+     'founder', 'signed', NULL, '{}'::jsonb, NULL, NULL,
+     (SELECT nonce FROM g), repeat('g',64), 'p'
+   ) ->> 'idempotent' FROM g),
   'true', 'same command_id replay is idempotent'
 );
 
