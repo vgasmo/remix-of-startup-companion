@@ -115,3 +115,19 @@ remain `NOT PROVEN` because only the production database is reachable.
 | pgTAP suite | 15 assertions, updated for the mandatory-grant contract | `supabase/tests/apply_contract_signature_atomic.test.sql` |
 | Gates | `deno-check-all` 131 files PASS; app typecheck exit 0 | this turn |
 | Behavioural proof (pgTAP execution, concurrent double-sign) | **NOT PROVEN** — needs non-production `STAGING_DATABASE_URL` | protocol rule 4 |
+
+## Batch 2 — P0-B DocuSign lease call site wired (2026-08-06)
+
+| Item | State | Evidence |
+|---|---|---|
+| Lease RPCs had no Edge call site | **FIXED (source + deployed)** | `supabase/functions/docusign-send-envelope/index.ts` |
+| Claim before provider call, bound to document hash | `claim_docusign_dispatch_lease(contract, command, owner=uuid, 120s, document_sha256)` runs after the PDF is hashed; a non-`claimed` result never reaches DocuSign | same file |
+| Provider idempotency key sourced from the lease | lease `provider_idempotency_key` overrides the locally computed digest so retries of the same document reuse the exact key DocuSign saw | same file |
+| Unreconciled expiry cannot be re-dispatched | `requires_reconciliation` / `lease_held` / `attempts_exhausted` return 409 without touching the provider; `idempotent` returns 200 `already_sent` | same file |
+| `in_flight` transition immediately before the HTTP call | `mark_docusign_dispatch_in_flight`; failure aborts before dispatch | same file |
+| Ambiguous outcomes (5xx, timeout) | `mark_docusign_dispatch_unknown` + contract `provider_last_error`, 202 response, no auto-retry | same file |
+| Definite failure (4xx / missing envelopeId) | `reconcile_docusign_dispatch_lease(..., 'not_found')` then `release_docusign_envelope_command`, so a later attempt may legitimately reclaim | same file |
+| Success | `finalize_docusign_dispatch_lease` (owner-checked) before `finalize_docusign_envelope` stamps the contract | same file |
+| Gates | `deno check` on the function: exit 0; function deployed 2026-08-06 | this turn |
+| Behavioural proof (pgTAP `docusign_dispatch_lease.test.sql`, true concurrent dispatch, provider failure injection) | **NOT PROVEN** — needs non-production `STAGING_DATABASE_URL` | protocol rule 4 |
+
