@@ -58,7 +58,7 @@ The live repo is materially newer than the ZIP. Verified per finding:
 | Ref | Embedded claim | Live state | Disposition |
 |---|---|---|---|
 | P0-A | `PublicContractSigning.tsx` omits top-level `consent` → `consent_required` | the component now sends an explicit `consent` object (`src/pages/PublicContractSigning.tsx:283`) | **partially FIXED** — the `consent_required` regression is closed; the nullable `p_grant_nonce` bypass, document-hash binding, authorize-before-replay ordering and counter-sign task remain `FAILING REPRO` |
-| P0-B | new DocuSign lease RPCs have no Edge call site | `claim_docusign_dispatch_lease` and siblings exist in production; `docusign-send-envelope` still calls the earlier RPCs | `FAILING REPRO` (unchanged) |
+| P0-B | new DocuSign lease RPCs have no Edge call site | wired 2026-08-06 (RC5 Batch 2): `docusign-send-envelope` claims/in-flights/finalizes the lease around the provider call and deployed | **FIXED (source)** — behavioural proof still `NOT PROVEN` |
 | P0-C | past-meeting RPC auth/idempotency/attendee gaps | `log_completed_session_atomic` hardened in migration `20260722113303…`; pgTAP file exists (19 scenarios) but has never executed | `NOT PROVEN` |
 | P1-D..P1-H | booking/mentor/CRM/publish/financial transactional gaps | supporting objects present in production (`normalize_ident`, `transition_mentor_booking_atomic`, `publish_program_atomic`, `save_financial_scenario_atomic`); call-site wiring and concurrency proof absent | `FAILING REPRO` / `NOT PROVEN` per ledger |
 | P1-I | onboarding gate + peer profile reads | onboarding gate migration landed; `profiles_safe` masked view live; peer-read audit in `batch-e-profiles-audit.md` | `NOT PROVEN` (needs pgTAP role matrix) |
