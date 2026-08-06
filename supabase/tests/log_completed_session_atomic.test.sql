@@ -64,7 +64,7 @@ CREATE OR REPLACE FUNCTION rc5_tap.as_user(u uuid) RETURNS void AS $$
 $$ LANGUAGE sql;
 
 -- 1. anonymous
-PERFORM rc5_tap.as_user(NULL);
+SELECT rc5_tap.as_user(NULL);
 SELECT throws_ok(
   $$ SELECT public.log_completed_session_atomic(
        gen_random_uuid(),'00000000-0000-0000-0000-0000000ba003','anon',
