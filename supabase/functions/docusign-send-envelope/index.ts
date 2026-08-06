@@ -329,9 +329,71 @@ Deno.serve(async (req) => {
       'SHA-256',
       new TextEncoder().encode(`${envelopeCommandId}:${documentSha256}`),
     )
-    const providerIdempotencyKey = Array.from(new Uint8Array(idemDigestBuf))
+    let providerIdempotencyKey = Array.from(new Uint8Array(idemDigestBuf))
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('')
+
+    // RC5 Batch 2 (P0-B) — exactly-once dispatch lease. The lease layer owns the
+    // provider-call window: it is claimed with the *document hash* before the
+    // HTTP call, moved to `in_flight` immediately before it, and can only be
+    // finalized by the owner that holds it. An expired lease that was never
+    // reconciled refuses re-dispatch, so an ambiguous provider call can never
+    // be blindly retried.
+    const leaseOwnerId = crypto.randomUUID()
+    const { data: leaseData, error: leaseError } = await supabase.rpc(
+      'claim_docusign_dispatch_lease',
+      {
+        p_contract_id: contractId,
+        p_command_id: envelopeCommandId,
+        p_owner_id: leaseOwnerId,
+        p_lease_seconds: 120,
+        p_document_sha256: documentSha256,
+      },
+    )
+    if (leaseError) {
+      console.error('claim_docusign_dispatch_lease failed', leaseError)
+      return new Response(JSON.stringify({ error: 'lease_claim_failed', details: leaseError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const lease = (leaseData ?? {}) as {
+      claimed?: boolean
+      idempotent?: boolean
+      conflict?: string
+      exhausted?: boolean
+      requires_reconciliation?: boolean
+      state?: string
+      envelope_id?: string | null
+      provider_idempotency_key?: string | null
+    }
+    if (!lease.claimed) {
+      if (lease.idempotent && lease.envelope_id) {
+        return new Response(JSON.stringify({
+          status: 'already_sent',
+          idempotent: true,
+          envelopeId: lease.envelope_id,
+          envelopeCommandId,
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      return new Response(JSON.stringify({
+        error: lease.requires_reconciliation
+          ? 'A previous dispatch attempt is unreconciled; provider state must be confirmed before resending.'
+          : 'Dispatch lease unavailable for this contract.',
+        conflict: lease.conflict ?? (lease.exhausted ? 'attempts_exhausted' : lease.requires_reconciliation ? 'requires_reconciliation' : 'lease_unavailable'),
+        leaseState: lease.state ?? null,
+        envelopeCommandId,
+      }), {
+        status: 409,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    // The lease is the source of truth for the provider key so retries of the
+    // same document reuse the exact key DocuSign already saw.
+    if (lease.provider_idempotency_key) providerIdempotencyKey = lease.provider_idempotency_key
+
 
     // Construct DocuSign envelope body (Batch C fix: previously referenced
     // an undefined `envelopeBody` variable — audit finding P0).
