@@ -60,6 +60,7 @@ createdb -h "$SOCK" -p "$PORT" -U postgres "$DB"
 log "base + shim + pgTAP ready"
 
 # ---- forward replay -------------------------------------------------------
+export PGOPTIONS='-c search_path=public,extensions'
 STRIP=$(mktemp -d)
 for f in "$ROOT"/supabase/migrations/*.sql; do
   # Managed extensions are provisioned by the platform, not by the harness.
@@ -76,7 +77,6 @@ done
 log "forward replay finished ($failed failing migration file(s))"
 
 # ---- pgTAP --------------------------------------------------------------
-export PGOPTIONS='-c search_path=public,extensions'
 files=("$@")
 [ ${#files[@]} -eq 0 ] && files=("$ROOT"/supabase/tests/*.test.sql)
 rc=0
