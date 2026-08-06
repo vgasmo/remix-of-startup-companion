@@ -157,10 +157,9 @@ UPDATE public.public_booking_links
        is_canonical = true, active = true
  WHERE id = '00000000-0000-0000-0000-00000000b201';
 
-SELECT unlike(
-  public.resolve_canonical_booking_token()::text,
-  '%example.com%'::text,
-  'resolver strips host — client cannot be redirected off-origin by a canonical row'::text
+SELECT ok(
+  public.resolve_canonical_booking_token() NOT LIKE '%example.com%',
+  'resolver strips host — client cannot be redirected off-origin by a canonical row'
 );
 
 SELECT is(public.resolve_canonical_booking_token(), 'tok-hostcheck',
