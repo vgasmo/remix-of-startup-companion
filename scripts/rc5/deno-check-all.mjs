@@ -38,7 +38,11 @@ if (files.length === 0) {
 }
 
 console.log(`[rc5:deno-check-all] checking ${files.length} edge TypeScript files…`);
-const r = spawnSync('deno', ['check', '--no-lock', ...files], { stdio: 'inherit' });
+const CONFIG = resolve(ROOT, 'deno.json');
+const r = spawnSync('deno', ['check', '--no-lock', '--config', CONFIG, ...files], {
+  stdio: 'inherit',
+  cwd: ROOT,
+});
 if (r.status !== 0) {
   console.error(`[rc5:deno-check-all] FAILED (exit ${r.status}) — full-tree Deno check must be green.`);
   process.exit(r.status ?? 1);
