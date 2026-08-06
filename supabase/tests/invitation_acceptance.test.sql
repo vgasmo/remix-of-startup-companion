@@ -29,8 +29,16 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- workspaces has no name/slug/active columns: it is a join of startup x program.
+-- unique_workspace_email (workspace_id, email) plus the field-immutability
+-- trigger on workspace_invitations mean each scenario needs its OWN workspace:
+-- an invitation row can never be rewritten to serve the next case.
 INSERT INTO public.startups (id, name)
-VALUES ('00000000-0000-0000-0000-0000000b3501', 'B3 Test Startup')
+VALUES
+  ('00000000-0000-0000-0000-0000000b3501', 'B3 Startup Expired'),
+  ('00000000-0000-0000-0000-0000000b3521', 'B3 Startup WrongEmail'),
+  ('00000000-0000-0000-0000-0000000b3531', 'B3 Startup Mentor'),
+  ('00000000-0000-0000-0000-0000000b3541', 'B3 Startup Already'),
+  ('00000000-0000-0000-0000-0000000b3551', 'B3 Startup Happy')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.programs (id, name)
@@ -38,9 +46,17 @@ VALUES ('00000000-0000-0000-0000-0000000b3502', 'B3 Test Program')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.workspaces (id, startup_id, program_id, status)
-VALUES ('00000000-0000-0000-0000-0000000b3503',
-        '00000000-0000-0000-0000-0000000b3501',
-        '00000000-0000-0000-0000-0000000b3502', 'active')
+VALUES
+  ('00000000-0000-0000-0000-0000000b3503', '00000000-0000-0000-0000-0000000b3501',
+   '00000000-0000-0000-0000-0000000b3502', 'active'),
+  ('00000000-0000-0000-0000-0000000b3523', '00000000-0000-0000-0000-0000000b3521',
+   '00000000-0000-0000-0000-0000000b3502', 'active'),
+  ('00000000-0000-0000-0000-0000000b3533', '00000000-0000-0000-0000-0000000b3531',
+   '00000000-0000-0000-0000-0000000b3502', 'active'),
+  ('00000000-0000-0000-0000-0000000b3543', '00000000-0000-0000-0000-0000000b3541',
+   '00000000-0000-0000-0000-0000000b3502', 'active'),
+  ('00000000-0000-0000-0000-0000000b3553', '00000000-0000-0000-0000-0000000b3551',
+   '00000000-0000-0000-0000-0000000b3502', 'active')
 ON CONFLICT (id) DO NOTHING;
 
 -- Helper: impersonate a user
@@ -56,6 +72,28 @@ BEGIN
   PERFORM set_config('request.jwt.claims', '', true);
   PERFORM set_config('role', 'postgres', true);
 END $$ LANGUAGE plpgsql;
+
+-- All invitation fixtures are seeded once, as owner, before any impersonation.
+INSERT INTO public.workspace_invitations
+  (id, workspace_id, email, token_hash, role, expires_at, accepted_at)
+VALUES
+  -- expired
+  ('00000000-0000-0000-0000-0000000b3511', '00000000-0000-0000-0000-0000000b3503',
+   'invitee-b3@example.com', 'hash-expired', 'founder', now() - interval '1 day', NULL),
+  -- addressed to another email
+  ('00000000-0000-0000-0000-0000000b3512', '00000000-0000-0000-0000-0000000b3523',
+   'someone-else@example.com', 'hash-wrong-email', 'founder', now() + interval '7 days', NULL),
+  -- non-founder role (must not escalate to founder). 'mentor' is NOT an
+  -- app_role label — the canonical external-mentor label is 'mentor_externo'.
+  ('00000000-0000-0000-0000-0000000b3513', '00000000-0000-0000-0000-0000000b3533',
+   'invitee-b3@example.com', 'hash-mentor', 'mentor_externo', now() + interval '7 days', NULL),
+  -- already accepted
+  ('00000000-0000-0000-0000-0000000b3514', '00000000-0000-0000-0000-0000000b3543',
+   'invitee-b3@example.com', 'hash-already', 'founder', now() + interval '7 days',
+   now() - interval '1 hour'),
+  -- happy path
+  ('00000000-0000-0000-0000-0000000b3515', '00000000-0000-0000-0000-0000000b3553',
+   'invitee-b3@example.com', 'hash-happy', 'founder', now() + interval '7 days', NULL);
 
 -- ============================================================
 -- B3.1: unauthenticated caller => auth_required
@@ -82,12 +120,6 @@ SELECT throws_ok(
 -- ============================================================
 -- B3.3: expired invitation => invitation_expired
 -- ============================================================
-SELECT pg_temp.reset_role();
-INSERT INTO public.workspace_invitations (id, workspace_id, email, token_hash, role, expires_at)
-VALUES ('00000000-0000-0000-0000-0000000b3511', '00000000-0000-0000-0000-0000000b3503',
-        'invitee-b3@example.com', 'hash-expired', 'founder', now() - interval '1 day');
-SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000b3');
-
 SELECT throws_ok(
   $$SELECT public.accept_workspace_invitation('hash-expired')$$,
   '22023',
@@ -107,12 +139,6 @@ SELECT is(
 -- ============================================================
 -- B3.4: wrong email (caller does not match invitation.email) => forbidden
 -- ============================================================
-SELECT pg_temp.reset_role();
-INSERT INTO public.workspace_invitations (id, workspace_id, email, token_hash, role, expires_at)
-VALUES ('00000000-0000-0000-0000-0000000b3512', '00000000-0000-0000-0000-0000000b3503',
-        'someone-else@example.com', 'hash-wrong-email', 'founder', now() + interval '7 days');
-SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000b3');
-
 SELECT throws_ok(
   $$SELECT public.accept_workspace_invitation('hash-wrong-email')$$,
   '42501',
@@ -124,14 +150,9 @@ SELECT throws_ok(
 -- B3.5: role tampering — a mentor invite must NOT grant founder global role
 -- ============================================================
 SELECT pg_temp.reset_role();
-UPDATE public.workspace_invitations
-   SET token_hash = 'hash-mentor', role = 'mentor', expires_at = now() + interval '7 days'
- WHERE id = '00000000-0000-0000-0000-0000000b3511';
-SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000b3');
-
--- Ensure no pre-existing founder role:
 DELETE FROM public.user_roles
  WHERE user_id = '00000000-0000-0000-0000-0000000000b3' AND role = 'founder';
+SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000b3');
 
 SELECT lives_ok(
   $$SELECT public.accept_workspace_invitation('hash-mentor')$$,
@@ -148,13 +169,6 @@ SELECT is(
 -- ============================================================
 -- B3.6: already accepted => idempotent success (no duplicate membership)
 -- ============================================================
-SELECT pg_temp.reset_role();
-UPDATE public.workspace_invitations
-   SET token_hash = 'hash-already', role = 'founder',
-       expires_at = now() + interval '7 days', accepted_at = now() - interval '1 hour'
- WHERE id = '00000000-0000-0000-0000-0000000b3511';
-SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000b3');
-
 SELECT lives_ok(
   $$SELECT public.accept_workspace_invitation('hash-already')$$,
   'already-accepted invitation returns success without raising'
@@ -163,18 +177,6 @@ SELECT lives_ok(
 -- ============================================================
 -- B3.7: happy path — founder invite creates membership + founder role
 -- ============================================================
-SELECT pg_temp.reset_role();
-UPDATE public.workspace_invitations
-   SET token_hash = 'hash-happy', role = 'founder',
-       expires_at = now() + interval '7 days', accepted_at = NULL
- WHERE id = '00000000-0000-0000-0000-0000000b3511';
-SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000b3');
-
--- Clean any prior membership from B3.5:
-DELETE FROM public.workspace_users
- WHERE workspace_id = '00000000-0000-0000-0000-0000000b3503'
-   AND user_id = '00000000-0000-0000-0000-0000000000b3';
-
 SELECT lives_ok(
   $$SELECT public.accept_workspace_invitation('hash-happy')$$,
   'founder invite accepted'
@@ -182,7 +184,7 @@ SELECT lives_ok(
 
 SELECT is(
   (SELECT count(*)::int FROM public.workspace_users
-    WHERE workspace_id = '00000000-0000-0000-0000-0000000b3503'
+    WHERE workspace_id = '00000000-0000-0000-0000-0000000b3553'
       AND user_id = '00000000-0000-0000-0000-0000000000b3'
       AND active = true),
   1,

@@ -3669,17 +3669,23 @@ export type Database = {
           ai_review_generated_at: string | null
           ai_review_generated_by: string | null
           ai_review_json: Json | null
+          assumptions_json: Json | null
+          command_fingerprint: string | null
+          command_id: string | null
           content_sha256: string | null
           coverage_pct: number | null
           created_at: string
-          document_id: string
+          document_id: string | null
           formula_cache_stale: boolean
           id: string
           key_metrics_json: Json | null
+          metadata_json: Json | null
           parse_error: string | null
           parse_status: string | null
           parse_warnings: Json
           scenario_name: string
+          scoring_json: Json | null
+          session_id: string | null
           snapshot_json: Json | null
           source_asset_id: string | null
           status: string
@@ -3693,17 +3699,23 @@ export type Database = {
           ai_review_generated_at?: string | null
           ai_review_generated_by?: string | null
           ai_review_json?: Json | null
+          assumptions_json?: Json | null
+          command_fingerprint?: string | null
+          command_id?: string | null
           content_sha256?: string | null
           coverage_pct?: number | null
           created_at?: string
-          document_id: string
+          document_id?: string | null
           formula_cache_stale?: boolean
           id?: string
           key_metrics_json?: Json | null
+          metadata_json?: Json | null
           parse_error?: string | null
           parse_status?: string | null
           parse_warnings?: Json
           scenario_name?: string
+          scoring_json?: Json | null
+          session_id?: string | null
           snapshot_json?: Json | null
           source_asset_id?: string | null
           status?: string
@@ -3717,17 +3729,23 @@ export type Database = {
           ai_review_generated_at?: string | null
           ai_review_generated_by?: string | null
           ai_review_json?: Json | null
+          assumptions_json?: Json | null
+          command_fingerprint?: string | null
+          command_id?: string | null
           content_sha256?: string | null
           coverage_pct?: number | null
           created_at?: string
-          document_id?: string
+          document_id?: string | null
           formula_cache_stale?: boolean
           id?: string
           key_metrics_json?: Json | null
+          metadata_json?: Json | null
           parse_error?: string | null
           parse_status?: string | null
           parse_warnings?: Json
           scenario_name?: string
+          scoring_json?: Json | null
+          session_id?: string | null
           snapshot_json?: Json | null
           source_asset_id?: string | null
           status?: string
@@ -3743,6 +3761,13 @@ export type Database = {
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_model_versions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "financial_plan_sessions"
             referencedColumns: ["id"]
           },
           {
@@ -12745,45 +12770,68 @@ export type Database = {
       }
       resolve_canonical_booking_token: { Args: never; Returns: string }
       revert_import_row: { Args: { p_row_id: string }; Returns: Json }
-      save_financial_scenario_atomic: {
-        Args: {
-          p_expected_updated_at: string
-          p_key_metrics: Json
-          p_scenario_name?: string
-          p_snapshot: Json
-          p_version_id: string
-        }
-        Returns: {
-          ai_review_generated_at: string | null
-          ai_review_generated_by: string | null
-          ai_review_json: Json | null
-          content_sha256: string | null
-          coverage_pct: number | null
-          created_at: string
-          document_id: string
-          formula_cache_stale: boolean
-          id: string
-          key_metrics_json: Json | null
-          parse_error: string | null
-          parse_status: string | null
-          parse_warnings: Json
-          scenario_name: string
-          snapshot_json: Json | null
-          source_asset_id: string | null
-          status: string
-          template_schema_version: number | null
-          updated_at: string
-          uploaded_at: string
-          uploaded_by: string | null
-          workspace_id: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "financial_model_versions"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+      save_financial_scenario_atomic:
+        | {
+            Args: {
+              p_assumptions: Json
+              p_command_fingerprint: string
+              p_command_id: string
+              p_metadata: Json
+              p_metrics: Json
+              p_scoring: Json
+              p_session_id: string
+              p_version_label: string
+            }
+            Returns: {
+              mode: string
+              version_id: string
+            }[]
+          }
+        | {
+            Args: {
+              p_expected_updated_at: string
+              p_key_metrics: Json
+              p_scenario_name?: string
+              p_snapshot: Json
+              p_version_id: string
+            }
+            Returns: {
+              ai_review_generated_at: string | null
+              ai_review_generated_by: string | null
+              ai_review_json: Json | null
+              assumptions_json: Json | null
+              command_fingerprint: string | null
+              command_id: string | null
+              content_sha256: string | null
+              coverage_pct: number | null
+              created_at: string
+              document_id: string | null
+              formula_cache_stale: boolean
+              id: string
+              key_metrics_json: Json | null
+              metadata_json: Json | null
+              parse_error: string | null
+              parse_status: string | null
+              parse_warnings: Json
+              scenario_name: string
+              scoring_json: Json | null
+              session_id: string | null
+              snapshot_json: Json | null
+              source_asset_id: string | null
+              status: string
+              template_schema_version: number | null
+              updated_at: string
+              uploaded_at: string
+              uploaded_by: string | null
+              workspace_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "financial_model_versions"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
       search_workspaces_paged: {
         Args: {
           _assigned_to?: string

@@ -25,9 +25,11 @@ SELECT throws_ok(
   'issue_contract_signing_grant requires staff role'
 );
 
--- Promote current role for the remaining tests (SECURITY DEFINER path is
--- exercised through the pgTAP session; role gates covered above).
+-- Promote the caller for the remaining tests: the staff gate is fail-closed, so
+-- grant issuance below runs with an explicit service_role claim (the role gate
+-- itself is covered by test 1 above).
 SET LOCAL role = 'postgres';
+SELECT set_config('request.jwt.claims', '{"role":"service_role"}', true);
 
 -- ---- 2. RC5 Batch 1: no grant → fail closed (no bypass) -----------------
 SELECT throws_ok(
