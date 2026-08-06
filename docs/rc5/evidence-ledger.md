@@ -101,3 +101,17 @@ remain `NOT PROVEN` because only the production database is reachable.
 - No destructive migration or production data change was performed this turn.
 - Drafted migration lives only in `docs/rc5/drafts/`; the migration tool was
   intentionally NOT invoked.
+
+## Batch 1 — P0-A signing bypass closed (2026-08-06)
+
+| Item | State | Evidence |
+|---|---|---|
+| Legacy 8-arg `apply_contract_signature_atomic` overload | **DROPPED** | migration 2026-08-06 (P0-A); pgTAP assertion "legacy 8-argument bypass overload dropped" |
+| Nullable `p_grant_nonce` bypass (`grant_bypass` evidence flag) | **REMOVED** — fail closed with `42501 signing_grant_required` | migration 2026-08-06; pgTAP tests 2 / 2b |
+| Document-hash binding | mandatory: `p_document_sha256` must equal the grant's `document_sha256` | migration 2026-08-06 |
+| Authorize-before-replay ordering | grant is located, hash-matched and ownership-checked **before** any contract state is read or returned | migration 2026-08-06 |
+| Grant issuance from the public onboarding edge function | `issue_contract_signing_grant` now accepts `service_role` (JWT claim) in addition to admin/backoffice | migration 2026-08-06 |
+| Edge call site wiring | `public-contract-onboarding` hashes a canonical contract projection, mints a 15-min single-use grant, and passes `p_grant_nonce` / `p_document_sha256` / `p_canonical_payload_sha256`; already-signed replays return 409 instead of 500 | `supabase/functions/public-contract-onboarding/index.ts:1303-1377`, deployed 2026-08-06 |
+| pgTAP suite | 15 assertions, updated for the mandatory-grant contract | `supabase/tests/apply_contract_signature_atomic.test.sql` |
+| Gates | `deno-check-all` 131 files PASS; app typecheck exit 0 | this turn |
+| Behavioural proof (pgTAP execution, concurrent double-sign) | **NOT PROVEN** — needs non-production `STAGING_DATABASE_URL` | protocol rule 4 |
