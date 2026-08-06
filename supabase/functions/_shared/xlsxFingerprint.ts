@@ -12,7 +12,6 @@
 // Byte identity is NOT required (users may resave from Excel), only structural
 // identity of the anchoring layout.
 
-import * as sha256 from "https://deno.land/std@0.224.0/hash/sha256.ts";
 
 export interface XlsxFingerprintInput {
   sheetNames: string[];
