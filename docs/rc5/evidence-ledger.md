@@ -131,3 +131,69 @@ remain `NOT PROVEN` because only the production database is reachable.
 | Gates | `deno check` on the function: exit 0; function deployed 2026-08-06 | this turn |
 | Behavioural proof (pgTAP `docusign_dispatch_lease.test.sql`, true concurrent dispatch, provider failure injection) | **NOT PROVEN** — needs non-production `STAGING_DATABASE_URL` | protocol rule 4 |
 
+
+## Batch 3 — P0-C past-meeting RPC: first executed behavioural proof (2026-08-06)
+
+### The harness (this is the unblock)
+
+Behavioural proof no longer needs an operator-provisioned staging DB. `scripts/rc5/local-pg-harness.sh`
+(`bun run rc5:pgtap:local`) boots a **disposable local PostgreSQL 17**, installs
+`scripts/rc5/supabase-shim.sql` (auth/storage/cron/net/vault schemas, `auth.uid()`/`auth.jwt()`/
+`auth.role()`, storage helpers), replays **every** migration from an empty database, loads pgTAP and
+executes `supabase/tests/*.test.sql`. It only ever talks to the local socket it created — production
+and staging are unreachable by construction.
+
+Forward replay: 443 migration files, **5** failing — all classified below, none blocking:
+
+| File | Error | Class |
+|---|---|---|
+| `20260103024619…` | `public.investor_readiness_items` missing | replay-order defect (table created later / dropped) — tracked for Batch 4 |
+| `20260115005921…` | `public.investor_update_templates` missing | same |
+| `20260401022520…` | `communication_log` is not part of the publication | harness artifact (`ALTER PUBLICATION … DROP TABLE`) |
+| `20260403163048…` | `workflow_executions` is not part of the publication | harness artifact |
+| `20260404150656…` | `realtime.messages` missing | harness artifact (platform-managed schema) |
+
+### Executed result — `log_completed_session_atomic.test.sql`
+
+First execution ever (the file previously contained a hard syntax error at line 67, `PERFORM` in a
+top-level SQL statement, so **every** prior "19 scenarios exist" claim was unexecuted paper):
+
+| Run | Result |
+|---|---|
+| First execution (pre-fix) | 20 pass, **2 fail**, plan mismatch (planned 23, ran 22) |
+| After fixes below, fresh replay | **22 / 22 PASS, 0 errors** |
+
+Findings and dispositions:
+
+| Finding | Class | Disposition |
+|---|---|---|
+| Test 1 expected message `insufficient_privilege`; RPC raises `42501 unauthenticated` | test defect | expectation corrected |
+| `plan(23)` vs 22 assertions | test defect | `plan(22)` |
+| **Test 21 — replaying a known `command_id` with a tampered payload returned the original `session_id` instead of failing closed. No fingerprint existed anywhere in the RPC.** | **production defect (P0-C)** | migration 2026-08-06: `sessions.command_fingerprint` + SHA-256 canonical fingerprint over actor + all 12 payload fields; mismatch → `42501 command_fingerprint_mismatch`; identical replay stays idempotent; legacy `NULL` rows are stamped on first replay and never duplicated |
+| Test 22 ("different actor replaying known command_id") | passed only because the rogue actor fails authorization first | now genuinely covered by the fingerprint (actor is part of the digest) |
+
+**P0-C status: FIXED and PROVEN** (executed pgTAP, fresh full-migration replay, production migration applied 2026-08-06).
+
+### Newly proven: the rest of the pgTAP corpus does not execute
+
+The same harness gives the first honest baseline of the other suites. These were all previously
+labelled "exists / not proven"; they are in fact **broken or failing** and are now real, owned work:
+
+| Suite | ok | fail | psql errors |
+|---|---|---|---|
+| `log_completed_session_atomic` | **22** | 0 | 0 |
+| `rls_policies` | 26 | 2 | 28 |
+| `crm_import_dedupe` | 6 | 1 | 0 |
+| `mentor_booking_transition` | 6 | 0 | 0 |
+| `apply_contract_signature_atomic` | 5 | 4 | 13 |
+| `program_publish_atomic` | 4 | 0 | 3 |
+| `financial_scenario_atomic` | 1 | 3 | 0 |
+| `booking_canonical` | 1 | 0 | 34 |
+| `docusign_dispatch_lease` | 0 | 0 | 17 |
+| `founder_pulse_off_state` | 0 | 0 | 12 |
+| `invitation_acceptance` | 0 | 0 | 25 |
+| `profiles_peer_boundary` | 0 | 0 | 30 |
+| `public_booking_dst` | 0 | 0 | 13 |
+
+Batch 4 scope is therefore fixed: repair these suites one by one and fix whatever production defects
+they expose — exactly as test 21 exposed the missing session fingerprint.

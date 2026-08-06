@@ -16,6 +16,7 @@
     "test:e2e": "bunx playwright test",
     "release-check": "bash scripts/release-check.sh",
     "rc5:verify": "bash scripts/rc5/verify.sh",
+    "rc5:pgtap:local": "bash scripts/rc5/local-pg-harness.sh",
     "size": "size-limit"
   },
   "dependencies": {
