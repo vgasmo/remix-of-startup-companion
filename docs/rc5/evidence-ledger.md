@@ -229,3 +229,42 @@ Suite status (ok/fail/errors):
 2. `complete_workspace_onboarding` compared `workspace_users.role` against `'owner'`,
    which is not an `app_role` label → 22P02 for every caller, founders and staff included.
    Fix: compare against `'founder'` only, staff override unchanged.
+
+## Batch 5 — local pgTAP suite fully green (2026-08-06)
+
+`scripts/rc5/local-pg-harness.sh` — 13 suites, 168 assertions, **0 fail / 0 errors**:
+apply_contract_signature_atomic 16, rls_policies 39, log_completed_session_atomic 22,
+booking_canonical 15, docusign_dispatch_lease 14, invitation_acceptance 11,
+profiles_peer_boundary 11, founder_pulse_off_state 9, public_booking_dst 9,
+crm_import_dedupe 7, mentor_booking_transition 6, program_publish_atomic 5,
+financial_scenario_atomic 4.
+
+### Landed in production
+1. **Batch F5 — atomic Save-As-Scenario.** `financial_model_versions` gains
+   `session_id`, `assumptions_json`, `scoring_json`, `metadata_json`, `command_id`,
+   `command_fingerprint`; `document_id` is now nullable (guided-plan scenarios have no
+   uploaded workbook); partial unique index `(session_id, command_fingerprint)`.
+   `save_financial_scenario_atomic(...)` is workspace-access checked, session-locked and
+   fingerprint-idempotent (`mode='idempotent_reuse'`), snapshots assumption rows and
+   repoints `financial_plan_sessions.active_version_id`.
+   NOTE: the held draft targeted columns (`label`, `metrics_json`, `created_by`,
+   `financial_assumptions.is_locked`) that never existed — the landed version matches
+   the live schema.
+
+### Production defects the harness exposed, all FIXED this turn
+1. **Every workspace invitation acceptance was failing.**
+   `workspace_invitations.role` is `text`, `workspace_users.role` is `app_role`;
+   `accept_workspace_invitation` inserted the raw text and raised 42804 for all callers.
+   Now cast with an enum-label check (`invitation_role_invalid`, 22023).
+2. **Signing-grant staff gate was bypassable by a claim-less caller.**
+   `issue_contract_signing_grant` evaluated `IF NOT (v_jwt_role = 'service_role' OR ...)`;
+   with no JWT claim that expression is NULL, so `IF NOT NULL` never fired and the guard
+   was skipped. Now `COALESCE(..., false)` — unknown identity means refuse. Verified no
+   other public function carries the same three-valued pattern.
+3. Repo/production drift on `issue_contract_signing_grant` closed (the staff guard was
+   live but absent from the tracked migration tree, so replays lost it).
+
+### Product truth confirmed
+- `app_role` labels are `admin, consultor, mentor_externo, founder, team_member, backoffice`.
+  There is no `mentor` label; `send-workspace-invite` correctly restricts invitations to
+  `founder` / `team_member`.
