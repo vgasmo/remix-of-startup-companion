@@ -20,7 +20,7 @@
 --   fingerprint mismatch on same command_id                        → 42501
 
 BEGIN;
-SELECT plan(23);
+SELECT plan(22);
 
 -- Fixtures (all under a discardable schema so ROLLBACK is total).
 CREATE SCHEMA IF NOT EXISTS rc5_tap;
@@ -69,7 +69,7 @@ SELECT throws_ok(
   $$ SELECT public.log_completed_session_atomic(
        gen_random_uuid(),'00000000-0000-0000-0000-0000000ba003','anon',
        now()-interval '1h',30,'00000000-0000-0000-0000-0000000ba010') $$,
-  '42501','insufficient_privilege','anonymous rejected');
+  '42501','unauthenticated','anonymous rejected');
 
 -- 2. founder attributing to someone else
 SELECT rc5_tap.as_user('00000000-0000-0000-0000-0000000ba014');
