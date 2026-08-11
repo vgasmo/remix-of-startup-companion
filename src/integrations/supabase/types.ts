@@ -2580,6 +2580,33 @@ export type Database = {
         }
         Relationships: []
       }
+      cron_invocation_tokens: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          job_name: string
+          token_hash: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          job_name: string
+          token_hash: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          job_name?: string
+          token_hash?: string
+        }
+        Relationships: []
+      }
       cron_job_runs: {
         Row: {
           created_at: string
@@ -9194,7 +9221,7 @@ export type Database = {
       system_alerts: {
         Row: {
           created_at: string
-          dedupe_key: string | null
+          dedupe_key: string
           id: string
           kind: string
           payload: Json
@@ -9202,7 +9229,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          dedupe_key?: string | null
+          dedupe_key: string
           id?: string
           kind: string
           payload?: Json
@@ -9210,7 +9237,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          dedupe_key?: string | null
+          dedupe_key?: string
           id?: string
           kind?: string
           payload?: Json
@@ -12192,6 +12219,10 @@ export type Database = {
         Args: { p_workspace_id: string }
         Returns: undefined
       }
+      consume_cron_token: {
+        Args: { p_job_name?: string; p_token: string }
+        Returns: boolean
+      }
       create_conversation: {
         Args: {
           _title?: string
@@ -12259,6 +12290,14 @@ export type Database = {
           linked_workspace_id: string
           resolved_via: string
         }[]
+      }
+      cron_invoke_edge: {
+        Args: { p_function: string; p_payload?: Json }
+        Returns: number
+      }
+      cron_invoke_rpc: {
+        Args: { p_function: string; p_job_name: string }
+        Returns: undefined
       }
       ecosystem_aggregates_v2: {
         Args: {
@@ -12502,6 +12541,7 @@ export type Database = {
           nonce: string
         }[]
       }
+      issue_cron_token: { Args: { p_job_name: string }; Returns: string }
       jsonb_deep_merge: { Args: { a: Json; b: Json }; Returns: Json }
       launch_survey_campaign: {
         Args: { p_campaign_id: string; p_workspace_ids?: string[] }

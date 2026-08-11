@@ -117,33 +117,67 @@ export async function requireUser(
 }
 
 /**
- * Require valid cron secret for system/scheduled functions
+ * Verify a single-use cron invocation token (header `x-cron-token`).
+ * Tokens are minted in Postgres by public.cron_invoke_edge and consumed exactly
+ * once via public.consume_cron_token. This removes the need for a shared secret
+ * to be kept in sync between the database and the function runtime.
+ */
+export async function verifyCronToken(req: Request): Promise<boolean> {
+  const token = req.headers.get('x-cron-token');
+  if (!token || token.length < 32) return false;
+
+  const url = Deno.env.get('SUPABASE_URL');
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !serviceKey) {
+    console.error('[SECURITY] cron token verification unavailable (missing service config)');
+    return false;
+  }
+
+  try {
+    const res = await fetch(`${url}/rest/v1/rpc/consume_cron_token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify({ p_token: token, p_job_name: null }),
+    });
+    if (!res.ok) return false;
+    return (await res.json()) === true;
+  } catch (err) {
+    console.error('[SECURITY] cron token verification failed', err);
+    return false;
+  }
+}
+
+/**
+ * Require valid cron credential for system/scheduled functions
+ * Accepts a single-use `x-cron-token` (preferred) or a legacy `x-cron-secret`.
  * Use this for cron/system functions (category B)
- * 
+ *
  * @param req - The incoming request
  * @returns true if valid, or Response with 401 error
  */
-export function requireCronSecret(
+export async function requireCronSecret(
   req: Request
-): { valid: true } | { error: Response } {
+): Promise<{ valid: true } | { error: Response }> {
+  if (await verifyCronToken(req)) {
+    return { valid: true };
+  }
+
   const cronSecret = req.headers.get('x-cron-secret');
   const expectedSecret = Deno.env.get('CRON_SECRET');
-  
-  if (!expectedSecret) {
-    console.error('[SECURITY] CRON_SECRET environment variable not configured');
-    return {
-      error: errorResponse(req, 'Server misconfigured', ErrorCode.INTERNAL_ERROR, 500)
-    };
+
+  if (cronSecret && expectedSecret && timingSafeEqual(cronSecret, expectedSecret)) {
+    return { valid: true };
   }
 
-  if (!cronSecret || !timingSafeEqual(cronSecret, expectedSecret)) {
-    return {
-      error: errorResponse(req, 'Invalid or missing cron secret', ErrorCode.UNAUTHORIZED, 401)
-    };
-  }
-
-  return { valid: true };
+  return {
+    error: errorResponse(req, 'Invalid or missing cron credential', ErrorCode.UNAUTHORIZED, 401)
+  };
 }
+
 
 /**
  * Require valid webhook secret for external webhook functions
