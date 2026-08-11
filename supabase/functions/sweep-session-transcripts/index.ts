@@ -28,7 +28,7 @@ Deno.serve(withCronRunLogging('sweep-session-transcripts', async (req: Request) 
 
   if (req.method === 'OPTIONS') return handleCorsOptions(req);
 
-  const auth = requireCronSecret(req);
+  const auth = await requireCronSecret(req);
   if ('error' in auth) return auth.error;
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;

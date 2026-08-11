@@ -222,10 +222,14 @@ export async function requireCronOrStaff(
   supabaseUserClient: SupabaseClient,
   supabaseAdminClient: SupabaseClient
 ): Promise<{ valid: true; userId?: string } | { error: Response }> {
+  if (await verifyCronToken(req)) {
+    return { valid: true };
+  }
+
   const cronSecret = req.headers.get('x-cron-secret');
   const expectedSecret = Deno.env.get('CRON_SECRET');
-  
-  // Check cron secret first
+
+  // Check cron secret next
   if (expectedSecret && cronSecret && timingSafeEqual(cronSecret, expectedSecret)) {
     return { valid: true };
   }
@@ -276,9 +280,13 @@ export async function requireCronOrGovernance(
   supabaseUserClient: SupabaseClient,
   supabaseAdminClient: SupabaseClient
 ): Promise<{ valid: true; userId?: string } | { error: Response }> {
+  if (await verifyCronToken(req)) {
+    return { valid: true };
+  }
+
   const cronSecret = req.headers.get('x-cron-secret');
   const expectedSecret = Deno.env.get('CRON_SECRET');
-  
+
   if (expectedSecret && cronSecret && timingSafeEqual(cronSecret, expectedSecret)) {
     return { valid: true };
   }

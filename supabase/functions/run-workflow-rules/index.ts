@@ -29,7 +29,7 @@ Deno.serve(async (req: Request) => {
 
   try {
     // SECURITY: Fail-closed timing-safe x-cron-secret check (cron-only).
-    const authCheck = requireCronSecret(req);
+    const authCheck = await requireCronSecret(req);
     if ('error' in authCheck) {
       console.error('[run-workflow-rules] Unauthorized invocation');
       return authCheck.error;

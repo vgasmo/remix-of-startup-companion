@@ -75,7 +75,7 @@ Deno.serve(withCronRunLogging('run-intake-reminders', async (req) => {
   }
 
   // SECURITY: Fail-closed timing-safe x-cron-secret check (cron-only).
-  const authCheck = requireCronSecret(req)
+  const authCheck = await requireCronSecret(req)
   if ('error' in authCheck) {
     console.error('[run-intake-reminders] Unauthorized invocation')
     return authCheck.error

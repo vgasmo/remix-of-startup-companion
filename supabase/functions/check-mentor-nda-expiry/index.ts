@@ -70,7 +70,7 @@ Deno.serve(withCronRunLogging('check-mentor-nda-expiry', async (req) => {
   const log = createLogger(FUNCTION_NAME, requestId);
   if (req.method === 'OPTIONS') return handleCorsOptions(req);
 
-  const auth = requireCronSecret(req);
+  const auth = await requireCronSecret(req);
   if ('error' in auth) return auth.error;
 
   const supabase = createClient(
