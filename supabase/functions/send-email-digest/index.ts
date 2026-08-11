@@ -66,7 +66,7 @@ Deno.serve(withCronRunLogging('send-email-digest', async (req) => {
   if (req.method === "OPTIONS") return handleCorsOptions(req);
 
   try {
-    const authResult = requireCronSecret(req);
+    const authResult = await requireCronSecret(req);
     if ('error' in authResult) {
       log.warn('Unauthorized access attempt');
       return authResult.error;

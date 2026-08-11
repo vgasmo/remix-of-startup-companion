@@ -50,7 +50,7 @@ const STRINGS = {
 serve(withCronRunLogging('send-weekly-health-digest', async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const cronAuth = requireCronSecret(req);
+  const cronAuth = await requireCronSecret(req);
   if ("error" in cronAuth) return cronAuth.error;
 
   try {

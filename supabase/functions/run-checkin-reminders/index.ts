@@ -57,7 +57,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     // SECURITY: Fail-closed cron-secret validation (timing-safe, requires CRON_SECRET env).
-    const authCheck = requireCronSecret(req);
+    const authCheck = await requireCronSecret(req);
     if ("error" in authCheck) {
       console.error("[run-checkin-reminders] Unauthorized cron invocation");
       return authCheck.error;

@@ -51,7 +51,7 @@ Deno.serve(withCronRunLogging('check-missed-milestones', async (req) => {
 
   try {
     // SECURITY: Require cron secret for system-initiated calls
-    const authResult = requireCronSecret(req);
+    const authResult = await requireCronSecret(req);
     if ('error' in authResult) {
       log.warn('Unauthorized access attempt');
       return authResult.error;

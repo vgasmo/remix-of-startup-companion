@@ -17,7 +17,7 @@ serve(withCronRunLogging('send-milestone-reminders', async (req) => {
   }
 
   // Security guard: require cron secret for scheduled jobs
-  const cronAuth = requireCronSecret(req);
+  const cronAuth = await requireCronSecret(req);
   if ("error" in cronAuth) {
     return cronAuth.error;
   }

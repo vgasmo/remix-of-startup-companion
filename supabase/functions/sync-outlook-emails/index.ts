@@ -18,6 +18,7 @@
  */
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { verifyCronToken } from '../_shared/security.ts';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { createLogger, generateRequestId, safeErrorMessage } from '../_shared/security.ts';
 import { withCronRunLogging } from '../_shared/cronRun.ts';
@@ -613,7 +614,9 @@ Deno.serve(withCronRunLogging('sync-outlook-emails', async (req) => {
         return out === 0;
       };
       let authorized = false;
-      if (expectedSecret && providedSecret && timingSafeEqual(providedSecret, expectedSecret)) {
+      if (await verifyCronToken(req)) {
+        authorized = true;
+      } else if (expectedSecret && providedSecret && timingSafeEqual(providedSecret, expectedSecret)) {
         authorized = true;
       } else {
         const authHeader = req.headers.get('Authorization') ?? '';
