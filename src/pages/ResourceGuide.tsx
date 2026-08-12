@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { RESOURCES_CATALOG, CATEGORY_LABELS, STAGE_LABELS } from '@/lib/resourcesCatalog';
+import { RESOURCES_CATALOG, CATEGORY_LABELS } from '@/lib/resourcesCatalog';
 import { GUIDE_CONTENT, type GuideContent } from '@/lib/guideContent';
 
 export default function ResourceGuide() {
@@ -53,7 +53,7 @@ export default function ResourceGuide() {
           <div className="flex flex-wrap gap-2 mb-3">
             <Badge variant="secondary">{catLabel}</Badge>
             {resource.stages.map(s => (
-              <Badge key={s} variant="outline">{STAGE_LABELS[s]?.[lang] || s}</Badge>
+              <Badge key={s} variant="outline">{t(`resources.stageLabels.${s}`, { defaultValue: s })}</Badge>
             ))}
           </div>
           <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
