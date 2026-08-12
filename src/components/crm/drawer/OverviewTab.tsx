@@ -437,7 +437,20 @@ export function OverviewTab({
       {/* Commercial Proposal / Linked Contract — single source of truth.
           If the lead already has a contract, the backoffice contract is authoritative:
           show its live pricing/discount read-only and hide the editable proposal fields. */}
+      {proposalDraftRestored && (
+        <DraftRestoredNotice
+          onDiscard={() => {
+            setProposedFee('');
+            setProposedDiscount('');
+            setProposedIncubationTypeId('');
+            setCommercialNotes('');
+            clearProposalDraft();
+            dismissProposalDraft();
+          }}
+        />
+      )}
       {linkedContract ? (
+
         <div className="space-y-3 pt-4 border-t">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-medium flex items-center gap-2">
