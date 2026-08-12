@@ -191,9 +191,9 @@ export default function CRM() {
       source: item.source ?? null,
       tags: [],
       notes: item.notes ?? null,
-      linked_startup_id: null,
+      linked_startup_id: item.linked_startup_id ?? null,
       linked_workspace_id: item.linked_workspace_id,
-      linked_contract_id: null,
+      linked_contract_id: item.linked_contract_id ?? null,
       program_id: item.program_id,
       first_contact_at: item.first_contact_at ?? null,
       qualified_at: null,
@@ -256,7 +256,7 @@ export default function CRM() {
         try {
           const { data, error } = await supabase
             .from('funnel_items')
-            .select('*, owner:profiles!funnel_items_owner_consultant_id_fkey(id, full_name), program:programs(id, name)')
+            .select('*, program:programs(id, name)')
             .eq('id', openId)
             .maybeSingle();
           
@@ -269,7 +269,15 @@ export default function CRM() {
             return;
           }
           
-          const ownerData = Array.isArray(data.owner) ? data.owner[0] : data.owner;
+          let ownerData: { id: string; full_name: string | null } | null = null;
+          if (data.owner_consultant_id) {
+            const { data: ownerProfile } = await supabase
+              .from('profiles_safe')
+              .select('id, full_name')
+              .eq('id', data.owner_consultant_id)
+              .maybeSingle();
+            ownerData = ownerProfile ?? null;
+          }
           const programData = Array.isArray(data.program) ? data.program[0] : data.program;
           
           const crmItem: CrmInboxItem = {
@@ -294,6 +302,8 @@ export default function CRM() {
             expected_close_date: data.expected_close_date ?? null,
             win_probability: data.win_probability ?? null,
             created_at: data.created_at,
+            linked_startup_id: data.linked_startup_id ?? null,
+            linked_contract_id: data.linked_contract_id ?? null,
             owner: ownerData || null,
             program: programData || null,
           };
