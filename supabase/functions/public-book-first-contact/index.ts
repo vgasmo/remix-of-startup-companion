@@ -300,68 +300,34 @@ serve(async (req) => {
     }
     const strictCalendarValidation = flagMap.get("strict_calendar_validation") === true;
 
-    // DB-enforced rate limiting: max 5 attempts / hour per email + 10 / 24h
-    // Uses public_booking_rate_limits (server-only) instead of counting funnel_items,
-    // so retries and invalid attempts also count and cannot be evaded by never committing.
-    try {
-      const emailNormalized = contact.email;
-      const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-      const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    // DB-enforced rate limiting: max 5 attempts / hour per email + 10 / 24h.
+    // Single atomic RPC (insert-or-increment + count) so concurrent requests cannot
+    // race past the cap, and so a DB error is never silently treated as "allowed".
+    {
+      const { data: rl, error: rlErr } = await supabase.rpc("touch_public_booking_rate_limit", {
+        p_email: contact.email,
+        p_ip_hash: null,
+      });
 
-      const [{ data: hourly }, { data: daily }] = await Promise.all([
-        supabase
-          .from("public_booking_rate_limits")
-          .select("attempts")
-          .eq("email_normalized", emailNormalized)
-          .gte("last_attempt_at", hourAgo),
-        supabase
-          .from("public_booking_rate_limits")
-          .select("attempts")
-          .eq("email_normalized", emailNormalized)
-          .gte("last_attempt_at", dayAgo),
-      ]);
-
-      const hourlyCount = (hourly ?? []).reduce((s, r: { attempts: number }) => s + (r.attempts ?? 0), 0);
-      const dailyCount = (daily ?? []).reduce((s, r: { attempts: number }) => s + (r.attempts ?? 0), 0);
-
-      if (hourlyCount >= 5 || dailyCount >= 10) {
-        return corsJsonResponse({
-          success: false,
-          error: "Too many booking attempts. Please try again later.",
-        }, req, 429);
-      }
-
-      // Upsert current-hour bucket
-      const bucketStart = new Date();
-      bucketStart.setMinutes(0, 0, 0);
-      await supabase
-        .from("public_booking_rate_limits")
-        .upsert(
-          {
-            email_normalized: emailNormalized,
-            bucket_start: bucketStart.toISOString(),
-            attempts: 1,
-            last_attempt_at: new Date().toISOString(),
-          },
-          { onConflict: "email_normalized,bucket_start", ignoreDuplicates: false },
-        );
-      // Increment the current-hour bucket so retries within the same hour count toward the cap.
-
-      await supabase
-        .from("public_booking_rate_limits")
-        .update({ attempts: (hourlyCount || 0) + 1, last_attempt_at: new Date().toISOString() })
-        .eq("email_normalized", emailNormalized)
-        .eq("bucket_start", bucketStart.toISOString());
-    } catch (rlErr) {
-      // Fail-CLOSED when strict validation is on so an unreachable DB cannot be used
-      // to bypass throttling. Fail-open only for the non-strict default so the public
-      // form doesn't blackhole during transient blips.
-      console.warn("public_booking rate-limit check failed:", rlErr);
-      if (strictCalendarValidation) {
-        return corsJsonResponse({
-          success: false,
-          error: "Booking service is temporarily degraded. Please try again in a few minutes.",
-        }, req, 503);
+      if (rlErr || !rl) {
+        // Fail-CLOSED when strict validation is on so an unreachable DB cannot be used
+        // to bypass throttling. Fail-open only for the non-strict default so the public
+        // form doesn't blackhole during transient blips.
+        console.warn("public_booking rate-limit check failed:", rlErr?.message ?? "no result");
+        if (strictCalendarValidation) {
+          return corsJsonResponse({
+            success: false,
+            error: "Booking service is temporarily degraded. Please try again in a few minutes.",
+          }, req, 503);
+        }
+      } else {
+        const counts = rl as { hour_attempts: number; day_attempts: number };
+        if ((counts.hour_attempts ?? 0) > 5 || (counts.day_attempts ?? 0) > 10) {
+          return corsJsonResponse({
+            success: false,
+            error: "Too many booking attempts. Please try again later.",
+          }, req, 429);
+        }
       }
     }
 

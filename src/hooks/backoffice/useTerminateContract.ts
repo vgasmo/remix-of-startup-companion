@@ -131,47 +131,30 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
     }
   } catch { /* non-fatal — logged upstream by RLS/server */ }
 
-  try {
-    const [{ data: staff }, { data: members }] = await Promise.all([
-      supabase.from('user_roles').select('user_id').in('role', ['admin', 'consultor', 'backoffice']),
-      contract.workspace_id
-        ? supabase.from('workspace_users').select('user_id').eq('workspace_id', contract.workspace_id).eq('role', 'founder').eq('active', true)
-        : Promise.resolve({ data: [] as any[] }),
-    ]);
-    const rows: any[] = [];
-    for (const s of (staff || [])) {
-      rows.push({
-        user_id: (s as any).user_id,
-        type: 'contract_terminated',
-        title: t('contractDetail.terminate.notifyStaffTitle', { defaultValue: 'Contrato terminado' }),
-        message: t('contractDetail.terminate.notifyStaffMsg', {
-          defaultValue: 'Contrato {{ref}} foi terminado. Motivo: {{reason}}',
-          ref: contract.id.slice(0, 8),
-          reason: reason.trim(),
-        }),
-        entity_type: 'contract',
-        entity_id: contract.id,
-        link: '/admin?tab=backoffice&subtab=contracts',
-      });
-    }
-    for (const m of (members || [])) {
-      rows.push({
-        user_id: (m as any).user_id,
-        type: 'contract_terminated',
-        title: t('contractDetail.terminate.notifyFounderTitle', { defaultValue: 'O seu contrato foi terminado' }),
-        message: t('contractDetail.terminate.notifyFounderMsg', {
-          defaultValue: 'A equipa Startup Leiria terminou o contrato. Motivo: {{reason}}',
-          reason: reason.trim(),
-        }),
-        entity_type: 'contract',
-        entity_id: contract.id,
-        link: '/workspace',
-      });
-    }
-    if (rows.length) {
-      await supabase.from('notifications').insert(rows);
-    }
-  } catch { /* non-fatal */ }
+  // P2.6: notifications are fanned out server-side. Client-side enumeration of
+  // user_roles / workspace_users is blocked by RLS for some staff roles, which
+  // silently dropped the founder notice. The RPC is staff-guarded and reliable.
+  const { error: notifyErr } = await (supabase as any).rpc('notify_contract_event', {
+    p_contract_id: contract.id,
+    p_event_type: 'contract_terminated',
+    p_staff_title: t('contractDetail.terminate.notifyStaffTitle', { defaultValue: 'Contrato terminado' }),
+    p_staff_message: t('contractDetail.terminate.notifyStaffMsg', {
+      defaultValue: 'Contrato {{ref}} foi terminado. Motivo: {{reason}}',
+      ref: contract.id.slice(0, 8),
+      reason: reason.trim(),
+    }),
+    p_founder_title: t('contractDetail.terminate.notifyFounderTitle', { defaultValue: 'O seu contrato foi terminado' }),
+    p_founder_message: t('contractDetail.terminate.notifyFounderMsg', {
+      defaultValue: 'A equipa Startup Leiria terminou o contrato. Motivo: {{reason}}',
+      reason: reason.trim(),
+    }),
+    p_founder_link: '/workspace',
+    p_staff_link: '/admin?tab=backoffice&subtab=contracts',
+  });
+  if (notifyErr) {
+    // Non-fatal for the termination itself, but must not be invisible.
+    console.warn('[useTerminateContract] notify_contract_event failed', notifyErr.message);
+  }
 }
 
 export function useTerminateContract() {
