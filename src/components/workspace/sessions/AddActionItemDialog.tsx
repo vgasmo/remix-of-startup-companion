@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,8 @@ import {
 } from '@/components/ui/select';
 import { useCreateActionItem, useWorkspaceMembers } from '@/hooks/useSessions';
 import { notify } from "@/lib/notify";
+import { useLocalFormDraft } from '@/hooks/useLocalFormDraft';
+import { DraftRestoredNotice } from '@/components/shared/DraftRestoredNotice';
 
 interface AddActionItemDialogProps {
   workspaceId: string;
@@ -40,6 +42,24 @@ export function AddActionItemDialog({ workspaceId, sessionId, open, onOpenChange
   const { data: members } = useWorkspaceMembers(workspaceId);
   const createMutation = useCreateActionItem(workspaceId);
 
+  // Local draft so a tab discard / post-deploy reload doesn't lose the action.
+  const draftValue = { title, description, dueDate, priority, ownerId };
+  type ActionDraft = typeof draftValue;
+  const restoreDraft = useCallback((d: ActionDraft) => {
+    setTitle(d.title || '');
+    setDescription(d.description || '');
+    setDueDate(d.dueDate || '');
+    setPriority(d.priority || 'medium');
+    setOwnerId(d.ownerId || '');
+  }, []);
+  const { restored, clear, dismissRestored } = useLocalFormDraft<ActionDraft>({
+    key: sessionId ? `session-action:${sessionId}` : null,
+    value: draftValue,
+    onRestore: restoreDraft,
+    isDirty: (d) => Boolean(d.title || d.description || d.dueDate || d.ownerId),
+    disabled: !open,
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
@@ -57,6 +77,7 @@ export function AddActionItemDialog({ workspaceId, sessionId, open, onOpenChange
         owner_user_id: ownerId || undefined,
       });
       notify.success(t('sessions.actionItemCreated'));
+      clear();
       onOpenChange(false);
       resetForm();
     } catch (error) {
@@ -82,6 +103,15 @@ export function AddActionItemDialog({ workspaceId, sessionId, open, onOpenChange
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {restored && (
+            <DraftRestoredNotice
+              onDiscard={() => {
+                resetForm();
+                clear();
+                dismissRestored();
+              }}
+            />
+          )}
           <div className="space-y-2">
             <Label htmlFor="action-title">{t('actions.title', { defaultValue: 'Título' })} *</Label>
             <Input

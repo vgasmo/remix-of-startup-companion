@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -12,8 +12,8 @@ import { useCreateFunnelItem } from '@/hooks/useFunnel';
 import { useConsultors } from '@/hooks/useWorkspaceOwner';
 import { usePrograms } from '@/hooks/useWorkspaces';
 import { useAuth } from '@/contexts/AuthContext';
-
-const DRAFT_KEY = 'sl-new-lead-draft';
+import { useLocalFormDraft } from '@/hooks/useLocalFormDraft';
+import { DraftRestoredNotice } from '@/components/shared/DraftRestoredNotice';
 
 const emptyForm = {
   contact_name: '',
@@ -26,25 +26,19 @@ const emptyForm = {
   program_id: '',
 };
 
-function loadDraft() {
-  try {
-    const raw = sessionStorage.getItem(DRAFT_KEY);
-    if (raw) return { ...emptyForm, ...JSON.parse(raw) };
-  } catch { /* ignore */ }
-  return emptyForm;
-}
+type LeadForm = typeof emptyForm;
 
-function saveDraft(form: typeof emptyForm) {
-  try {
-    const hasData = Object.values(form).some(v => v !== '');
-    if (hasData) sessionStorage.setItem(DRAFT_KEY, JSON.stringify(form));
-    else sessionStorage.removeItem(DRAFT_KEY);
-  } catch { /* ignore */ }
-}
+/** Only the user-typed fields count as content — silent defaults must not create a draft. */
+const leadIsDirty = (f: LeadForm) =>
+  Boolean(
+    f.contact_name ||
+      f.organization_name ||
+      f.contact_email ||
+      f.contact_phone ||
+      f.source ||
+      f.notes,
+  );
 
-function clearDraft() {
-  try { sessionStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
-}
 
 export function NewLeadDialog() {
   const { t } = useTranslation();
@@ -55,7 +49,18 @@ export function NewLeadDialog() {
   const { data: consultors } = useConsultors();
   const { data: programs } = usePrograms();
 
-  const [form, setForm] = useState(loadDraft);
+  const [form, setForm] = useState<LeadForm>(emptyForm);
+
+  const restoreDraft = useCallback((draft: LeadForm) => {
+    setForm({ ...emptyForm, ...draft });
+  }, []);
+
+  const { restored, clear, dismissRestored } = useLocalFormDraft<LeadForm>({
+    key: 'crm-new-lead',
+    value: form,
+    onRestore: restoreDraft,
+    isDirty: leadIsDirty,
+  });
 
   // Silent defaults: preselect current user as owner + auto-pick program when only one exists.
   // Only fill when the field is empty so a saved draft is not overwritten.
@@ -69,7 +74,6 @@ export function NewLeadDialog() {
     });
   }, [open, user?.id, programs]);
 
-  useEffect(() => { saveDraft(form); }, [form]);
 
   const hasAngleBrackets = (s: string) => /[<>]/.test(s);
   const nameInvalid = hasAngleBrackets(form.contact_name) || hasAngleBrackets(form.organization_name);
@@ -90,7 +94,7 @@ export function NewLeadDialog() {
       type: 'lead' as any,
     });
     setForm(emptyForm);
-    clearDraft();
+    clear();
     setShowMore(false);
     setOpen(false);
   };
@@ -108,6 +112,16 @@ export function NewLeadDialog() {
           <DialogTitle>{t('crm.createNewLead', 'Criar Nova Lead')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 mt-2">
+          {restored && (
+            <DraftRestoredNotice
+              onDiscard={() => {
+                setForm(emptyForm);
+                clear();
+                dismissRestored();
+              }}
+            />
+          )}
+
           {/* Core: name + org + email */}
           <div className="grid grid-cols-2 gap-3">
             <div>

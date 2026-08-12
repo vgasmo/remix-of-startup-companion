@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { format, addDays, startOfDay } from 'date-fns';
@@ -45,6 +45,8 @@ import { useMentorAvailability } from '@/hooks/useMentorAvailability';
 import { logger } from '@/lib/logger';
 import { lisbonWallClockToUtcIso } from '@/lib/dateUtils';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
+import { useLocalFormDraft } from '@/hooks/useLocalFormDraft';
+import { DraftRestoredNotice } from '@/components/shared/DraftRestoredNotice';
 
 interface CreateSessionDialogProps {
   workspaceId: string;
@@ -91,6 +93,39 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
     () => (members || []).filter((m) => m.role === 'mentor_externo'),
     [members]
   );
+
+  // Local draft — survives tab discards (Memory Saver) and post-deploy reloads.
+  const draftValue = {
+    title, selectedSlot, duration, agenda, location, joinUrl,
+    manualDateTime, notes, decisions, logPast,
+    selectedDateIso: selectedDate ? selectedDate.toISOString() : '',
+  };
+  type SessionDraft = typeof draftValue;
+  const restoreSessionDraft = useCallback((d: SessionDraft) => {
+    setTitle(d.title || '');
+    setSelectedSlot(d.selectedSlot || '');
+    setDuration(d.duration || '60');
+    setAgenda(d.agenda || '');
+    setLocation(d.location || '');
+    setJoinUrl(d.joinUrl || '');
+    setManualDateTime(d.manualDateTime || '');
+    setNotes(d.notes || '');
+    setDecisions(d.decisions || '');
+    setLogPast(Boolean(d.logPast));
+    if (d.logPast) setUseManualTime(true);
+    if (d.selectedDateIso) {
+      const parsed = new Date(d.selectedDateIso);
+      if (!Number.isNaN(parsed.getTime())) setSelectedDate(parsed);
+    }
+  }, []);
+  const { restored: draftRestored, clear: clearDraft, dismissRestored } = useLocalFormDraft<SessionDraft>({
+    key: workspaceId ? `create-session:${workspaceId}` : null,
+    value: draftValue,
+    onRestore: restoreSessionDraft,
+    isDirty: (d) =>
+      Boolean(d.title || d.agenda || d.location || d.joinUrl || d.notes || d.decisions || d.manualDateTime || d.selectedDateIso),
+    disabled: !open,
+  });
 
   const [meetingWith, setMeetingWith] = useState<'consultor' | 'mentor_externo'>('consultor');
   const [participantId, setParticipantId] = useState<string>('');
@@ -446,6 +481,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
   };
 
   const resetForm = () => {
+    clearDraft();
     setTitle('');
     setSelectedDate(undefined);
     setSelectedSlot('');
@@ -494,6 +530,14 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
 
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {draftRestored && (
+            <DraftRestoredNotice
+              onDiscard={() => {
+                resetForm();
+                dismissRestored();
+              }}
+            />
+          )}
           {/* Log a past meeting (already happened off-platform) */}
           <div className="flex items-start gap-3 p-3 rounded-lg border border-dashed bg-muted/30">
             <Checkbox

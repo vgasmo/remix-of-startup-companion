@@ -2422,10 +2422,12 @@
     "details": "Details",
     "disabled": "disabled",
     "discard": "Discard",
+    "discardDraft": "Discard draft",
     "dismiss": "Dismiss",
     "done": "Done",
     "download": "Download",
     "draft": "Draft",
+    "draftRestored": "Draft recovered — continue where you left off.",
     "dryRunCompleteResultsummarywould_insertTo": "Dry run complete: ${result.summary.would_insert} to insert,{{ would_update }} to update",
     "edit": "Edit",
     "email": "Email",
@@ -2435,6 +2437,7 @@
     "error": "Error",
     "errorGeneric": "An error occurred. Please try again.",
     "errorLoading": "Failed to load.",
+    "errorOccurred": "An error occurred",
     "errorSaving": "Error saving",
     "errors": "Errors",
     "expand": "Expand",
@@ -2602,8 +2605,7 @@
     "warning": "Warning",
     "workspace": "Workspace",
     "years": "years",
-    "yes": "Yes",
-    "errorOccurred": "An error occurred"
+    "yes": "Yes"
   },
   "communication": {
     "communicationLogged": "Communication logged",

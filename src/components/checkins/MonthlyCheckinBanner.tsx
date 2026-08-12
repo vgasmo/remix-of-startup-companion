@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { usePendingCheckin, useSubmitCheckin, useSkipCheckin, CheckinQuestion, SubmitCheckinPayload } from '@/hooks/useCheckins';
@@ -13,6 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { ClipboardCheck, Clock, AlertTriangle, Send } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 import { useQuickWinToast } from '@/hooks/useQuickWinToast';
+import { useLocalFormDraft } from '@/hooks/useLocalFormDraft';
+import { DraftRestoredNotice } from '@/components/shared/DraftRestoredNotice';
 
 interface MonthlyCheckinBannerProps {
   workspaceId: string;
@@ -29,6 +31,16 @@ export function MonthlyCheckinBanner({ workspaceId }: MonthlyCheckinBannerProps)
   const submitCheckin = useSubmitCheckin();
   const skipCheckin = useSkipCheckin();
   const { showQuickWin } = useQuickWinToast();
+
+  // Local draft for the monthly check-in answers (P0.1c).
+  type CheckinDraft = Record<string, string | number>;
+  const restoreResponses = useCallback((d: CheckinDraft) => setResponses(d), []);
+  const { restored: draftRestored, clear: clearDraft, dismissRestored } = useLocalFormDraft<CheckinDraft>({
+    key: pendingCheckin?.id ? `monthly-checkin:${pendingCheckin.id}` : null,
+    value: responses,
+    onRestore: restoreResponses,
+    isDirty: (d) => Object.values(d || {}).some((v) => v !== '' && v !== undefined && v !== null),
+  });
 
   // Auto-open form when landing here from a smart nudge / one-thing-today CTA (?open=checkin)
   useEffect(() => {
@@ -98,6 +110,8 @@ export function MonthlyCheckinBanner({ workspaceId }: MonthlyCheckinBannerProps)
     showQuickWin('monthly_wins_submitted');
     setShowForm(false);
     setResponses({});
+    clearDraft();
+
   };
 
   const handleSkip = async () => {
@@ -153,6 +167,15 @@ export function MonthlyCheckinBanner({ workspaceId }: MonthlyCheckinBannerProps)
           </DialogHeader>
 
           <div className="space-y-6 py-4">
+            {draftRestored && (
+              <DraftRestoredNotice
+                onDiscard={() => {
+                  setResponses({});
+                  clearDraft();
+                  dismissRestored();
+                }}
+              />
+            )}
             {/* Questions */}
             {questions.map((q, idx) => (
               <div key={q.id} className="space-y-2">
