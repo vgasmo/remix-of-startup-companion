@@ -35,6 +35,53 @@ function formatError(err: unknown): Record<string, unknown> | undefined {
 const errorBuffer: LogEntry[] = [];
 const MAX_ERROR_BUFFER = 50;
 
+/**
+ * Optional external sinks. `logError` (client_error_logs + Sentry forwarder) is
+ * attached lazily below; extra sinks can be registered by app code/tests.
+ * A sink must never throw and never call back into the logger.
+ */
+type LogSink = (entry: LogEntry) => void;
+const sinks: LogSink[] = [];
+
+export function registerLogSink(sink: LogSink): () => void {
+  sinks.push(sink);
+  return () => {
+    const i = sinks.indexOf(sink);
+    if (i >= 0) sinks.splice(i, 1);
+  };
+}
+
+// Forward warn/error to the remote sink (Supabase `client_error_logs` +
+// optional Sentry) so structured events are not console-only. Lazy import
+// keeps this module free of a hard dependency at init time and avoids cycles.
+let remoteForwardingEnabled = typeof window !== 'undefined';
+
+function forwardRemote(entry: LogEntry) {
+  if (!remoteForwardingEnabled) return;
+  void (async () => {
+    try {
+      const { logError } = await import('@/lib/logError');
+      const err = entry.error instanceof Error
+        ? entry.error
+        : new Error(`${entry.event}${entry.error ? `: ${String(entry.error)}` : ''}`);
+      logError(err, {
+        component: 'logger',
+        action: entry.event,
+        severity: entry.level === 'error' ? 'high' : 'low',
+        tags: ['structured-logger', entry.level],
+        metadata: entry.context,
+      });
+    } catch {
+      // Never let observability break the app.
+    }
+  })();
+}
+
+/** Disable remote forwarding (used by tests and by opt-out paths). */
+export function setRemoteLogForwarding(enabled: boolean) {
+  remoteForwardingEnabled = enabled;
+}
+
 function emit(entry: LogEntry) {
   const { level, event, context, error } = entry;
   const tag = `${LOG_PREFIX} ${event}`;
@@ -43,10 +90,16 @@ function emit(entry: LogEntry) {
   if (level === 'error' || level === 'warn') {
     errorBuffer.push(entry);
     if (errorBuffer.length > MAX_ERROR_BUFFER) errorBuffer.shift();
+    forwardRemote(entry);
   }
 
-  // Future: send to Sentry/external here
-  // if (window.__SENTRY__) Sentry.captureMessage(...)
+  for (const sink of sinks) {
+    try {
+      sink(entry);
+    } catch {
+      // A broken sink must not break logging.
+    }
+  }
 
   const payload = { ...context, ...(error ? { error: formatError(error) } : {}) };
 
