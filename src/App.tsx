@@ -48,6 +48,7 @@ const SharedDataroom = lazy(lazyWithRetry(() => import("./pages/SharedDataroom")
 const MentorNda = lazy(lazyWithRetry(() => import("./pages/MentorNda"), "lazy:mentor-nda"));
 const ConsultorTools = lazy(lazyWithRetry(() => import("./pages/ConsultorTools"), "lazy:consultor-tools"));
 const ValuePropWizardPage = lazy(lazyWithRetry(() => import("./pages/ValuePropWizardPage"), "lazy:value-prop"));
+const OAuthConsent = lazy(lazyWithRetry(() => import("./pages/OAuthConsent"), "lazy:oauth-consent"));
 const HelpGlossary = lazy(lazyWithRetry(() => import("./pages/HelpGlossary"), "lazy:help-glossary"));
 const QuickGuide = lazy(lazyWithRetry(() => import("./pages/QuickGuide"), "lazy:quick-guide"));
 const CRM = lazy(lazyWithRetry(() => import("./pages/CRM"), "lazy:crm"));
@@ -153,6 +154,7 @@ function AppRoutes() {
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/pending-approval" element={<PendingApproval />} />
         <Route path="/suspended" element={<SuspendedAccount />} />

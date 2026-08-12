@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import fs from "fs";
 import { componentTagger } from "lovable-tagger";
+import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
 
 function versionJsonPlugin(): Plugin {
   return {
@@ -30,6 +31,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     versionJsonPlugin(),
+    mcpPlugin(),
   ].filter(Boolean),
   resolve: {
     alias: {
