@@ -12,12 +12,42 @@ export interface SessionArtifacts {
   next_steps: string[];
 }
 
+export type TranscriptConfidentiality = 'workspace' | 'staff_only' | 'founder_only';
+
 export interface SessionTranscript {
   id: string;
   session_id: string;
   transcript_text: string | null;
   source: string;
   created_at: string;
+  confidentiality?: TranscriptConfidentiality | null;
+  pending_confidentiality_review?: boolean | null;
+}
+
+export function useReclassifyTranscript() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ transcriptId, confidentiality, reason }: {
+      transcriptId: string;
+      confidentiality: TranscriptConfidentiality;
+      reason?: string;
+    }) => {
+      const { error } = await (supabase as any).rpc('staff_reclassify_transcript_confidentiality', {
+        p_transcript_id: transcriptId,
+        p_new_confidentiality: confidentiality,
+        p_reason: reason ?? 'staff_review',
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['session-transcripts'] });
+      notify.success(t('sessions.transcriptReclassified'));
+    },
+    onError: () => {
+      notify.error(t('sessions.transcriptReclassifyFailed'));
+    },
+  });
 }
 
 export function useGenerateSessionArtifacts() {
