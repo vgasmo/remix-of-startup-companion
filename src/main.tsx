@@ -2,7 +2,8 @@ import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
-import "./i18n";
+import { initI18n } from "./i18n";
+
 
 // Validate environment variables at startup (fail-fast in dev)
 import { validateEnv } from "./lib/env";
@@ -46,8 +47,14 @@ if (typeof window !== "undefined") {
     .catch(() => { /* noop */ });
 }
 
-createRoot(document.getElementById("root")!).render(
-  <HelmetProvider>
-    <App />
-  </HelmetProvider>,
-);
+const root = createRoot(document.getElementById("root")!);
+
+// Load the active locale bundle before first paint so no untranslated keys flash.
+initI18n().finally(() => {
+  root.render(
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>,
+  );
+});
+
