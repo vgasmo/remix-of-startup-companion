@@ -12,8 +12,16 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { useSessionTranscripts, SessionTranscript } from '@/hooks/useSessionArtifacts';
+import {
+  useSessionTranscripts,
+  useReclassifyTranscript,
+  SessionTranscript,
+  TranscriptConfidentiality,
+} from '@/hooks/useSessionArtifacts';
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ShieldAlert } from 'lucide-react';
 
 interface SessionTranscriptsViewerProps {
   sessionId: string;
@@ -85,6 +93,43 @@ export function SessionTranscriptsViewer({ sessionId, showEmpty = true }: Sessio
   );
 }
 
+const CONFIDENTIALITY_LABEL_KEY: Record<string, string> = {
+  workspace: 'sessions.transcriptConfWorkspace',
+  staff_only: 'sessions.transcriptConfStaffOnly',
+  founder_only: 'sessions.transcriptConfFounderOnly',
+};
+
+function ConfidentialityControls({ transcript }: { transcript: SessionTranscript }) {
+  const { t } = useTranslation();
+  const { isStaff } = useAuth();
+  const reclassify = useReclassifyTranscript();
+
+  if (!isStaff) return null;
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className="text-xs text-muted-foreground">{t('sessions.transcriptVisibility')}</span>
+      <Select
+        value={transcript.confidentiality ?? 'workspace'}
+        onValueChange={(v) =>
+          reclassify.mutate({ transcriptId: transcript.id, confidentiality: v as TranscriptConfidentiality })
+        }
+        disabled={reclassify.isPending}
+      >
+        <SelectTrigger className="h-8 w-[180px] text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="workspace">{t('sessions.transcriptConfWorkspace')}</SelectItem>
+          <SelectItem value="staff_only">{t('sessions.transcriptConfStaffOnly')}</SelectItem>
+          <SelectItem value="founder_only">{t('sessions.transcriptConfFounderOnly')}</SelectItem>
+        </SelectContent>
+      </Select>
+      {reclassify.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+    </div>
+  );
+}
+
 function TranscriptItem({ 
   transcript, 
   isExpanded, 
@@ -94,6 +139,7 @@ function TranscriptItem({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
+  const { t } = useTranslation();
   const dateLocale = useDateLocale();
   const config = SOURCE_CONFIG[transcript.source] || SOURCE_CONFIG.manual;
   const Icon = config.icon;
@@ -115,6 +161,17 @@ function TranscriptItem({
                     <Badge variant="outline" className="text-[10px]">
                       {config.label}
                     </Badge>
+                    {transcript.pending_confidentiality_review && (
+                      <Badge variant="outline" className="text-[10px] gap-1 border-[hsl(var(--warning))] text-[hsl(var(--warning))]">
+                        <ShieldAlert className="h-3 w-3" />
+                        {t('sessions.transcriptPendingReview')}
+                      </Badge>
+                    )}
+                    {transcript.confidentiality && (
+                      <Badge variant="secondary" className="text-[10px]">
+                        {t(CONFIDENTIALITY_LABEL_KEY[transcript.confidentiality] ?? 'sessions.transcriptConfWorkspace')}
+                      </Badge>
+                    )}
                     {transcript.created_at && (
                       <span className="text-xs text-muted-foreground">
                         {format(new Date(transcript.created_at), 'MMM d, h:mm a', { locale: dateLocale })}
@@ -133,7 +190,8 @@ function TranscriptItem({
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="px-3 pb-3 pt-0">
+          <div className="px-3 pb-3 pt-0 space-y-3">
+            <ConfidentialityControls transcript={transcript} />
             <ScrollArea  viewportClassName="max-h-48">
               <p className="text-sm whitespace-pre-wrap bg-muted/50 p-3 rounded-lg">
                 {transcript.transcript_text}
