@@ -455,23 +455,24 @@ Deno.serve(async (req) => {
       const result: AutomationResult = { type: 'crm_lead_stale', notifications: 0, emails: 0, errors: [] }
       try {
         const fourteenDaysAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString()
-        const { data: leads } = await supabase
+        const { data: leads, error: leadsError } = await supabase
           .from('funnel_items')
-          .select('id, company_name, owner_user_id, last_activity_at, updated_at')
+          .select('id, organization_name, contact_name, owner_consultant_id, last_activity_at, updated_at')
           .not('stage', 'in', '("contratado","rejeitado","arquivado")')
-          .not('owner_user_id', 'is', null)
+          .not('owner_consultant_id', 'is', null)
+        if (leadsError) throw leadsError
 
         for (const lead of leads || []) {
           const lastActivity = lead.last_activity_at || lead.updated_at
           if (!lastActivity || new Date(lastActivity) > new Date(fourteenDaysAgo)) continue
 
-          if (await wasAlreadyRun(supabase, 'crm_lead_stale', lead.id, lead.owner_user_id, todayStr)) continue
-          await notify(supabase, lead.owner_user_id, 'crm_lead_stale',
-            `Lead parada há 14+ dias — ${lead.company_name}`,
+          if (await wasAlreadyRun(supabase, 'crm_lead_stale', lead.id, lead.owner_consultant_id, todayStr)) continue
+          await notify(supabase, lead.owner_consultant_id, 'crm_lead_stale',
+            `Lead parada há 14+ dias — ${lead.organization_name || lead.contact_name || 'Lead'}`,
             `Sem atividade na lead desde ${new Date(lastActivity).toLocaleDateString('pt-PT')}.`,
             `/admin?tab=crm`,
             'funnel_item', lead.id)
-          await recordRun(supabase, 'crm_lead_stale', lead.id, 'funnel_item', lead.owner_user_id, todayStr, 'app')
+          await recordRun(supabase, 'crm_lead_stale', lead.id, 'funnel_item', lead.owner_consultant_id, todayStr, 'app')
           result.notifications++
         }
       } catch (e: any) { result.errors.push(e.message) }
