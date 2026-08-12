@@ -12717,6 +12717,19 @@ export type Database = {
         Returns: Json
       }
       normalize_ident: { Args: { _v: string }; Returns: string }
+      notify_contract_event: {
+        Args: {
+          p_contract_id: string
+          p_event_type: string
+          p_founder_link?: string
+          p_founder_message: string
+          p_founder_title: string
+          p_staff_link?: string
+          p_staff_message: string
+          p_staff_title: string
+        }
+        Returns: number
+      }
       open_and_notify_monthly_founder_pulse_cycles: {
         Args: never
         Returns: Json
@@ -13034,6 +13047,10 @@ export type Database = {
           responses_saved: number
           status: string
         }[]
+      }
+      touch_public_booking_rate_limit: {
+        Args: { p_email: string; p_ip_hash?: string }
+        Returns: Json
       }
       transition_mentor_booking_atomic: {
         Args: {
