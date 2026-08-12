@@ -97,30 +97,19 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
         } as any);
       } catch { /* non-fatal */ }
 
-      // Notify staff + founder members (best-effort)
-      try {
-        const [{ data: staff }, { data: members }] = await Promise.all([
-          supabase.from('user_roles').select('user_id').in('role', ['admin', 'consultor', 'backoffice']),
-          contract.workspace_id
-            ? supabase.from('workspace_users').select('user_id').eq('workspace_id', contract.workspace_id).eq('role', 'founder').eq('active', true)
-            : Promise.resolve({ data: [] as any[] }),
-        ]);
-        const targets = [
-          ...(staff || []).map((s: any) => s.user_id),
-          ...(members || []).map((m: any) => m.user_id),
-        ];
-        if (targets.length) {
-          await supabase.from('notifications').insert(targets.map((uid: string) => ({
-            user_id: uid,
-            type: 'contract_renewed',
-            title: t('contractDetail.renewNotifyTitle', { defaultValue: 'Contrato renovado' }),
-            message: t('contractDetail.renewNotifyMsg', { defaultValue: 'O contrato foi renovado até {{end}}.', end: newEnd }),
-            entity_type: 'contract',
-            entity_id: contract.id,
-            link: '/admin?tab=backoffice&subtab=contracts',
-          })));
-        }
-      } catch { /* non-fatal */ }
+      // P2.6: fan out via staff-guarded RPC — client-side enumeration of
+      // user_roles/workspace_users is blocked by RLS and silently skipped founders.
+      const { error: notifyErr } = await (supabase as any).rpc('notify_contract_event', {
+        p_contract_id: contract.id,
+        p_event_type: 'contract_renewed',
+        p_staff_title: t('contractDetail.renewNotifyTitle', { defaultValue: 'Contrato renovado' }),
+        p_staff_message: t('contractDetail.renewNotifyMsg', { defaultValue: 'O contrato foi renovado até {{end}}.', end: newEnd }),
+        p_founder_title: t('contractDetail.renewNotifyTitle', { defaultValue: 'Contrato renovado' }),
+        p_founder_message: t('contractDetail.renewNotifyMsg', { defaultValue: 'O contrato foi renovado até {{end}}.', end: newEnd }),
+        p_founder_link: '/workspace',
+        p_staff_link: '/admin?tab=backoffice&subtab=contracts',
+      });
+      if (notifyErr) console.warn('[RenewContractDialog] notify_contract_event failed', notifyErr.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
