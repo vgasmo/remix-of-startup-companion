@@ -33,7 +33,7 @@ export function useDocumentReviews(documentId: string | undefined) {
       if (!documentId) return [];
       const { data, error } = await supabase
         .from('document_reviews')
-        .select('*')
+        .select('id, document_id, workspace_id, reviewer_id, score_problem_solution, score_market, score_business_model, score_team, score_traction, score_design_clarity, comments, ai_analysis_json, ai_analyzed_at, approval_status, created_at, updated_at')
         .eq('document_id', documentId)
         .order('created_at', { ascending: false });
       if (error) throw error;

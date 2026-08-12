@@ -16,7 +16,7 @@ import { useWorkspaces } from '@/hooks/useWorkspaces';
 import {
   RESOURCES_CATALOG,
   CATEGORY_LABELS,
-  STAGE_LABELS,
+  RESOURCE_STAGE_KEYS,
   type ResourceItem,
   getFavorites,
   toggleFavorite,
@@ -58,7 +58,7 @@ function ResourceCard({ r, favs, onToggleFav, lang }: { r: ResourceItem; favs: s
         <div className="flex flex-wrap gap-1 mt-1">
           <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{catLabel}</Badge>
           {r.stages.slice(0, 2).map(s => (
-            <Badge key={s} variant="outline" className="text-[10px] px-1.5 py-0">{STAGE_LABELS[s]?.[lang === 'pt' ? 'pt' : 'en'] || s}</Badge>
+            <Badge key={s} variant="outline" className="text-[10px] px-1.5 py-0">{t(`resources.stageLabels.${s}`, { defaultValue: s })}</Badge>
           ))}
         </div>
       </CardContent>
@@ -186,9 +186,9 @@ export default function Resources() {
             </Badge>
           ))}
           <span className="w-px h-6 bg-border self-center" />
-          {Object.entries(STAGE_LABELS).map(([key, labels]) => (
+          {RESOURCE_STAGE_KEYS.map((key) => (
             <Badge key={key} variant={filterStage === key ? 'default' : 'outline'} className="cursor-pointer select-none" onClick={() => setFilterStage(filterStage === key ? '' : key)}>
-              {lang === 'pt' ? labels.pt : labels.en}
+              {t(`resources.stageLabels.${key}`, { defaultValue: key })}
             </Badge>
           ))}
           {hasFilters && (

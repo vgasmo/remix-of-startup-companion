@@ -7862,6 +7862,12 @@
       "templatesTools": "Templates & Ferramentas",
       "templatesToolsDesc": "Modelos prontos para pitch decks, financeiros, legais e mais."
     },
+    "stageLabels": {
+      "ideation": "Ideação",
+      "pre_seed": "Pré-seed",
+      "seed": "Seed",
+      "scale": "Scale"
+    },
     "subtitle": "Mentoria, templates e guias para avançar mais depressa — sem perder rigor.",
     "title": "Rede & Recursos",
     "titleRequired": "Título é obrigatório",

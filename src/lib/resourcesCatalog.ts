@@ -388,12 +388,12 @@ export const CATEGORY_LABELS: Record<string, { pt: string; en: string }> = {
   metrics: { pt: 'Métricas', en: 'Metrics' },
 };
 
-export const STAGE_LABELS: Record<string, { pt: string; en: string }> = {
-  ideation: { pt: 'Ideação', en: 'Ideation' },
-  pre_seed: { pt: 'Pré-seed', en: 'Pre-seed' },
-  seed: { pt: 'Seed', en: 'Seed' },
-  scale: { pt: 'Scale', en: 'Scale' },
-};
+/**
+ * Resource stage keys. Labels live in i18n (`resources.stageLabels.<key>`) so
+ * there is a single translation mechanism — no parallel bilingual maps.
+ */
+export const RESOURCE_STAGE_KEYS = ['ideation', 'pre_seed', 'seed', 'scale'] as const;
+export type ResourceStageKey = (typeof RESOURCE_STAGE_KEYS)[number];
 
 export const ROLE_LABELS: Record<string, { pt: string; en: string }> = {
   founder: { pt: 'Founder', en: 'Founder' },

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { logger } from '@/lib/logger';
+import { SESSION_LIST_COLUMNS } from '@/hooks/useSessions';
 
 export function useWorkspaceActions(workspaceId: string | undefined) {
   return useQuery({
@@ -11,7 +12,7 @@ export function useWorkspaceActions(workspaceId: string | undefined) {
       // First get action items
       const { data: actions, error } = await supabase
         .from('action_items')
-        .select('*')
+        .select('id, workspace_id, session_id, milestone_id, title, description, status, priority, due_date, owner_user_id, created_by, completed_at, created_at, updated_at, source_deliverable_key')
         .eq('workspace_id', workspaceId)
         .in('status', ['pending', 'in_progress'])
         .order('due_date', { ascending: true, nullsFirst: false })
@@ -124,7 +125,7 @@ export function useWorkspaceNextSession(workspaceId: string | undefined) {
       
       const { data: session } = await supabase
         .from('sessions')
-        .select('*')
+        .select('id, title, scheduled_at, duration, join_url, teams_meeting_url, location, status')
         .eq('workspace_id', workspaceId)
         .gte('scheduled_at', new Date().toISOString())
         .not('status', 'in', '(cancelled,no_show)')
@@ -157,7 +158,7 @@ export function useWorkspaceSessions(workspaceId: string | undefined) {
       
       const { data, error } = await supabase
         .from('sessions')
-        .select('*')
+        .select(SESSION_LIST_COLUMNS)
         .eq('workspace_id', workspaceId)
         .order('scheduled_at', { ascending: false })
         .limit(5);
