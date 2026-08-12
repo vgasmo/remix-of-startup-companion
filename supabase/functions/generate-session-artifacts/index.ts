@@ -102,14 +102,14 @@ Deno.serve(async (req: Request) => {
     // Call AI API
     if (lovableApiKey) {
       try {
-        const aiResponse = await fetch('https://api.lovable.dev/v1/chat/completions', {
+        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${lovableApiKey}`,
           },
           body: JSON.stringify({
-            model: 'gpt-5-mini',
+            model: 'google/gemini-2.5-flash',
             messages: [
               {
                 role: 'system',
@@ -134,20 +134,33 @@ Be concise and actionable. Focus on startup progress, mentor advice, and founder
           }),
         });
 
-        if (aiResponse.ok) {
-          const aiData = await aiResponse.json();
-          const content = aiData.choices?.[0]?.message?.content;
-          if (content) {
-            try {
-              artifacts = JSON.parse(content);
-            } catch {
-              console.error('Failed to parse AI response as JSON');
-            }
-          }
+        if (!aiResponse.ok) {
+          const detail = await aiResponse.text();
+          console.error('AI gateway error:', aiResponse.status, detail);
+          return corsJsonResponse(
+            { error: 'AI generation failed', status: aiResponse.status },
+            req,
+            aiResponse.status === 429 ? 429 : 502,
+          );
+        }
+        const aiData = await aiResponse.json();
+        const content = aiData.choices?.[0]?.message?.content;
+        if (!content) {
+          console.error('AI gateway returned no content');
+          return corsJsonResponse({ error: 'AI generation returned no content' }, req, 502);
+        }
+        try {
+          artifacts = JSON.parse(content);
+        } catch {
+          console.error('Failed to parse AI response as JSON');
+          return corsJsonResponse({ error: 'AI generation returned invalid JSON' }, req, 502);
         }
       } catch (aiError) {
         console.error('AI API error:', aiError);
+        return corsJsonResponse({ error: 'AI generation failed' }, req, 502);
       }
+    } else {
+      return corsJsonResponse({ error: 'AI gateway not configured' }, req, 503);
     }
 
     // Update session with summary

@@ -6417,6 +6417,8 @@ export type Database = {
           last_publish_rollback_status: string | null
           program_id: string | null
           program_snapshot_json: Json | null
+          published_at: string | null
+          published_by: string | null
           revision: number
           status: string
           updated_at: string
@@ -6431,6 +6433,8 @@ export type Database = {
           last_publish_rollback_status?: string | null
           program_id?: string | null
           program_snapshot_json?: Json | null
+          published_at?: string | null
+          published_by?: string | null
           revision?: number
           status?: string
           updated_at?: string
@@ -6445,6 +6449,8 @@ export type Database = {
           last_publish_rollback_status?: string | null
           program_id?: string | null
           program_snapshot_json?: Json | null
+          published_at?: string | null
+          published_by?: string | null
           revision?: number
           status?: string
           updated_at?: string

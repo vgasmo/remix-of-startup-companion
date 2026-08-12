@@ -66,7 +66,7 @@ export function useWorkspaceTabBadges(workspaceId: string | undefined) {
   return useMemo(() => {
     const badges: Record<string, number> = {};
     if (data?.pendingActions && data.pendingActions > 0) {
-      badges['actions'] = data.pendingActions;
+      badges['milestones-actions'] = data.pendingActions;
     }
     if (data?.unreadChat && data.unreadChat > 0) {
       badges['chat'] = data.unreadChat;

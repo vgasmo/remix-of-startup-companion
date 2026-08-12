@@ -21,6 +21,7 @@ interface LinkedContextPanelProps {
   onInitiateContract?: () => void;
   onSendContract?: (contractId: string) => void;
   onCreateAndSendContract?: () => void;
+  isCreatingContract?: boolean;
 }
 
 const CONTRACT_STATUS_COLORS: Record<string, string> = {
@@ -88,6 +89,7 @@ export function LinkedContextPanel({
   onInitiateContract,
   onSendContract,
   onCreateAndSendContract,
+  isCreatingContract = false,
 }: LinkedContextPanelProps) {
   const { t } = useTranslation();
 
@@ -202,6 +204,7 @@ export function LinkedContextPanel({
               size="sm"
               variant="default"
               className="h-8 text-xs gap-1.5"
+              disabled={isCreatingContract}
               onClick={onCreateAndSendContract}
             >
               <Zap className="h-3.5 w-3.5" />
@@ -335,6 +338,7 @@ export function LinkedContextPanel({
                 size="sm"
                 variant="default"
                 className="h-8 text-xs gap-1.5"
+                disabled={isCreatingContract}
                 onClick={onCreateAndSendContract}
               >
                 <Zap className="h-3.5 w-3.5" />

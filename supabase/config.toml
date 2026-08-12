@@ -329,3 +329,7 @@ verify_jwt = true
 # Manual mode still requires an authenticated staff user.
 [functions.sync-outlook-emails]
 verify_jwt = false
+
+# Cron mensal — cron secret/token validado em runtime.
+[functions.open-monthly-founder-pulse]
+verify_jwt = false

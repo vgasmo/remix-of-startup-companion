@@ -127,9 +127,17 @@ function validateMeetingPayload(body: MeetingIngestPayload): { valid: true; data
       transcript_text: transcriptResult.value ? sanitizeString(transcriptResult.value, SIZE_LIMITS.TRANSCRIPT) : undefined,
       summary: summaryResult.value ? sanitizeString(summaryResult.value, SIZE_LIMITS.DESCRIPTION) : undefined,
       join_url: urlResult.value,
-      source: sourceResult.value || 'webhook',
+      source: normalizeTranscriptSource(sourceResult.value),
     },
   };
+}
+
+const ALLOWED_TRANSCRIPT_SOURCES = ['teams_graph', 'manual_upload', 'voice', 'webhook', 'unknown'] as const;
+
+function normalizeTranscriptSource(raw?: string | null): string {
+  if (!raw) return 'webhook';
+  const value = raw.trim().toLowerCase();
+  return (ALLOWED_TRANSCRIPT_SOURCES as readonly string[]).includes(value) ? value : 'unknown';
 }
 
 Deno.serve(async (req: Request) => {
@@ -302,6 +310,10 @@ Deno.serve(async (req: Request) => {
 
       if (transcriptError) {
         console.error('Error storing transcript:', transcriptError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to store transcript', details: transcriptError.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        );
       }
     }
 

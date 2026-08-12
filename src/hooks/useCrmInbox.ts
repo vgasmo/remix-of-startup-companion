@@ -16,6 +16,8 @@ export interface CrmInboxItem {
   next_action_description: string | null;
   last_activity_at: string | null;
   linked_workspace_id: string | null;
+  linked_startup_id?: string | null;
+  linked_contract_id?: string | null;
   notes: string | null;
   source: string | null;
   first_contact_at: string | null;
@@ -56,7 +58,7 @@ const FUNNEL_ITEM_FIELDS = `
   id, stage, type, owner_consultant_id, program_id,
   contact_name, contact_email, organization_name,
   next_action_at, next_action_description, last_activity_at,
-  linked_workspace_id, metadata_json, notes, contact_phone, source, first_contact_at,
+  linked_workspace_id, linked_startup_id, linked_contract_id, metadata_json, notes, contact_phone, source, first_contact_at,
   deal_value, deal_currency, expected_close_date, win_probability,
   created_at, updated_at
 `;

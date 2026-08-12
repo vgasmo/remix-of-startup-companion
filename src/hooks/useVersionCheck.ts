@@ -24,28 +24,6 @@ export function useVersionCheck() {
       if (remote !== initialVersion.current && !hasNotified.current) {
         hasNotified.current = true;
 
-        // Force unregister stale service workers so the new build is used
-        if ('serviceWorker' in navigator) {
-          try {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            for (const reg of registrations) {
-              await reg.unregister();
-            }
-          } catch {
-            // ignore SW errors
-          }
-        }
-
-        // Clear all caches (Workbox / SW caches)
-        if ('caches' in window) {
-          try {
-            const names = await caches.keys();
-            await Promise.all(names.map(n => caches.delete(n)));
-          } catch {
-            // ignore cache errors
-          }
-        }
-
         // Show persistent, unmissable toast with clear action.
         // IMPORTANT: never auto-reload — that would silently destroy
         // unsaved work / scroll position when the user returns to the tab.
@@ -61,8 +39,30 @@ export function useVersionCheck() {
             action: {
               label: t('app.updateNow', 'Atualizar agora'),
               onClick: () => {
-                // Hard reload bypassing cache
-                window.location.reload();
+                // Destroy stale caches ONLY when the user opts in — doing it at
+                // detection time leaves the old tab without a safety net and the
+                // next navigation blows up mid-form.
+                void (async () => {
+                  if ('serviceWorker' in navigator) {
+                    try {
+                      const registrations = await navigator.serviceWorker.getRegistrations();
+                      for (const reg of registrations) {
+                        await reg.unregister();
+                      }
+                    } catch {
+                      // ignore SW errors
+                    }
+                  }
+                  if ('caches' in window) {
+                    try {
+                      const names = await caches.keys();
+                      await Promise.all(names.map((n) => caches.delete(n)));
+                    } catch {
+                      // ignore cache errors
+                    }
+                  }
+                  window.location.reload();
+                })();
               },
             },
           },
@@ -74,6 +74,19 @@ export function useVersionCheck() {
   }, [t]);
 
   useEffect(() => {
+    // Surface the involuntary reload caused by lazyWithRetry after a deploy.
+    try {
+      if (sessionStorage.getItem('app_reload_reason') === 'chunk_update') {
+        sessionStorage.removeItem('app_reload_reason');
+        notify.info(
+          t('app.reloadedAfterUpdate', 'A app foi atualizada e recarregada. Se estava a preencher algo, pode ter-se perdido.'),
+          { duration: 8000, position: 'top-center' },
+        );
+      }
+    } catch {
+      // sessionStorage unavailable
+    }
+
     checkVersion();
     const id = setInterval(checkVersion, POLL_INTERVAL);
 
@@ -92,6 +105,6 @@ export function useVersionCheck() {
       window.removeEventListener('focus', onFocus);
       navigator.serviceWorker?.removeEventListener('controllerchange', onControllerChange);
     };
-  }, [checkVersion]);
+  }, [checkVersion, t]);
 }
 

@@ -25,7 +25,7 @@ const FUNNEL_ITEM_FIELDS = `
   id, stage, type, owner_consultant_id, program_id,
   contact_name, contact_email, organization_name,
   next_action_at, next_action_description, last_activity_at,
-  linked_workspace_id, deal_value, deal_currency, expected_close_date, win_probability,
+  linked_workspace_id, linked_startup_id, linked_contract_id, deal_value, deal_currency, expected_close_date, win_probability,
   metadata_json, notes, contact_phone, source, first_contact_at,
   created_at, updated_at
 `;

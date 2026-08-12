@@ -19,6 +19,7 @@ export function lazyWithRetry<TModule extends { default: ComponentType<any> }>(
 
       if (typeof window !== 'undefined' && isDynamicImportFailure && !hasRetried) {
         sessionStorage.setItem(storageKey, 'true');
+        sessionStorage.setItem('app_reload_reason', 'chunk_update');
         window.location.reload();
         return new Promise<TModule>(() => {
           // Intentionally unresolved while the page reloads.

@@ -88,6 +88,7 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
   const [addTaskDialog, setAddTaskDialog] = useState(false);
   const [nextActionDialog, setNextActionDialog] = useState(false);
   const [convertDialog, setConvertDialog] = useState(false);
+  const [creatingContract, setCreatingContract] = useState(false);
   const [taskStatusFilter, setTaskStatusFilter] = useState<TaskStatusFilter>('open');
   
   // Local overrides for optimistic updates on next action
@@ -561,7 +562,10 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
                     notify.error(err?.message || t('crm.contractLinkError', { defaultValue: 'Erro ao gerar link do contrato' }));
                   }
                 }}
+                isCreatingContract={creatingContract}
                 onCreateAndSendContract={async () => {
+                  if (creatingContract) return;
+                  setCreatingContract(true);
                   try {
                     const today = new Date().toISOString().slice(0, 10);
 
@@ -621,6 +625,9 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
                     // still-open drawer stops showing the pre-write null state.
                     queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
                     queryClient.invalidateQueries({ queryKey: ['funnel-linked-contract', newContract.id] });
+                    queryClient.invalidateQueries({ queryKey: ['crm-linked-contract', newContract.id] });
+                    queryClient.invalidateQueries({ queryKey: ['crm-workspace-contracts', item.linked_workspace_id] });
+                    queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
                     queryClient.invalidateQueries({ queryKey: ['activity-timeline', item.id] });
 
 
@@ -641,6 +648,8 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
                     notify.error(err?.message || t('crm.contractCreateAndSendError', {
                       defaultValue: 'Erro ao criar e enviar contrato',
                     }));
+                  } finally {
+                    setCreatingContract(false);
                   }
                 }}
               />
