@@ -12,7 +12,7 @@ export function useWorkspaceActions(workspaceId: string | undefined) {
       // First get action items
       const { data: actions, error } = await supabase
         .from('action_items')
-        .select('id, workspace_id, milestone_id, title, description, status, priority, due_date, owner_user_id, completed_at, created_at, updated_at')
+        .select('id, workspace_id, session_id, milestone_id, title, description, status, priority, due_date, owner_user_id, created_by, completed_at, created_at, updated_at, source_deliverable_key')
         .eq('workspace_id', workspaceId)
         .in('status', ['pending', 'in_progress'])
         .order('due_date', { ascending: true, nullsFirst: false })
