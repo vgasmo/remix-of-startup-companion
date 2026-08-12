@@ -49,7 +49,19 @@ export function NewLeadDialog() {
   const { data: consultors } = useConsultors();
   const { data: programs } = usePrograms();
 
-  const [form, setForm] = useState(loadDraft);
+  const [form, setForm] = useState<LeadForm>(emptyForm);
+
+  const restoreDraft = useCallback((draft: LeadForm) => {
+    setForm({ ...emptyForm, ...draft });
+    setOpen(true);
+  }, []);
+
+  const { restored, clear, dismissRestored } = useLocalFormDraft<LeadForm>({
+    key: 'crm-new-lead',
+    value: form,
+    onRestore: restoreDraft,
+    isDirty: leadIsDirty,
+  });
 
   // Silent defaults: preselect current user as owner + auto-pick program when only one exists.
   // Only fill when the field is empty so a saved draft is not overwritten.
@@ -63,7 +75,6 @@ export function NewLeadDialog() {
     });
   }, [open, user?.id, programs]);
 
-  useEffect(() => { saveDraft(form); }, [form]);
 
   const hasAngleBrackets = (s: string) => /[<>]/.test(s);
   const nameInvalid = hasAngleBrackets(form.contact_name) || hasAngleBrackets(form.organization_name);
