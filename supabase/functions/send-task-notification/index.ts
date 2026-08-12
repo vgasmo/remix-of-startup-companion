@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { requireCronSecret, generateRequestId, createLogger } from '../_shared/security.ts';
+import { requireCronOrStaff, generateRequestId, createLogger } from '../_shared/security.ts';
 import { resolveLocalesByUserIds, type Locale } from '../_shared/i18n.ts';
 
 const FUNCTION_NAME = 'send-task-notification';
@@ -64,10 +64,16 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return handleCorsOptions(req);
 
   try {
-    const authResult = await requireCronOrStaff(req);
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const supabaseUser = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: req.headers.get("Authorization") || "" } } },
+    );
+
+    const authResult = await requireCronOrStaff(req, supabaseUser, supabase);
     if ('error' in authResult) { log.warn('Unauthorized'); return authResult.error; }
 
-    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const body: TaskNotificationRequest = await req.json();
     log.info('Task notification request', { type: body.type, taskId: body.taskId });
 

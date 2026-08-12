@@ -132,6 +132,14 @@ function validateMeetingPayload(body: MeetingIngestPayload): { valid: true; data
   };
 }
 
+const ALLOWED_TRANSCRIPT_SOURCES = ['teams_graph', 'manual_upload', 'voice', 'webhook', 'unknown'] as const;
+
+function normalizeTranscriptSource(raw?: string | null): string {
+  if (!raw) return 'webhook';
+  const value = raw.trim().toLowerCase();
+  return (ALLOWED_TRANSCRIPT_SOURCES as readonly string[]).includes(value) ? value : 'unknown';
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -302,6 +310,10 @@ Deno.serve(async (req: Request) => {
 
       if (transcriptError) {
         console.error('Error storing transcript:', transcriptError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to store transcript', details: transcriptError.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        );
       }
     }
 
