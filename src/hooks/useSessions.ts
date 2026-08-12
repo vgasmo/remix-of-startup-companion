@@ -142,6 +142,14 @@ async function notifySessionEvent(
 
 
 
+/**
+ * Explicit column list for session list/calendar reads.
+ * `sessions` has 47 columns including heavy blobs (`raw_transcript`); listing
+ * columns keeps payloads small. Detail views fetch extra fields on demand.
+ */
+export const SESSION_LIST_COLUMNS =
+  'id, workspace_id, title, scheduled_at, duration, agenda, notes, decisions, location, join_url, teams_meeting_url, status, primary_consultant_id, session_template_id, session_type, outlook_event_id, outlook_sync_status, outlook_synced_at, created_by, created_at, updated_at, source, ai_summary, ai_decisions, ai_risks, ai_action_suggestions, ai_kpi_prompts, ai_generated_at, ai_generated_by';
+
 export interface Session {
   id: string;
   workspace_id: string;
@@ -237,7 +245,7 @@ export function useCalendarSessions(workspaceId: string | undefined) {
       
       const { data: sessions, error } = await supabase
         .from('sessions')
-        .select('*')
+        .select(SESSION_LIST_COLUMNS)
         .eq('workspace_id', workspaceId)
         .order('scheduled_at', { ascending: true });
 
