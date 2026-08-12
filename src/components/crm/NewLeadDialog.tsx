@@ -112,6 +112,16 @@ export function NewLeadDialog() {
           <DialogTitle>{t('crm.createNewLead', 'Criar Nova Lead')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 mt-2">
+          {restored && (
+            <DraftRestoredNotice
+              onDiscard={() => {
+                setForm(emptyForm);
+                clear();
+                dismissRestored();
+              }}
+            />
+          )}
+
           {/* Core: name + org + email */}
           <div className="grid grid-cols-2 gap-3">
             <div>
