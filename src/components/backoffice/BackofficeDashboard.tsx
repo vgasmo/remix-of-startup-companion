@@ -13,9 +13,7 @@ import {
   TrendingUp, Users, ArrowRight, Cake, AlertCircle, CheckCircle2,
   Timer, MapPin, Receipt, DoorOpen, CreditCard, Map
 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabaseClient';
-import { format, differenceInMonths, differenceInDays, addYears } from 'date-fns';
+import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
