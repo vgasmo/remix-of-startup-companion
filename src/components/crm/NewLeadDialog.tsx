@@ -53,7 +53,6 @@ export function NewLeadDialog() {
 
   const restoreDraft = useCallback((draft: LeadForm) => {
     setForm({ ...emptyForm, ...draft });
-    setOpen(true);
   }, []);
 
   const { restored, clear, dismissRestored } = useLocalFormDraft<LeadForm>({
@@ -95,7 +94,7 @@ export function NewLeadDialog() {
       type: 'lead' as any,
     });
     setForm(emptyForm);
-    clearDraft();
+    clear();
     setShowMore(false);
     setOpen(false);
   };
