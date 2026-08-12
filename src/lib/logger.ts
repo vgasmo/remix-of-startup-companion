@@ -55,9 +55,15 @@ export function registerLogSink(sink: LogSink): () => void {
 // optional Sentry) so structured events are not console-only. Lazy import
 // keeps this module free of a hard dependency at init time and avoids cycles.
 let remoteForwardingEnabled = typeof window !== 'undefined';
+// Hard cap per page session so a hot loop can never flood the sink.
+const MAX_REMOTE_FORWARDS = 25;
+let remoteForwards = 0;
 
 function forwardRemote(entry: LogEntry) {
   if (!remoteForwardingEnabled) return;
+  if (entry.level !== 'error') return; // warns stay local (buffer + console)
+  if (remoteForwards >= MAX_REMOTE_FORWARDS) return;
+  remoteForwards++;
   void (async () => {
     try {
       const { logError } = await import('@/lib/logError');
