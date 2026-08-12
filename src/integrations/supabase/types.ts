@@ -1447,13 +1447,6 @@ export type Database = {
             foreignKeyName: "communication_log_assigned_to_fkey"
             columns: ["assigned_to"]
             isOneToOne: false
-            referencedRelation: "profiles_safe"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "communication_log_assigned_to_fkey"
-            columns: ["assigned_to"]
-            isOneToOne: false
             referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
@@ -11454,30 +11447,6 @@ export type Database = {
           phone: string | null
           updated_at: string | null
         }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          email?: never
-          expertise?: string[] | null
-          full_name?: string | null
-          id?: string | null
-          linkedin_url?: never
-          phone?: never
-          updated_at?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          email?: never
-          expertise?: string[] | null
-          full_name?: string | null
-          id?: string | null
-          linkedin_url?: never
-          phone?: never
-          updated_at?: string | null
-        }
         Relationships: []
       }
       program_benchmarks: {
@@ -12829,6 +12798,21 @@ export type Database = {
       }
       resolve_canonical_booking_token: { Args: never; Returns: string }
       revert_import_row: { Args: { p_row_id: string }; Returns: Json }
+      safe_profiles: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          bio: string
+          created_at: string
+          email: string
+          expertise: string[]
+          full_name: string
+          id: string
+          linkedin_url: string
+          phone: string
+          updated_at: string
+        }[]
+      }
       save_financial_scenario_atomic:
         | {
             Args: {
