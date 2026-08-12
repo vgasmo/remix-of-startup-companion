@@ -127,7 +127,7 @@ function validateMeetingPayload(body: MeetingIngestPayload): { valid: true; data
       transcript_text: transcriptResult.value ? sanitizeString(transcriptResult.value, SIZE_LIMITS.TRANSCRIPT) : undefined,
       summary: summaryResult.value ? sanitizeString(summaryResult.value, SIZE_LIMITS.DESCRIPTION) : undefined,
       join_url: urlResult.value,
-      source: sourceResult.value || 'webhook',
+      source: normalizeTranscriptSource(sourceResult.value),
     },
   };
 }

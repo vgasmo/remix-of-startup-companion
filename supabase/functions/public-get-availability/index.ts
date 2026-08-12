@@ -434,7 +434,7 @@ serve(async (req) => {
       // insert a system_alerts row for operators. We never fabricate weekday slots.
       const failClosed = async (
         reason: string,
-        severity: 'warning' | 'critical' = 'warning',
+        severity: 'high' | 'critical' = 'high',
         detail?: Record<string, unknown>,
       ) => {
         try {

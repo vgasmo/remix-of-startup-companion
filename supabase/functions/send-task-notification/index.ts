@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return handleCorsOptions(req);
 
   try {
-    const authResult = await requireCronSecret(req);
+    const authResult = await requireCronOrStaff(req);
     if ('error' in authResult) { log.warn('Unauthorized'); return authResult.error; }
 
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);

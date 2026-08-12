@@ -102,14 +102,14 @@ Deno.serve(async (req: Request) => {
     // Call AI API
     if (lovableApiKey) {
       try {
-        const aiResponse = await fetch('https://api.lovable.dev/v1/chat/completions', {
+        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${lovableApiKey}`,
           },
           body: JSON.stringify({
-            model: 'gpt-5-mini',
+            model: 'google/gemini-2.5-flash',
             messages: [
               {
                 role: 'system',

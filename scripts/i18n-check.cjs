@@ -60,14 +60,14 @@ function run() {
   }
 
   // Empty values in EN
-  const emptyEn = enEntries.filter(e => e.value === '' || e.value === null);
+  const emptyEn = enEntries.filter(e => (typeof e.value === 'string' && e.value.trim() === '') || e.value === null);
   if (emptyEn.length > 0) {
     errors.push(`\n🇬🇧 Empty values in en.json (${emptyEn.length}):`);
     emptyEn.forEach(e => errors.push(`  - ${e.key}`));
   }
 
   // Empty values in PT
-  const emptyPt = ptEntries.filter(e => e.value === '' || e.value === null);
+  const emptyPt = ptEntries.filter(e => (typeof e.value === 'string' && e.value.trim() === '') || e.value === null);
   if (emptyPt.length > 0) {
     errors.push(`\n🇵🇹 Empty values in pt.json (${emptyPt.length}):`);
     emptyPt.forEach(e => errors.push(`  - ${e.key}`));

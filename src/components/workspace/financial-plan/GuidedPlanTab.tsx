@@ -810,10 +810,10 @@ function PrefillProgressCard({
         </span>
         <span className="tabular-nums text-muted-foreground">
           {t('financialPlan.prefillStats', {
-            defaultValue: '{{c}} new · {{s}} skipped{{fail}}',
-            c: s.created,
-            s: s.skipped,
-            fail: failed
+            defaultValue: '{{ok}} new · {{skipped}} skipped · {{failed}}',
+            ok: s.created,
+            skipped: s.skipped,
+            failed: failed
               ? ` · ${t('financialPlan.prefillFailedN', { defaultValue: '{{n}} failed', n: s.failed })}`
               : '',
           })}
