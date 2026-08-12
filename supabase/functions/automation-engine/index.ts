@@ -485,12 +485,13 @@ Deno.serve(async (req) => {
     {
       const result: AutomationResult = { type: 'milestone_overdue', notifications: 0, emails: 0, errors: [] }
       try {
-        const { data: milestones } = await supabase
+        const { data: milestones, error: milestonesError } = await supabase
           .from('milestones')
-          .select('id, title, due_date, workspace_id, workspace:workspaces(startup:startups(name), workspace_users(user_id))')
+          .select('id, title, target_date, workspace_id, workspace:workspaces(startup:startups(name), workspace_users(user_id))')
           .not('status', 'eq', 'completed')
-          .not('due_date', 'is', null)
-          .lt('due_date', todayStr)
+          .not('target_date', 'is', null)
+          .lt('target_date', todayStr)
+        if (milestonesError) throw milestonesError
 
         for (const m of milestones || []) {
           const members = (m as any).workspace?.workspace_users || []
@@ -500,7 +501,7 @@ Deno.serve(async (req) => {
             if (await wasAlreadyRun(supabase, 'milestone_overdue', m.id, member.user_id, todayStr)) continue
             await notify(supabase, member.user_id, 'milestone_overdue',
               `Milestone atrasado — ${m.title}`,
-              `O milestone "${m.title}" da ${startupName} está atrasado (limite: ${m.due_date}).`,
+              `O milestone "${m.title}" da ${startupName} está atrasado (limite: ${m.target_date}).`,
               `/workspace/${m.workspace_id}?tab=milestones-actions`,
               'milestone', m.id)
             await recordRun(supabase, 'milestone_overdue', m.id, 'milestone', member.user_id, todayStr, 'app')
