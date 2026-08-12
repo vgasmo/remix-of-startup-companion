@@ -2422,10 +2422,12 @@
     "details": "Detalhes",
     "disabled": "desativada",
     "discard": "Descartar",
+    "discardDraft": "Descartar rascunho",
     "dismiss": "Dispensar",
     "done": "Concluído",
     "download": "Descarregar",
     "draft": "Rascunho",
+    "draftRestored": "Rascunho recuperado — continue de onde ficou.",
     "dryRunCompleteResultsummarywould_insertTo": "Simulação concluída: ${result.summary.would_insert} a inserir, {{ would_update }} a atualizar",
     "edit": "Editar",
     "email": "Email",
@@ -2435,6 +2437,7 @@
     "error": "Erro",
     "errorGeneric": "Ocorreu um erro. Por favor tente novamente.",
     "errorLoading": "Erro ao carregar.",
+    "errorOccurred": "Ocorreu um erro",
     "errorSaving": "Erro ao guardar",
     "errors": "Erros",
     "expand": "Expandir",
@@ -2602,8 +2605,7 @@
     "warning": "Aviso",
     "workspace": "Workspace",
     "years": "anos",
-    "yes": "Sim",
-    "errorOccurred": "Ocorreu um erro"
+    "yes": "Sim"
   },
   "communication": {
     "communicationLogged": "Communication logged",
