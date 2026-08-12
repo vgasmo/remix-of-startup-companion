@@ -47,8 +47,14 @@ if (typeof window !== "undefined") {
     .catch(() => { /* noop */ });
 }
 
-createRoot(document.getElementById("root")!).render(
-  <HelmetProvider>
-    <App />
-  </HelmetProvider>,
-);
+const root = createRoot(document.getElementById("root")!);
+
+// Load the active locale bundle before first paint so no untranslated keys flash.
+initI18n().finally(() => {
+  root.render(
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>,
+  );
+});
+
