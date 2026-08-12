@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Target, Clock, X, Plus, DollarSign, CalendarDays, TrendingUp, Tag, Briefcase, Calendar, FileText, ExternalLink, Lock, Send } from 'lucide-react';
 import { SendProposalDialog } from '@/components/crm/SendProposalDialog';
@@ -22,6 +22,8 @@ import { notify } from "@/lib/notify";
 import { useIncubationTypes } from '@/hooks/backoffice/useIncubationTypes';
 import { usePrograms } from '@/hooks/useAdminData';
 import { computeEffectiveDiscount, type ContractDiscountRow } from '@/lib/contractLifecycle';
+import { useLocalFormDraft } from '@/hooks/useLocalFormDraft';
+import { DraftRestoredNotice } from '@/components/shared/DraftRestoredNotice';
 
 
 interface OverviewTabProps {
@@ -126,6 +128,23 @@ export function OverviewTab({
     setCommercialNotes(typeof metadata?.commercial_notes === 'string' ? metadata.commercial_notes : '');
   }, [item.id]);
 
+  // Local draft for the commercial proposal fields (P0.1c) — keyed per lead.
+  const proposalDraft = { proposedFee, proposedDiscount, proposedIncubationTypeId, commercialNotes };
+  type ProposalDraft = typeof proposalDraft;
+  const restoreProposalDraft = useCallback((d: ProposalDraft) => {
+    setProposedFee(d.proposedFee || '');
+    setProposedDiscount(d.proposedDiscount || '');
+    setProposedIncubationTypeId(d.proposedIncubationTypeId || '');
+    setCommercialNotes(d.commercialNotes || '');
+  }, []);
+  const { restored: proposalDraftRestored, clear: clearProposalDraft, dismissRestored: dismissProposalDraft } =
+    useLocalFormDraft<ProposalDraft>({
+      key: item.id ? `crm-proposal:${item.id}` : null,
+      value: proposalDraft,
+      onRestore: restoreProposalDraft,
+      isDirty: (d) => Boolean(d.proposedFee || d.proposedDiscount || d.proposedIncubationTypeId || d.commercialNotes),
+    });
+
   const handleSaveDeal = () => {
     updateItem.mutate({
       id: item.id,
@@ -168,6 +187,7 @@ export function OverviewTab({
       id: item.id,
       metadata_json: nextMetadata,
     } as any);
+    clearProposalDraft();
   };
 
   const weightedValue = (item.deal_value || 0) * ((item.win_probability ?? DEFAULT_WIN_PROBABILITY[item.stage] ?? 0) / 100);
