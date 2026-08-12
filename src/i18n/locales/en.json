@@ -1876,6 +1876,7 @@
   },
   "app": {
     "clickToUpdate": "Click to refresh.",
+    "reloadedAfterUpdate": "The app was updated and reloaded. If you were filling something in, it may have been lost.",
     "newVersionAvailable": "New version available.",
     "updateNow": "Atualizar agora"
   },

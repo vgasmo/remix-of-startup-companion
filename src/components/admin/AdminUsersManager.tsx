@@ -632,7 +632,7 @@ export function AdminUsersManager() {
                 if (!deleteUserTarget) return;
                 const { error } = await supabase.rpc('staff_delete_user', { target_user_id: deleteUserTarget.userId });
                 if (error) {
-                  notify.error(t('admin.userManagement.deleteError', { defaultValue: 'Erro ao apagar utilizador' }));
+                  notify.error(`${t('admin.userManagement.deleteError', { defaultValue: 'Erro ao apagar utilizador' })}: ${error.message}`);
                 } else {
                   notify.success(t('admin.userManagement.deleteSuccess', { defaultValue: 'Utilizador apagado com sucesso' }));
                   queryClient.invalidateQueries({ queryKey: ['admin-profiles'] });
