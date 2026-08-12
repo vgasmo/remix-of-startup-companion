@@ -110,6 +110,8 @@ export function MonthlyCheckinBanner({ workspaceId }: MonthlyCheckinBannerProps)
     showQuickWin('monthly_wins_submitted');
     setShowForm(false);
     setResponses({});
+    clearDraft();
+
   };
 
   const handleSkip = async () => {
