@@ -455,23 +455,24 @@ Deno.serve(async (req) => {
       const result: AutomationResult = { type: 'crm_lead_stale', notifications: 0, emails: 0, errors: [] }
       try {
         const fourteenDaysAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString()
-        const { data: leads } = await supabase
+        const { data: leads, error: leadsError } = await supabase
           .from('funnel_items')
-          .select('id, company_name, owner_user_id, last_activity_at, updated_at')
+          .select('id, organization_name, contact_name, owner_consultant_id, last_activity_at, updated_at')
           .not('stage', 'in', '("contratado","rejeitado","arquivado")')
-          .not('owner_user_id', 'is', null)
+          .not('owner_consultant_id', 'is', null)
+        if (leadsError) throw leadsError
 
         for (const lead of leads || []) {
           const lastActivity = lead.last_activity_at || lead.updated_at
           if (!lastActivity || new Date(lastActivity) > new Date(fourteenDaysAgo)) continue
 
-          if (await wasAlreadyRun(supabase, 'crm_lead_stale', lead.id, lead.owner_user_id, todayStr)) continue
-          await notify(supabase, lead.owner_user_id, 'crm_lead_stale',
-            `Lead parada há 14+ dias — ${lead.company_name}`,
+          if (await wasAlreadyRun(supabase, 'crm_lead_stale', lead.id, lead.owner_consultant_id, todayStr)) continue
+          await notify(supabase, lead.owner_consultant_id, 'crm_lead_stale',
+            `Lead parada há 14+ dias — ${lead.organization_name || lead.contact_name || 'Lead'}`,
             `Sem atividade na lead desde ${new Date(lastActivity).toLocaleDateString('pt-PT')}.`,
             `/admin?tab=crm`,
             'funnel_item', lead.id)
-          await recordRun(supabase, 'crm_lead_stale', lead.id, 'funnel_item', lead.owner_user_id, todayStr, 'app')
+          await recordRun(supabase, 'crm_lead_stale', lead.id, 'funnel_item', lead.owner_consultant_id, todayStr, 'app')
           result.notifications++
         }
       } catch (e: any) { result.errors.push(e.message) }
@@ -484,12 +485,13 @@ Deno.serve(async (req) => {
     {
       const result: AutomationResult = { type: 'milestone_overdue', notifications: 0, emails: 0, errors: [] }
       try {
-        const { data: milestones } = await supabase
+        const { data: milestones, error: milestonesError } = await supabase
           .from('milestones')
-          .select('id, title, due_date, workspace_id, workspace:workspaces(startup:startups(name), workspace_users(user_id))')
+          .select('id, title, target_date, workspace_id, workspace:workspaces(startup:startups(name), workspace_users(user_id))')
           .not('status', 'eq', 'completed')
-          .not('due_date', 'is', null)
-          .lt('due_date', todayStr)
+          .not('target_date', 'is', null)
+          .lt('target_date', todayStr)
+        if (milestonesError) throw milestonesError
 
         for (const m of milestones || []) {
           const members = (m as any).workspace?.workspace_users || []
@@ -499,7 +501,7 @@ Deno.serve(async (req) => {
             if (await wasAlreadyRun(supabase, 'milestone_overdue', m.id, member.user_id, todayStr)) continue
             await notify(supabase, member.user_id, 'milestone_overdue',
               `Milestone atrasado — ${m.title}`,
-              `O milestone "${m.title}" da ${startupName} está atrasado (limite: ${m.due_date}).`,
+              `O milestone "${m.title}" da ${startupName} está atrasado (limite: ${m.target_date}).`,
               `/workspace/${m.workspace_id}?tab=milestones-actions`,
               'milestone', m.id)
             await recordRun(supabase, 'milestone_overdue', m.id, 'milestone', member.user_id, todayStr, 'app')
