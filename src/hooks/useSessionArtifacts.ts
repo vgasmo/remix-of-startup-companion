@@ -108,7 +108,7 @@ export function useAddTranscript() {
       sessionId: string;
       transcriptText: string;
       source?: string;
-      confidentiality?: 'workspace' | 'staff_only';
+      confidentiality?: TranscriptConfidentiality;
     }) => {
       const { data, error } = await supabase
         .from('session_transcripts')
