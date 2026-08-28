@@ -53,6 +53,17 @@ export function NotificationSettings() {
     }
   };
 
+  const handleToggleFounderDelayEmails = async (enabled: boolean) => {
+    try {
+      await updatePrefs.mutateAsync({ email_on_founder_delays: enabled });
+      notify.success(t('common.success'));
+    } catch (error: any) {
+      notify.error(error.message || t('common.errorGeneric'));
+    }
+  };
+
+
+
   if (isLoading) {
     return (
       <Card>
