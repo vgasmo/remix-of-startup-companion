@@ -77,6 +77,7 @@ serve(withCronRunLogging('send-milestone-reminders', async (req) => {
           notification_preferences(
             milestone_reminders_enabled,
             milestone_reminder_days,
+            email_on_founder_delays,
             slack_enabled,
             slack_webhook_url
           )
@@ -154,8 +155,15 @@ serve(withCronRunLogging('send-milestone-reminders', async (req) => {
           },
         }[locale];
 
+        // Staff/consultants can opt out of email alerts about founder delays
+        // (in-app notifications and Slack are unaffected).
+        const founderDelayEmailsEnabled = prefs?.email_on_founder_delays ?? true;
+        const isStaffRole = ['consultor', 'admin', 'backoffice'].includes(user.role);
+        const skipEmail = isStaffRole && !founderDelayEmailsEnabled;
+
         // Send email reminder
         try {
+          if (skipEmail) throw new Error('skip:founder_delay_emails_disabled');
           const emailHtml = `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
               <h2 style="color: #333;">${s.heading}</h2>
