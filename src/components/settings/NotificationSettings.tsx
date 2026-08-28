@@ -128,7 +128,29 @@ export function NotificationSettings() {
             )}
           </div>
         )}
+
+        {isStaff && (
+          <div className="flex items-center justify-between border-t pt-6">
+            <div className="space-y-0.5 pr-4">
+              <Label className="flex items-center gap-2" htmlFor="founder-delay-emails">
+                <AlarmClock className="h-4 w-4" aria-hidden="true" />
+                {t('settingsPage.founderDelayEmails')}
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {t('settingsPage.founderDelayEmailsDesc')}
+              </p>
+            </div>
+            <Switch
+              id="founder-delay-emails"
+              checked={founderDelayEmails}
+              onCheckedChange={handleToggleFounderDelayEmails}
+              disabled={updatePrefs.isPending}
+              aria-label={t('settingsPage.founderDelayEmails')}
+            />
+          </div>
+        )}
       </CardContent>
+
     </Card>
   );
 }
