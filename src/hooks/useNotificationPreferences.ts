@@ -14,6 +14,9 @@ export interface NotificationPreferences {
   calendar_sync_enabled: boolean;
   milestone_reminders_enabled: boolean;
   milestone_reminder_days: number;
+  /** Staff/consultants: email alerts about founder delays (inactivity, overdue milestones/check-ins, stale KPIs). */
+  email_on_founder_delays: boolean;
+
 }
 
 export function useNotificationPreferences() {
