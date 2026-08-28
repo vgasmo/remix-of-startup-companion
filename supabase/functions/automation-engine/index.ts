@@ -102,6 +102,17 @@ async function getAdminIds(supabase: any): Promise<string[]> {
   return [...new Set((data || []).map((r: any) => r.user_id as string))] as string[]
 }
 
+// Users (typically consultants/staff) who opted out of email alerts about
+// founder delays (inactivity, overdue milestones/check-ins, stale KPIs).
+// In-app notifications are unaffected.
+async function getFounderDelayEmailOptOuts(supabase: any): Promise<Set<string>> {
+  const { data } = await supabase
+    .from('notification_preferences')
+    .select('user_id')
+    .eq('email_on_founder_delays', false)
+  return new Set((data || []).map((r: any) => r.user_id as string))
+}
+
 async function getUserEmail(supabase: any, userId: string): Promise<string | null> {
   const { data } = await supabase.from('profiles').select('email').eq('id', userId).single()
   return data?.email || null
@@ -153,6 +164,7 @@ Deno.serve(async (req) => {
     const today = new Date()
     const todayStr = today.toISOString().split('T')[0]
     const results: AutomationResult[] = []
+    const delayEmailOptOuts = await getFounderDelayEmailOptOuts(supabase)
 
     // ═══════════════════════════════════════════════════════════
     // 1. DESCONTO A EXPIRAR (30/15/7 dias)
@@ -308,7 +320,7 @@ Deno.serve(async (req) => {
               await recordRun(supabase, 'founder_inactive_staff', ws.id, 'workspace', c.user_id, todayStr, 'both')
               result.notifications++
 
-              const email = await getUserEmail(supabase, c.user_id)
+              const email = delayEmailOptOuts.has(c.user_id) ? null : await getUserEmail(supabase, c.user_id)
               if (email) {
                 if (await sendEmail(email,
                   `[Startup Leiria] Founder inativo — ${startupName}`,
@@ -434,7 +446,7 @@ Deno.serve(async (req) => {
             await recordRun(supabase, 'kpi_stale', ws.id, 'workspace', m.user_id, todayStr, 'both')
             result.notifications++
 
-            const email = await getUserEmail(supabase, m.user_id)
+            const email = delayEmailOptOuts.has(m.user_id) ? null : await getUserEmail(supabase, m.user_id)
             if (email) {
               if (await sendEmail(email,
                 `[Startup Leiria] KPIs desatualizados — ${startupName}`,
