@@ -5545,6 +5545,7 @@ export type Database = {
           digest_day: number | null
           digest_frequency: string | null
           email_digest_enabled: boolean | null
+          email_on_founder_delays: boolean
           email_on_health_drop: boolean | null
           id: string
           last_digest_sent_at: string | null
@@ -5562,6 +5563,7 @@ export type Database = {
           digest_day?: number | null
           digest_frequency?: string | null
           email_digest_enabled?: boolean | null
+          email_on_founder_delays?: boolean
           email_on_health_drop?: boolean | null
           id?: string
           last_digest_sent_at?: string | null
@@ -5579,6 +5581,7 @@ export type Database = {
           digest_day?: number | null
           digest_frequency?: string | null
           email_digest_enabled?: boolean | null
+          email_on_founder_delays?: boolean
           email_on_health_drop?: boolean | null
           id?: string
           last_digest_sent_at?: string | null
