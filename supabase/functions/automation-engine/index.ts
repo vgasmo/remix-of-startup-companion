@@ -102,6 +102,17 @@ async function getAdminIds(supabase: any): Promise<string[]> {
   return [...new Set((data || []).map((r: any) => r.user_id as string))] as string[]
 }
 
+// Users (typically consultants/staff) who opted out of email alerts about
+// founder delays (inactivity, overdue milestones/check-ins, stale KPIs).
+// In-app notifications are unaffected.
+async function getFounderDelayEmailOptOuts(supabase: any): Promise<Set<string>> {
+  const { data } = await supabase
+    .from('notification_preferences')
+    .select('user_id')
+    .eq('email_on_founder_delays', false)
+  return new Set((data || []).map((r: any) => r.user_id as string))
+}
+
 async function getUserEmail(supabase: any, userId: string): Promise<string | null> {
   const { data } = await supabase.from('profiles').select('email').eq('id', userId).single()
   return data?.email || null
@@ -153,6 +164,7 @@ Deno.serve(async (req) => {
     const today = new Date()
     const todayStr = today.toISOString().split('T')[0]
     const results: AutomationResult[] = []
+    const delayEmailOptOuts = await getFounderDelayEmailOptOuts(supabase)
 
     // ═══════════════════════════════════════════════════════════
     // 1. DESCONTO A EXPIRAR (30/15/7 dias)
