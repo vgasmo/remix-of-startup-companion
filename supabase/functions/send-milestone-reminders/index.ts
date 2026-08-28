@@ -162,8 +162,7 @@ serve(withCronRunLogging('send-milestone-reminders', async (req) => {
         const skipEmail = isStaffRole && !founderDelayEmailsEnabled;
 
         // Send email reminder
-        try {
-          if (skipEmail) throw new Error('skip:founder_delay_emails_disabled');
+        if (!skipEmail) try {
           const emailHtml = `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
               <h2 style="color: #333;">${s.heading}</h2>
