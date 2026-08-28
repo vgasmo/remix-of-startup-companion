@@ -6,12 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { notify } from "@/lib/notify";
-import { Bell, Mail } from 'lucide-react';
+import { Bell, Mail, AlarmClock } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function NotificationSettings() {
   const { t } = useTranslation();
+  const { isStaff } = useAuth();
   const { data: prefs, isLoading } = useNotificationPreferences();
   const updatePrefs = useUpdateNotificationPreferences();
+
 
   const DAYS = [
     t('settingsPage.sunday'),

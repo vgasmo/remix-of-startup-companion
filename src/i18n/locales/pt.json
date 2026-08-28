@@ -8557,6 +8557,9 @@
     "notificationSettings": "Definições de Notificações",
     "notificationSettingsDesc": "Configure como recebe notificações",
     "notifications": "Notificações",
+    "founderDelayEmails": "Emails de atrasos dos founders",
+    "founderDelayEmailsDesc": "Receber emails quando founders ficam inativos, com milestones, check-ins ou KPIs atrasados. As notificações na app continuam ativas.",
+
     "password": "Palavra-passe",
     "passwordRecommendation": "Recomendamos usar uma palavra-passe forte e única",
     "passwordUpdateFailed": "Falha ao atualizar password",
