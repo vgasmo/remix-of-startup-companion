@@ -320,7 +320,7 @@ Deno.serve(async (req) => {
               await recordRun(supabase, 'founder_inactive_staff', ws.id, 'workspace', c.user_id, todayStr, 'both')
               result.notifications++
 
-              const email = await getUserEmail(supabase, c.user_id)
+              const email = delayEmailOptOuts.has(c.user_id) ? null : await getUserEmail(supabase, c.user_id)
               if (email) {
                 if (await sendEmail(email,
                   `[Startup Leiria] Founder inativo — ${startupName}`,
@@ -446,7 +446,7 @@ Deno.serve(async (req) => {
             await recordRun(supabase, 'kpi_stale', ws.id, 'workspace', m.user_id, todayStr, 'both')
             result.notifications++
 
-            const email = await getUserEmail(supabase, m.user_id)
+            const email = delayEmailOptOuts.has(m.user_id) ? null : await getUserEmail(supabase, m.user_id)
             if (email) {
               if (await sendEmail(email,
                 `[Startup Leiria] KPIs desatualizados — ${startupName}`,
