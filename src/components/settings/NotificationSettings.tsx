@@ -65,6 +65,8 @@ export function NotificationSettings() {
   const digestEnabled = prefs?.email_digest_enabled ?? true;
   const digestFrequency = prefs?.digest_frequency ?? 'weekly';
   const digestDay = prefs?.digest_day ?? 1;
+  const founderDelayEmails = prefs?.email_on_founder_delays ?? true;
+
 
   return (
     <Card>
