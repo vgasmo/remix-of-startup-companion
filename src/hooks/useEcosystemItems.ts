@@ -124,12 +124,16 @@ export function useEcosystemItems(filters: EcosystemFilters = {}) {
       const rows = (data ?? []) as Array<Record<string, unknown>>;
       const first = rows[0] ?? {};
       const totalCount = Number(first.total_count ?? 0);
-      const nextActivity = (first.next_cursor_activity ?? null) as string | null;
-      const nextId = (first.next_cursor_id ?? null) as string | null;
+      // The RPC returns the cursor markers per row; the cursor for the NEXT
+      // page is the marker of the LAST row of this page (not the first).
+      const last = rows[rows.length - 1] ?? {};
+      const nextActivity = (last.next_cursor_activity ?? null) as string | null;
+      const nextId = (last.next_cursor_id ?? null) as string | null;
+      const hasMore = rows.length >= PAGE_SIZE && Boolean(nextId);
       return {
         items: rows.map(mapRow),
         totalCount,
-        nextCursor: nextId ? { activity: nextActivity, id: nextId } : null,
+        nextCursor: hasMore ? { activity: nextActivity, id: nextId } : null,
       };
     },
     getNextPageParam: (last) => last.nextCursor ?? undefined,
