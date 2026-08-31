@@ -125,7 +125,7 @@ export default function CRM() {
   const setSegmentFilter = (v: string) => updateFilterParam('segment', v, 'all');
   const setSearchQuery = (v: string) => setSearchInput(v);
   const setMyItemsOnly = (v: boolean) => updateFilterParam('mine', v, false);
-  const setFocusMode = (v: boolean) => updateFilterParam('focus', v, false);
+  
 
   const segmentStages = SEGMENT_STAGES[segmentFilter];
 
