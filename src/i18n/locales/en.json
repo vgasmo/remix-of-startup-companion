@@ -4151,6 +4151,13 @@
       "download": "Download",
       "emptyDescription": "No materials yet for this program. They appear here once consultants upload them.",
       "emptyTitle": "No program materials yet",
+      "hintEmpty": "View material details",
+      "hintFile": "File to download and work on",
+      "hintGuide": "Step-by-step instructions to apply in your startup",
+      "hintLinks": "External resources to explore",
+      "howToUse": "How to use this exercise",
+      "noContent": "This material has no content or file yet. Talk to your consultant.",
+      "open": "Open & use",
       "title": "Program Materials"
     },
     "provideNameAndUrl": "Please provide both name and URL",
@@ -8559,7 +8566,6 @@
     "notifications": "Notifications",
     "founderDelayEmails": "Founder delay emails",
     "founderDelayEmailsDesc": "Receive emails when founders go inactive or have overdue milestones, check-ins or KPIs. In-app notifications stay on.",
-
     "password": "Password",
     "passwordRecommendation": "We recommend using a strong, unique password",
     "passwordUpdateFailed": "Failed to update password",
