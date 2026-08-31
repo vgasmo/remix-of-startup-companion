@@ -23,6 +23,7 @@ export function useRealtimeWorkspaces() {
       queryClient.invalidateQueries({ queryKey: ['workspaces-paged'] });
       queryClient.invalidateQueries({ queryKey: ['my-pending-workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
+      queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
       queryClient.invalidateQueries({ queryKey: ['ecosystem-aggregates'] });
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['attention-count'] });
@@ -54,6 +55,7 @@ export function useRealtimeWorkspaces() {
           queryClient.invalidateQueries({ queryKey: ['workspaces'] });
           queryClient.invalidateQueries({ queryKey: ['workspace-stage-timeline'] });
           queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
+          queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
         },
       )
       // Health snapshots feed the health widget + attention counters
@@ -62,6 +64,7 @@ export function useRealtimeWorkspaces() {
         { event: 'INSERT', schema: 'public', table: 'workspace_health_history' },
         () => {
           queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+          queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
           queryClient.invalidateQueries({ queryKey: ['health-score'] });
           queryClient.invalidateQueries({ queryKey: ['attention-count'] });
         },
@@ -94,6 +97,7 @@ export function useRealtimeWorkspaces() {
             (payload.new as { workspace_id?: string } | null)?.workspace_id ??
             (payload.old as { workspace_id?: string } | null)?.workspace_id;
           queryClient.invalidateQueries({ queryKey: ['action-items'] });
+          queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
           queryClient.invalidateQueries({ queryKey: ['attention-count'] });
           if (wsId) {
             queryClient.invalidateQueries({ queryKey: ['workspace-tab-badges', wsId] });
