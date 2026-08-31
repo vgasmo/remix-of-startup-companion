@@ -139,10 +139,18 @@ export function useEcosystemItems(filters: EcosystemFilters = {}) {
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
 
-  const items = useMemo(
-    () => (query.data?.pages ?? []).flatMap((p) => p.items),
-    [query.data],
-  );
+  const items = useMemo(() => {
+    const seen = new Set<string>();
+    const out: EcosystemItem[] = [];
+    for (const page of query.data?.pages ?? []) {
+      for (const item of page.items) {
+        if (seen.has(item.id)) continue;
+        seen.add(item.id);
+        out.push(item);
+      }
+    }
+    return out;
+  }, [query.data]);
   const totalCount = query.data?.pages?.[0]?.totalCount ?? 0;
 
   return {
