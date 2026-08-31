@@ -4499,6 +4499,7 @@ export type Database = {
       }
       incubation_types: {
         Row: {
+          auto_renewal: boolean
           base_currency: string | null
           base_monthly_fee: number | null
           contract_type: string | null
@@ -4514,11 +4515,13 @@ export type Database = {
           is_virtual: boolean | null
           name: string
           price_per_sqm: number | null
+          renewal_months: number
           requires_space: boolean | null
           sort_order: number | null
           updated_at: string
         }
         Insert: {
+          auto_renewal?: boolean
           base_currency?: string | null
           base_monthly_fee?: number | null
           contract_type?: string | null
@@ -4534,11 +4537,13 @@ export type Database = {
           is_virtual?: boolean | null
           name: string
           price_per_sqm?: number | null
+          renewal_months?: number
           requires_space?: boolean | null
           sort_order?: number | null
           updated_at?: string
         }
         Update: {
+          auto_renewal?: boolean
           base_currency?: string | null
           base_monthly_fee?: number | null
           contract_type?: string | null
@@ -4554,6 +4559,7 @@ export type Database = {
           is_virtual?: boolean | null
           name?: string
           price_per_sqm?: number | null
+          renewal_months?: number
           requires_space?: boolean | null
           sort_order?: number | null
           updated_at?: string
