@@ -478,27 +478,15 @@ export default function CRM() {
             />
             <div className="flex items-center gap-2">
               <Switch
-                id="focus-mode"
-                checked={focusMode}
-                onCheckedChange={setFocusMode}
+                id="my-items"
+                checked={myItemsOnly}
+                onCheckedChange={setMyItemsOnly}
               />
-              <Label htmlFor="focus-mode" className="text-sm cursor-pointer whitespace-nowrap flex items-center gap-1">
-                <Zap className={cn('h-3.5 w-3.5', focusMode && 'text-[hsl(var(--warning))]')} />
-                {t('crm.focusMode')}
+              <Label htmlFor="my-items" className="text-sm cursor-pointer whitespace-nowrap">
+                {t('crm.myItemsOnly')}
               </Label>
             </div>
-            {!focusMode && (
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="my-items"
-                  checked={myItemsOnly}
-                  onCheckedChange={setMyItemsOnly}
-                />
-                <Label htmlFor="my-items" className="text-sm cursor-pointer whitespace-nowrap">
-                  {t('crm.myItemsOnly')}
-                </Label>
-              </div>
-            )}
+
           </div>
         </div>
 
