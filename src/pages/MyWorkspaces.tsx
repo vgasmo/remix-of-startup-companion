@@ -84,9 +84,9 @@ export default function MyWorkspaces() {
   const [showSmartImport, setShowSmartImport] = useState(false);
   const [showDetailedView, setShowDetailedView] = useState(false);
 
-  // Handle URL filter parameter — only enable the chips that actually have
-  // matching items so we don't AND-filter into an empty list (e.g. 0 critical
-  // + 0 at_risk + 277 overdue previously collapsed to no results).
+  // Handle URL filter parameter — "attention" means "startups at risk", so we
+  // only enable the health chips (critical OR at_risk). Mixing in the overdue
+  // chip ANDed the filters and produced an empty list.
   const { data: attentionStatsForFilter } = useAttentionCount();
   useEffect(() => {
     const filterParam = searchParams.get('filter');
@@ -95,13 +95,16 @@ export default function MyWorkspaces() {
     const next: Record<string, boolean> = {};
     if (attentionStatsForFilter.criticalCount > 0) next.critical = true;
     if (attentionStatsForFilter.atRiskCount > 0) next.at_risk = true;
-    if (attentionStatsForFilter.overdueCount > 0) next.overdue = true;
-    // Fallback: if nothing has counts, still show overdue chip so the view isn't empty.
+    // Fallback: no health signal at all → fall back to overdue actions.
     if (Object.keys(next).length === 0) next.overdue = true;
     setQuickFilters(next);
+    // Always land on "all startups" so the risk list isn't hidden by the
+    // assigned-only default of consultants.
+    setAssignedOverride(false);
     setShowDetailedView(true);
     setSearchParams({}, { replace: true });
   }, [searchParams, setSearchParams, attentionStatsForFilter]);
+
 
   // Realtime is subscribed once in AppLayout.
 
