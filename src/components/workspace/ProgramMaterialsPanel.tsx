@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GraduationCap, Download, FileText, ExternalLink, Tag } from 'lucide-react';
+import { GraduationCap, Download, FileText, ExternalLink, Tag, BookOpen } from 'lucide-react';
 import { notify } from "@/lib/notify";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   useSupportMaterials,
   useSupportMaterialDownloadUrl,
