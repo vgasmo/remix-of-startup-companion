@@ -106,7 +106,9 @@ export default function CRM() {
   const [searchInput, setSearchInput] = useState(urlSearchQuery);
   const searchQuery = useDebounce(searchInput, 300);
   const myItemsOnly = searchParams.get('mine') === '1';
-  const focusMode = searchParams.get('focus') === '1';
+  // "Modo Foco" was removed — it duplicated the Follow-Up Inbox without adding value.
+  const focusMode = false;
+
 
   const updateFilterParam = useCallback((key: string, value: string | boolean, defaultValue: string | boolean = 'all') => {
     const next = new URLSearchParams(searchParams);
@@ -123,7 +125,7 @@ export default function CRM() {
   const setSegmentFilter = (v: string) => updateFilterParam('segment', v, 'all');
   const setSearchQuery = (v: string) => setSearchInput(v);
   const setMyItemsOnly = (v: boolean) => updateFilterParam('mine', v, false);
-  const setFocusMode = (v: boolean) => updateFilterParam('focus', v, false);
+  
 
   const segmentStages = SEGMENT_STAGES[segmentFilter];
 
@@ -476,27 +478,15 @@ export default function CRM() {
             />
             <div className="flex items-center gap-2">
               <Switch
-                id="focus-mode"
-                checked={focusMode}
-                onCheckedChange={setFocusMode}
+                id="my-items"
+                checked={myItemsOnly}
+                onCheckedChange={setMyItemsOnly}
               />
-              <Label htmlFor="focus-mode" className="text-sm cursor-pointer whitespace-nowrap flex items-center gap-1">
-                <Zap className={cn('h-3.5 w-3.5', focusMode && 'text-[hsl(var(--warning))]')} />
-                {t('crm.focusMode')}
+              <Label htmlFor="my-items" className="text-sm cursor-pointer whitespace-nowrap">
+                {t('crm.myItemsOnly')}
               </Label>
             </div>
-            {!focusMode && (
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="my-items"
-                  checked={myItemsOnly}
-                  onCheckedChange={setMyItemsOnly}
-                />
-                <Label htmlFor="my-items" className="text-sm cursor-pointer whitespace-nowrap">
-                  {t('crm.myItemsOnly')}
-                </Label>
-              </div>
-            )}
+
           </div>
         </div>
 
