@@ -4151,6 +4151,13 @@
       "download": "Descarregar",
       "emptyDescription": "Ainda sem materiais para este programa. Aparecem aqui quando os consultores publicarem.",
       "emptyTitle": "Sem materiais do programa",
+      "hintEmpty": "Ver detalhes do material",
+      "hintFile": "Ficheiro para descarregar e trabalhar",
+      "hintGuide": "Instruções passo a passo para aplicar na sua startup",
+      "hintLinks": "Recursos externos para consultar",
+      "howToUse": "Como usar este exercício",
+      "noContent": "Este material ainda não tem conteúdo nem ficheiro associado. Fale com o seu consultor.",
+      "open": "Abrir e usar",
       "title": "Materiais do Programa"
     },
     "provideNameAndUrl": "Por favor forneça nome e URL",
@@ -8559,7 +8566,6 @@
     "notifications": "Notificações",
     "founderDelayEmails": "Emails de atrasos dos founders",
     "founderDelayEmailsDesc": "Receber emails quando founders ficam inativos, com milestones, check-ins ou KPIs atrasados. As notificações na app continuam ativas.",
-
     "password": "Palavra-passe",
     "passwordRecommendation": "Recomendamos usar uma palavra-passe forte e única",
     "passwordUpdateFailed": "Falha ao atualizar password",
