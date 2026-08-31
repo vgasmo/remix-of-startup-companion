@@ -106,7 +106,9 @@ export default function CRM() {
   const [searchInput, setSearchInput] = useState(urlSearchQuery);
   const searchQuery = useDebounce(searchInput, 300);
   const myItemsOnly = searchParams.get('mine') === '1';
-  const focusMode = searchParams.get('focus') === '1';
+  // "Modo Foco" was removed — it duplicated the Follow-Up Inbox without adding value.
+  const focusMode = false;
+
 
   const updateFilterParam = useCallback((key: string, value: string | boolean, defaultValue: string | boolean = 'all') => {
     const next = new URLSearchParams(searchParams);
