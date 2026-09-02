@@ -255,6 +255,7 @@ export default function MyWorkspaces() {
     programFilter !== 'all',
     stageFilter !== 'all',
     healthFilter !== 'all',
+    priorityFilter !== 'all',
     missingKpi,
     overdueActions,
   ].filter(Boolean).length;
@@ -265,6 +266,7 @@ export default function MyWorkspaces() {
     setProgramFilter('all');
     setStageFilter('all');
     setHealthFilter('all');
+    setPriorityFilter('all');
     setMissingKpi(false);
     setOverdueActions(false);
     setQuickFilters({});
