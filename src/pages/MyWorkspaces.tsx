@@ -125,6 +125,7 @@ export default function MyWorkspaces() {
     setProgramFilter(filters.programId || 'all');
     setStageFilter(filters.stage || 'all');
     setHealthFilter(filters.health || 'all');
+    setPriorityFilter(filters.priority || 'all');
     setMissingKpi(filters.missingKpi || false);
     setOverdueActions(filters.overdueActions || false);
     if (filters.sortBy) setSortBy(filters.sortBy);
