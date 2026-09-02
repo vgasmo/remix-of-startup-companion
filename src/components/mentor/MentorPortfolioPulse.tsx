@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, CheckCircle2, AlertCircle, Info, ChevronDown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,7 @@ const TONE: Record<Severity, string> = {
 
 function MentorPortfolioPulseInner({ workspaces }: Props) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
 
   const alerts = useMemo<Alert[]>(() => {
@@ -106,7 +108,13 @@ function MentorPortfolioPulseInner({ workspaces }: Props) {
   const visible = expanded ? alerts : alerts.slice(0, 3);
 
   const handleSeeDetails = () => {
-    document.getElementById('mentor-startups-section')?.scrollIntoView({ behavior: 'smooth' });
+    const el = document.getElementById('mentor-startups-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    // P2: outside the mentor dashboard the anchor does not exist — navigate instead.
+    navigate('/my-workspaces');
   };
 
   return (
