@@ -146,7 +146,7 @@ export function useFounderOnboardingState(): FounderOnboardingState {
 
   // Surface (log) RLS/network failures instead of hanging in a permanent skeleton
   if (isError) {
-    logger.warn('useFounderOnboardingState: failed to resolve onboarding state', error);
+    logger.warn('useFounderOnboardingState: failed to resolve onboarding state", { error: (error as Error)?.message });
     return { status: 'error', activeWorkspaceId: null, startupName: null, pendingClaimEmail: null, pendingClaimCreatedAt: null, isLoading: false };
   }
 
