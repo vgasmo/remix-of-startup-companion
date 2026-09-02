@@ -7,6 +7,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/lib/logger';
 
 export type FounderOnboardingStatus =
   | 'loading'
@@ -16,6 +17,7 @@ export type FounderOnboardingStatus =
   | 'has_pending_claim'          // Founder has a pending claim request awaiting staff review
   | 'needs_claim_verification'   // Founder has no workspace and no pending claim — should verify
   | 'not_founder'                // User is not a founder (staff, mentor, etc.)
+  | 'error'                      // Query failed (RLS/network) — do not gate the UI silently
   | 'staff_exempt';              // User is founder but also staff — exempt from gating
 
 export interface FounderOnboardingState {
@@ -36,7 +38,7 @@ export function useFounderOnboardingState(): FounderOnboardingState {
   const isExempt = isStaff || roles.includes('mentor_externo');
   const shouldQuery = isAuthReady && !!user && isFounder && !isExempt;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['founder-onboarding-state', user?.id],
     queryFn: async (): Promise<Omit<FounderOnboardingState, 'isLoading'>> => {
       if (!user) {
@@ -44,7 +46,7 @@ export function useFounderOnboardingState(): FounderOnboardingState {
       }
 
       // 1. Check for active/claimed workspace membership
-      const { data: workspaceData } = await supabase
+      const { data: workspaceData, error: workspaceError } = await supabase
         .from('workspace_users')
         .select(`
           workspace_id,
@@ -54,6 +56,8 @@ export function useFounderOnboardingState(): FounderOnboardingState {
         .eq('active', true)
         .eq('role', 'founder')
         .limit(5);
+
+      if (workspaceError) throw workspaceError;
 
       if (workspaceData && workspaceData.length > 0) {
         // Check for active/claimed workspace
@@ -97,13 +101,15 @@ export function useFounderOnboardingState(): FounderOnboardingState {
       }
 
       // 2. Check for pending claim request
-      const { data: claimData } = await supabase
+      const { data: claimData, error: claimError } = await supabase
         .from('startup_claim_requests')
         .select('id, status, user_email, created_at')
         .eq('user_id', user.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
         .limit(1);
+
+      if (claimError) throw claimError;
 
       if (claimData && claimData.length > 0) {
         return {
@@ -136,6 +142,12 @@ export function useFounderOnboardingState(): FounderOnboardingState {
   }
   if (isExempt) {
     return { status: 'staff_exempt', activeWorkspaceId: null, startupName: null, pendingClaimEmail: null, pendingClaimCreatedAt: null, isLoading: false };
+  }
+
+  // Surface (log) RLS/network failures instead of hanging in a permanent skeleton
+  if (isError) {
+    logger.warn('useFounderOnboardingState: failed to resolve onboarding state', { error: (error as Error)?.message });
+    return { status: 'error', activeWorkspaceId: null, startupName: null, pendingClaimEmail: null, pendingClaimCreatedAt: null, isLoading: false };
   }
 
   if (!isAuthReady || isLoading || !data) {

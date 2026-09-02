@@ -12,7 +12,24 @@ import { ContentSkeleton } from '@/components/ui/ContentSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SavedViewsDropdown } from '@/components/crm/SavedViewsDropdown';
 import { Button } from '@/components/ui/button';
-import { Globe2, Users, Building2, UserCog, Loader2 } from 'lucide-react';
+import { Globe2, Users, Building2, UserCog, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+
+function ErrorState({ message, onRetry }: { message?: string; onRetry: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex flex-col items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-8 text-center">
+      <AlertTriangle className="h-6 w-6 text-destructive" />
+      <p className="text-sm font-medium">
+        {t('ecosystem.loadError', { defaultValue: 'Não foi possível carregar o ecossistema.' })}
+      </p>
+      {message && <p className="text-xs text-muted-foreground max-w-md break-words">{message}</p>}
+      <Button variant="outline" size="sm" onClick={onRetry} className="gap-2">
+        <RefreshCw className="h-4 w-4" />
+        {t('common.retry', { defaultValue: 'Tentar novamente' })}
+      </Button>
+    </div>
+  );
+}
 
 export default function Ecosystem() {
   const { t } = useTranslation();
@@ -38,6 +55,9 @@ export default function Ecosystem() {
     items,
     totalCount,
     isLoading,
+    isError,
+    error,
+    refetch,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -85,6 +105,8 @@ export default function Ecosystem() {
             </div>
             {isLoading ? (
               <ContentSkeleton type="list" count={10} />
+            ) : isError ? (
+              <ErrorState message={(error as Error)?.message} onRetry={() => refetch()} />
             ) : (
               <>
                 <div className="text-xs text-muted-foreground" aria-live="polite">
@@ -92,6 +114,10 @@ export default function Ecosystem() {
                 </div>
                 <EcosystemTable
                   items={items}
+                  totalCount={totalCount}
+                  hasNextPage={hasNextPage}
+                  isFetchingNextPage={isFetchingNextPage}
+                  fetchNextPage={fetchNextPage}
                   onOpenItem={(item) => {
                     if (item.item_type === 'workspace' && item.workspace_id) {
                       navigate(`/workspace/${item.workspace_id}`);
@@ -120,6 +146,8 @@ export default function Ecosystem() {
             <EcosystemFilters filters={filters} onChange={setFilters} showOwnerFilter />
             {isLoading ? (
               <ContentSkeleton type="list" count={6} />
+            ) : isError ? (
+              <ErrorState message={(error as Error)?.message} onRetry={() => refetch()} />
             ) : (
               <>
                 <ConsultorPortfolioView items={items} ownerId={filters.ownerId} />

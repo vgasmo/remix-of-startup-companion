@@ -168,6 +168,7 @@ export function useEcosystemItems(filters: EcosystemFilters = {}) {
     fetchNextPage: query.fetchNextPage,
     refetch: query.refetch,
     error: query.error,
+    isError: query.isError,
   };
 }
 

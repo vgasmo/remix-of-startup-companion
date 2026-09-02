@@ -45,9 +45,15 @@ const PAGE_SIZE_OPTIONS = [25, 50, 100];
 interface Props {
   items: EcosystemItem[];
   onOpenItem: (item: EcosystemItem) => void;
+  /** Total rows available on the server (for accurate "showing x of y") */
+  totalCount?: number;
+  /** Server-side infinite pagination hooks */
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+  fetchNextPage?: () => void;
 }
 
-export function EcosystemTable({ items, onOpenItem }: Props) {
+export function EcosystemTable({ items, onOpenItem, totalCount, hasNextPage, isFetchingNextPage, fetchNextPage }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -263,6 +269,20 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
 
   const from = items.length > 0 ? page * pageSize + 1 : 0;
   const to = Math.min((page + 1) * pageSize, items.length);
+  const grandTotal = typeof totalCount === 'number' && totalCount > items.length ? totalCount : items.length;
+  const canGoNext = page < totalPages - 1 || !!hasNextPage;
+  const goNext = () => {
+    if (page < totalPages - 1) {
+      setPage((p) => p + 1);
+      // Prefetch the next server page when nearing the end of loaded rows
+      if (page + 2 >= totalPages && hasNextPage && !isFetchingNextPage) fetchNextPage?.();
+      return;
+    }
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage?.();
+      setPage((p) => p + 1);
+    }
+  };
 
   if (items.length === 0) {
     return (
@@ -293,7 +313,7 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
       </div>
       <div className="flex items-center gap-1">
         <span className="text-sm text-muted-foreground mr-2">
-          {t('common.showingResults', { from, to, total: items.length, defaultValue: `Showing ${from}-${to} of ${items.length}` })}
+          {t('common.showingResults', { from, to, total: grandTotal, defaultValue: `Showing ${from}-${to} of ${grandTotal}` })}
         </span>
         <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={() => setPage(0)} aria-label={t('common.first', { defaultValue: 'First' })}>
           <ChevronsLeft className="h-4 w-4" />
@@ -304,10 +324,10 @@ export function EcosystemTable({ items, onOpenItem }: Props) {
         <span className="text-sm text-muted-foreground px-2">
           {page + 1} / {totalPages}
         </span>
-        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} aria-label={t('common.nextPage', { defaultValue: 'Next page' })}>
+        <Button variant="outline" size="icon" className="h-8 w-8" disabled={!canGoNext || isFetchingNextPage} onClick={goNext} aria-label={t('common.nextPage', { defaultValue: 'Next page' })}>
           <ChevronRight className="h-4 w-4" />
         </Button>
-        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages - 1} onClick={() => setPage(totalPages - 1)} aria-label={t('common.lastPage', { defaultValue: 'Last page' })}>
+        <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages - 1 || isFetchingNextPage} onClick={() => setPage(totalPages - 1)} aria-label={t('common.lastPage', { defaultValue: 'Last page' })}>
           <ChevronsRight className="h-4 w-4" />
         </Button>
       </div>

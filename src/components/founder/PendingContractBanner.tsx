@@ -16,7 +16,7 @@ interface PendingContractBannerProps {
 }
 
 export function PendingContractBanner({ workspaceId }: PendingContractBannerProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const { data: contracts } = useQuery({
@@ -68,7 +68,7 @@ export function PendingContractBanner({ workspaceId }: PendingContractBannerProp
                   </p>
                   {c.monthly_fee && (
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {c.monthly_fee}€/mês • {t('founder.pendingContract.startDate', { defaultValue: 'Início previsto:' })} {new Date(c.start_date).toLocaleDateString('pt-PT')}
+                      {c.monthly_fee}€/mês{c.start_date && !Number.isNaN(new Date(c.start_date).getTime()) ? ` • ${t('founder.pendingContract.startDate', { defaultValue: 'Início previsto:' })} ${new Date(c.start_date).toLocaleDateString(i18n.language || 'pt-PT')}` : ''}
                     </p>
                   )}
                 </div>
