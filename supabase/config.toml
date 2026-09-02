@@ -57,9 +57,6 @@ verify_jwt = true
 [functions.publish-program-setup]
 verify_jwt = false
 
-[functions.smart-session-scheduler]
-verify_jwt = true
-
 [functions.import-kpi-data]
 verify_jwt = true
 
@@ -332,4 +329,16 @@ verify_jwt = false
 
 # Cron mensal — cron secret/token validado em runtime.
 [functions.open-monthly-founder-pulse]
+verify_jwt = false
+
+# P1.1: cron-invoked via cron_invoke_edge (x-cron-token only) — token validated in handler.
+[functions.automation-engine]
+verify_jwt = false
+
+[functions.check-mentor-nda-expiry]
+verify_jwt = false
+
+# P1.2: MCP server — OAuth verified at runtime by the SDK (JWKS).
+# /.well-known/oauth-protected-resource MUST be reachable anonymously.
+[functions.mcp]
 verify_jwt = false

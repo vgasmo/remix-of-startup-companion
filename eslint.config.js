@@ -6,7 +6,7 @@ import tseslint from "typescript-eslint";
 
 export default [
   // ignore build output and Node.js scripts from TS/React linting
-  { ignores: ["dist", "scripts/**", "e2e/**/*.cjs"] },
+  { ignores: ["dist", "scripts/**", "e2e/**/*.cjs", "supabase/functions/mcp/index.ts"] }, // mcp bundle is auto-generated
 
   // base recommended configs
   js.configs.recommended,

@@ -1,6 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { supabaseForUser } from "../supabase";
+import { throwToolError } from "../toolError";
 
 export default defineTool({
   name: "list_action_items",
@@ -37,7 +38,7 @@ export default defineTool({
     }
 
     const { data, error } = await query;
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    if (error) throwToolError("list_action_items", error);
 
     return {
       content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],

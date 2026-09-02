@@ -128,12 +128,17 @@ serve(async (req) => {
           </div>
         `;
 
-        await resend.emails.send({
+        // Resend returns { data, error } and never throws — check error explicitly.
+        const { error: sendError } = await resend.emails.send({
           from: "Startup Leiria <noreply@startupleiria.com>",
           to: [profile.email],
           subject: s.subject(startupName, alert.severity.toUpperCase()),
           html,
         });
+        if (sendError) {
+          console.error(`Resend rejected email to ${profile.email}:`, sendError);
+          continue;
+        }
 
         emailsSent++;
         console.log(`Email sent to ${profile.email} (${locale})`);

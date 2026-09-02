@@ -1,6 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { supabaseForUser } from "../supabase";
+import { throwToolError } from "../toolError";
 
 export default defineTool({
   name: "get_workspace_overview",
@@ -40,7 +41,7 @@ export default defineTool({
     ]);
 
     const failure = workspace.error ?? milestones.error ?? actions.error;
-    if (failure) return { content: [{ type: "text", text: failure.message }], isError: true };
+    if (failure) throwToolError("get_workspace_overview", failure);
     if (!workspace.data) {
       return { content: [{ type: "text", text: "Workspace not found or not accessible" }], isError: true };
     }

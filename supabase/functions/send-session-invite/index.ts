@@ -406,8 +406,14 @@ serve(async (req) => {
             },
           ],
         });
-        console.log(`Email sent to ${email}:`, result);
-        results.push({ email, success: true, result });
+        if (result.error) {
+          // Resend returns { data, error } and never throws.
+          console.error(`Resend rejected email to ${email}:`, result.error);
+          results.push({ email, success: false, error: result.error.message || 'resend_send_failed' });
+        } else {
+          console.log(`Email sent to ${email}: ${result.data?.id ?? 'ok'}`);
+          results.push({ email, success: true, result });
+        }
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : String(err);
         console.error(`Failed to send email to ${email}:`, err);

@@ -193,7 +193,9 @@
       "title": "Startup Announcements",
       "titleLabel": "Title",
       "titlePlaceholder": "E.g.: Package received, Registered letter...",
-      "unread": "Unread"
+      "unread": "Unread",
+      "deleteConfirmTitle": "Delete announcement?",
+      "deleteConfirmDesc": "This announcement will be permanently removed. This action cannot be undone."
     },
     "anyProgram": "Any program",
     "applicationRejected": "Application rejected",
@@ -4266,7 +4268,8 @@
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
     "workspaceRestored": "Workspace restaurado",
-    "workspaces": "workspaces"
+    "workspaces": "workspaces",
+    "loadError": "Could not load the ecosystem list. Please try again."
   },
   "ecosystemHub": {
     "navLabel": "Management Hub",
@@ -10187,5 +10190,16 @@
     "previewTitle": "Impact preview",
     "simulate": "Simulate",
     "confirm": "Confirm transfer"
+  },
+  "oauthConsent": {
+    "missingId": "Missing client identifier.",
+    "noRedirect": "Missing redirect address.",
+    "genericClient": "this application",
+    "title": "Authorize access",
+    "subtitle": "Review the access being requested",
+    "loading": "Loading request…",
+    "body": "{{client}} is requesting access to your Startup Leiria data.",
+    "approve": "Allow",
+    "deny": "Deny"
   }
 }

@@ -1,6 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { supabaseForUser } from "../supabase";
+import { throwToolError } from "../toolError";
 
 export default defineTool({
   name: "list_crm_leads",
@@ -20,7 +21,7 @@ export default defineTool({
     const supabase = supabaseForUser(ctx);
     let query = supabase
       .from("funnel_items")
-      .select("id, organization_name, stage, contact_email, owner_consultant_id, last_contact_at, created_at")
+      .select("id, organization_name, stage, contact_email, owner_consultant_id, last_activity_at, created_at")
       .order("created_at", { ascending: false })
       .limit(limit ?? 25);
 
@@ -28,7 +29,7 @@ export default defineTool({
     if (search) query = query.ilike("organization_name", `%${search}%`);
 
     const { data, error } = await query;
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    if (error) throwToolError("list_crm_leads", error);
     return {
       content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
       structuredContent: { leads: data ?? [], count: (data ?? []).length },

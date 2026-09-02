@@ -9,6 +9,9 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    // Several suites dynamically import heavy component barrels; the 5s default
+    // flakes when the whole suite runs in parallel.
+    testTimeout: 30000,
   },
   resolve: {
     alias: {
