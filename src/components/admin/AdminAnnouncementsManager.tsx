@@ -15,6 +15,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Mail, Package, AlertTriangle, Bell, Trash2, CheckCircle, Users, Send, MapPin, MessageSquare } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { notify } from "@/lib/notify";
 import { format } from 'date-fns';
 import { getDateLocale } from '@/lib/dateLocale';
