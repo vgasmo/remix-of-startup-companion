@@ -59,6 +59,7 @@ export function AdminAnnouncementsManager() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { confirm, dialogProps } = useConfirmDialog();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState<FormState>(EMPTY_FORM);
   const [buildingFilter, setBuildingFilter] = useState<string>('all');
@@ -191,6 +192,8 @@ export function AdminAnnouncementsManager() {
   const unreadCount = announcements?.filter(a => !a.is_read).length || 0;
 
   return (
+    <>
+    <ConfirmDialog {...dialogProps} />
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
@@ -424,7 +427,12 @@ export function AdminAnnouncementsManager() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => deleteMutation.mutate(ann.id)}
+                        onClick={() => confirm({
+                          title: t('admin.announcements.deleteConfirmTitle', { defaultValue: 'Eliminar aviso?' }),
+                          description: t('admin.announcements.deleteConfirmDesc', { defaultValue: 'Esta ação não pode ser desfeita.' }),
+                          confirmLabel: t('common.delete', { defaultValue: 'Apagar' }),
+                          onConfirm: () => deleteMutation.mutate(ann.id),
+                        })}
                         disabled={deleteMutation.isPending} loading={deleteMutation.isPending}
                        aria-label={t('common.delete')}>
                         <Trash2 className="h-4 w-4 text-destructive" />
@@ -438,5 +446,6 @@ export function AdminAnnouncementsManager() {
         )}
       </CardContent>
     </Card>
+    </>
   );
 }
