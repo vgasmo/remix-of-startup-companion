@@ -4,6 +4,7 @@
  * Provider-agnostic: dispatches to backend which routes by contract's signature_provider.
  */
 import { useState, useEffect } from 'react';
+import { getIntlLocale } from '@/lib/dateLocale';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -513,7 +514,7 @@ export default function ContractOnboarding() {
                   <div><span className="text-muted-foreground">{t('contractOnboarding.type')}:</span> {(contract as any).incubation_type?.name || '—'}</div>
                   <div><span className="text-muted-foreground">{t('contractOnboarding.building')}:</span> {(contract as any).building?.name || '—'}</div>
                   <div><span className="text-muted-foreground">{t('contractOnboarding.monthlyFee')}:</span> {(contract as any).monthly_fee}€/{(contract as any).currency || 'EUR'}</div>
-                  <div><span className="text-muted-foreground">{t('contractOnboarding.startDate')}:</span> {new Date((contract as any).start_date).toLocaleDateString('pt-PT')}</div>
+                  <div><span className="text-muted-foreground">{t('contractOnboarding.startDate')}:</span> {new Date((contract as any).start_date).toLocaleDateString(getIntlLocale())}</div>
                   {(contract as any).square_meters && (
                     <div><span className="text-muted-foreground">{t('contractOnboarding.area')}:</span> {(contract as any).square_meters} m²</div>
                   )}

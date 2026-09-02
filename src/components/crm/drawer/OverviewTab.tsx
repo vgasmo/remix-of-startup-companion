@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getIntlLocale } from '@/lib/dateLocale';
 import { useTranslation } from 'react-i18next';
 import { Target, Clock, X, Plus, DollarSign, CalendarDays, TrendingUp, Tag, Briefcase, Calendar, FileText, ExternalLink, Lock, Send } from 'lucide-react';
 import { SendProposalDialog } from '@/components/crm/SendProposalDialog';
@@ -260,7 +261,7 @@ export function OverviewTab({
                   {item.expected_close_date && (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <CalendarDays className="h-3 w-3" />
-                      {t('crm.closeBy', { defaultValue: 'Fecho' })}: {new Date(item.expected_close_date).toLocaleDateString('pt-PT')}
+                      {t('crm.closeBy', { defaultValue: 'Fecho' })}: {new Date(item.expected_close_date).toLocaleDateString(getIntlLocale())}
                     </div>
                   )}
                 </>

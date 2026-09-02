@@ -3,6 +3,7 @@
  * Shows contract, workspace, and startup details when a funnel item has linked entities
  */
 import { useQuery } from '@tanstack/react-query';
+import { getIntlLocale } from '@/lib/dateLocale';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Building2, FileText, Briefcase, ExternalLink, MapPin, Calendar, Euro, Users, PlusCircle, Send, Zap } from 'lucide-react';
@@ -60,8 +61,8 @@ function ContractCard({ contract, t, compact }: { contract: any; t: any; compact
         {contract.start_date && (
           <span className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
-            {new Date(contract.start_date).toLocaleDateString('pt-PT')}
-            {contract.end_date ? ` → ${new Date(contract.end_date).toLocaleDateString('pt-PT')}` : ''}
+            {new Date(contract.start_date).toLocaleDateString(getIntlLocale())}
+            {contract.end_date ? ` → ${new Date(contract.end_date).toLocaleDateString(getIntlLocale())}` : ''}
           </span>
         )}
         {contract.building?.name && (

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { getIntlLocale } from '@/lib/dateLocale';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -146,7 +147,7 @@ export function FounderStoryTimeline({ workspaceId }: FounderStoryTimelineProps)
                 {e.detail && <span className="text-xs text-muted-foreground">{e.detail}</span>}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {new Date(e.date).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })}
+                {new Date(e.date).toLocaleDateString(getIntlLocale(), { day: '2-digit', month: 'short', year: 'numeric' })}
               </p>
             </li>
           ))}

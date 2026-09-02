@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getIntlLocale } from '@/lib/dateLocale';
 import { clickableProps } from '@/lib/clickable';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useNavigate } from 'react-router-dom';
@@ -169,7 +170,7 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
           if (updErr) throw updErr;
 
           if (inst.submitted_by) {
-            const monthLabel = inst.week_start ? new Date(inst.week_start).toLocaleDateString('pt-PT', { month: 'long' }) : '';
+            const monthLabel = inst.week_start ? new Date(inst.week_start).toLocaleDateString(getIntlLocale(), { month: 'long' }) : '';
             const { error: notifErr } = await supabase.from('notifications').insert({
               user_id: inst.submitted_by,
               type: 'system',
