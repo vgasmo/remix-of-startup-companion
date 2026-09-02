@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { supabase } from '@/lib/supabaseClient';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { notify } from "@/lib/notify";
