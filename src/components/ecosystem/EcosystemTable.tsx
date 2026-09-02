@@ -269,6 +269,20 @@ export function EcosystemTable({ items, onOpenItem, totalCount, hasNextPage, isF
 
   const from = items.length > 0 ? page * pageSize + 1 : 0;
   const to = Math.min((page + 1) * pageSize, items.length);
+  const grandTotal = typeof totalCount === 'number' && totalCount > items.length ? totalCount : items.length;
+  const canGoNext = page < totalPages - 1 || !!hasNextPage;
+  const goNext = () => {
+    if (page < totalPages - 1) {
+      setPage((p) => p + 1);
+      // Prefetch the next server page when nearing the end of loaded rows
+      if (page + 2 >= totalPages && hasNextPage && !isFetchingNextPage) fetchNextPage?.();
+      return;
+    }
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage?.();
+      setPage((p) => p + 1);
+    }
+  };
 
   if (items.length === 0) {
     return (
