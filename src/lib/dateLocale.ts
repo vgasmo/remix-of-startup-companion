@@ -50,3 +50,12 @@ export function timeAgo(
     .replace(/\s{2,}/g, ' ')
     .trim();
 }
+
+/**
+ * P2: BCP-47 tag for Intl / toLocaleDateString calls, driven by the active
+ * language instead of hardcoding 'pt-PT'.
+ */
+export function getIntlLocale(lang?: string): string {
+  const l = (lang ?? i18next.language ?? 'pt').toLowerCase();
+  return l.startsWith('en') ? 'en-GB' : 'pt-PT';
+}
