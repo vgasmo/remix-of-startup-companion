@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabaseClient';
+import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { notify } from "@/lib/notify";
 
@@ -43,7 +44,7 @@ export function CsvLeadImport() {
     setStaging(true);
     try {
       const csvText = await file.text();
-      const { data, error } = await supabase.functions.invoke('bulk-import-leads', {
+      const { data, error } = await invokeWithAuth('bulk-import-leads', {
         body: { mode: 'stage', csv_text: csvText, filename: file.name },
       });
       if (error) throw error;
@@ -72,7 +73,7 @@ export function CsvLeadImport() {
     if (!batchId) return;
     setImporting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('bulk-import-leads', {
+      const { data, error } = await invokeWithAuth('bulk-import-leads', {
         body: { mode: 'commit', batch_id: batchId },
       });
       if (error) throw error;
