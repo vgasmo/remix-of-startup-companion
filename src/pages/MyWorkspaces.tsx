@@ -125,6 +125,7 @@ export default function MyWorkspaces() {
     setProgramFilter(filters.programId || 'all');
     setStageFilter(filters.stage || 'all');
     setHealthFilter(filters.health || 'all');
+    setPriorityFilter(filters.priority || 'all');
     setMissingKpi(filters.missingKpi || false);
     setOverdueActions(filters.overdueActions || false);
     if (filters.sortBy) setSortBy(filters.sortBy);
@@ -255,6 +256,7 @@ export default function MyWorkspaces() {
     programFilter !== 'all',
     stageFilter !== 'all',
     healthFilter !== 'all',
+    priorityFilter !== 'all',
     missingKpi,
     overdueActions,
   ].filter(Boolean).length;
@@ -265,6 +267,7 @@ export default function MyWorkspaces() {
     setProgramFilter('all');
     setStageFilter('all');
     setHealthFilter('all');
+    setPriorityFilter('all');
     setMissingKpi(false);
     setOverdueActions(false);
     setQuickFilters({});
@@ -473,7 +476,7 @@ export default function MyWorkspaces() {
             />
             <div className="mt-2 flex justify-end">
               <SavedFiltersDropdown 
-                currentFilters={{ search, programId: programFilter, stage: stageFilter, health: healthFilter, missingKpi, overdueActions, sortBy }}
+                currentFilters={{ search, programId: programFilter, stage: stageFilter, health: healthFilter, priority: priorityFilter, missingKpi, overdueActions, sortBy }}
                 onApplyFilter={applyFilters}
               />
             </div>

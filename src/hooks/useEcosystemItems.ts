@@ -119,6 +119,9 @@ export function useEcosystemItems(filters: EcosystemFilters = {}) {
         p_incubation_type_id: filters.incubationTypeId && filters.incubationTypeId !== 'all' ? filters.incubationTypeId : null,
         p_modality: filters.modality ?? null,
         p_tier: filters.tier ?? null,
+        p_category_id: filters.categoryId && filters.categoryId !== 'all' ? filters.categoryId : null,
+        p_tag_id: filters.tagId && filters.tagId !== 'all' ? filters.tagId : null,
+        p_needs_attention: filters.needsAttention ? true : null,
       });
       if (error) throw error;
       const rows = (data ?? []) as Array<Record<string, unknown>>;

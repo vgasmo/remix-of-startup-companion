@@ -38,12 +38,14 @@ interface TransitionalFounderDashboardProps {
   contractStatus?: string | null;
 }
 
-const CHECKLIST_ITEMS = [
+// `/documents` is staff-only; founders reach their documents through the
+// workspace tab instead, so the checklist links depend on the workspace id.
+const buildChecklistItems = (workspaceId: string) => [
   { key: 'await_validation', icon: Clock, defaultLabel: 'Aguardar validação da equipa', href: null as string | null },
-  { key: 'prepare_docs', icon: FileText, defaultLabel: 'Preparar documentação da startup', href: '/documents' as string | null },
+  { key: 'prepare_docs', icon: FileText, defaultLabel: 'Preparar documentação da startup', href: `/workspace/${workspaceId}?tab=documents` as string | null },
   { key: 'confirm_contacts', icon: User, defaultLabel: 'Confirmar dados de contacto', href: '/settings' as string | null },
   { key: 'explore_resources', icon: FolderOpen, defaultLabel: 'Explorar recursos disponíveis', href: '/resources' as string | null },
-] as const;
+];
 
 function getContractLabel(status: string | null | undefined, t: (k: string, o?: any) => string): { label: string; variant: 'default' | 'secondary' | 'outline' } {
   switch (status) {
@@ -173,7 +175,7 @@ export function TransitionalFounderDashboard({
         </CardHeader>
         <CardContent>
           <div className="space-y-1">
-            {CHECKLIST_ITEMS.map((item) => {
+            {buildChecklistItems(workspace.id).map((item) => {
               const label = t(`founder.transitional.checklist.${item.key}`, { defaultValue: item.defaultLabel });
               const className = 'flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-muted/50 transition-colors w-full text-left';
               const content = (
