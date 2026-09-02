@@ -36,7 +36,7 @@ export function useFounderOnboardingState(): FounderOnboardingState {
   const isExempt = isStaff || roles.includes('mentor_externo');
   const shouldQuery = isAuthReady && !!user && isFounder && !isExempt;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['founder-onboarding-state', user?.id],
     queryFn: async (): Promise<Omit<FounderOnboardingState, 'isLoading'>> => {
       if (!user) {
@@ -140,6 +140,12 @@ export function useFounderOnboardingState(): FounderOnboardingState {
   }
   if (isExempt) {
     return { status: 'staff_exempt', activeWorkspaceId: null, startupName: null, pendingClaimEmail: null, pendingClaimCreatedAt: null, isLoading: false };
+  }
+
+  // Surface (log) RLS/network failures instead of hanging in a permanent skeleton
+  if (isError) {
+    logger.warn('useFounderOnboardingState: failed to resolve onboarding state', error);
+    return { status: 'error', activeWorkspaceId: null, startupName: null, pendingClaimEmail: null, pendingClaimCreatedAt: null, isLoading: false };
   }
 
   if (!isAuthReady || isLoading || !data) {
