@@ -85,7 +85,8 @@ function usePendingWorkspaces() {
           program:programs(id, name)
         `)
         .eq('status', 'pending')
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .limit(200);
 
       if (error) throw error;
       if (!workspaces?.length) return [];
@@ -125,7 +126,8 @@ function usePendingUsers() {
         .from('profiles')
         .select('id, full_name, email, avatar_url, created_at, account_status')
         .eq('account_status', 'pending')
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .limit(200);
 
       if (error) throw error;
       if (!profiles?.length) return [];
@@ -162,7 +164,8 @@ function usePendingClaims() {
         .from('startup_claim_requests')
         .select('id, user_id, user_email, status, match_method, created_at')
         .eq('status', 'pending')
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .limit(200);
 
       if (error) throw error;
       if (!claims?.length) return [];
@@ -193,7 +196,8 @@ function useAvailableWorkspaces() {
         .from('workspaces')
         .select('id, status, startup:startups(id, name)')
         .in('status', ['imported_unclaimed', 'active', 'claimed', 'pending'])
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(1000);
 
       if (error) throw error;
       return data || [];

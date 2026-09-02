@@ -38,7 +38,8 @@ export function ClaimRequestsQueue() {
         .from('startup_claim_requests')
         .select('*')
         .eq('status', 'pending')
-        .order('requested_at', { ascending: true });
+        .order('requested_at', { ascending: true })
+        .limit(200);
       if (error) throw error;
       return (data || []) as ClaimRequest[];
     },
@@ -51,7 +52,8 @@ export function ClaimRequestsQueue() {
         .from('workspaces')
         .select('id, startup:startups(id, name)')
         .eq('status', 'imported_unclaimed')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(500);
       if (error) throw error;
       return (data || []).map(w => ({
         id: w.id,
