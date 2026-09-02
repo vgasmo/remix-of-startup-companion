@@ -476,7 +476,7 @@ export default function MyWorkspaces() {
             />
             <div className="mt-2 flex justify-end">
               <SavedFiltersDropdown 
-                currentFilters={{ search, programId: programFilter, stage: stageFilter, health: healthFilter, missingKpi, overdueActions, sortBy }}
+                currentFilters={{ search, programId: programFilter, stage: stageFilter, health: healthFilter, priority: priorityFilter, missingKpi, overdueActions, sortBy }}
                 onApplyFilter={applyFilters}
               />
             </div>
