@@ -187,14 +187,18 @@ serve(withCronRunLogging('send-milestone-reminders', async (req) => {
             </div>
           `;
 
-          await resend.emails.send({
+          // Resend returns { data, error } and never throws — check error explicitly.
+          const { error: sendError } = await resend.emails.send({
             from: "Startup Leiria <noreply@startupleiria.com>",
             to: profile.email,
             subject: s.subject(daysUntilDue, dayWord, milestone.title),
             html: emailHtml,
           });
-
-          emailsSent++;
+          if (sendError) {
+            console.error("Resend rejected milestone reminder:", sendError);
+          } else {
+            emailsSent++;
+          }
           console.log(`Email sent to ${profile.email} for milestone ${milestone.id}`);
         } catch (emailError) {
           console.error("Error sending email:", emailError);

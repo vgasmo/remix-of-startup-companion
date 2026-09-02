@@ -1,11 +1,11 @@
 {
-  "started_at": "2026-07-23T10:14:59.696Z",
-  "finished_at": "2026-07-23T10:16:42.889Z",
+  "started_at": "2026-09-02T14:36:48.972Z",
+  "finished_at": "2026-09-02T14:37:54.308Z",
   "overall": "fail",
   "reason": "Staging gates were not executed. RC5_ALLOW_STAGING_TESTS must be 'true' to prove behavioral invariants. Local gates PASS but overall is NO-GO.",
   "source": {
-    "git_sha": "7251814e56588536deba4fd5001bc27c9c6d5c27",
-    "git_branch": "edit/edt-04686d64-47bb-46c7-ae7f-0dce9d239eb2"
+    "git_sha": "f94d2394cb4d4f2472c954fa08c865d00d369524",
+    "git_branch": "edit/edt-fabfecdb-fe80-4e8c-81e5-0c7bcbe54d94"
   },
   "target": {
     "staging_project_ref_redacted": null,
@@ -17,77 +17,98 @@
       "name": "install",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 77,
+      "duration_ms": 51,
       "note": null
     },
     {
       "name": "typecheck",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 7562,
+      "duration_ms": 6245,
       "note": null
     },
     {
       "name": "lint",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 17225,
+      "duration_ms": 11034,
       "note": null
     },
     {
       "name": "build",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 28519,
+      "duration_ms": 17586,
       "note": null
     },
     {
       "name": "vitest:run:1",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 16823,
+      "duration_ms": 9139,
       "note": null
     },
     {
       "name": "vitest:run:2",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 16409,
+      "duration_ms": 9218,
       "note": null
     },
     {
       "name": "vitest:run:3",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 15365,
+      "duration_ms": 10174,
       "note": null
     },
     {
       "name": "i18n:parity",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 152,
+      "duration_ms": 136,
       "note": null
     },
     {
       "name": "i18n:lint",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 267,
+      "duration_ms": 205,
+      "note": null
+    },
+    {
+      "name": "i18n:quality",
+      "status": "pass",
+      "exit_code": 0,
+      "duration_ms": 111,
       "note": null
     },
     {
       "name": "secret:scan",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 592,
+      "duration_ms": 452,
       "note": null
     },
     {
-      "name": "deno:check-changed",
+      "name": "migration:scan",
       "status": "pass",
       "exit_code": 0,
-      "duration_ms": 154,
+      "duration_ms": 122,
+      "note": null
+    },
+    {
+      "name": "size-limit",
+      "status": "pass",
+      "exit_code": 0,
+      "duration_ms": 253,
+      "note": null
+    },
+    {
+      "name": "deno:check-all",
+      "status": "pass",
+      "exit_code": 0,
+      "duration_ms": 581,
       "note": null
     },
     {

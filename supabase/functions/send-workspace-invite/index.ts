@@ -305,7 +305,12 @@ serve(async (req) => {
     });
 
     
-    console.log(`Invitation sent to ${payload.email} for workspace ${payload.workspaceId}`, emailResult);
+    if (emailResult.error) {
+      // Resend returns { data, error } and never throws — surface the failure.
+      throw new Error(emailResult.error.message || 'resend_send_failed');
+    }
+
+    console.log(`Invitation sent to ${payload.email} for workspace ${payload.workspaceId}`, emailResult.data?.id);
     
     return corsJsonResponse({ 
       success: true, 

@@ -214,12 +214,17 @@ serve(withCronRunLogging('send-weekly-health-digest', async (req) => {
           </div>
         `;
 
-        await resend.emails.send({
+        // Resend returns { data, error } and never throws — check error explicitly.
+        const { error: sendError } = await resend.emails.send({
           from: "Startup Leiria <noreply@startupleiria.com>",
           to: [profile.email],
           subject: s.subject(atRisk.length),
           html,
         });
+        if (sendError) {
+          console.error(`Resend rejected digest to ${profile.email}:`, sendError);
+          continue;
+        }
 
         emailsSent++;
         await new Promise(r => setTimeout(r, 600));

@@ -58,6 +58,13 @@ function supabaseForUser(ctx) {
   });
 }
 
+// src/lib/mcp/toolError.ts
+function throwToolError(tool, error) {
+  const detail = error && typeof error === "object" && "message" in error ? String(error.message) : String(error);
+  console.error(JSON.stringify({ level: "error", event: "mcp_tool_error", tool, detail }));
+  throw new Error(`The ${tool} tool could not complete the request.`);
+}
+
 // src/lib/mcp/tools/list-workspaces.ts
 var list_workspaces_default = defineTool({
   name: "list_workspaces",
@@ -73,14 +80,13 @@ var list_workspaces_default = defineTool({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
-    const { data, error } = await supabase.from("workspaces").select(
-      "id, stage, health_score, priority_level, updated_at, startup:startups(id, name), program:programs(id, name, program_type)"
-    ).order("updated_at", { ascending: false }).limit(limit ?? 25);
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
-    const needle = search?.toLowerCase();
-    const rows = (data ?? []).filter(
-      (row) => !needle || (row.startup?.name ?? "").toLowerCase().includes(needle)
-    );
+    let query = supabase.from("workspaces").select(
+      "id, stage, health_score, priority_level, updated_at, startup:startups!inner(id, name), program:programs(id, name, program_type)"
+    ).order("updated_at", { ascending: false });
+    if (search) query = query.ilike("startup.name", `%${search}%`);
+    const { data, error } = await query.limit(limit ?? 25);
+    if (error) throwToolError("list_workspaces", error);
+    const rows = data ?? [];
     return {
       content: [{ type: "text", text: JSON.stringify(rows, null, 2) }],
       structuredContent: { workspaces: rows, count: rows.length }
@@ -112,7 +118,7 @@ var get_workspace_overview_default = defineTool2({
       supabase.from("action_items").select("id, title, status, priority, due_date").eq("workspace_id", workspace_id).neq("status", "completed").order("due_date", { ascending: true, nullsFirst: false }).limit(50)
     ]);
     const failure = workspace.error ?? milestones.error ?? actions.error;
-    if (failure) return { content: [{ type: "text", text: failure.message }], isError: true };
+    if (failure) throwToolError("get_workspace_overview", failure);
     if (!workspace.data) {
       return { content: [{ type: "text", text: "Workspace not found or not accessible" }], isError: true };
     }
@@ -154,7 +160,7 @@ var list_action_items_default = defineTool3({
       query = query.lt("due_date", (/* @__PURE__ */ new Date()).toISOString().slice(0, 10)).not("status", "in", "(completed,cancelled)");
     }
     const { data, error } = await query;
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    if (error) throwToolError("list_action_items", error);
     return {
       content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
       structuredContent: { action_items: data ?? [], count: (data ?? []).length }
@@ -183,6 +189,14 @@ var create_action_item_default = defineTool4({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
+    const { data: ms, error: msError } = await supabase.from("milestones").select("id").eq("id", milestone_id).eq("workspace_id", workspace_id).maybeSingle();
+    if (msError) throwToolError("create_action_item", msError);
+    if (!ms) {
+      return {
+        content: [{ type: "text", text: "Milestone does not belong to this workspace" }],
+        isError: true
+      };
+    }
     const { data, error } = await supabase.from("action_items").insert({
       workspace_id,
       milestone_id,
@@ -193,7 +207,7 @@ var create_action_item_default = defineTool4({
       status: "pending",
       created_by: ctx.getUserId()
     }).select("id, workspace_id, milestone_id, title, status, priority, due_date").maybeSingle();
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    if (error) throwToolError("create_action_item", error);
     return {
       content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
       structuredContent: { action_item: data }
@@ -224,7 +238,7 @@ var list_upcoming_sessions_default = defineTool5({
     let query = supabase.from("sessions").select("id, workspace_id, title, scheduled_at, duration, status").gte("scheduled_at", now.toISOString()).lte("scheduled_at", until.toISOString()).order("scheduled_at", { ascending: true }).limit(limit ?? 25);
     if (workspace_id) query = query.eq("workspace_id", workspace_id);
     const { data, error } = await query;
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    if (error) throwToolError("list_upcoming_sessions", error);
     return {
       content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
       structuredContent: { sessions: data ?? [], count: (data ?? []).length }
@@ -250,11 +264,11 @@ var list_crm_leads_default = defineTool6({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
-    let query = supabase.from("funnel_items").select("id, organization_name, stage, contact_email, owner_consultant_id, last_contact_at, created_at").order("created_at", { ascending: false }).limit(limit ?? 25);
+    let query = supabase.from("funnel_items").select("id, organization_name, stage, contact_email, owner_consultant_id, last_activity_at, created_at").order("created_at", { ascending: false }).limit(limit ?? 25);
     if (stage) query = query.eq("stage", stage);
     if (search) query = query.ilike("organization_name", `%${search}%`);
     const { data, error } = await query;
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    if (error) throwToolError("list_crm_leads", error);
     return {
       content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
       structuredContent: { leads: data ?? [], count: (data ?? []).length }

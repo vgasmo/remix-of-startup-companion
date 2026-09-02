@@ -193,7 +193,9 @@
       "title": "Avisos às Startups",
       "titleLabel": "Título",
       "titlePlaceholder": "Ex: Encomenda recebida, Carta registada...",
-      "unread": "Por ler"
+      "unread": "Por ler",
+      "deleteConfirmTitle": "Eliminar comunicado?",
+      "deleteConfirmDesc": "Este comunicado será removido permanentemente. Esta ação não pode ser revertida."
     },
     "anyProgram": "Qualquer programa",
     "applicationRejected": "Candidatura rejeitada",
@@ -4266,7 +4268,8 @@
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
     "workspaceRestored": "Workspace restaurado",
-    "workspaces": "workspaces"
+    "workspaces": "workspaces",
+    "loadError": "Não foi possível carregar a lista do ecossistema. Tente novamente."
   },
   "ecosystemHub": {
     "navLabel": "Hub de Gestão",
@@ -10187,5 +10190,16 @@
     "previewTitle": "Pré-visualização do impacto",
     "simulate": "Simular",
     "confirm": "Confirmar transferência"
+  },
+  "oauthConsent": {
+    "missingId": "Identificador da aplicação em falta.",
+    "noRedirect": "Endereço de redirecionamento em falta.",
+    "genericClient": "esta aplicação",
+    "title": "Autorizar acesso",
+    "subtitle": "Reveja o acesso que está a ser pedido",
+    "loading": "A carregar pedido…",
+    "body": "{{client}} está a pedir acesso aos seus dados do Startup Leiria.",
+    "approve": "Permitir",
+    "deny": "Recusar"
   }
 }

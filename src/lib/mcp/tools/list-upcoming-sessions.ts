@@ -1,6 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { supabaseForUser } from "../supabase";
+import { throwToolError } from "../toolError";
 
 export default defineTool({
   name: "list_upcoming_sessions",
@@ -31,7 +32,7 @@ export default defineTool({
     if (workspace_id) query = query.eq("workspace_id", workspace_id);
 
     const { data, error } = await query;
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    if (error) throwToolError("list_upcoming_sessions", error);
     return {
       content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
       structuredContent: { sessions: data ?? [], count: (data ?? []).length },

@@ -1,6 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { supabaseForUser } from "../supabase";
+import { throwToolError } from "../toolError";
 
 export default defineTool({
   name: "create_action_item",
@@ -21,6 +22,20 @@ export default defineTool({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
+    // P0.2 defence in depth: the milestone MUST belong to the same workspace.
+    const { data: ms, error: msError } = await supabase
+      .from("milestones")
+      .select("id")
+      .eq("id", milestone_id)
+      .eq("workspace_id", workspace_id)
+      .maybeSingle();
+    if (msError) throwToolError("create_action_item", msError);
+    if (!ms) {
+      return {
+        content: [{ type: "text", text: "Milestone does not belong to this workspace" }],
+        isError: true,
+      };
+    }
     const { data, error } = await supabase
       .from("action_items")
       .insert({
@@ -36,7 +51,7 @@ export default defineTool({
       .select("id, workspace_id, milestone_id, title, status, priority, due_date")
       .maybeSingle();
 
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    if (error) throwToolError("create_action_item", error);
     return {
       content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
       structuredContent: { action_item: data },

@@ -138,6 +138,11 @@ Deno.serve(async (req) => {
         html: bodyHtml,
       });
 
+      if (emailResult.error) {
+        // Resend returns { data, error } and never throws — surface the failure.
+        throw new Error(emailResult.error.message || 'resend_send_failed');
+      }
+
       console.log(`Email sent successfully to ${funnelItem.contact_email}`);
 
       // Update log entry with success

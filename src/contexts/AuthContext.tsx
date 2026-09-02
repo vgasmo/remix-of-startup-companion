@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode, useCallback, useMemo } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import { AppRole } from '@/types/database';
@@ -26,6 +26,9 @@ interface AuthContextType {
   roles: AppRole[];
   isLoading: boolean;
   isAuthReady: boolean;
+  /** P0.3: true when profile/roles could not be loaded — do NOT treat as "no roles". */
+  authError: boolean;
+  retryUserData: () => Promise<void>;
   isAdmin: boolean;
   isConsultor: boolean;
   isBackoffice: boolean;
@@ -51,41 +54,76 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthReady, setIsAuthReady] = useState(false);
+  const [authError, setAuthError] = useState(false);
+  const userIdRef = useRef<string | null>(null);
 
   const fetchUserData = useCallback(async (userId: string): Promise<void> => {
-    try {
-      const [profileResult, rolesResult] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('id, email, full_name, avatar_url, account_status, created_at, updated_at')
-          .eq('id', userId)
-          .maybeSingle(),
-        supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', userId)
-      ]);
-      
-      if (profileResult.data) {
-        const profileData = profileResult.data as Record<string, unknown>;
-        setProfile({
-          id: profileData.id as string,
-          email: profileData.email as string,
-          full_name: profileData.full_name as string | null,
-          avatar_url: profileData.avatar_url as string | null,
-          account_status: (profileData.account_status as AccountStatus) || 'approved',
-          created_at: profileData.created_at as string,
-          updated_at: profileData.updated_at as string,
-        });
+    // P0.3: supabase-js never throws — it returns { data, error }. Treating an
+    // error as "no roles" silently strips every permission from the user, so we
+    // retry with backoff and surface authError instead of degrading.
+    const MAX_ATTEMPTS = 3;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        const [profileResult, rolesResult] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('id, email, full_name, avatar_url, account_status, created_at, updated_at')
+            .eq('id', userId)
+            .maybeSingle(),
+          supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', userId)
+        ]);
+
+        if (profileResult.error || rolesResult.error) {
+          logger.error('fetch_user_data_failed', {
+            userId: userId.slice(0, 8),
+            attempt,
+            profileError: profileResult.error?.message,
+            rolesError: rolesResult.error?.message,
+          });
+          if (attempt < MAX_ATTEMPTS) {
+            await new Promise(resolve => setTimeout(resolve, 400 * attempt));
+            continue;
+          }
+          setAuthError(true);
+          return;
+        }
+
+        if (profileResult.data) {
+          const profileData = profileResult.data as Record<string, unknown>;
+          setProfile({
+            id: profileData.id as string,
+            email: profileData.email as string,
+            full_name: profileData.full_name as string | null,
+            avatar_url: profileData.avatar_url as string | null,
+            account_status: (profileData.account_status as AccountStatus) || 'approved',
+            created_at: profileData.created_at as string,
+            updated_at: profileData.updated_at as string,
+          });
+        }
+
+        setRoles((rolesResult.data ?? []).map(r => r.role as AppRole));
+        setAuthError(false);
+        return;
+      } catch (error) {
+        logger.error('fetch_user_data_threw', { userId: userId.slice(0, 8), attempt }, error);
+        if (attempt < MAX_ATTEMPTS) {
+          await new Promise(resolve => setTimeout(resolve, 400 * attempt));
+          continue;
+        }
+        setAuthError(true);
       }
-      
-      if (rolesResult.data) {
-        setRoles(rolesResult.data.map(r => r.role as AppRole));
-      }
-    } catch (error) {
-      logger.error('fetch_user_data_failed', { userId: userId.slice(0, 8) }, error);
     }
   }, []);
+
+  const retryUserData = useCallback(async () => {
+    const uid = userIdRef.current;
+    if (!uid) return;
+    setAuthError(false);
+    await fetchUserData(uid);
+  }, [fetchUserData]);
 
   useEffect(() => {
     let isMounted = true;
@@ -98,6 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         setSession(initialSession);
         setUser(initialSession?.user ?? null);
+        userIdRef.current = initialSession?.user?.id ?? null;
         
         if (initialSession?.user) {
           // Hydrate cache ONLY after confirming user identity
@@ -123,6 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         setSession(newSession);
         setUser(newSession?.user ?? null);
+        userIdRef.current = newSession?.user?.id ?? null;
         
         if (event === 'SIGNED_OUT') {
           resetSession(queryClient, 'logout');
@@ -269,6 +309,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       roles,
       isLoading,
       isAuthReady,
+      authError,
+      retryUserData,
       isAdmin,
       isConsultor,
       isBackoffice,
@@ -284,7 +326,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signOut,
       refreshProfile,
     };
-  }, [user, session, profile, roles, isLoading, isAuthReady, signIn, signUp, signOut, refreshProfile]);
+  }, [user, session, profile, roles, isLoading, isAuthReady, authError, retryUserData, signIn, signUp, signOut, refreshProfile]);
 
   return (
     <AuthContext.Provider value={value}>
