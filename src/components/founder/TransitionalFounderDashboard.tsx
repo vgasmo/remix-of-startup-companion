@@ -175,7 +175,7 @@ export function TransitionalFounderDashboard({
         </CardHeader>
         <CardContent>
           <div className="space-y-1">
-            {CHECKLIST_ITEMS.map((item) => {
+            {buildChecklistItems(workspace.id).map((item) => {
               const label = t(`founder.transitional.checklist.${item.key}`, { defaultValue: item.defaultLabel });
               const className = 'flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-muted/50 transition-colors w-full text-left';
               const content = (
