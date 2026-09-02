@@ -98,10 +98,11 @@ export default function MyWorkspaces() {
     // Fallback: no health signal at all → fall back to overdue actions.
     if (Object.keys(next).length === 0) next.overdue = true;
     setQuickFilters(next);
-    // Always land on "all startups" so the risk list isn't hidden by the
-    // assigned-only default of consultants.
-    setAssignedOverride(false);
+    // Keep the consultant's assigned-only scope so the list matches the
+    // dashboard badge count; admins/non-consultants land on "all startups".
+    setAssignedOverride(isConsultor && !isAdmin ? true : false);
     setShowDetailedView(true);
+
     setSearchParams({}, { replace: true });
   }, [searchParams, setSearchParams, attentionStatsForFilter]);
 
