@@ -313,7 +313,7 @@ export function EcosystemTable({ items, onOpenItem, totalCount, hasNextPage, isF
       </div>
       <div className="flex items-center gap-1">
         <span className="text-sm text-muted-foreground mr-2">
-          {t('common.showingResults', { from, to, total: items.length, defaultValue: `Showing ${from}-${to} of ${items.length}` })}
+          {t('common.showingResults', { from, to, total: grandTotal, defaultValue: `Showing ${from}-${to} of ${grandTotal}` })}
         </span>
         <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={() => setPage(0)} aria-label={t('common.first', { defaultValue: 'First' })}>
           <ChevronsLeft className="h-4 w-4" />
