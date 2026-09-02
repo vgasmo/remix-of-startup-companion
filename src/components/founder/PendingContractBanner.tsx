@@ -16,7 +16,7 @@ interface PendingContractBannerProps {
 }
 
 export function PendingContractBanner({ workspaceId }: PendingContractBannerProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const { data: contracts } = useQuery({
