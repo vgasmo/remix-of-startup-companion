@@ -7,6 +7,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/lib/logger';
 
 export type FounderOnboardingStatus =
   | 'loading'
@@ -16,6 +17,7 @@ export type FounderOnboardingStatus =
   | 'has_pending_claim'          // Founder has a pending claim request awaiting staff review
   | 'needs_claim_verification'   // Founder has no workspace and no pending claim — should verify
   | 'not_founder'                // User is not a founder (staff, mentor, etc.)
+  | 'error'                      // Query failed (RLS/network) — do not gate the UI silently
   | 'staff_exempt';              // User is founder but also staff — exempt from gating
 
 export interface FounderOnboardingState {
