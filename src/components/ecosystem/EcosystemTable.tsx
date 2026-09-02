@@ -45,9 +45,15 @@ const PAGE_SIZE_OPTIONS = [25, 50, 100];
 interface Props {
   items: EcosystemItem[];
   onOpenItem: (item: EcosystemItem) => void;
+  /** Total rows available on the server (for accurate "showing x of y") */
+  totalCount?: number;
+  /** Server-side infinite pagination hooks */
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+  fetchNextPage?: () => void;
 }
 
-export function EcosystemTable({ items, onOpenItem }: Props) {
+export function EcosystemTable({ items, onOpenItem, totalCount, hasNextPage, isFetchingNextPage, fetchNextPage }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
