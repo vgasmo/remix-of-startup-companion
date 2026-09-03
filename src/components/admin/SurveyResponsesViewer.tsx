@@ -221,8 +221,9 @@ function InstanceDetailDialog({
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {data?.instance?.workspace?.startups?.name || "Survey"} - Responses
+            {data?.instance?.workspace?.startups?.name || t('surveys.title', 'Inquérito')} — {t('surveys.responses', 'Respostas')}
           </DialogTitle>
+
         </DialogHeader>
 
         {isLoading ? (
