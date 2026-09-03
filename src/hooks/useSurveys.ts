@@ -394,6 +394,105 @@ export function useCloseCampaign() {
   });
 }
 
+/** Reopen a closed campaign so pending startups can submit again. */
+export function useReopenCampaign() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (campaignId: string) => {
+      const { error } = await supabase
+        .from("survey_campaigns")
+        .update({ status: "active" })
+        .eq("id", campaignId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
+      toast.success(t("admin.surveys.reopened", "Campanha reaberta"));
+    },
+    onError: (error) => {
+      toast.error(t("admin.surveys.reopenFailed", "Não foi possível reabrir a campanha"));
+      logger.error('operation_error', {}, error);
+    },
+  });
+}
+
+/**
+ * Enroll every eligible active workspace that has no instance yet.
+ * Idempotent: existing instances are left untouched.
+ */
+export function useSyncCampaignParticipants() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (campaignId: string) => {
+      const { data: campaign, error: campaignError } = await supabase
+        .from("survey_campaigns")
+        .select("id, program_id")
+        .eq("id", campaignId)
+        .single();
+
+      if (campaignError) throw campaignError;
+
+      let query = supabase
+        .from("workspaces")
+        .select("id, stage, startups(name, founded_date)")
+        .eq("status", "active");
+
+      if (campaign.program_id) {
+        query = query.eq("program_id", campaign.program_id);
+      }
+
+      const { data: workspaces, error: workspacesError } = await query;
+      if (workspacesError) throw workspacesError;
+
+      const { data: existing, error: existingError } = await supabase
+        .from("survey_instances")
+        .select("workspace_id")
+        .eq("campaign_id", campaignId);
+
+      if (existingError) throw existingError;
+
+      const enrolled = new Set((existing || []).map((i) => i.workspace_id));
+      const missing = (workspaces || []).filter((ws) => !enrolled.has(ws.id));
+
+      if (missing.length === 0) return { added: 0 };
+
+      const { error: insertError } = await supabase.from("survey_instances").insert(
+        missing.map((ws) => ({
+          campaign_id: campaignId,
+          workspace_id: ws.id,
+          auto_filled_data: {
+            stage: ws.stage,
+            startup_name: ws.startups?.name || null,
+            founded_year: ws.startups?.founded_date
+              ? new Date(ws.startups.founded_date).getFullYear()
+              : null,
+          } as Json,
+          status: "pending" as const,
+        })),
+      );
+
+      if (insertError) throw insertError;
+      return { added: missing.length };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
+      queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
+      toast.success(
+        data.added > 0
+          ? t("admin.surveys.participantsAdded", { count: data.added, defaultValue: "{{count}} startups inscritas" })
+          : t("admin.surveys.participantsUpToDate", "Todas as startups elegíveis já estão inscritas"),
+      );
+    },
+    onError: (error) => {
+      toast.error(t("admin.surveys.syncFailed", "Não foi possível inscrever as startups"));
+      logger.error('operation_error', {}, error);
+    },
+  });
+}
+
 // Survey instances for a campaign
 export function useCampaignInstances(campaignId: string | null) {
   return useQuery({
