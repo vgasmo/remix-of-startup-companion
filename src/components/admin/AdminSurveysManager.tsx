@@ -213,9 +213,12 @@ function CampaignCard({
   onViewResponses: () => void;
 }) {
   const { t, i18n } = useTranslation();
+  const [showQuestions, setShowQuestions] = useState(false);
   const { data: stats } = useCampaignStats(campaign.id);
   const launchCampaign = useLaunchCampaign();
   const closeCampaign = useCloseCampaign();
+  const reopenCampaign = useReopenCampaign();
+  const syncParticipants = useSyncCampaignParticipants();
 
   const locale = i18n.language === "pt" ? pt : undefined;
 
