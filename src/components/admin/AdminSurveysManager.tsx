@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { getDateLocale } from "@/lib/dateLocale";
+import { pt } from "date-fns/locale";
 import {
   ClipboardList,
   Plus,
@@ -63,9 +63,9 @@ import { SurveyResponsesViewer } from "./SurveyResponsesViewer";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
-  active: "bg-[hsl(var(--success))]/20 text-[hsl(var(--success))]",
-  closed: "bg-[hsl(var(--warning))]/20 text-[hsl(var(--warning))] ",
-  archived: "bg-muted/20 text-muted-foreground",
+  active: "bg-green-500/20 text-green-700 dark:text-green-400",
+  closed: "bg-orange-500/20 text-orange-700 dark:text-orange-400",
+  archived: "bg-gray-500/20 text-gray-700 dark:text-gray-400",
 };
 
 export function AdminSurveysManager() {
@@ -217,7 +217,7 @@ function CampaignCard({
   const launchCampaign = useLaunchCampaign();
   const closeCampaign = useCloseCampaign();
 
-  const locale = getDateLocale();
+  const locale = i18n.language === "pt" ? pt : undefined;
 
   return (
     <Card>
@@ -229,9 +229,16 @@ function CampaignCard({
               <p className="text-sm text-muted-foreground mt-1">{campaign.description}</p>
             )}
           </div>
-          <Badge className={STATUS_COLORS[campaign.status]}>
-            {campaign.status}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {campaign.auto_enroll && (
+              <Badge variant="outline">
+                {t("admin.surveys.autoEnroll", "Inscrição automática")}
+              </Badge>
+            )}
+            <Badge className={STATUS_COLORS[campaign.status]}>
+              {campaign.status}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -268,9 +275,9 @@ function CampaignCard({
             </div>
             <Progress value={stats.completionRate} />
             <div className="flex gap-4 text-xs text-muted-foreground">
-              <span className="text-[hsl(var(--success))]">● {stats.submitted} submitted</span>
-              <span className="text-[hsl(var(--warning))]">● {stats.inProgress} in progress</span>
-              <span className="text-muted-foreground">● {stats.pending} pending</span>
+              <span className="text-green-600">● {stats.submitted} submitted</span>
+              <span className="text-yellow-600">● {stats.inProgress} in progress</span>
+              <span className="text-gray-400">● {stats.pending} pending</span>
             </div>
           </div>
         )}
@@ -280,7 +287,7 @@ function CampaignCard({
             <Button
               size="sm"
               onClick={() => launchCampaign.mutate(campaign.id)}
-              disabled={launchCampaign.isPending} loading={launchCampaign.isPending}
+              disabled={launchCampaign.isPending}
             >
               <Rocket className="h-4 w-4 mr-2" />
               {t("admin.surveys.launch", "Launch")}
@@ -291,7 +298,7 @@ function CampaignCard({
               size="sm"
               variant="outline"
               onClick={() => closeCampaign.mutate(campaign.id)}
-              disabled={closeCampaign.isPending} loading={closeCampaign.isPending}
+              disabled={closeCampaign.isPending}
             >
               <StopCircle className="h-4 w-4 mr-2" />
               {t("admin.surveys.close", "Close")}
@@ -423,7 +430,7 @@ function CreateCampaignDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t("common.cancel", "Cancel")}
             </Button>
-            <Button type="submit" disabled={createCampaign.isPending || !formData.survey_definition_id} loading={createCampaign.isPending}>
+            <Button type="submit" disabled={createCampaign.isPending || !formData.survey_definition_id}>
               {t("common.create", "Create")}
             </Button>
           </div>
