@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Trash2, Save, Pencil, Eye, EyeOff } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Plus, Trash2, GripVertical, Save, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,78 +22,155 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   SurveyDefinition,
   SurveyQuestion,
+  WriteBackMapping,
+  STARTUP_WRITE_BACK_FIELDS,
   useCreateSurveyDefinition,
   useUpdateSurveyDefinition,
-  useDeleteSurveyDefinition,
 } from "@/hooks/useSurveys";
+import { useAllKpiDefinitions } from "@/hooks/useKpis";
+import { toast } from "sonner";
 
 // Default ecosystem survey based on the provided PDF
 const ECOSYSTEM_SURVEY_TEMPLATE: SurveyQuestion[] = [
+  // Section 1: Founder Characterization
   { id: "q1", section: "Caracterização do Fundador", question: "Qual é o seu papel dentro do ecossistema?", type: "select", options: ["Fundador", "Co-fundador", "CEO", "CTO", "Colaborador", "Mentor", "Investidor", "Outro"], required: true },
   { id: "q2", section: "Caracterização do Fundador", question: "Género", type: "select", options: ["Masculino", "Feminino", "Outro", "Prefiro não dizer"], required: true },
   { id: "q3", section: "Caracterização do Fundador", question: "Idade", type: "select", options: ["<26", "26-35", "36-45", "46-55", "56-65", ">65"], required: true },
+  { id: "q4", section: "Caracterização do Fundador", question: "Nacionalidade", type: "text", required: true },
+  { id: "q5", section: "Caracterização do Fundador", question: "Educação/Escolaridade", type: "select", options: ["Ensino Secundário", "Licenciatura", "Mestrado", "Doutoramento", "Outro"], required: true },
+  { id: "q6", section: "Caracterização do Fundador", question: "Está ligado ou já esteve ligado ao Politécnico de Leiria?", type: "select", options: ["Sim, como estudante", "Sim, como professor", "Sim, como investigador", "Não"], required: true },
+  { id: "q7", section: "Caracterização do Fundador", question: "Pertence a algum dos grupos sub-representados no empreendedorismo?", type: "multiselect", options: ["Desempregados", "Migrantes", "Minorias", "Refugiados", "Pessoas com deficiência", "Jovens <26", "Idosos +65", "Mulheres", "Nenhum"], required: false },
+
+  // Section 2: General Characterization - Auto-fillable
+  { id: "q8", section: "Caracterização Geral", question: "Fase da Startup (Startup Stage)", type: "select", options: ["Ideação", "Validação", "Crescimento", "Expansão", "Maturidade"], required: true, autoFillKey: "stage" },
+  { id: "q9", section: "Caracterização Geral", question: "Nome da empresa/projeto", type: "text", required: false, autoFillKey: "startup_name" },
+  { id: "q10", section: "Caracterização Geral", question: "Serviço atual", type: "select", options: ["Incubação física", "Incubação virtual", "Startup Visa", "Cowork", "Aceleração", "Outro"], required: true },
+  { id: "q11", section: "Caracterização Geral", question: "Ano de fundação", type: "number", required: true, autoFillKey: "founded_year" },
+  { id: "q12", section: "Caracterização Geral", question: "Tipo de investimento", type: "multiselect", options: ["Bootstrapping", "FFF", "Business Angels", "Capital de Risco", "Crowdfunding", "Subsídios/Grants", "Outro"], required: true },
+  { id: "q13", section: "Caracterização Geral", question: "Montante de investimento obtido até 2025 (€)", type: "number", required: false },
+  { id: "q14", section: "Caracterização Geral", question: "Montante de financiamento obtido em 2025 (€)", type: "number", required: false },
+  { id: "q15", section: "Caracterização Geral", question: "Projetos EU em que está envolvido", type: "number", required: false },
+  { id: "q16", section: "Caracterização Geral", question: "Valor do orçamento aprovado nesses projetos (€)", type: "number", required: false },
+  { id: "q17", section: "Caracterização Geral", question: "Número de colaboradores", type: "number", required: true },
+  { id: "q18", section: "Caracterização Geral", question: "Número de colaboradores em Leiria", type: "number", required: true },
+  { id: "q19", section: "Caracterização Geral", question: "Empregos criados em 2025", type: "number", required: false },
+  { id: "q20", section: "Caracterização Geral", question: "Empregos criados em 2025 em Leiria", type: "number", required: false },
+  { id: "q21", section: "Caracterização Geral", question: "Quantas patentes tem a empresa?", type: "number", required: false },
+  { id: "q22", section: "Caracterização Geral", question: "Quantas patentes solicitou em 2025?", type: "number", required: false },
+
+  // Section 3: Ecosystem Diagnosis
+  { id: "q23", section: "Diagnóstico do Ecossistema", question: "Qual o setor que melhor descreve a sua proposta de valor principal?", type: "select", options: ["Tecnologia/Software", "Saúde/Biotech", "Fintech", "EdTech", "GreenTech", "Indústria 4.0", "Retalho/E-commerce", "Turismo", "Agrotech", "Outro"], required: true, autoFillKey: "sector" },
+  { id: "q24", section: "Diagnóstico do Ecossistema", question: "Qual a afirmação que melhor reflete a sua geração de receita atual?", type: "select", options: ["Ainda sem receita", "Receita <10k€/ano", "Receita 10k-50k€/ano", "Receita 50k-200k€/ano", "Receita >200k€/ano"], required: true },
+  { id: "q25", section: "Diagnóstico do Ecossistema", question: "Qual é o estado atual da sua tecnologia ou produto?", type: "select", options: ["Conceito/Ideia", "MVP", "Produto em beta", "Produto lançado", "Produto maduro"], required: true },
+  { id: "q26", section: "Diagnóstico do Ecossistema", question: "Como está estruturada a sua gestão financeira atualmente?", type: "select", options: ["Sem estrutura formal", "Excel/Sheets básico", "Software de faturação", "ERP completo", "CFO/Financeiro dedicado"], required: true },
+  { id: "q27", section: "Diagnóstico do Ecossistema", question: "Que software de faturação/ERP utiliza?", type: "text", required: false },
+  { id: "q28", section: "Diagnóstico do Ecossistema", question: "Está a utilizar incentivos fiscais (SIFIDE, RFAI, StartUP Visa)?", type: "multiselect", options: ["SIFIDE", "RFAI", "StartUP Visa", "Benefícios I&D", "Nenhum", "Não sei"], required: false },
+  { id: "q29", section: "Diagnóstico do Ecossistema", question: "Quais são os seus maiores desafios de gestão financeira?", type: "multiselect", options: ["Tesouraria/Cash flow", "Acesso a financiamento", "Gestão fiscal", "Contabilidade", "Pricing", "Outro"], required: false },
+  { id: "q30", section: "Diagnóstico do Ecossistema", question: "Tem Seguro de Acidentes de Trabalho ativo para TODOS os membros?", type: "select", options: ["Sim", "Não", "Parcialmente"], required: true },
+  { id: "q31", section: "Diagnóstico do Ecossistema", question: "Que apólices estratégicas possui?", type: "multiselect", options: ["Responsabilidade civil", "Cibersegurança", "D&O", "Propriedade intelectual", "Nenhuma"], required: false },
+  { id: "q32", section: "Diagnóstico do Ecossistema", question: "Que ferramentas utiliza para CRM?", type: "text", required: false },
+  { id: "q33", section: "Diagnóstico do Ecossistema", question: "Que tipos de apoio técnico/desenvolvimento seriam mais valiosos?", type: "multiselect", options: ["Desenvolvimento software", "UX/UI Design", "DevOps/Cloud", "Data Science/AI", "Hardware/IoT", "Outro"], required: false },
+  { id: "q34", section: "Diagnóstico do Ecossistema", question: "O seu negócio envolve Indústria Física, Manufatura ou Agricultura?", type: "select", options: ["Sim", "Não"], required: true },
+  { id: "q35", section: "Diagnóstico do Ecossistema", question: "Quais são os seus principais requisitos de conectividade/IoT?", type: "textarea", required: false },
+  { id: "q36", section: "Diagnóstico do Ecossistema", question: "Necessita de integração com maquinaria antiga?", type: "select", options: ["Sim", "Não", "Não aplicável"], required: false },
+  { id: "q37", section: "Diagnóstico do Ecossistema", question: "Quais os mercados que está a visar ativamente?", type: "multiselect", options: ["Portugal", "Espanha", "Europa", "EUA", "Latam", "África", "Ásia", "Global"], required: true },
+  { id: "q38", section: "Diagnóstico do Ecossistema", question: "Qual é o seu principal desafio de marketing?", type: "select", options: ["Notoriedade de marca", "Geração de leads", "Conversão", "Retenção", "Budget limitado", "Falta de expertise"], required: true },
+
+  // Section 4: Legal & IP
+  { id: "q39", section: "Jurídico e IP", question: "Qual é a sua configuração legal atual?", type: "select", options: ["ENI", "Lda", "SA", "Cooperativa", "Associação", "Em formação"], required: true, autoFillKey: "legal_form" },
+  { id: "q40", section: "Jurídico e IP", question: "Concluiu os passos de conformidade obrigatórios?", type: "multiselect", options: ["NIF", "Segurança Social", "Seguros obrigatórios", "RGPD", "Licenças específicas", "Todos completos"], required: true },
+  { id: "q41", section: "Jurídico e IP", question: "Tem uma Marca Registada ou Patente?", type: "multiselect", options: ["Marca registada PT", "Marca registada EU", "Patente nacional", "Patente internacional", "Em processo", "Nenhuma"], required: true },
+  { id: "q42", section: "Jurídico e IP", question: "Como avalia o seu conhecimento sobre estratégia de IP?", type: "rating", min: 1, max: 5, required: true },
+  { id: "q43", section: "Jurídico e IP", question: "Que tipos de ativos de IP são relevantes para o seu negócio?", type: "multiselect", options: ["Patentes", "Marcas", "Direitos de autor", "Segredos comerciais", "Designs", "Software"], required: false },
+  { id: "q44", section: "Jurídico e IP", question: "Que apoio seria mais útil em Assuntos Jurídicos e IP?", type: "multiselect", options: ["Consultoria jurídica", "Registo de marcas", "Patentes", "Contratos", "RGPD", "Internacionalização"], required: false },
+  { id: "q45", section: "Jurídico e IP", question: "Nível de confiança na conformidade atual (Trabalho, Fiscal, SS)?", type: "rating", min: 1, max: 5, required: true },
+
+  // Section 5: Human Capital
+  { id: "q46", section: "Capital Humano", question: "A sua equipa trabalha remotamente ou num modelo híbrido?", type: "select", options: ["100% Presencial", "Híbrido", "100% Remoto"], required: true },
+  { id: "q47", section: "Capital Humano", question: "Tem acordos escritos para reembolso de despesas remotas?", type: "select", options: ["Sim", "Não", "Em desenvolvimento"], required: false },
+  { id: "q48", section: "Capital Humano", question: "Quais são os seus principais obstáculos no recrutamento?", type: "multiselect", options: ["Talento técnico", "Salários competitivos", "Localização", "Cultura fit", "Experiência", "Outro"], required: false },
+  { id: "q49", section: "Capital Humano", question: "Funções mais críticas para contratar nos próximos 12 meses?", type: "multiselect", options: ["Desenvolvimento", "Vendas", "Marketing", "Operações", "Financeiro", "Gestão", "Outro"], required: false },
+  { id: "q50", section: "Capital Humano", question: "Áreas que beneficiariam de formação ou mentoria?", type: "multiselect", options: ["Liderança", "Vendas", "Marketing digital", "Finanças", "Produto", "Tecnologia", "Pessoas/RH"], required: false },
+
+  // Section 6: Startup Leiria Support
+  { id: "q51", section: "Apoio Startup Leiria", question: "Que tipos de apoio criariam mais valor nos próximos 12 meses?", type: "multiselect", options: ["Mentoria individual", "Workshops", "Networking", "Financiamento", "Espaço físico", "Internacionalização", "Recrutamento", "Legal/Jurídico"], required: true },
+  { id: "q52", section: "Apoio Startup Leiria", question: "De que forma prefere interagir com o apoio da Startup Leiria?", type: "multiselect", options: ["Presencial", "Online síncrono", "Online assíncrono", "Email", "Plataforma dedicada"], required: true },
+  { id: "q53", section: "Apoio Startup Leiria", question: "Mais alguma coisa sobre os seus desafios ou prioridades atuais?", type: "textarea", required: false },
+
+  // Section 7: Satisfaction
+  { id: "q54", section: "Satisfação", question: "Classificação dos serviços prestados - Mentoria", type: "rating", min: 1, max: 5, required: false },
+  { id: "q55", section: "Satisfação", question: "Classificação dos serviços prestados - Espaço", type: "rating", min: 1, max: 5, required: false },
+  { id: "q56", section: "Satisfação", question: "Classificação dos serviços prestados - Comunicação", type: "rating", min: 1, max: 5, required: false },
+  { id: "q57", section: "Satisfação", question: "Classificação dos serviços prestados - Financiamento", type: "rating", min: 1, max: 5, required: false },
+  { id: "q58", section: "Satisfação", question: "Classificação da comunicação - Redes Sociais", type: "rating", min: 1, max: 5, required: false },
+  { id: "q59", section: "Satisfação", question: "Classificação da comunicação - Newsletter", type: "rating", min: 1, max: 5, required: false },
+  { id: "q60", section: "Satisfação", question: "Classificação da comunicação - Website", type: "rating", min: 1, max: 5, required: false },
+  { id: "q61", section: "Satisfação", question: "Probabilidade de recomendar os serviços (NPS 0-10)", type: "rating", min: 0, max: 10, required: true },
+  { id: "q62", section: "Satisfação", question: "Sugestões de melhoria", type: "textarea", required: false },
 ];
 
-const QUESTION_TYPES: SurveyQuestion["type"][] = [
-  "text",
-  "textarea",
-  "number",
-  "select",
-  "multiselect",
-  "rating",
-];
+
+/** Stage labels a founder may see, normalized to the startup_stage enum. */
+const STAGE_SYNONYMS: Record<string, string> = {
+  ideacao: "ideation",
+  ideation: "ideation",
+  validacao: "validation",
+  validation: "validation",
+  mvp: "mvp",
+  produto: "mvp",
+  crescimento: "growth",
+  growth: "growth",
+  escala: "scale",
+  scale: "scale",
+  expansao: "growth",
+  maturidade: "scale",
+};
+
+function normalize(value: string): string {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
+/**
+ * Build the answer -> enum map for a question mapped to workspace.stage, so
+ * "MVP / Produto no mercado" reaches the database as "mvp".
+ */
+export function suggestStageValueMap(options: string[] | undefined): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const option of options || []) {
+    const words = normalize(option).split(/[^a-z0-9]+/).filter(Boolean);
+    const match = words.map((w) => STAGE_SYNONYMS[w]).find(Boolean);
+    if (match) map[option] = match;
+  }
+  return map;
+}
+
+/** Encode a mapping as a single select value, e.g. "kpi:<uuid>". */
+export function encodeTarget(mapping: WriteBackMapping | undefined): string {
+  if (!mapping) return NO_TARGET;
+  if (mapping.target === "milestone") return "milestone";
+  return `${mapping.target}:${mapping.key ?? ""}`;
+}
+
+export const NO_TARGET = "none";
 
 interface SurveyTemplateEditorProps {
   definitions: SurveyDefinition[];
-}
-
-function nextQuestionId(existing: SurveyQuestion[]) {
-  const nums = existing
-    .map((q) => parseInt(q.id.replace(/^q/, ""), 10))
-    .filter((n) => !Number.isNaN(n));
-  const max = nums.length ? Math.max(...nums) : 0;
-  return `q${max + 1}`;
 }
 
 export function SurveyTemplateEditor({ definitions }: SurveyTemplateEditorProps) {
   const { t } = useTranslation();
   const createDefinition = useCreateSurveyDefinition();
   const updateDefinition = useUpdateSurveyDefinition();
-  const deleteDefinition = useDeleteSurveyDefinition();
+
+  const { data: kpiDefinitions = [] } = useAllKpiDefinitions();
 
   const [selectedDef, setSelectedDef] = useState<SurveyDefinition | null>(null);
   const [editingName, setEditingName] = useState("");
   const [editingDescription, setEditingDescription] = useState("");
   const [editingQuestions, setEditingQuestions] = useState<SurveyQuestion[]>([]);
-  const [dirty, setDirty] = useState(false);
-  const [previewMode, setPreviewMode] = useState(false);
-
-  const [questionDialog, setQuestionDialog] = useState<{
-    open: boolean;
-    question: SurveyQuestion | null;
-    defaultSection?: string;
-  }>({ open: false, question: null });
-
-  const [confirmDelete, setConfirmDelete] = useState<null | { type: "template"; id: string } | { type: "question"; id: string }>(null);
+  const [editingMappings, setEditingMappings] = useState<Record<string, WriteBackMapping>>({});
 
   const handleCreateDefault = () => {
     createDefinition.mutate({
@@ -112,50 +187,60 @@ export function SurveyTemplateEditor({ definitions }: SurveyTemplateEditorProps)
     });
   };
 
-  const handleCreateBlank = () => {
-    createDefinition.mutate({
-      name: "Novo template",
-      description: "",
-      questions_json: [],
-      auto_fill_mappings: {},
-    });
-  };
-
   const handleSelectDefinition = (def: SurveyDefinition) => {
     setSelectedDef(def);
     setEditingName(def.name);
     setEditingDescription(def.description || "");
     setEditingQuestions(def.questions_json || []);
-    setDirty(false);
+    setEditingMappings(def.write_back_mappings || {});
+  };
+
+  /**
+   * Point a question at a canonical destination. Answers only reach KPIs,
+   * the startup profile or milestones for questions mapped here.
+   */
+  const handleTargetChange = (question: SurveyQuestion, encoded: string) => {
+    setEditingMappings((prev) => {
+      const next = { ...prev };
+
+      if (encoded === NO_TARGET) {
+        delete next[question.id];
+        return next;
+      }
+
+      const [target, key = ""] = encoded.split(":") as [WriteBackMapping["target"], string?];
+      const previous = prev[question.id];
+      const mapping: WriteBackMapping = { target };
+
+      if (key) mapping.key = key;
+
+      if (target === "milestone") {
+        // Keep the date pairing configured on the seeded templates.
+        if (previous?.dateQuestionId) mapping.dateQuestionId = previous.dateQuestionId;
+      } else if (target === "workspace" && key === "stage") {
+        mapping.overwrite = true;
+        mapping.valueMap = previous?.target === "workspace" && previous.valueMap
+          ? previous.valueMap
+          : suggestStageValueMap(question.options);
+      } else if (previous?.target === target && previous.overwrite) {
+        mapping.overwrite = true;
+      }
+
+      next[question.id] = mapping;
+      return next;
+    });
   };
 
   const handleSave = () => {
     if (!selectedDef) return;
-    updateDefinition.mutate(
-      {
-        id: selectedDef.id,
-        name: editingName,
-        description: editingDescription,
-        questions_json: editingQuestions,
-      },
-      { onSuccess: () => setDirty(false) },
-    );
-  };
 
-  const upsertQuestion = (q: SurveyQuestion) => {
-    setEditingQuestions((prev) => {
-      const idx = prev.findIndex((x) => x.id === q.id);
-      if (idx === -1) return [...prev, q];
-      const copy = [...prev];
-      copy[idx] = q;
-      return copy;
+    updateDefinition.mutate({
+      id: selectedDef.id,
+      name: editingName,
+      description: editingDescription,
+      questions_json: editingQuestions,
+      write_back_mappings: editingMappings,
     });
-    setDirty(true);
-  };
-
-  const removeQuestion = (id: string) => {
-    setEditingQuestions((prev) => prev.filter((q) => q.id !== id));
-    setDirty(true);
   };
 
   const sections = [...new Set(editingQuestions.map((q) => q.section))];
@@ -164,32 +249,25 @@ export function SurveyTemplateEditor({ definitions }: SurveyTemplateEditorProps)
     <div className="space-y-4">
       {definitions.length === 0 ? (
         <Card>
-          <CardContent className="py-8 text-center space-y-2">
-            <p className="text-muted-foreground">
-              {t("admin.surveys.noTemplates", "Sem templates de inquérito")}
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground mb-4">
+              {t("admin.surveys.noTemplates", "No survey templates yet")}
             </p>
-            <div className="flex justify-center gap-2">
-              <Button onClick={handleCreateDefault} disabled={createDefinition.isPending} loading={createDefinition.isPending}>
-                <Plus className="h-4 w-4 mr-2" />
-                {t("admin.surveys.createDefaultTemplate", "Criar template Ecossistema")}
-              </Button>
-              <Button variant="outline" onClick={handleCreateBlank} disabled={createDefinition.isPending}>
-                <Plus className="h-4 w-4 mr-2" />
-                {t("admin.surveys.createBlank", "Template em branco")}
-              </Button>
-            </div>
+            <Button onClick={handleCreateDefault} disabled={createDefinition.isPending}>
+              <Plus className="h-4 w-4 mr-2" />
+              {t("admin.surveys.createDefaultTemplate", "Create Ecosystem Survey Template")}
+            </Button>
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-3 gap-4">
+          {/* Template List */}
           <div className="space-y-2">
             <div className="flex justify-between items-center mb-2">
               <Label>{t("admin.surveys.templates", "Templates")}</Label>
-              <div className="flex gap-1">
-                <Button size="sm" variant="outline" onClick={handleCreateBlank} title={t("admin.surveys.createBlank", "Template em branco")}>
-                  <Plus className="h-3 w-3" />
-                </Button>
-              </div>
+              <Button size="sm" variant="outline" onClick={handleCreateDefault}>
+                <Plus className="h-3 w-3" />
+              </Button>
             </div>
             {definitions.map((def) => (
               <Card
@@ -199,656 +277,138 @@ export function SurveyTemplateEditor({ definitions }: SurveyTemplateEditorProps)
                 }`}
                 onClick={() => handleSelectDefinition(def)}
               >
-                <CardContent className="p-3 flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm truncate">{def.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {(def.questions_json as SurveyQuestion[])?.length || 0} {t("admin.surveys.questions", "perguntas")}
-                    </p>
-                  </div>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-7 w-7 text-destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setConfirmDelete({ type: "template", id: def.id });
-                    }}
-                    title={t("common.delete", "Remover")}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
+                <CardContent className="p-3">
+                  <p className="font-medium text-sm">{def.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {(def.questions_json as SurveyQuestion[])?.length || 0} questions
+                  </p>
                 </CardContent>
               </Card>
             ))}
           </div>
 
+          {/* Editor */}
           <div className="col-span-2">
             {selectedDef ? (
               <Card>
                 <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start gap-2">
+                  <div className="flex justify-between items-start">
                     <div className="flex-1 space-y-2">
                       <Input
                         value={editingName}
-                        onChange={(e) => { setEditingName(e.target.value); setDirty(true); }}
+                        onChange={(e) => setEditingName(e.target.value)}
                         className="font-semibold"
                       />
                       <Textarea
                         value={editingDescription}
-                        onChange={(e) => { setEditingDescription(e.target.value); setDirty(true); }}
-                        placeholder={t("admin.surveys.descriptionPlaceholder", "Descrição...")}
+                        onChange={(e) => setEditingDescription(e.target.value)}
+                        placeholder="Description..."
                         rows={2}
                       />
                     </div>
-                    <div className="flex flex-col gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setPreviewMode((v) => !v)}
-                    >
-                      {previewMode ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
-                      {previewMode
-                        ? t("admin.surveys.exitPreview", "Sair da pré-visualização")
-                        : t("admin.surveys.preview", "Pré-visualizar")}
-                    </Button>
                     <Button
                       size="sm"
                       onClick={handleSave}
-                      disabled={updateDefinition.isPending || !dirty}
-                      loading={updateDefinition.isPending}
+                      disabled={updateDefinition.isPending}
+                      className="ml-2"
                     >
                       <Save className="h-4 w-4 mr-1" />
-                      {t("common.save", "Guardar")}
+                      {t("common.save", "Save")}
                     </Button>
-                    </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  {previewMode ? (
-                    <SurveyPreview
-                      name={editingName}
-                      description={editingDescription}
-                      questions={editingQuestions}
-                    />
-                  ) : (<>
-                  <div className="flex justify-end">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() =>
-                        setQuestionDialog({ open: true, question: null, defaultSection: sections[0] })
-                      }
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      {t("admin.surveys.addQuestion", "Adicionar pergunta")}
-                    </Button>
-                  </div>
-
-                  {sections.length === 0 ? (
-                    <div className="text-center py-8 text-sm text-muted-foreground">
-                      {t("admin.surveys.emptyQuestions", "Sem perguntas. Adicione a primeira.")}
-                    </div>
-                  ) : (
-                    <Accordion type="multiple" className="space-y-2" defaultValue={sections}>
-                      {sections.map((section) => (
-                        <AccordionItem key={section} value={section}>
-                          <AccordionTrigger className="text-sm font-medium">
-                            <span className="flex items-center gap-2">
-                              {section}
-                              <Badge variant="secondary">
-                                {editingQuestions.filter((q) => q.section === section).length}
-                              </Badge>
-                            </span>
-                          </AccordionTrigger>
-                          <AccordionContent>
-                            <div className="space-y-2 pl-2">
-                              {editingQuestions
-                                .filter((q) => q.section === section)
-                                .map((q) => (
-                                  <div
-                                    key={q.id}
-                                    className="flex items-center gap-2 p-2 bg-muted/50 rounded text-sm"
+                <CardContent>
+                  <Accordion type="multiple" className="space-y-2">
+                    {sections.map((section) => (
+                      <AccordionItem key={section} value={section}>
+                        <AccordionTrigger className="text-sm font-medium">
+                          {section}
+                          <Badge variant="secondary" className="ml-2">
+                            {editingQuestions.filter((q) => q.section === section).length}
+                          </Badge>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-2 pl-2">
+                            {editingQuestions
+                              .filter((q) => q.section === section)
+                              .map((q) => (
+                                <div
+                                  key={q.id}
+                                  className="flex items-center gap-2 p-2 bg-muted/50 rounded text-sm"
+                                >
+                                  <span className="text-muted-foreground text-xs shrink-0 w-20 truncate" title={q.id}>
+                                    {q.id}
+                                  </span>
+                                  <span className="flex-1 min-w-0 truncate" title={q.question}>
+                                    {q.question}
+                                  </span>
+                                  <Badge variant="outline" className="text-xs shrink-0">
+                                    {q.type}
+                                  </Badge>
+                                  {q.autoFillKey && (
+                                    <Badge className="text-xs bg-blue-500/20 text-blue-700 shrink-0">
+                                      Auto
+                                    </Badge>
+                                  )}
+                                  {q.required && (
+                                    <span className="text-destructive shrink-0">*</span>
+                                  )}
+                                  {editingMappings[q.id]?.dateQuestionId && (
+                                    <Badge variant="outline" className="text-xs shrink-0">
+                                      {t("admin.surveys.pairedDate", "data")}: {editingMappings[q.id].dateQuestionId}
+                                    </Badge>
+                                  )}
+                                  <Select
+                                    value={encodeTarget(editingMappings[q.id])}
+                                    onValueChange={(value) => handleTargetChange(q, value)}
                                   >
-                                    <span className="text-muted-foreground w-10 shrink-0">{q.id}</span>
-                                    <span className="flex-1">{q.question}</span>
-                                    <Badge variant="outline" className="text-xs">{q.type}</Badge>
-                                    {q.autoFillKey && (
-                                      <Badge className="text-xs bg-[hsl(var(--info))]/20 text-[hsl(var(--info))]">
-                                        Auto
-                                      </Badge>
-                                    )}
-                                    {q.required && <span className="text-destructive">*</span>}
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      className="h-7 w-7"
-                                      onClick={() => setQuestionDialog({ open: true, question: q })}
-                                      title={t("common.edit", "Editar")}
-                                    >
-                                      <Pencil className="h-3.5 w-3.5" />
-                                    </Button>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      className="h-7 w-7 text-destructive"
-                                      onClick={() => setConfirmDelete({ type: "question", id: q.id })}
-                                      title={t("common.delete", "Remover")}
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5" />
-                                    </Button>
-                                  </div>
-                                ))}
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() =>
-                                  setQuestionDialog({ open: true, question: null, defaultSection: section })
-                                }
-                              >
-                                <Plus className="h-3.5 w-3.5 mr-1" />
-                                {t("admin.surveys.addToSection", "Adicionar a esta secção")}
-                              </Button>
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  )}
-                  </>)}
+                                    <SelectTrigger className="h-8 w-[200px] shrink-0 text-xs">
+                                      <SelectValue
+                                        placeholder={t("admin.surveys.noDestination", "Sem destino")}
+                                      />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value={NO_TARGET}>
+                                        {t("admin.surveys.noDestination", "Sem destino")}
+                                      </SelectItem>
+                                      <SelectItem value="workspace:stage">
+                                        {t("admin.surveys.targetStage", "Fase da startup")}
+                                      </SelectItem>
+                                      <SelectItem value="milestone">
+                                        {t("admin.surveys.targetMilestone", "Novo marco (plano)")}
+                                      </SelectItem>
+                                      {STARTUP_WRITE_BACK_FIELDS.map((field) => (
+                                        <SelectItem key={field} value={`startup:${field}`}>
+                                          {t("admin.surveys.targetProfile", "Perfil")}: {field}
+                                        </SelectItem>
+                                      ))}
+                                      {kpiDefinitions.map((kpi) => (
+                                        <SelectItem key={kpi.id} value={`kpi:${kpi.id}`}>
+                                          KPI: {kpi.name}
+                                          {kpi.unit ? ` (${kpi.unit})` : ""}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
                 </CardContent>
               </Card>
             ) : (
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
-                  {t("admin.surveys.selectTemplate", "Selecione um template para editar")}
+                  {t("admin.surveys.selectTemplate", "Select a template to edit")}
                 </CardContent>
               </Card>
             )}
           </div>
         </div>
       )}
-
-      <QuestionDialog
-        open={questionDialog.open}
-        question={questionDialog.question}
-        defaultSection={questionDialog.defaultSection}
-        existingIds={editingQuestions.map((q) => q.id)}
-        onClose={() => setQuestionDialog({ open: false, question: null })}
-        onSave={(q) => {
-          upsertQuestion(q);
-          setQuestionDialog({ open: false, question: null });
-        }}
-      />
-
-      <AlertDialog
-        open={!!confirmDelete}
-        onOpenChange={(o) => !o && setConfirmDelete(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {confirmDelete?.type === "template"
-                ? t("admin.surveys.confirmDeleteTemplate", "Remover template?")
-                : t("admin.surveys.confirmDeleteQuestion", "Remover pergunta?")}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {confirmDelete?.type === "template"
-                ? t("admin.surveys.confirmDeleteTemplateDesc", "Esta ação não pode ser desfeita. As campanhas existentes que usem este template poderão ficar afetadas.")
-                : t("admin.surveys.confirmDeleteQuestionDesc", "A pergunta será removida do template. Guarde para persistir a alteração.")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel", "Cancelar")}</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                if (!confirmDelete) return;
-                if (confirmDelete.type === "template") {
-                  deleteDefinition.mutate(confirmDelete.id, {
-                    onSuccess: () => {
-                      if (selectedDef?.id === confirmDelete.id) {
-                        setSelectedDef(null);
-                        setEditingQuestions([]);
-                      }
-                    },
-                  });
-                } else {
-                  removeQuestion(confirmDelete.id);
-                }
-                setConfirmDelete(null);
-              }}
-            >
-              {t("common.delete", "Remover")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
-}
-
-function QuestionDialog({
-  open,
-  question,
-  defaultSection,
-  existingIds,
-  onClose,
-  onSave,
-}: {
-  open: boolean;
-  question: SurveyQuestion | null;
-  defaultSection?: string;
-  existingIds: string[];
-  onClose: () => void;
-  onSave: (q: SurveyQuestion) => void;
-}) {
-  const { t } = useTranslation();
-  const isEdit = !!question;
-
-  const [form, setForm] = useState<SurveyQuestion>(
-    question || {
-      id: "",
-      section: defaultSection || "Geral",
-      question: "",
-      type: "text",
-      required: false,
-    },
-  );
-  const [optionsText, setOptionsText] = useState(
-    (question?.options || []).join("\n"),
-  );
-
-  // Reset when dialog re-opens with new payload
-  const key = `${open}-${question?.id ?? "new"}-${defaultSection ?? ""}`;
-  const [lastKey, setLastKey] = useState(key);
-  if (key !== lastKey) {
-    setLastKey(key);
-    setForm(
-      question || {
-        id: "",
-        section: defaultSection || "Geral",
-        question: "",
-        type: "text",
-        required: false,
-      },
-    );
-    setOptionsText((question?.options || []).join("\n"));
-  }
-
-  const needsOptions = form.type === "select" || form.type === "multiselect";
-  const needsRange = form.type === "rating";
-
-  const handleSubmit = () => {
-    if (!form.section.trim() || !form.question.trim()) return;
-    const id = form.id?.trim()
-      ? form.id.trim()
-      : (() => {
-          // generate next id
-          const nums = existingIds
-            .map((x) => parseInt(x.replace(/^q/, ""), 10))
-            .filter((n) => !Number.isNaN(n));
-          return `q${(nums.length ? Math.max(...nums) : 0) + 1}`;
-        })();
-
-    const payload: SurveyQuestion = {
-      ...form,
-      id,
-      options: needsOptions
-        ? optionsText.split("\n").map((s) => s.trim()).filter(Boolean)
-        : undefined,
-      min: needsRange ? Number(form.min ?? 1) : undefined,
-      max: needsRange ? Number(form.max ?? 5) : undefined,
-      autoFillKey: form.autoFillKey?.trim() || undefined,
-    };
-    onSave(payload);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit
-              ? t("admin.surveys.editQuestion", "Editar pergunta")
-              : t("admin.surveys.addQuestion", "Adicionar pergunta")}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <Label>{t("admin.surveys.section", "Secção")}</Label>
-              <Input
-                value={form.section}
-                onChange={(e) => setForm({ ...form, section: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label>{t("admin.surveys.type", "Tipo")}</Label>
-              <Select
-                value={form.type}
-                onValueChange={(v) => setForm({ ...form, type: v as SurveyQuestion["type"] })}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {QUESTION_TYPES.map((tp) => (
-                    <SelectItem key={tp} value={tp}>{tp}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <Label>{t("admin.surveys.questionText", "Pergunta")}</Label>
-            <Textarea
-              value={form.question}
-              onChange={(e) => setForm({ ...form, question: e.target.value })}
-              rows={2}
-            />
-          </div>
-
-          {needsOptions && (
-            <div className="space-y-1">
-              <Label>{t("admin.surveys.options", "Opções (uma por linha)")}</Label>
-              <Textarea
-                value={optionsText}
-                onChange={(e) => setOptionsText(e.target.value)}
-                rows={5}
-                placeholder="Opção 1&#10;Opção 2"
-              />
-            </div>
-          )}
-
-          {needsRange && (
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label>Min</Label>
-                <Input
-                  type="number"
-                  value={form.min ?? 1}
-                  onChange={(e) => setForm({ ...form, min: Number(e.target.value) })}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label>Max</Label>
-                <Input
-                  type="number"
-                  value={form.max ?? 5}
-                  onChange={(e) => setForm({ ...form, max: Number(e.target.value) })}
-                />
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-1">
-            <Label>{t("admin.surveys.autoFillKey", "Auto-fill key (opcional)")}</Label>
-            <Input
-              value={form.autoFillKey || ""}
-              onChange={(e) => setForm({ ...form, autoFillKey: e.target.value })}
-              placeholder="ex.: stage, startup_name"
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label>{t("admin.surveys.required", "Obrigatória")}</Label>
-            <Switch
-              checked={!!form.required}
-              onCheckedChange={(v) => setForm({ ...form, required: v })}
-            />
-          </div>
-
-          {isEdit && (
-            <div className="space-y-1">
-              <Label>ID</Label>
-              <Input value={form.id} disabled />
-            </div>
-          )}
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            {t("common.cancel", "Cancelar")}
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!form.section.trim() || !form.question.trim()}
-          >
-            {t("common.save", "Guardar")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function SurveyPreview({
-  name,
-  description,
-  questions,
-}: {
-  name: string;
-  description: string;
-  questions: SurveyQuestion[];
-}) {
-  const { t } = useTranslation();
-  const sections = [...new Set(questions.map((q) => q.section))];
-  const [interactive, setInteractive] = useState(true);
-  const [answers, setAnswers] = useState<Record<string, string | string[] | number>>({});
-  const [submittedOpen, setSubmittedOpen] = useState(false);
-
-  const setAnswer = (id: string, value: string | string[] | number) =>
-    setAnswers((prev) => ({ ...prev, [id]: value }));
-
-  const toggleMulti = (id: string, opt: string) => {
-    const current = (answers[id] as string[]) || [];
-    setAnswer(id, current.includes(opt) ? current.filter((o) => o !== opt) : [...current, opt]);
-  };
-
-  const requiredQs = questions.filter((q) => q.required);
-  const answeredRequired = requiredQs.filter((q) => {
-    const a = answers[q.id];
-    if (Array.isArray(a)) return a.length > 0;
-    return a !== undefined && a !== "";
-  }).length;
-  const progress = requiredQs.length
-    ? Math.round((answeredRequired / requiredQs.length) * 100)
-    : 100;
-  const canSubmit = answeredRequired === requiredQs.length;
-
-  if (questions.length === 0) {
-    return (
-      <div className="text-center py-8 text-sm text-muted-foreground">
-        {t("admin.surveys.emptyQuestions", "Sem perguntas. Adicione a primeira.")}
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6 border rounded-md p-4 bg-background">
-      <div className="space-y-2 border-b pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h3 className="text-lg font-semibold">{name}</h3>
-            {description && (
-              <p className="text-sm text-muted-foreground">{description}</p>
-            )}
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Label htmlFor="respondent-mode" className="text-xs whitespace-nowrap">
-              {t("admin.surveys.respondentMode", "Modo respondente")}
-            </Label>
-            <Switch
-              id="respondent-mode"
-              checked={interactive}
-              onCheckedChange={(v) => {
-                setInteractive(v);
-                if (!v) setAnswers({});
-              }}
-            />
-          </div>
-        </div>
-        <p className="text-xs text-muted-foreground italic">
-          {interactive
-            ? t(
-                "admin.surveys.respondentNotice",
-                "Modo respondente ativo — pode preencher para experimentar. Nada é guardado.",
-              )
-            : t("admin.surveys.previewNotice", "Pré-visualização — as respostas não são guardadas.")}
-        </p>
-        {interactive && (
-          <div className="space-y-1 pt-1">
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{t("surveys.progress", "Progresso")}</span>
-              <span>
-                {answeredRequired}/{requiredQs.length} · {progress}%
-              </span>
-            </div>
-            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary transition-all"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {sections.map((section) => (
-        <div key={section} className="space-y-4">
-          <h4 className="text-sm font-semibold text-primary">{section}</h4>
-          {questions
-            .filter((q) => q.section === section)
-            .map((q, idx) => {
-              const val = answers[q.id];
-              const disabled = !interactive;
-              return (
-                <div key={q.id} className="space-y-2">
-                  <Label className="text-sm">
-                    <span className="text-muted-foreground mr-2">{idx + 1}.</span>
-                    {q.question}
-                    {q.required && <span className="text-destructive ml-1">*</span>}
-                  </Label>
-                  {q.type === "text" && (
-                    <Input
-                      disabled={disabled}
-                      value={(val as string) || ""}
-                      onChange={(e) => setAnswer(q.id, e.target.value)}
-                      placeholder="..."
-                    />
-                  )}
-                  {q.type === "number" && (
-                    <Input
-                      type="number"
-                      disabled={disabled}
-                      value={(val as string) ?? ""}
-                      onChange={(e) => setAnswer(q.id, e.target.value)}
-                      placeholder="0"
-                    />
-                  )}
-                  {q.type === "textarea" && (
-                    <Textarea
-                      disabled={disabled}
-                      rows={3}
-                      value={(val as string) || ""}
-                      onChange={(e) => setAnswer(q.id, e.target.value)}
-                      placeholder="..."
-                    />
-                  )}
-                  {q.type === "rating" && (
-                    <div className="flex gap-1">
-                      {Array.from({ length: (q.max ?? 5) - (q.min ?? 1) + 1 }, (_, i) => (q.min ?? 1) + i).map((n) => (
-                        <Button
-                          key={n}
-                          type="button"
-                          size="sm"
-                          variant={val === n ? "default" : "outline"}
-                          disabled={disabled}
-                          onClick={() => setAnswer(q.id, n)}
-                        >
-                          {n}
-                        </Button>
-                      ))}
-                    </div>
-                  )}
-                  {q.type === "select" && (
-                    <RadioGroup
-                      disabled={disabled}
-                      className="space-y-1"
-                      value={(val as string) || ""}
-                      onValueChange={(v) => setAnswer(q.id, v)}
-                    >
-                      {(q.options || []).map((opt) => (
-                        <div key={opt} className="flex items-center gap-2">
-                          <RadioGroupItem value={opt} id={`${q.id}-${opt}`} disabled={disabled} />
-                          <Label htmlFor={`${q.id}-${opt}`} className="font-normal">{opt}</Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  )}
-                  {q.type === "multiselect" && (
-                    <div className="space-y-1">
-                      {(q.options || []).map((opt) => (
-                        <div key={opt} className="flex items-center gap-2">
-                          <Checkbox
-                            id={`${q.id}-${opt}`}
-                            disabled={disabled}
-                            checked={((val as string[]) || []).includes(opt)}
-                            onCheckedChange={() => toggleMulti(q.id, opt)}
-                          />
-                          <Label htmlFor={`${q.id}-${opt}`} className="font-normal">{opt}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-        </div>
-      ))}
-
-      {interactive && (
-        <div className="flex items-center justify-end gap-2 pt-2 border-t">
-          <Button variant="outline" size="sm" onClick={() => setAnswers({})}>
-            {t("admin.surveys.clearAnswers", "Limpar respostas")}
-          </Button>
-          <Button size="sm" disabled={!canSubmit} onClick={() => setSubmittedOpen(true)}>
-            {t("admin.surveys.simulateSubmit", "Simular submissão")}
-          </Button>
-        </div>
-      )}
-
-      <Dialog open={submittedOpen} onOpenChange={setSubmittedOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {t("admin.surveys.simulatedResponses", "Respostas simuladas")}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground italic">
-              {t(
-                "admin.surveys.simulatedNotice",
-                "Nada foi guardado. É apenas a pré-visualização do que o respondente enviaria.",
-              )}
-            </p>
-            {questions.map((q) => {
-              const a = answers[q.id];
-              const display = Array.isArray(a) ? a.join(", ") : a !== undefined && a !== "" ? String(a) : "—";
-              return (
-                <div key={q.id} className="grid grid-cols-2 gap-3 py-2 border-b border-border/50 text-sm">
-                  <div className="text-muted-foreground">{q.question}</div>
-                  <div className="font-medium">{display}</div>
-                </div>
-              );
-            })}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSubmittedOpen(false)}>
-              {t("common.close", "Fechar")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
