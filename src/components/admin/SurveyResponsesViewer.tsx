@@ -248,8 +248,9 @@ function InstanceDetailDialog({
                             {q.question}
                             {response?.is_auto_filled && (
                               <Badge variant="secondary" className="ml-2 text-xs">
-                                Auto
+                                {t('surveys.autoFilled', 'Preenchido automaticamente')}
                               </Badge>
+
                             )}
                           </div>
                           <div className="text-sm font-medium">
