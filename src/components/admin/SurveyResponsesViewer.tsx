@@ -124,18 +124,30 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
         </Button>
       </div>
 
+      <Card>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t('common.startup', 'Startup')}</TableHead>
+              <TableHead>{t('common.status', 'Status')}</TableHead>
+              <TableHead>{t('common.submitted', 'Submetido')}</TableHead>
+              <TableHead>{t('surveys.dataApplied', 'Dados aplicados')}</TableHead>
+              <TableHead className="w-[100px]">{t('common.actions', 'Ações')}</TableHead>
+            </TableRow>
+          </TableHeader>
           <TableBody>
             {instances.map((instance) => (
               <TableRow key={instance.id}>
                 <TableCell className="font-medium">
-                  {instance.workspace?.startups?.name || "Unknown"}
+                  {instance.workspace?.startups?.name || t('common.unknown', 'Desconhecido')}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     {STATUS_ICONS[instance.status]}
-                    <span className="capitalize">{instance.status.replace("_", " ")}</span>
+                    <span>{statusLabel(instance.status)}</span>
                   </div>
                 </TableCell>
+
                 <TableCell>
                   {instance.submitted_at
                     ? format(new Date(instance.submitted_at), "dd MMM yyyy HH:mm", { locale })
