@@ -5678,6 +5678,7 @@
   "kpis": {
     "aboveTarget": "Acima da meta",
     "actual": "Real",
+    "fromSurvey": "Do inquérito",
     "addContext": "Adicionar contexto...",
     "addKpi": "Adicionar KPI",
     "addKpis": "Adicionar KPIs",

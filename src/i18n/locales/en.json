@@ -5678,6 +5678,7 @@
   "kpis": {
     "aboveTarget": "Above target",
     "actual": "Actual",
+    "fromSurvey": "From survey",
     "addContext": "Add context...",
     "addKpi": "Add KPI",
     "addKpis": "Add KPIs",
