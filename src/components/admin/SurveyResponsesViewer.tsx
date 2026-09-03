@@ -54,22 +54,28 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
   const locale = i18n.language === "pt" ? pt : undefined;
 
   const handleExportCSV = () => {
-    // Basic CSV export
-    const headers = ["Startup", "Status", "Submitted At", "Applied"];
+    const esc = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const headers = [
+      t("common.startup", "Startup"),
+      t("common.status", "Status"),
+      t("common.submitted", "Submetido"),
+      t("surveys.dataApplied", "Dados aplicados"),
+    ];
     const rows = instances.map((inst) => [
-      inst.workspace?.startups?.name || "Unknown",
+      inst.workspace?.startups?.name || t("common.unknown", "Desconhecido"),
       inst.status,
       inst.submitted_at ? format(new Date(inst.submitted_at), "yyyy-MM-dd HH:mm") : "",
       String(appliedByInstance[inst.id] || 0),
     ]);
 
-    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    const csv = [headers, ...rows].map((r) => r.map(esc).join(",")).join("\n");
+    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `survey-responses-${campaignId}.csv`;
     a.click();
+    URL.revokeObjectURL(url);
   };
 
   if (isLoading) {
@@ -88,40 +94,36 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
     );
   }
 
+  const statusLabel = (status: SurveyInstance["status"]) =>
+    status === "submitted"
+      ? t("surveys.statusSubmitted", "Submetido")
+      : status === "in_progress"
+        ? t("surveys.statusInProgress", "Em progresso")
+        : t("surveys.statusPending", "Pendente");
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div className="flex gap-4 text-sm">
           <span className="flex items-center gap-1">
             <CheckCircle className="h-4 w-4 text-green-500" />
-            {instances.filter((i) => i.status === "submitted").length} submitted
+            {instances.filter((i) => i.status === "submitted").length} {t("surveys.statusSubmitted", "Submetido")}
           </span>
           <span className="flex items-center gap-1">
             <Clock className="h-4 w-4 text-yellow-500" />
-            {instances.filter((i) => i.status === "in_progress").length} in progress
+            {instances.filter((i) => i.status === "in_progress").length} {t("surveys.statusInProgress", "Em progresso")}
           </span>
           <span className="flex items-center gap-1">
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
-            {instances.filter((i) => i.status === "pending").length} pending
+            {instances.filter((i) => i.status === "pending").length} {t("surveys.statusPending", "Pendente")}
           </span>
         </div>
         <Button variant="outline" size="sm" onClick={handleExportCSV}>
           <Download className="h-4 w-4 mr-2" />
-          Export CSV
+          {t("common.exportCsv", "Exportar CSV")}
         </Button>
       </div>
 
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('common.startup', 'Startup')}</TableHead>
-              <TableHead>{t('common.status', 'Status')}</TableHead>
-              <TableHead>{t('common.submitted', 'Submetido')}</TableHead>
-              <TableHead>{t('surveys.dataApplied', 'Dados aplicados')}</TableHead>
-              <TableHead className="w-[100px]">{t('common.actions', 'Ações')}</TableHead>
-            </TableRow>
-          </TableHeader>
           <TableBody>
             {instances.map((instance) => (
               <TableRow key={instance.id}>
