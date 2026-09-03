@@ -211,6 +211,36 @@ export function useUpdateSurveyDefinition() {
   });
 }
 
+export function useDeleteSurveyDefinition() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("survey_definitions")
+        .delete()
+        .eq("id", id);
+      if (error) {
+        if ((error as { code?: string }).code === '23503') {
+          const err = new Error("Template has campaigns — archive it instead");
+          (err as unknown as { code: string }).code = 'RESTRICT_CAMPAIGNS';
+          throw err;
+        }
+        throw error;
+      }
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["survey-definitions"] });
+      toast.success("Template removido");
+    },
+    onError: (error) => {
+      toast.error((error as Error)?.message || "Falha ao remover template");
+      logger.error('operation_error', {}, error);
+    },
+  });
+}
+
 // Survey campaigns
 export function useSurveyCampaigns() {
   return useQuery({

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { getDateLocale } from "@/lib/dateLocale";
+import { pt } from "date-fns/locale";
 import { Download, CheckCircle, Clock, AlertCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,15 +23,15 @@ import {
 } from "@/components/ui/dialog";
 import {
   useCampaignInstances,
+  useCampaignWritebacks,
   useSurveyInstance,
   SurveyInstance,
   SurveyQuestion,
-  getCampaignQuestions,
 } from "@/hooks/useSurveys";
 
 const STATUS_ICONS = {
-  submitted: <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />,
-  in_progress: <Clock className="h-4 w-4 text-[hsl(var(--warning))]" />,
+  submitted: <CheckCircle className="h-4 w-4 text-green-500" />,
+  in_progress: <Clock className="h-4 w-4 text-yellow-500" />,
   pending: <AlertCircle className="h-4 w-4 text-muted-foreground" />,
 };
 
@@ -42,34 +42,34 @@ interface SurveyResponsesViewerProps {
 export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps) {
   const { t, i18n } = useTranslation();
   const { data: instances = [], isLoading } = useCampaignInstances(campaignId);
+  const { data: writebacks = [] } = useCampaignWritebacks(campaignId);
   const [selectedInstance, setSelectedInstance] = useState<string | null>(null);
 
-  const locale = getDateLocale();
+  // How much of each submission actually landed in the workspace.
+  const appliedByInstance = writebacks.reduce<Record<string, number>>((acc, wb) => {
+    if (wb.status === "applied") acc[wb.instance_id] = (acc[wb.instance_id] || 0) + 1;
+    return acc;
+  }, {});
+
+  const locale = i18n.language === "pt" ? pt : undefined;
 
   const handleExportCSV = () => {
-    // RFC 4180 escaping: quote every field, double any inner quotes.
-    // Prevents startup names/status containing commas, quotes, or newlines
-    // from corrupting columns downstream (Excel, GSheets).
-    const esc = (v: unknown) => {
-      const s = v === null || v === undefined ? "" : String(v);
-      return `"${s.replace(/"/g, '""')}"`;
-    };
-    const headers = ["Startup", "Status", "Submitted At"];
+    // Basic CSV export
+    const headers = ["Startup", "Status", "Submitted At", "Applied"];
     const rows = instances.map((inst) => [
       inst.workspace?.startups?.name || "Unknown",
       inst.status,
       inst.submitted_at ? format(new Date(inst.submitted_at), "yyyy-MM-dd HH:mm") : "",
+      String(appliedByInstance[inst.id] || 0),
     ]);
 
-    const csv = [headers.map(esc).join(","), ...rows.map((r) => r.map(esc).join(","))].join("\r\n");
-    // UTF-8 BOM so Excel opens accented characters correctly.
-    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `survey-responses-${campaignId}.csv`;
     a.click();
-    URL.revokeObjectURL(url);
   };
 
   if (isLoading) {
@@ -93,11 +93,11 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
       <div className="flex justify-between items-center">
         <div className="flex gap-4 text-sm">
           <span className="flex items-center gap-1">
-            <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />
+            <CheckCircle className="h-4 w-4 text-green-500" />
             {instances.filter((i) => i.status === "submitted").length} submitted
           </span>
           <span className="flex items-center gap-1">
-            <Clock className="h-4 w-4 text-[hsl(var(--warning))]" />
+            <Clock className="h-4 w-4 text-yellow-500" />
             {instances.filter((i) => i.status === "in_progress").length} in progress
           </span>
           <span className="flex items-center gap-1">
@@ -113,11 +113,12 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
 
       <Card>
         <Table>
-          <TableHeader sticky>
+          <TableHeader>
             <TableRow>
               <TableHead>{t('common.startup', 'Startup')}</TableHead>
               <TableHead>{t('common.status', 'Status')}</TableHead>
               <TableHead>{t('common.submitted', 'Submetido')}</TableHead>
+              <TableHead>{t('surveys.dataApplied', 'Dados aplicados')}</TableHead>
               <TableHead className="w-[100px]">{t('common.actions', 'Ações')}</TableHead>
             </TableRow>
           </TableHeader>
@@ -137,6 +138,13 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
                   {instance.submitted_at
                     ? format(new Date(instance.submitted_at), "dd MMM yyyy HH:mm", { locale })
                     : "—"}
+                </TableCell>
+                <TableCell>
+                  {appliedByInstance[instance.id] ? (
+                    <Badge variant="secondary">{appliedByInstance[instance.id]}</Badge>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <Button
@@ -175,12 +183,7 @@ function InstanceDetailDialog({
 
   if (!instanceId) return null;
 
-  // P4: prefer the campaign's frozen questions_snapshot so historical
-  // responses stay readable even after the survey template is edited.
-  const campaign = data?.instance?.campaign as
-    | { questions_snapshot?: SurveyQuestion[] | null; survey_definition?: { questions_json?: SurveyQuestion[] } }
-    | undefined;
-  const questions = (campaign ? getCampaignQuestions(campaign as any) : []) as SurveyQuestion[];
+  const questions = (data?.instance?.campaign?.survey_definition?.questions_json || []) as SurveyQuestion[];
   const responses = data?.responses || [];
 
   const getResponseValue = (questionId: string) => {
