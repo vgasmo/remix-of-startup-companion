@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
+import { invokeWithAuth } from "@/lib/invokeWithAuth";
 import { useAuth } from "@/contexts/AuthContext";
-import { notify } from "@/lib/notify";
+import { toast } from "sonner";
 import { Json } from "@/integrations/supabase/types";
 import { logger } from '@/lib/logger';
 
@@ -12,12 +13,55 @@ export interface SurveyQuestion {
   id: string;
   section: string;
   question: string;
-  type: "text" | "number" | "select" | "multiselect" | "rating" | "textarea";
+  type: "text" | "number" | "date" | "select" | "multiselect" | "rating" | "textarea";
   options?: string[];
   required?: boolean;
   autoFillKey?: string;
   min?: number;
   max?: number;
+}
+
+/** Where a submitted answer is written in the canonical tables. */
+export type WriteBackTarget = "kpi" | "startup" | "workspace" | "milestone";
+
+export interface WriteBackMapping {
+  target: WriteBackTarget;
+  /** kpi_definition_id for `kpi`; column name for `startup` / `workspace`. */
+  key?: string;
+  /** Answer value -> stored value (e.g. "Validacao" -> "validation"). */
+  valueMap?: Record<string, string>;
+  /** Overwrite a field that already holds a value. Default: false. */
+  overwrite?: boolean;
+  /** For `milestone`: the question holding the target date. */
+  dateQuestionId?: string;
+}
+
+/** Fields a survey answer may write on the startup profile. */
+export const STARTUP_WRITE_BACK_FIELDS = [
+  "description",
+  "website",
+  "founded_date",
+  "main_contact_name",
+  "main_contact_email",
+  "main_contact_phone",
+  "phone",
+  "address",
+  "nif",
+] as const;
+
+export interface SurveyWriteback {
+  id: string;
+  instance_id: string;
+  workspace_id: string;
+  question_id: string;
+  target_type: WriteBackTarget;
+  target_key: string | null;
+  target_row_id: string | null;
+  value_text: string | null;
+  value_number: number | null;
+  status: "applied" | "skipped" | "error";
+  detail: string | null;
+  created_at: string;
 }
 
 export interface SurveyDefinition {
@@ -26,6 +70,7 @@ export interface SurveyDefinition {
   description: string | null;
   questions_json: SurveyQuestion[];
   auto_fill_mappings: Record<string, string>;
+  write_back_mappings: Record<string, WriteBackMapping>;
   is_active: boolean;
   created_by: string | null;
   created_at: string;
@@ -41,25 +86,13 @@ export interface SurveyCampaign {
   ends_at: string;
   reminder_days: number[];
   status: "draft" | "active" | "closed" | "archived";
+  kind: "baseline" | "ecosystem" | "custom";
+  auto_enroll: boolean;
   program_id: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
-  // Copy-on-write snapshot taken at launch time. Preferred over
-  // survey_definition.questions_json for reads once a campaign is active,
-  // so subsequent template edits never mutate live questionnaires.
-  questions_snapshot: SurveyQuestion[] | null;
-  launched_at: string | null;
-  definition_version_at_launch: string | null;
   survey_definition?: SurveyDefinition;
-}
-
-/** Preferred accessor: snapshot if present (post-launch), else live definition. */
-export function getCampaignQuestions(c: Pick<SurveyCampaign, 'questions_snapshot' | 'survey_definition'>): SurveyQuestion[] {
-  if (Array.isArray(c.questions_snapshot) && c.questions_snapshot.length > 0) {
-    return c.questions_snapshot;
-  }
-  return (c.survey_definition?.questions_json ?? []) as SurveyQuestion[];
 }
 
 export interface SurveyInstance {
@@ -113,6 +146,7 @@ export function useCreateSurveyDefinition() {
       description?: string;
       questions_json: SurveyQuestion[];
       auto_fill_mappings?: Record<string, string>;
+      write_back_mappings?: Record<string, WriteBackMapping>;
     }) => {
       const { data, error } = await supabase
         .from("survey_definitions")
@@ -121,6 +155,7 @@ export function useCreateSurveyDefinition() {
           description: definition.description,
           questions_json: definition.questions_json as unknown as Json,
           auto_fill_mappings: (definition.auto_fill_mappings || {}) as unknown as Json,
+          write_back_mappings: (definition.write_back_mappings || {}) as unknown as Json,
         })
         .select()
         .single();
@@ -130,10 +165,10 @@ export function useCreateSurveyDefinition() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["survey-definitions"] });
-      notify.success(t('surveys.templateCreated'));
+      toast.success("Survey template created");
     },
     onError: (error) => {
-      notify.error(t('surveys.templateCreateFailed'));
+      toast.error("Failed to create survey template");
       logger.error('operation_error', {}, error);
     },
   });
@@ -152,6 +187,7 @@ export function useUpdateSurveyDefinition() {
       if (updates.description !== undefined) updateData.description = updates.description;
       if (updates.questions_json !== undefined) updateData.questions_json = updates.questions_json as unknown as Json;
       if (updates.auto_fill_mappings !== undefined) updateData.auto_fill_mappings = updates.auto_fill_mappings as unknown as Json;
+      if (updates.write_back_mappings !== undefined) updateData.write_back_mappings = updates.write_back_mappings as unknown as Json;
       if (updates.is_active !== undefined) updateData.is_active = updates.is_active;
 
       const { data, error } = await supabase
@@ -166,71 +202,10 @@ export function useUpdateSurveyDefinition() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["survey-definitions"] });
-      notify.success(t('surveys.templateUpdated'));
+      toast.success("Survey template updated");
     },
     onError: (error) => {
-      notify.error(t('surveys.templateUpdateFailed'));
-      logger.error('operation_error', {}, error);
-    },
-  });
-}
-
-export function useDeleteSurveyDefinition() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("survey_definitions")
-        .delete()
-        .eq("id", id);
-      if (error) {
-        // RESTRICT: FK from survey_campaigns blocks hard delete when any
-        // campaign was ever created from this template. Surface an actionable
-        // hint so callers can offer "Archive" instead.
-        if ((error as { code?: string }).code === '23503') {
-          const err = new Error(t('surveys.templateDeleteBlockedByCampaigns', 'Template has campaigns — archive it instead'));
-          (err as unknown as { code: string }).code = 'RESTRICT_CAMPAIGNS';
-          throw err;
-        }
-        throw error;
-      }
-      return id;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["survey-definitions"] });
-      notify.success(t('surveys.templateDeleted', 'Template removido'));
-    },
-    onError: (error) => {
-      notify.error((error as Error)?.message || t('surveys.templateDeleteFailed', 'Falha ao remover template'));
-      logger.error('operation_error', {}, error);
-    },
-  });
-}
-
-/**
- * Soft-archive a survey definition. Preferred over delete once any campaign
- * has been launched from it (delete is blocked by RESTRICT FK).
- */
-export function useArchiveSurveyDefinition() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ id, archive }: { id: string; archive: boolean }) => {
-      const { error } = await supabase
-        .from("survey_definitions")
-        .update({
-          archived_at: archive ? new Date().toISOString() : null,
-          is_active: archive ? false : true,
-        } as never)
-        .eq("id", id);
-      if (error) throw error;
-      return id;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["survey-definitions"] });
-    },
-    onError: (error) => {
-      notify.error(t('surveys.templateUpdateFailed'));
+      toast.error("Failed to update survey template");
       logger.error('operation_error', {}, error);
     },
   });
@@ -279,10 +254,10 @@ export function useCreateSurveyCampaign() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
-      notify.success(t('surveys.campaignCreated'));
+      toast.success("Survey campaign created");
     },
     onError: (error) => {
-      notify.error(t('surveys.campaignCreateFailed'));
+      toast.error("Failed to create campaign");
       logger.error('operation_error', {}, error);
     },
   });
@@ -293,27 +268,74 @@ export function useLaunchCampaign() {
 
   return useMutation({
     mutationFn: async (campaignId: string) => {
-      // Atomic launch: snapshot questions_json into the campaign, create
-      // instances for every active workspace (optionally filtered by
-      // program), and flip status draft→active — all in one transaction.
-      // Rejects on archived template, empty questions, non-draft status.
-      const { data, error } = await (supabase as unknown as {
-        rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
-      }).rpc('launch_survey_campaign', {
-        p_campaign_id: campaignId,
-        p_workspace_ids: null,
+      // Get campaign details
+      const { data: campaign, error: campaignError } = await supabase
+        .from("survey_campaigns")
+        .select("*, survey_definition:survey_definitions(*)")
+        .eq("id", campaignId)
+        .single();
+
+      if (campaignError) throw campaignError;
+
+      // Get all active workspaces (optionally filtered by program)
+      let query = supabase
+        .from("workspaces")
+        .select("id, startup_id, stage, startups(name, founded_date, description)")
+        .eq("status", "active");
+
+      if (campaign.program_id) {
+        query = query.eq("program_id", campaign.program_id);
+      }
+
+      const { data: workspaces, error: workspacesError } = await query;
+      if (workspacesError) throw workspacesError;
+
+      // Create survey instances for each workspace with auto-filled data
+      const instances = workspaces.map((ws) => {
+        // Extract year from founded_date if available
+        const foundedYear = ws.startups?.founded_date 
+          ? new Date(ws.startups.founded_date).getFullYear() 
+          : null;
+
+        const autoFilledData: Json = {
+          stage: ws.stage,
+          startup_name: ws.startups?.name || null,
+          founded_year: foundedYear,
+        };
+
+        return {
+          campaign_id: campaignId,
+          workspace_id: ws.id,
+          auto_filled_data: autoFilledData,
+          status: "pending" as const,
+        };
       });
-      if (error) throw error;
-      const row = Array.isArray(data) ? (data[0] as { instances_created?: number } | undefined) : (data as { instances_created?: number } | null);
-      return { instancesCreated: row?.instances_created ?? 0 };
+
+      if (instances.length > 0) {
+        const { error: instancesError } = await supabase
+          .from("survey_instances")
+          .insert(instances);
+
+        if (instancesError) throw instancesError;
+      }
+
+      // Update campaign status to active
+      const { error: updateError } = await supabase
+        .from("survey_campaigns")
+        .update({ status: "active" })
+        .eq("id", campaignId);
+
+      if (updateError) throw updateError;
+
+      return { instancesCreated: instances.length };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
       queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
-      notify.success(t('surveys.campaignLaunched', { instancesCreated: data.instancesCreated }));
+      toast.success(t('surveys.campaignLaunched', { instancesCreated: data.instancesCreated }));
     },
     onError: (error) => {
-      notify.error(t('surveys.campaignLaunchFailed'));
+      toast.error("Failed to launch campaign");
       logger.error('operation_error', {}, error);
     },
   });
@@ -333,10 +355,10 @@ export function useCloseCampaign() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
-      notify.success(t('surveys.campaignClosed'));
+      toast.success("Campaign closed");
     },
     onError: (error) => {
-      notify.error(t('surveys.campaignCloseFailed'));
+      toast.error("Failed to close campaign");
       logger.error('operation_error', {}, error);
     },
   });
@@ -427,11 +449,9 @@ export function useSurveyInstance(instanceId: string | null) {
           workspace:workspaces(id, startup_id, startups(name))
         `)
         .eq("id", instanceId)
-        .maybeSingle();
+        .single();
 
       if (instanceError) throw instanceError;
-      if (!instance) return null;
-
 
       const { data: responses, error: responsesError } = await supabase
         .from("survey_responses")
@@ -449,9 +469,16 @@ export function useSurveyInstance(instanceId: string | null) {
   });
 }
 
+export interface SurveyWriteBackSummary {
+  applied: number;
+  skipped: number;
+  errors: number;
+}
+
 // Save survey responses
 export function useSaveSurveyResponses() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({
@@ -468,43 +495,104 @@ export function useSaveSurveyResponses() {
       }>;
       submit?: boolean;
     }) => {
-      // Atomic: upsert every response AND flip instance status in one
-      // transaction. Rejects submits on non-active campaigns, blocks
-      // re-submission of already-submitted instances, and silently drops
-      // answers whose question_id is not in the campaign's launch-time
-      // snapshot (server-side validation).
-      const { data, error } = await (supabase as unknown as {
-        rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: Array<{ responses_saved: number }> | null; error: unknown }>;
-      }).rpc('submit_survey_responses', {
-        p_instance_id: instanceId,
-        p_responses: responses as unknown as Json,
-        p_submit: submit,
-      });
-      if (error) throw error;
-      const accepted = Array.isArray(data) && data[0]?.responses_saved != null ? data[0].responses_saved : responses.length;
-      const dropped = Math.max(0, responses.length - accepted);
-      return { accepted, dropped };
+      // Upsert responses
+      for (const response of responses) {
+        const { error } = await supabase.from("survey_responses").upsert(
+          {
+            instance_id: instanceId,
+            question_id: response.question_id,
+            response_value: response.response_value,
+            response_json: response.response_json,
+            is_auto_filled: response.is_auto_filled || false,
+          },
+          { onConflict: "instance_id,question_id" }
+        );
+
+        if (error) throw error;
+      }
+
+      // Update instance status
+      const updateData: Record<string, unknown> = {
+        status: submit ? "submitted" : "in_progress",
+      };
+
+      if (submit) {
+        updateData.submitted_at = new Date().toISOString();
+        updateData.submitted_by = user?.id ?? null;
+      }
+
+      const { error: updateError } = await supabase
+        .from("survey_instances")
+        .update(updateData)
+        .eq("id", instanceId);
+
+      if (updateError) throw updateError;
+
+      if (!submit) return { writeBack: null };
+
+      // Feed the platform: answers become KPI values, profile fields and
+      // milestones. A failure here must not lose the submitted survey.
+      const { data, error: writeBackError } = await invokeWithAuth<SurveyWriteBackSummary>(
+        "apply-survey-responses",
+        { body: { instance_id: instanceId } }
+      );
+
+      if (writeBackError) {
+        logger.error('survey_write_back_failed', { instanceId }, writeBackError);
+        return { writeBack: null };
+      }
+
+      return { writeBack: data };
     },
     onSuccess: (result, variables) => {
       queryClient.invalidateQueries({ queryKey: ["survey-instance", variables.instanceId] });
       queryClient.invalidateQueries({ queryKey: ["my-pending-surveys"] });
       queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
 
-      if (result.dropped > 0) {
-        // Snapshot drift: some answered questions no longer exist in the
-        // campaign's frozen question set. Tell the user honestly.
-        logger.warn('survey.snapshot_drift', { instanceId: variables.instanceId, accepted: result.accepted, dropped: result.dropped });
-        notify.warn(t('surveys.snapshotDrift', { accepted: result.accepted, dropped: result.dropped }));
-      } else if (variables.submit) {
-        notify.success(t('surveys.submitted'));
+      if (!variables.submit) {
+        toast.success(t('surveys.progressSaved', { defaultValue: 'Progresso guardado' }));
+        return;
+      }
+
+      // Anything the survey wrote is now visible in the workspace.
+      queryClient.invalidateQueries({ queryKey: ["kpi-values"] });
+      queryClient.invalidateQueries({ queryKey: ["workspace-kpi-definitions"] });
+      queryClient.invalidateQueries({ queryKey: ["milestones"] });
+      queryClient.invalidateQueries({ queryKey: ["survey-writebacks"] });
+
+      const applied = result?.writeBack?.applied ?? 0;
+      if (applied > 0) {
+        toast.success(t('surveys.submittedWithWriteBack', {
+          count: applied,
+          defaultValue: 'Inquérito submetido — {{count}} dados atualizados no workspace',
+        }));
       } else {
-        notify.success(t('surveys.progressSaved'));
+        toast.success(t('surveys.surveySubmitted', { defaultValue: 'Inquérito submetido' }));
       }
     },
     onError: (error) => {
-      notify.error(t('surveys.saveFailed'));
+      toast.error("Failed to save survey");
       logger.error('operation_error', {}, error);
     },
+  });
+}
+
+// What a submitted survey actually wrote into the workspace
+export function useCampaignWritebacks(campaignId: string | null) {
+  return useQuery({
+    queryKey: ["survey-writebacks", campaignId],
+    queryFn: async () => {
+      if (!campaignId) return [];
+
+      const { data, error } = await supabase
+        .from("survey_writebacks")
+        .select("*, instance:survey_instances!inner(campaign_id)")
+        .eq("instance.campaign_id", campaignId);
+
+      if (error) throw error;
+      return (data || []) as unknown as SurveyWriteback[];
+    },
+    enabled: !!campaignId,
   });
 }
 
