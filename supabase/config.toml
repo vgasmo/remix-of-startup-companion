@@ -342,3 +342,7 @@ verify_jwt = false
 # /.well-known/oauth-protected-resource MUST be reachable anonymously.
 [functions.mcp]
 verify_jwt = false
+
+# Survey write-back — token validado em runtime (getUser + permissões).
+[functions.apply-survey-responses]
+verify_jwt = false
