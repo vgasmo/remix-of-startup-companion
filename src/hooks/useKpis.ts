@@ -26,7 +26,7 @@ export interface KpiValue {
   target_value: number | null;
   notes: string | null;
   created_at: string;
-  source_type: 'manual' | 'financial_model' | 'import' | 'ai';
+  source_type: 'manual' | 'financial_model' | 'import' | 'ai' | 'survey';
   source_ref_id: string | null;
   locked_by_source: boolean;
 }
