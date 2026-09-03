@@ -282,7 +282,7 @@ function CampaignCard({
           </div>
         )}
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {campaign.status === "draft" && (
             <Button
               size="sm"
@@ -304,11 +304,68 @@ function CampaignCard({
               {t("admin.surveys.close", "Close")}
             </Button>
           )}
+          {(campaign.status === "closed" || campaign.status === "archived") && (
+            <Button
+              size="sm"
+              onClick={() => reopenCampaign.mutate(campaign.id)}
+              disabled={reopenCampaign.isPending}
+            >
+              <PlayCircle className="h-4 w-4 mr-2" />
+              {t("admin.surveys.reopen", "Reabrir")}
+            </Button>
+          )}
+          {campaign.status !== "draft" && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => syncParticipants.mutate(campaign.id)}
+              disabled={syncParticipants.isPending}
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              {t("admin.surveys.enrollMissing", "Inscrever novas startups")}
+            </Button>
+          )}
+          <Button size="sm" variant="outline" onClick={() => setShowQuestions(true)}>
+            <ListChecks className="h-4 w-4 mr-2" />
+            {t("admin.surveys.viewQuestions", "Ver questões")}
+          </Button>
           <Button size="sm" variant="outline" onClick={onViewResponses}>
             <Eye className="h-4 w-4 mr-2" />
             {t("admin.surveys.viewResponses", "View Responses")}
           </Button>
         </div>
+
+        <Dialog open={showQuestions} onOpenChange={setShowQuestions}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {campaign.survey_definition?.name || campaign.name}
+              </DialogTitle>
+              <DialogDescription>
+                {t("admin.surveys.viewQuestionsDesc", "Questões incluídas neste inquérito")}
+              </DialogDescription>
+            </DialogHeader>
+            <ol className="space-y-3 list-decimal pl-5">
+              {(campaign.survey_definition?.questions_json || []).map((q) => (
+                <li key={q.id} className="text-sm">
+                  <p className="font-medium">{q.question}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {q.section} · {q.type}
+                    {q.required ? ` · ${t("admin.surveys.requiredLabel", "obrigatória")}` : ""}
+                  </p>
+                  {q.options?.length ? (
+                    <p className="text-xs text-muted-foreground">{q.options.join(" · ")}</p>
+                  ) : null}
+                </li>
+              ))}
+            </ol>
+            {!(campaign.survey_definition?.questions_json || []).length && (
+              <p className="text-sm text-muted-foreground">
+                {t("admin.surveys.noQuestions", "Este template ainda não tem questões.")}
+              </p>
+            )}
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
