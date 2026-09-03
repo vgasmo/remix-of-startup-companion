@@ -9025,12 +9025,14 @@ export type Database = {
       }
       survey_campaigns: {
         Row: {
+          auto_enroll: boolean
           created_at: string
           created_by: string | null
           definition_version_at_launch: string | null
           description: string | null
           ends_at: string
           id: string
+          kind: string
           launched_at: string | null
           name: string
           program_id: string | null
@@ -9042,12 +9044,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          auto_enroll?: boolean
           created_at?: string
           created_by?: string | null
           definition_version_at_launch?: string | null
           description?: string | null
           ends_at: string
           id?: string
+          kind?: string
           launched_at?: string | null
           name: string
           program_id?: string | null
@@ -9059,12 +9063,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          auto_enroll?: boolean
           created_at?: string
           created_by?: string | null
           definition_version_at_launch?: string | null
           description?: string | null
           ends_at?: string
           id?: string
+          kind?: string
           launched_at?: string | null
           name?: string
           program_id?: string | null
@@ -9104,6 +9110,7 @@ export type Database = {
           name: string
           questions_json: Json
           updated_at: string
+          write_back_mappings: Json
         }
         Insert: {
           archived_at?: string | null
@@ -9116,6 +9123,7 @@ export type Database = {
           name: string
           questions_json?: Json
           updated_at?: string
+          write_back_mappings?: Json
         }
         Update: {
           archived_at?: string | null
@@ -9128,6 +9136,7 @@ export type Database = {
           name?: string
           questions_json?: Json
           updated_at?: string
+          write_back_mappings?: Json
         }
         Relationships: []
       }
@@ -9222,6 +9231,69 @@ export type Database = {
             columns: ["instance_id"]
             isOneToOne: false
             referencedRelation: "survey_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      survey_writebacks: {
+        Row: {
+          applied_by: string | null
+          created_at: string
+          detail: string | null
+          id: string
+          instance_id: string
+          question_id: string
+          status: string
+          target_key: string | null
+          target_row_id: string | null
+          target_type: string
+          value_number: number | null
+          value_text: string | null
+          workspace_id: string
+        }
+        Insert: {
+          applied_by?: string | null
+          created_at?: string
+          detail?: string | null
+          id?: string
+          instance_id: string
+          question_id: string
+          status: string
+          target_key?: string | null
+          target_row_id?: string | null
+          target_type: string
+          value_number?: number | null
+          value_text?: string | null
+          workspace_id: string
+        }
+        Update: {
+          applied_by?: string | null
+          created_at?: string
+          detail?: string | null
+          id?: string
+          instance_id?: string
+          question_id?: string
+          status?: string
+          target_key?: string | null
+          target_row_id?: string | null
+          target_type?: string
+          value_number?: number | null
+          value_text?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_writebacks_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "survey_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_writebacks_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
