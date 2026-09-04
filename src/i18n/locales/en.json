@@ -9060,7 +9060,14 @@
       "workflows": "Workflow Rules"
     },
     "title": "System Preferences & IT",
-    "warningBanner": "Super-Admin Area — Changes here affect the entire platform."
+    "warningBanner": "Super-Admin Area — Changes here affect the entire platform.",
+    "founderNotifications": {
+      "title": "Founder Notifications",
+      "description": "Globally disables all in-app notifications for founders and team members. Staff and mentors keep receiving them.",
+      "switchLabel": "Block notifications for founders",
+      "disabledToast": "Founder notifications disabled",
+      "enabledToast": "Founder notifications re-enabled"
+    }
   },
   "tabGroups": {
     "investor": "Investor",
