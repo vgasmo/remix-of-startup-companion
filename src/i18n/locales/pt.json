@@ -9060,7 +9060,14 @@
       "workflows": "Regras de Workflow"
     },
     "title": "Preferências do Sistema & IT",
-    "warningBanner": "Área de Super-Admin — Alterações aqui afetam toda a plataforma."
+    "warningBanner": "Área de Super-Admin — Alterações aqui afetam toda a plataforma.",
+    "founderNotifications": {
+      "title": "Notificações dos Founders",
+      "description": "Desativa globalmente todas as notificações in-app para founders e membros de equipa. Staff e mentores continuam a receber.",
+      "switchLabel": "Bloquear notificações para founders",
+      "disabledToast": "Notificações dos founders desativadas",
+      "enabledToast": "Notificações dos founders reativadas"
+    }
   },
   "tabGroups": {
     "investor": "Investidor",
