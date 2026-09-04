@@ -11,6 +11,7 @@ import { IntegrationTestHarness } from '@/components/admin/IntegrationTestHarnes
 import { WorkflowIntegrations } from '@/components/settings/WorkflowIntegrations';
 import { ActivityLogViewerEnhanced } from '@/components/admin/ActivityLogViewerEnhanced';
 import { SignatureProvidersCard } from '@/components/admin/SignatureProvidersCard';
+import { FounderNotificationsKillSwitch } from '@/components/admin/FounderNotificationsKillSwitch';
 
 export default function SystemSettings() {
   const { t } = useTranslation();
