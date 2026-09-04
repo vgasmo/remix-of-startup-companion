@@ -68,6 +68,7 @@ export default function SystemSettings() {
 
         <TabsContent value="flags">
           <div className="space-y-6">
+            <FounderNotificationsKillSwitch />
             <EnrollmentControlCenter />
             <AdminFeatureFlagsManager />
           </div>
