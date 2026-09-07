@@ -291,7 +291,11 @@ export default function BulkContractImport() {
           );
           if (error) throw error;
           notify.success(
-            t('bulkImport.commitSuccess', `Imported ${data?.committed ?? 0} contracts (${data?.failed ?? 0} failed)`)
+            t('bulkImport.commitSuccess', {
+              committed: data?.committed ?? 0,
+              failed: data?.failed ?? 0,
+              defaultValue: `Imported ${data?.committed ?? 0} contracts (${data?.failed ?? 0} failed)`,
+            })
           );
           await refreshRows(batchId);
           setStep('done');

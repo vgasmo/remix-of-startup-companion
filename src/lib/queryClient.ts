@@ -23,7 +23,9 @@ export const queryClient = new QueryClient({
         mutationKey: mutation.options.mutationKey,
       });
 
-      const message = error.message || t('common.operationFailed', { defaultValue: 'Operação falhou. Tente novamente.' });
+      const message =
+        error.message ||
+        t('common.operationFailed', { error: '', defaultValue: 'Operação falhou. Tente novamente.' });
 
       if (message.includes('JWT') || message.includes('401')) {
         notify.error(t('errors.sessionExpired', { defaultValue: 'Sessão expirada. Faça login novamente.' }));
