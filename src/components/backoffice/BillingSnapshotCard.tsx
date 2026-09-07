@@ -28,7 +28,7 @@ function BillingSnapshotCardInner() {
       const todayStr = today.toISOString().slice(0, 10);
       const in60 = new Date(today.getTime() + 60 * 86400000).toISOString().slice(0, 10);
 
-      const [mrrRes, overdueRes, renewalsRes] = await Promise.all([
+      const settled = await Promise.allSettled([
         supabase
           .from('startup_contracts' as any)
           .select('id, monthly_fee, discount_percentage, discount_reason, contract_discounts(id, discount_percentage, start_date, end_date, reason)')
@@ -45,21 +45,29 @@ function BillingSnapshotCardInner() {
           .lte('end_date', in60),
       ]);
 
-      const mrr = (mrrRes.data || []).reduce((sum: number, c: any) => {
+      const unwrap = (r: PromiseSettledResult<any>) =>
+        r.status === 'fulfilled' && !r.value?.error ? r.value : null;
+      const mrrRes = unwrap(settled[0]);
+      const overdueRes = unwrap(settled[1]);
+      const renewalsRes = unwrap(settled[2]);
+
+      const mrr = (mrrRes?.data || []).reduce((sum: number, c: any) => {
         const fee = Number(c.monthly_fee) || 0;
         const disc = computeEffectiveDiscount(c.contract_discounts, c.discount_percentage, c.discount_reason);
         return sum + fee * (1 - disc.effectivePct / 100);
       }, 0);
 
-      const overdueList = overdueRes.data || [];
+      const overdueList = overdueRes?.data || [];
       const overdueAmount = overdueList.reduce((s: number, i: any) => s + (Number(i.total) || 0), 0);
 
       return {
         mrr,
+        mrrUnavailable: mrrRes === null,
         overdueCount: overdueList.length,
         overdueAmount,
-        renewals: renewalsRes.count ?? 0,
-        unavailable: !!overdueRes.error,
+        renewals: renewalsRes?.count ?? 0,
+        renewalsUnavailable: renewalsRes === null,
+        unavailable: overdueRes === null,
       };
     },
   });
@@ -83,6 +91,10 @@ function BillingSnapshotCardInner() {
               </p>
               {isLoading ? (
                 <Skeleton className="h-7 w-28 mt-1" />
+              ) : data?.mrrUnavailable ? (
+                <p className="text-xs text-muted-foreground italic">
+                  {t('backoffice.billing.unavailable', { defaultValue: 'Dados indisponíveis' })}
+                </p>
               ) : (
                 <p className="text-xl font-semibold tabular-nums leading-tight">{fmtEUR.format(data?.mrr ?? 0)}</p>
               )}
@@ -134,6 +146,10 @@ function BillingSnapshotCardInner() {
               </p>
               {isLoading ? (
                 <Skeleton className="h-7 w-12 mt-1" />
+              ) : data?.renewalsUnavailable ? (
+                <p className="text-xs text-muted-foreground italic">
+                  {t('backoffice.billing.unavailable', { defaultValue: 'Dados indisponíveis' })}
+                </p>
               ) : (
                 <p className="text-xl font-semibold tabular-nums leading-tight">{data?.renewals ?? 0}</p>
               )}

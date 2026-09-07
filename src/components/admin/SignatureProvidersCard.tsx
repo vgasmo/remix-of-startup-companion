@@ -64,7 +64,7 @@ function useSaveSignatureProvider() {
   return useMutation({
     mutationFn: async (params: {
       integration_type: string;
-      settings_json: Record<string, unknown>;
+      settings_json?: Record<string, unknown>;
       is_enabled?: boolean;
     }) => {
       const { data, error } = await invokeWithAuth('set-global-integrations', {
@@ -99,13 +99,12 @@ function DocuSignSettingsCard() {
   const isConfigured = !!(json.account_id && json.user_id);
 
   useEffect(() => {
-    if (json && !initialized) {
-      setAccountId((json.account_id as string) || '');
-      setUserId((json.user_id as string) || '');
-      setBaseUrl((json.base_url as string) || 'https://demo.docusign.net/restapi');
-      setInitialized(true);
-    }
-  }, [json, initialized]);
+    if (!settings || initialized) return;
+    setAccountId((json.account_id as string) || '');
+    setUserId((json.user_id as string) || '');
+    setBaseUrl((json.base_url as string) || 'https://demo.docusign.net/restapi');
+    setInitialized(true);
+  }, [settings, json, initialized]);
 
   if (isLoading) return <Skeleton className="h-40 w-full" />;
 
@@ -135,7 +134,7 @@ function DocuSignSettingsCard() {
                   notify.error(t('admin.configureAsCredenciaisPrimeiro'));
                   return;
                 }
-                save.mutate({ integration_type: 'docusign', settings_json: json, is_enabled: enabled });
+                save.mutate({ integration_type: 'docusign', is_enabled: enabled });
               }}
               disabled={save.isPending}
             />
@@ -203,11 +202,10 @@ function PandaDocSettingsCard() {
   const isConfigured = !!(json.configured);
 
   useEffect(() => {
-    if (json && !initialized) {
-      setWebhookUrl((json.webhook_url as string) || '');
-      setInitialized(true);
-    }
-  }, [json, initialized]);
+    if (!settings || initialized) return;
+    setWebhookUrl((json.webhook_url as string) || '');
+    setInitialized(true);
+  }, [settings, json, initialized]);
 
   if (isLoading) return <Skeleton className="h-40 w-full" />;
 
@@ -241,7 +239,7 @@ function PandaDocSettingsCard() {
                   notify.error(t('admin.configureAsCredenciaisPrimeiro'));
                   return;
                 }
-                save.mutate({ integration_type: 'pandadoc', settings_json: json, is_enabled: enabled });
+                save.mutate({ integration_type: 'pandadoc', is_enabled: enabled });
               }}
               disabled={save.isPending}
             />

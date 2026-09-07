@@ -16,6 +16,30 @@ import { supabase } from '@/lib/supabaseClient';
 import { notify } from '@/lib/notify';
 import type { StartupContract } from '@/hooks/useBackoffice';
 
+/** Every query key a termination can invalidate — see useBackoffice invalidation set. */
+const TERMINATION_QUERY_KEYS: string[] = [
+  'contracts',
+  'workspaces',
+  'room-allocations',
+  'rooms-with-allocations',
+  'building-occupancy',
+  'backoffice-unified',
+  'backoffice-billing-snapshot',
+  'contract-intakes',
+  'funnel-items',
+  'crm-pipeline',
+  'crm-inbox',
+  'contract-lifecycle-events',
+  'lifecycle-events-contracts',
+  'staff-tasks',
+];
+
+function invalidateTerminationViews(queryClient: ReturnType<typeof useQueryClient>) {
+  for (const key of TERMINATION_QUERY_KEYS) {
+    queryClient.invalidateQueries({ queryKey: [key] });
+  }
+}
+
 export interface TerminateInput {
   contract: Pick<StartupContract, 'id' | 'workspace_id'>;
   reason: string;
@@ -148,7 +172,7 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
       defaultValue: 'A equipa Startup Leiria terminou o contrato. Motivo: {{reason}}',
       reason: reason.trim(),
     }),
-    p_founder_link: '/workspace',
+    p_founder_link: contract.workspace_id ? `/workspace/${contract.workspace_id}` : '/my-workspaces',
     p_staff_link: '/admin?tab=backoffice&subtab=contracts',
   });
   if (notifyErr) {
@@ -167,12 +191,7 @@ export function useTerminateContract() {
       await terminateOne(input, t);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contracts'] });
-      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      queryClient.invalidateQueries({ queryKey: ['room-allocations'] });
-      queryClient.invalidateQueries({ queryKey: ['contract-lifecycle-events'] });
-      queryClient.invalidateQueries({ queryKey: ['lifecycle-events-contracts'] });
-      queryClient.invalidateQueries({ queryKey: ['staff-tasks'] });
+      invalidateTerminationViews(queryClient);
       notify.success(t('contractDetail.terminate.success', { defaultValue: 'Contrato terminado' }));
     },
     onError: (err: any) => {
@@ -205,14 +224,12 @@ export function useBulkTerminateContracts() {
       }
       return { ok, failed };
     },
-    onSuccess: ({ ok }) => {
-      queryClient.invalidateQueries({ queryKey: ['contracts'] });
-      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      queryClient.invalidateQueries({ queryKey: ['room-allocations'] });
-      queryClient.invalidateQueries({ queryKey: ['contract-lifecycle-events'] });
-      queryClient.invalidateQueries({ queryKey: ['lifecycle-events-contracts'] });
-      queryClient.invalidateQueries({ queryKey: ['staff-tasks'] });
+    onSuccess: ({ ok, failed }) => {
+      invalidateTerminationViews(queryClient);
       notify.success(t('contracts.bulk.terminateSuccess', { count: ok, defaultValue: '{{count}} contratos terminados' }));
+      if (failed > 0) {
+        notify.error(t('contracts.bulk.terminatePartial', { count: failed, defaultValue: '{{count}} contratos não foram terminados' }));
+      }
     },
     onError: (err: any) => {
       if (err?.message === 'reason_required') {

@@ -2,6 +2,7 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { supabaseForUser } from "../supabase";
 import { throwToolError } from "../toolError";
+import { enforceMcpRateLimit } from "../rateLimit";
 
 export default defineTool({
   name: "create_action_item",
@@ -22,6 +23,7 @@ export default defineTool({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
+    await enforceMcpRateLimit(supabase, "create_action_item");
     // P0.2 defence in depth: the milestone MUST belong to the same workspace.
     const { data: ms, error: msError } = await supabase
       .from("milestones")

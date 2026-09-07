@@ -2,6 +2,7 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { supabaseForUser } from "../supabase";
 import { throwToolError } from "../toolError";
+import { enforceMcpRateLimit } from "../rateLimit";
 
 export default defineTool({
   name: "list_upcoming_sessions",
@@ -18,6 +19,7 @@ export default defineTool({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
+    await enforceMcpRateLimit(supabase, "list_upcoming_sessions");
     const now = new Date();
     const until = new Date(now.getTime() + (days_ahead ?? 30) * 86_400_000);
 

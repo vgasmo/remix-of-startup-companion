@@ -60,7 +60,7 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
     }
   }, [canWrite, searchParams, setSearchParams]);
 
-  const { data: sessions, isLoading } = useSessions(workspaceId);
+  const { data: sessions, isLoading, isError, refetch } = useSessions(workspaceId);
   const deleteMutation = useDeleteSession(workspaceId);
   const queryClient = useQueryClient();
   const { refetch: fetchExportData } = useExportSessions(workspaceId);
@@ -134,6 +134,13 @@ export function SessionsTab({ workspaceId, canWrite }: SessionsTabProps) {
         <div className="space-y-4">
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
+      ) : isError ? (
+        <EmptyState
+          icon={FileText}
+          title={t('sessions.loadError', { defaultValue: 'Não foi possível carregar as sessões' })}
+          description={t('common.tryAgainLater', { defaultValue: 'Tente novamente.' })}
+          action={{ label: t('common.retry', { defaultValue: 'Tentar novamente' }), onClick: () => refetch(), icon: Plus }}
+        />
       ) : filteredSessions?.length === 0 ? (
         <EmptyState
           icon={FileText}

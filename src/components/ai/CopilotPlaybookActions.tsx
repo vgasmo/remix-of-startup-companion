@@ -7,6 +7,7 @@ import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { notify } from '@/lib/notify';
 import { detectPlaybooks, type PlaybookSummary } from '@/lib/copilotPlaybooks';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface WorkspaceOption {
   id: string;
@@ -37,18 +38,19 @@ export function CopilotPlaybookActions({ messageText }: Props) {
 
 function ApplyPlaybookChip({ playbook }: { playbook: PlaybookSummary }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [loadingWs, setLoadingWs] = useState(false);
   const [applying, setApplying] = useState(false);
   const [done, setDone] = useState<{ wsId: string; msId: string } | null>(null);
   const [workspaces, setWorkspaces] = useState<WorkspaceOption[] | null>(null);
 
-  const loadWorkspaces = async () => {
-    if (workspaces) return;
+  const loadWorkspaces = async (): Promise<WorkspaceOption[] | null> => {
+    if (workspaces) return workspaces;
     setLoadingWs(true);
     try {
       const { data: { user } } = await supabaseClient.auth.getUser();
-      if (!user) return;
+      if (!user) return null;
       const { data, error } = await supabaseClient
         .from('workspace_users')
         .select('workspace_id, workspaces(id, startups(name))')
@@ -63,8 +65,10 @@ function ApplyPlaybookChip({ playbook }: { playbook: PlaybookSummary }) {
         }))
         .filter((w) => w.id);
       setWorkspaces(opts);
+      return opts;
     } catch (e: any) {
       notify.error(e?.message || 'Não foi possível carregar workspaces.');
+      return null;
     } finally {
       setLoadingWs(false);
     }
@@ -78,6 +82,11 @@ function ApplyPlaybookChip({ playbook }: { playbook: PlaybookSummary }) {
       });
       if (error) throw error;
       const res = data as { milestone: { id: string; title: string }; actions_created: number };
+      queryClient.invalidateQueries({ queryKey: ['workspace-playbook-instances'] });
+      queryClient.invalidateQueries({ queryKey: ['workspace-milestones'] });
+      queryClient.invalidateQueries({ queryKey: ['workspace-actions'] });
+      queryClient.invalidateQueries({ queryKey: ['milestones', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
       setDone({ wsId: workspaceId, msId: res.milestone.id });
       notify.success(
         `"${playbook.name}" aplicado: 1 milestone + ${res.actions_created} ações criadas.`
@@ -95,15 +104,13 @@ function ApplyPlaybookChip({ playbook }: { playbook: PlaybookSummary }) {
       navigate(`/workspace/${done.wsId}?tab=milestones-actions`);
       return;
     }
-    await loadWorkspaces();
+    const opts = await loadWorkspaces();
     // If exactly one workspace, apply immediately without opening popover.
-    setTimeout(() => {
-      if (workspaces?.length === 1) {
-        apply(workspaces[0].id);
-      } else {
-        setOpen(true);
-      }
-    }, 0);
+    if (opts?.length === 1) {
+      apply(opts[0].id);
+    } else {
+      setOpen(true);
+    }
   };
 
   if (done) {

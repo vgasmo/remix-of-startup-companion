@@ -82,23 +82,27 @@ Deno.serve(async (req) => {
 
     // SECURITY: Never store client_secret in database
     // Accept both 'settings' and 'settings_json' from client
-    const rawSettings = body.settings ?? body.settings_json ?? {};
-    const { client_secret: _removed, ...sanitizedSettings } = rawSettings;
+    const rawSettings = body.settings ?? body.settings_json;
+    const { client_secret: _removed, ...sanitizedSettings } = rawSettings ?? {};
     const finalSettings = { ...sanitizedSettings };
-    
+
     if (_removed) {
       log.warn('Rejected attempt to store client_secret in database - use MS_GRAPH_CLIENT_SECRET env var');
     }
 
+    // When the caller omits settings entirely (e.g. a pure enable/disable toggle),
+    // never clobber the stored credentials.
+    const payload: Record<string, unknown> = {
+      integration_type: body.integration_type,
+      is_enabled: body.is_enabled ?? true,
+      created_by: user.id,
+    };
+    if (rawSettings !== undefined) payload.settings_json = finalSettings;
+
     // Upsert settings using service role
     const { data, error } = await supabase
       .from('global_integration_settings')
-      .upsert({
-        integration_type: body.integration_type,
-        settings_json: finalSettings,
-        is_enabled: body.is_enabled ?? true,
-        created_by: user.id,
-      }, { onConflict: 'integration_type' })
+      .upsert(payload, { onConflict: 'integration_type' })
       .select('id, integration_type, is_enabled, created_at, updated_at')
       .single();
 

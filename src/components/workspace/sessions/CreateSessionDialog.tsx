@@ -282,7 +282,18 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Double-click guard: the async availability/conflict checks below run while
+    // the submit button is still enabled, which allowed two sessions to be created.
+    if (isSending) return;
+    setIsSending(true);
+    try {
+      await submitSession();
+    } finally {
+      setIsSending(false);
+    }
+  };
 
+  const submitSession = async () => {
     let scheduledAtISO: string;
 
     if (useManualTime) {
@@ -348,7 +359,6 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
       }
     }
 
-    setIsSending(true);
     try {
       // ---- Log a past off-platform meeting -----------------------------------
       // Uses the atomic RPC so the row is written together with attendance and
@@ -475,8 +485,6 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
       resetForm();
     } catch (error) {
       notify.error(t('common.error'));
-    } finally {
-      setIsSending(false);
     }
   };
 

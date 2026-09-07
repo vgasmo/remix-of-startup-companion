@@ -147,18 +147,8 @@ export function useRequestStageGateReview() {
 
       if (error) throw error;
 
-      // Create work queue item
-      await supabase.from('staff_work_queue_items').insert({
-        workspace_id: workspaceId,
-        type: 'stage_gate_review',
-        title: `Stage Gate Review: ${fromStage} → ${toStage}`,
-        description: 'Pedido de revisão de stage gate',
-        priority: 'high',
-        due_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'open',
-        evidence_json: { review_id: data.id },
-      });
-
+      // P2.13: the staff work queue item is created server-side by the
+      // stage_gate_review_enqueue trigger — founders cannot insert it (RLS).
       return data;
     },
     onSuccess: (_, { workspaceId }) => {

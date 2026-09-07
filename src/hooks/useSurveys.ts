@@ -298,66 +298,14 @@ export function useLaunchCampaign() {
 
   return useMutation({
     mutationFn: async (campaignId: string) => {
-      // Get campaign details
-      const { data: campaign, error: campaignError } = await supabase
-        .from("survey_campaigns")
-        .select("*, survey_definition:survey_definitions(*)")
-        .eq("id", campaignId)
-        .single();
-
-      if (campaignError) throw campaignError;
-
-      // Get all active workspaces (optionally filtered by program)
-      let query = supabase
-        .from("workspaces")
-        .select("id, startup_id, stage, startups(name, founded_date, description)")
-        .eq("status", "active");
-
-      if (campaign.program_id) {
-        query = query.eq("program_id", campaign.program_id);
-      }
-
-      const { data: workspaces, error: workspacesError } = await query;
-      if (workspacesError) throw workspacesError;
-
-      // Create survey instances for each workspace with auto-filled data
-      const instances = workspaces.map((ws) => {
-        // Extract year from founded_date if available
-        const foundedYear = ws.startups?.founded_date 
-          ? new Date(ws.startups.founded_date).getFullYear() 
-          : null;
-
-        const autoFilledData: Json = {
-          stage: ws.stage,
-          startup_name: ws.startups?.name || null,
-          founded_year: foundedYear,
-        };
-
-        return {
-          campaign_id: campaignId,
-          workspace_id: ws.id,
-          auto_filled_data: autoFilledData,
-          status: "pending" as const,
-        };
+      // Server-side launch: snapshots the questions, sets launched_at and is
+      // idempotent (ON CONFLICT), so relaunching never leaves partial instances.
+      const { data, error } = await supabase.rpc("launch_survey_campaign", {
+        p_campaign_id: campaignId,
       });
-
-      if (instances.length > 0) {
-        const { error: instancesError } = await supabase
-          .from("survey_instances")
-          .insert(instances);
-
-        if (instancesError) throw instancesError;
-      }
-
-      // Update campaign status to active
-      const { error: updateError } = await supabase
-        .from("survey_campaigns")
-        .update({ status: "active" })
-        .eq("id", campaignId);
-
-      if (updateError) throw updateError;
-
-      return { instancesCreated: instances.length };
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      return { instancesCreated: row?.instances_created ?? 0 };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });

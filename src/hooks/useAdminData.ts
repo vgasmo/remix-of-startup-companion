@@ -220,7 +220,12 @@ export function useAddWorkspaceUser() {
       await supabase.from('user_roles').upsert({ user_id, role }, { onConflict: 'user_id,role' });
 
       // Ensure account is approved
-      await supabase.from('profiles').update({ account_status: 'approved' }).eq('id', user_id).eq('account_status', 'pending');
+      const { error: approveErr } = await supabase
+        .from('profiles')
+        .update({ account_status: 'approved' })
+        .eq('id', user_id)
+        .eq('account_status', 'pending');
+      if (approveErr) throw approveErr;
 
       // C5: If adding a founder, activate the workspace if it's pending/claimed
       if (role === 'founder') {
