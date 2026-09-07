@@ -32,11 +32,18 @@ export default function ClaimStartup() {
   // Determine the effective display state based on founderState + pageState
   const getDisplayState = () => {
     // If we just ran the RPC, that takes priority
-    if (pageState === 'verifying' || pageState === 'auto_claimed' || pageState === 'error') {
+    if (
+      pageState === 'verifying' ||
+      pageState === 'auto_claimed' ||
+      pageState === 'already_claimed' ||
+      pageState === 'pending_review' ||
+      pageState === 'error'
+    ) {
       return pageState;
     }
     // Otherwise, use the read-only state
     if (founderState.isLoading) return 'loading' as const;
+    if (founderState.status === 'error') return 'error' as const;
     if (founderState.status === 'needs_onboarding') return 'needs_onboarding' as const;
     if (founderState.status === 'has_active_workspace') return 'already_claimed' as const;
     if (founderState.status === 'has_pending_claim') return 'pending_review' as const;
