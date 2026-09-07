@@ -21,7 +21,10 @@ const MIN_MINUTES_AFTER_COMPLETION = 5;
 // Minimum spacing between attempts on the same session (in minutes)
 const MIN_ATTEMPT_INTERVAL_MIN = 15;
 
-Deno.serve(withCronRunLogging('sweep-session-transcripts', async (req: Request) => {
+// NOTE: this function writes its own cron_job_runs row via `logRun` below, so it
+// must NOT also be wrapped in withCronRunLogging (that produced two rows per run
+// and doubled failures_24h).
+Deno.serve(async (req: Request) => {
   const requestId = generateRequestId();
   const log = createLogger(FUNCTION_NAME, requestId);
   const runStartedAt = Date.now();
