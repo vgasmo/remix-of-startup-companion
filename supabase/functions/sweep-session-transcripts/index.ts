@@ -10,7 +10,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { createLogger, generateRequestId, requireCronSecret, safeErrorMessage } from '../_shared/security.ts';
-import { withCronRunLogging } from '../_shared/cronRun.ts';
+
 
 const FUNCTION_NAME = 'sweep-session-transcripts';
 const MAX_ATTEMPTS = 8;
@@ -195,4 +195,4 @@ Deno.serve(async (req: Request) => {
     await logRun('failed', { stage: 'fatal' }, msg);
     return corsJsonResponse({ success: false, error: msg }, req, 500);
   }
-}));
+});
