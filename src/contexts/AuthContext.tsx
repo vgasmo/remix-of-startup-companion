@@ -190,6 +190,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           resetSession(queryClient, 'logout');
           setProfile(null);
           setRoles([]);
+          profileRef.current = null;
+          rolesRef.current = [];
+          // P0.4: without this, signing back in as the same user hits the
+          // duplicate-SIGNED_IN early return and isAuthReady stays false forever.
+          initialUserId = null;
           setIsAuthReady(true);
         } else if (event === 'TOKEN_REFRESHED') {
           // Token refresh — no need to re-fetch profile/roles, just update session
@@ -200,8 +205,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         } else if (newSession?.user) {
           // Real auth change (SIGNED_IN, USER_UPDATED)
-          // Skip if same user as initial session (already fetched)
-          if (newSession.user.id === initialUserId && event === 'SIGNED_IN') {
+          // Skip the duplicate SIGNED_IN only when we still hold that user's data.
+          if (
+            newSession.user.id === initialUserId &&
+            event === 'SIGNED_IN' &&
+            userIdRef.current === newSession.user.id &&
+            rolesRef.current.length > 0
+          ) {
+            setIsAuthReady(true);
             return;
           }
           // Detect user switch — clear previous user's cache
