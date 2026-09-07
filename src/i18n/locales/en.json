@@ -10237,5 +10237,20 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
+  },
+  "founderPulse": {
+    "askPlaceholder": "Ask from the ecosystem",
+    "blockersPlaceholder": "Blockers / pains",
+    "confidence": "Confidence",
+    "confidenceQuestion": "Confidence in trajectory",
+    "mood": "Mood",
+    "moodQuestion": "How do you feel this month?",
+    "submit": "Submit pulse",
+    "submitted": "Pulse submitted — thank you!",
+    "submittedTitle": "Monthly pulse submitted",
+    "submitting": "Submitting…",
+    "summary": "{{moodLabel}} {{mood}}/5 · {{confidenceLabel}} {{confidence}}/5",
+    "title": "Founder pulse",
+    "winsPlaceholder": "Wins this month"
   }
 }

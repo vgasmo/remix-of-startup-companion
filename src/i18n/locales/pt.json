@@ -10237,5 +10237,20 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
+  },
+  "founderPulse": {
+    "askPlaceholder": "Pedido ao ecossistema",
+    "blockersPlaceholder": "Bloqueios / dores",
+    "confidence": "Confiança",
+    "confidenceQuestion": "Confiança na trajetória",
+    "mood": "Humor",
+    "moodQuestion": "Como te sentes este mês?",
+    "submit": "Enviar pulse",
+    "submitted": "Pulse enviado — obrigado!",
+    "submittedTitle": "Pulse do mês registado",
+    "submitting": "A enviar…",
+    "summary": "{{moodLabel}} {{mood}}/5 · {{confidenceLabel}} {{confidence}}/5",
+    "title": "Pulse do fundador",
+    "winsPlaceholder": "Vitórias do mês"
   }
 }
