@@ -1511,7 +1511,7 @@
     "templateCriadoComSucesso": "Template criado com sucesso",
     "templates": "Templates",
     "title": "Painel de Administração",
-    "titleIsRequired": "Title is required",
+    "titleIsRequired": "O título é obrigatório",
     "trySearOrCreate": "Tente pesquisar manualmente ou criar um novo workspace.",
     "urlCopiado": "URL copiado",
     "userApproved": "Utilizador aprovado com sucesso",
@@ -2764,8 +2764,8 @@
       "noRecentSession": "No Recent Sessão",
       "overdueActions": "Atrasado Ações"
     },
-    "titleIsRequired": "Title is required",
-    "valuePropositionSaved": "Value proposition saved!",
+    "titleIsRequired": "O título é obrigatório",
+    "valuePropositionSaved": "Proposta de valor guardada",
     "weekSummary": "Esta semana: {{sessions}} sessões · {{actions}} ações fechadas · {{health}} startups melhoraram",
     "weeklyImpact": {
       "actionsCreated": "Ações Created",
@@ -3503,7 +3503,7 @@
     "lastSyncAt": "dd/MM HH:mm",
     "leadContracted": "{{name}} contratado! Criar workspace?",
     "leadContractedPickProgram": "Escolha um programa para ativar esta lead",
-    "leadCreated": "Lead created",
+    "leadCreated": "Lead criada",
     "leadScore": {
       "cold": "Lead Frio",
       "coldDesc": "Precisa de reengajamento ou qualificação",
@@ -4153,7 +4153,7 @@
     "deleted": "Documento eliminado",
     "descriptionOptional": "Descrição (opcional)",
     "descriptionPlaceholder": "Breve descrição...",
-    "documentDeleted": "Documento deleted",
+    "documentDeleted": "Documento eliminado",
     "downloadFailed": "Falha ao gerar link de download",
     "externalLinkWarning": "Este link leva a um site externo. Certifique-se que confia neste destino antes de prosseguir.",
     "file": "Ficheiro",
@@ -4532,15 +4532,15 @@
     "stage": "Fase"
   },
   "financial": {
-    "activeVersionUpdated": "Active version updated",
+    "activeVersionUpdated": "Versão ativa atualizada",
     "aiReviewFailed": "AI review failed:{{ message }}",
     "aiReviewGenerated": "AI review generated",
-    "created": "Created{{ count }} actions from AI",
+    "created": "Criadas {{count}} ações a partir da IA",
     "failedToCreateActions": "Falha ao criar ações: {{ message }}",
     "failedToCreateVersion": "Falha ao criar versão: {{ message }}",
     "failedToParse": "Falha ao processar: {{ message }}",
     "failedToSync": "Falha ao sincronizar: {{ message }}",
-    "financialModelParsedSuccessfully": "Financial model parsed successfully",
+    "financialModelParsedSuccessfully": "Modelo financeiro lido com sucesso",
     "mitigation": "Mitigação",
     "payback": "Payback",
     "synced": "Synced{{ length }} KPIs"
@@ -5423,7 +5423,7 @@
     "changesRequested": "Correções Pedidas",
     "failedToUpdateIntakeRouting": "Falha ao atualizar o encaminhamento de intake: {{ message }}",
     "history": "Histórico",
-    "intakeRoutingUpdated": "Intake routing updated",
+    "intakeRoutingUpdated": "Encaminhamento de intake atualizado",
     "signatureProvider": "Provider de Assinatura",
     "submittedData": "Dados Submetidos"
   },
@@ -5552,7 +5552,7 @@
     "userId": "User ID (Impersonation)",
     "webhookSaved": "Webhook Saved",
     "webhookUrl": "Webhook Url",
-    "webhookUrlSaved": "Webhook URL saved",
+    "webhookUrlSaved": "URL do webhook guardado",
     "zoomMeet": "Zoom / Google Meet",
     "zoomMeetNote": "Use Zapier ou Make.com para conectar as suas reuniões a este endpoint de webhook."
   },
@@ -7391,8 +7391,8 @@
     "title": "Transferir para outro programa"
   },
   "programs": {
-    "draftDiscarded": "Draft discarded",
-    "programPublishedSuccessfully": "Program published successfully"
+    "draftDiscarded": "Rascunho descartado",
+    "programPublishedSuccessfully": "Programa publicado com sucesso"
   },
   "progressReport": {
     "actions": "Ações",
@@ -8281,7 +8281,7 @@
     "noMicrophoneFound": "No microphone found on this device.",
     "noNotesRecorded": "Sem notas registadas",
     "noRisksIdentified": "No Risks Identified",
-    "noSearchResults": "No Pesquisar resultados",
+    "noSearchResults": "Sem resultados de pesquisa",
     "noSessions": "Nenhuma sessão encontrada",
     "noSessionsScheduled": "Sem sessões agendadas",
     "noShowDesc": "Registe uma nota (opcional). O relatório de impacto mantém a sessão contabilizada como no-show.",
@@ -8785,7 +8785,7 @@
     "workspaceStartup": "Workspace / Startup"
   },
   "staff": {
-    "actionItemCreated": "Action item created",
+    "actionItemCreated": "Ação criada",
     "created": "Created{{ selectedCount }} staff tasks",
     "failedToCreateAction": "Falha ao criar a ação",
     "failedToCreateSession": "Falha ao criar a sessão",
@@ -8795,7 +8795,7 @@
     "pleaseFillAllFields": "Preencha todos os campos",
     "pleaseFillRequiredFields": "Preencha os campos obrigatórios",
     "prioritySetToPriorityFor": "Priority set to ${priority} for{{ selectedCount }} workspaces",
-    "sessionScheduledSuccessfully": "Session scheduled successfully",
+    "sessionScheduledSuccessfully": "Sessão agendada com sucesso",
     "taskTitleIsRequired": "Task title is required"
   },
   "staffCockpit": {
@@ -8942,7 +8942,7 @@
     "nameRequired": "Nome is obrigatório",
     "nif": "NIF",
     "phone": "Telefone",
-    "profileUpdated": "Startup Perfil updated",
+    "profileUpdated": "Perfil atualizado",
     "saveFailed": "Falha ao guardar perfil",
     "saved": "Perfil da startup guardado",
     "startupName": "Nome da Startup",
@@ -10082,7 +10082,7 @@
     "contactLogged": "Contact logged",
     "copiedToClipboard": "Copied to clipboard",
     "currentWeek": "Semana {{week}}",
-    "defaultFilterUpdated": "Default filter updated",
+    "defaultFilterUpdated": "Filtro predefinido atualizado",
     "documents": "Docs & Ferramentas",
     "erroAoCarregarKpis": "Erro ao carregar KPIs",
     "erroAoGuardarKpi": "Erro ao guardar KPI",
@@ -10094,15 +10094,15 @@
     "failedToSaveNotes": "Falha ao guardar as notas",
     "failedToSetDefault": "Falha ao definir como predefinido",
     "failedToUpdateReview": "Falha ao atualizar a revisão",
-    "filterDeleted": "Filter deleted",
-    "filterSaved": "Filter saved",
+    "filterDeleted": "Filtro eliminado",
+    "filterSaved": "Filtro guardado",
     "funding": "Financiamento",
     "governance": "Governança",
     "header": {
       "addDescription": "+ Adicionar descrição",
       "fromValueProp": "Do canvas de proposta de valor"
     },
-    "healthNotesSaved": "Health notes saved",
+    "healthNotesSaved": "Notas de saúde guardadas",
     "healthScore": "Saúde",
     "healthScoreRecomputed": "Health score recomputed",
     "incubationStatus": {
@@ -10120,7 +10120,7 @@
     "mentor": "Mentor",
     "milestones": "Marcos",
     "milestonesActions": "Marcos e Ações",
-    "noActionableInsights": "No actionable insights",
+    "noActionableInsights": "Sem insights acionáveis",
     "noActionsYet": "Sem ações ainda",
     "noConsultantAssigned": "Nenhum consultor atribuído ainda. Um administrador irá atribuí-lo em breve.",
     "noContractAssigned": "Ainda sem contrato atribuído",
@@ -10158,7 +10158,7 @@
     "templates": "Templates",
     "time": "Tempo",
     "valorInválido": "Valor inválido",
-    "workspaceUpdated": "Workspace updated",
+    "workspaceUpdated": "Workspace atualizada",
     "yourConsultant": "Seu Consultor",
     "yourMentor": "Seu Mentor",
     "yourTeam": "A Sua Equipa"
