@@ -2002,7 +2002,11 @@
     "signIn": "Sign In",
     "signOut": "Sign out",
     "signUp": "Sign Up",
-    "updatePassword": "Update Password"
+    "updatePassword": "Update Password",
+    "loadError": {
+      "title": "We could not load your profile and permissions.",
+      "hint": "Check your connection and try again."
+    }
   },
   "backoffice": {
     "allocationEndError": "Failed to end allocation",

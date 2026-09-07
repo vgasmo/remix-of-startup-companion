@@ -2002,7 +2002,11 @@
     "signIn": "Entrar",
     "signOut": "Terminar sessão",
     "signUp": "Registar",
-    "updatePassword": "Atualizar Palavra-passe"
+    "updatePassword": "Atualizar Palavra-passe",
+    "loadError": {
+      "title": "Não foi possível carregar o seu perfil e permissões.",
+      "hint": "Verifique a ligação e tente novamente."
+    }
   },
   "backoffice": {
     "allocationEndError": "Erro ao terminar atribuição",
