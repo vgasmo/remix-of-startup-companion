@@ -305,12 +305,21 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
     const localeMap = await resolveLocalesByUserIds(supabase, ids);
     const results: typeof recipients = [];
     for (const id of ids) {
+      // Admin kill-switch: founders/team members receive nothing while active.
+      const { data: blocked, error: blockedError } = await supabase
+        .rpc('founder_notifications_blocked', { _user_id: id });
+      if (blockedError) {
+        log.warn('founder_kill_switch_check_failed', { error: blockedError.message });
+        continue; // fail-closed
+      }
+      if (blocked === true) continue;
       const p = await resolveProfile(supabase, id);
       if (!p?.email) continue;
       results.push({ userId: id, email: p.email, name: p.full_name, locale: localeMap.get(id) ?? 'pt' });
     }
     return results;
   };
+
 
   if (type === 'contract_signed' || type === 'contract_activated') {
     const founders = await resolveFounderIds(supabase, workspaceId);
