@@ -113,7 +113,16 @@ async function getFounderDelayEmailOptOuts(supabase: any): Promise<Set<string>> 
   return new Set((data || []).map((r: any) => r.user_id as string))
 }
 
+// Respects the admin kill-switch (system_settings 'notifications.founders_disabled'):
+// when active, founders/team members get no email either.
 async function getUserEmail(supabase: any, userId: string): Promise<string | null> {
+  const { data: blocked, error: blockedError } = await supabase
+    .rpc('founder_notifications_blocked', { _user_id: userId })
+  if (blockedError) {
+    console.warn('[automation-engine] founder_notifications_blocked failed', blockedError.message)
+    return null // fail-closed: do not email when the switch state is unknown
+  }
+  if (blocked === true) return null
   const { data } = await supabase.from('profiles').select('email').eq('id', userId).single()
   return data?.email || null
 }
