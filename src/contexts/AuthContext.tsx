@@ -56,12 +56,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [authError, setAuthError] = useState(false);
   const userIdRef = useRef<string | null>(null);
+  // Refs mirror the latest loaded permissions so a failed *refetch* never blanks
+  // the screen for a user whose roles/profile are already in memory (P0.3-bis).
+  const rolesRef = useRef<AppRole[]>([]);
+  const profileRef = useRef<ProfileWithStatus | null>(null);
 
-  const fetchUserData = useCallback(async (userId: string): Promise<void> => {
+  const fetchUserData = useCallback(async (userId: string, opts?: { isRefetch?: boolean }): Promise<void> => {
     // P0.3: supabase-js never throws — it returns { data, error }. Treating an
     // error as "no roles" silently strips every permission from the user, so we
     // retry with backoff and surface authError instead of degrading.
     const MAX_ATTEMPTS = 3;
+    const surfaceError = () => {
+      // A failed refetch with permissions already loaded must not cover the UI.
+      if (opts?.isRefetch && (rolesRef.current.length > 0 || profileRef.current)) return;
+      setAuthError(true);
+    };
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
         const [profileResult, rolesResult] = await Promise.all([
@@ -76,6 +85,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .eq('user_id', userId)
         ]);
 
+        // A fetch for user X must never write state after a logout or a switch to Y.
+        if (userIdRef.current !== userId) return;
+
         if (profileResult.error || rolesResult.error) {
           logger.error('fetch_user_data_failed', {
             userId: userId.slice(0, 8),
@@ -87,13 +99,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await new Promise(resolve => setTimeout(resolve, 400 * attempt));
             continue;
           }
-          setAuthError(true);
+          surfaceError();
           return;
         }
 
         if (profileResult.data) {
           const profileData = profileResult.data as Record<string, unknown>;
-          setProfile({
+          const nextProfile: ProfileWithStatus = {
             id: profileData.id as string,
             email: profileData.email as string,
             full_name: profileData.full_name as string | null,
@@ -101,19 +113,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             account_status: (profileData.account_status as AccountStatus) || 'approved',
             created_at: profileData.created_at as string,
             updated_at: profileData.updated_at as string,
-          });
+          };
+          profileRef.current = nextProfile;
+          setProfile(nextProfile);
         }
 
-        setRoles((rolesResult.data ?? []).map(r => r.role as AppRole));
+        const nextRoles = (rolesResult.data ?? []).map(r => r.role as AppRole);
+        rolesRef.current = nextRoles;
+        setRoles(nextRoles);
         setAuthError(false);
         return;
       } catch (error) {
         logger.error('fetch_user_data_threw', { userId: userId.slice(0, 8), attempt }, error);
+        if (userIdRef.current !== userId) return;
         if (attempt < MAX_ATTEMPTS) {
           await new Promise(resolve => setTimeout(resolve, 400 * attempt));
           continue;
         }
-        setAuthError(true);
+        surfaceError();
       }
     }
   }, []);
@@ -122,7 +139,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const uid = userIdRef.current;
     if (!uid) return;
     setAuthError(false);
-    await fetchUserData(uid);
+    setIsAuthReady(false);
+    try {
+      await fetchUserData(uid);
+    } finally {
+      setIsAuthReady(true);
+    }
   }, [fetchUserData]);
 
   useEffect(() => {
@@ -168,6 +190,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           resetSession(queryClient, 'logout');
           setProfile(null);
           setRoles([]);
+          profileRef.current = null;
+          rolesRef.current = [];
+          // P0.4: without this, signing back in as the same user hits the
+          // duplicate-SIGNED_IN early return and isAuthReady stays false forever.
+          initialUserId = null;
           setIsAuthReady(true);
         } else if (event === 'TOKEN_REFRESHED') {
           // Token refresh — no need to re-fetch profile/roles, just update session
@@ -178,8 +205,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         } else if (newSession?.user) {
           // Real auth change (SIGNED_IN, USER_UPDATED)
-          // Skip if same user as initial session (already fetched)
-          if (newSession.user.id === initialUserId && event === 'SIGNED_IN') {
+          // Skip the duplicate SIGNED_IN only when we still hold that user's data.
+          if (
+            newSession.user.id === initialUserId &&
+            event === 'SIGNED_IN' &&
+            userIdRef.current === newSession.user.id &&
+            rolesRef.current.length > 0
+          ) {
+            setIsAuthReady(true);
             return;
           }
           // Detect user switch — clear previous user's cache
@@ -220,7 +253,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user?.id) return;
     const uid = user.id;
-    const refetch = () => { void fetchUserData(uid); };
+    const refetch = () => { void fetchUserData(uid, { isRefetch: true }); };
 
     const channel = supabase
       .channel(`self-auth-${uid}`)

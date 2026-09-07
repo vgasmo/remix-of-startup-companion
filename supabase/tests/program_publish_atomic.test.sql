@@ -1,10 +1,14 @@
 -- Batch F4 pgTAP: snapshot precedes swap; publish is atomic.
 BEGIN;
-SELECT plan(5);
+SELECT plan(6);
 
 SELECT has_table('public','program_publish_snapshots','snapshot audit table exists');
 SELECT has_function('public','serialize_program_tree', ARRAY['uuid'], 'tree serializer exists');
 SELECT has_function('public','publish_program_atomic', ARRAY['uuid','text'], 'atomic publish RPC exists');
+
+-- P0.1: the SECURITY DEFINER serializer must not be reachable with the anon key.
+SELECT function_privs_are('public','serialize_program_tree',ARRAY['uuid'],'anon',ARRAY[]::text[],
+  'anon cannot execute serialize_program_tree');
 
 -- Anon may not publish
 SET LOCAL role anon;

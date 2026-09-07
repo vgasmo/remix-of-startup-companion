@@ -169,18 +169,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "action_items_milestone_id_fkey"
-            columns: ["milestone_id"]
+            foreignKeyName: "action_items_milestone_ws_fkey"
+            columns: ["milestone_id", "workspace_id"]
             isOneToOne: false
             referencedRelation: "active_milestones"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "workspace_id"]
           },
           {
-            foreignKeyName: "action_items_milestone_id_fkey"
-            columns: ["milestone_id"]
+            foreignKeyName: "action_items_milestone_ws_fkey"
+            columns: ["milestone_id", "workspace_id"]
             isOneToOne: false
             referencedRelation: "milestones"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "workspace_id"]
           },
           {
             foreignKeyName: "action_items_session_id_fkey"

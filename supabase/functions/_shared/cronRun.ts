@@ -125,7 +125,9 @@ export function withCronRunLogging(
     if (req.method === 'OPTIONS') return handler(req);
 
     const requestId = crypto.randomUUID();
-    const triggeredBy: 'cron' | 'manual' = req.headers.get('x-cron-secret') ? 'cron' : 'manual';
+    // cron_invoke_edge only sends `x-cron-token`; older callers send `x-cron-secret`.
+    const triggeredBy: 'cron' | 'manual' =
+      (req.headers.get('x-cron-token') || req.headers.get('x-cron-secret')) ? 'cron' : 'manual';
     const started = Date.now();
 
     try {

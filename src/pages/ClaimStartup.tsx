@@ -32,11 +32,18 @@ export default function ClaimStartup() {
   // Determine the effective display state based on founderState + pageState
   const getDisplayState = () => {
     // If we just ran the RPC, that takes priority
-    if (pageState === 'verifying' || pageState === 'auto_claimed' || pageState === 'error') {
+    if (
+      pageState === 'verifying' ||
+      pageState === 'auto_claimed' ||
+      pageState === 'already_claimed' ||
+      pageState === 'pending_review' ||
+      pageState === 'error'
+    ) {
       return pageState;
     }
     // Otherwise, use the read-only state
     if (founderState.isLoading) return 'loading' as const;
+    if (founderState.status === 'error') return 'error' as const;
     if (founderState.status === 'needs_onboarding') return 'needs_onboarding' as const;
     if (founderState.status === 'has_active_workspace') return 'already_claimed' as const;
     if (founderState.status === 'has_pending_claim') return 'pending_review' as const;
@@ -86,6 +93,7 @@ export default function ClaimStartup() {
         void track('claim_completed', { workspaceId: result.workspace_id, properties: { mode: 'auto' } });
         // Invalidate onboarding state so routing updates
         queryClient.invalidateQueries({ queryKey: ['founder-onboarding-state'] });
+        queryClient.invalidateQueries({ queryKey: ['workspaces'] });
         toast({
           title: t('claimStartup.claimedTitle', { defaultValue: 'Startup verificada!' }),
           description: t('claimStartup.claimedDesc', { defaultValue: 'A sua startup foi associada automaticamente à sua conta.' }),
@@ -97,13 +105,17 @@ export default function ClaimStartup() {
             navigate('/my-workspaces', { replace: true });
           }
         }, 2500);
-      } else if (result.status === 'already_claimed') {
+      } else if (result.status === 'already_claimed' || result.status === 'already_member') {
         setPageState('already_claimed');
         queryClient.invalidateQueries({ queryKey: ['founder-onboarding-state'] });
+        queryClient.invalidateQueries({ queryKey: ['workspaces'] });
         setTimeout(() => navigate('/my-workspaces', { replace: true }), 1500);
-      } else if (result.status === 'pending') {
+      } else if (result.status === 'pending' || result.status === 'pending_review') {
         setPageState('pending_review');
         queryClient.invalidateQueries({ queryKey: ['founder-onboarding-state'] });
+      } else {
+        logger.error('claim_unknown_status', { status: result.status });
+        setPageState('error');
       }
     } catch (err) {
       logger.error('claim_unexpected_error', { userId: user?.id?.slice(0, 8) }, err);
