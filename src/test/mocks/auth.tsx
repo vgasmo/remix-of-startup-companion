@@ -47,6 +47,8 @@ export function MockAuthProvider({
     roles,
     isLoading: false,
     isAuthReady: true,
+    authError: false,
+    retryUserData: async () => {},
     isAdmin,
     isConsultor,
     isBackoffice,

@@ -18,6 +18,7 @@ import { useFounderOnboardingState } from "@/hooks/useFounderOnboardingState";
 
 import { AccessDenied } from "@/components/ui/AccessDenied";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
+import { Button } from "@/components/ui/button";
 import { queryClient } from "@/lib/queryClient";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { notify } from "@/lib/notify";
