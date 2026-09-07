@@ -164,6 +164,14 @@ function shell(locale: Locale, title: string, body: string, ctaUrl: string, ctaL
 </html>`;
 }
 
+// Resend allows ~2 requests/second. Serialize sends with a small gap and
+// retry on 429 / 5xx with exponential backoff so recipients are not dropped.
+const MIN_SEND_GAP_MS = 600;
+const MAX_SEND_ATTEMPTS = 4;
+let lastSendAt = 0;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 async function sendEmail(supabase: any, log: any, args: {
   to: string;
   subject: string;
@@ -173,25 +181,46 @@ async function sendEmail(supabase: any, log: any, args: {
     log.warn('RESEND_API_KEY not set — email skipped', { to: args.to });
     return false;
   }
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ from: FROM, to: [args.to], subject: args.subject, html: args.html }),
-    });
-    if (!res.ok) {
+
+  for (let attempt = 1; attempt <= MAX_SEND_ATTEMPTS; attempt++) {
+    // Throttle: keep a minimum gap between outbound requests.
+    const wait = MIN_SEND_GAP_MS - (Date.now() - lastSendAt);
+    if (wait > 0) await sleep(wait);
+    lastSendAt = Date.now();
+
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ from: FROM, to: [args.to], subject: args.subject, html: args.html }),
+      });
+      if (res.ok) return true;
+
       const text = await res.text();
-      log.warn('resend_error', { status: res.status, body: text.slice(0, 300) });
+      const retryable = res.status === 429 || res.status >= 500;
+      if (retryable && attempt < MAX_SEND_ATTEMPTS) {
+        const retryAfter = Number(res.headers.get('retry-after')) || 0;
+        const backoff = retryAfter > 0 ? retryAfter * 1000 : 800 * Math.pow(2, attempt - 1);
+        log.warn('resend_retry', { status: res.status, attempt, backoffMs: backoff });
+        await sleep(backoff);
+        continue;
+      }
+      log.warn('resend_error', { status: res.status, attempt, body: text.slice(0, 300) });
+      return false;
+    } catch (e) {
+      if (attempt < MAX_SEND_ATTEMPTS) {
+        log.warn('resend_fetch_retry', { attempt, error: String(e) });
+        await sleep(800 * Math.pow(2, attempt - 1));
+        continue;
+      }
+      log.warn('resend_fetch_failed', e);
       return false;
     }
-    return true;
-  } catch (e) {
-    log.warn('resend_fetch_failed', e);
-    return false;
   }
+  return false;
 }
 
 async function pushSlack(supabase: any, log: any, args: {
