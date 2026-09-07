@@ -368,7 +368,7 @@ serve(async (req) => {
         console.warn('First-contact booking NO_ROUTE:', e.reason, e.trace);
         // Best-effort staff alert so backoffice notices routing gaps.
         try {
-          await supabase.from('system_alerts').insert({
+          await supabase.from('system_alerts').upsert({
             kind: 'first_contact_no_route',
             severity: 'high',
             dedupe_key: `first_contact_no_route:${e.reason}:${contact.email}`,
@@ -378,7 +378,7 @@ serve(async (req) => {
               contact_email: contact.email,
               message: `Public booking failed to resolve a consultant (${e.reason}).`,
             },
-          });
+          }, { onConflict: 'dedupe_key', ignoreDuplicates: true });
         } catch { /* system_alerts is best-effort */ }
         return corsJsonResponse({
           success: false,
@@ -517,6 +517,18 @@ serve(async (req) => {
 
     const credentials = await getGraphCredentials(supabase);
 
+    // The RPC injects link_id / submitter_email_normalized / booking_slot_utc into
+    // metadata_json; the dedupe index depends on them, so merge instead of replace (P1.7).
+    const { data: currentMeta } = await supabase
+      .from('funnel_items')
+      .select('metadata_json')
+      .eq('id', funnelItemId)
+      .maybeSingle();
+    const baseMeta = {
+      ...((currentMeta?.metadata_json as Record<string, unknown>) ?? {}),
+      ...bookingMetadata,
+    };
+
     if (credentials && consultantEmail) {
       try {
         const accessToken = await getGraphAccessToken(credentials);
@@ -531,7 +543,7 @@ serve(async (req) => {
           .from('funnel_items')
           .update({
             metadata_json: {
-              ...bookingMetadata,
+              ...baseMeta,
               calendar_event_id: calendarEventId,
               teams_url: teamsLink,
               calendar_status: 'ok',
@@ -546,7 +558,7 @@ serve(async (req) => {
         calendarError = graphError instanceof Error ? graphError.message : 'unknown';
         console.error('Graph API error:', graphError);
         await supabase.from('funnel_items').update({
-          metadata_json: { ...bookingMetadata, calendar_status: 'failed', calendar_error: calendarError },
+          metadata_json: { ...baseMeta, calendar_status: 'failed', calendar_error: calendarError },
         }).eq('id', funnelItemId);
         if (outboxIds.graph_event) {
           await supabase.rpc('mark_first_contact_outbox_failed', {

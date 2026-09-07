@@ -37,6 +37,7 @@ async function callSendIntakeEmail(
   supabaseUrl: string,
   cronSecret: string,
   payload: Record<string, unknown>,
+  serviceKey?: string,
 ): Promise<SendResult> {
   try {
     const res = await fetch(`${supabaseUrl}/functions/v1/send-intake-email`, {
@@ -44,6 +45,9 @@ async function callSendIntakeEmail(
       headers: {
         'Content-Type': 'application/json',
         'x-cron-secret': cronSecret,
+        // The gateway needs a bearer; the service-role key also satisfies the
+        // callee's guard when CRON_SECRET is not set in the runtime (P1.3).
+        ...(serviceKey ? { Authorization: `Bearer ${serviceKey}` } : {}),
       },
       body: JSON.stringify(payload),
     })
@@ -143,7 +147,7 @@ Deno.serve(withCronRunLogging('run-intake-reminders', async (req) => {
           recipientName: intake.legal_representative_name,
           organizationName: intake.organization_name,
           intakeToken: freshToken,
-        })
+        }, serviceKey)
 
         if (!send.ok) {
           intakesFailed++
@@ -215,7 +219,7 @@ Deno.serve(withCronRunLogging('run-intake-reminders', async (req) => {
           recipientEmail: intake.legal_representative_email,
           recipientName: intake.legal_representative_name,
           organizationName: intake.organization_name,
-        })
+        }, serviceKey)
 
         if (!send.ok) {
           signatureFailed++

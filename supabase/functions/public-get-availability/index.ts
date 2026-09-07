@@ -438,7 +438,7 @@ serve(async (req) => {
         detail?: Record<string, unknown>,
       ) => {
         try {
-          await supabase.from('system_alerts').insert({
+          await supabase.from('system_alerts').upsert({
             kind: 'public_availability_unavailable',
             severity,
             dedupe_key: `public_availability:${reason}:${consultantEmail ?? 'no-consultant'}:${new Date().toISOString().slice(0, 10)}`,
@@ -452,7 +452,7 @@ serve(async (req) => {
               detail: detail ?? null,
               at: new Date().toISOString(),
             },
-          });
+          }, { onConflict: 'dedupe_key', ignoreDuplicates: true });
         } catch (alertErr) {
           console.error('Failed to insert system_alerts row:', alertErr);
         }

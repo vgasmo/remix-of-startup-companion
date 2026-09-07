@@ -47,3 +47,6 @@
 20260722071841_f10874a8-5d87-4cc4-9f00-7e4fe70e55d9.sql
 20260722071918_1c4bab29-4788-41ea-ac88-d98d7daaddcf.sql
 20260722072018_d3d78cde-3274-4dfa-857c-0b8a43943034.sql
+# Seeded ecosystem survey definition/campaign supplied verbatim by the release owner;
+# the fixed UUIDs are referenced by application code and must stay in the migration.
+20260903135424_57d10b3e-5155-42e6-a457-2daeaa40a0ac.sql

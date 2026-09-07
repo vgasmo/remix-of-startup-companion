@@ -11,7 +11,7 @@
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { createLogger, generateRequestId, ErrorCode, timingSafeEqual } from '../_shared/security.ts';
+import { createLogger, generateRequestId, ErrorCode, timingSafeEqual, isServiceRoleBearer } from '../_shared/security.ts';
 
 const FUNCTION_NAME = 'teams-notify';
 
@@ -212,7 +212,8 @@ Deno.serve(async (req: Request) => {
     const expectedSecret = Deno.env.get('CRON_SECRET');
     const authHeader = req.headers.get('Authorization');
 
-    const isSystemCall = !!cronSecret && !!expectedSecret && timingSafeEqual(cronSecret, expectedSecret);
+    // Internal edge→edge calls carry the service-role key instead of a cron secret (P1.3).
+    const isSystemCall = (!!cronSecret && !!expectedSecret && timingSafeEqual(cronSecret, expectedSecret)) || isServiceRoleBearer(req);
     const isUserCall = authHeader?.startsWith('Bearer ');
 
     if (!isSystemCall && !isUserCall) {

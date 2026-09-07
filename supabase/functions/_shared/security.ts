@@ -152,6 +152,17 @@ export async function verifyCronToken(req: Request): Promise<boolean> {
 }
 
 /**
+ * Internal edge→edge call authenticated with the service-role key.
+ * The service-role JWT has no `sub`, so auth.getUser() rejects it — these calls
+ * would otherwise 401 against every guard below (P1.3).
+ */
+export function isServiceRoleBearer(req: Request): boolean {
+  const auth = req.headers.get('Authorization') ?? '';
+  const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+  return auth.startsWith('Bearer ') && key.length > 0 && timingSafeEqual(auth.slice(7), key);
+}
+
+/**
  * Require valid cron credential for system/scheduled functions
  * Accepts a single-use `x-cron-token` (preferred) or a legacy `x-cron-secret`.
  * Use this for cron/system functions (category B)
@@ -165,6 +176,11 @@ export async function requireCronSecret(
   if (await verifyCronToken(req)) {
     return { valid: true };
   }
+
+  if (isServiceRoleBearer(req)) {
+    return { valid: true };
+  }
+
 
   const cronSecret = req.headers.get('x-cron-secret');
   const expectedSecret = Deno.env.get('CRON_SECRET');
@@ -226,6 +242,11 @@ export async function requireCronOrStaff(
     return { valid: true };
   }
 
+  if (isServiceRoleBearer(req)) {
+    return { valid: true };
+  }
+
+
   const cronSecret = req.headers.get('x-cron-secret');
   const expectedSecret = Deno.env.get('CRON_SECRET');
 
@@ -283,6 +304,11 @@ export async function requireCronOrGovernance(
   if (await verifyCronToken(req)) {
     return { valid: true };
   }
+
+  if (isServiceRoleBearer(req)) {
+    return { valid: true };
+  }
+
 
   const cronSecret = req.headers.get('x-cron-secret');
   const expectedSecret = Deno.env.get('CRON_SECRET');
