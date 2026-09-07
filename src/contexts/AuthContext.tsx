@@ -253,7 +253,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user?.id) return;
     const uid = user.id;
-    const refetch = () => { void fetchUserData(uid); };
+    const refetch = () => { void fetchUserData(uid, { isRefetch: true }); };
 
     const channel = supabase
       .channel(`self-auth-${uid}`)
