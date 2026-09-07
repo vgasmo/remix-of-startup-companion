@@ -1461,11 +1461,11 @@
       "categories": "Categorias de Etiquetas",
       "categoriesDesc": "Organize Etiquetas into categories para better filtering",
       "category": "Categoria",
-      "categoryCreated": "Categoria Created",
+      "categoryCreated": "Categoria criada",
       "categoryDescPlaceholder": "opcional Descrição",
       "categoryDialogDesc": "Categories help organize Etiquetas para easier filtering",
       "categoryNamePlaceholder": "ex: Indústria, Tecnologia",
-      "categoryUpdated": "Categoria Updated",
+      "categoryUpdated": "Categoria atualizada",
       "deleteCategoryWarning": "Isto irá remover a categoria de todas as etiquetas associadas. As etiquetas em si serão mantidas.",
       "deleteTagWarning": "Isto irá remover a etiqueta de todos os workspaces.",
       "editCategory": "Editar Categoria",
@@ -2479,7 +2479,7 @@
     "help": "Ajuda",
     "hide": "Ocultar",
     "highlights": "Destaques",
-    "importCompleteResultinsertedInserted": "Import complete: ${result.inserted} inserted,{{ updated }} updated",
+    "importCompleteResultinsertedInserted": "Importação concluída: {{inserted}} inseridos, {{updated}} atualizados",
     "important": "Importante",
     "inactive": "Inativo",
     "info": "Informação",
@@ -2633,7 +2633,7 @@
   },
   "communication": {
     "communicationLogged": "Communication logged",
-    "emailAliasCreated": "Email alias created"
+    "emailAliasCreated": "Alias de email criado"
   },
   "communications": {
     "aliasCopied": "Alias de email copiado",
@@ -2768,7 +2768,7 @@
     "valuePropositionSaved": "Proposta de valor guardada",
     "weekSummary": "Esta semana: {{sessions}} sessões · {{actions}} ações fechadas · {{health}} startups melhoraram",
     "weeklyImpact": {
-      "actionsCreated": "Ações Created",
+      "actionsCreated": "Ações criadas",
       "leadsConverted": "Leads Converted",
       "sessionsCompleted": "Sessões Concluído",
       "title": "Título"
@@ -3736,7 +3736,7 @@
     "upcoming": "Próximas",
     "upcomingSession": "Próxima Sessão",
     "updateNextAction": "Atualizar",
-    "updated": "Updated",
+    "updated": "Atualizado",
     "value": "Valor",
     "viewAll": "Ver Tudo",
     "viewSession": "Ver Sessão",
@@ -3831,7 +3831,7 @@
     "parsing": "Parsing Ficheiro...",
     "program": "Programa",
     "recordsInserted": "Records Inserted",
-    "recordsUpdated": "Records Updated",
+    "recordsUpdated": "Registos atualizados",
     "running": "A executar...",
     "safetyDesc": "Confirme o seguinte antes de prosseguir:",
     "safetyTitle": "Safety Checklist",
@@ -3864,7 +3864,7 @@
     "useFileStageDesc": "Use Ficheiro Stage Desc",
     "validRows": "Valid Rows",
     "willBeInserted": "will be inserted",
-    "willBeUpdated": "will be updated",
+    "willBeUpdated": "serão atualizados",
     "withEmail": "com Email",
     "withNIF": "com NIF"
   },
@@ -4533,7 +4533,7 @@
   },
   "financial": {
     "activeVersionUpdated": "Versão ativa atualizada",
-    "aiReviewFailed": "AI review failed:{{ message }}",
+    "aiReviewFailed": "A revisão por IA falhou: {{message}}",
     "aiReviewGenerated": "AI review generated",
     "created": "Criadas {{count}} ações a partir da IA",
     "failedToCreateActions": "Falha ao criar ações: {{ message }}",
@@ -5545,12 +5545,12 @@
     "teamsStep2": "Use o gatilho 'Quando uma reunião do Teams termina'",
     "teamsStep3": "Adicione uma ação HTTP POST apontando para este URL de webhook",
     "testConnection": "Testar Connection",
-    "testFailed": "Test failed:{{ message }}",
+    "testFailed": "O teste falhou: {{message}}",
     "testMessageQueuedsentToTeams": "Test message queued/sent to Teams.",
     "testPayload": "Exemplo de Payload de Teste",
     "title": "Integrações e Captura",
     "userId": "User ID (Impersonation)",
-    "webhookSaved": "Webhook Saved",
+    "webhookSaved": "Webhook guardado",
     "webhookUrl": "Webhook Url",
     "webhookUrlSaved": "URL do webhook guardado",
     "zoomMeet": "Zoom / Google Meet",
@@ -6732,7 +6732,7 @@
     "actionValidatedTitle": "Ação validada",
     "checkinReviewedBody": "O seu check-in de {{month}} foi visto ✓",
     "checkinReviewedTitle": "Check-in visto",
-    "deleted": "Deleted",
+    "deleted": "Eliminada",
     "earlier": "Mais antigas",
     "emailSyncDone": "Emails Sincronizados",
     "filterAll": "Todas",
@@ -8207,7 +8207,7 @@
     "enterValidEmail": "Introduza pelo menos um Email válido",
     "estaSessãoNãoTemLink": "Esta sessão não tem link do Teams associado.",
     "exerciseAdded": "Exercise added",
-    "exerciseRemoved": "Exercise removed",
+    "exerciseRemoved": "Exercício removido",
     "export": "Exportar",
     "exportIcs": "Exportar para calendário (.ics)",
     "exportedSuccess": "Exportado para CSV",
@@ -8786,7 +8786,7 @@
   },
   "staff": {
     "actionItemCreated": "Ação criada",
-    "created": "Created{{ selectedCount }} staff tasks",
+    "created": "Criadas {{selectedCount}} tarefas de equipa",
     "failedToCreateAction": "Falha ao criar a ação",
     "failedToCreateSession": "Falha ao criar a sessão",
     "failedToCreateTasks": "Falha ao criar as tarefas",
@@ -8796,7 +8796,7 @@
     "pleaseFillRequiredFields": "Preencha os campos obrigatórios",
     "prioritySetToPriorityFor": "Priority set to ${priority} for{{ selectedCount }} workspaces",
     "sessionScheduledSuccessfully": "Sessão agendada com sucesso",
-    "taskTitleIsRequired": "Task title is required"
+    "taskTitleIsRequired": "O título da tarefa é obrigatório"
   },
   "staffCockpit": {
     "claimRequests": "Associações",
@@ -9194,7 +9194,7 @@
       "strengthsHeading": "### Pontos Fortes",
       "summaryHeading": "## Resumo do AI Coach"
     },
-    "aiCoachUnavailable": "AI Coach is temporarily unavailable.",
+    "aiCoachUnavailable": "O AI Coach está temporariamente indisponível.",
     "aiRecommendation": "Recomendação AI",
     "analyzing": "A analisar...",
     "analyzingCoach": "A gerar insights de coaching...",
@@ -10051,7 +10051,7 @@
     "viewAll": "Ver todos os {{count}} itens"
   },
   "workflow": {
-    "ruleUpdated": "Rule updated"
+    "ruleUpdated": "Regra atualizada"
   },
   "workload": {
     "activeWorkspaces": "Workspaces Ativos",
