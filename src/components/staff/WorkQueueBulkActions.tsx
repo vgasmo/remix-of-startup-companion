@@ -75,7 +75,7 @@ export function WorkQueueBulkActions({
         succeeded = selectedCount;
       }
       if (succeeded > 0) notify.success(t('workQueue.bulkMarkedDone', { count: succeeded }));
-      if (failed > 0) notify.error(t('workQueue.bulkPartialFailure', { count: failed, defaultValue: `${failed} item(ns) falharam` }));
+      if (failed > 0) notify.error(t('workQueue.bulkPartialFailure', { ok: succeeded, failed, defaultValue: `${succeeded} ok, ${failed} falharam` }));
       onDeselectAll();
       invalidate();
     } catch (e) {

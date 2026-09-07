@@ -2,6 +2,7 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { supabaseForUser } from "../supabase";
 import { throwToolError } from "../toolError";
+import { enforceMcpRateLimit } from "../rateLimit";
 
 export default defineTool({
   name: "get_workspace_overview",
@@ -17,6 +18,7 @@ export default defineTool({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
+    await enforceMcpRateLimit(supabase, "get_workspace_overview");
 
     const [workspace, milestones, actions] = await Promise.all([
       supabase

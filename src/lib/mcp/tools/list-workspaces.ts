@@ -2,6 +2,7 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { supabaseForUser } from "../supabase";
 import { throwToolError } from "../toolError";
+import { enforceMcpRateLimit } from "../rateLimit";
 
 export default defineTool({
   name: "list_workspaces",
@@ -18,6 +19,7 @@ export default defineTool({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
+    await enforceMcpRateLimit(supabase, "list_workspaces");
     // P3: apply the search server-side BEFORE the limit, otherwise a startup
     // outside the newest N rows is reported as non-existent.
     let query = supabase

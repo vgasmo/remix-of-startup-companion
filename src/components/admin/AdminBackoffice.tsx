@@ -250,8 +250,10 @@ export function AdminBackoffice() {
       const { error } = await supabase.from('workspaces').update({ assigned_consultor_id: consultorId }).eq('id', workspaceId);
       if (error) throw error;
       // Also ensure workspace_users entry
-      await supabase.from('workspace_users').delete().eq('workspace_id', workspaceId).eq('role', 'consultor');
-      await supabase.from('workspace_users').insert({ workspace_id: workspaceId, user_id: consultorId, role: 'consultor', active: true });
+      const { error: delErr } = await supabase.from('workspace_users').delete().eq('workspace_id', workspaceId).eq('role', 'consultor');
+      if (delErr) throw delErr;
+      const { error: insErr } = await supabase.from('workspace_users').insert({ workspace_id: workspaceId, user_id: consultorId, role: 'consultor', active: true });
+      if (insErr) throw insErr;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['backoffice-unified'] });
@@ -264,8 +266,10 @@ export function AdminBackoffice() {
 
   const removeConsultorMutation = useMutation({
     mutationFn: async (workspaceId: string) => {
-      await supabase.from('workspaces').update({ assigned_consultor_id: null }).eq('id', workspaceId);
-      await supabase.from('workspace_users').delete().eq('workspace_id', workspaceId).eq('role', 'consultor');
+      const { error: wsErr } = await supabase.from('workspaces').update({ assigned_consultor_id: null }).eq('id', workspaceId);
+      if (wsErr) throw wsErr;
+      const { error: wuErr } = await supabase.from('workspace_users').delete().eq('workspace_id', workspaceId).eq('role', 'consultor');
+      if (wuErr) throw wuErr;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['backoffice-unified'] });

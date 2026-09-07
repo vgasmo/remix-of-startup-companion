@@ -91,6 +91,7 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
           duration: 60,
           created_by: user?.id,
           session_type: sessionType,
+          outlook_sync_status: 'pending',
         });
 
       if (error) throw error;
@@ -98,6 +99,9 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['work-queue'] });
       queryClient.invalidateQueries({ queryKey: ['upcoming-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions', sessionWorkspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['calendar-sessions', sessionWorkspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['workspace-sessions', sessionWorkspaceId] });
       setShowQuickSession(false);
       resetSessionForm();
     } catch (error) {

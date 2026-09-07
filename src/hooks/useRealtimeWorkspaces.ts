@@ -53,7 +53,7 @@ export function useRealtimeWorkspaces() {
         { event: 'INSERT', schema: 'public', table: 'stage_history' },
         () => {
           queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-          queryClient.invalidateQueries({ queryKey: ['workspace-stage-timeline'] });
+          queryClient.invalidateQueries({ queryKey: ['stage-history'] });
           queryClient.invalidateQueries({ queryKey: ['ecosystem-items'] });
           queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
         },
@@ -65,7 +65,7 @@ export function useRealtimeWorkspaces() {
         () => {
           queryClient.invalidateQueries({ queryKey: ['workspaces'] });
           queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
-          queryClient.invalidateQueries({ queryKey: ['health-score'] });
+          queryClient.invalidateQueries({ queryKey: ['workspace-health'] });
           queryClient.invalidateQueries({ queryKey: ['attention-count'] });
         },
       )
@@ -84,7 +84,8 @@ export function useRealtimeWorkspaces() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'kpi_values' },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['kpis'] });
+          queryClient.invalidateQueries({ queryKey: ['kpi-values'] });
+          queryClient.invalidateQueries({ queryKey: ['workspace-kpi-definitions'] });
           queryClient.invalidateQueries({ queryKey: ['workspaces'] });
         },
       )

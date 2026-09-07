@@ -2609,6 +2609,7 @@
     "tomorrow": "Tomorrow",
     "total": "Total",
     "tryAgain": "Try Again",
+    "tryAgainLater": "Please try again later.",
     "unassigned": "Unassigned",
     "undo": "Undo",
     "undoFailed": "Could not undo",
@@ -3127,6 +3128,7 @@
       "selected": "{{count}} selected",
       "terminateConfirm": "Terminate {{count}} contracts",
       "terminateDescription": "You are about to terminate {{count}} contracts. Rooms will be freed and a task will be created to cancel future sessions.",
+      "terminatePartial": "{{ok}} contracts terminated, {{failed}} failed",
       "terminateSelected": "Terminate selected",
       "terminateSuccess": "{{count}} contracts terminated",
       "terminateTitle": "Terminate contracts"
@@ -4953,6 +4955,21 @@
     "scheduleFirstMeeting": "Schedule First Meeting",
     "viewSessions": "View Sessions",
     "yourConsultant": "Your Consultant"
+  },
+  "founderPulse": {
+    "askPlaceholder": "Ask from the ecosystem",
+    "blockersPlaceholder": "Blockers / pains",
+    "confidence": "Confidence",
+    "confidenceQuestion": "Confidence in trajectory",
+    "mood": "Mood",
+    "moodQuestion": "How do you feel this month?",
+    "submit": "Submit pulse",
+    "submitted": "Pulse submitted — thank you!",
+    "submittedTitle": "Monthly pulse submitted",
+    "submitting": "Submitting…",
+    "summary": "{{moodLabel}} {{mood}}/5 · {{confidenceLabel}} {{confidence}}/5",
+    "title": "Founder pulse",
+    "winsPlaceholder": "Wins this month"
   },
   "founderReadiness": {
     "actions": "Actions on track",
@@ -8243,6 +8260,7 @@
     "keyDecisionsPlaceholder": "Key decisions made during this session...",
     "kpisToUpdate": "KPIs to Update",
     "lastGenerated": "Last Generated",
+    "loadError": "Could not load sessions.",
     "location": "Location",
     "locationLabel": "Local",
     "locationPlaceholder": "Meeting room or address",

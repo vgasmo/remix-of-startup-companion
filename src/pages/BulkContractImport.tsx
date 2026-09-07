@@ -291,7 +291,11 @@ export default function BulkContractImport() {
           );
           if (error) throw error;
           notify.success(
-            t('bulkImport.commitSuccess', `Imported ${data?.committed ?? 0} contracts (${data?.failed ?? 0} failed)`)
+            t('bulkImport.commitSuccess', {
+              committed: data?.committed ?? 0,
+              failed: data?.failed ?? 0,
+              defaultValue: `Imported ${data?.committed ?? 0} contracts (${data?.failed ?? 0} failed)`,
+            })
           );
           await refreshRows(batchId);
           setStep('done');
@@ -389,7 +393,7 @@ export default function BulkContractImport() {
                   <AlertTitle>{t('bulkImport.noPrograms.title', 'No active programmes')}</AlertTitle>
                   <AlertDescription className="space-y-2">
                     <p>{t('bulkImport.noPrograms.desc', 'Create or activate a programme before importing contracts in bulk. Every imported workspace must be attached to a programme.')}</p>
-                    <Button size="sm" variant="outline" onClick={() => navigate('/admin?tab=programs')}>
+                    <Button size="sm" variant="outline" onClick={() => navigate('/admin?tab=programs-setup')}>
                       {t('bulkImport.noPrograms.cta', 'Go to programmes')}
                     </Button>
                   </AlertDescription>

@@ -437,7 +437,7 @@ function StartupPortugalCertifiedCard() {
         )}
         <div className="mt-3 flex justify-end">
           <Button variant="outline" size="sm" asChild>
-            <Link to="/admin?tab=startups">
+            <Link to="/admin?tab=enrollment">
               {t('staffCockpit.viewAllStartups', { defaultValue: 'Gerir startups' })}
             </Link>
           </Button>

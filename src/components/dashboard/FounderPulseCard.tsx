@@ -88,9 +88,7 @@ export function FounderPulseCard({ workspaceId }: Props) {
     },
     onSuccess: () => {
       notify.success(
-        i18n.language.startsWith('pt')
-          ? 'Pulse enviado — obrigado!'
-          : 'Pulse submitted — thank you!'
+        t('founderPulse.submitted', 'Pulse submitted — thank you!')
       );
       qc.invalidateQueries({ queryKey: ['founder-pulse-response', cycle?.id, user?.id] });
     },
@@ -101,7 +99,6 @@ export function FounderPulseCard({ workspaceId }: Props) {
 
   if (!cycle) return null;
 
-  const pt = i18n.language.startsWith('pt');
 
   if (existing) {
     return (
@@ -110,12 +107,17 @@ export function FounderPulseCard({ workspaceId }: Props) {
           <CheckCircle2 className="h-5 w-5 text-emerald-600" aria-hidden />
           <div className="flex-1">
             <p className="text-sm font-medium">
-              {pt ? 'Pulse do mês registado' : 'Monthly pulse submitted'}
+              {t('founderPulse.submittedTitle', 'Monthly pulse submitted')}
             </p>
             <p className="text-xs text-muted-foreground capitalize">{monthLabel}</p>
           </div>
           <Badge variant="secondary">
-            {pt ? 'Humor' : 'Mood'} {existing.mood}/5 · {pt ? 'Confiança' : 'Confidence'} {existing.confidence}/5
+            {t('founderPulse.summary', {
+              moodLabel: t('founderPulse.mood', 'Mood'),
+              mood: existing.mood,
+              confidenceLabel: t('founderPulse.confidence', 'Confidence'),
+              confidence: existing.confidence,
+            })}
           </Badge>
         </CardContent>
       </Card>
@@ -127,16 +129,16 @@ export function FounderPulseCard({ workspaceId }: Props) {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <HeartPulse className="h-4 w-4 text-primary" aria-hidden />
-          {pt ? 'Pulse do fundador' : 'Founder pulse'}
+          {t('founderPulse.title', 'Founder pulse')}
           <Badge variant="outline" className="ml-2 capitalize font-normal">{monthLabel}</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
           <p className="text-xs font-medium text-muted-foreground mb-2">
-            {pt ? 'Como te sentes este mês?' : 'How do you feel this month?'} (1–5)
+            {t('founderPulse.moodQuestion', 'How do you feel this month?')} (1–5)
           </p>
-          <div className="flex gap-2" role="radiogroup" aria-label={pt ? 'Humor' : 'Mood'}>
+          <div className="flex gap-2" role="radiogroup" aria-label={t('founderPulse.mood', 'Mood')}>
             {SCALE.map((n) => (
               <button
                 key={n}
@@ -157,9 +159,9 @@ export function FounderPulseCard({ workspaceId }: Props) {
         </div>
         <div>
           <p className="text-xs font-medium text-muted-foreground mb-2">
-            {pt ? 'Confiança na trajetória' : 'Confidence in trajectory'} (1–5)
+            {t('founderPulse.confidenceQuestion', 'Confidence in trajectory')} (1–5)
           </p>
-          <div className="flex gap-2" role="radiogroup" aria-label={pt ? 'Confiança' : 'Confidence'}>
+          <div className="flex gap-2" role="radiogroup" aria-label={t('founderPulse.confidence', 'Confidence')}>
             {SCALE.map((n) => (
               <button
                 key={n}
@@ -180,21 +182,21 @@ export function FounderPulseCard({ workspaceId }: Props) {
         </div>
         <div className="grid gap-3 md:grid-cols-3">
           <Textarea
-            placeholder={pt ? 'Vitórias do mês' : 'Wins this month'}
+            placeholder={t('founderPulse.winsPlaceholder', 'Wins this month')}
             value={wins}
             onChange={(e) => setWins(e.target.value)}
             className="resize-y min-h-[70px]"
             maxLength={500}
           />
           <Textarea
-            placeholder={pt ? 'Bloqueios / dores' : 'Blockers / pains'}
+            placeholder={t('founderPulse.blockersPlaceholder', 'Blockers / pains')}
             value={blockers}
             onChange={(e) => setBlockers(e.target.value)}
             className="resize-y min-h-[70px]"
             maxLength={500}
           />
           <Textarea
-            placeholder={pt ? 'Pedido ao ecossistema' : 'Ask from the ecosystem'}
+            placeholder={t('founderPulse.askPlaceholder', 'Ask from the ecosystem')}
             value={ask}
             onChange={(e) => setAsk(e.target.value)}
             className="resize-y min-h-[70px]"
@@ -207,8 +209,8 @@ export function FounderPulseCard({ workspaceId }: Props) {
             disabled={mood == null || confidence == null || submit.isPending}
           >
             {submit.isPending
-              ? pt ? 'A enviar…' : 'Submitting…'
-              : pt ? 'Enviar pulse' : 'Submit pulse'}
+              ? t('founderPulse.submitting', 'Submitting…')
+              : t('founderPulse.submit', 'Submit pulse')}
           </Button>
         </div>
       </CardContent>

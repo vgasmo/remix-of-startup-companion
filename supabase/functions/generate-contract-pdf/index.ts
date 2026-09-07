@@ -625,6 +625,7 @@ Deno.serve(async (req) => {
           .select('user_id')
           .eq('workspace_id', contract.workspace_id)
           .eq('user_id', user!.id)
+          .eq('active', true)
           .maybeSingle()
         authorized = !!membership
       }

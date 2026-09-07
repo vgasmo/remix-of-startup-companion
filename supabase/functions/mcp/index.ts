@@ -65,6 +65,23 @@ function throwToolError(tool, error) {
   throw new Error(`The ${tool} tool could not complete the request.`);
 }
 
+// src/lib/mcp/rateLimit.ts
+var DEFAULT_MAX_REQUESTS = 60;
+async function enforceMcpRateLimit(supabase, toolName, maxRequests = DEFAULT_MAX_REQUESTS) {
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData?.user) throwToolError(toolName, userError ?? new Error("no user"));
+  const { data, error } = await supabase.rpc("check_ai_rate_limit", {
+    _user_id: userData.user.id,
+    _workspace_id: null,
+    _function_name: `mcp_${toolName}`,
+    _max_requests: maxRequests
+  });
+  if (error) throwToolError(toolName, error);
+  if (data !== true) {
+    throw new Error(`Rate limit reached for ${toolName}. Try again later.`);
+  }
+}
+
 // src/lib/mcp/tools/list-workspaces.ts
 var list_workspaces_default = defineTool({
   name: "list_workspaces",
@@ -80,6 +97,7 @@ var list_workspaces_default = defineTool({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
+    await enforceMcpRateLimit(supabase, "list_workspaces");
     let query = supabase.from("workspaces").select(
       "id, stage, health_score, priority_level, updated_at, startup:startups!inner(id, name), program:programs(id, name, program_type)"
     ).order("updated_at", { ascending: false });
@@ -110,6 +128,7 @@ var get_workspace_overview_default = defineTool2({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
+    await enforceMcpRateLimit(supabase, "get_workspace_overview");
     const [workspace, milestones, actions] = await Promise.all([
       supabase.from("workspaces").select(
         "id, stage, health_score, health_notes, priority_level, current_week, updated_at, startup:startups(id, name, description, website), program:programs(id, name, program_type)"
@@ -153,6 +172,7 @@ var list_action_items_default = defineTool3({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
+    await enforceMcpRateLimit(supabase, "list_action_items");
     let query = supabase.from("action_items").select("id, workspace_id, title, description, status, priority, due_date, created_at").order("due_date", { ascending: true, nullsFirst: false }).limit(limit ?? 25);
     if (workspace_id) query = query.eq("workspace_id", workspace_id);
     if (status) query = query.eq("status", status);
@@ -189,6 +209,7 @@ var create_action_item_default = defineTool4({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
+    await enforceMcpRateLimit(supabase, "create_action_item");
     const { data: ms, error: msError } = await supabase.from("milestones").select("id").eq("id", milestone_id).eq("workspace_id", workspace_id).maybeSingle();
     if (msError) throwToolError("create_action_item", msError);
     if (!ms) {
@@ -233,6 +254,7 @@ var list_upcoming_sessions_default = defineTool5({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
+    await enforceMcpRateLimit(supabase, "list_upcoming_sessions");
     const now = /* @__PURE__ */ new Date();
     const until = new Date(now.getTime() + (days_ahead ?? 30) * 864e5);
     let query = supabase.from("sessions").select("id, workspace_id, title, scheduled_at, duration, status").gte("scheduled_at", now.toISOString()).lte("scheduled_at", until.toISOString()).order("scheduled_at", { ascending: true }).limit(limit ?? 25);
@@ -264,7 +286,8 @@ var list_crm_leads_default = defineTool6({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
-    let query = supabase.from("funnel_items").select("id, organization_name, stage, contact_email, owner_consultant_id, last_activity_at, created_at").order("created_at", { ascending: false }).limit(limit ?? 25);
+    await enforceMcpRateLimit(supabase, "list_crm_leads");
+    let query = supabase.from("funnel_items").select("id, organization_name, stage, owner_consultant_id, last_activity_at, created_at").order("created_at", { ascending: false }).limit(limit ?? 25);
     if (stage) query = query.eq("stage", stage);
     if (search) query = query.ilike("organization_name", `%${search}%`);
     const { data, error } = await query;

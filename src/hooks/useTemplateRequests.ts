@@ -95,7 +95,7 @@ async function notifyStaffOfNewRequest(req: TemplateRequest) {
 
     const link = req.workspace_id
       ? `/workspace/${req.workspace_id}?tab=documents&sub=tools`
-      : '/admin?tab=programs';
+      : '/admin?tab=programs-setup';
     const rows = [...recipients].map((uid) => ({
       user_id: uid,
       type: 'template_request',

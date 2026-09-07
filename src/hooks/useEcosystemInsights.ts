@@ -89,7 +89,7 @@ export function useEcosystemInsights(stats: InsightInput | undefined): Ecosystem
           pct,
         }),
         actionLabel: t('admin.insights.sendReminder'),
-        actionHref: '/admin?tab=quality',
+        actionHref: '/admin?tab=data-quality',
       });
     }
 

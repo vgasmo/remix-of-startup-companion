@@ -106,7 +106,7 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
         p_staff_message: t('contractDetail.renewNotifyMsg', { defaultValue: 'O contrato foi renovado até {{end}}.', end: newEnd }),
         p_founder_title: t('contractDetail.renewNotifyTitle', { defaultValue: 'Contrato renovado' }),
         p_founder_message: t('contractDetail.renewNotifyMsg', { defaultValue: 'O contrato foi renovado até {{end}}.', end: newEnd }),
-        p_founder_link: '/workspace',
+        p_founder_link: contract.workspace_id ? `/workspace/${contract.workspace_id}` : '/my-workspaces',
         p_staff_link: '/admin?tab=backoffice&subtab=contracts',
       });
       if (notifyErr) console.warn('[RenewContractDialog] notify_contract_event failed', notifyErr.message);

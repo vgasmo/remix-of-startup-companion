@@ -162,12 +162,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Fail if real .env is committed
+      - name: Fail if .env carries non-public keys
         run: |
+          # P4.1 — the Lovable runtime rewrites .env on every boot with the three
+          # publishable client variables. Only fail on keys beyond that set.
           if [ -f ".env" ]; then
-            echo "❌ SECURITY: .env file detected in repository!"
-            echo "Real environment files must never be committed."
-            exit 1
+            BAD=$(grep -oE '^[A-Z0-9_]+' .env \
+              | grep -vE '^(VITE_SUPABASE_PROJECT_ID|VITE_SUPABASE_PUBLISHABLE_KEY|VITE_SUPABASE_URL)$' || true)
+            if [ -n "$BAD" ]; then
+              echo "❌ SECURITY: .env contains non-public keys:"
+              echo "$BAD"
+              exit 1
+            fi
+            echo "ℹ️ .env present with publishable client keys only — allowed."
           fi
           # Check for other .env variants (but allow .env.example)
           ENV_FILES=$(find . -maxdepth 1 -name '.env.*' ! -name '.env.example' -type f 2>/dev/null)

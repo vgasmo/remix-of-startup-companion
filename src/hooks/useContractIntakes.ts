@@ -182,9 +182,10 @@ export function useCreateIntake() {
       if (error) throw error;
 
       // Move CRM stage
-      await supabase.from('funnel_items')
+      const { error: stageErr } = await supabase.from('funnel_items')
         .update({ stage: 'intake_requested' })
         .eq('id', params.funnelItemId);
+      if (stageErr) throw stageErr;
 
       // Audit trail
       await supabase.from('intake_events').insert({

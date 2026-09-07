@@ -60,6 +60,8 @@ const ADMIN_ONLY_TABS = new Set([
   'health',
   'mentors',
   'template-requests',
+  // P2.9: every write on survey_* is is_admin() at the data layer.
+  'surveys',
 ]);
 
 // Tabs that require any staff role (admin, consultor, backoffice) but not

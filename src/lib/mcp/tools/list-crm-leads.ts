@@ -2,6 +2,7 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { supabaseForUser } from "../supabase";
 import { throwToolError } from "../toolError";
+import { enforceMcpRateLimit } from "../rateLimit";
 
 export default defineTool({
   name: "list_crm_leads",
@@ -19,9 +20,10 @@ export default defineTool({
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser(ctx);
+    await enforceMcpRateLimit(supabase, "list_crm_leads");
     let query = supabase
       .from("funnel_items")
-      .select("id, organization_name, stage, contact_email, owner_consultant_id, last_activity_at, created_at")
+      .select("id, organization_name, stage, owner_consultant_id, last_activity_at, created_at")
       .order("created_at", { ascending: false })
       .limit(limit ?? 25);
 
