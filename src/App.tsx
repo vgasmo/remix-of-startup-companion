@@ -71,10 +71,11 @@ const PublicContractIntake = lazy(lazyWithRetry(() => import("./pages/PublicCont
 const AppDiagnostics = lazy(lazyWithRetry(() => import("./pages/AppDiagnostics"), "lazy:app-diagnostics"));
 
 function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { children: React.ReactNode; adminOnly?: boolean; staffOnly?: boolean }) {
-  const { user, isLoading, isAuthReady, isAdmin, isStaff, isAccountPending, isAccountSuspended } = useAuth();
+  const { user, isLoading, isAuthReady, isAdmin, isStaff, isAccountPending, isAccountSuspended, authError, retryUserData, signOut } = useAuth();
   const { needsNda, isLoading: ndaLoading } = useMentorNdaStatus();
   const founderState = useFounderOnboardingState();
   const location = useLocation();
+  const { t } = useTranslation();
 
   if (isLoading || !isAuthReady || ndaLoading) {
     return <LoadingScreen />;
@@ -82,6 +83,29 @@ function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { ch
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // P0.3-bis: profile/roles could not be loaded — never render the app as if the
+  // user had no permissions. Offer an explicit retry instead.
+  if (authError) {
+    return (
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-4 p-6 text-center">
+        <p className="text-lg font-semibold">
+          {t('auth.loadError.title', { defaultValue: 'Não foi possível carregar o seu perfil e permissões.' })}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          {t('auth.loadError.hint', { defaultValue: 'Verifique a ligação e tente novamente.' })}
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Button onClick={() => void retryUserData()}>
+            {t('common.retry', { defaultValue: 'Tentar novamente' })}
+          </Button>
+          <Button variant="ghost" onClick={() => void signOut()}>
+            {t('auth.signOut', { defaultValue: 'Terminar sessão' })}
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   if (isAccountSuspended) {
