@@ -1,23 +1,26 @@
 # RC5 verification results
 
-- Started: 2026-09-07T18:04:46.087Z
-- Finished: 2026-09-07T18:07:13.243Z
+- Started: 2026-09-07T18:07:36.788Z
+- Finished: 2026-09-07T18:10:04.096Z
 - Overall: **fail**
-- Reason: Step "migration:scan" exited 1.
-- Git: edit/edt-397b11a4-78bd-40a4-bdf3-586939098004@0e55ba7e6c8e6a28f48d811c5735fb85d393971f
+- Reason: Staging gates were not executed. RC5_ALLOW_STAGING_TESTS must be 'true' to prove behavioral invariants. Local gates PASS but overall is NO-GO.
+- Git: edit/edt-c027cd7f-91de-4d40-91f9-15e603f3c455@bb46864f8822d82e60589d690a85dc26a71f3c80
 - Staging ref: -
 
 | Step | Status | Exit | Duration (ms) | Note |
 |---|---|---|---|---|
-| install | pass | 0 | 94 |  |
-| typecheck | pass | 0 | 25528 |  |
-| lint | pass | 0 | 21995 |  |
-| build | pass | 0 | 31016 |  |
-| vitest:run:1 | pass | 0 | 23083 |  |
-| vitest:run:2 | pass | 0 | 22831 |  |
-| vitest:run:3 | pass | 0 | 21242 |  |
-| i18n:parity | pass | 0 | 134 |  |
-| i18n:lint | pass | 0 | 317 |  |
-| i18n:quality | pass | 0 | 123 |  |
-| secret:scan | pass | 0 | 595 |  |
-| migration:scan | fail | 1 | 155 |  |
+| install | pass | 0 | 127 |  |
+| typecheck | pass | 0 | 12187 |  |
+| lint | pass | 0 | 20409 |  |
+| build | pass | 0 | 29111 |  |
+| vitest:run:1 | pass | 0 | 21953 |  |
+| vitest:run:2 | pass | 0 | 21756 |  |
+| vitest:run:3 | pass | 0 | 22598 |  |
+| i18n:parity | pass | 0 | 169 |  |
+| i18n:lint | pass | 0 | 248 |  |
+| i18n:quality | pass | 0 | 131 |  |
+| secret:scan | pass | 0 | 702 |  |
+| migration:scan | pass | 0 | 177 |  |
+| size-limit | pass | 0 | 364 |  |
+| deno:check-all | pass | 0 | 17312 |  |
+| staging:gate | fail | 2 | 0 | RC5_ALLOW_STAGING_TESTS != 'true' — staging gates not executed |
