@@ -2629,7 +2629,8 @@
     "warning": "Aviso",
     "workspace": "Workspace",
     "years": "anos",
-    "yes": "Sim"
+    "yes": "Sim",
+    "tryAgainLater": "Tente novamente mais tarde."
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -3129,7 +3130,8 @@
       "terminateDescription": "Vai terminar {{count}} contratos. Liberta as salas alocadas e cria tarefas para cancelar sessões futuras.",
       "terminateSelected": "Terminar selecionados",
       "terminateSuccess": "{{count}} contratos terminados",
-      "terminateTitle": "Terminar contratos"
+      "terminateTitle": "Terminar contratos",
+      "terminatePartial": "{{ok}} contratos terminados, {{failed}} falharam"
     },
     "confirmAnalysis": "Confirmar Análise IA",
     "confirmAnalysisDesc": "A IA analisa o contrato e sinaliza datas, informação em falta e riscos. Nenhuma alteração é feita.",
@@ -8419,7 +8421,8 @@
     "withConsultant": "Consultor",
     "withMentor": "Mentor",
     "workspaceMembers": "membros do espaço",
-    "zoomDesc": "Importar gravações e transcrições automaticamente"
+    "zoomDesc": "Importar gravações e transcrições automaticamente",
+    "loadError": "Não foi possível carregar as sessões."
   },
   "sessionsEmpty": {
     "description": "O seu consultor ou programa vai agendar a primeira sessão em breve.",

@@ -2629,7 +2629,8 @@
     "warning": "Warning",
     "workspace": "Workspace",
     "years": "years",
-    "yes": "Yes"
+    "yes": "Yes",
+    "tryAgainLater": "Please try again later."
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -3129,7 +3130,8 @@
       "terminateDescription": "You are about to terminate {{count}} contracts. Rooms will be freed and a task will be created to cancel future sessions.",
       "terminateSelected": "Terminate selected",
       "terminateSuccess": "{{count}} contracts terminated",
-      "terminateTitle": "Terminate contracts"
+      "terminateTitle": "Terminate contracts",
+      "terminatePartial": "{{ok}} contracts terminated, {{failed}} failed"
     },
     "confirmAnalysis": "Confirm AI Analysis",
     "confirmAnalysisDesc": "AI reviews the contract and flags dates, missing info and risks. Nothing is changed.",
@@ -8419,7 +8421,8 @@
     "withConsultant": "Consultor",
     "withMentor": "Mentor",
     "workspaceMembers": "workspace members",
-    "zoomDesc": "Auto-import meeting recordings and transcripts"
+    "zoomDesc": "Auto-import meeting recordings and transcripts",
+    "loadError": "Could not load sessions."
   },
   "sessionsEmpty": {
     "description": "Your consultant or program will schedule your first session soon.",
