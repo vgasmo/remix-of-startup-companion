@@ -31,6 +31,9 @@ function walk(obj, visit, path = '') {
 const problems = [];
 walk(PT, (key, value) => {
   if (EN_LEAK.test(value)) problems.push(`pt.${key}: English leakage → "${value}"`);
+  if (!EN_WORD_ALLOW.test(value.trim()) && EN_WORDS.test(value)) {
+    problems.push(`pt.${key}: English word → "${value}"`);
+  }
   if (PLACEHOLDER.test(value.trim())) problems.push(`pt.${key}: placeholder → "${value}"`);
 });
 walk(EN, (key, value) => {
