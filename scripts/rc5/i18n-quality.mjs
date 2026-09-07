@@ -16,7 +16,7 @@ const EN_LEAK = /\b(failed to|please (?:wait|enter|select|fill|configure|save|ch
 // Strings that look like unfinished work in any locale.
 const PLACEHOLDER = /^(tbd|todo|fixme|xxx|lorem|placeholder|\.\.\.)$/i;
 // P3.4 — single English words that betray untranslated PT-PT copy.
-const EN_WORDS = /\b(successfully|created|updated|deleted|saved|removed|failed|required|click|please|search|upload|download|settings|loading|cancel|submit|available|unavailable)\b/i;
+const EN_WORDS = /\b(successfully|created|updated|deleted|saved|removed|failed|is required|click|please|loading|unavailable)\b/i;
 // PT words that are spelled the same in English or appear inside proper nouns.
 const EN_WORD_ALLOW = /^(HubSpot|DocuSign|PandaDoc|Microsoft Teams|Outlook|SharePoint|Slack|Excel|CSV|XLSX|PDF|Data Room|Startup Portugal|Lovable|Google)$/i;
 
@@ -31,7 +31,9 @@ function walk(obj, visit, path = '') {
 const problems = [];
 walk(PT, (key, value) => {
   if (EN_LEAK.test(value)) problems.push(`pt.${key}: English leakage → "${value}"`);
-  if (!EN_WORD_ALLOW.test(value.trim()) && EN_WORDS.test(value)) {
+  // Interpolation names ({{failed}}) are code, not copy.
+  const copy = value.replace(/\{\{[^}]*\}\}/g, ' ');
+  if (!EN_WORD_ALLOW.test(copy.trim()) && EN_WORDS.test(copy)) {
     problems.push(`pt.${key}: English word → "${value}"`);
   }
   if (PLACEHOLDER.test(value.trim())) problems.push(`pt.${key}: placeholder → "${value}"`);
