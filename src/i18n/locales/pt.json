@@ -2609,6 +2609,7 @@
     "tomorrow": "Amanhã",
     "total": "Total",
     "tryAgain": "Tentar Novamente",
+    "tryAgainLater": "Tente novamente mais tarde.",
     "unassigned": "Não atribuído",
     "undo": "Desfazer",
     "undoFailed": "Não foi possível anular",
@@ -2629,8 +2630,7 @@
     "warning": "Aviso",
     "workspace": "Workspace",
     "years": "anos",
-    "yes": "Sim",
-    "tryAgainLater": "Tente novamente mais tarde."
+    "yes": "Sim"
   },
   "communication": {
     "communicationLogged": "Communication logged",
@@ -3128,10 +3128,10 @@
       "selected": "{{count}} selecionados",
       "terminateConfirm": "Terminar {{count}} contratos",
       "terminateDescription": "Vai terminar {{count}} contratos. Liberta as salas alocadas e cria tarefas para cancelar sessões futuras.",
+      "terminatePartial": "{{ok}} contratos terminados, {{failed}} falharam",
       "terminateSelected": "Terminar selecionados",
       "terminateSuccess": "{{count}} contratos terminados",
-      "terminateTitle": "Terminar contratos",
-      "terminatePartial": "{{ok}} contratos terminados, {{failed}} falharam"
+      "terminateTitle": "Terminar contratos"
     },
     "confirmAnalysis": "Confirmar Análise IA",
     "confirmAnalysisDesc": "A IA analisa o contrato e sinaliza datas, informação em falta e riscos. Nenhuma alteração é feita.",
@@ -4955,6 +4955,21 @@
     "scheduleFirstMeeting": "Agendar Primeira Reunião",
     "viewSessions": "Ver Sessões",
     "yourConsultant": "O Seu Consultor"
+  },
+  "founderPulse": {
+    "askPlaceholder": "Pedido ao ecossistema",
+    "blockersPlaceholder": "Bloqueios / dores",
+    "confidence": "Confiança",
+    "confidenceQuestion": "Confiança na trajetória",
+    "mood": "Humor",
+    "moodQuestion": "Como te sentes este mês?",
+    "submit": "Enviar pulse",
+    "submitted": "Pulse enviado — obrigado!",
+    "submittedTitle": "Pulse do mês registado",
+    "submitting": "A enviar…",
+    "summary": "{{moodLabel}} {{mood}}/5 · {{confidenceLabel}} {{confidence}}/5",
+    "title": "Pulse do fundador",
+    "winsPlaceholder": "Vitórias do mês"
   },
   "founderReadiness": {
     "actions": "Ações em dia",
@@ -8245,6 +8260,7 @@
     "keyDecisionsPlaceholder": "Decisões principais tomadas durante esta sessão...",
     "kpisToUpdate": "KPIs para Atualizar",
     "lastGenerated": "Last Generated",
+    "loadError": "Não foi possível carregar as sessões.",
     "location": "Localização",
     "locationLabel": "Local",
     "locationPlaceholder": "Sala de reunião ou endereço",
@@ -8421,8 +8437,7 @@
     "withConsultant": "Consultor",
     "withMentor": "Mentor",
     "workspaceMembers": "membros do espaço",
-    "zoomDesc": "Importar gravações e transcrições automaticamente",
-    "loadError": "Não foi possível carregar as sessões."
+    "zoomDesc": "Importar gravações e transcrições automaticamente"
   },
   "sessionsEmpty": {
     "description": "O seu consultor ou programa vai agendar a primeira sessão em breve.",
@@ -10240,20 +10255,5 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
-  },
-  "founderPulse": {
-    "askPlaceholder": "Pedido ao ecossistema",
-    "blockersPlaceholder": "Bloqueios / dores",
-    "confidence": "Confiança",
-    "confidenceQuestion": "Confiança na trajetória",
-    "mood": "Humor",
-    "moodQuestion": "Como te sentes este mês?",
-    "submit": "Enviar pulse",
-    "submitted": "Pulse enviado — obrigado!",
-    "submittedTitle": "Pulse do mês registado",
-    "submitting": "A enviar…",
-    "summary": "{{moodLabel}} {{mood}}/5 · {{confidenceLabel}} {{confidence}}/5",
-    "title": "Pulse do fundador",
-    "winsPlaceholder": "Vitórias do mês"
   }
 }
