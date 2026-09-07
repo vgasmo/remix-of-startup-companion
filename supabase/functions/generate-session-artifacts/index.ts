@@ -1,6 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { timingSafeEqual } from '../_shared/security.ts';
+import { timingSafeEqual, isServiceRoleBearer } from '../_shared/security.ts';
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -16,7 +16,8 @@ Deno.serve(async (req: Request) => {
     // Auth: cron OR authenticated user
     const cronSecret = req.headers.get('x-cron-secret');
     const expectedCron = Deno.env.get('CRON_SECRET');
-    const isCron = !!cronSecret && !!expectedCron && timingSafeEqual(cronSecret, expectedCron);
+    // Internal edge→edge calls carry the service-role key instead of a cron secret (P1.3).
+    const isCron = (!!cronSecret && !!expectedCron && timingSafeEqual(cronSecret, expectedCron)) || isServiceRoleBearer(req);
 
     const authHeader = req.headers.get('Authorization');
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);

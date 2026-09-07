@@ -8,7 +8,7 @@
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { createLogger, generateRequestId, ErrorCode, requireUser, safeErrorMessage, timingSafeEqual } from '../_shared/security.ts';
+import { createLogger, generateRequestId, ErrorCode, requireUser, safeErrorMessage, timingSafeEqual, isServiceRoleBearer } from '../_shared/security.ts';
 
 const FUNCTION_NAME = 'import-teams-transcript';
 
@@ -226,7 +226,8 @@ Deno.serve(async (req: Request) => {
     // Auth: allow cron secret OR authenticated user
     const cronSecret = req.headers.get('x-cron-secret');
     const expectedCronSecret = Deno.env.get('CRON_SECRET');
-    const isCronCall = !!cronSecret && !!expectedCronSecret && timingSafeEqual(cronSecret, expectedCronSecret);
+    // Internal edge→edge calls carry the service-role key instead of a cron secret (P1.3).
+    const isCronCall = (!!cronSecret && !!expectedCronSecret && timingSafeEqual(cronSecret, expectedCronSecret)) || isServiceRoleBearer(req);
 
     let userId: string | null = null;
     if (!isCronCall) {

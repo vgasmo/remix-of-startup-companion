@@ -232,7 +232,8 @@ async function pushSlack(supabase: any, log: any, args: {
 }) {
   if (!args.workspaceId) return;
   try {
-    await supabase.functions.invoke('send-slack-notification', {
+    // functions.invoke never throws on a non-2xx — read { error } (P1.3/P1.4).
+    const { error } = await supabase.functions.invoke('send-slack-notification', {
       body: {
         workspace_id: args.workspaceId,
         message: args.message,
@@ -241,6 +242,9 @@ async function pushSlack(supabase: any, log: any, args: {
         link: args.link,
       },
     });
+    if (error) {
+      log.warn('slack_push_failed', { error: error.message ?? String(error) });
+    }
   } catch (e) {
     log.warn('slack_push_failed', e);
   }

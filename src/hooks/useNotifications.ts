@@ -216,14 +216,17 @@ export function useCreateNotification() {
 
   return useMutation({
     mutationFn: async (notification: Omit<Notification, 'id' | 'created_at' | 'read'>) => {
+      // The founder kill-switch trigger can suppress the row; `.single()` would
+      // surface that as an error, so treat "no row returned" as suppressed.
       const { data, error } = await supabase
         .from('notifications')
         .insert([{ ...notification, read: false }])
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      return data;
+      return data ?? null;
+
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] }); queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });

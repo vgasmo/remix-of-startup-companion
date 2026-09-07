@@ -173,16 +173,32 @@ Deno.serve(async (req) => {
         const { data: outcome, error: rpcErr } = await sbUser.rpc('reconciler_commit_row', {
           p_row_id: r.id, p_expected_plan_hash: body.expected_plan_hash, p_idempotency_key: key,
         });
-        if (rpcErr) { errored++; results.push({ row_id: r.id, error: rpcErr.message }); continue; }
+        if (rpcErr) {
+          errored++;
+          results.push({ row_id: r.id, error: rpcErr.message });
+          if (rpcErr.message?.startsWith('invariant_failed_')) {
+            // The RPC's own INSERT is rolled back by its RAISE, so persist here (P1.4).
+            const { error: invErr } = await sbSvc.from('system_alerts').upsert({
+              kind: 'reconciler_invariant_failed',
+              severity: 'high',
+              dedupe_key: `reconciler_invariant_failed:${r.id}`,
+              payload: { row_id: r.id, batch_id: body.batch_id, error: rpcErr.message },
+            }, { onConflict: 'dedupe_key', ignoreDuplicates: true });
+            if (invErr) console.error('system_alerts upsert failed', invErr.message);
+          }
+          continue;
+        }
         committed++; results.push({ row_id: r.id, outcome });
       }
       if (errored > 0 && committed > 0) {
         // Partial failure — surface an alert
-        await sbSvc.from('system_alerts').insert({
+        const { error: alertErr } = await sbSvc.from('system_alerts').upsert({
           kind: 'reconciler_partial_failure',
           severity: 'high',
+          dedupe_key: `reconciler_partial:${body.batch_id}`,
           payload: { batch_id: body.batch_id, committed, errored, skipped },
-        });
+        }, { onConflict: 'dedupe_key', ignoreDuplicates: true });
+        if (alertErr) console.error('system_alerts upsert failed', alertErr.message);
       }
 
       return new Response(JSON.stringify({

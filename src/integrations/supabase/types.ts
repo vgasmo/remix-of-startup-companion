@@ -2376,6 +2376,7 @@ export type Database = {
           source_filename: string | null
           status: string
           total_rows: number
+          updated_at: string
           valid_rows: number
         }
         Insert: {
@@ -2390,6 +2391,7 @@ export type Database = {
           source_filename?: string | null
           status?: string
           total_rows?: number
+          updated_at?: string
           valid_rows?: number
         }
         Update: {
@@ -2404,6 +2406,7 @@ export type Database = {
           source_filename?: string | null
           status?: string
           total_rows?: number
+          updated_at?: string
           valid_rows?: number
         }
         Relationships: []
@@ -4059,8 +4062,9 @@ export type Database = {
           created_at: string
           cycle_id: string
           id: string
+          metadata: Json
           mood: number
-          respondent_id: string
+          respondent_id: string | null
           submitted_at: string
           updated_at: string
           wins: string | null
@@ -4073,8 +4077,9 @@ export type Database = {
           created_at?: string
           cycle_id: string
           id?: string
+          metadata?: Json
           mood: number
-          respondent_id: string
+          respondent_id?: string | null
           submitted_at?: string
           updated_at?: string
           wins?: string | null
@@ -4087,8 +4092,9 @@ export type Database = {
           created_at?: string
           cycle_id?: string
           id?: string
+          metadata?: Json
           mood?: number
-          respondent_id?: string
+          respondent_id?: string | null
           submitted_at?: string
           updated_at?: string
           wins?: string | null
