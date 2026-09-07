@@ -138,6 +138,7 @@ function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { ch
     founderState.status !== 'staff_exempt' &&
     founderState.status !== 'has_active_workspace' &&
     founderState.status !== 'needs_onboarding' &&
+    founderState.status !== 'error' &&
     !claimExemptPaths.some((p) => location.pathname === p || location.pathname.startsWith(p + '/'))
   ) {
     return <Navigate to="/claim-startup" replace />;

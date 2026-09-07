@@ -93,6 +93,7 @@ export default function ClaimStartup() {
         void track('claim_completed', { workspaceId: result.workspace_id, properties: { mode: 'auto' } });
         // Invalidate onboarding state so routing updates
         queryClient.invalidateQueries({ queryKey: ['founder-onboarding-state'] });
+        queryClient.invalidateQueries({ queryKey: ['workspaces'] });
         toast({
           title: t('claimStartup.claimedTitle', { defaultValue: 'Startup verificada!' }),
           description: t('claimStartup.claimedDesc', { defaultValue: 'A sua startup foi associada automaticamente à sua conta.' }),
