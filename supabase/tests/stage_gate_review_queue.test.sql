@@ -11,8 +11,13 @@ INSERT INTO public.startups (id, name)
 VALUES ('a0000000-0000-4000-8000-00000000f002', 'SGR Test Startup')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO public.workspaces (id, startup_id, status, stage)
-VALUES ('a0000000-0000-4000-8000-00000000f003', 'a0000000-0000-4000-8000-00000000f002', 'active', 'validation')
+INSERT INTO public.programs (id, name)
+VALUES ('a0000000-0000-4000-8000-00000000f004', 'SGR Program')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.workspaces (id, startup_id, program_id, status, stage)
+VALUES ('a0000000-0000-4000-8000-00000000f003', 'a0000000-0000-4000-8000-00000000f002',
+        'a0000000-0000-4000-8000-00000000f004', 'active', 'validation')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.workspace_users (workspace_id, user_id, role, active)
