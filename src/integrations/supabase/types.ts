@@ -12402,6 +12402,10 @@ export type Database = {
         }
         Returns: Json
       }
+      founder_notifications_blocked: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       fuzzy_search_leads: {
         Args: { p_limit?: number; p_query: string }
         Returns: {
