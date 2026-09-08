@@ -339,6 +339,10 @@ function CampaignCard({
               {t("admin.surveys.enrollMissing", "Inscrever novas startups")}
             </Button>
           )}
+          <Button size="sm" variant="outline" onClick={() => setShowEndDate(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            {t("admin.surveys.editEndDate", "Definir data de fim")}
+          </Button>
           <Button size="sm" variant="outline" onClick={() => setShowQuestions(true)}>
             <ListChecks className="h-4 w-4 mr-2" />
             {t("admin.surveys.viewQuestions", "Ver questões")}
