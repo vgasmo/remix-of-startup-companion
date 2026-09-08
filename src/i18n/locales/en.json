@@ -1430,7 +1430,14 @@
       "editEndDate": "Set end date",
       "editEndDateDesc": "Startups can answer until this date.",
       "endDateUpdated": "End date updated",
-      "endDateUpdateFailed": "Could not update the end date"
+      "endDateUpdateFailed": "Could not update the end date",
+      "manageParticipants": "Manage participants",
+      "manageParticipantsDesc": "Check the startups that should answer this survey.",
+      "searchStartup": "Search startup...",
+      "enrollAll": "Include all",
+      "enrolledCount": "{{count}} of {{total}} included",
+      "cannotRemoveSubmitted": "This startup already answered — it cannot be removed",
+      "toggleParticipantFailed": "Could not update the enrollment"
     },
     "suspend": "Suspend",
     "suspendUser": "Suspend User",

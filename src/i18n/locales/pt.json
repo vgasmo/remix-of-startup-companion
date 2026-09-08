@@ -1430,7 +1430,14 @@
       "editEndDate": "Definir data de fim",
       "editEndDateDesc": "As startups podem responder até esta data.",
       "endDateUpdated": "Data de fim atualizada",
-      "endDateUpdateFailed": "Não foi possível atualizar a data de fim"
+      "endDateUpdateFailed": "Não foi possível atualizar a data de fim",
+      "manageParticipants": "Gerir participantes",
+      "manageParticipantsDesc": "Marque as startups que devem responder a este inquérito.",
+      "searchStartup": "Procurar startup...",
+      "enrollAll": "Incluir todas",
+      "enrolledCount": "{{count}} de {{total}} incluídas",
+      "cannotRemoveSubmitted": "Esta startup já respondeu — não pode ser removida",
+      "toggleParticipantFailed": "Não foi possível atualizar a inscrição"
     },
     "suspend": "Suspender",
     "suspendUser": "Suspend Utilizador",
