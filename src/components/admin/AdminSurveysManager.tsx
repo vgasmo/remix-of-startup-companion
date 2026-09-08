@@ -238,6 +238,18 @@ function CampaignCard({
   const closeCampaign = useCloseCampaign();
   const reopenCampaign = useReopenCampaign();
   const syncParticipants = useSyncCampaignParticipants();
+  const [showParticipants, setShowParticipants] = useState(false);
+  const [participantSearch, setParticipantSearch] = useState("");
+  const { data: candidates = [], isLoading: loadingCandidates } = useCampaignCandidates(
+    campaign.id,
+    showParticipants,
+  );
+  const toggleParticipant = useToggleCampaignParticipant();
+  const enrollAll = useEnrollAllCandidates();
+  const filteredCandidates = candidates.filter((c) =>
+    c.startupName.toLowerCase().includes(participantSearch.toLowerCase()),
+  );
+  const enrolledCount = candidates.filter((c) => c.enrolled).length;
 
   const locale = i18n.language === "pt" ? pt : undefined;
 
