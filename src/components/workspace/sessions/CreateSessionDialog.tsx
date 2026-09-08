@@ -195,11 +195,12 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
   }, [dateStr, duration, meetingWith, consultantAvailability, mentorWeeklyAvailability, useManualTime]);
 
   const getWorkspaceInfo = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('workspaces')
       .select(`id, startup:startups(name, main_contact_email, main_contact_name), program:programs(name)`)
       .eq('id', workspaceId)
       .maybeSingle();
+    if (error) throw error;
     return data;
   };
 
@@ -207,11 +208,15 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
   const getCurrentUserProfile = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .select('full_name, email')
       .eq('id', user.id)
       .maybeSingle();
+    if (error) {
+      logger.warn('[CreateSessionDialog] failed to load current user profile', { error: String(error) });
+      return null;
+    }
     return data;
   };
 

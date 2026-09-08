@@ -133,19 +133,21 @@ export function ContractLifecycleStepper({
 
       if (workspaceId) {
         // Fallback: find intake via workspace contracts
-        const { data: contracts } = await supabase
+        const { data: contracts, error: contractsError } = await supabase
           .from('startup_contracts')
           .select('id')
           .eq('workspace_id', workspaceId);
+        if (contractsError) throw contractsError;
         
         if (contracts && contracts.length > 0) {
           const contractIds = contracts.map(c => c.id);
-          const { data } = await supabase
+          const { data, error } = await supabase
             .from('contract_intakes')
             .select('id, contract_id, status, submitted_at, reviewed_at, created_at, updated_at')
             .in('contract_id', contractIds)
             .order('created_at', { ascending: false })
             .limit(1);
+          if (error) throw error;
           if (data && data.length > 0) return data[0] as IntakeRecord;
         }
       }

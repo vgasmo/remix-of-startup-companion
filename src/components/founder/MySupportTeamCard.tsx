@@ -34,11 +34,12 @@ function MySupportTeamCardInner({ workspaceId, consultantId, mentorMember, lastS
     enabled: !!consultantId,
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('profiles_safe')
         .select('id, full_name, email, avatar_url')
         .eq('id', consultantId!)
         .maybeSingle();
+      if (error) throw error;
       return data;
     },
   });

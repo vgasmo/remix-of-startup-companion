@@ -68,11 +68,12 @@ export function OpsActionPrompts() {
     enabled: !!user?.id,
     staleTime: 60_000,
     queryFn: async (): Promise<string[]> => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('dismissed_prompts')
         .eq('id', user!.id)
         .maybeSingle();
+      if (error) throw error;
       const raw = (data?.dismissed_prompts ?? []) as unknown;
       return Array.isArray(raw) ? raw.filter((v): v is string => typeof v === 'string') : [];
     },

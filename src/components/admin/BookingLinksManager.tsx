@@ -50,7 +50,8 @@ export function BookingLinksManager() {
   const { data: programs } = useQuery({
     queryKey: ['programs-list'],
     queryFn: async () => {
-      const { data } = await supabase.from('programs').select('id, name').order('name');
+      const { data, error } = await supabase.from('programs').select('id, name').order('name');
+      if (error) throw error;
       return data || [];
     },
   });

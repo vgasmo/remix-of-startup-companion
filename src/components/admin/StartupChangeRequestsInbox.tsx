@@ -43,10 +43,11 @@ export function StartupChangeRequestsInbox() {
     queryKey: ['scr-inbox-workspaces', workspaceIds],
     enabled: workspaceIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('workspaces')
         .select('id, startup:startups(name)')
         .in('id', workspaceIds);
+      if (error) throw error;
       const map: Record<string, { startupName: string | null }> = {};
       (data || []).forEach((w: any) => {
         map[w.id] = { startupName: w.startup?.name ?? null };
@@ -60,10 +61,11 @@ export function StartupChangeRequestsInbox() {
     queryKey: ['scr-inbox-requesters', requesterIds],
     enabled: requesterIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('profiles_safe')
         .select('id, full_name, email')
         .in('id', requesterIds);
+      if (error) throw error;
       const map: Record<string, { name: string | null; email: string | null }> = {};
       (data || []).forEach((p: any) => {
         map[p.id] = { name: p.full_name ?? null, email: p.email ?? null };

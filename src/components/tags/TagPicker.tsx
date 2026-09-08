@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { useTags, useCreateTag, type Tag } from '@/hooks/useGlobalSearch';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 interface TagPickerProps {
@@ -32,6 +33,9 @@ export function TagPicker({
   const effectivePlaceholder = placeholder ?? t('common.placeholders.addTags');
   const { data: allTags, isLoading: loadingTags } = useTags();
   const createTag = useCreateTag();
+  // Global tags are an ecosystem-wide taxonomy: only staff may add new ones
+  // (matches the "Staff can create tags" database policy).
+  const { isStaff } = useAuth();
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
 
@@ -49,10 +53,11 @@ export function TagPicker({
   }, [availableTags, searchValue]);
 
   const canCreateNew = useMemo(() => {
+    if (!isStaff) return false;
     if (!searchValue.trim()) return false;
     const search = searchValue.toLowerCase().trim();
     return !allTags?.some(t => t.name.toLowerCase() === search);
-  }, [searchValue, allTags]);
+  }, [searchValue, allTags, isStaff]);
 
   const handleCreateTag = async () => {
     if (!searchValue.trim()) return;

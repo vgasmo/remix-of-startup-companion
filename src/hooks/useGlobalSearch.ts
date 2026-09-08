@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { logger } from '@/lib/logger';
 import { notify } from "@/lib/notify";
 
 import i18n from '@/i18n';
@@ -370,10 +371,11 @@ export function useGlobalSearch(filters: SearchFilters) {
       // Search workspaces (by startup name / program — already filtered by RLS)
       if (typesToSearch.includes('workspace')) {
         searchPromises.push((async () => {
-          const { data } = await supabase
+          const { data, error } = await supabase
             .from('workspaces')
             .select('id, stage, status, updated_at, startup:startups(name), program:programs(name)')
             .limit(50);
+          if (error) logger.warn('[useGlobalSearch] workspace search failed', { error: String(error) });
           const q = searchTerm.toLowerCase();
           return (data || [])
             .filter((w: any) =>
@@ -397,11 +399,12 @@ export function useGlobalSearch(filters: SearchFilters) {
       // Search contracts (staff via RLS)
       if (typesToSearch.includes('contract')) {
         searchPromises.push((async () => {
-          const { data } = await supabase
+          const { data, error } = await supabase
             .from('startup_contracts')
             .select('id, contract_number, status, updated_at, workspace_id, startup:startups(name)')
             .or(`contract_number.ilike.${ilikeTerm}`)
             .limit(20);
+          if (error) logger.warn('[useGlobalSearch] contract search failed', { error: String(error) });
           return (data || []).map((c: any) => ({
             type: 'contract' as const,
             id: c.id,
@@ -450,11 +453,12 @@ export function useGlobalSearch(filters: SearchFilters) {
       // Search people (mentors / consultants / founders via profiles_safe)
       if (typesToSearch.includes('person')) {
         searchPromises.push((async () => {
-          const { data } = await supabase
+          const { data, error } = await supabase
             .from('profiles_safe')
             .select('id, full_name, email')
             .or(`full_name.ilike.${ilikeTerm},email.ilike.${ilikeTerm}`)
             .limit(15);
+          if (error) logger.warn('[useGlobalSearch] people search failed', { error: String(error) });
           return (data || []).map((p: any) => ({
             type: 'person' as const,
             id: p.id,
