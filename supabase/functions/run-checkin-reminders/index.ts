@@ -163,9 +163,9 @@ const handler = async (req: Request): Promise<Response> => {
         const definitionName = definition?.name || "Monthly Check-in";
 
         // Find founders in this workspace
-        const founders = (workspace?.members || []).filter(
-          (m: any) => m.role === "founder" && m.profile
-        );
+        const founders = (workspace?.members || [])
+          .filter((m: any) => m.role === "founder")
+          .map((m: any) => ({ ...m, profile: profileMap.get(m.user_id) || null }));
 
         if (founders.length === 0) {
           console.log(`[run-checkin-reminders] No founders found for workspace ${checkin.workspace_id}`);
