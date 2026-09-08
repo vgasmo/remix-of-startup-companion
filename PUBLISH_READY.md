@@ -1,155 +1,56 @@
-# Publish Readiness Checklist
+# Estado de publicação (Publish Readiness)
 
-> **SUPERSEDED — historical document.** The authoritative release status is
-> `docs/rc5/evidence-ledger.md` (verdict: **NO-GO** until the staging gates run).
-> Do not treat the checkmarks below as a current release approval.
+**Última verificação:** 2026-09-08 (12:20 UTC)
+**Veredicto:** ⚠️ **NO-GO** — todos os testes automáticos locais passam, falta a validação em ambiente de teste (staging).
 
-
-**Date:** 2026-01-15  
-**Status:** ✅ READY TO PUBLISH
+Fonte de verdade: `docs/rc5/results.md` / `docs/rc5/results.json` (gerados por `bun run rc5:verify`)
+e `docs/rc5/evidence-ledger.md`.
 
 ---
 
-## 1. Build Verification
+## 1. O que já está verificado (tudo passou)
 
-| Check | Status |
-|-------|--------|
-| TypeScript compiles | ✅ Pass |
-| No console errors | ✅ Pass (1 minor warning - Badge ref, non-breaking) |
-| Edge functions compile | ✅ Pass |
-| RLS policies applied | ✅ 15 tables secured |
-
----
-
-## 2. Commit Summary
-
-### Security Fixes
-- Added RLS policies to 15 publicly readable tables
-- All business-critical data now requires authentication
-- Staff-only tables (workflow_rules) properly restricted
-
-### Features Verified
-- CRM v1.1-1.3 complete and functional
-- Founder dashboard with soft urgency tones
-- Notification system with proper scoping
-- AI recap feature gated by feature flag
-
-### UI Polish
-- Amber tones replace red for overdue items
-- Consistent button and card styling
-- Dark mode compatible colors
+| Verificação | Resultado |
+|---|---|
+| TypeScript (typecheck) | ✅ passa |
+| Lint | ✅ passa |
+| Build de produção | ✅ passa |
+| Testes unitários (3 execuções seguidas) | ✅ passa — 3×, sem falhas intermitentes |
+| Paridade de traduções PT/EN | ✅ passa |
+| Lint de traduções | ✅ passa |
+| Qualidade de traduções | ✅ passa |
+| Análise de segredos no código | ✅ passa |
+| Análise de migrações (só aditivas) | ✅ passa |
+| Limite de tamanho dos ficheiros entregues | ✅ passa |
+| Verificação das funções do servidor (132 ficheiros) | ✅ passa |
 
 ---
 
-## 3. Environment Variables
+## 2. O que falta para dar GO
 
-### Required (Auto-configured by Lovable Cloud)
-```
-VITE_SUPABASE_URL=<auto>
-VITE_SUPABASE_PUBLISHABLE_KEY=<auto>
-VITE_SUPABASE_PROJECT_ID=<auto>
+| Em falta | Porquê | Quem |
+|---|---|---|
+| Testes de comportamento em staging (E2E por perfil, 4 tamanhos de ecrã) | Exigem um ambiente de teste separado com credenciais próprias | Responsável de release (ops) |
+| Replay de migrações numa base limpa | Precisa de Postgres descartável / cópia de staging | DBA |
+| Matriz de permissões (pgTAP) contra staging | Precisa de ligação à base de staging | Responsável de release |
+| Testes de falha de serviços externos (Graph / email) | Precisam de tenant e caixa de correio de teste | Responsável de release |
+
+Comando único para fechar estes pontos (a correr por quem tem acesso a staging):
+
+```bash
+export RC5_ALLOW_STAGING_TESTS=true
+bun run rc5:verify
 ```
 
-### Edge Function Secrets (Already Configured)
-- `RESEND_API_KEY` - Email sending
-- `SUPABASE_SERVICE_ROLE_KEY` - Background jobs
-- `CRON_SECRET` - Scheduled tasks
-
-### Optional (For Graph Integration)
-- `MS_GRAPH_CLIENT_SECRET` - Microsoft Graph API
+Quando `docs/rc5/results.json` indicar `"overall": "pass"` e o smoke manual
+(`docs/rc5/release-checklist.md`) estiver limpo, o veredicto passa a **GO**.
 
 ---
 
-## 4. Graph API Setup (Optional)
+## 3. Documentos relacionados
 
-If enabling email sync:
-
-1. **Azure AD App Registration**
-   - Create app with Mail.Read permissions (Application type)
-   - Grant admin consent
-   - Add consultant email domains to tenant
-
-2. **FoundersBook Configuration**
-   - Admin → Integrations → Microsoft Graph
-   - Enter: Tenant ID, Client ID, Client Secret
-   - Enable the integration
-
-3. **Feature Flag**
-   - Enable `crm_graph_email_sync` in Admin → Flags
-
----
-
-## 5. Diagnostics
-
-### CRM Diagnostics
-Navigate to `/admin/crm-diagnostics` to run:
-- Schema validation
-- Permissions check
-- Notification dry run
-- Email sync dry run
-
-### Health Check
-All workspaces should show health scores. If missing:
-- Run `recompute-health-scores` edge function
-- Check `workspace_health_history` table
-
----
-
-## 6. Post-Publish Monitoring
-
-### First Hour
-- [ ] Check edge function logs for errors
-- [ ] Verify login flow works
-- [ ] Spot-check workspace access
-
-### First Day
-- [ ] Monitor notification generation
-- [ ] Check health alert emails
-- [ ] Verify scheduled jobs run
-
-### First Week
-- [ ] Review activity logs
-- [ ] Check for RLS-related empty states
-- [ ] Gather user feedback
-
----
-
-## 7. Rollback Notes
-
-### If RLS Breaks Queries
-```sql
--- Emergency: Temporarily allow authenticated reads
--- (Use only if critical, then fix properly)
-CREATE POLICY "temp_authenticated_read"
-ON public.<table_name> FOR SELECT
-TO authenticated
-USING (true);
-```
-
-### If UI Regression
-- Revert to previous commit
-- Check index.css and tailwind.config.ts
-
-### If Edge Function Fails
-- Check edge function logs
-- Verify secrets are configured
-- Check feature flags are enabled
-
----
-
-## 8. Support Contact
-
-For issues after publish:
-- Check console logs in browser
-- Check edge function logs in Lovable Cloud
-- Review REGRESSION_CHECKLIST.md for test steps
-
----
-
-## Approval
-
-**Security Audit:** ✅ Passed (see SECURITY_REPORT.md)  
-**Regression Testing:** ✅ Passed (see REGRESSION_CHECKLIST.md)  
-**UI Polish:** ✅ Completed  
-
-**Approved for Production:** ✅ YES
+- `docs/rc5/results.md` — resultado da última execução automática
+- `docs/rc5/evidence-ledger.md` — registo de provas por invariante
+- `docs/rc5/staging-runbook.md` — como correr a validação em staging
+- `docs/rc5/rollback-runbook.md` — como reverter
+- `docs/rc5/release-checklist.md` — smoke manual de produção (<15 min)
