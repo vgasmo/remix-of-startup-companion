@@ -1426,7 +1426,11 @@
       "type": "Type",
       "viewQuestions": "View questions",
       "viewQuestionsDesc": "Questions included in this survey",
-      "viewResponses": "View Responses"
+      "viewResponses": "View Responses",
+      "editEndDate": "Set end date",
+      "editEndDateDesc": "Startups can answer until this date.",
+      "endDateUpdated": "End date updated",
+      "endDateUpdateFailed": "Could not update the end date"
     },
     "suspend": "Suspend",
     "suspendUser": "Suspend User",
