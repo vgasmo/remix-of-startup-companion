@@ -59,6 +59,7 @@ import {
   useCloseCampaign,
   useReopenCampaign,
   useSyncCampaignParticipants,
+  useUpdateCampaignEndDate,
   useCampaignInstances,
   useCampaignStats,
   SurveyCampaign,
@@ -219,6 +220,11 @@ function CampaignCard({
 }) {
   const { t, i18n } = useTranslation();
   const [showQuestions, setShowQuestions] = useState(false);
+  const [showEndDate, setShowEndDate] = useState(false);
+  const [endDateValue, setEndDateValue] = useState(
+    campaign.ends_at ? new Date(campaign.ends_at).toISOString().split("T")[0] : "",
+  );
+  const updateEndDate = useUpdateCampaignEndDate();
   const { data: stats } = useCampaignStats(campaign.id);
   const launchCampaign = useLaunchCampaign();
   const closeCampaign = useCloseCampaign();
