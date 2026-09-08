@@ -121,3 +121,17 @@ ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS confirmation_token text;
 ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS recovery_token text;
 ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS email_change_token_new text;
 ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS email_change text;
+-- Realtime broadcast table (platform-managed in Supabase); migrations that grant
+-- or policy realtime.messages need it to exist locally.
+CREATE TABLE IF NOT EXISTS realtime.messages (
+  id bigserial PRIMARY KEY,
+  topic text NOT NULL,
+  extension text NOT NULL DEFAULT 'broadcast',
+  payload jsonb,
+  event text,
+  private boolean DEFAULT false,
+  inserted_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE realtime.messages ENABLE ROW LEVEL SECURITY;
+GRANT USAGE ON SCHEMA realtime TO anon, authenticated, service_role;
