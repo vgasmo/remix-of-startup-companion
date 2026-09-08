@@ -9,7 +9,6 @@ import { throwToolError } from "./toolError";
 
 const DEFAULT_MAX_REQUESTS = 60;
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 type MinimalClient = {
   auth: { getUser: () => Promise<{ data: { user: { id: string } | null }; error: any }> };
   rpc: (fn: any, args?: any) => any;
