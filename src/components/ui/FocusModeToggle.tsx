@@ -51,7 +51,7 @@ export function FocusModeProvider({ children, defaultFocused = true, persistKey 
   );
 }
 
-export function FocusModeToggle({ className }: { className?: string }) {
+export const FocusModeToggle = forwardRef<HTMLButtonElement, { className?: string }>(function FocusModeToggle({ className }, ref) {
   const { t } = useTranslation();
   const { isFocused, toggle } = useFocusMode();
   const targetLabel = isFocused
