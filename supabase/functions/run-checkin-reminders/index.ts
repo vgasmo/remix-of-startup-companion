@@ -116,6 +116,27 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`[run-checkin-reminders] Found ${pendingCheckins?.length || 0} pending check-ins needing reminders`);
 
+    // Fetch founder profiles separately (no FK workspace_users -> profiles,
+    // so a PostgREST embed fails with PGRST200).
+    const founderIds = new Set<string>();
+    for (const c of pendingCheckins || []) {
+      for (const m of ((c.workspace as any)?.members || [])) {
+        if (m.role === "founder") founderIds.add(m.user_id);
+      }
+    }
+    const profileMap = new Map<string, { email: string | null; full_name: string | null }>();
+    if (founderIds.size > 0) {
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, email, full_name")
+        .in("id", Array.from(founderIds));
+      if (profilesError) {
+        console.error("[run-checkin-reminders] Error fetching profiles:", profilesError);
+      } else {
+        for (const p of profilesData || []) profileMap.set(p.id, p);
+      }
+    }
+
     const results = {
       generated: generatedCount || 0,
       reminders_sent: 0,
