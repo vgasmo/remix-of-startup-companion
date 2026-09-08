@@ -102,11 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
         definition:checkin_definitions(name),
         workspace:workspaces(
           startup:startups(name),
-          members:workspace_users(
-            user_id,
-            role,
-            profile:profiles(email, full_name)
-          )
+          members:workspace_users(user_id, role)
         )
       `)
       .eq("status", "pending")
@@ -119,6 +115,27 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     console.log(`[run-checkin-reminders] Found ${pendingCheckins?.length || 0} pending check-ins needing reminders`);
+
+    // Fetch founder profiles separately (no FK workspace_users -> profiles,
+    // so a PostgREST embed fails with PGRST200).
+    const founderIds = new Set<string>();
+    for (const c of pendingCheckins || []) {
+      for (const m of ((c.workspace as any)?.members || [])) {
+        if (m.role === "founder") founderIds.add(m.user_id);
+      }
+    }
+    const profileMap = new Map<string, { email: string | null; full_name: string | null }>();
+    if (founderIds.size > 0) {
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, email, full_name")
+        .in("id", Array.from(founderIds));
+      if (profilesError) {
+        console.error("[run-checkin-reminders] Error fetching profiles:", profilesError);
+      } else {
+        for (const p of profilesData || []) profileMap.set(p.id, p);
+      }
+    }
 
     const results = {
       generated: generatedCount || 0,
@@ -146,9 +163,9 @@ const handler = async (req: Request): Promise<Response> => {
         const definitionName = definition?.name || "Monthly Check-in";
 
         // Find founders in this workspace
-        const founders = (workspace?.members || []).filter(
-          (m: any) => m.role === "founder" && m.profile
-        );
+        const founders = (workspace?.members || [])
+          .filter((m: any) => m.role === "founder")
+          .map((m: any) => ({ ...m, profile: profileMap.get(m.user_id) || null }));
 
         if (founders.length === 0) {
           console.log(`[run-checkin-reminders] No founders found for workspace ${checkin.workspace_id}`);
