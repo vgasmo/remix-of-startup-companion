@@ -13,7 +13,9 @@ import {
   FileText,
   PlayCircle,
   UserPlus,
+  Users,
   ListChecks,
+
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +45,8 @@ import {
 } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -60,6 +64,10 @@ import {
   useReopenCampaign,
   useSyncCampaignParticipants,
   useUpdateCampaignEndDate,
+  useCampaignCandidates,
+  useToggleCampaignParticipant,
+  useEnrollAllCandidates,
+
   useCampaignInstances,
   useCampaignStats,
   SurveyCampaign,
@@ -230,6 +238,18 @@ function CampaignCard({
   const closeCampaign = useCloseCampaign();
   const reopenCampaign = useReopenCampaign();
   const syncParticipants = useSyncCampaignParticipants();
+  const [showParticipants, setShowParticipants] = useState(false);
+  const [participantSearch, setParticipantSearch] = useState("");
+  const { data: candidates = [], isLoading: loadingCandidates } = useCampaignCandidates(
+    campaign.id,
+    showParticipants,
+  );
+  const toggleParticipant = useToggleCampaignParticipant();
+  const enrollAll = useEnrollAllCandidates();
+  const filteredCandidates = candidates.filter((c) =>
+    c.startupName.toLowerCase().includes(participantSearch.toLowerCase()),
+  );
+  const enrolledCount = candidates.filter((c) => c.enrolled).length;
 
   const locale = i18n.language === "pt" ? pt : undefined;
 
@@ -339,6 +359,10 @@ function CampaignCard({
               {t("admin.surveys.enrollMissing", "Inscrever novas startups")}
             </Button>
           )}
+          <Button size="sm" variant="outline" onClick={() => setShowParticipants(true)}>
+            <Users className="h-4 w-4 mr-2" />
+            {t("admin.surveys.manageParticipants", "Gerir participantes")}
+          </Button>
           <Button size="sm" variant="outline" onClick={() => setShowEndDate(true)}>
             <Edit className="h-4 w-4 mr-2" />
             {t("admin.surveys.editEndDate", "Definir data de fim")}
@@ -352,6 +376,78 @@ function CampaignCard({
             {t("admin.surveys.viewResponses", "View Responses")}
           </Button>
         </div>
+
+        <Dialog open={showParticipants} onOpenChange={setShowParticipants}>
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>{t("admin.surveys.manageParticipants", "Gerir participantes")}</DialogTitle>
+              <DialogDescription>
+                {t(
+                  "admin.surveys.manageParticipantsDesc",
+                  "Marque as startups que devem responder a este inquérito.",
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder={t("admin.surveys.searchStartup", "Procurar startup...")}
+                value={participantSearch}
+                onChange={(e) => setParticipantSearch(e.target.value)}
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={enrollAll.isPending}
+                onClick={() => enrollAll.mutate(campaign.id)}
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                {t("admin.surveys.enrollAll", "Incluir todas")}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t("admin.surveys.enrolledCount", {
+                count: enrolledCount,
+                total: candidates.length,
+                defaultValue: "{{count}} de {{total}} incluídas",
+              })}
+            </p>
+            <ScrollArea className="h-[50vh] pr-3">
+              {loadingCandidates ? (
+                <p className="text-sm text-muted-foreground">{t("common.loading", "A carregar...")}</p>
+              ) : (
+                <div className="space-y-1">
+                  {filteredCandidates.map((c) => (
+                    <label
+                      key={c.workspaceId}
+                      className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-muted/50 cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={c.enrolled}
+                        disabled={toggleParticipant.isPending}
+                        onCheckedChange={(checked) =>
+                          toggleParticipant.mutate({
+                            campaignId: campaign.id,
+                            workspaceId: c.workspaceId,
+                            enroll: checked === true,
+                          })
+                        }
+                      />
+                      <span className="text-sm flex-1">{c.startupName}</span>
+                      {c.instanceStatus === "submitted" && (
+                        <Badge variant="outline" className="text-xs">
+                          {t("admin.surveys.submitted", "submitted")}
+                        </Badge>
+                      )}
+                      <Badge variant="secondary" className="text-xs">
+                        {c.workspaceStatus}
+                      </Badge>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={showEndDate} onOpenChange={setShowEndDate}>
           <DialogContent className="max-w-md">

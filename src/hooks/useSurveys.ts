@@ -465,6 +465,206 @@ export function useSyncCampaignParticipants() {
   });
 }
 
+export interface CampaignCandidate {
+  workspaceId: string;
+  startupName: string;
+  workspaceStatus: string;
+  enrolled: boolean;
+  instanceId: string | null;
+  instanceStatus: string | null;
+}
+
+/** Every workspace that can take part in a campaign, with its enrollment state. */
+export function useCampaignCandidates(campaignId: string | null, enabled = true) {
+  return useQuery({
+    queryKey: ["survey-candidates", campaignId],
+    enabled: !!campaignId && enabled,
+    queryFn: async (): Promise<CampaignCandidate[]> => {
+      if (!campaignId) return [];
+
+      const { data: campaign, error: campaignError } = await supabase
+        .from("survey_campaigns")
+        .select("id, program_id")
+        .eq("id", campaignId)
+        .single();
+      if (campaignError) throw campaignError;
+
+      let query = supabase
+        .from("workspaces")
+        .select("id, status, startups(name)")
+        .neq("status", "rejected");
+      if (campaign.program_id) query = query.eq("program_id", campaign.program_id);
+
+      const { data: workspaces, error: workspacesError } = await query;
+      if (workspacesError) throw workspacesError;
+
+      const { data: instances, error: instancesError } = await supabase
+        .from("survey_instances")
+        .select("id, workspace_id, status")
+        .eq("campaign_id", campaignId);
+      if (instancesError) throw instancesError;
+
+      const byWorkspace = new Map(
+        (instances || []).map((i) => [i.workspace_id, i]),
+      );
+
+      return (workspaces || [])
+        .map((ws) => {
+          const instance = byWorkspace.get(ws.id);
+          return {
+            workspaceId: ws.id,
+            startupName: ws.startups?.name || "—",
+            workspaceStatus: ws.status as string,
+            enrolled: !!instance,
+            instanceId: instance?.id ?? null,
+            instanceStatus: (instance?.status as string) ?? null,
+          };
+        })
+        .sort((a, b) => a.startupName.localeCompare(b.startupName));
+    },
+  });
+}
+
+/** Enroll or remove one workspace from a campaign. */
+export function useToggleCampaignParticipant() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      campaignId,
+      workspaceId,
+      enroll,
+    }: { campaignId: string; workspaceId: string; enroll: boolean }) => {
+      if (enroll) {
+        const { data: ws, error: wsError } = await supabase
+          .from("workspaces")
+          .select("id, stage, startups(name, founded_date)")
+          .eq("id", workspaceId)
+          .single();
+        if (wsError) throw wsError;
+
+        const { error } = await supabase.from("survey_instances").insert({
+          campaign_id: campaignId,
+          workspace_id: workspaceId,
+          status: "pending" as const,
+          auto_filled_data: {
+            stage: ws.stage,
+            startup_name: ws.startups?.name || null,
+            founded_year: ws.startups?.founded_date
+              ? new Date(ws.startups.founded_date).getFullYear()
+              : null,
+          } as Json,
+        });
+        if (error) throw error;
+        return { enrolled: true };
+      }
+
+      const { data: instance, error: fetchError } = await supabase
+        .from("survey_instances")
+        .select("id, status")
+        .eq("campaign_id", campaignId)
+        .eq("workspace_id", workspaceId)
+        .maybeSingle();
+      if (fetchError) throw fetchError;
+      if (!instance) return { enrolled: false };
+
+      if (instance.status === "submitted") {
+        throw new Error("submitted");
+      }
+
+      const { error } = await supabase
+        .from("survey_instances")
+        .delete()
+        .eq("id", instance.id);
+      if (error) throw error;
+      return { enrolled: false };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["survey-candidates"] });
+      queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
+      queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
+    },
+    onError: (error: Error) => {
+      if (error?.message === "submitted") {
+        toast.error(
+          t("admin.surveys.cannotRemoveSubmitted", "Esta startup já respondeu — não pode ser removida"),
+        );
+        return;
+      }
+      toast.error(t("admin.surveys.toggleParticipantFailed", "Não foi possível atualizar a inscrição"));
+      logger.error('operation_error', {}, error);
+    },
+  });
+}
+
+/** Enroll every eligible workspace (any status except rejected). */
+export function useEnrollAllCandidates() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (campaignId: string) => {
+      const { data: campaign, error: campaignError } = await supabase
+        .from("survey_campaigns")
+        .select("id, program_id")
+        .eq("id", campaignId)
+        .single();
+      if (campaignError) throw campaignError;
+
+      let query = supabase
+        .from("workspaces")
+        .select("id, stage, startups(name, founded_date)")
+        .neq("status", "rejected");
+      if (campaign.program_id) query = query.eq("program_id", campaign.program_id);
+
+      const { data: workspaces, error: workspacesError } = await query;
+      if (workspacesError) throw workspacesError;
+
+      const { data: existing, error: existingError } = await supabase
+        .from("survey_instances")
+        .select("workspace_id")
+        .eq("campaign_id", campaignId);
+      if (existingError) throw existingError;
+
+      const enrolled = new Set((existing || []).map((i) => i.workspace_id));
+      const missing = (workspaces || []).filter((ws) => !enrolled.has(ws.id));
+      if (missing.length === 0) return { added: 0 };
+
+      const { error: insertError } = await supabase.from("survey_instances").insert(
+        missing.map((ws) => ({
+          campaign_id: campaignId,
+          workspace_id: ws.id,
+          status: "pending" as const,
+          auto_filled_data: {
+            stage: ws.stage,
+            startup_name: ws.startups?.name || null,
+            founded_year: ws.startups?.founded_date
+              ? new Date(ws.startups.founded_date).getFullYear()
+              : null,
+          } as Json,
+        })),
+      );
+      if (insertError) throw insertError;
+      return { added: missing.length };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["survey-candidates"] });
+      queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
+      queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
+      toast.success(
+        data.added > 0
+          ? t("admin.surveys.participantsAdded", { count: data.added, defaultValue: "{{count}} startups inscritas" })
+          : t("admin.surveys.participantsUpToDate", "Todas as startups elegíveis já estão inscritas"),
+      );
+    },
+    onError: (error) => {
+      toast.error(t("admin.surveys.syncFailed", "Não foi possível inscrever as startups"));
+      logger.error('operation_error', {}, error);
+    },
+  });
+}
+
+
+
 // Survey instances for a campaign
 export function useCampaignInstances(campaignId: string | null) {
   return useQuery({
