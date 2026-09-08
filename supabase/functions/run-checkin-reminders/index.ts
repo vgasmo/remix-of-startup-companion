@@ -102,11 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
         definition:checkin_definitions(name),
         workspace:workspaces(
           startup:startups(name),
-          members:workspace_users(
-            user_id,
-            role,
-            profile:profiles(email, full_name)
-          )
+          members:workspace_users(user_id, role)
         )
       `)
       .eq("status", "pending")
