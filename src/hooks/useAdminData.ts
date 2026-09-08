@@ -1,5 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { logger } from '@/lib/logger';
+
+/** Hard cap for admin-wide lists: keeps us below PostgREST's implicit row cap
+ *  and makes truncation observable instead of silent. */
+const ADMIN_LIST_LIMIT = 5000;
 import { notify } from "@/lib/notify";
 
 import i18n from '@/i18n';
@@ -202,8 +207,13 @@ export function useWorkspaceUsers() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('workspace_users')
-        .select('id, workspace_id, user_id, role, active, created_at');
+        .select('id, workspace_id, user_id, role, active, created_at')
+        .order('created_at', { ascending: false })
+        .limit(ADMIN_LIST_LIMIT);
       if (error) throw error;
+      if (data && data.length === ADMIN_LIST_LIMIT) {
+        logger.warn('[useWorkspaceUsers] result truncated at limit', { limit: ADMIN_LIST_LIMIT });
+      }
       return data;
     },
   });
@@ -286,8 +296,12 @@ export function useAllWorkspaces() {
           startup:startups(id, name),
           program:programs(id, name)
         `)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(ADMIN_LIST_LIMIT);
       if (error) throw error;
+      if (data && data.length === ADMIN_LIST_LIMIT) {
+        logger.warn('[useAllWorkspaces] result truncated at limit', { limit: ADMIN_LIST_LIMIT });
+      }
       return data;
     },
   });

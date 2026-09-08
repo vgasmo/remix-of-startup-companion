@@ -109,11 +109,15 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
   const { data: startupContact } = useQuery({
     queryKey: ['workspace-startup-contact', workspaceId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('workspaces')
         .select('startup:startups(main_contact_email)')
         .eq('id', workspaceId)
         .maybeSingle();
+      if (error) {
+        logger.warn('[CalendarTab] failed to load startup contact', { workspaceId }, error);
+        return null;
+      }
       return (data?.startup as { main_contact_email: string | null } | null)?.main_contact_email || null;
     },
     enabled: !!workspaceId,

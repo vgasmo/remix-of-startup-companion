@@ -181,7 +181,8 @@ export function AdminBackoffice() {
   const { data: programs } = useQuery({
     queryKey: ['programs-list'],
     queryFn: async () => {
-      const { data } = await supabase.from('programs').select('id, name').order('name');
+      const { data, error } = await supabase.from('programs').select('id, name').order('name');
+      if (error) throw error;
       return data || [];
     },
   });
@@ -189,10 +190,12 @@ export function AdminBackoffice() {
   const { data: consultants } = useQuery({
     queryKey: ['consultants-list'],
     queryFn: async () => {
-      const { data: roleData } = await supabase.from('user_roles').select('user_id').eq('role', 'consultor');
+      const { data: roleData, error: roleError } = await supabase.from('user_roles').select('user_id').eq('role', 'consultor');
+      if (roleError) throw roleError;
       if (!roleData?.length) return [];
       const userIds = roleData.map(r => r.user_id);
-      const { data } = await supabase.from('profiles_safe').select('id, full_name, email, avatar_url').in('id', userIds);
+      const { data, error } = await supabase.from('profiles_safe').select('id, full_name, email, avatar_url').in('id', userIds);
+      if (error) throw error;
       return data || [];
     },
   });

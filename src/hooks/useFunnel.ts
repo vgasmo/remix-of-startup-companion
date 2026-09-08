@@ -4,6 +4,9 @@ import { notify } from "@/lib/notify";
 import { type FunnelStage, type FunnelType } from '@/constants/funnelStages';
 import { logger } from '@/lib/logger';
 
+/** Explicit cap so the CRM board never silently drops leads past PostgREST's default. */
+const FUNNEL_ITEMS_LIMIT = 5000;
+
 import i18n from '@/i18n';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
 const t = i18n.t.bind(i18n);
@@ -52,7 +55,8 @@ export function useFunnelItems(filters?: { stage?: FunnelStage; consultantId?: s
       let query = supabase
         .from('funnel_items')
         .select('id, type, stage, organization_name, contact_name, contact_email, contact_phone, source, notes, tags, owner_consultant_id, program_id, linked_startup_id, linked_workspace_id, linked_contract_id, first_contact_at, qualified_at, converted_at, next_action_at, next_action_description, last_activity_at, deal_value, deal_currency, expected_close_date, win_probability, loss_reason, metadata_json, created_at, updated_at')
-        .order('updated_at', { ascending: false });
+        .order('updated_at', { ascending: false })
+        .limit(FUNNEL_ITEMS_LIMIT);
 
       if (filters?.stage) {
         query = query.eq('stage', filters.stage);
@@ -63,6 +67,9 @@ export function useFunnelItems(filters?: { stage?: FunnelStage; consultantId?: s
 
       const { data, error } = await query;
       if (error) throw error;
+      if (data && data.length === FUNNEL_ITEMS_LIMIT) {
+        logger.warn('[useFunnelItems] result truncated at limit', { limit: FUNNEL_ITEMS_LIMIT });
+      }
 
       // Fetch owner profiles
       const ownerIds = [...new Set((data || []).filter(d => d.owner_consultant_id).map(d => d.owner_consultant_id))];

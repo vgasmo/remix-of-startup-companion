@@ -94,7 +94,7 @@ export function FounderHelpNudge({
     if (workspaceId) {
       navigate(`/workspace/${workspaceId}?tab=agenda`);
     } else {
-      navigate('/agenda');
+      navigate('/my-workspaces');
     }
   };
 

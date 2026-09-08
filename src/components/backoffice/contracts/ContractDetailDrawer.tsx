@@ -94,11 +94,12 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
     queryKey: ['contract-linked-intake', contract?.id],
     queryFn: async () => {
       if (!contract?.id) return null;
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('contract_intakes')
         .select('*')
         .eq('contract_id', contract.id)
         .maybeSingle();
+      if (error) throw error;
       return data || null;
     },
     enabled: !!contract?.id,

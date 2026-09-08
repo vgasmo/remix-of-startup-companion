@@ -221,10 +221,13 @@ export function useSessions(workspaceId: string | undefined) {
       let profiles: { id: string; full_name: string | null; avatar_url: string | null }[] = [];
       
       if (creatorIds.length > 0) {
-        const { data } = await supabase
+        const { data, error: profilesError } = await supabase
           .from('profiles_safe')
           .select('id, full_name, avatar_url')
           .in('id', creatorIds);
+        if (profilesError) {
+          logger.warn('[useSessions] failed to load creator profiles', { count: creatorIds.length }, profilesError);
+        }
         profiles = data || [];
       }
 

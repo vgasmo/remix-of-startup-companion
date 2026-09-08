@@ -58,10 +58,11 @@ export function FounderRequestsInbox() {
     queryKey: ['founder-request-workspaces', workspaceIds],
     enabled: workspaceIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('workspaces')
         .select('id, name, startup:startups(name)')
         .in('id', workspaceIds);
+      if (error) throw error;
       const map: Record<string, { name: string | null; startupName: string | null }> = {};
       (data || []).forEach((w: any) => {
         map[w.id] = { name: w.name ?? null, startupName: w.startup?.name ?? null };
@@ -74,10 +75,11 @@ export function FounderRequestsInbox() {
     queryKey: ['founder-request-creators', creatorIds],
     enabled: creatorIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('profiles_safe')
         .select('id, full_name, email')
         .in('id', creatorIds);
+      if (error) throw error;
       const map: Record<string, { name: string | null; email: string | null }> = {};
       (data || []).forEach((p: any) => {
         map[p.id] = { name: p.full_name ?? null, email: p.email ?? null };

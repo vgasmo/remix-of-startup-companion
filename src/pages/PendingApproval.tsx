@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
+import { logger } from '@/lib/logger';
 import startupLeiriaLogo from '@/assets/startup-leiria.svg';
 
 export default function PendingApproval() {
@@ -18,11 +19,12 @@ export default function PendingApproval() {
     if (!profile?.id) return;
     setIsChecking(true);
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('account_status')
         .eq('id', profile.id)
         .maybeSingle();
+      if (error) logger.warn('[PendingApproval] status check failed', {}, error);
       if (data?.account_status && data.account_status !== 'pending') {
         // Refresh the in-memory profile BEFORE navigating so ProtectedRoute's
         // isAccountPending guard sees the new status; otherwise the user just
