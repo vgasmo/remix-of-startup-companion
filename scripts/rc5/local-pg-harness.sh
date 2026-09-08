@@ -67,8 +67,9 @@ createdb -h "$SOCK" -p "$PORT" -U postgres "$DB"
   CREATE EXTENSION pg_stat_statements WITH SCHEMA extensions;
   CREATE PUBLICATION supabase_realtime;" >/dev/null
 "${PSQL[@]}" -f "$ROOT/scripts/rc5/supabase-shim.sql" >/dev/null
+"${PSQL[@]}" -f "$ROOT/scripts/rc5/legacy-baseline.sql" >/dev/null
 "${PSQL[@]}" -f "$PGTAP_SQL" >/dev/null
-log "base + shim + pgTAP ready"
+log "base + shim + legacy baseline + pgTAP ready"
 
 # ---- forward replay -------------------------------------------------------
 STRIP=$(mktemp -d)
@@ -85,6 +86,9 @@ for f in "$STRIP"/*.sql; do
   fi
 done
 log "forward replay finished ($failed failing migration file(s))"
+if [ "$failed" != "0" ] && [ "${RC5_ALLOW_REPLAY_FAILURES:-0}" != "1" ]; then
+  die "forward replay is not clean ($failed file(s)); set RC5_ALLOW_REPLAY_FAILURES=1 to inspect anyway"
+fi
 
 # Production grants anon/authenticated/service_role on every public table (Supabase
 # platform default privileges); RLS is the only boundary. Mirror that here or

@@ -295,3 +295,16 @@ financial_scenario_atomic 4.
 | P4.6 contradictory release docs | `FIXED + PASS` | `PUBLISH_READY.md` / `PRODUCTION_READINESS.md` marked SUPERSEDED |
 | P4.7 GitHub job logs (`deno-check-edge`, `db-tests`, `e2e`) | `BLOCKED` | logs not reachable from this environment; must be supplied by the release lead |
 | Staging behavioural gates | `NOT PROVEN` | `RC5_ALLOW_STAGING_TESTS` requires a staging project + secrets |
+
+## Fecho P2–P4 — suites de base de dados verdes numa base vazia (2026-09-08)
+
+| Item | Estado | Prova |
+|---|---|---|
+| Replay integral das migrações numa base vazia | `PASS` | `scripts/rc5/local-pg-harness.sh` → `forward replay finished (0 failing migration file(s))`. O harness passa agora a falhar (exit != 0) se o replay não estiver limpo, salvo `RC5_ALLOW_REPLAY_FAILURES=1`. |
+| Tabelas sem migração no repositório (`investor_readiness_items`, `workspace_readiness_status`, `investor_update_templates`) | `PASS` | DDL de produção reproduzida em `scripts/rc5/legacy-baseline.sql`, aplicada antes do replay. Colunas/tipos/defaults conferidos contra o esquema real. |
+| `realtime.messages` ausente do shim | `PASS` | tabela + RLS + grants acrescentados a `scripts/rc5/supabase-shim.sql`. |
+| Suites pgTAP | `PASS` | 23 suites, ok=210, fail=0, errors=0. |
+| Novo: kill switch de notificações a founders (comportamental) | `PASS` | `supabase/tests/founder_notifications_kill_switch.test.sql` ok=7 — OFF entrega, ON descarta founder/team_member, staff mantém-se, helper coerente. |
+| Novo: inscrição automática em campanhas de inquérito | `PASS` | `supabase/tests/survey_auto_enroll.test.sql` ok=6 — só campanhas ativas com `auto_enroll` inscrevem, unicidade `(campaign_id, workspace_id)`, RLS em `survey_writebacks`. |
+| Novo: isolamento da "Última Atividade" + filtro de atenção | `PASS` | `supabase/tests/ecosystem_activity_isolation.test.sql` ok=4 — atividade de um workspace não contamina o vizinho; `p_needs_attention` filtra corretamente. |
+| Testes manuais da lista final | `PENDING (humano)` | `docs/rc5/manual-test-runsheet.md` — 12 passos que exigem contas reais, email e tenant Microsoft. |
