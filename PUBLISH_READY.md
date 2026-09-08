@@ -49,6 +49,7 @@ Quando `docs/rc5/results.json` indicar `"overall": "pass"` e o smoke manual
 
 ## 3. Documentos relacionados
 
+- `docs/rc5/staging-setup-guide.md` — como montar o ambiente de teste separado
 - `docs/rc5/results.md` — resultado da última execução automática
 - `docs/rc5/evidence-ledger.md` — registo de provas por invariante
 - `docs/rc5/staging-runbook.md` — como correr a validação em staging
