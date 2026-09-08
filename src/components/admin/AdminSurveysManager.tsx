@@ -60,6 +60,10 @@ import {
   useReopenCampaign,
   useSyncCampaignParticipants,
   useUpdateCampaignEndDate,
+  useCampaignCandidates,
+  useToggleCampaignParticipant,
+  useEnrollAllCandidates,
+
   useCampaignInstances,
   useCampaignStats,
   SurveyCampaign,
