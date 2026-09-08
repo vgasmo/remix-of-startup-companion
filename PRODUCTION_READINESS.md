@@ -1,5 +1,10 @@
 # Production Readiness Audit Report
 
+> **SUPERSEDED — historical document.** The authoritative release status is
+> `docs/rc5/evidence-ledger.md` (verdict: **NO-GO** until the staging gates run).
+> Do not treat the checkmarks below as a current release approval.
+
+
 **Audit Date**: 2026-01-09 (Updated)  
 **Status**: ✅ Production Ready
 

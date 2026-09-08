@@ -268,3 +268,30 @@ financial_scenario_atomic 4.
 - `app_role` labels are `admin, consultor, mentor_externo, founder, team_member, backoffice`.
   There is no `mentor` label; `send-workspace-invite` correctly restricts invitations to
   `founder` / `team_member`.
+
+## RC7 round P2-P4 (2026-09-08)
+
+| Item | Status | Evidence |
+|---|---|---|
+| P2.1 signature provider hydration / toggle preservation | `FIXED + PASS` | typecheck + lint green; credentials no longer cleared on toggle |
+| P2.2 termination invalidations, founder links, bulk partial failures | `FIXED + PASS` | source fixes; partial-failure counts surfaced |
+| P2.3 playbook invalidations + fresh workspace list | `FIXED + PASS` | query keys corrected |
+| P2.4 realtime invalidation keys | `FIXED + PASS` | `useRealtimeWorkspaces.ts` |
+| P2.5 explicit `{ data, error }` handling in listed flows | `FIXED + PASS` | approvals, consultant assignment, CRM stage, financial snapshot, quick sessions |
+| P2.6 session load retry + duplicate-submit guard | `FIXED + PASS` | source fixes |
+| P2.7 admin deep links | `FIXED + PASS` | source fixes |
+| P2.8 contract PDF requires active membership | `FIXED + PASS` | server-side membership check |
+| P2.9 admin-only surveys + `launch_survey_campaign` | `FIXED + PASS` | RPC + gated UI |
+| P2.10 legacy 13-arg `list_ecosystem_items_v2` dropped; active statuses corrected | `FIXED + PASS` | migration 2026-09-08 |
+| P2.11 backoffice keeps access to inactive programs | `FIXED + PASS` | programs SELECT policy rewritten |
+| P2.12 MCP rate limits on all tools; CRM `contact_email` removed | `FIXED + PASS` | `src/lib/mcp/rateLimit.ts` + 6 tools |
+| P2.13 stage-gate queue moved server-side (trigger) | `FIXED + PASS` | `supabase/tests/stage_gate_review_queue.test.sql` ok=3 fail=0 |
+| P3 interpolation + PT-PT leakage + EN-word heuristic | `FIXED + PASS` | `i18n-quality`, `i18n-check` (9071 keys), `i18n-lint` 0 problems |
+| P4.1 CI env guard restricted to public Vite keys | `FIXED + PASS` | `.github/workflows/ci.yml` |
+| P4.2 migration-scan allowlist entry for survey seed | `FIXED + PASS` | `scripts/ci/migration-scan-allowlist.txt` |
+| P4.3 i18n sync clean | `FIXED + PASS` | `scripts/i18n-sync.cjs` -> 0 added/filled/fixed |
+| P4.4 pgTAP coverage for changed RPCs | `FIXED + PASS` | 20 suites under `supabase/tests/`, incl. `serialize_program_tree_privileges` |
+| P4.5 dead edge-function audit | `FIXED + PASS` | `docs/rc5/dead-edge-functions.md` (12 functions, dispositions recorded) |
+| P4.6 contradictory release docs | `FIXED + PASS` | `PUBLISH_READY.md` / `PRODUCTION_READINESS.md` marked SUPERSEDED |
+| P4.7 GitHub job logs (`deno-check-edge`, `db-tests`, `e2e`) | `BLOCKED` | logs not reachable from this environment; must be supplied by the release lead |
+| Staging behavioural gates | `NOT PROVEN` | `RC5_ALLOW_STAGING_TESTS` requires a staging project + secrets |
