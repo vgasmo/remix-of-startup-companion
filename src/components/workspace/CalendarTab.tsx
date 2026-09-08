@@ -115,7 +115,7 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
         .eq('id', workspaceId)
         .maybeSingle();
       if (error) {
-        logger.warn('[CalendarTab] failed to load startup contact', { workspaceId }, error);
+        logger.warn('[CalendarTab] failed to load startup contact', { workspaceId, error: String(error) });
         return null;
       }
       return (data?.startup as { main_contact_email: string | null } | null)?.main_contact_email || null;

@@ -375,7 +375,7 @@ export function useGlobalSearch(filters: SearchFilters) {
             .from('workspaces')
             .select('id, stage, status, updated_at, startup:startups(name), program:programs(name)')
             .limit(50);
-          if (error) logger.warn('[useGlobalSearch] workspace search failed', {}, error);
+          if (error) logger.warn('[useGlobalSearch] workspace search failed', { error: String(error) });
           const q = searchTerm.toLowerCase();
           return (data || [])
             .filter((w: any) =>
@@ -404,7 +404,7 @@ export function useGlobalSearch(filters: SearchFilters) {
             .select('id, contract_number, status, updated_at, workspace_id, startup:startups(name)')
             .or(`contract_number.ilike.${ilikeTerm}`)
             .limit(20);
-          if (error) logger.warn('[useGlobalSearch] contract search failed', {}, error);
+          if (error) logger.warn('[useGlobalSearch] contract search failed', { error: String(error) });
           return (data || []).map((c: any) => ({
             type: 'contract' as const,
             id: c.id,
@@ -458,7 +458,7 @@ export function useGlobalSearch(filters: SearchFilters) {
             .select('id, full_name, email')
             .or(`full_name.ilike.${ilikeTerm},email.ilike.${ilikeTerm}`)
             .limit(15);
-          if (error) logger.warn('[useGlobalSearch] people search failed', {}, error);
+          if (error) logger.warn('[useGlobalSearch] people search failed', { error: String(error) });
           return (data || []).map((p: any) => ({
             type: 'person' as const,
             id: p.id,

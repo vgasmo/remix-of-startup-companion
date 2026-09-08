@@ -24,7 +24,7 @@ export default function PendingApproval() {
         .select('account_status')
         .eq('id', profile.id)
         .maybeSingle();
-      if (error) logger.warn('[PendingApproval] status check failed', {}, error);
+      if (error) logger.warn('[PendingApproval] status check failed', { error: String(error) });
       if (data?.account_status && data.account_status !== 'pending') {
         // Refresh the in-memory profile BEFORE navigating so ProtectedRoute's
         // isAccountPending guard sees the new status; otherwise the user just

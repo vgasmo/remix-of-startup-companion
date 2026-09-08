@@ -226,7 +226,7 @@ export function useSessions(workspaceId: string | undefined) {
           .select('id, full_name, avatar_url')
           .in('id', creatorIds);
         if (profilesError) {
-          logger.warn('[useSessions] failed to load creator profiles', { count: creatorIds.length }, profilesError);
+          logger.warn('[useSessions] failed to load creator profiles', { count: creatorIds.length, error: String(profilesError) });
         }
         profiles = data || [];
       }

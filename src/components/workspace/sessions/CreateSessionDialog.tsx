@@ -214,7 +214,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
       .eq('id', user.id)
       .maybeSingle();
     if (error) {
-      logger.warn('[CreateSessionDialog] failed to load current user profile', {}, error);
+      logger.warn('[CreateSessionDialog] failed to load current user profile', { error: String(error) });
       return null;
     }
     return data;
