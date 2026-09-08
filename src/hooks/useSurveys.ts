@@ -366,6 +366,30 @@ export function useReopenCampaign() {
   });
 }
 
+/** Update the campaign end date. */
+export function useUpdateCampaignEndDate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ campaignId, endsAt }: { campaignId: string; endsAt: string }) => {
+      const { error } = await supabase
+        .from("survey_campaigns")
+        .update({ ends_at: endsAt })
+        .eq("id", campaignId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
+      toast.success(t("admin.surveys.endDateUpdated", "Data de fim atualizada"));
+    },
+    onError: (error) => {
+      toast.error(t("admin.surveys.endDateUpdateFailed", "Não foi possível atualizar a data de fim"));
+      logger.error('operation_error', {}, error);
+    },
+  });
+}
+
 /**
  * Enroll every eligible active workspace that has no instance yet.
  * Idempotent: existing instances are left untouched.
