@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, forwardRef, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -51,7 +51,7 @@ export function FocusModeProvider({ children, defaultFocused = true, persistKey 
   );
 }
 
-export function FocusModeToggle({ className }: { className?: string }) {
+export const FocusModeToggle = forwardRef<HTMLButtonElement, { className?: string }>(function FocusModeToggle({ className }, ref) {
   const { t } = useTranslation();
   const { isFocused, toggle } = useFocusMode();
   const targetLabel = isFocused
@@ -72,6 +72,7 @@ export function FocusModeToggle({ className }: { className?: string }) {
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
+          ref={ref}
           variant="outline"
           size="sm"
           onClick={handleClick}
@@ -100,4 +101,4 @@ export function FocusModeToggle({ className }: { className?: string }) {
       </TooltipContent>
     </Tooltip>
   );
-}
+});
