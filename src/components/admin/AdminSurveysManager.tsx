@@ -59,6 +59,7 @@ import {
   useCloseCampaign,
   useReopenCampaign,
   useSyncCampaignParticipants,
+  useUpdateCampaignEndDate,
   useCampaignInstances,
   useCampaignStats,
   SurveyCampaign,
@@ -219,6 +220,11 @@ function CampaignCard({
 }) {
   const { t, i18n } = useTranslation();
   const [showQuestions, setShowQuestions] = useState(false);
+  const [showEndDate, setShowEndDate] = useState(false);
+  const [endDateValue, setEndDateValue] = useState(
+    campaign.ends_at ? new Date(campaign.ends_at).toISOString().split("T")[0] : "",
+  );
+  const updateEndDate = useUpdateCampaignEndDate();
   const { data: stats } = useCampaignStats(campaign.id);
   const launchCampaign = useLaunchCampaign();
   const closeCampaign = useCloseCampaign();
@@ -333,6 +339,10 @@ function CampaignCard({
               {t("admin.surveys.enrollMissing", "Inscrever novas startups")}
             </Button>
           )}
+          <Button size="sm" variant="outline" onClick={() => setShowEndDate(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            {t("admin.surveys.editEndDate", "Definir data de fim")}
+          </Button>
           <Button size="sm" variant="outline" onClick={() => setShowQuestions(true)}>
             <ListChecks className="h-4 w-4 mr-2" />
             {t("admin.surveys.viewQuestions", "Ver questões")}
@@ -342,6 +352,50 @@ function CampaignCard({
             {t("admin.surveys.viewResponses", "View Responses")}
           </Button>
         </div>
+
+        <Dialog open={showEndDate} onOpenChange={setShowEndDate}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>{t("admin.surveys.editEndDate", "Definir data de fim")}</DialogTitle>
+              <DialogDescription>
+                {t(
+                  "admin.surveys.editEndDateDesc",
+                  "As startups podem responder até esta data.",
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2">
+              <Label htmlFor={`ends-at-${campaign.id}`}>
+                {t("admin.surveys.endDate", "End")}
+              </Label>
+              <Input
+                id={`ends-at-${campaign.id}`}
+                type="date"
+                value={endDateValue}
+                onChange={(e) => setEndDateValue(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowEndDate(false)}>
+                {t("common.cancel", "Cancelar")}
+              </Button>
+              <Button
+                disabled={!endDateValue || updateEndDate.isPending}
+                onClick={() => {
+                  updateEndDate.mutate(
+                    {
+                      campaignId: campaign.id,
+                      endsAt: new Date(`${endDateValue}T23:59:59`).toISOString(),
+                    },
+                    { onSuccess: () => setShowEndDate(false) },
+                  );
+                }}
+              >
+                {t("common.save", "Guardar")}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={showQuestions} onOpenChange={setShowQuestions}>
           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
