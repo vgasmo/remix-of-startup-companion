@@ -1437,7 +1437,10 @@
       "type": "Tipo",
       "viewQuestions": "Ver questões",
       "viewQuestionsDesc": "Questões incluídas neste inquérito",
-      "viewResponses": "Ver Responses"
+      "viewResponses": "Ver Responses",
+      "confirmRemoveParticipant": "Remover esta startup do inquérito?",
+      "confirmRemoveParticipantDesc": "{{name}} já começou a responder. As respostas guardadas serão apagadas e não podem ser recuperadas.",
+      "confirmRemoveParticipantAction": "Remover e apagar respostas"
     },
     "suspend": "Suspender",
     "suspendUser": "Suspend Utilizador",

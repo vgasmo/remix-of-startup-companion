@@ -1437,7 +1437,10 @@
       "type": "Type",
       "viewQuestions": "View questions",
       "viewQuestionsDesc": "Questions included in this survey",
-      "viewResponses": "View Responses"
+      "viewResponses": "View Responses",
+      "confirmRemoveParticipant": "Remove this startup from the survey?",
+      "confirmRemoveParticipantDesc": "{{name}} has already started answering. Saved answers will be deleted and cannot be recovered.",
+      "confirmRemoveParticipantAction": "Remove and delete answers"
     },
     "suspend": "Suspend",
     "suspendUser": "Suspend User",
