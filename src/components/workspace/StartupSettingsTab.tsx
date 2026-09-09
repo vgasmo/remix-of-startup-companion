@@ -270,7 +270,7 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
       {
         onSuccess: async () => {
           // Also persist the non-sensitive edits directly.
-          const { error } = await supabase.from('startups').update(directPayload).eq('id', startupId as never);
+          const { error } = await supabase.from('startups').update(directPayload as never).eq('id', startupId);
           if (error) {
             notify.warn(`${t('common.warning', 'Aviso')}: ${error.message}`);
           }
