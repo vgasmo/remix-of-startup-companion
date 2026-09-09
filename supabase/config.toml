@@ -346,3 +346,7 @@ verify_jwt = false
 # Survey write-back — token validado em runtime (getUser + permissões).
 [functions.apply-survey-responses]
 verify_jwt = false
+
+# Convites de inquérito — staff (JWT validado em runtime via requireCronOrStaff).
+[functions.send-survey-invites]
+verify_jwt = false
