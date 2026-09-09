@@ -313,7 +313,7 @@ Deno.serve(async (req) => {
         const { error } = await resend.emails.send({
           from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
           to: recipient.email,
-          reply_to: REPLY_TO,
+          replyTo: REPLY_TO,
           subject,
           html,
         });
