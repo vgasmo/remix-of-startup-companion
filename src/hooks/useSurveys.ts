@@ -192,7 +192,7 @@ export function useUpdateSurveyDefinition() {
 
       const { data, error } = await supabase
         .from("survey_definitions")
-        .update(updateData)
+        .update(updateData as never)
         .eq("id", id)
         .select()
         .single();
@@ -824,7 +824,7 @@ export function useSaveSurveyResponses() {
 
       const { error: updateError } = await supabase
         .from("survey_instances")
-        .update(updateData)
+        .update(updateData as never)
         .eq("id", instanceId);
 
       if (updateError) throw updateError;

@@ -221,7 +221,7 @@ export function useUpdateAlertRule() {
 
       const { error } = await supabase
         .from('program_alert_rules')
-        .update(updates)
+        .update(updates as never)
         .eq('id', id);
 
       if (error) throw error;

@@ -754,7 +754,7 @@ export default function AdminDataImport() {
 
             const { error } = await supabase
               .from('funnel_items')
-              .update(updateData)
+              .update(updateData as never)
               .eq('id', existingId);
 
             if (error) throw error;

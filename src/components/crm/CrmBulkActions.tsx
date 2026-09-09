@@ -98,7 +98,7 @@ export function CrmBulkActions({
       for (const [val, ids] of groups.entries()) {
         const { error } = await supabase
           .from('funnel_items')
-          .update({ [column]: val as any, updated_at: new Date().toISOString() })
+          .update({ [column]: val as any, updated_at: new Date().toISOString() } as never)
           .in('id', ids);
         if (error) throw error;
       }

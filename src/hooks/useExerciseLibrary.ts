@@ -140,7 +140,7 @@ export function useUpdateExercise() {
 
       const { data, error } = await supabase
         .from('exercise_library')
-        .update(updateData)
+        .update(updateData as never)
         .eq('id', id)
         .select()
         .single();

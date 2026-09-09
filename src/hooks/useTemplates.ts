@@ -130,7 +130,7 @@ export function useUpdateTemplate() {
 
       const { data, error } = await supabase
         .from('templates')
-        .update(updateData)
+        .update(updateData as never)
         .eq('id', id)
         .select()
         .single();

@@ -66,7 +66,7 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
 
       const { error: updErr } = await supabase
         .from('startup_contracts')
-        .update(patch)
+        .update(patch as never)
         .eq('id', contract.id);
       if (updErr) throw updErr;
 
