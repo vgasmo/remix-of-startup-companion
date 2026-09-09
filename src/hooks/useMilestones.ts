@@ -141,7 +141,7 @@ export function useUpdateMilestone(workspaceId: string) {
 
       const { data, error } = await supabase
         .from('milestones')
-        .update(updateData)
+        .update(updateData as never)
         .eq('id', id)
         .select()
         .single();

@@ -124,7 +124,7 @@ export function useUpdateActionItem(workspaceId: string) {
 
       const { error } = await supabase
         .from('action_items')
-        .update(updateData)
+        .update(updateData as never)
         .eq('id', id);
 
       if (error) throw error;
@@ -387,7 +387,7 @@ export function useBulkUpdateActions(workspaceId: string) {
 
       const { error } = await supabase
         .from('action_items')
-        .update(updateData)
+        .update(updateData as never)
         .in('id', ids);
 
       if (error) throw error;

@@ -98,7 +98,7 @@ export function useUpdateWorkQueueItem() {
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<WorkQueueItem> }) => {
       const { error } = await supabase
         .from('staff_work_queue_items')
-        .update(updates)
+        .update(updates as never)
         .eq('id', id);
 
       if (error) throw error;

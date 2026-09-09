@@ -198,7 +198,7 @@ export function useUpdateTemplateRequest() {
       }
       const { data, error } = await supabase
         .from('template_requests')
-        .update(patch)
+        .update(patch as never)
         .eq('id', input.id)
         .select()
         .single();

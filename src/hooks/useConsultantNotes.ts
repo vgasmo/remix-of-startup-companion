@@ -97,7 +97,7 @@ export function useUpdateConsultantNote() {
 
       const { error } = await supabase
         .from('consultant_notes')
-        .update(updates)
+        .update(updates as never)
         .eq('id', id);
 
       if (error) throw error;

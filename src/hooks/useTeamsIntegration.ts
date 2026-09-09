@@ -89,7 +89,7 @@ export function useUpdateTeamsSettings(workspaceId?: string, programId?: string)
           // Update existing global settings
           const { data, error } = await supabase
             .from('teams_integration_settings')
-            .update(upsertData)
+            .update(upsertData as never)
             .eq('id', existing.id)
             .select()
             .single();

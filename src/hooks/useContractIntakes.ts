@@ -430,7 +430,7 @@ export function useTransitionIntakeStatus() {
 
       const { error } = await supabase
         .from('contract_intakes')
-        .update(updateFields)
+        .update(updateFields as never)
         .eq('id', params.intakeId);
       if (error) throw error;
 

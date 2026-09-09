@@ -236,7 +236,7 @@ export function AdminBackoffice() {
         stage_id: null,
         current_week: targetType === 'acceleration' ? 1 : null,
       };
-      const { error } = await supabase.from('workspaces').update(patch).eq('id', workspaceId);
+      const { error } = await supabase.from('workspaces').update(patch as never).eq('id', workspaceId);
       if (error) throw error;
     },
     onSuccess: () => {

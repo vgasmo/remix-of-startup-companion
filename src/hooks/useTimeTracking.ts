@@ -125,7 +125,7 @@ export function useUpdateTimeEntry() {
     mutationFn: async ({ id, ...updates }: Partial<TimeEntry> & { id: string }) => {
       const { error } = await supabase
         .from('time_entries')
-        .update(updates)
+        .update(updates as never)
         .eq('id', id);
       if (error) throw error;
     },

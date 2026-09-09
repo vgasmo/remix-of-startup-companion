@@ -79,7 +79,7 @@ function useUpdateProgramWeek(programId: string) {
       if (params.meeting_url !== undefined) updates.meeting_url = params.meeting_url;
       const { error } = await supabase
         .from('program_weeks')
-        .update(updates)
+        .update(updates as never)
         .eq('id', params.weekId);
       if (error) throw error;
     },

@@ -133,7 +133,7 @@ export function useAttachEmailToCrm() {
 
       const { error } = await supabase
         .from('communication_log')
-        .update(update)
+        .update(update as never)
         .eq('id', params.emailId);
       if (error) throw error;
     },
