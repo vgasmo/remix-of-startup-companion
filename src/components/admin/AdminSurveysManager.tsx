@@ -15,6 +15,8 @@ import {
   UserPlus,
   Users,
   ListChecks,
+  Mail,
+
 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -67,6 +69,8 @@ import {
   useCampaignCandidates,
   useToggleCampaignParticipant,
   useEnrollAllCandidates,
+  useSendSurveyInvites,
+
 
   useCampaignInstances,
   useCampaignStats,
