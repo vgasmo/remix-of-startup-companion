@@ -404,6 +404,18 @@ function CampaignCard({
             <ListChecks className="h-4 w-4 mr-2" />
             {t("admin.surveys.viewQuestions", "Ver questões")}
           </Button>
+          {campaign.status === "active" && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleSendInvites}
+              disabled={sendInvites.isPending}
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              {t("admin.surveys.sendInvites", "Enviar convites por email")}
+            </Button>
+          )}
+
           <Button size="sm" variant="outline" onClick={onViewResponses}>
             <Eye className="h-4 w-4 mr-2" />
             {t("admin.surveys.viewResponses", "View Responses")}
