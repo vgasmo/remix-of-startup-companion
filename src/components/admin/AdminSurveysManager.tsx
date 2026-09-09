@@ -72,6 +72,8 @@ import {
   useCampaignStats,
   SurveyCampaign,
 } from "@/hooks/useSurveys";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { SurveyTemplateEditor } from "./SurveyTemplateEditor";
 import { SurveyResponsesViewer } from "./SurveyResponsesViewer";
 
@@ -250,6 +252,33 @@ function CampaignCard({
     c.startupName.toLowerCase().includes(participantSearch.toLowerCase()),
   );
   const enrolledCount = candidates.filter((c) => c.enrolled).length;
+  const { confirm, dialogProps: confirmProps } = useConfirmDialog();
+
+  const handleToggleParticipant = (
+    c: { workspaceId: string; startupName: string; instanceStatus?: string | null },
+    checked: boolean,
+  ) => {
+    const run = () =>
+      toggleParticipant.mutate({
+        campaignId: campaign.id,
+        workspaceId: c.workspaceId,
+        enroll: checked,
+      });
+    if (!checked && c.instanceStatus === "in_progress") {
+      confirm({
+        title: t("admin.surveys.confirmRemoveParticipant", "Remover esta startup do inquérito?"),
+        description: t("admin.surveys.confirmRemoveParticipantDesc", {
+          name: c.startupName,
+          defaultValue:
+            "{{name}} já começou a responder. As respostas guardadas serão apagadas e não podem ser recuperadas.",
+        }),
+        confirmLabel: t("admin.surveys.confirmRemoveParticipantAction", "Remover e apagar respostas"),
+        onConfirm: run,
+      });
+      return;
+    }
+    run();
+  };
 
   const locale = i18n.language === "pt" ? pt : undefined;
 
@@ -424,13 +453,7 @@ function CampaignCard({
                       <Checkbox
                         checked={c.enrolled}
                         disabled={toggleParticipant.isPending}
-                        onCheckedChange={(checked) =>
-                          toggleParticipant.mutate({
-                            campaignId: campaign.id,
-                            workspaceId: c.workspaceId,
-                            enroll: checked === true,
-                          })
-                        }
+                        onCheckedChange={(checked) => handleToggleParticipant(c, checked === true)}
                       />
                       <span className="text-sm flex-1">{c.startupName}</span>
                       {c.instanceStatus === "submitted" && (
@@ -446,6 +469,7 @@ function CampaignCard({
                 </div>
               )}
             </ScrollArea>
+            <ConfirmDialog {...confirmProps} />
           </DialogContent>
         </Dialog>
 
