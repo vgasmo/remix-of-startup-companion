@@ -969,7 +969,7 @@ export function useSendSurveyInvites() {
     },
     onError: (error: Error) => {
       toast.error(t("admin.surveys.invitesFailed", "Não foi possível enviar os convites"));
-      logger.error("survey_invites_error", error);
+      logger.error("survey_invites_error", {}, error);
     },
   });
 }
