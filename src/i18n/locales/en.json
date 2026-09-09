@@ -1440,7 +1440,13 @@
       "viewResponses": "View Responses",
       "confirmRemoveParticipant": "Remove this startup from the survey?",
       "confirmRemoveParticipantDesc": "{{name}} has already started answering. Saved answers will be deleted and cannot be recovered.",
-      "confirmRemoveParticipantAction": "Remove and delete answers"
+      "confirmRemoveParticipantAction": "Remove and delete answers",
+      "sendInvites": "Send email invitations",
+      "sendInvitesTitle": "Send email invitations?",
+      "sendInvitesDesc": "{{total}} emails will be sent on behalf of Vítor Ferreira: {{registered}} contacts with an account get the survey link and {{unregistered}} without an account get registration instructions.",
+      "sendInvitesAction": "Send invitations",
+      "invitesSent": "{{count}} invitations sent",
+      "invitesFailed": "Could not send the invitations"
     },
     "suspend": "Suspend",
     "suspendUser": "Suspend User",

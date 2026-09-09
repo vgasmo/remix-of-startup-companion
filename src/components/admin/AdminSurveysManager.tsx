@@ -15,6 +15,8 @@ import {
   UserPlus,
   Users,
   ListChecks,
+  Mail,
+
 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -67,6 +69,8 @@ import {
   useCampaignCandidates,
   useToggleCampaignParticipant,
   useEnrollAllCandidates,
+  useSendSurveyInvites,
+
 
   useCampaignInstances,
   useCampaignStats,
@@ -253,6 +257,24 @@ function CampaignCard({
   );
   const enrolledCount = candidates.filter((c) => c.enrolled).length;
   const { confirm, dialogProps: confirmProps } = useConfirmDialog();
+  const sendInvites = useSendSurveyInvites();
+
+  const handleSendInvites = async () => {
+    const preview = await sendInvites.mutateAsync({ campaignId: campaign.id, dryRun: true });
+    confirm({
+      title: t("admin.surveys.sendInvitesTitle", "Enviar convites por email?"),
+      description: t("admin.surveys.sendInvitesDesc", {
+        total: preview.recipients,
+        registered: preview.registered ?? 0,
+        unregistered: preview.unregistered ?? 0,
+        defaultValue:
+          "Vão ser enviados {{total}} emails em nome de Vítor Ferreira: {{registered}} contactos já com conta recebem o link do inquérito e {{unregistered}} sem conta recebem instruções para se registarem.",
+      }),
+      confirmLabel: t("admin.surveys.sendInvitesAction", "Enviar convites"),
+      onConfirm: () => sendInvites.mutate({ campaignId: campaign.id }),
+    });
+  };
+
 
   const handleToggleParticipant = (
     c: { workspaceId: string; startupName: string; instanceStatus?: string | null },
@@ -400,6 +422,18 @@ function CampaignCard({
             <ListChecks className="h-4 w-4 mr-2" />
             {t("admin.surveys.viewQuestions", "Ver questões")}
           </Button>
+          {campaign.status === "active" && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleSendInvites}
+              disabled={sendInvites.isPending}
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              {t("admin.surveys.sendInvites", "Enviar convites por email")}
+            </Button>
+          )}
+
           <Button size="sm" variant="outline" onClick={onViewResponses}>
             <Eye className="h-4 w-4 mr-2" />
             {t("admin.surveys.viewResponses", "View Responses")}

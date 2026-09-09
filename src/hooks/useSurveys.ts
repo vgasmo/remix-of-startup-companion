@@ -927,3 +927,49 @@ export function useCampaignStats(campaignId: string | null) {
     enabled: !!campaignId,
   });
 }
+
+/**
+ * Sends the survey invitation email (in Vítor Ferreira's name) to every startup
+ * enrolled in the campaign that has not submitted yet. Recipients without an
+ * account get registration instructions and are added to the signup allowlist.
+ * Pass `dryRun` to only count recipients.
+ */
+export function useSendSurveyInvites() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ campaignId, dryRun }: { campaignId: string; dryRun?: boolean }) => {
+      const { data, error } = await invokeWithAuth("send-survey-invites", {
+        body: { campaign_id: campaignId, dry_run: dryRun === true },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(String(data.error));
+      return data as {
+        dry_run?: boolean;
+        sent?: number;
+        recipients: number;
+        registered?: number;
+        unregistered?: number;
+        skipped: number;
+        failures?: { email: string; error: string }[];
+      };
+    },
+    onSuccess: (result, variables) => {
+      if (variables.dryRun) return;
+      queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
+      toast.success(
+        t("admin.surveys.invitesSent", {
+          count: result.sent ?? 0,
+          defaultValue: "{{count}} convites enviados",
+        }),
+      );
+      if (result.failures && result.failures.length > 0) {
+        logger.warn("survey_invites_partial_failure", { failures: result.failures.length });
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(t("admin.surveys.invitesFailed", "Não foi possível enviar os convites"));
+      logger.error("survey_invites_error", {}, error);
+    },
+  });
+}
