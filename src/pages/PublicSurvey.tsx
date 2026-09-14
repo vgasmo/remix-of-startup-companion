@@ -374,12 +374,10 @@ export default function PublicSurvey() {
                   <Save className="h-4 w-4 mr-2" />
                   {t("publicSurvey.saveDraft", "Guardar rascunho")}
                 </Button>
-                {currentSectionIndex === sections.length - 1 && (
-                  <Button onClick={() => handleSave(true)} disabled={!canSubmit() || saving}>
-                    <Send className="h-4 w-4 mr-2" />
-                    {t("publicSurvey.submit", "Submeter respostas")}
-                  </Button>
-                )}
+                <Button onClick={() => handleSave(true)} disabled={saving} loading={saving}>
+                  <Send className="h-4 w-4 mr-2" />
+                  {t("publicSurvey.submit", "Submeter respostas")}
+                </Button>
               </div>
 
               <Button
