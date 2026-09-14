@@ -379,6 +379,13 @@ export default function PublicSurvey() {
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
+
+            <p className="text-center text-sm text-muted-foreground pb-8">
+              {t("publicSurvey.registerHint", "Prefere acompanhar a sua startup com uma conta gratuita?")}{" "}
+              <Link to="/login?mode=signup" className="underline underline-offset-4 hover:text-foreground">
+                {t("publicSurvey.registerCta", "Registar-me na plataforma")}
+              </Link>
+            </p>
           </>
         )}
       </main>
