@@ -30,6 +30,9 @@ interface Body {
   dry_run?: boolean;
   /** Optional allowlist: only these addresses receive the invite. */
   only_emails?: string[];
+  /** Optional denylist: these addresses are skipped (e.g. already invited). */
+  exclude_emails?: string[];
+
   /** Optional ad-hoc recipients attached to a workspace's instance (not stored as contacts). */
   extra_recipients?: { email: string; name?: string | null; workspace_id: string }[];
 }
@@ -307,6 +310,18 @@ Deno.serve(async (req) => {
         if (!allow.has(key)) recipients.delete(key);
       }
     }
+
+    // Optional exclusion: skip addresses that already received the invite.
+    if (Array.isArray(body.exclude_emails) && body.exclude_emails.length > 0) {
+      const deny = new Set(body.exclude_emails.map((e) => (e || '').trim().toLowerCase()).filter(Boolean));
+      for (const key of [...recipients.keys()]) {
+        if (deny.has(key)) {
+          recipients.delete(key);
+          skipped += 1;
+        }
+      }
+    }
+
 
     const emails = [...recipients.keys()];
 
