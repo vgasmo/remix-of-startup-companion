@@ -431,7 +431,7 @@ export function useConvertToStartup() {
           }),
         );
       } else if (data && !data.wasExisting && data.inviteEmail) {
-        notify.warning(
+        notify.warn(
           t('crm.convertInviteFailed', {
             email: data.inviteEmail,
             defaultValue: 'Workspace criado, mas não foi possível enviar o convite para {{email}}. Envie-o manualmente no separador de membros.',
