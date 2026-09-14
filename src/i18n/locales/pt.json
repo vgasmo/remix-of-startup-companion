@@ -3378,6 +3378,8 @@
       "title": "Converter Lead em Workspace"
     },
     "convertedToStartup": "Convertido em startup",
+    "convertInviteSent": "Convite enviado para {{email}} — pode agora ligar-se ao workspace.",
+    "convertInviteFailed": "Workspace criado, mas não foi possível enviar o convite para {{email}}. Envie-o manualmente no separador de membros.",
     "createAndSendContract": "Criar contrato e enviar",
     "createLead": "Criar Lead",
     "createNewLead": "Criar Nova Lead",
