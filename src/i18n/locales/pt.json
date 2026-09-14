@@ -4317,7 +4317,8 @@
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
     "workspaceRestored": "Workspace restaurado",
-    "workspaces": "workspaces"
+    "workspaces": "workspaces",
+    "loadingAll": "A carregar todos os registos…"
   },
   "ecosystemHub": {
     "navLabel": "Hub de Gestão",

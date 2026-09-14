@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -62,6 +62,17 @@ export default function Ecosystem() {
     hasNextPage,
     fetchNextPage,
   } = useEcosystemItems(filters);
+
+  // The "Por Consultor" view groups rows client-side, so partial pagination
+  // produced counts lower than the totals shown in the Startups & Leads tab.
+  // Auto-load remaining pages while that tab is open.
+  useEffect(() => {
+    if (tab !== 'by-consultant') return;
+    if (isLoading || isError) return;
+    if (hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+    }
+  }, [tab, hasNextPage, isFetchingNextPage, isLoading, isError, fetchNextPage]);
 
   const showingCountLabel = t('ecosystem.showingCount', {
     defaultValue: 'A mostrar {{shown}} de {{total}}',
@@ -151,16 +162,10 @@ export default function Ecosystem() {
             ) : (
               <>
                 <ConsultorPortfolioView items={items} ownerId={filters.ownerId} />
-                {hasNextPage && (
-                  <div className="flex justify-center pt-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => fetchNextPage()}
-                      disabled={isFetchingNextPage}
-                    >
-                      {isFetchingNextPage && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                      {t('ecosystem.loadMore', { defaultValue: 'Carregar mais' })}
-                    </Button>
+                {(hasNextPage || isFetchingNextPage) && (
+                  <div className="flex items-center justify-center gap-2 pt-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t('ecosystem.loadingAll', { defaultValue: 'A carregar todos os registos…' })}
                   </div>
                 )}
               </>
