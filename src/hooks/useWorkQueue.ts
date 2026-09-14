@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface WorkQueueItem {
   id: string;
