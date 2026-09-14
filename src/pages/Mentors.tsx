@@ -28,6 +28,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { notify } from "@/lib/notify";
 import { MentorAvailabilitySettings } from '@/components/mentors/MentorAvailabilitySettings';
+import { ConsultantTimeOffSettings } from '@/components/mentors/ConsultantTimeOffSettings';
 import { MentorImpactDashboard } from '@/components/mentors/MentorImpactDashboard';
 import { MentorBookingPanel } from '@/components/mentors/MentorBookingPanel';
 import { FounderMentorRequestPanel } from '@/components/mentors/FounderMentorRequestPanel';
@@ -976,8 +977,9 @@ export default function Mentors() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="availability">
+          <TabsContent value="availability" className="space-y-6">
             <MentorAvailabilitySettings />
+            <ConsultantTimeOffSettings />
           </TabsContent>
 
           <TabsContent value="bookings">
