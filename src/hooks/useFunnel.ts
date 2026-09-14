@@ -423,6 +423,21 @@ export function useConvertToStartup() {
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
       notify.success(t('crm.convertedToStartup'));
+      if (data?.inviteSent && data.inviteEmail) {
+        notify.success(
+          t('crm.convertInviteSent', {
+            email: data.inviteEmail,
+            defaultValue: 'Convite enviado para {{email}} — pode agora ligar-se ao workspace.',
+          }),
+        );
+      } else if (data && !data.wasExisting && data.inviteEmail) {
+        notify.warning(
+          t('crm.convertInviteFailed', {
+            email: data.inviteEmail,
+            defaultValue: 'Workspace criado, mas não foi possível enviar o convite para {{email}}. Envie-o manualmente no separador de membros.',
+          }),
+        );
+      }
     },
     onError: (e: Error) => notify.error(e.message),
   });
