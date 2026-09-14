@@ -16,6 +16,7 @@ import {
   Users,
   ListChecks,
   Mail,
+  Link2,
 
 
 } from "lucide-react";
@@ -78,6 +79,7 @@ import {
 } from "@/hooks/useSurveys";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
+import { notify } from "@/lib/notify";
 import { SurveyTemplateEditor } from "./SurveyTemplateEditor";
 import { SurveyResponsesViewer } from "./SurveyResponsesViewer";
 
@@ -268,7 +270,7 @@ function CampaignCard({
         registered: preview.registered ?? 0,
         unregistered: preview.unregistered ?? 0,
         defaultValue:
-          "Vão ser enviados {{total}} emails em nome de Vítor Ferreira: {{registered}} contactos já com conta recebem o link do inquérito e {{unregistered}} sem conta recebem instruções para se registarem.",
+          "Vão ser enviados {{total}} emails em nome de Vítor Ferreira. Cada email inclui um link direto para responder sem registo; os {{unregistered}} contactos sem conta recebem também um convite opcional para se registarem.",
       }),
       confirmLabel: t("admin.surveys.sendInvitesAction", "Enviar convites"),
       onConfirm: () => sendInvites.mutate({ campaignId: campaign.id }),
@@ -490,6 +492,26 @@ function CampaignCard({
                         onCheckedChange={(checked) => handleToggleParticipant(c, checked === true)}
                       />
                       <span className="text-sm flex-1">{c.startupName}</span>
+                      {c.enrolled && c.publicToken && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2"
+                          title={t("admin.surveys.copyPublicLink", "Copiar link público (sem registo)")}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const url = `${window.location.origin}/survey/${c.publicToken}`;
+                            navigator.clipboard
+                              .writeText(url)
+                              .then(() => notify.success(t("admin.surveys.publicLinkCopied", "Link público copiado")))
+                              .catch(() => notify.info(url));
+                          }}
+                        >
+                          <Link2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                       {c.instanceStatus === "submitted" && (
                         <Badge variant="outline" className="text-xs">
                           {t("admin.surveys.submitted", "submitted")}

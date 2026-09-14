@@ -4,11 +4,9 @@
  * Sends the baseline ecosystem survey invitation, in Vítor Ferreira's name, to
  * every startup enrolled in a campaign that has not submitted yet.
  *
- * Two flavours of the same email:
- *  - recipient already has an account -> "answer the survey"
- *  - recipient has no account yet     -> "create your account, claim your
- *    startup and answer the survey" (the address is added to the signup
- *    allowlist so registration is possible).
+ * Every email carries a direct, per-startup public link (/survey/<token>) that
+ * opens the survey without an account. Unregistered recipients additionally
+ * get an optional signup link and are added to the signup allowlist.
  *
  * Staff-only. Resend returns { data, error } and never throws, so every send is
  * checked explicitly.
@@ -38,6 +36,8 @@ interface Recipient {
   registered: boolean;
   startups: string[];
   instanceIds: string[];
+  /** Per-startup public answer links (no account needed). */
+  links: { startup: string; token: string }[];
 }
 
 function escapeHtml(text: string): string {
@@ -55,26 +55,54 @@ function buildEmail(
   const startupLabel = recipient.startups.length === 1
     ? escapeHtml(recipient.startups[0])
     : escapeHtml(recipient.startups.join(', '));
-  const ctaUrl = recipient.registered
-    ? `${appUrl}/my-workspaces`
-    : `${appUrl}/login?mode=signup&email=${encodeURIComponent(recipient.email)}`;
-  const ctaLabel = recipient.registered ? 'Responder ao inquérito' : 'Criar conta e responder';
 
-  const steps = recipient.registered
+  // Direct answer link: anyone with the link can respond, no account needed.
+  const directLinks = recipient.links
+    .filter((l) => l.token)
+    .map((l) => ({ startup: l.startup, url: `${appUrl}/survey/${l.token}` }));
+  const primaryLink = directLinks[0] ?? null;
+  const signupUrl = `${appUrl}/login?mode=signup&email=${encodeURIComponent(recipient.email)}`;
+
+  const ctaUrl = primaryLink?.url ?? (recipient.registered ? `${appUrl}/my-workspaces` : signupUrl);
+  const ctaLabel = primaryLink
+    ? `Responder ao inquérito${recipient.registered ? '' : ' — sem registo'}`
+    : recipient.registered
+      ? 'Responder ao inquérito'
+      : 'Criar conta e responder';
+
+  const steps = primaryLink
     ? `<ol style="margin:0;padding-left:20px;color:#333">
-         <li>Entre na plataforma com a sua conta.</li>
-         <li>No painel da sua startup, abra o inquérito <strong>${escapeHtml(campaignName)}</strong>.</li>
-         <li>Confirme ou atualize os dados e submeta.</li>
+         <li>Abra o link deste email — <strong>não precisa de criar conta</strong>.</li>
+         <li>Confirme ou atualize os dados da sua startup (${startupLabel}).</li>
+         <li>Submeta as respostas — leva poucos minutos.</li>
        </ol>`
-    : `<ol style="margin:0;padding-left:20px;color:#333">
-         <li>Crie a sua conta com este endereço de email (${escapeHtml(recipient.email)}).</li>
-         <li>Associe-se à sua startup (${startupLabel}).</li>
-         <li>Preencha o inquérito <strong>${escapeHtml(campaignName)}</strong> — leva poucos minutos.</li>
-       </ol>`;
+    : recipient.registered
+      ? `<ol style="margin:0;padding-left:20px;color:#333">
+           <li>Entre na plataforma com a sua conta.</li>
+           <li>No painel da sua startup, abra o inquérito <strong>${escapeHtml(campaignName)}</strong>.</li>
+           <li>Confirme ou atualize os dados e submeta.</li>
+         </ol>`
+      : `<ol style="margin:0;padding-left:20px;color:#333">
+           <li>Crie a sua conta com este endereço de email (${escapeHtml(recipient.email)}).</li>
+           <li>Associe-se à sua startup (${startupLabel}).</li>
+           <li>Preencha o inquérito <strong>${escapeHtml(campaignName)}</strong> — leva poucos minutos.</li>
+         </ol>`;
+
+  const extraLinksBlock = directLinks.length > 1
+    ? `<div style="margin:12px 0 0;text-align:center">
+         ${directLinks.slice(1).map((l) => `<a href="${l.url}" style="display:inline-block;margin:4px 6px;color:#c03c3c;font-weight:600">${escapeHtml(l.startup)}</a>`).join('')}
+       </div>`
+    : '';
+
+  const signupNote = recipient.registered
+    ? ''
+    : `<p style="font-size:13px;color:#666;margin-top:18px">Se quiser acompanhar a sua startup na plataforma
+         (marcos, mentores, documentos), pode também
+         <a href="${signupUrl}" style="color:#c03c3c">criar a sua conta gratuita</a> — mas não é necessário para responder.</p>`;
 
   const subject = recipient.registered
     ? `${campaignName} — precisamos dos dados da ${recipient.startups[0] ?? 'sua startup'}`
-    : `Registo na plataforma Startup Leiria + dados da ${recipient.startups[0] ?? 'sua startup'}`;
+    : `Dados da ${recipient.startups[0] ?? 'sua startup'} — responda sem registo (Startup Leiria)`;
 
   const html = `
   <!DOCTYPE html>
@@ -89,7 +117,7 @@ function buildEmail(
       <p style="margin-top:0">Olá${greetingName},</p>
       <p>Estamos a consolidar numa única plataforma os dados do ecossistema Startup Leiria, para conseguirmos
          acompanhar melhor cada startup e reportar o impacto do ecossistema com números fiáveis.</p>
-      <p>Peço-lhe alguns minutos para ${recipient.registered ? 'responder' : 'se registar e responder'} ao inquérito de dados base
+      <p>Peço-lhe alguns minutos para responder ao inquérito de dados base
          relativo a <strong>${startupLabel}</strong>.</p>
       <div style="background:#fff;padding:18px;border-radius:8px;border-left:4px solid #c03c3c;margin:20px 0">
         ${steps}
@@ -99,7 +127,9 @@ function buildEmail(
         <a href="${ctaUrl}" style="display:inline-block;background:#c03c3c;color:#fff;padding:12px 26px;border-radius:8px;text-decoration:none;font-weight:600">
           ${ctaLabel}
         </a>
+        ${extraLinksBlock}
       </div>
+      ${signupNote}
       <p style="font-size:13px;color:#666">Se já respondeu ou se este email não lhe diz respeito, pode ignorá-lo.
          Qualquer dúvida, responda diretamente a esta mensagem.</p>
       <hr style="border:none;border-top:1px solid #eee;margin:26px 0">
@@ -150,7 +180,7 @@ Deno.serve(async (req) => {
 
     const { data: instances, error: instancesError } = await admin
       .from('survey_instances')
-      .select('id, workspace_id, status')
+      .select('id, workspace_id, status, public_token')
       .eq('campaign_id', campaign.id)
       .neq('status', 'submitted');
     if (instancesError) throw instancesError;
@@ -207,13 +237,20 @@ Deno.serve(async (req) => {
     const recipients = new Map<string, Recipient>();
     let skipped = 0;
 
-    const add = (email: string | null, name: string | null, startupName: string, instanceId: string) => {
+    const add = (
+      email: string | null,
+      name: string | null,
+      startupName: string,
+      instanceId: string,
+      token: string | null,
+    ) => {
       const clean = (email || '').trim().toLowerCase();
       if (!clean || !clean.includes('@')) return false;
       const existing = recipients.get(clean);
       if (existing) {
         if (!existing.startups.includes(startupName)) existing.startups.push(startupName);
         existing.instanceIds.push(instanceId);
+        if (token) existing.links.push({ startup: startupName, token });
         if (!existing.name && name) existing.name = name;
         return true;
       }
@@ -223,6 +260,7 @@ Deno.serve(async (req) => {
         registered: false,
         startups: [startupName],
         instanceIds: [instanceId],
+        links: token ? [{ startup: startupName, token }] : [],
       });
       return true;
     };
@@ -234,9 +272,9 @@ Deno.serve(async (req) => {
 
       for (const userId of membersByWorkspace.get(instance.workspace_id) ?? []) {
         const profile = profilesById.get(userId);
-        if (add(profile?.email ?? null, profile?.full_name ?? null, startupName, instance.id)) added = true;
+        if (add(profile?.email ?? null, profile?.full_name ?? null, startupName, instance.id, instance.public_token ?? null)) added = true;
       }
-      if (add(startup?.main_contact_email ?? null, startup?.main_contact_name ?? null, startupName, instance.id)) {
+      if (add(startup?.main_contact_email ?? null, startup?.main_contact_name ?? null, startupName, instance.id, instance.public_token ?? null)) {
         added = true;
       }
       if (!added) skipped += 1;

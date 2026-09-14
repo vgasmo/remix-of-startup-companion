@@ -472,6 +472,8 @@ export interface CampaignCandidate {
   enrolled: boolean;
   instanceId: string | null;
   instanceStatus: string | null;
+  /** Unguessable public answer link token (only when enrolled). */
+  publicToken: string | null;
 }
 
 /** Every workspace that can take part in a campaign, with its enrollment state. */
@@ -500,7 +502,7 @@ export function useCampaignCandidates(campaignId: string | null, enabled = true)
 
       const { data: instances, error: instancesError } = await supabase
         .from("survey_instances")
-        .select("id, workspace_id, status")
+        .select("id, workspace_id, status, public_token")
         .eq("campaign_id", campaignId);
       if (instancesError) throw instancesError;
 
@@ -518,6 +520,7 @@ export function useCampaignCandidates(campaignId: string | null, enabled = true)
             enrolled: !!instance,
             instanceId: instance?.id ?? null,
             instanceStatus: (instance?.status as string) ?? null,
+            publicToken: (instance?.public_token as string) ?? null,
           };
         })
         .sort((a, b) => a.startupName.localeCompare(b.startupName));

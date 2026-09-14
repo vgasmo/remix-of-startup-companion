@@ -1427,7 +1427,7 @@
       "selectTemplate": "Survey Template",
       "sendInvites": "Send email invitations",
       "sendInvitesAction": "Send invitations",
-      "sendInvitesDesc": "{{total}} emails will be sent on behalf of Vítor Ferreira: {{registered}} contacts with an account get the survey link and {{unregistered}} without an account get registration instructions.",
+      "sendInvitesDesc": "{{total}} emails will be sent on behalf of Vítor Ferreira. Each email includes a direct link to answer with no sign-up; the {{unregistered}} contacts without an account also get an optional registration invite.",
       "sendInvitesTitle": "Send email invitations?",
       "simulateSubmit": "Simulate submission",
       "simulatedNotice": "These answers were not saved — simulation only.",
@@ -1446,7 +1446,9 @@
       "type": "Type",
       "viewQuestions": "View questions",
       "viewQuestionsDesc": "Questions included in this survey",
-      "viewResponses": "View Responses"
+      "viewResponses": "View Responses",
+      "copyPublicLink": "Copy public link (no sign-up)",
+      "publicLinkCopied": "Public link copied"
     },
     "suspend": "Suspend",
     "suspendUser": "Suspend User",
@@ -10275,5 +10277,21 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
+  },
+  "publicSurvey": {
+    "loading": "Loading the survey...",
+    "invalidLink": "This link is not valid. Please check the address in the email you received.",
+    "closed": "This survey is no longer available.",
+    "loadFailed": "We could not open the survey. Please try again.",
+    "needHelp": "Need help? Reply to the email you received or write to vitor.ferreira@startupleiria.com.",
+    "thankYou": "Thank you — your response has been submitted.",
+    "thankYouDesc": "Your startup's data has been updated on the Startup Leiria platform.",
+    "forStartup": "Startup:",
+    "deadline": "Deadline",
+    "progress": "Progress",
+    "saveDraft": "Save draft",
+    "submit": "Submit answers",
+    "requiredMissing": "Please answer every required question before submitting.",
+    "saveFailed": "Could not save. Please try again."
   }
 }

@@ -9153,6 +9153,7 @@ export type Database = {
           created_at: string
           id: string
           last_reminder_sent_at: string | null
+          public_token: string
           status: string
           submitted_at: string | null
           submitted_by: string | null
@@ -9165,6 +9166,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_reminder_sent_at?: string | null
+          public_token?: string
           status?: string
           submitted_at?: string | null
           submitted_by?: string | null
@@ -9177,6 +9179,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_reminder_sent_at?: string | null
+          public_token?: string
           status?: string
           submitted_at?: string | null
           submitted_by?: string | null

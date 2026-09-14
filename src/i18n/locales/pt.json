@@ -1427,7 +1427,7 @@
       "selectTemplate": "Modelo de Inquérito",
       "sendInvites": "Enviar convites por email",
       "sendInvitesAction": "Enviar convites",
-      "sendInvitesDesc": "Vão ser enviados {{total}} emails em nome de Vítor Ferreira: {{registered}} contactos já com conta recebem o link do inquérito e {{unregistered}} sem conta recebem instruções para se registarem.",
+      "sendInvitesDesc": "Vão ser enviados {{total}} emails em nome de Vítor Ferreira. Cada email inclui um link direto para responder sem registo; os {{unregistered}} contactos sem conta recebem também um convite opcional para se registarem.",
       "sendInvitesTitle": "Enviar convites por email?",
       "simulateSubmit": "Simular submissão",
       "simulatedNotice": "Estas respostas não foram guardadas — apenas simulação.",
@@ -1446,7 +1446,9 @@
       "type": "Tipo",
       "viewQuestions": "Ver questões",
       "viewQuestionsDesc": "Questões incluídas neste inquérito",
-      "viewResponses": "Ver Responses"
+      "viewResponses": "Ver Responses",
+      "copyPublicLink": "Copiar link público (sem registo)",
+      "publicLinkCopied": "Link público copiado"
     },
     "suspend": "Suspender",
     "suspendUser": "Suspend Utilizador",
@@ -10275,5 +10277,21 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
+  },
+  "publicSurvey": {
+    "loading": "A carregar o inquérito...",
+    "invalidLink": "Este link não é válido. Confirme o endereço no email que recebeu.",
+    "closed": "Este inquérito já não está disponível.",
+    "loadFailed": "Não foi possível abrir o inquérito. Tente novamente.",
+    "needHelp": "Precisa de ajuda? Responda ao email que recebeu ou escreva para vitor.ferreira@startupleiria.com.",
+    "thankYou": "Obrigado — a sua resposta foi submetida.",
+    "thankYouDesc": "Os dados da sua startup foram atualizados na plataforma Startup Leiria.",
+    "forStartup": "Startup:",
+    "deadline": "Data limite",
+    "progress": "Progresso",
+    "saveDraft": "Guardar rascunho",
+    "submit": "Submeter respostas",
+    "requiredMissing": "Responda a todas as perguntas obrigatórias antes de submeter.",
+    "saveFailed": "Não foi possível guardar. Tente novamente."
   }
 }

@@ -304,7 +304,7 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
   );
 }
 
-interface QuestionFieldProps {
+export interface QuestionFieldProps {
   question: SurveyQuestion;
   value: string | string[] | number | undefined;
   onChange: (value: string | string[] | number) => void;
@@ -313,7 +313,7 @@ interface QuestionFieldProps {
   disabled: boolean;
 }
 
-function QuestionField({
+export function QuestionField({
   question,
   value,
   onChange,
