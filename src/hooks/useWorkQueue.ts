@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface WorkQueueItem {
   id: string;
@@ -25,17 +26,26 @@ export interface WorkQueueItem {
 }
 
 export function useWorkQueue(filters?: { status?: string; statuses?: string[]; type?: string; assignedTo?: string; includeDone?: boolean; staleTime?: number }) {
+  const { user, roles } = useAuth();
+  // Consultors only see queue items for their own portfolio; admin/backoffice
+  // keep the global view.
+  const scopeToConsultor =
+    !!user && roles.includes('consultor') && !roles.includes('admin') && !roles.includes('backoffice');
   return useQuery({
     staleTime: filters?.staleTime,
-    queryKey: ['work-queue', filters],
+    queryKey: ['work-queue', filters, scopeToConsultor ? user?.id : 'all'],
     queryFn: async () => {
       let query = supabase
         .from('staff_work_queue_items')
         .select(`
           *,
-          workspace:workspaces(startup:startups(name))
+          workspace:workspaces${scopeToConsultor ? '!inner' : ''}(startup:startups(name))
         `)
         .order('due_at', { ascending: true });
+
+      if (scopeToConsultor) {
+        query = query.eq('workspace.assigned_consultor_id', user!.id);
+      }
 
       if (filters?.status) {
         query = query.eq('status', filters.status);
@@ -61,20 +71,34 @@ export function useWorkQueue(filters?: { status?: string; statuses?: string[]; t
 }
 
 export function useWorkQueueStats(userId?: string) {
+  const { user, roles } = useAuth();
+  const scopeToConsultor =
+    !!user && roles.includes('consultor') && !roles.includes('admin') && !roles.includes('backoffice');
   return useQuery({
-    queryKey: ['work-queue-stats', userId],
+    queryKey: ['work-queue-stats', userId, scopeToConsultor ? user?.id : 'all'],
     queryFn: async () => {
-      let query = supabase
-        .from('staff_work_queue_items')
-        .select('id, status, due_at, priority')
-        .in('status', ['open', 'in_progress']);
-
-      if (userId) {
-        query = query.eq('assigned_to', userId);
+      type StatsRow = { id: string; status: string; due_at: string | null; priority: string };
+      let data: StatsRow[] | null = null;
+      if (scopeToConsultor) {
+        let q = supabase
+          .from('staff_work_queue_items')
+          .select('id, status, due_at, priority, workspace:workspaces!inner(assigned_consultor_id)')
+          .in('status', ['open', 'in_progress'])
+          .eq('workspace.assigned_consultor_id', user!.id);
+        if (userId) q = q.eq('assigned_to', userId);
+        const res = await q;
+        if (res.error) throw res.error;
+        data = res.data as unknown as StatsRow[];
+      } else {
+        let q = supabase
+          .from('staff_work_queue_items')
+          .select('id, status, due_at, priority')
+          .in('status', ['open', 'in_progress']);
+        if (userId) q = q.eq('assigned_to', userId);
+        const res = await q;
+        if (res.error) throw res.error;
+        data = res.data;
       }
-
-      const { data, error } = await query;
-      if (error) throw error;
 
       const today = new Date();
       const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
