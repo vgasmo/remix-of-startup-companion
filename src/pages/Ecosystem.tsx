@@ -162,16 +162,10 @@ export default function Ecosystem() {
             ) : (
               <>
                 <ConsultorPortfolioView items={items} ownerId={filters.ownerId} />
-                {hasNextPage && (
-                  <div className="flex justify-center pt-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => fetchNextPage()}
-                      disabled={isFetchingNextPage}
-                    >
-                      {isFetchingNextPage && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                      {t('ecosystem.loadMore', { defaultValue: 'Carregar mais' })}
-                    </Button>
+                {(hasNextPage || isFetchingNextPage) && (
+                  <div className="flex items-center justify-center gap-2 pt-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t('ecosystem.loadingAll', { defaultValue: 'A carregar todos os registos…' })}
                   </div>
                 )}
               </>
