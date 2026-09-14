@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { 
   Building2, Users, Settings, Home, Briefcase, Calendar, 
   Contact, BookOpen, MoreHorizontal, Cog, FileText, ClipboardList,
-  Network, MessageCircle, LucideIcon
+  Network, MessageCircle, LucideIcon, Wrench
 } from 'lucide-react';
 import { useConversations } from '@/hooks/useMessaging';
 import { AppSidebar } from './AppSidebar';
