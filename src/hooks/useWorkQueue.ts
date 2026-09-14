@@ -26,17 +26,26 @@ export interface WorkQueueItem {
 }
 
 export function useWorkQueue(filters?: { status?: string; statuses?: string[]; type?: string; assignedTo?: string; includeDone?: boolean; staleTime?: number }) {
+  const { user, roles } = useAuth();
+  // Consultors only see queue items for their own portfolio; admin/backoffice
+  // keep the global view.
+  const scopeToConsultor =
+    !!user && roles.includes('consultor') && !roles.includes('admin') && !roles.includes('backoffice');
   return useQuery({
     staleTime: filters?.staleTime,
-    queryKey: ['work-queue', filters],
+    queryKey: ['work-queue', filters, scopeToConsultor ? user?.id : 'all'],
     queryFn: async () => {
       let query = supabase
         .from('staff_work_queue_items')
         .select(`
           *,
-          workspace:workspaces(startup:startups(name))
+          workspace:workspaces${scopeToConsultor ? '!inner' : ''}(startup:startups(name))
         `)
         .order('due_at', { ascending: true });
+
+      if (scopeToConsultor) {
+        query = query.eq('workspace.assigned_consultor_id', user!.id);
+      }
 
       if (filters?.status) {
         query = query.eq('status', filters.status);
