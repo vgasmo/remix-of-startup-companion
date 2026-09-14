@@ -84,19 +84,35 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
     enabled: open,
   });
 
-  // Query all available workspaces for manual search
-  const { data: allWorkspaces } = useQuery({
-    queryKey: ['all-workspaces-for-assignment', searchQuery],
+  // Query available workspaces for manual search.
+  // The search must run SERVER-SIDE: previously only the 20 most recent
+  // workspaces were fetched and filtered in the browser, so older startups
+  // (e.g. imported ones) could never be found by name.
+  const trimmedSearch = searchQuery.trim();
+  const { data: allWorkspaces, isFetching: searching } = useQuery({
+    queryKey: ['all-workspaces-for-assignment', trimmedSearch],
     queryFn: async () => {
+      let matchedStartupIds: string[] | null = null;
+      if (trimmedSearch) {
+        const pattern = `%${trimmedSearch.replace(/[%_]/g, '')}%`;
+        const { data: startupMatches, error: startupError } = await supabase
+          .from('startups')
+          .select('id')
+          .or(`name.ilike.${pattern},main_contact_email.ilike.${pattern}`)
+          .limit(100);
+        if (startupError) throw startupError;
+        matchedStartupIds = (startupMatches ?? []).map(s => s.id);
+        if (!matchedStartupIds.length) return [];
+      }
+
       let query = supabase
         .from('workspaces')
         .select('id, status, startup:startups(id, name, main_contact_email)')
-        .in('status', ['imported_unclaimed', 'active', 'claimed', 'pending'])
         .order('created_at', { ascending: false })
-        .limit(20);
-      
-      if (searchQuery.trim()) {
-        // We filter client-side since startup name is in a joined table
+        .limit(trimmedSearch ? 100 : 20);
+
+      if (matchedStartupIds) {
+        query = query.in('startup_id', matchedStartupIds);
       }
 
       const { data, error } = await query;
@@ -106,16 +122,7 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
     enabled: open && tab === 'search',
   });
 
-  const filteredWorkspaces = useMemo(() => {
-    if (!allWorkspaces) return [];
-    if (!searchQuery.trim()) return allWorkspaces;
-    const q = searchQuery.toLowerCase();
-    return allWorkspaces.filter(w => {
-      const name = (w.startup as any)?.name?.toLowerCase() || '';
-      const email = (w.startup as any)?.main_contact_email?.toLowerCase() || '';
-      return name.includes(q) || email.includes(q);
-    });
-  }, [allWorkspaces, searchQuery]);
+  const filteredWorkspaces = allWorkspaces ?? [];
 
   const handleAssign = async (workspaceId: string) => {
     setIsSubmitting(true);
@@ -300,7 +307,12 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
                   </CardContent>
                 </Card>
               ))}
-              {filteredWorkspaces.length === 0 && (
+              {searching && (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              )}
+              {!searching && filteredWorkspaces.length === 0 && (
                 <p className="text-center text-sm text-muted-foreground py-4">
                   {t('admin.noWorkspacesFound', { defaultValue: 'Nenhum workspace encontrado.' })}
                 </p>

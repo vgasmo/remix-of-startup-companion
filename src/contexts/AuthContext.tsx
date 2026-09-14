@@ -40,7 +40,7 @@ interface AuthContextType {
   isAccountPending: boolean;
   isAccountSuspended: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, fullName: string, selectedRole?: 'founder' | 'mentor_externo', returnTo?: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, selectedRole?: 'founder' | 'mentor_externo', returnTo?: string, startupName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -282,7 +282,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error as Error | null };
   }, []);
 
-  const signUp = useCallback(async (email: string, password: string, fullName: string, selectedRole?: 'founder' | 'mentor_externo', returnTo?: string) => {
+  const signUp = useCallback(async (email: string, password: string, fullName: string, selectedRole?: 'founder' | 'mentor_externo', returnTo?: string, startupName?: string) => {
     // Preserve invite/accept-invite return URLs so accounts created from an
     // invitation flow land on the acceptance page instead of the generic root.
     const redirectUrl = returnTo
@@ -295,7 +295,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
-          selected_role: selectedRole
+          selected_role: selectedRole,
+          startup_name: startupName
         }
       }
     });

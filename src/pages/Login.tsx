@@ -43,6 +43,9 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [selectedRole, setSelectedRole] = useState<'founder' | 'mentor_externo'>('founder');
+  // Founders must state the startup/project name so staff know which workspace
+  // to attach the pending account to.
+  const [startupName, setStartupName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -107,6 +110,11 @@ export default function Login() {
     e.preventDefault();
     setError(null);
 
+    if (!isConsultorEmail && selectedRole === 'founder' && startupName.trim().length < 2) {
+      setError(t('login.startupNameRequired', 'Indique o nome do projeto ou startup.'));
+      return;
+    }
+
     try {
       signupSchema.parse({ email, password, fullName });
     } catch (err) {
@@ -141,7 +149,7 @@ export default function Login() {
 
     // Only pass role if not a consultor email (consultor role is auto-assigned by the database)
     const roleToAssign = isConsultorEmail ? undefined : selectedRole;
-    const { error } = await signUp(email, password, fullName, roleToAssign);
+    const { error } = await signUp(email, password, fullName, roleToAssign, undefined, startupName.trim() || undefined);
     setIsSubmitting(false);
 
     if (error) {
@@ -442,6 +450,27 @@ export default function Login() {
                         />
                       </div>
                     </div>
+                    {!isConsultorEmail && selectedRole === 'founder' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-startup">{t('login.startupName', 'Nome do projeto / startup')}</Label>
+                        <div className="relative group">
+                          <Rocket className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" aria-hidden="true" />
+                          <Input
+                            id="signup-startup"
+                            type="text"
+                            placeholder={t('login.startupNamePlaceholder', 'Ex.: VYNHELIX')}
+                            value={startupName}
+                            onChange={(e) => setStartupName(e.target.value)}
+                            className="pl-10 transition-shadow focus:shadow-md"
+                            required
+                            aria-required="true"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {t('login.startupNameHint', 'Ajuda-nos a ligar a sua conta à startup certa.')}
+                        </p>
+                      </div>
+                    )}
                     <div className="space-y-2">
                       <Label htmlFor="signup-email">{t('auth.email')}</Label>
                       <div className="relative group">

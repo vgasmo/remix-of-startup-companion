@@ -6072,7 +6072,11 @@
     "startups": "Startups",
     "termsAgree": "By signing in, you agree to our Terms of Service and Privacy Policy",
     "trackProgress": "Track Progress",
-    "welcome": "Welcome"
+    "welcome": "Welcome",
+    "startupName": "Project / startup name",
+    "startupNamePlaceholder": "e.g. VYNHELIX",
+    "startupNameHint": "Helps us link your account to the right startup.",
+    "startupNameRequired": "Please enter your project or startup name."
   },
   "mentor": {
     "actionsPending": "ações",
@@ -10320,6 +10324,7 @@
     "removed": "Block removed",
     "removeFailed": "Could not remove",
     "invalidRange": "The end must be after the start",
-    "empty": "No blocked periods."
+    "empty": "No blocked periods.",
+    "tab": "My Calendar"
   }
 }

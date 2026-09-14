@@ -309,6 +309,13 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
             </h3>
             <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
               {templatesByCategory[category].map(template => {
+                // Respect the "hide from founder" toggle here too: the canvas
+                // tabs were filtered, but this list also links to the same
+                // templates, so founders could still open a hidden tool.
+                const templateCanvasType = getCanvasType(template.name);
+                const templateHidden = !!templateCanvasType && hiddenTools.includes(templateCanvasType);
+                if (templateHidden && !isStaff) return null;
+
                 const instance = instancesByTemplateId[template.id];
                 const isCompleted = instance?.status === 'completed';
                 const isStarted = !!instance;
@@ -348,8 +355,14 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
                     
                     {/* Content */}
                     <div className="flex-1 min-w-0 pr-4">
-                      <h4 className="font-medium text-sm leading-snug text-foreground group-hover:text-primary transition-colors">
+                      <h4 className="font-medium text-sm leading-snug text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
                         {meta.title}
+                        {templateHidden && isStaff && (
+                          <EyeOff
+                            className="h-3 w-3 text-muted-foreground"
+                            aria-label={t('templates.hiddenFromFounder', 'Oculto para o founder')}
+                          />
+                        )}
                       </h4>
                       {meta.description && (
                         <p className="text-xs text-muted-foreground mt-0.5 truncate" title={meta.description}>

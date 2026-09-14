@@ -6177,6 +6177,7 @@ export type Database = {
           mentor_monthly_target_hours: number
           phone: string | null
           preferred_language: string
+          signup_startup_name: string | null
           updated_at: string
         }
         Insert: {
@@ -6194,6 +6195,7 @@ export type Database = {
           mentor_monthly_target_hours?: number
           phone?: string | null
           preferred_language?: string
+          signup_startup_name?: string | null
           updated_at?: string
         }
         Update: {
@@ -6211,6 +6213,7 @@ export type Database = {
           mentor_monthly_target_hours?: number
           phone?: string | null
           preferred_language?: string
+          signup_startup_name?: string | null
           updated_at?: string
         }
         Relationships: []

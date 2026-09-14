@@ -6072,7 +6072,11 @@
     "startups": "Startups",
     "termsAgree": "Ao entrar, concorda com os nossos Termos de Serviço e Política de Privacidade",
     "trackProgress": "Acompanhar Progresso",
-    "welcome": "Bem-vindo"
+    "welcome": "Bem-vindo",
+    "startupName": "Nome do projeto / startup",
+    "startupNamePlaceholder": "Ex.: VYNHELIX",
+    "startupNameHint": "Ajuda-nos a ligar a sua conta à startup certa.",
+    "startupNameRequired": "Indique o nome do projeto ou startup."
   },
   "mentor": {
     "actionsPending": "ações",
@@ -10320,6 +10324,7 @@
     "removed": "Bloqueio removido",
     "removeFailed": "Não foi possível remover",
     "invalidRange": "O fim tem de ser depois do início",
-    "empty": "Sem períodos bloqueados."
+    "empty": "Sem períodos bloqueados.",
+    "tab": "Minha Agenda"
   }
 }

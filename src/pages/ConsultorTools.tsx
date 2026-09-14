@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { FileText, Lightbulb, Sparkles, Shield, MessageSquare, Wrench, BarChart3 } from 'lucide-react';
+import { FileText, Lightbulb, Sparkles, Shield, MessageSquare, Wrench, BarChart3, CalendarOff } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExerciseLibraryTab } from '@/components/consultor/ExerciseLibraryTab';
@@ -10,10 +10,11 @@ import { SessionFrameworksTab } from '@/components/consultor/SessionFrameworksTa
 import { CoachingToolkitTab } from '@/components/consultor/CoachingToolkitTab';
 import { PlaybookAnalyticsTab } from '@/components/consultor/PlaybookAnalyticsTab';
 import { ValuePropWizard } from '@/components/consultor/ValuePropWizard';
+import { ConsultantTimeOffSettings } from '@/components/mentors/ConsultantTimeOffSettings';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
-const VALID_TABS = ['frameworks', 'coaching', 'exercises', 'materials', 'analytics'];
+const VALID_TABS = ['frameworks', 'coaching', 'exercises', 'materials', 'analytics', 'availability'];
 
 export default function ConsultorTools() {
   const { t } = useTranslation();
@@ -102,6 +103,10 @@ export default function ConsultorTools() {
               <BarChart3 className="h-4 w-4" />
               {t('consultorTools.playbookAnalytics', 'Playbook Analytics')}
             </TabsTrigger>
+            <TabsTrigger value="availability" className="gap-2">
+              <CalendarOff className="h-4 w-4" />
+              {t('timeOff.tab', 'Minha Agenda')}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="frameworks" className="mt-6">
@@ -122,6 +127,10 @@ export default function ConsultorTools() {
 
           <TabsContent value="analytics" className="mt-6">
             <PlaybookAnalyticsTab />
+          </TabsContent>
+
+          <TabsContent value="availability" className="mt-6">
+            <ConsultantTimeOffSettings />
           </TabsContent>
         </Tabs>
 
