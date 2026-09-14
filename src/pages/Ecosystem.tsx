@@ -63,6 +63,17 @@ export default function Ecosystem() {
     fetchNextPage,
   } = useEcosystemItems(filters);
 
+  // The "Por Consultor" view groups rows client-side, so partial pagination
+  // produced counts lower than the totals shown in the Startups & Leads tab.
+  // Auto-load remaining pages while that tab is open.
+  useEffect(() => {
+    if (tab !== 'by-consultant') return;
+    if (isLoading || isError) return;
+    if (hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+    }
+  }, [tab, hasNextPage, isFetchingNextPage, isLoading, isError, fetchNextPage]);
+
   const showingCountLabel = t('ecosystem.showingCount', {
     defaultValue: 'A mostrar {{shown}} de {{total}}',
     shown: items.length,
