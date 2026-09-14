@@ -1376,6 +1376,7 @@
       "confirmRemoveParticipant": "Remover esta startup do inquérito?",
       "confirmRemoveParticipantAction": "Remover e apagar respostas",
       "confirmRemoveParticipantDesc": "{{name}} já começou a responder. As respostas guardadas serão apagadas e não podem ser recuperadas.",
+      "copyPublicLink": "Copiar link público (sem registo)",
       "createBlank": "Criar template em branco",
       "createCampaign": "Criar Survey Campaign",
       "createDefaultTemplate": "Criar Ecosystem Survey Template",
@@ -1412,6 +1413,7 @@
       "preview": "Pré-visualizar",
       "previewNotice": "Pré-visualização do inquérito. Nenhuma resposta é guardada.",
       "progress": "Progress",
+      "publicLinkCopied": "Link público copiado",
       "questionText": "Texto da pergunta",
       "questions": "Perguntas",
       "reopen": "Reabrir",
@@ -1446,9 +1448,7 @@
       "type": "Tipo",
       "viewQuestions": "Ver questões",
       "viewQuestionsDesc": "Questões incluídas neste inquérito",
-      "viewResponses": "Ver Responses",
-      "copyPublicLink": "Copiar link público (sem registo)",
-      "publicLinkCopied": "Link público copiado"
+      "viewResponses": "Ver Responses"
     },
     "suspend": "Suspender",
     "suspendUser": "Suspend Utilizador",
@@ -3367,6 +3367,8 @@
     "contractLinkMissing": "O servidor não devolveu um link válido.",
     "contractMissingNotice": "O contrato vinculado já não existe (foi eliminado ou arquivado).",
     "contratoEnviadoParaAssinatura": "Contrato enviado para assinatura!",
+    "convertInviteFailed": "Workspace criado, mas não foi possível enviar o convite para {{email}}. Envie-o manualmente no separador de membros.",
+    "convertInviteSent": "Convite enviado para {{email}} — pode agora ligar-se ao workspace.",
     "convertToStartup": "Converter em Startup",
     "convertToWorkspace": {
       "confirm": "Converter",
@@ -3378,8 +3380,6 @@
       "title": "Converter Lead em Workspace"
     },
     "convertedToStartup": "Convertido em startup",
-    "convertInviteSent": "Convite enviado para {{email}} — pode agora ligar-se ao workspace.",
-    "convertInviteFailed": "Workspace criado, mas não foi possível enviar o convite para {{email}}. Envie-o manualmente no separador de membros.",
     "createAndSendContract": "Criar contrato e enviar",
     "createLead": "Criar Lead",
     "createNewLead": "Criar Nova Lead",
@@ -4293,6 +4293,7 @@
     "leads": "Leads",
     "loadError": "Não foi possível carregar a lista do ecossistema. Tente novamente.",
     "loadMore": "Carregar mais",
+    "loadingAll": "A carregar todos os registos…",
     "manageTeam": "Gerir Equipa",
     "name": "Nome",
     "needsAttention": "Apenas Precisa de Atenção",
@@ -4317,8 +4318,7 @@
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
     "workspaceRestored": "Workspace restaurado",
-    "workspaces": "workspaces",
-    "loadingAll": "A carregar todos os registos…"
+    "workspaces": "workspaces"
   },
   "ecosystemHub": {
     "navLabel": "Hub de Gestão",
@@ -6258,6 +6258,7 @@
     "bookSessionWith": "Agendar Sessão com {{name}}",
     "bookingAccepted": "Marcação aceite",
     "bookingDeclined": "Marcação recusada",
+    "bookingMinNotice": "As marcações devem ser feitas com pelo menos 24 horas de antecedência.",
     "bookingRequestSent": "Pedido de marcação enviado!",
     "chooseTimeSlot": "Escolha um horário",
     "confirmAssignment": "Confirmar Assignment",
@@ -6306,8 +6307,7 @@
     "slotAlreadyTaken": "Esse horário acabou de ser reservado por outra pessoa — escolha outro.",
     "startTime": "Hora de início",
     "whatToDiscuss": "O que gostaria de discutir?",
-    "yourBookings": "As Suas Marcações",
-    "bookingMinNotice": "As marcações devem ser feitas com pelo menos 24 horas de antecedência."
+    "yourBookings": "As Suas Marcações"
   },
   "mentorsPage": {
     "accept": "Aceitar",
@@ -7750,6 +7750,26 @@
     "youWillReceiveAnEmailFromPandadoc": "Vai receber um email do PandaDoc para assinar.",
     "yourContractHasBeenSubmittedFor": "O seu contrato foi submetido para assinatura.",
     "yourSignatureIpDateTimeAndUser": "A sua assinatura, IP, data/hora e utilizador ficam registados."
+  },
+  "publicSurvey": {
+    "closed": "Este inquérito já não está disponível.",
+    "deadline": "Data limite",
+    "forStartup": "Startup:",
+    "invalidLink": "Este link não é válido. Confirme o endereço no email que recebeu.",
+    "loadFailed": "Não foi possível abrir o inquérito. Tente novamente.",
+    "loading": "A carregar o inquérito...",
+    "needHelp": "Precisa de ajuda? Responda ao email que recebeu ou escreva para vitor.ferreira@startupleiria.com.",
+    "progress": "Progresso",
+    "registerCta": "Registar-me na plataforma",
+    "registerDesc": "Com uma conta gratuita vê os dados que acabou de enviar, os marcos do programa, sessões com consultores e todos os recursos da Startup Leiria.",
+    "registerHint": "Prefere acompanhar a sua startup com uma conta gratuita?",
+    "registerTitle": "Quer acompanhar a sua startup na plataforma?",
+    "requiredMissing": "Responda a todas as perguntas obrigatórias antes de submeter.",
+    "saveDraft": "Guardar rascunho",
+    "saveFailed": "Não foi possível guardar. Tente novamente.",
+    "submit": "Submeter respostas",
+    "thankYou": "Obrigado — a sua resposta foi submetida.",
+    "thankYouDesc": "Os dados da sua startup foram atualizados na plataforma Startup Leiria."
   },
   "quality": {
     "blockingWarning": "Este {{entityType}} não pode ser marcado como pronto até a pontuação atingir 70+",
@@ -10281,25 +10301,5 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
-  },
-  "publicSurvey": {
-    "loading": "A carregar o inquérito...",
-    "invalidLink": "Este link não é válido. Confirme o endereço no email que recebeu.",
-    "closed": "Este inquérito já não está disponível.",
-    "loadFailed": "Não foi possível abrir o inquérito. Tente novamente.",
-    "needHelp": "Precisa de ajuda? Responda ao email que recebeu ou escreva para vitor.ferreira@startupleiria.com.",
-    "thankYou": "Obrigado — a sua resposta foi submetida.",
-    "thankYouDesc": "Os dados da sua startup foram atualizados na plataforma Startup Leiria.",
-    "forStartup": "Startup:",
-    "deadline": "Data limite",
-    "progress": "Progresso",
-    "saveDraft": "Guardar rascunho",
-    "submit": "Submeter respostas",
-    "requiredMissing": "Responda a todas as perguntas obrigatórias antes de submeter.",
-    "saveFailed": "Não foi possível guardar. Tente novamente.",
-    "registerTitle": "Quer acompanhar a sua startup na plataforma?",
-    "registerDesc": "Com uma conta gratuita vê os dados que acabou de enviar, os marcos do programa, sessões com consultores e todos os recursos da Startup Leiria.",
-    "registerCta": "Registar-me na plataforma",
-    "registerHint": "Prefere acompanhar a sua startup com uma conta gratuita?"
   }
 }
