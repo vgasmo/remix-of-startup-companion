@@ -10292,6 +10292,10 @@
     "saveDraft": "Save draft",
     "submit": "Submit answers",
     "requiredMissing": "Please answer every required question before submitting.",
-    "saveFailed": "Could not save. Please try again."
+    "saveFailed": "Could not save. Please try again.",
+    "registerTitle": "Want to follow your startup on the platform?",
+    "registerDesc": "With a free account you can see the data you just sent, program milestones, consultant sessions and every Startup Leiria resource.",
+    "registerCta": "Sign me up on the platform",
+    "registerHint": "Prefer to follow your startup with a free account?"
   }
 }
