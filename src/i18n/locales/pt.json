@@ -10292,6 +10292,10 @@
     "saveDraft": "Guardar rascunho",
     "submit": "Submeter respostas",
     "requiredMissing": "Responda a todas as perguntas obrigatórias antes de submeter.",
-    "saveFailed": "Não foi possível guardar. Tente novamente."
+    "saveFailed": "Não foi possível guardar. Tente novamente.",
+    "registerTitle": "Quer acompanhar a sua startup na plataforma?",
+    "registerDesc": "Com uma conta gratuita vê os dados que acabou de enviar, os marcos do programa, sessões com consultores e todos os recursos da Startup Leiria.",
+    "registerCta": "Registar-me na plataforma",
+    "registerHint": "Prefere acompanhar a sua startup com uma conta gratuita?"
   }
 }

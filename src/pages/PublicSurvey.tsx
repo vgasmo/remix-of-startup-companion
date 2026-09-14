@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
@@ -239,6 +239,22 @@ export default function PublicSurvey() {
                   "Os dados da sua startup foram atualizados na plataforma Startup Leiria.",
                 )}
               </p>
+              <div className="pt-6 border-t mt-6 space-y-2">
+                <p className="font-medium">
+                  {t("publicSurvey.registerTitle", "Quer acompanhar a sua startup na plataforma?")}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {t(
+                    "publicSurvey.registerDesc",
+                    "Com uma conta gratuita vê os dados que acabou de enviar, os marcos do programa, sessões com consultores e todos os recursos da Startup Leiria.",
+                  )}
+                </p>
+                <Button asChild className="mt-2">
+                  <Link to="/login?mode=signup">
+                    {t("publicSurvey.registerCta", "Registar-me na plataforma")}
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -363,6 +379,13 @@ export default function PublicSurvey() {
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
+
+            <p className="text-center text-sm text-muted-foreground pb-8">
+              {t("publicSurvey.registerHint", "Prefere acompanhar a sua startup com uma conta gratuita?")}{" "}
+              <Link to="/login?mode=signup" className="underline underline-offset-4 hover:text-foreground">
+                {t("publicSurvey.registerCta", "Registar-me na plataforma")}
+              </Link>
+            </p>
           </>
         )}
       </main>
