@@ -416,9 +416,9 @@ export function useConvertToStartup() {
           : Promise.resolve({ data: null }),
       ]);
 
-      return { startup, workspace, contract, wasExisting: result.was_existing };
+      return { startup, workspace, contract, wasExisting: result.was_existing, inviteSent, inviteEmail: item.contact_email ?? null };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
