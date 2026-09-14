@@ -383,6 +383,27 @@ export function useConvertToStartup() {
         }
       }
 
+      // Best-effort: invite the lead's contact as founder so they can claim the
+      // new workspace. Never rolls back a successful conversion.
+      let inviteSent = false;
+      if (!result.was_existing && item.contact_email) {
+        try {
+          await invokeWithAuth('send-workspace-invite', {
+            workspaceId: result.workspace_id,
+            startupId: result.startup_id,
+            email: item.contact_email,
+            role: 'founder',
+          });
+          inviteSent = true;
+        } catch (err) {
+          logger.warn('convert_invite_failed', {
+            error: String(err),
+            workspaceId: result.workspace_id,
+          });
+        }
+      }
+
+
       // Fetch the created startup + workspace so callers relying on prior shape keep working.
       const [{ data: startup }, { data: workspace }, { data: contract }] = await Promise.all([
         supabase.from('startups').select('*').eq('id', result.startup_id).single(),
