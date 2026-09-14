@@ -307,7 +307,12 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
                   </CardContent>
                 </Card>
               ))}
-              {filteredWorkspaces.length === 0 && (
+              {searching && (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              )}
+              {!searching && filteredWorkspaces.length === 0 && (
                 <p className="text-center text-sm text-muted-foreground py-4">
                   {t('admin.noWorkspacesFound', { defaultValue: 'Nenhum workspace encontrado.' })}
                 </p>
