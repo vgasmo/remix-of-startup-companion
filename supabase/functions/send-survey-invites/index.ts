@@ -28,7 +28,12 @@ const SIGNATURE_ROLE = 'Startup Leiria';
 interface Body {
   campaign_id: string;
   dry_run?: boolean;
+  /** Optional allowlist: only these addresses receive the invite. */
+  only_emails?: string[];
+  /** Optional ad-hoc recipients attached to a workspace's instance (not stored as contacts). */
+  extra_recipients?: { email: string; name?: string | null; workspace_id: string }[];
 }
+
 
 interface Recipient {
   email: string;
