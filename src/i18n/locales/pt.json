@@ -4318,7 +4318,10 @@
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
     "workspaceRestored": "Workspace restaurado",
-    "workspaces": "workspaces"
+    "workspaces": "workspaces",
+    "allTiers": "Todos os Tiers",
+    "tierUnclassified": "Sem Tier",
+    "tierValue": "Tier {{tier}}"
   },
   "ecosystemHub": {
     "navLabel": "Hub de Gestão",

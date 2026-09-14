@@ -13,7 +13,7 @@ export interface EcosystemFiltersState {
   search: string;
   programId: string;
   stage: string;
-  healthScore: string;
+  tier: string;
   ownerId: string;
   buildingId: string;
   incubationTypeId: string;
@@ -32,8 +32,8 @@ interface Props {
 // Stage values are now translated in the component using t()
 const STAGE_VALUES = ['all', 'awaiting_workspace', 'ideation', 'validation', 'early_traction', 'scaling', 'growth', 'new', 'first_contact_booked', 'met', 'contracted'] as const;
 
-// Health scores are now translated in the component using t()
-const HEALTH_SCORE_VALUES = ['all', 'critical', 'at_risk', 'stable', 'healthy', 'thriving'] as const;
+// Tier values map to workspaces.startup_category (A/B/C) plus "unclassified"
+const TIER_VALUES = ['all', 'A', 'B', 'C', 'unclassified'] as const;
 
 export function EcosystemFilters({ filters, onChange, showOwnerFilter = false }: Props) {
   const { t } = useTranslation();
@@ -121,19 +121,23 @@ export function EcosystemFilters({ filters, onChange, showOwnerFilter = false }:
           </Select>
         </div>
 
-        {/* Health Score Filter */}
+        {/* Tier Filter */}
         <div className="w-[150px]">
           <Label className="text-xs text-muted-foreground mb-1 block">
-            {t('workspace.healthScore', 'Health')}
+            {t('ecosystem.tier', { defaultValue: 'Tier' })}
           </Label>
-          <Select value={filters.healthScore} onValueChange={(v) => updateFilter('healthScore', v)}>
+          <Select value={filters.tier} onValueChange={(v) => updateFilter('tier', v)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {HEALTH_SCORE_VALUES.map(h => (
-                <SelectItem key={h} value={h}>
-                  {h === 'all' ? t('ecosystem.allHealth') : t(`health.levels.${h}`)}
+              {TIER_VALUES.map(tier => (
+                <SelectItem key={tier} value={tier}>
+                  {tier === 'all'
+                    ? t('ecosystem.allTiers', { defaultValue: 'Todos os Tiers' })
+                    : tier === 'unclassified'
+                      ? t('ecosystem.tierUnclassified', { defaultValue: 'Sem Tier' })
+                      : t('ecosystem.tierValue', { defaultValue: 'Tier {{tier}}', tier })}
                 </SelectItem>
               ))}
             </SelectContent>
