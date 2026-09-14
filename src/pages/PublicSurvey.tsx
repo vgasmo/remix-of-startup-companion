@@ -129,16 +129,28 @@ export default function PublicSurvey() {
     return Math.round((answered.length / required.length) * 100);
   };
 
-  const canSubmit = () =>
-    questions
-      .filter((q) => q.required)
-      .every((q) => {
+  const missingRequired = useMemo(
+    () =>
+      questions.filter((q) => {
+        if (!q.required) return false;
         const answer = answers[q.id];
-        if (Array.isArray(answer)) return answer.length > 0;
-        return answer !== undefined && answer !== "";
-      });
+        if (Array.isArray(answer)) return answer.length === 0;
+        return answer === undefined || answer === "";
+      }),
+    [questions, answers],
+  );
 
   const handleSave = async (submit: boolean) => {
+    if (submit && missingRequired.length > 0) {
+      const missingSections = [...new Set(missingRequired.map((q) => q.section))];
+      setSubmitError(
+        `${t("publicSurvey.requiredMissing", "Responda a todas as perguntas obrigatórias antes de submeter.")} (${missingSections.join(", ")})`,
+      );
+      const firstIdx = sections.indexOf(missingRequired[0].section);
+      if (firstIdx >= 0) setCurrentSectionIndex(firstIdx);
+      window.scrollTo({ top: 0 });
+      return;
+    }
     setSaving(true);
     setSubmitError(null);
     try {
@@ -362,12 +374,10 @@ export default function PublicSurvey() {
                   <Save className="h-4 w-4 mr-2" />
                   {t("publicSurvey.saveDraft", "Guardar rascunho")}
                 </Button>
-                {currentSectionIndex === sections.length - 1 && (
-                  <Button onClick={() => handleSave(true)} disabled={!canSubmit() || saving}>
-                    <Send className="h-4 w-4 mr-2" />
-                    {t("publicSurvey.submit", "Submeter respostas")}
-                  </Button>
-                )}
+                <Button onClick={() => handleSave(true)} disabled={saving} loading={saving}>
+                  <Send className="h-4 w-4 mr-2" />
+                  {t("publicSurvey.submit", "Submeter respostas")}
+                </Button>
               </div>
 
               <Button
