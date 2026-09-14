@@ -355,8 +355,14 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
                     
                     {/* Content */}
                     <div className="flex-1 min-w-0 pr-4">
-                      <h4 className="font-medium text-sm leading-snug text-foreground group-hover:text-primary transition-colors">
+                      <h4 className="font-medium text-sm leading-snug text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
                         {meta.title}
+                        {templateHidden && isStaff && (
+                          <EyeOff
+                            className="h-3 w-3 text-muted-foreground"
+                            aria-label={t('templates.hiddenFromFounder', 'Oculto para o founder')}
+                          />
+                        )}
                       </h4>
                       {meta.description && (
                         <p className="text-xs text-muted-foreground mt-0.5 truncate" title={meta.description}>
