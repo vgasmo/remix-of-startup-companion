@@ -100,9 +100,6 @@ export function useWorkQueueStats(userId?: string) {
         data = res.data;
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-
       const today = new Date();
       const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
