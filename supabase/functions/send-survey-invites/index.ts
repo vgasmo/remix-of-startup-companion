@@ -285,7 +285,31 @@ Deno.serve(async (req) => {
       if (!added) skipped += 1;
     }
 
+    // Ad-hoc recipients: known contacts that are not stored on the startup record.
+    const instanceByWorkspace = new Map(instances.map((i) => [i.workspace_id, i]));
+    for (const extra of body.extra_recipients ?? []) {
+      const instance = instanceByWorkspace.get(extra.workspace_id);
+      if (!instance) continue;
+      const startup = startupByWorkspace.get(instance.workspace_id);
+      add(
+        extra.email ?? null,
+        extra.name ?? null,
+        startup?.name || 'a sua startup',
+        instance.id,
+        instance.public_token ?? null,
+      );
+    }
+
+    // Optional targeting: keep only the requested addresses.
+    if (Array.isArray(body.only_emails) && body.only_emails.length > 0) {
+      const allow = new Set(body.only_emails.map((e) => (e || '').trim().toLowerCase()).filter(Boolean));
+      for (const key of [...recipients.keys()]) {
+        if (!allow.has(key)) recipients.delete(key);
+      }
+    }
+
     const emails = [...recipients.keys()];
+
     if (emails.length === 0) {
       return corsJsonResponse({ sent: 0, recipients: 0, skipped, failures: [] }, req, 200);
     }
