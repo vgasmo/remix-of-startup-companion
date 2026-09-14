@@ -6307,7 +6307,8 @@
     "slotAlreadyTaken": "That slot was just booked by someone else — please pick another one.",
     "startTime": "Hora de início",
     "whatToDiscuss": "What would you like to discuss?",
-    "yourBookings": "Your Bookings"
+    "yourBookings": "Your Bookings",
+    "bookingTimeOff": "The consultant blocked that period. Please pick another slot."
   },
   "mentorsPage": {
     "accept": "Accept",
@@ -10301,5 +10302,24 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
+  },
+  "timeOff": {
+    "title": "Days and hours without meetings",
+    "description": "Block holidays, whole days or hour ranges when you don't want meetings. These periods stop appearing in booking screens and are rejected server-side.",
+    "allDay": "Full day(s)",
+    "from": "From",
+    "to": "To",
+    "day": "Day",
+    "startTime": "From",
+    "endTime": "To",
+    "reason": "Reason (optional, visible to staff only)",
+    "reasonPlaceholder": "Holidays, training, internal work…",
+    "add": "Block period",
+    "added": "Period blocked",
+    "addFailed": "Could not block the period",
+    "removed": "Block removed",
+    "removeFailed": "Could not remove",
+    "invalidRange": "The end must be after the start",
+    "empty": "No blocked periods."
   }
 }

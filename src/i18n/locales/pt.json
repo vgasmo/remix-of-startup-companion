@@ -6307,7 +6307,8 @@
     "slotAlreadyTaken": "Esse horário acabou de ser reservado por outra pessoa — escolha outro.",
     "startTime": "Hora de início",
     "whatToDiscuss": "O que gostaria de discutir?",
-    "yourBookings": "As Suas Marcações"
+    "yourBookings": "As Suas Marcações",
+    "bookingTimeOff": "O consultor bloqueou esse período. Escolha outro horário."
   },
   "mentorsPage": {
     "accept": "Aceitar",
@@ -10301,5 +10302,24 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
+  },
+  "timeOff": {
+    "title": "Dias e horas sem reuniões",
+    "description": "Marque férias, dias ou intervalos de horas em que não quer receber reuniões. Estes períodos deixam de aparecer nas marcações e são recusados no servidor.",
+    "allDay": "Dia(s) inteiro(s)",
+    "from": "De",
+    "to": "Até",
+    "day": "Dia",
+    "startTime": "Das",
+    "endTime": "Às",
+    "reason": "Motivo (opcional, apenas visível para a equipa)",
+    "reasonPlaceholder": "Férias, formação, trabalho interno…",
+    "add": "Bloquear período",
+    "added": "Período bloqueado",
+    "addFailed": "Não foi possível bloquear o período",
+    "removed": "Bloqueio removido",
+    "removeFailed": "Não foi possível remover",
+    "invalidRange": "O fim tem de ser depois do início",
+    "empty": "Sem períodos bloqueados."
   }
 }
