@@ -6306,7 +6306,8 @@
     "slotAlreadyTaken": "That slot was just booked by someone else — please pick another one.",
     "startTime": "Hora de início",
     "whatToDiscuss": "What would you like to discuss?",
-    "yourBookings": "Your Bookings"
+    "yourBookings": "Your Bookings",
+    "bookingMinNotice": "Bookings must be made at least 24 hours in advance."
   },
   "mentorsPage": {
     "accept": "Accept",

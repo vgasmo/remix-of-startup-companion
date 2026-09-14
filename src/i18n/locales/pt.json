@@ -6306,7 +6306,8 @@
     "slotAlreadyTaken": "Esse horário acabou de ser reservado por outra pessoa — escolha outro.",
     "startTime": "Hora de início",
     "whatToDiscuss": "O que gostaria de discutir?",
-    "yourBookings": "As Suas Marcações"
+    "yourBookings": "As Suas Marcações",
+    "bookingMinNotice": "As marcações devem ser feitas com pelo menos 24 horas de antecedência."
   },
   "mentorsPage": {
     "accept": "Aceitar",
