@@ -390,6 +390,26 @@ serve(async (req) => {
     }
 
 
+    // Consultant blocked period (declared day/hour off) — refuse before committing.
+    if (consultantId) {
+      const slotStart = new Date(`${slot.date}T${slot.time}:00+01:00`);
+      const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
+      const { data: isBlocked, error: blockErr } = await supabase.rpc('consultant_time_off_blocks', {
+        p_consultant_id: consultantId,
+        p_start: slotStart.toISOString(),
+        p_end: slotEnd.toISOString(),
+      });
+      if (blockErr) {
+        console.error('time-off check failed:', blockErr.message);
+      } else if (isBlocked === true) {
+        return corsJsonResponse({
+          success: false,
+          error: 'Esse horário já não está disponível. Escolha outro horário.',
+          reason: 'consultant_time_off',
+        }, req, 409);
+      }
+    }
+
     // Deterministic idempotency key — repeated identical submissions (double clicks,
     // retries) resolve to the same funnel item instead of creating duplicates.
     const idempotencyKey = await deriveBookingIdempotencyKey(contact.email, slot.date, slot.time, token);
