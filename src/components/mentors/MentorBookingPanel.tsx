@@ -165,7 +165,11 @@ export function MentorBookingPanel({
         // The database trigger `prevent_mentor_booking_overlap` raises a
         // 23505 error when another founder has just booked the same slot.
         const msg = String(error?.message ?? '');
-        if (msg.includes('mentor_double_booking') || error?.code === '23505') {
+        if (msg.includes('24 hours notice')) {
+          notify.error(t('mentors.bookingMinNotice', {
+            defaultValue: 'As marcações devem ser feitas com pelo menos 24 horas de antecedência.',
+          }));
+        } else if (msg.includes('mentor_double_booking') || error?.code === '23505') {
           notify.error(t('mentors.slotAlreadyTaken', {
             defaultValue: 'That slot was just booked by someone else — please pick another one.',
           }));
