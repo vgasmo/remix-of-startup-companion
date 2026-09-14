@@ -350,3 +350,7 @@ verify_jwt = false
 # Convites de inquérito — staff (JWT validado em runtime via requireCronOrStaff).
 [functions.send-survey-invites]
 verify_jwt = false
+
+# Inquérito público — acesso anónimo mediado por public_token validado em runtime.
+[functions.public-survey]
+verify_jwt = false
