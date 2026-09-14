@@ -503,9 +503,11 @@ function CampaignCard({
                 </div>
               )}
             </ScrollArea>
-            <ConfirmDialog {...confirmProps} />
           </DialogContent>
         </Dialog>
+
+        <ConfirmDialog {...confirmProps} />
+
 
         <Dialog open={showEndDate} onOpenChange={setShowEndDate}>
           <DialogContent className="max-w-md">
