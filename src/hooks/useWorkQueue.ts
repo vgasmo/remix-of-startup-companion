@@ -71,14 +71,20 @@ export function useWorkQueue(filters?: { status?: string; statuses?: string[]; t
 }
 
 export function useWorkQueueStats(userId?: string) {
+  const { user, roles } = useAuth();
+  const scopeToConsultor =
+    !!user && roles.includes('consultor') && !roles.includes('admin') && !roles.includes('backoffice');
   return useQuery({
-    queryKey: ['work-queue-stats', userId],
+    queryKey: ['work-queue-stats', userId, scopeToConsultor ? user?.id : 'all'],
     queryFn: async () => {
       let query = supabase
         .from('staff_work_queue_items')
-        .select('id, status, due_at, priority')
+        .select(`id, status, due_at, priority${scopeToConsultor ? ', workspace:workspaces!inner(assigned_consultor_id)' : ''}`)
         .in('status', ['open', 'in_progress']);
 
+      if (scopeToConsultor) {
+        query = query.eq('workspace.assigned_consultor_id', user!.id);
+      }
       if (userId) {
         query = query.eq('assigned_to', userId);
       }
