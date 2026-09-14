@@ -53,6 +53,7 @@ interface PendingWorkspace {
 interface PendingUser {
   id: string;
   full_name: string | null;
+  signup_startup_name: string | null;
   email: string;
   avatar_url: string | null;
   created_at: string;
@@ -124,7 +125,7 @@ function usePendingUsers() {
     queryFn: async (): Promise<PendingUser[]> => {
       const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('id, full_name, email, avatar_url, created_at, account_status')
+        .select('id, full_name, email, avatar_url, created_at, account_status, signup_startup_name')
         .eq('account_status', 'pending')
         .order('created_at', { ascending: true })
         .limit(200);
@@ -147,6 +148,7 @@ function usePendingUsers() {
       return profiles.map(p => ({
         id: p.id,
         full_name: p.full_name,
+        signup_startup_name: p.signup_startup_name ?? null,
         email: p.email,
         avatar_url: p.avatar_url,
         created_at: p.created_at,
@@ -458,6 +460,12 @@ export function PendingApprovalsManager() {
                       </Avatar>
                       <div>
                         <p className="font-medium text-sm">{user.full_name || 'Sem nome'}</p>
+                        {user.signup_startup_name && (
+                          <p className="text-xs font-medium text-primary flex items-center gap-1">
+                            <Building2 className="h-3 w-3" />
+                            {user.signup_startup_name}
+                          </p>
+                        )}
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
                           <Mail className="h-3 w-3" />
                           {user.email}
