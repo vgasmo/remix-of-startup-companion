@@ -137,6 +137,7 @@ export function AppSidebar() {
   const consultorNavigation: NavItem[] = [
     { name: t('nav.consultor.portfolio', { defaultValue: 'Portefólio' }), href: '/my-workspaces', icon: Briefcase, exact: true },
     { name: t('nav.consultor.sessionsActions', { defaultValue: 'Sessões & Ações' }), href: '/staff-cockpit', icon: Calendar },
+    { name: t('consultorTools.title', { defaultValue: 'Ferramentas de Consultor' }), href: '/consultor-tools', icon: Briefcase },
 
     { name: t('nav.consultor.documents', { defaultValue: 'Documentos e Ferramentas' }), href: '/documents', icon: FolderOpen },
     { name: t('nav.consultor.crmPipeline', { defaultValue: 'CRM & Pipeline' }), href: '/crm', icon: Contact },

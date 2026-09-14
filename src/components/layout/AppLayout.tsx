@@ -172,8 +172,8 @@ function MobileBottomNav() {
     if (isConsultor) {
       return [
         { href: '/my-workspaces', icon: Briefcase, label: t('nav.mobile.portfolio', { defaultValue: 'Portefólio' }) },
-        { href: '/consultor-tools', icon: Calendar, label: t('nav.mobile.sessions', { defaultValue: 'Sessões' }) },
-        { href: '/crm', icon: Contact, label: t('nav.mobile.crm', { defaultValue: 'CRM' }) },
+        { href: '/staff-cockpit', icon: Calendar, label: t('nav.mobile.sessions', { defaultValue: 'Sessões' }) },
+        { href: '/consultor-tools', icon: Wrench, label: t('consultorTools.title', { defaultValue: 'Ferramentas' }) },
         messagingItem,
         { href: '/settings', icon: Settings, label: t('nav.settings') },
       ];
