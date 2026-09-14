@@ -3378,6 +3378,8 @@
       "title": "Convert Lead to Workspace"
     },
     "convertedToStartup": "Converted to startup",
+    "convertInviteSent": "Invitation sent to {{email}} — they can now join the workspace.",
+    "convertInviteFailed": "Workspace created, but the invitation to {{email}} could not be sent. Send it manually from the members tab.",
     "createAndSendContract": "Create contract and send",
     "createLead": "Criar Lead",
     "createNewLead": "Criar Nova Lead",
