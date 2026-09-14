@@ -1574,6 +1574,42 @@ export type Database = {
           },
         ]
       }
+      consultant_time_off: {
+        Row: {
+          all_day: boolean
+          consultant_id: string
+          created_at: string
+          created_by: string | null
+          ends_at: string
+          id: string
+          reason: string | null
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          all_day?: boolean
+          consultant_id: string
+          created_at?: string
+          created_by?: string | null
+          ends_at: string
+          id?: string
+          reason?: string | null
+          starts_at: string
+          updated_at?: string
+        }
+        Update: {
+          all_day?: boolean
+          consultant_id?: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string
+          id?: string
+          reason?: string | null
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contract_discounts: {
         Row: {
           approved_by: string | null
@@ -12284,6 +12320,10 @@ export type Database = {
         Args: { p_workspace_id: string }
         Returns: undefined
       }
+      consultant_time_off_blocks: {
+        Args: { p_consultant_id: string; p_end: string; p_start: string }
+        Returns: boolean
+      }
       consume_cron_token: {
         Args: { p_job_name?: string; p_token: string }
         Returns: boolean
@@ -12449,6 +12489,14 @@ export type Database = {
         }[]
       }
       get_canonical_booking_url: { Args: never; Returns: string }
+      get_consultant_time_off: {
+        Args: { p_consultant_id: string; p_from: string; p_to: string }
+        Returns: {
+          all_day: boolean
+          ends_at: string
+          starts_at: string
+        }[]
+      }
       get_dataroom_workspace_id: {
         Args: { _dataroom_id: string }
         Returns: string
