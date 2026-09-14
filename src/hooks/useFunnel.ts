@@ -383,6 +383,30 @@ export function useConvertToStartup() {
         }
       }
 
+      // Best-effort: invite the lead's contact as founder so they can claim the
+      // new workspace. Never rolls back a successful conversion.
+      let inviteSent = false;
+      if (!result.was_existing && item.contact_email) {
+        try {
+          const { error: inviteError } = await invokeWithAuth('send-workspace-invite', {
+            body: {
+              workspaceId: result.workspace_id,
+              startupId: result.startup_id,
+              email: item.contact_email,
+              role: 'founder',
+            },
+          });
+          if (inviteError) throw inviteError;
+          inviteSent = true;
+        } catch (err) {
+          logger.warn('convert_invite_failed', {
+            error: String(err),
+            workspaceId: result.workspace_id,
+          });
+        }
+      }
+
+
       // Fetch the created startup + workspace so callers relying on prior shape keep working.
       const [{ data: startup }, { data: workspace }, { data: contract }] = await Promise.all([
         supabase.from('startups').select('*').eq('id', result.startup_id).single(),
@@ -392,13 +416,28 @@ export function useConvertToStartup() {
           : Promise.resolve({ data: null }),
       ]);
 
-      return { startup, workspace, contract, wasExisting: result.was_existing };
+      return { startup, workspace, contract, wasExisting: result.was_existing, inviteSent, inviteEmail: item.contact_email ?? null };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
       notify.success(t('crm.convertedToStartup'));
+      if (data?.inviteSent && data.inviteEmail) {
+        notify.success(
+          t('crm.convertInviteSent', {
+            email: data.inviteEmail,
+            defaultValue: 'Convite enviado para {{email}} — pode agora ligar-se ao workspace.',
+          }),
+        );
+      } else if (data && !data.wasExisting && data.inviteEmail) {
+        notify.warn(
+          t('crm.convertInviteFailed', {
+            email: data.inviteEmail,
+            defaultValue: 'Workspace criado, mas não foi possível enviar o convite para {{email}}. Envie-o manualmente no separador de membros.',
+          }),
+        );
+      }
     },
     onError: (e: Error) => notify.error(e.message),
   });
