@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ConsultantTimeOffSettings } from '@/components/mentors/ConsultantTimeOffSettings';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -52,6 +53,8 @@ export default function Settings() {
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   const isMentor = roles.includes('mentor_externo');
+  // Staff and mentors run their own booking calendar, so they can block time off.
+  const canManageTimeOff = roles.some(r => ['admin', 'consultor', 'backoffice', 'mentor_externo'].includes(r));
   const isFounder = roles.includes('founder');
   const { canRestore, restoreChecklist } = useChecklistRecovery(user?.id);
 
@@ -240,7 +243,7 @@ export default function Settings() {
 
       <div className="max-w-2xl">
         <Tabs value={settingsTab} onValueChange={(v) => setSettingsParams({ tab: v }, { replace: false })} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className={canManageTimeOff ? 'grid w-full grid-cols-6' : 'grid w-full grid-cols-5'}>
             <TabsTrigger value="profile" className="gap-2">
               <User className="h-4 w-4" aria-hidden="true" />
               <span className="hidden sm:inline">{t('settingsPage.profile')}</span>
@@ -261,6 +264,12 @@ export default function Settings() {
               <Zap className="h-4 w-4" aria-hidden="true" />
               <span className="hidden sm:inline">{t('integrations.title')}</span>
             </TabsTrigger>
+            {canManageTimeOff && (
+              <TabsTrigger value="agenda" className="gap-2">
+                <CalendarOff className="h-4 w-4" aria-hidden="true" />
+                <span className="hidden sm:inline">{t('timeOff.tab', 'Minha Agenda')}</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* Profile Tab */}
@@ -590,6 +599,12 @@ export default function Settings() {
           <TabsContent value="integrations">
             <WorkflowIntegrations />
           </TabsContent>
+        
+          {canManageTimeOff && (
+            <TabsContent value="agenda">
+              <ConsultantTimeOffSettings />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </AppLayout>
