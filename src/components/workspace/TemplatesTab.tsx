@@ -309,6 +309,13 @@ export function TemplatesTab({ workspaceId, canWrite, isFounder = false }: Templ
             </h3>
             <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
               {templatesByCategory[category].map(template => {
+                // Respect the "hide from founder" toggle here too: the canvas
+                // tabs were filtered, but this list also links to the same
+                // templates, so founders could still open a hidden tool.
+                const templateCanvasType = getCanvasType(template.name);
+                const templateHidden = !!templateCanvasType && hiddenTools.includes(templateCanvasType);
+                if (templateHidden && !isStaff) return null;
+
                 const instance = instancesByTemplateId[template.id];
                 const isCompleted = instance?.status === 'completed';
                 const isStarted = !!instance;
