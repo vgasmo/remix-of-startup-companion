@@ -1376,6 +1376,7 @@
       "confirmRemoveParticipant": "Remove this startup from the survey?",
       "confirmRemoveParticipantAction": "Remove and delete answers",
       "confirmRemoveParticipantDesc": "{{name}} has already started answering. Saved answers will be deleted and cannot be recovered.",
+      "copyPublicLink": "Copy public link (no sign-up)",
       "createBlank": "Create blank template",
       "createCampaign": "Create Survey Campaign",
       "createDefaultTemplate": "Create Ecosystem Survey Template",
@@ -1412,6 +1413,7 @@
       "preview": "Preview",
       "previewNotice": "Survey preview. No responses are saved.",
       "progress": "Progress",
+      "publicLinkCopied": "Public link copied",
       "questionText": "Question text",
       "questions": "Questions",
       "reopen": "Reopen",
@@ -1446,9 +1448,7 @@
       "type": "Type",
       "viewQuestions": "View questions",
       "viewQuestionsDesc": "Questions included in this survey",
-      "viewResponses": "View Responses",
-      "copyPublicLink": "Copy public link (no sign-up)",
-      "publicLinkCopied": "Public link copied"
+      "viewResponses": "View Responses"
     },
     "suspend": "Suspend",
     "suspendUser": "Suspend User",
@@ -3367,6 +3367,8 @@
     "contractLinkMissing": "The server did not return a valid link.",
     "contractMissingNotice": "The linked contract no longer exists (deleted or archived).",
     "contratoEnviadoParaAssinatura": "Contract sent for signature!",
+    "convertInviteFailed": "Workspace created, but the invitation to {{email}} could not be sent. Send it manually from the members tab.",
+    "convertInviteSent": "Invitation sent to {{email}} — they can now join the workspace.",
     "convertToStartup": "Convert to Startup",
     "convertToWorkspace": {
       "confirm": "Convert",
@@ -3378,8 +3380,6 @@
       "title": "Convert Lead to Workspace"
     },
     "convertedToStartup": "Converted to startup",
-    "convertInviteSent": "Invitation sent to {{email}} — they can now join the workspace.",
-    "convertInviteFailed": "Workspace created, but the invitation to {{email}} could not be sent. Send it manually from the members tab.",
     "createAndSendContract": "Create contract and send",
     "createLead": "Criar Lead",
     "createNewLead": "Criar Nova Lead",
@@ -4293,6 +4293,7 @@
     "leads": "leads",
     "loadError": "Could not load the ecosystem list. Please try again.",
     "loadMore": "Load more",
+    "loadingAll": "Loading all records…",
     "manageTeam": "Manage Team",
     "name": "Name",
     "needsAttention": "Needs Attention Only",
@@ -4317,8 +4318,7 @@
     "workspace": "Workspace",
     "workspaceArchived": "Workspace arquivado",
     "workspaceRestored": "Workspace restaurado",
-    "workspaces": "workspaces",
-    "loadingAll": "Loading all records…"
+    "workspaces": "workspaces"
   },
   "ecosystemHub": {
     "navLabel": "Management Hub",
@@ -6258,6 +6258,7 @@
     "bookSessionWith": "Book Session with {{name}}",
     "bookingAccepted": "Booking accepted",
     "bookingDeclined": "Booking declined",
+    "bookingMinNotice": "Bookings must be made at least 24 hours in advance.",
     "bookingRequestSent": "Booking request sent!",
     "chooseTimeSlot": "Choose a time slot",
     "confirmAssignment": "Confirm Assignment",
@@ -7749,6 +7750,26 @@
     "youWillReceiveAnEmailFromPandadoc": "You will receive an email from PandaDoc to sign.",
     "yourContractHasBeenSubmittedFor": "Your contract has been submitted for signature.",
     "yourSignatureIpDateTimeAndUser": "Your signature, IP, date/time and user are recorded."
+  },
+  "publicSurvey": {
+    "closed": "This survey is no longer available.",
+    "deadline": "Deadline",
+    "forStartup": "Startup:",
+    "invalidLink": "This link is not valid. Please check the address in the email you received.",
+    "loadFailed": "We could not open the survey. Please try again.",
+    "loading": "Loading the survey...",
+    "needHelp": "Need help? Reply to the email you received or write to vitor.ferreira@startupleiria.com.",
+    "progress": "Progress",
+    "registerCta": "Sign me up on the platform",
+    "registerDesc": "With a free account you can see the data you just sent, program milestones, consultant sessions and every Startup Leiria resource.",
+    "registerHint": "Prefer to follow your startup with a free account?",
+    "registerTitle": "Want to follow your startup on the platform?",
+    "requiredMissing": "Please answer every required question before submitting.",
+    "saveDraft": "Save draft",
+    "saveFailed": "Could not save. Please try again.",
+    "submit": "Submit answers",
+    "thankYou": "Thank you — your response has been submitted.",
+    "thankYouDesc": "Your startup's data has been updated on the Startup Leiria platform."
   },
   "quality": {
     "blockingWarning": "This {{entityType}} cannot be marked as ready until the score reaches 70+",
@@ -10280,25 +10301,5 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
-  },
-  "publicSurvey": {
-    "loading": "Loading the survey...",
-    "invalidLink": "This link is not valid. Please check the address in the email you received.",
-    "closed": "This survey is no longer available.",
-    "loadFailed": "We could not open the survey. Please try again.",
-    "needHelp": "Need help? Reply to the email you received or write to vitor.ferreira@startupleiria.com.",
-    "thankYou": "Thank you — your response has been submitted.",
-    "thankYouDesc": "Your startup's data has been updated on the Startup Leiria platform.",
-    "forStartup": "Startup:",
-    "deadline": "Deadline",
-    "progress": "Progress",
-    "saveDraft": "Save draft",
-    "submit": "Submit answers",
-    "requiredMissing": "Please answer every required question before submitting.",
-    "saveFailed": "Could not save. Please try again.",
-    "registerTitle": "Want to follow your startup on the platform?",
-    "registerDesc": "With a free account you can see the data you just sent, program milestones, consultant sessions and every Startup Leiria resource.",
-    "registerCta": "Sign me up on the platform",
-    "registerHint": "Prefer to follow your startup with a free account?"
   }
 }

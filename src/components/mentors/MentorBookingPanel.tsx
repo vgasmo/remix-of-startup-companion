@@ -106,6 +106,9 @@ export function MentorBookingPanel({
       .map(b => ({ s: timeToMin(b.start_time), e: timeToMin(b.end_time) }));
     const busy = [...ownBusy, ...crossFounderBusy];
 
+    // Founders must book with at least 24h notice (also enforced server-side).
+    const minStart = mode === 'founder' ? Date.now() + 24 * 60 * 60 * 1000 : 0;
+
     const slots: { start: string; end: string; key: string }[] = [];
     for (const w of windows) {
       let cursor = timeToMin(w.start_time);
@@ -117,7 +120,11 @@ export function MentorBookingPanel({
         if (!clash) {
           const startStr = minToTime(slotStart);
           const endStr = minToTime(slotEnd);
-          slots.push({ start: startStr, end: endStr, key: `${startStr}-${endStr}` });
+          const slotDate = new Date(date);
+          slotDate.setHours(Math.floor(slotStart / 60), slotStart % 60, 0, 0);
+          if (slotDate.getTime() >= minStart) {
+            slots.push({ start: startStr, end: endStr, key: `${startStr}-${endStr}` });
+          }
         }
         cursor += SLOT_STEP;
       }
@@ -158,7 +165,11 @@ export function MentorBookingPanel({
         // The database trigger `prevent_mentor_booking_overlap` raises a
         // 23505 error when another founder has just booked the same slot.
         const msg = String(error?.message ?? '');
-        if (msg.includes('mentor_double_booking') || error?.code === '23505') {
+        if (msg.includes('24 hours notice')) {
+          notify.error(t('mentors.bookingMinNotice', {
+            defaultValue: 'As marcações devem ser feitas com pelo menos 24 horas de antecedência.',
+          }));
+        } else if (msg.includes('mentor_double_booking') || error?.code === '23505') {
           notify.error(t('mentors.slotAlreadyTaken', {
             defaultValue: 'That slot was just booked by someone else — please pick another one.',
           }));
