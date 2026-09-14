@@ -77,16 +77,27 @@ export function useWorkQueueStats(userId?: string) {
   return useQuery({
     queryKey: ['work-queue-stats', userId, scopeToConsultor ? user?.id : 'all'],
     queryFn: async () => {
-      let query = supabase
-        .from('staff_work_queue_items')
-        .select(`id, status, due_at, priority${scopeToConsultor ? ', workspace:workspaces!inner(assigned_consultor_id)' : ''}`)
-        .in('status', ['open', 'in_progress']);
-
+      type StatsRow = { id: string; status: string; due_at: string | null; priority: string };
+      let data: StatsRow[] | null = null;
       if (scopeToConsultor) {
-        query = query.eq('workspace.assigned_consultor_id', user!.id);
-      }
-      if (userId) {
-        query = query.eq('assigned_to', userId);
+        let q = supabase
+          .from('staff_work_queue_items')
+          .select('id, status, due_at, priority, workspace:workspaces!inner(assigned_consultor_id)')
+          .in('status', ['open', 'in_progress'])
+          .eq('workspace.assigned_consultor_id', user!.id);
+        if (userId) q = q.eq('assigned_to', userId);
+        const res = await q;
+        if (res.error) throw res.error;
+        data = res.data as unknown as StatsRow[];
+      } else {
+        let q = supabase
+          .from('staff_work_queue_items')
+          .select('id, status, due_at, priority')
+          .in('status', ['open', 'in_progress']);
+        if (userId) q = q.eq('assigned_to', userId);
+        const res = await q;
+        if (res.error) throw res.error;
+        data = res.data;
       }
 
       const { data, error } = await query;
