@@ -41,7 +41,7 @@ export default function Ecosystem() {
     search: '',
     programId: 'all',
     stage: 'all',
-    healthScore: 'all',
+    tier: 'all',
     ownerId: 'all',
     buildingId: 'all',
     incubationTypeId: 'all',
@@ -61,7 +61,10 @@ export default function Ecosystem() {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-  } = useEcosystemItems(filters);
+  } = useEcosystemItems({
+    ...filters,
+    tier: filters.tier !== 'all' ? (filters.tier as 'A' | 'B' | 'C' | 'unclassified') : undefined,
+  });
 
   // The "Por Consultor" view groups rows client-side, so partial pagination
   // produced counts lower than the totals shown in the Startups & Leads tab.
