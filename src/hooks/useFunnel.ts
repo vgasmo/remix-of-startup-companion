@@ -388,12 +388,15 @@ export function useConvertToStartup() {
       let inviteSent = false;
       if (!result.was_existing && item.contact_email) {
         try {
-          await invokeWithAuth('send-workspace-invite', {
-            workspaceId: result.workspace_id,
-            startupId: result.startup_id,
-            email: item.contact_email,
-            role: 'founder',
+          const { error: inviteError } = await invokeWithAuth('send-workspace-invite', {
+            body: {
+              workspaceId: result.workspace_id,
+              startupId: result.startup_id,
+              email: item.contact_email,
+              role: 'founder',
+            },
           });
+          if (inviteError) throw inviteError;
           inviteSent = true;
         } catch (err) {
           logger.warn('convert_invite_failed', {
