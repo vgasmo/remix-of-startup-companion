@@ -401,6 +401,7 @@ serve(async (req) => {
     if (action === "get_slots") {
       const slots: TimeSlot[] = [];
       const now = new Date();
+      let consultantId: string | null = null;
 
       // CANONICAL ROUTING: pick the exact consultant that public-book-first-contact will use,
       // so displayed availability matches the actual booking target. Failure to resolve is
@@ -413,6 +414,7 @@ serve(async (req) => {
         });
         consultantEmail = resolved.consultantEmail;
         consultantName = resolved.consultantName;
+        consultantId = resolved.consultantId;
         if (resolved.programId) {
           programId = resolved.programId;
           programName = resolved.programName;
@@ -521,6 +523,33 @@ serve(async (req) => {
           attempted: scheduleCallsAttempted,
           failed: scheduleCallsFailed,
         });
+      }
+
+      // Consultant-declared blocked periods (days / hours off) close the slot,
+      // even when the Outlook calendar shows the time as free.
+      if (consultantId) {
+        try {
+          const { data: timeOff } = await supabase.rpc('get_consultant_time_off', {
+            p_consultant_id: consultantId,
+            p_from: format(now, 'yyyy-MM-dd'),
+            p_to: format(addDays(now, 21), 'yyyy-MM-dd'),
+          });
+          const blocks = (timeOff ?? []) as Array<{ starts_at: string; ends_at: string }>;
+          if (blocks.length > 0) {
+            for (const slot of slots) {
+              if (!slot.available) continue;
+              // Lisbon wall clock (UTC+1/+2) — compare against absolute instants.
+              const slotStart = new Date(`${slot.date}T${slot.time}:00+01:00`);
+              const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
+              const blocked = blocks.some((b) =>
+                new Date(b.starts_at) < slotEnd && new Date(b.ends_at) > slotStart
+              );
+              if (blocked) slot.available = false;
+            }
+          }
+        } catch (offErr) {
+          console.error('time-off filter failed:', offErr instanceof Error ? offErr.message : offErr);
+        }
       }
 
       return corsJsonResponse(

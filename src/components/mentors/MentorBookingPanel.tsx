@@ -23,6 +23,7 @@ import {
   useMentorBusySlots,
   MentorBooking 
 } from '@/hooks/useMentorAvailability';
+import { useConsultantTimeOff } from '@/hooks/useConsultantTimeOff';
 
 interface MentorBookingPanelProps {
   mentorId?: string;
@@ -72,6 +73,8 @@ export function MentorBookingPanel({
   // mentor from every founder (no PII), so founder B can't book a slot
   // founder A already took.
   const { data: mentorBusySlots } = useMentorBusySlots(mentorId);
+  // Blocked days/hours declared by the mentor/consultant — never bookable.
+  const { data: mentorTimeOff } = useConsultantTimeOff(mentorId);
   const createBooking = useCreateBooking();
   const updateStatus = useUpdateBookingStatus();
 
@@ -122,7 +125,12 @@ export function MentorBookingPanel({
           const endStr = minToTime(slotEnd);
           const slotDate = new Date(date);
           slotDate.setHours(Math.floor(slotStart / 60), slotStart % 60, 0, 0);
-          if (slotDate.getTime() >= minStart) {
+          const slotEndDate = new Date(date);
+          slotEndDate.setHours(Math.floor(slotEnd / 60), slotEnd % 60, 0, 0);
+          const inTimeOff = (mentorTimeOff || []).some(o =>
+            new Date(o.starts_at) < slotEndDate && new Date(o.ends_at) > slotDate,
+          );
+          if (!inTimeOff && slotDate.getTime() >= minStart) {
             slots.push({ start: startStr, end: endStr, key: `${startStr}-${endStr}` });
           }
         }
@@ -165,7 +173,11 @@ export function MentorBookingPanel({
         // The database trigger `prevent_mentor_booking_overlap` raises a
         // 23505 error when another founder has just booked the same slot.
         const msg = String(error?.message ?? '');
-        if (msg.includes('24 hours notice')) {
+        if (msg.includes('unavailable in this period')) {
+          notify.error(t('mentors.bookingTimeOff', {
+            defaultValue: 'O consultor bloqueou esse período. Escolha outro horário.',
+          }));
+        } else if (msg.includes('24 hours notice')) {
           notify.error(t('mentors.bookingMinNotice', {
             defaultValue: 'As marcações devem ser feitas com pelo menos 24 horas de antecedência.',
           }));
