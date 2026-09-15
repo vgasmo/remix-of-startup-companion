@@ -180,7 +180,7 @@ export const WorkspaceFilters = memo(function WorkspaceFilters({
             <SelectItem value="all">{t('filters.allPriorities', { defaultValue: 'Todas as Prioridades' })}</SelectItem>
             {priorities.map((priority) => (
               <SelectItem key={priority} value={priority}>
-                {priority === 'star' ? `⭐ ${t('priorities.star', { defaultValue: 'Estrela' })}` : t(`priorities.${priority}`, { defaultValue: priority })}
+                {t(`priorities.${priority}`, { defaultValue: priority })}
               </SelectItem>
             ))}
           </SelectContent>
