@@ -120,8 +120,14 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
       const a = document.createElement("a");
       a.href = url;
       a.download = `respostas-inquerito-${format(new Date(), "yyyy-MM-dd")}.csv`;
+      a.style.display = "none";
+      document.body.appendChild(a);
       a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 2000);
+      notify.success(t("common.exportCsv", "Exportar CSV") + ` — ${instances.length}`);
     } catch (e) {
       notify.error(t("reports.errorTitle", "Não foi possível gerar o relatório"), { description: e instanceof Error ? e.message : "" });
     } finally {
