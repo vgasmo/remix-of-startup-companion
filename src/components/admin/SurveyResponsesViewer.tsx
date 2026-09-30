@@ -123,7 +123,7 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (e) {
-      notify.error(t("reports.errorTitle", "Não foi possível gerar o relatório"), e instanceof Error ? e.message : "");
+      notify.error(t("reports.errorTitle", "Não foi possível gerar o relatório"), { description: e instanceof Error ? e.message : "" });
     } finally {
       setExporting(false);
     }
