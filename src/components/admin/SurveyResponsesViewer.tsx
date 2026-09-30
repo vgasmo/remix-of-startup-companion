@@ -28,6 +28,8 @@ import {
   SurveyInstance,
   SurveyQuestion,
 } from "@/hooks/useSurveys";
+import { supabase } from "@/lib/supabaseClient";
+import { notify } from "@/lib/notify";
 
 const STATUS_ICONS = {
   submitted: <CheckCircle className="h-4 w-4 text-green-500" />,
@@ -53,29 +55,78 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
 
   const locale = i18n.language === "pt" ? pt : undefined;
 
-  const handleExportCSV = () => {
-    const esc = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-    const headers = [
-      t("common.startup", "Startup"),
-      t("common.status", "Status"),
-      t("common.submitted", "Submetido"),
-      t("surveys.dataApplied", "Dados aplicados"),
-    ];
-    const rows = instances.map((inst) => [
-      inst.workspace?.startups?.name || t("common.unknown", "Desconhecido"),
-      inst.status,
-      inst.submitted_at ? format(new Date(inst.submitted_at), "yyyy-MM-dd HH:mm") : "",
-      String(appliedByInstance[inst.id] || 0),
-    ]);
+  const [exporting, setExporting] = useState(false);
 
-    const csv = [headers, ...rows].map((r) => r.map(esc).join(",")).join("\n");
-    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `survey-responses-${campaignId}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const esc = (v: unknown) => {
+        let s = String(v ?? "");
+        if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+        return `"${s.replace(/"/g, '""')}"`;
+      };
+      const { data: camp, error: cErr } = await supabase
+        .from("survey_campaigns")
+        .select("survey_definition:survey_definitions(questions_json)")
+        .eq("id", campaignId)
+        .single();
+      if (cErr) throw cErr;
+      const questions = (((camp as any)?.survey_definition?.questions_json) || []) as SurveyQuestion[];
+
+      const ids = instances.map((i) => i.id);
+      const responses: { instance_id: string; question_id: string; response_value: string | null; response_json: unknown }[] = [];
+      for (let i = 0; i < ids.length; i += 100) {
+        const chunk = ids.slice(i, i + 100);
+        let from = 0;
+        while (true) {
+          const { data, error } = await supabase
+            .from("survey_responses")
+            .select("instance_id, question_id, response_value, response_json")
+            .in("instance_id", chunk)
+            .range(from, from + 999);
+          if (error) throw error;
+          responses.push(...((data || []) as any));
+          if (!data || data.length < 1000) break;
+          from += 1000;
+        }
+      }
+      const byInst: Record<string, Record<string, string>> = {};
+      for (const r of responses) {
+        let v = r.response_value ?? "";
+        if (!v && r.response_json != null) {
+          v = Array.isArray(r.response_json) ? r.response_json.join("; ") : typeof r.response_json === "object" ? JSON.stringify(r.response_json) : String(r.response_json);
+        }
+        (byInst[r.instance_id] ||= {})[r.question_id] = v;
+      }
+
+      const headers = [
+        t("common.startup", "Startup"),
+        t("common.status", "Status"),
+        t("common.submitted", "Submetido"),
+        t("surveys.dataApplied", "Dados aplicados"),
+        ...questions.map((q) => (q.section ? `${q.section} — ${q.question}` : q.question)),
+      ];
+      const rows = instances.map((inst) => [
+        inst.workspace?.startups?.name || t("common.unknown", "Desconhecido"),
+        statusLabel(inst.status),
+        inst.submitted_at ? format(new Date(inst.submitted_at), "yyyy-MM-dd HH:mm") : "",
+        String(appliedByInstance[inst.id] || 0),
+        ...questions.map((q) => byInst[inst.id]?.[q.id] ?? ""),
+      ]);
+
+      const csv = [headers, ...rows].map((r) => r.map(esc).join(";")).join("\r\n");
+      const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `respostas-inquerito-${format(new Date(), "yyyy-MM-dd")}.csv`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      notify.error(t("reports.errorTitle", "Não foi possível gerar o relatório"), { description: e instanceof Error ? e.message : "" });
+    } finally {
+      setExporting(false);
+    }
   };
 
   if (isLoading) {
@@ -118,7 +169,7 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
             {instances.filter((i) => i.status === "pending").length} {t("surveys.statusPending", "Pendente")}
           </span>
         </div>
-        <Button variant="outline" size="sm" onClick={handleExportCSV}>
+        <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={exporting} loading={exporting}>
           <Download className="h-4 w-4 mr-2" />
           {t("common.exportCsv", "Exportar CSV")}
         </Button>
