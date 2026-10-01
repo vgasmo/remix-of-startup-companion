@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { type FunnelStage, type FunnelType } from '@/constants/funnelStages';
 import { logger } from '@/lib/logger';
+import { fetchAllRows } from '@/lib/fetchAllRows';
 
 /** Explicit cap so the CRM board never silently drops leads past PostgREST's default. */
 const FUNNEL_ITEMS_LIMIT = 5000;
@@ -52,24 +53,23 @@ export function useFunnelItems(filters?: { stage?: FunnelStage; consultantId?: s
   return useQuery({
     queryKey: ['funnel-items', filters],
     queryFn: async (): Promise<FunnelItem[]> => {
-      let query = supabase
-        .from('funnel_items')
-        .select('id, type, stage, organization_name, contact_name, contact_email, contact_phone, source, notes, tags, owner_consultant_id, program_id, linked_startup_id, linked_workspace_id, linked_contract_id, first_contact_at, qualified_at, converted_at, next_action_at, next_action_description, last_activity_at, deal_value, deal_currency, expected_close_date, win_probability, loss_reason, metadata_json, created_at, updated_at')
-        .order('updated_at', { ascending: false })
-        .limit(FUNNEL_ITEMS_LIMIT);
+      const data = await fetchAllRows((from, to) => {
+        let query = supabase
+          .from('funnel_items')
+          .select('id, type, stage, organization_name, contact_name, contact_email, contact_phone, source, notes, tags, owner_consultant_id, program_id, linked_startup_id, linked_workspace_id, linked_contract_id, first_contact_at, qualified_at, converted_at, next_action_at, next_action_description, last_activity_at, deal_value, deal_currency, expected_close_date, win_probability, loss_reason, metadata_json, created_at, updated_at')
+          .order('updated_at', { ascending: false })
+          .order('id')
+          .range(from, to);
 
-      if (filters?.stage) {
-        query = query.eq('stage', filters.stage);
-      }
-      if (filters?.consultantId) {
-        query = query.eq('owner_consultant_id', filters.consultantId);
-      }
+        if (filters?.stage) {
+          query = query.eq('stage', filters.stage);
+        }
+        if (filters?.consultantId) {
+          query = query.eq('owner_consultant_id', filters.consultantId);
+        }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      if (data && data.length === FUNNEL_ITEMS_LIMIT) {
-        logger.warn('[useFunnelItems] result truncated at limit', { limit: FUNNEL_ITEMS_LIMIT });
-      }
+        return query;
+      });
 
       // Fetch owner profiles
       const ownerIds = [...new Set((data || []).filter(d => d.owner_consultant_id).map(d => d.owner_consultant_id))];

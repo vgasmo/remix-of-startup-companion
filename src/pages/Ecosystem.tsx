@@ -40,7 +40,7 @@ export default function Ecosystem() {
   const [filters, setFilters] = useState<EcosystemFiltersState>({
     search: '',
     programId: 'all',
-    stage: 'all',
+    stage: searchParams.get('stage') || 'all',
     tier: 'all',
     ownerId: 'all',
     buildingId: 'all',
@@ -64,6 +64,7 @@ export default function Ecosystem() {
   } = useEcosystemItems({
     ...filters,
     tier: filters.tier !== 'all' ? (filters.tier as 'A' | 'B' | 'C' | 'unclassified') : undefined,
+    healthScore: searchParams.get('health') || undefined,
   });
 
   // The "Por Consultor" view groups rows client-side, so partial pagination
