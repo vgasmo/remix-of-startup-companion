@@ -2366,8 +2366,6 @@
     "newStartupHint": "Tem uma startup nova que ainda não está no sistema?",
     "noMatchHint": "Se não encontrarmos correspondência, a nossa equipa irá rever o seu pedido.",
     "noRequests": "Sem pedidos de associação pendentes.",
-    "onboardingDesc": "Complete o processo de configuração para começar a utilizar a plataforma.",
-    "onboardingTitle": "Configurar o seu workspace",
     "orSubmitNew": "Ou, se preferir, pode submeter uma candidatura de nova startup:",
     "pendingDesc": "Não encontrámos uma correspondência automática, mas a sua equipa irá analisar e associá-lo manualmente. Isto é normal no modelo por convite.",
     "pendingReassurance": "Não precisa de fazer mais nada. Receberá acesso assim que a equipa confirmar.",
@@ -2381,7 +2379,6 @@
     "searchingHint": "Isto demora apenas alguns segundos.",
     "securityNote": "Processo seguro e confidencial. Os seus dados não são partilhados externamente.",
     "selectStartup": "Selecionar startup...",
-    "startOnboarding": "Iniciar configuração",
     "step1": "Verificamos se existe uma startup associada ao seu email no nosso sistema.",
     "step2": "Se encontrarmos, a startup é associada automaticamente à sua conta.",
     "step3": "Se não, o pedido é enviado para a equipa para revisão manual.",
@@ -2673,6 +2670,25 @@
     "years": "anos",
     "yes": "Sim"
   },
+  "common.archive": "common.archive",
+  "common.cancel": "common.cancel",
+  "common.copyLink": "common.copyLink",
+  "common.delete": "common.delete",
+  "common.edit": "Editar",
+  "common.first": "First",
+  "common.lastPage": "Last page",
+  "common.linkCopied": "common.linkCopied",
+  "common.loading": "common.loading",
+  "common.moreActions": "More actions",
+  "common.moreDetails": "Mais",
+  "common.nextPage": "Next page",
+  "common.open": "Abrir",
+  "common.previousPage": "Previous page",
+  "common.rowsPerPage": "Rows per page",
+  "common.showingResults": "common.showingResults",
+  "common.undo": "Anular",
+  "common.undoFailed": "Não foi possível anular",
+  "common.unknown": "Unknown",
   "communication": {
     "emailAliasCreated": "Alias de email criado"
   },
@@ -3067,6 +3083,18 @@
     "viewWorkspace": "Ver Workspace",
     "voidedNotice": "Este contrato foi anulado."
   },
+  "contractDetail.notifyFailed": "Contrato atualizado, mas as notificações falharam.",
+  "contractDetail.terminate.archiveFailed": "contractDetail.terminate.archiveFailed",
+  "contractDetail.terminate.archiveSkipped": "contractDetail.terminate.archiveSkipped",
+  "contractDetail.terminate.error": "Não foi possível terminar o contrato",
+  "contractDetail.terminate.notifyFounderMsg": "contractDetail.terminate.notifyFounderMsg",
+  "contractDetail.terminate.notifyFounderTitle": "O seu contrato foi terminado",
+  "contractDetail.terminate.notifyStaffMsg": "contractDetail.terminate.notifyStaffMsg",
+  "contractDetail.terminate.notifyStaffTitle": "Contrato terminado",
+  "contractDetail.terminate.reasonRequired": "Indique o motivo da terminação.",
+  "contractDetail.terminate.staffTaskDesc": "contractDetail.terminate.staffTaskDesc",
+  "contractDetail.terminate.staffTaskTitle": "Cancelar sessões futuras (contrato terminado)",
+  "contractDetail.terminate.success": "Contrato terminado",
   "contractOnboarding": {
     "acceptContract": "Li e aceito os termos do Contrato de Incubação, incluindo as condições de prestação de serviços, obrigações e direitos das partes.",
     "acceptRegulation": "Li e aceito o Regulamento da Startup Leiria, comprometendo-me a cumprir as normas e procedimentos nele estabelecidos.",
@@ -3237,6 +3265,8 @@
       "uploading": "A carregar documento..."
     }
   },
+  "contracts.bulk.terminatePartial": "contracts.bulk.terminatePartial",
+  "contracts.bulk.terminateSuccess": "contracts.bulk.terminateSuccess",
   "copilot": {
     "askAnything": "Pergunte sobre a sua startup, tarefas, KPIs ou ecossistema.",
     "askInputLabel": "Pergunte ao copiloto",
@@ -3795,6 +3825,16 @@
     "winProbability": "Probabilidade (%)",
     "workspaceCreated": "Workspace criado para {{name}}"
   },
+  "crm.contract": "Contrato",
+  "crm.contractArchivedNotice": "O contrato vinculado foi arquivado.",
+  "crm.contractMissingNotice": "O contrato vinculado já não existe (foi eliminado ou arquivado).",
+  "crm.createAndSendContract": "Criar contrato e enviar",
+  "crm.initiateContract": "Iniciar Contrato",
+  "crm.linkedContext": "Contexto Vinculado",
+  "crm.noContractsAvailable": "Sem contratos neste workspace",
+  "crm.noLinkedContext": "Sem contexto associado.",
+  "crm.sendContract": "Enviar Contrato",
+  "crm.startupNoWorkspace": "Sem workspace",
   "dashboard": {
     "acrossPrograms": "Em {{count}} programa",
     "acrossPrograms_plural": "Em {{count}} programas",
@@ -4348,6 +4388,32 @@
     "tierUnclassified": "Sem Tier",
     "tierValue": "Tier {{tier}}"
   },
+  "ecosystem.archiveError": "Erro ao arquivar workspace",
+  "ecosystem.archiveWorkspace": "Arquivar Workspace",
+  "ecosystem.confirmArchiveDesc": "ecosystem.confirmArchiveDesc",
+  "ecosystem.confirmArchiveTitle": "ecosystem.confirmArchiveTitle",
+  "ecosystem.confirmDeleteDesc": "ecosystem.confirmDeleteDesc",
+  "ecosystem.confirmDeleteTitle": "Eliminar Lead?",
+  "ecosystem.deleteLead": "Eliminar Lead",
+  "ecosystem.deleteLeadError": "Erro ao arquivar a lead",
+  "ecosystem.lastActivity": "Last Activity",
+  "ecosystem.lead": "Lead",
+  "ecosystem.leadDeleted": "Lead arquivada",
+  "ecosystem.leadRestored": "Lead restaurada",
+  "ecosystem.manageTeam": "Manage Team",
+  "ecosystem.name": "Name",
+  "ecosystem.noItems": "No items found",
+  "ecosystem.noItemsDesc": "Try adjusting your filters or search criteria",
+  "ecosystem.openDetail": "Open Details",
+  "ecosystem.owner": "Owner",
+  "ecosystem.scheduleSession": "Schedule Session",
+  "ecosystem.startupPortugalBadge": "Estatuto Startup Portugal",
+  "ecosystem.startupPortugalShort": "SP",
+  "ecosystem.tier": "Tier",
+  "ecosystem.type": "Type",
+  "ecosystem.workspace": "Workspace",
+  "ecosystem.workspaceArchived": "Workspace arquivado",
+  "ecosystem.workspaceRestored": "Workspace restaurado",
   "ecosystemHub": {
     "navLabel": "Hub de Gestão",
     "subtitle": "Gerir startups, mentores, programas e fluxos operacionais",
@@ -4502,6 +4568,7 @@
     "unauthorized": "Não tem autorização para esta ação.",
     "validationError": "Verifique os dados introduzidos."
   },
+  "errors.noPermission": "Sem permissão para esta ação.",
   "exercises": {
     "addMaterial": "Adicionar material",
     "addStep": "Adicionar passo",
@@ -5042,6 +5109,12 @@
     "session": "Sessão recente",
     "title": "Prontidão do Projeto",
     "updateKpis": "Atualizar"
+  },
+  "founderRequests": {
+    "sendFailed": "Erro ao enviar pedido",
+    "sent": "Pedido enviado à equipa",
+    "updateFailed": "Erro ao atualizar",
+    "updated": "Pedido atualizado"
   },
   "founderWizard": {
     "done": "Concluir",
@@ -5641,6 +5714,8 @@
     "zoomMeet": "Zoom / Google Meet",
     "zoomMeetNote": "Use Zapier ou Make.com para conectar as suas reuniões a este endpoint de webhook."
   },
+  "integrations.pesquisaGuardada": "integrations.pesquisaGuardada",
+  "integrations.pesquisaRemovida": "integrations.pesquisaRemovida",
   "investorReadiness": {
     "createLink": "Criar Link",
     "createUpdate": "Criar update para investidores",
@@ -5765,6 +5840,12 @@
     "verifyingDesc": "Por favor aguarde enquanto verificamos o seu convite...",
     "wrongEmail": "Este convite foi enviado para {{email}}. Por favor inicie sessão com esse email."
   },
+  "invite.inviteFailed": "invite.inviteFailed",
+  "invite.inviteMember": "Convidar",
+  "invite.inviteTitle": "Convidar para o workspace",
+  "invite.role": "Papel",
+  "invite.sendInvite": "invite.sendInvite",
+  "invite.sentTo": "invite.sentTo",
   "journey": {
     "actionsCompleted": "{{completed}}/{{total}} ações concluídas",
     "aiInsight": "Insight IA",
@@ -6640,6 +6721,7 @@
     "usersPermissions": "Utilizadores & Permissões",
     "workspaces": "Workspaces"
   },
+  "nav.workspaces": "nav.workspaces",
   "nda": {
     "acceptButton": "Aceitar e Continuar",
     "acceptLabel": "Li, compreendo e aceito os termos deste Acordo de Confidencialidade",
@@ -8103,6 +8185,8 @@
     "mentor_externo": "Mentor Externo",
     "team_member": "Membro da Equipa"
   },
+  "roles.founder": "Founder",
+  "roles.team_member": "Membro da equipa",
   "savedViews": {
     "deleteFailed": "Falha ao eliminar vista",
     "deleted": "Vista eliminada",
@@ -9273,6 +9357,29 @@
     "teamMembers": "Co-fundadores",
     "title": "Co-fundadores"
   },
+  "team.addMember": "team.addMember",
+  "team.editMember": "team.editMember",
+  "team.email": "team.email",
+  "team.failedToRemove": "team.failedToRemove",
+  "team.failedToSave": "team.failedToSave",
+  "team.fullName": "team.fullName",
+  "team.inviteHint": "Para dar acesso à plataforma a cofounders ou à equipa, use o botão \"Convidar\" na página do workspace.",
+  "team.jobTitle": "team.jobTitle",
+  "team.jobTitlePlaceholder": "team.jobTitlePlaceholder",
+  "team.linkedinUrl": "team.linkedinUrl",
+  "team.memberAdded": "team.memberAdded",
+  "team.memberCount": "team.memberCount",
+  "team.memberRemoved": "team.memberRemoved",
+  "team.memberUpdated": "team.memberUpdated",
+  "team.nameRequired": "team.nameRequired",
+  "team.noMembersDesc": "team.noMembersDesc",
+  "team.noMembersTitle": "Sem membros de equipa ainda",
+  "team.phone": "team.phone",
+  "team.removeMemberConfirm": "team.removeMemberConfirm",
+  "team.removeMemberTitle": "Remover membro?",
+  "team.role": "team.role",
+  "team.saveChanges": "team.saveChanges",
+  "team.teamMembers": "team.teamMembers",
   "templateRequests": {
     "adminEmpty": "Sem pedidos neste estado.",
     "adminNote": "Nota da equipa",
@@ -9886,6 +9993,26 @@
     "validHoursRequired": "Por favor insira horas válidas",
     "whatDidYouWorkOn": "Em que trabalhou?"
   },
+  "timeOff": {
+    "title": "Dias e horas sem reuniões",
+    "description": "Marque férias, dias ou intervalos de horas em que não quer receber reuniões. Estes períodos deixam de aparecer nas marcações e são recusados no servidor.",
+    "allDay": "Dia(s) inteiro(s)",
+    "from": "De",
+    "to": "Até",
+    "day": "Dia",
+    "startTime": "Das",
+    "endTime": "Às",
+    "reason": "Motivo (opcional, apenas visível para a equipa)",
+    "reasonPlaceholder": "Férias, formação, trabalho interno…",
+    "add": "Bloquear período",
+    "added": "Período bloqueado",
+    "addFailed": "Não foi possível bloquear o período",
+    "removed": "Bloqueio removido",
+    "removeFailed": "Não foi possível remover",
+    "invalidRange": "O fim tem de ser depois do início",
+    "empty": "Sem períodos bloqueados.",
+    "tab": "Minha Agenda"
+  },
   "topBar": {
     "accountSettings": "Definições da Conta",
     "noRoles": "Sem funções atribuídas",
@@ -10305,6 +10432,15 @@
     "yourMentor": "Seu Mentor",
     "yourTeam": "A Sua Equipa"
   },
+  "workspace.category": "Cat.",
+  "workspace.header.addDescription": "+ Adicionar descrição",
+  "workspace.header.fromValueProp": "Do canvas de proposta de valor",
+  "workspace.healthScore": "Health",
+  "workspace.noPermission": "workspace.noPermission",
+  "workspace.notAccessible": "workspace.notAccessible",
+  "workspace.program": "Program",
+  "workspace.stage": "Stage",
+  "workspace.tabs": "Workspace sections",
   "workspaceCard": {
     "actions": "Ações",
     "kpiTrend": "Tendência KPI",
@@ -10379,31 +10515,5 @@
     "upcomingSession": "Sessão a chegar",
     "updateKpis": "Atualize os seus KPIs",
     "viewActions": "Ver Ações"
-  },
-  "timeOff": {
-    "title": "Dias e horas sem reuniões",
-    "description": "Marque férias, dias ou intervalos de horas em que não quer receber reuniões. Estes períodos deixam de aparecer nas marcações e são recusados no servidor.",
-    "allDay": "Dia(s) inteiro(s)",
-    "from": "De",
-    "to": "Até",
-    "day": "Dia",
-    "startTime": "Das",
-    "endTime": "Às",
-    "reason": "Motivo (opcional, apenas visível para a equipa)",
-    "reasonPlaceholder": "Férias, formação, trabalho interno…",
-    "add": "Bloquear período",
-    "added": "Período bloqueado",
-    "addFailed": "Não foi possível bloquear o período",
-    "removed": "Bloqueio removido",
-    "removeFailed": "Não foi possível remover",
-    "invalidRange": "O fim tem de ser depois do início",
-    "empty": "Sem períodos bloqueados.",
-    "tab": "Minha Agenda"
-  },
-  "founderRequests": {
-    "sendFailed": "Erro ao enviar pedido",
-    "sent": "Pedido enviado à equipa",
-    "updateFailed": "Erro ao atualizar",
-    "updated": "Pedido atualizado"
   }
 }

@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 
 interface ContractForEvents {
   id: string;
+  workspace_id: string | null;
   start_date: string;
   end_date: string | null;
   status: string;
@@ -56,7 +57,7 @@ export function ContractLifecycleEventsCard() {
       const { data, error } = await supabase
         .from('startup_contracts')
         .select(`
-          id, start_date, end_date, status, monthly_fee, contract_number,
+          id, workspace_id, start_date, end_date, status, monthly_fee, contract_number,
           workspace:workspaces(id, startup:startups(name)),
           incubation_type:incubation_types(name, contract_type)
         `)

@@ -392,6 +392,23 @@ serve(async (req) => {
         return corsJsonResponse({ error: "Invalid file extension" }, req, 400);
       }
 
+      // O token tem de ser um link ativo e não expirado (ou 'demo'). A ação 'validate' aceita qualquer token,
+      // por isso não basta "fazer como no validate"; e não usamos resolveFirstContactRoute aqui
+      // (falharia sem rota global quando o visitante escolheu um programa).
+      if (token !== 'demo') {
+        const upHashBuf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+        const upHash = Array.from(new Uint8Array(upHashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+        const { data: upLink } = await supabase
+          .from("public_booking_links")
+          .select("id, expires_at")
+          .eq("token_hash", upHash)
+          .eq("active", true)
+          .maybeSingle();
+        if (!upLink || (upLink.expires_at && new Date(upLink.expires_at) < new Date())) {
+          return corsJsonResponse({ error: "Invalid booking link" }, req, 403);
+        }
+      }
+
       // Token must resolve to a valid booking route (same check as "validate"):
       // the consultant/program resolution above already failed closed for invalid
       // tokens via empty routingOptions/consultantEmail, but demo/no-link tokens
@@ -451,6 +468,7 @@ serve(async (req) => {
           supabase,
           token,
           selectedProgramId: typeof selectedProgramId === 'string' ? selectedProgramId : null,
+          advanceRoundRobin: false,
         });
         consultantEmail = resolved.consultantEmail;
         consultantName = resolved.consultantName;

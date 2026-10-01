@@ -29,6 +29,7 @@ export interface ResolveInput {
   supabase: any;
   token: string;                 // raw token from the public URL, or 'demo'
   selectedProgramId?: string | null; // 'global', UUID, null/undefined
+  advanceRoundRobin?: boolean;   // false = só consultar (get_slots): mostra o consultor que a marcação vai usar
 }
 
 export class NoRouteError extends Error {
@@ -96,13 +97,15 @@ async function pickConsultantForRouting(
     consultant_ids: string[];
     round_robin_index: number | null;
   },
+  advance: boolean,
 ): Promise<string | null> {
   const list = (routing.consultant_ids ?? []).filter((x) => !!x);
   if (list.length === 0) return null;
 
   // Modes we support: fixed / first / global / program → first entry;
-  // round_robin → advance counter.
+  // round_robin → advance counter (ou só pré-visualizar o próximo, sem avançar).
   if (routing.mode === 'round_robin') {
+    if (!advance) return list[((routing.round_robin_index ?? 0) + 1) % list.length];
     return await pickRoundRobin(supabase, routing);
   }
   return list[0];
@@ -112,6 +115,7 @@ export async function resolveFirstContactRoute({
   supabase,
   token,
   selectedProgramId,
+  advanceRoundRobin = true,
 }: ResolveInput): Promise<ResolvedRoute> {
   const trace: Record<string, unknown> = { token_is_demo: token === 'demo', selected_program_id: selectedProgramId ?? null };
 
@@ -208,7 +212,7 @@ export async function resolveFirstContactRoute({
 
   if (!chosen) throw new NoRouteError('no_active_routing', trace);
 
-  const consultantId = await pickConsultantForRouting(supabase, chosen);
+  const consultantId = await pickConsultantForRouting(supabase, chosen, advanceRoundRobin);
   if (!consultantId) throw new NoRouteError('routing_has_no_consultants', { ...trace, routing_id: chosen.id });
 
   const profile = await loadProfile(supabase, consultantId);

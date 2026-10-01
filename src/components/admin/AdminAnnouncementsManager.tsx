@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Mail, Package, AlertTriangle, Bell, Trash2, CheckCircle, Users, Send, MapPin, MessageSquare } from 'lucide-react';
+import { Plus, Mail, Package, AlertTriangle, Bell, Trash2, CheckCircle, Users, MapPin } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { notify } from "@/lib/notify";
@@ -72,6 +72,9 @@ export function AdminAnnouncementsManager() {
       const { data, error } = await supabase
         .from('workspaces')
         .select('id, startup:startups(id, name)')
+        // 'Enviar para todas' só abrange startups ativas (nunca arquivadas, rejeitadas ou pendentes)
+        .eq('status', 'active')
+        .is('archived_at', null)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
@@ -128,27 +131,24 @@ export function AdminAnnouncementsManager() {
       
       if (error) throw error;
 
-      // Send emails if option is enabled
-      if (data.sendEmail && insertedAnnouncements && insertedAnnouncements.length > 0) {
-        const announcementIds = insertedAnnouncements.map(a => a.id);
-        
-        const { error: emailError } = await invokeWithAuth('send-announcement-email', {
-          body: { announcement_ids: announcementIds },
-        });
-
-        if (emailError) {
-          logger.error('Email send error', {}, emailError);
-          // Don't throw - announcement was created, just email failed
-          notify.warn(t('admin.announcements.emailFailed'));
+      // Send emails if option is enabled (a função responde 200 com errors[] quando alguns envios falham)
+      if (data.sendEmail && insertedAnnouncements?.length) {
+        const { data: emailData, error: emailError } = await invokeWithAuth<{ emailsSent: number; errors?: string[] }>(
+          'send-announcement-email',
+          { body: { announcement_ids: insertedAnnouncements.map((a) => a.id) } },
+        );
+        if (emailError || (emailData?.errors?.length ?? 0) > 0) {
+          logger.error('Email send error', { errors: emailData?.errors }, emailError ?? undefined);
+          return { emailOk: false };
         }
+        return { emailOk: true };
       }
+      return { emailOk: null };
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['admin-announcements'] });
-      notify.success(formData.sendEmail 
-        ? t('admin.announcements.sentWithEmail') 
-        : t('admin.announcements.sent')
-      );
+      if (res?.emailOk === false) notify.warn(t('admin.announcements.emailFailed'));
+      else notify.success(res?.emailOk ? t('admin.announcements.sentWithEmail') : t('admin.announcements.sent'));
       setFormData(EMPTY_FORM);
       setIsDialogOpen(false);
     },
@@ -318,30 +318,6 @@ export function AdminAnnouncementsManager() {
                 />
               </div>
 
-              <div className="space-y-2 p-3 bg-muted/50 rounded-md">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="sendEmail"
-                    checked={formData.sendEmail}
-                    onCheckedChange={(checked) => setFormData({ ...formData, sendEmail: !!checked })}
-                  />
-                  <Label htmlFor="sendEmail" className="flex items-center gap-2 cursor-pointer text-sm">
-                    <Send className="h-4 w-4" />
-                    {t('admin.announcements.sendEmailNotification')}
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="sendTeams"
-                    checked={formData.sendTeams}
-                    onCheckedChange={(checked) => setFormData({ ...formData, sendTeams: !!checked })}
-                  />
-                  <Label htmlFor="sendTeams" className="flex items-center gap-2 cursor-pointer text-sm">
-                    <MessageSquare className="h-4 w-4" />
-                    {t('admin.announcements.sendTeamsNotification')}
-                  </Label>
-                </div>
-              </div>
 
               <Button type="submit" className="w-full" disabled={createMutation.isPending} loading={createMutation.isPending}>
                 {createMutation.isPending ? t('common.sending') : t('admin.announcements.send')}
