@@ -41,7 +41,8 @@ import { useSessionTemplates } from '@/hooks/useSessionTemplates';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { useConsultantAvailability, useValidateBookingSlot } from '@/hooks/useConsultantCalendar';
-import { useMentorAvailability } from '@/hooks/useMentorAvailability';
+import { useMentorAvailability, useMentorBusySlots } from '@/hooks/useMentorAvailability';
+import { useConsultantTimeOff } from '@/hooks/useConsultantTimeOff';
 import { logger } from '@/lib/logger';
 import { lisbonWallClockToUtcIso } from '@/lib/dateUtils';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
@@ -163,36 +164,46 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
   const { data: mentorWeeklyAvailability } = useMentorAvailability(
     meetingWith === 'mentor_externo' ? participantId : undefined
   );
+  const timeOffOwnerId = meetingWith === 'consultor'
+    ? (participantId || assignedConsultant?.user_id || undefined)
+    : (participantId || undefined);
+  const { data: participantTimeOff } = useConsultantTimeOff(timeOffOwnerId);
+  const overlapsTimeOff = useCallback((startMs: number, minutes: number) => {
+    const endMs = startMs + minutes * 60000;
+    return (participantTimeOff ?? []).some(
+      (o) => new Date(o.starts_at).getTime() < endMs && new Date(o.ends_at).getTime() > startMs,
+    );
+  }, [participantTimeOff]);
+  const { data: mentorBusy } = useMentorBusySlots(meetingWith === 'mentor_externo' ? (participantId || undefined) : undefined);
 
   const availableSlots = useMemo(() => {
     if (!dateStr || useManualTime) return [];
     const durationMinutes = Number.parseInt(duration || '60', 10);
+    const notBlocked = (s: string) => !overlapsTimeOff(new Date(lisbonWallClockToUtcIso(s)).getTime(), durationMinutes);
 
     if (meetingWith === 'consultor') {
       const rawSlots = consultantAvailability?.slots ?? [];
       const slotStarts = rawSlots
         .map((s: unknown) => (typeof s === 'string' ? s : (s as { start?: string })?.start))
         .filter(Boolean) as string[];
-      return slotStarts;
+      return slotStarts.filter(notBlocked);
     }
 
-    const date = new Date(`${dateStr}T00:00:00`);
-    const day = date.getDay();
-    const windows = (mentorWeeklyAvailability || []).filter((w) => w.day_of_week === day && w.is_active);
+    const windows = (mentorWeeklyAvailability || []).filter((w) => w.day_of_week === new Date(`${dateStr}T00:00:00`).getDay() && w.is_active);
     if (windows.length === 0) return [];
 
+    const toMin = (s: string) => { const [h, m] = s.split(':').map(Number); return h * 60 + (m || 0); };
+    const pad = (n: number) => String(n).padStart(2, '0');
     const slots: string[] = [];
     for (const w of windows) {
-      const start = new Date(`${dateStr}T${w.start_time}:00`);
-      const end = new Date(`${dateStr}T${w.end_time}:00`);
-      let cur = new Date(start);
-      while (cur.getTime() + durationMinutes * 60000 <= end.getTime()) {
-        slots.push(cur.toISOString());
-        cur = new Date(cur.getTime() + 30 * 60000);
+      for (let m = toMin(w.start_time); m + durationMinutes <= toMin(w.end_time); m += 30) {
+        slots.push(`${dateStr}T${pad(Math.floor(m / 60))}:${pad(m % 60)}:00`);
       }
     }
-    return Array.from(new Set(slots)).sort();
-  }, [dateStr, duration, meetingWith, consultantAvailability, mentorWeeklyAvailability, useManualTime]);
+    const busy = (mentorBusy ?? []).filter((b) => b.busy_date === dateStr).map((b) => [toMin(b.start_time), toMin(b.end_time)] as const);
+    const isFree = (s: string) => { const m = toMin(s.slice(11, 16)); return !busy.some(([a, e]) => a < m + durationMinutes && e > m); };
+    return Array.from(new Set(slots)).filter(notBlocked).filter(isFree).sort();
+  }, [dateStr, duration, meetingWith, consultantAvailability, mentorWeeklyAvailability, useManualTime, overlapsTimeOff, mentorBusy]);
 
   const getWorkspaceInfo = async () => {
     const { data, error } = await supabase
@@ -268,7 +279,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
         .from('mentor_bookings')
         .select('id, requested_date, requested_start_time, requested_end_time, status')
         .eq('mentor_id', participantId)
-        .in('status', ['pending', 'confirmed'])
+        .in('status', ['pending', 'accepted'])
         .eq('requested_date', dayStr);
 
       for (const b of bookings || []) {
@@ -354,6 +365,11 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
       scheduledAtISO = startUtcIso;
     }
 
+    if (!logPast && overlapsTimeOff(new Date(scheduledAtISO).getTime(), parseInt(duration, 10))) {
+      notify.error(t('mentors.bookingTimeOff', { defaultValue: 'O consultor bloqueou esse período. Escolha outro horário.' }));
+      return;
+    }
+
     // Universal conflict guard — same-workspace duplicates + mentor overlap.
     // Skipped for logging past off-platform meetings (that's a record, not a booking).
     if (!logPast) {
@@ -431,6 +447,8 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
         location: location.trim() || null,
         join_url: joinUrl.trim() || null,
         source: logPast ? 'off_platform' : null,
+        primary_consultant_id: meetingWith === 'consultor' ? (participantId || assignedConsultant?.user_id || null) : null,
+        primary_mentor_id: meetingWith === 'mentor_externo' ? (participantId || null) : null,
       });
 
       if (!logPast && sendInvites) {

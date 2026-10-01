@@ -142,6 +142,20 @@ export function useWorkspaces(
       const { data: workspaces, error } = await query;
       if (error) throw error;
 
+      // P4.8: fall back to RPC-fetched startup basics for roles (team_member/mentor)
+      // whose RLS blocks reading `startups` directly, so names/logos aren't missing.
+      const missingIds = workspaces.filter((w) => !w.startup).map((w) => w.id);
+      if (missingIds.length > 0) {
+        const { data: basics } = await supabase.rpc('get_member_startup_basics', { p_workspace_ids: missingIds });
+        const byWs = new Map((basics ?? []).map((b) => [b.workspace_id, b]));
+        workspaces.forEach((w) => {
+          const b = byWs.get(w.id);
+          if (!w.startup && b) {
+            (w as any).startup = { id: b.id, name: b.name, description: b.description, logo_url: b.logo_url, has_startup_portugal_status: b.has_startup_portugal_status };
+          }
+        });
+      }
+
       // Get workspace IDs for server-side aggregation
       const workspaceIds = workspaces.map(w => w.id);
       
@@ -288,6 +302,22 @@ export function useWorkspace(id: string | undefined) {
         .maybeSingle();
 
       if (error) throw error;
+
+      // P4.8: team_member/mentor can't read `startups` via RLS; fall back to RPC basics.
+      if (data && !data.startup) {
+        const { data: basics } = await supabase.rpc('get_member_startup_basics', { p_workspace_ids: [data.id] });
+        const b = basics?.[0];
+        if (b) {
+          return {
+            ...data,
+            startup: {
+              id: b.id, name: b.name, description: b.description, logo_url: b.logo_url, website: b.website,
+              nif: null, main_contact_name: null, main_contact_email: null, main_contact_phone: null,
+              has_startup_portugal_status: b.has_startup_portugal_status,
+            },
+          } as typeof data;
+        }
+      }
       return data;
     },
     enabled: !!id,

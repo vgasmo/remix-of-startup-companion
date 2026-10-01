@@ -80,6 +80,12 @@ Deno.serve(async (req) => {
       const instance = await loadInstance(tokenResult.value!);
       if (!instance) return json({ error: 'not_found' }, 404);
 
+      if (instance.status === 'submitted') {
+        const c = instance.campaign as unknown as { name: string; ends_at: string | null } | null;
+        return json({ status: 'submitted', campaignName: c?.name ?? '', endsAt: c?.ends_at ?? null,
+          surveyName: c?.name ?? '', surveyDescription: null, questions: [], autoFill: {}, startupName: null, responses: [] });
+      }
+
       const campaign = instance.campaign as unknown as {
         name: string;
         status: string;
@@ -206,25 +212,35 @@ Deno.serve(async (req) => {
         }
       }
 
-      const { error: updateError } = await supabase
+      const { data: updated, error: updateError } = await supabase
         .from('survey_instances')
         .update({
           status: submit ? 'submitted' : 'in_progress',
           ...(submit ? { submitted_at: new Date().toISOString(), submitted_by: null } : {}),
         })
-        .eq('id', instance.id);
+        .eq('id', instance.id)
+        .neq('status', 'submitted')
+        .select('id');
       if (updateError) throw updateError;
+      if (!updated || updated.length === 0) return json({ error: 'already_submitted' }, 409);
 
-      if (submit && cronSecret) {
+      if (submit) {
         // Same write-back the in-app flow triggers; failure here must not undo
         // the submission, so we log and continue.
         const applyRes = await fetch(`${supabaseUrl}/functions/v1/apply-survey-responses`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-cron-secret': cronSecret },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${serviceKey}` },
           body: JSON.stringify({ instance_id: instance.id }),
         });
         if (!applyRes.ok) {
-          console.error(`[public-survey] write-back failed [${applyRes.status}]: ${await applyRes.text()}`);
+          const detail = (await applyRes.text()).slice(0, 500);
+          console.error(`[public-survey] write-back failed [${applyRes.status}]: ${detail}`);
+          const { error: alertError } = await supabase.from('system_alerts').upsert({
+            kind: 'survey_writeback_failed', severity: 'medium',
+            dedupe_key: `survey_writeback_failed:${instance.id}`,
+            payload: { instance_id: instance.id, status: applyRes.status, detail },
+          }, { onConflict: 'dedupe_key' });
+          if (alertError) console.error('[public-survey] alert upsert failed', alertError.message);
         }
       }
 
