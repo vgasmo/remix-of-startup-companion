@@ -123,11 +123,11 @@ Deno.serve(withCronRunLogging('run-intake-reminders', async (req) => {
           : Infinity
         const count = intake.reminder_count || 0
 
-        // Cadence: D+2, D+5, D+10, then weekly
+        let shouldSend = false
+        // (intervalos contados desde o último lembrete: D+2, D+5, D+10 e depois semanal)
         if (count === 0 && daysSinceBase >= 2) shouldSend = true
         else if (count === 1 && daysSinceLastReminder >= 3) shouldSend = true
         else if (count === 2 && daysSinceLastReminder >= 5) shouldSend = true
-        else if (count >= 3 && daysSinceLastReminder >= 7) shouldSend = true
         else if (count >= 3 && daysSinceLastReminder >= 7) shouldSend = true
 
         if (!shouldSend) continue
