@@ -681,63 +681,72 @@ export function AdminBackoffice() {
                         </span>
                       </TableCell>
                       
-                      {/* Consultant - inline editable */}
+                      {/* Consultant - inline editable, admin-only */}
                       <TableCell>
-                        <Popover 
-                          open={openConsultorPopover === item.workspace_id} 
-                          onOpenChange={(open) => {
-                            setOpenConsultorPopover(open ? item.workspace_id : null);
-                            if (!open) setConsultorSearch('');
-                          }}
-                        >
-                          <PopoverTrigger asChild>
-                            <button className="flex items-center gap-1 hover:bg-muted rounded px-1 -ml-1 text-sm">
-                              {item.assigned_consultant_name ? (
-                              <>
-                                  <User className="h-3 w-3 text-muted-foreground" />
-                                  {item.assigned_consultant_name}
-                                </>
-                              ) : (
-                                <span className="text-muted-foreground">{t('admin.backoffice.unassigned')}</span>
-                              )}
-                              <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-64 p-2">
-                            <Input
-                              placeholder={t('admin.backoffice.searchConsultant')}
-                              value={consultorSearch}
-                              onChange={(e) => setConsultorSearch(e.target.value)}
-                              className="mb-2"
-                            />
-                            <div className="max-h-40 overflow-y-auto space-y-1">
-                              {filteredConsultors?.map(c => (
-                                <button
-                                  key={c.id}
-                                  onClick={() => assignConsultorMutation.mutate({ workspaceId: item.workspace_id, consultorId: c.id })}
-                                  className="w-full flex items-center gap-2 p-2 hover:bg-muted rounded text-left"
+                        {isAdmin ? (
+                          <Popover 
+                            open={openConsultorPopover === item.workspace_id} 
+                            onOpenChange={(open) => {
+                              setOpenConsultorPopover(open ? item.workspace_id : null);
+                              if (!open) setConsultorSearch('');
+                            }}
+                          >
+                            <PopoverTrigger asChild>
+                              <button className="flex items-center gap-1 hover:bg-muted rounded px-1 -ml-1 text-sm">
+                                {item.assigned_consultant_name ? (
+                                <>
+                                    <User className="h-3 w-3 text-muted-foreground" />
+                                    {item.assigned_consultant_name}
+                                  </>
+                                ) : (
+                                  <span className="text-muted-foreground">{t('admin.backoffice.unassigned')}</span>
+                                )}
+                                <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-2">
+                              <Input
+                                placeholder={t('admin.backoffice.searchConsultant')}
+                                value={consultorSearch}
+                                onChange={(e) => setConsultorSearch(e.target.value)}
+                                className="mb-2"
+                              />
+                              <div className="max-h-40 overflow-y-auto space-y-1">
+                                {filteredConsultors?.map(c => (
+                                  <button
+                                    key={c.id}
+                                    onClick={() => assignConsultorMutation.mutate({ workspaceId: item.workspace_id, consultorId: c.id })}
+                                    className="w-full flex items-center gap-2 p-2 hover:bg-muted rounded text-left"
+                                  >
+                                    <Avatar className="h-6 w-6">
+                                      <AvatarImage src={c.avatar_url || undefined} />
+                                      <AvatarFallback className="text-xs">{c.full_name?.slice(0, 2) || c.email?.slice(0, 2)}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-sm truncate">{c.full_name || c.email}</span>
+                                  </button>
+                                ))}
+                              </div>
+                              {item.assigned_consultant_id && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full mt-2 text-destructive"
+                                  onClick={() => removeConsultorMutation.mutate(item.workspace_id)}
                                 >
-                                  <Avatar className="h-6 w-6">
-                                    <AvatarImage src={c.avatar_url || undefined} />
-                                    <AvatarFallback className="text-xs">{c.full_name?.slice(0, 2) || c.email?.slice(0, 2)}</AvatarFallback>
-                                  </Avatar>
-                                  <span className="text-sm truncate">{c.full_name || c.email}</span>
-                                </button>
-                              ))}
-                            </div>
-                            {item.assigned_consultant_id && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-full mt-2 text-destructive"
-                                onClick={() => removeConsultorMutation.mutate(item.workspace_id)}
-                              >
-                                <Trash2 className="h-3 w-3 mr-1" />
-                                {t('admin.backoffice.removeConsultant')}
-                              </Button>
-                            )}
-                          </PopoverContent>
-                        </Popover>
+                                  <Trash2 className="h-3 w-3 mr-1" />
+                                  {t('admin.backoffice.removeConsultant')}
+                                </Button>
+                              )}
+                            </PopoverContent>
+                          </Popover>
+                        ) : item.assigned_consultant_name ? (
+                          <span className="flex items-center gap-1 text-sm">
+                            <User className="h-3 w-3 text-muted-foreground" />
+                            {item.assigned_consultant_name}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">{t('admin.backoffice.unassigned')}</span>
+                        )}
                       </TableCell>
                       
                       {/* Next Session */}
@@ -759,9 +768,9 @@ export function AdminBackoffice() {
                         </Badge>
                       </TableCell>
                       
-                      {/* Actions */}
+                      {/* Actions, admin-only */}
                       <TableCell>
-                        {item.status === 'blocked' ? (
+                        {!isAdmin ? null : item.status === 'blocked' ? (
                           <Button
                             variant="ghost"
                             size="sm"
