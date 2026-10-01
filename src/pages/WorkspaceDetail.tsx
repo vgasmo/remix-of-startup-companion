@@ -439,6 +439,12 @@ export default function WorkspaceDetail() {
       subtitle={subtitleNode}
       actions={
         <div className="flex gap-1 sm:gap-2">
+          {(isAdmin || isConsultor) && (
+            <Button variant="outline" size="sm" onClick={() => setInviteOpen(true)} className="px-2 sm:px-3">
+              <Mail className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">{t('invite.inviteMember', { defaultValue: 'Convidar' })}</span>
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={copyWorkspaceLink} className="px-2 sm:px-3">
             <Copy className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">{t('common.copyLink')}</span>
@@ -690,6 +696,34 @@ export default function WorkspaceDetail() {
           isFounderOnboarding={isFounder}
         />
       )}
+
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('invite.inviteTitle', { defaultValue: 'Convidar para o workspace' })}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="invite-email">Email</Label>
+              <Input id="invite-email" type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>{t('invite.role', { defaultValue: 'Papel' })}</Label>
+              <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as 'founder' | 'team_member')}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="founder">{t('roles.founder', { defaultValue: 'Founder' })}</SelectItem>
+                  <SelectItem value="team_member">{t('roles.team_member', { defaultValue: 'Membro da equipa' })}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteOpen(false)}>{t('common.cancel')}</Button>
+            <Button onClick={sendInvite} disabled={inviting || !inviteEmail.includes('@')}>{t('invite.sendInvite')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

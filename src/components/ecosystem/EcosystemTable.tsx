@@ -175,91 +175,54 @@ export function EcosystemTable({ items, onOpenItem, totalCount, hasNextPage, isF
   };
 
   const handleDeleteLead = async (item: EcosystemItem) => {
-    if (!item.funnel_item_id) return;
+    const leadId = item.funnel_item_id;
+    if (!leadId) return;
     try {
-      // Pre-check for blocking references (contracts have ON DELETE NO ACTION)
-      const [{ count: contractCount }, { count: intakeCount }] = await Promise.all([
-        supabase
-          .from('startup_contracts')
-          .select('id', { count: 'exact', head: true })
-          .eq('funnel_item_id', item.funnel_item_id),
-        supabase
-          .from('contract_intakes')
-          .select('id', { count: 'exact', head: true })
-          .eq('funnel_item_id', item.funnel_item_id),
-      ]);
-
-      if ((contractCount || 0) > 0) {
-        notify.error(
-          t('ecosystem.deleteBlockedByContract', { defaultValue: 'Não é possível eliminar: existe(m) contrato(s) associado(s) a esta lead.' })
-        );
-        return;
-      }
-
-      // Snapshot full lead row + intake ids for undo
-      const { data: snapshot } = await supabase
+      // Arquivar em vez de apagar: o DELETE em cascata levava o histórico (eventos, emails, chamadas)
+      // e o 'Anular' falhava sempre (email_normalized é uma coluna gerada)
+      const { data: before } = await supabase.from('funnel_items').select('stage').eq('id', leadId).maybeSingle();
+      const prevStage = before?.stage ?? 'new';
+      const { data: upd, error } = await supabase
         .from('funnel_items')
-        .select('*')
-        .eq('id', item.funnel_item_id)
-        .maybeSingle();
-
-      const { data: detachedIntakes } = (intakeCount || 0) > 0
-        ? await supabase
-            .from('contract_intakes')
-            .select('id')
-            .eq('funnel_item_id', item.funnel_item_id)
-        : { data: [] as { id: string }[] };
-
-      // Detach intakes (FK is SET NULL but we make it explicit for clarity)
-      if ((intakeCount || 0) > 0) {
-        await supabase
-          .from('contract_intakes')
-          .update({ funnel_item_id: null })
-          .eq('funnel_item_id', item.funnel_item_id);
-      }
-
-      const { error } = await supabase
-        .from('funnel_items')
-        .delete()
-        .eq('id', item.funnel_item_id);
+        .update({ stage: 'archived', updated_at: new Date().toISOString() })
+        .eq('id', leadId)
+        .select('id');
       if (error) throw error;
-
+      if (!upd?.length) throw new Error('Sem permissão para arquivar esta lead.');
+      const { data: authData } = await supabase.auth.getUser();
+      const performedBy = authData.user?.id ?? null;
+      await supabase.from('funnel_events').insert({
+        funnel_item_id: leadId, event_type: 'archived', from_stage: prevStage, to_stage: 'archived', performed_by: performedBy,
+      });
       let undoInFlight = false;
-      notify.success(t('ecosystem.leadDeleted', { defaultValue: 'Lead eliminada' }), {
+      notify.success(t('ecosystem.leadDeleted', { defaultValue: 'Lead arquivada' }), {
         duration: 8000,
-        action: snapshot ? {
+        action: {
           label: t('common.undo', { defaultValue: 'Anular' }),
           onClick: async () => {
             if (undoInFlight) return;
             undoInFlight = true;
-            try {
-              const { error: insErr } = await supabase.from('funnel_items').insert(snapshot as any);
-              if (insErr) throw insErr;
-              // Re-attach any intakes we detached
-              const intakeIds = (detachedIntakes || []).map((r) => r.id);
-              if (intakeIds.length > 0) {
-                await supabase
-                  .from('contract_intakes')
-                  .update({ funnel_item_id: item.funnel_item_id })
-                  .in('id', intakeIds);
-              }
-              notify.success(t('ecosystem.leadRestored', { defaultValue: 'Lead restaurada' }));
-            } catch {
+            const { data: back, error: undoErr } = await supabase
+              .from('funnel_items')
+              .update({ stage: prevStage, updated_at: new Date().toISOString() })
+              .eq('id', leadId)
+              .eq('stage', 'archived')
+              .select('id');
+            if (undoErr || !back?.length) {
               notify.error(t('common.undoFailed', { defaultValue: 'Não foi possível anular' }));
-            } finally {
-              queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
+            } else {
+              await supabase.from('funnel_events').insert({
+                funnel_item_id: leadId, event_type: 'unarchived', from_stage: 'archived', to_stage: prevStage, performed_by: performedBy,
+              });
+              notify.success(t('ecosystem.leadRestored', { defaultValue: 'Lead restaurada' }));
             }
+            queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
           },
-        } : undefined,
+        },
       });
-
       queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
     } catch (err: any) {
-      const msg = err?.message || '';
-      const friendly = msg.includes('foreign key') || msg.includes('violates')
-        ? t('ecosystem.deleteBlockedByReferences', { defaultValue: 'Não é possível eliminar: esta lead está associada a outros registos (contrato, sala ou histórico).' })
-        : t('ecosystem.deleteLeadError', { defaultValue: 'Erro ao eliminar lead' });
-      notify.error(friendly, { description: msg || undefined });
+      notify.error(t('ecosystem.deleteLeadError', { defaultValue: 'Erro ao arquivar a lead' }), { description: err?.message || undefined });
     }
   };
 
@@ -592,7 +555,7 @@ export function EcosystemTable({ items, onOpenItem, totalCount, hasNextPage, isF
                 setConfirmDelete(null);
               }}
             >
-              {t('common.delete', { defaultValue: 'Eliminar' })}
+              {t('common.archive', { defaultValue: 'Arquivar' })}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
