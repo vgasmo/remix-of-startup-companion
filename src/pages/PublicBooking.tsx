@@ -168,6 +168,11 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
         body: {
           token,
           slot: selectedSlot,
+          program_id: selectedProgramId,
+          recording_consent: recordingConsent,
+        },
+      });
+      
       if (error) {
         // mostrar a razão do servidor (ex.: 409 hora já ocupada) em vez do texto genérico do cliente
         const ctx = (error as { context?: unknown }).context;
@@ -177,12 +182,6 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
         }
         throw new Error(msg);
       }
-          program_id: selectedProgramId,
-          recording_consent: recordingConsent,
-        },
-      });
-      
-      if (error) throw error;
       if (!data?.success) throw new Error(data?.error || 'Booking failed');
       
       return data;
