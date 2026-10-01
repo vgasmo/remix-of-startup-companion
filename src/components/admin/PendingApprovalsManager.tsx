@@ -1,6 +1,7 @@
 import { safeExternalHref } from '@/lib/sanitizeUrl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
 import i18n from '@/i18n';
 import { Check, X, Clock, Building2, User, Calendar, ExternalLink, UserCheck, Mail, Link2, Search, Plus, Rocket } from 'lucide-react';
 
@@ -251,6 +252,7 @@ export function PendingApprovalsManager() {
   const { t } = useTranslation();
   const dateLocale = useDateLocale();
   const queryClient = useQueryClient();
+  const { isAdmin, isConsultor } = useAuth();
   const { data: pendingWorkspaces, isLoading: loadingWs } = usePendingWorkspaces();
   const { data: pendingUsers, isLoading: loadingUsers } = usePendingUsers();
   const { data: pendingClaims, isLoading: loadingClaims } = usePendingClaims();
@@ -481,6 +483,7 @@ export function PendingApprovalsManager() {
                       </div>
                     </div>
                     <div className="flex gap-2 flex-wrap justify-end">
+                      {isAdmin && (
                       <Button
                         size="sm"
                         variant="outline"
@@ -489,7 +492,8 @@ export function PendingApprovalsManager() {
                         <X className="h-4 w-4 mr-1" />
                         {t('admin.reject', { defaultValue: 'Rejeitar' })}
                       </Button>
-                      {user.roles.includes('founder') && (
+                      )}
+                      {(isAdmin || isConsultor) && user.roles.includes('founder') && (
                         <Button
                           size="sm"
                           variant="secondary"
