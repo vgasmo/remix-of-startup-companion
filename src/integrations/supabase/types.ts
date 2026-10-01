@@ -12447,6 +12447,10 @@ export type Database = {
         Args: { p_cycle_id: string }
         Returns: number
       }
+      ensure_contract_workspace: {
+        Args: { p_contract_id: string }
+        Returns: string
+      }
       ensure_dataroom_exists: {
         Args: { _workspace_id: string }
         Returns: string
