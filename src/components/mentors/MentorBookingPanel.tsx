@@ -320,6 +320,11 @@ export function MentorBookingPanel({
                         ))}
                       </SelectContent>
                     </Select>
+                    {selectedDate && getAvailableSlotsForDate(selectedDate).length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        {t('mentors.noSlotsForDate', { defaultValue: 'Sem horários livres neste dia. Escolha outra data.' })}
+                      </p>
+                    )}
                   </div>
                 </>
               )}

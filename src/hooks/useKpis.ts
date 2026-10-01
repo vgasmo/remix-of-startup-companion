@@ -226,13 +226,7 @@ export function useMarkCheckinComplete(workspaceId: string) {
 
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase
-        .from('workspaces')
-        .update({ last_checkin_at: new Date().toISOString() })
-        .eq('id', workspaceId)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.rpc('mark_workspace_checkin', { p_workspace_id: workspaceId });
       if (error) throw error;
       return data;
     },
