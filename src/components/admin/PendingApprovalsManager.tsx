@@ -212,11 +212,13 @@ function useApproveWorkspace() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (workspaceId: string) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('workspaces')
         .update({ status: 'active' })
-        .eq('id', workspaceId);
+        .eq('id', workspaceId)
+        .select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', 'Sem permissão para esta ação.'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-workspaces'] });
@@ -230,11 +232,13 @@ function useRejectWorkspace() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (workspaceId: string) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('workspaces')
         .update({ status: 'rejected' })
-        .eq('id', workspaceId);
+        .eq('id', workspaceId)
+        .select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', 'Sem permissão para esta ação.'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-workspaces'] });
@@ -321,14 +325,7 @@ export function PendingApprovalsManager() {
 
       if (approveError) throw approveError;
 
-      // P0 fix: was a bare `.update` that silently no-op'd against RLS.
-      // Approve the account via the RPC and check it.
-      const { data: approvedOk, error: acctErr } = await supabase.rpc('approve_user_account', {
-        p_user_id: assignClaimTarget.user_id,
-      });
-      if (acctErr || approvedOk === false) {
-        throw acctErr || new Error('approve_user_account returned false');
-      }
+      // approve_startup_claim already approves the account in the same transaction.
 
       notify.success(t('admin.claimAprovadoEFounderAssociado'));
       queryClient.invalidateQueries({ queryKey: ['pending-claim-requests'] });

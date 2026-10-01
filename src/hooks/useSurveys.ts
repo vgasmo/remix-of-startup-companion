@@ -313,7 +313,7 @@ export function useLaunchCampaign() {
       toast.success(t('surveys.campaignLaunched', { instancesCreated: data.instancesCreated }));
     },
     onError: (error) => {
-      toast.error("Failed to launch campaign");
+      toast.error(t('surveys.launchFailed', 'Não foi possível lançar a campanha') + ': ' + (error as Error).message);
       logger.error('operation_error', {}, error);
     },
   });
