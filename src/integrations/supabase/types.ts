@@ -12433,6 +12433,16 @@ export type Database = {
         }
         Returns: Json
       }
+      enqueue_financial_assumption_review: {
+        Args: {
+          p_assumption_key: string
+          p_description: string
+          p_scenario: string
+          p_title: string
+          p_workspace_id: string
+        }
+        Returns: string
+      }
       enqueue_pulse_notifications: {
         Args: { p_cycle_id: string }
         Returns: number
@@ -12538,6 +12548,18 @@ export type Database = {
           p25: number
           p50: number
           p75: number
+        }[]
+      }
+      get_member_startup_basics: {
+        Args: { p_workspace_ids: string[] }
+        Returns: {
+          description: string
+          has_startup_portugal_status: boolean
+          id: string
+          logo_url: string
+          name: string
+          website: string
+          workspace_id: string
         }[]
       }
       get_mentor_busy_slots: {
@@ -12835,6 +12857,10 @@ export type Database = {
           p_workspace_id: string
         }
         Returns: Json
+      }
+      mark_workspace_checkin: {
+        Args: { p_workspace_id: string }
+        Returns: string
       }
       materialize_acceleration_deliverables: {
         Args: { p_program_id: string; p_workspace_id: string }
@@ -13179,6 +13205,10 @@ export type Database = {
           p_workspace_id: string
         }
         Returns: Json
+      }
+      startup_is_established: {
+        Args: { p_startup_id: string }
+        Returns: boolean
       }
       submit_checkin: {
         Args: { p_instance_id: string; p_responses: Json }
