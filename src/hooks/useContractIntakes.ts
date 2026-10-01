@@ -406,22 +406,22 @@ export function useTransitionIntakeStatus() {
               organizationName: intakeData.organization_name,
               intakeToken: freshToken as string,
             };
-            try {
-              await invokeWithAuth('send-intake-email', {
-                body: {
-                  type: 'changes_requested',
-                  intakeId: params.intakeId,
-                  recipientEmail: preparedChangesRequestedEmail.recipientEmail,
-                  recipientName: preparedChangesRequestedEmail.recipientName,
-                  organizationName: preparedChangesRequestedEmail.organizationName,
-                  intakeToken: preparedChangesRequestedEmail.intakeToken,
-                  changesNotes: params.notes,
-                },
-              });
-            } catch (emailErr) {
-              logger.error('changes_requested_email_failed', { error: String(emailErr) });
+            // invokeWithAuth não lança: ler o erro devolvido (antes, a falha do email aparecia como sucesso)
+            const { error: mailErr } = await invokeWithAuth("send-intake-email", {
+              body: {
+                type: "changes_requested",
+                intakeId: params.intakeId,
+                recipientEmail: preparedChangesRequestedEmail.recipientEmail,
+                recipientName: preparedChangesRequestedEmail.recipientName,
+                organizationName: preparedChangesRequestedEmail.organizationName,
+                intakeToken: preparedChangesRequestedEmail.intakeToken,
+                changesNotes: params.notes,
+              },
+            });
+            if (mailErr) {
+              logger.error("changes_requested_email_failed", { error: mailErr.message });
               // Send failed BEFORE any DB status change — safe to abort cleanly.
-              throw new Error(`Falha ao enviar o email de pedido de correções ao fundador: ${String(emailErr)}. Nenhuma alteração foi guardada — tente novamente.`);
+              throw new Error(`Falha ao enviar o email de pedido de correções ao fundador: ${mailErr.message}. Nenhuma alteração foi guardada; tente novamente.`);
             }
           }
         }

@@ -119,7 +119,7 @@ async function notifySessionEvent(
 
       if (recipientEmails.length > 0) {
         const organizerProfile = (profiles || []).find((p) => p.id === user?.id);
-        await invokeWithAuth('send-session-invite', {
+        const { error: inviteErr } = await invokeWithAuth("send-session-invite", {
           body: {
             sessionId: session.id,
             workspaceId,
@@ -128,11 +128,12 @@ async function notifySessionEvent(
             duration: session.duration || 60,
             agenda: session.agenda || undefined,
             recipientEmails,
-            organizerName: organizerProfile?.full_name || organizerProfile?.email || 'Startup Leiria',
+            organizerName: organizerProfile?.full_name || organizerProfile?.email || "Startup Leiria",
             startupName,
             eventType: kind,
           },
         });
+        if (inviteErr) logger.warn("session_invite_email_failed", { sessionId: session.id, kind, error: inviteErr.message });
       }
     }
   } catch (e) {

@@ -1,3 +1,4 @@
+import { CUSTOMER_EDITABLE_STATES, type IntakeState } from "@/constants/intakeStates";
 /**
  * Public Contract Intake Form
  * Accessible via token link — no authentication required.
@@ -203,7 +204,7 @@ export default function PublicContractIntake() {
       }));
     }
   }, [intake]);
-
+  const isSubmitted = !!intake && !CUSTOMER_EDITABLE_STATES.includes(intake.status as IntakeState);
   const isSubmitted = intake?.status === 'intake_submitted' || intake?.status === 'review_pending';
   const hasChangesRequested = intake?.status === 'changes_requested';
 

@@ -287,9 +287,6 @@ export function AssignWorkspaceDialog({
                   <SelectValue placeholder={t('common.optional', { defaultValue: 'Opcional' })} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__none__">
-                    {t('common.none', { defaultValue: 'Nenhum' })}
-                  </SelectItem>
                   {(programs || []).map((p: any) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.name}
