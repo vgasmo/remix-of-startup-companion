@@ -190,12 +190,16 @@ Deno.serve(async (req) => {
     if (campaignError) throw campaignError;
     if (!campaign) return corsJsonResponse({ error: 'campaign_not_found' }, req, 404);
 
-    const { data: instances, error: instancesError } = await admin
+    const RESEND_COOLDOWN_MS = 20 * 60 * 60 * 1000;
+    const force = (body as { force?: boolean }).force === true;
+    const { data: allInstances, error: instancesError } = await admin
       .from('survey_instances')
-      .select('id, workspace_id, status, public_token')
+      .select('id, workspace_id, status, public_token, last_reminder_sent_at')
       .eq('campaign_id', campaign.id)
       .neq('status', 'submitted');
     if (instancesError) throw instancesError;
+    const instances = force ? (allInstances ?? []) : (allInstances ?? []).filter((i) =>
+      !i.last_reminder_sent_at || Date.now() - new Date(i.last_reminder_sent_at).getTime() > RESEND_COOLDOWN_MS);
     if (!instances || instances.length === 0) {
       return corsJsonResponse({ sent: 0, recipients: 0, skipped: 0, failures: [] }, req, 200);
     }
@@ -436,7 +440,7 @@ Deno.serve(async (req) => {
     const { error: logError } = await admin.from('email_log').insert({
       email_type: 'survey_invite',
       subject: `${campaign.name} — convite de resposta`,
-      recipients: JSON.stringify([...recipients.keys()]),
+      recipients: [...recipients.keys()],
       status: failures.length === 0 ? 'sent' : 'partial',
       sent_at: new Date().toISOString(),
       created_by: null,
