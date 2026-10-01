@@ -75,6 +75,9 @@ const TYPE_KEYS = [
   'escalation',
   'validate_actions',
   'review_checkin',
+  'counter_sign_contract',
+  'financial_assumption_skipped',
+  'milestone_missed',
 ];
 
 const PRIORITY_COLORS: Record<string, string> = {

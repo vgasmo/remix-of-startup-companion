@@ -593,6 +593,8 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
                       incubation_type_id: proposedIncubationTypeId,
                       discount_percentage: proposedDiscount > 0 ? proposedDiscount : null,
                       discount_start_date: proposedDiscount > 0 ? today : null,
+                      // o link enviado é o da assinatura nativa (/contract-signing)
+                      signature_provider: 'assinatura_digital',
                     };
                     const { data: newContract, error: createErr } = await supabase
                       .from('startup_contracts')

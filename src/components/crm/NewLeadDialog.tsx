@@ -68,11 +68,12 @@ export function NewLeadDialog() {
     if (!open) return;
     setForm(f => {
       const next = { ...f };
-      if (!next.owner_consultant_id && user?.id) next.owner_consultant_id = user.id;
+      // Só um consultor/admin fica dono por omissão (o backoffice não é consultor de startups)
+      if (!next.owner_consultant_id && user?.id && consultors?.some(c => c.id === user.id)) next.owner_consultant_id = user.id;
       if (!next.program_id && programs && programs.length === 1) next.program_id = programs[0].id;
       return next;
     });
-  }, [open, user?.id, programs]);
+  }, [open, user?.id, programs, consultors]);
 
 
   const hasAngleBrackets = (s: string) => /[<>]/.test(s);
@@ -88,7 +89,7 @@ export function NewLeadDialog() {
       contact_phone: form.contact_phone || null,
       source: form.source || null,
       notes: form.notes || null,
-      owner_consultant_id: form.owner_consultant_id || user?.id || null,
+      owner_consultant_id: form.owner_consultant_id || null,
       program_id: form.program_id || null,
       stage: 'new' as any,
       type: 'lead' as any,

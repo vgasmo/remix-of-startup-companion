@@ -2343,6 +2343,9 @@
     "restored": "Checklist restored"
   },
   "claimStartup": {
+    "onboardingTitle": "Set up your workspace",
+    "onboardingDesc": "Complete the setup process to start using the platform.",
+    "startOnboarding": "Start setup",
     "alreadyLinked": "Your startup is already linked",
     "applicationPendingDesc": "Your application has been received and is being reviewed by our team. You'll be notified once it's approved.",
     "applicationPendingTitle": "Application Under Review",
@@ -2940,6 +2943,7 @@
     }
   },
   "contractDetail": {
+    "markedSignedAwaitingFounder": "Contract signed, but the workspace is still pending because it has no active members yet. Invite the founder (or assign a consultant) and then approve the workspace in Approvals.",
     "notifyFailed": "Contract updated, but the notifications failed.",
     "completedAt": "Completed at",
     "configured": "Configured",
@@ -6937,6 +6941,8 @@
     "welcomeTitle": "Welcome to your startup journey!"
   },
   "onboardingWizard": {
+    "changeNeedsApproval": "This data is already validated. Use Settings → change request.",
+    "completeFailed": "Could not complete onboarding. Please try again.",
     "allSet": "You're all set! 🎉",
     "allSetDesc": "Your workspace is ready to go. You can now track KPIs, manage milestones, and collaborate with your team.",
     "applied": "Applied",

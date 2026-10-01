@@ -2343,6 +2343,9 @@
     "restored": "Checklist restaurada"
   },
   "claimStartup": {
+    "onboardingTitle": "Configurar o seu workspace",
+    "onboardingDesc": "Complete o processo de configuração para começar a utilizar a plataforma.",
+    "startOnboarding": "Iniciar configuração",
     "alreadyLinked": "A sua startup já está associada",
     "applicationPendingDesc": "A sua candidatura foi recebida e está a ser analisada pela nossa equipa. Será notificado assim que for aprovada.",
     "applicationPendingTitle": "Candidatura em Análise",
@@ -2940,6 +2943,7 @@
     }
   },
   "contractDetail": {
+    "markedSignedAwaitingFounder": "Contrato assinado, mas o workspace continua pendente porque ainda não tem membros ativos. Convide o founder (ou atribua um consultor) e depois aprove o workspace em Aprovações.",
     "notifyFailed": "Contrato atualizado, mas as notificações falharam.",
     "completedAt": "Concluído em",
     "configured": "Configurado",
@@ -6937,6 +6941,8 @@
     "welcomeTitle": "Bem-vindo à sua jornada empreendedora!"
   },
   "onboardingWizard": {
+    "changeNeedsApproval": "Estes dados já estão validados. Use Definições → pedido de alteração.",
+    "completeFailed": "Não foi possível concluir o onboarding. Tente novamente.",
     "allSet": "Tudo pronto! 🎉",
     "allSetDesc": "O seu workspace está pronto. Pode agora acompanhar KPIs, gerir marcos e colaborar com a sua equipa.",
     "applied": "Aplicados",

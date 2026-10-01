@@ -58,7 +58,10 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
       status: 'terminated',
       terminated_at: nowIso,
       termination_reason: reason.trim(),
-    } as any)
+      // o link público de assinatura deixa de servir
+      onboarding_token_hash: null,
+      onboarding_token_expires_at: null,
+    })
     .eq('id', contract.id);
   if (updErr) throw updErr;
 
@@ -126,18 +129,24 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
       .limit(1)
       .maybeSingle();
 
-    if (intake && !['declined', 'voided', 'terminated', 'cancelled'].includes(intake.status as string)) {
-      await (supabase as any)
+    // O enum intake_status não tem 'terminated': um intake ainda por assinar fecha como 'cancelled'
+    // (pára os lembretes ao founder); um intake já ativado mantém 'activated'.
+    if (intake && !['cancelled', 'rejected', 'signed', 'activated'].includes(intake.status)) {
+      const { error: intakeErr } = await supabase
         .from('contract_intakes')
-        .update({ status: 'terminated' })
+        .update({ status: 'cancelled' })
         .eq('id', intake.id);
-      await supabase.from('intake_events').insert({
-        intake_id: intake.id,
-        event_type: 'lifecycle_sync_terminated',
-        from_status: intake.status,
-        to_status: 'terminated',
-        metadata: { source: 'useTerminateContract', contract_id: contract.id },
-      } as any);
+      if (intakeErr) {
+        console.warn('[useTerminateContract] intake close failed', intakeErr.message);
+      } else {
+        await supabase.from('intake_events').insert({
+          intake_id: intake.id,
+          event_type: 'lifecycle_sync_terminated',
+          from_status: intake.status,
+          to_status: 'cancelled',
+          metadata: { source: 'useTerminateContract', contract_id: contract.id, outcome: 'terminated' },
+        });
+      }
     }
 
     // Resolve funnel_item_id via intake first, fall back to contract.funnel_item_id.

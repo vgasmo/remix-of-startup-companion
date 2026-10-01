@@ -1052,11 +1052,26 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
                       provider_last_event: null,
                       founder_signer_status: 'pending',
                       counter_signer_status: null,
+                      // o próximo envio volta a resolver o contra-assinante (a rota nativa não contra-assina)
+                      counter_signer_email: null,
+                      counter_signer_name: null,
+                      // o link público anterior deixa de servir
+                      onboarding_token_hash: null,
+                      onboarding_token_expires_at: null,
                     })
                     .eq('id', contract.id)
-                    .select('id');
+                    .select('id, funnel_item_id');
                   if (error) throw error;
                   if (!resetRows?.length) throw new Error(t('contractDetail.resetFailed', { defaultValue: 'Falha ao repor estado' }));
+                  // a recusa pôs a lead em 'rejected' e os triggers de reenvio não a tiram de lá
+                  if (resetRows[0].funnel_item_id) {
+                    const { error: fiErr } = await supabase
+                      .from('funnel_items')
+                      .update({ stage: 'approved_for_signature' })
+                      .eq('id', resetRows[0].funnel_item_id)
+                      .eq('stage', 'rejected');
+                    if (fiErr) logger.warn('contract_reset_funnel_stage_failed', { error: fiErr.message });
+                  }
                   notify.success(t('contractDetail.resetOk', { defaultValue: 'Estado reposto. Pode reenviar.' }));
                   queryClient.invalidateQueries({ queryKey: ['contracts'] });
                 } catch (e: any) {
@@ -1182,14 +1197,27 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
           </div>
         )}
 
-        {/* Both manual routes: Mark as signed */}
-        {(provider === 'pandadoc_manual' || provider === 'manual') && sigStatus === 'sent_for_signature' && (
+        {/* Rotas manuais (incluindo o fallback 'pending_manual' do DocuSign/PandaDoc e a assinatura presencial)
+            e contra-assinatura pendente na rota nativa: Marcar como assinado */}
+        {['draft', 'pending_signature'].includes(contract.status) && (
+          sigStatus === 'pending_manual'
+          || ((provider === 'pandadoc_manual' || provider === 'manual') && sigStatus === 'sent_for_signature')
+          || (provider === 'manual' && (!sigStatus || ['draft', 'pending'].includes(sigStatus)))
+          || (provider === 'assinatura_digital' && sigStatus === 'partially_signed')
+        ) && (
           <Button 
             size="sm" 
             variant="default"
             className="w-full gap-2 mt-4 bg-success hover:bg-success"
             onClick={async () => {
               const result = await canonicalMarkAsSigned(contract.id, contract.workspace_id || null);
+              // O contrato fica ativo mesmo com falha a jusante: invalidar sempre
+              queryClient.invalidateQueries({ queryKey: ['contracts'] });
+              queryClient.invalidateQueries({ queryKey: ['contract-intakes'] });
+              queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
+              queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+              queryClient.invalidateQueries({ queryKey: ['ops-action-prompts'] });
+              queryClient.invalidateQueries({ queryKey: ['pending-workspaces'] });
               if (!result.success) {
                 notify.error(
                   result.error
@@ -1198,11 +1226,13 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
                 );
                 return;
               }
-              queryClient.invalidateQueries({ queryKey: ['contracts'] });
-              queryClient.invalidateQueries({ queryKey: ['contract-intakes'] });
-              queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
-              queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-              notify.success(t('contractDetail.markedAsSigned'));
+              if (result.awaitingFounder) {
+                notify.warn(t('contractDetail.markedSignedAwaitingFounder', {
+                  defaultValue: 'Contrato assinado, mas o workspace continua pendente porque ainda não tem membros ativos. Convide o founder (ou atribua um consultor) e depois aprove o workspace em Aprovações.',
+                }));
+              } else {
+                notify.success(t('contractDetail.markedAsSigned'));
+              }
             }}
           >
             <CheckCircle2 className="h-4 w-4" />

@@ -19,6 +19,7 @@
  * bulk creation) MUST use the server helper instead.
  */
 import { supabase } from '@/lib/supabaseClient';
+import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { logger } from '@/lib/logger';
 import { track } from '@/lib/analytics';
 import { INTAKE_TO_CRM_STAGE, type IntakeState } from '@/constants/intakeStates';
@@ -150,34 +151,54 @@ export async function canonicalMarkAsSigned(
   contractId: string,
   workspaceId: string | null,
   userId?: string,
-): Promise<{ success: boolean; error?: string; syncError?: string }> {
+): Promise<{ success: boolean; error?: string; syncError?: string; awaitingFounder?: boolean }> {
   try {
-    // 1. Update contract to signed
+    // 1. Update contract to signed (as duas partes, para não ficar em 'partially_signed')
     const { error: contractErr } = await supabase
       .from('startup_contracts')
       .update({
         signature_status: 'signed',
         signed_at: new Date().toISOString(),
         status: 'active',
-      } as any)
+        founder_signer_status: 'signed',
+        counter_signer_status: 'signed',
+      })
       .eq('id', contractId);
 
     if (contractErr) throw contractErr;
 
     const syncErrors: string[] = [];
+    let awaitingFounder = false;
 
     // 2. Sync intake to 'signed'
     const signedRes = await syncIntakeOnContractEvent(contractId, 'signed', userId);
     if (isRealSyncFailure(signedRes)) syncErrors.push(`intake_signed: ${signedRes.error}`);
 
-    // 3. Activate workspace only if contract is truly signed
-    if (workspaceId) {
-      const { data: wsResult, error: wsErr } = await supabase.rpc(
-        'activate_workspace_for_signed_contract' as never,
+    // 3. Contrato do CRM sem workspace: criar/ligar (RPC idempotente). Se o workspace ainda não estiver ativo,
+    //    criar a conta + membro founder no servidor ANTES de ativar (a ativação exige um membro ativo).
+    let wsId = workspaceId;
+    if (!wsId) {
+      const { data: mintedWs, error: mintErr } = await supabase.rpc(
+        'ensure_contract_workspace' as never,
         { p_contract_id: contractId } as never,
       );
+      if (mintErr) syncErrors.push(`workspace_create: ${mintErr.message}`);
+      else wsId = (mintedWs as unknown as string | null) ?? null;
+    }
+    if (wsId) {
+      const { data: wsRow } = await supabase.from('workspaces').select('status').eq('id', wsId).maybeSingle();
+      if (wsRow?.status !== 'active') {
+        const { error: founderErr } = await invokeWithAuth('staff-assign-workspace-to-contract', {
+          body: { contract_id: contractId, workspace_id: wsId },
+        });
+        if (founderErr) syncErrors.push(`founder_account: ${founderErr.message}`);
+      }
+      const { data: wsResult, error: wsErr } = await supabase.rpc('activate_workspace_for_signed_contract', {
+        p_contract_id: contractId,
+      });
       if (wsErr) syncErrors.push(`workspace_activate: ${wsErr.message}`);
-      else if ((wsResult as unknown) === 'no_signed_contract') syncErrors.push('workspace_activate: no_signed_contract');
+      else if (wsResult === 'no_signed_contract') syncErrors.push('workspace_activate: no_signed_contract');
+      else if (wsResult === 'awaiting_founder') awaitingFounder = true;
     }
 
     // 4. Sync intake to 'activated'
@@ -186,10 +207,10 @@ export async function canonicalMarkAsSigned(
 
     if (syncErrors.length > 0) {
       logger.warn('canonical_mark_signed_partial', { contractId, syncErrors });
-      return { success: false, syncError: syncErrors.join('; ') };
+      return { success: false, syncError: syncErrors.join('; '), awaitingFounder };
     }
 
-    return { success: true };
+    return { success: true, awaitingFounder };
   } catch (err: any) {
     logger.error('canonical_mark_signed_error', { contractId, error: err?.message });
     return { success: false, error: err?.message };

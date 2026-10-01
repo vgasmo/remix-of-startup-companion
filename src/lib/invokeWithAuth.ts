@@ -44,15 +44,26 @@ export async function invokeWithAuth<T = any>(
 
   if (error) {
     const parsed = parseApiError(error, `invokeWithAuth:${functionName}`);
-    // Preserve status code info in the error message for downstream handling
-    const rawMsg = error instanceof Error ? error.message : String(error);
-    const is403 = rawMsg.includes('403') || rawMsg.includes('non-2xx') || parsed.code === 'FORBIDDEN';
-    const errMsg = is403
-      ? `403: Access denied (${functionName})`
-      : parsed.message;
+    // O FunctionsHttpError traz a Response em error.context: usar o status e a mensagem reais do servidor.
+    // Só 401/403 viram '403: Access denied' (há chamadores que testam esse texto).
+    const ctx = (error as { context?: unknown }).context;
+    let status: number | undefined;
+    let serverMsg: string | undefined;
+    if (ctx instanceof Response) {
+      status = ctx.status;
+      try {
+        const body = await ctx.clone().json();
+        serverMsg = typeof body?.message === 'string' ? body.message
+          : typeof body?.error === 'string' ? body.error
+          : undefined;
+      } catch { /* corpo não-JSON */ }
+    }
+    if (status === 401 || status === 403 || parsed.code === 'FORBIDDEN') {
+      return { data: null, error: new Error(`403: Access denied (${functionName})`) };
+    }
     return { 
       data: null, 
-      error: new Error(errMsg)
+      error: new Error(serverMsg || parsed.message)
     };
   }
 

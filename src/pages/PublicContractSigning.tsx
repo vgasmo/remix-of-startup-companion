@@ -119,6 +119,19 @@ const getStepLabels = (provider: SignatureProvider): Record<WizardStep, { pt: st
   signing: { pt: stepSigningLabel(provider, 'pt'), en: stepSigningLabel(provider, 'en') },
 });
 
+/** Mensagem do servidor quando a função responde non-2xx (o FunctionsHttpError traz a Response em `context`). */
+async function serverErrorMessage(error: unknown): Promise<string | undefined> {
+  const ctx = (error as { context?: unknown } | null)?.context;
+  if (ctx instanceof Response) {
+    try {
+      const body = await ctx.clone().json();
+      if (typeof body?.message === 'string') return body.message;
+      if (typeof body?.error === 'string') return body.error;
+    } catch { /* corpo não-JSON */ }
+  }
+  return undefined;
+}
+
 export default function PublicContractSigning() {
   const { token } = useParams<{ token: string }>();
   const { i18n, t } = useTranslation();
@@ -202,7 +215,12 @@ export default function PublicContractSigning() {
         project_name: (contract as any).project_name || '',
       }));
 
-      if (contract.signature_status === 'sent_for_signature' || contract.signature_status === 'completed') {
+      // Rota nativa: o founder só salta para a assinatura depois de aceitar o Regulamento (submit_signing).
+      // Nos fornecedores externos (DocuSign/PandaDoc/manual) a assinatura já está a decorrer fora da página.
+      const regulationAlreadyAccepted = !!(contract as any).regulation_accepted_at;
+      const signatureClosed = ['completed', 'signed', 'partially_signed'].includes(contract.signature_status);
+      const providerHandlesSigning = contract.signature_provider !== 'assinatura_digital';
+      if (signatureClosed || (contract.signature_status === 'sent_for_signature' && (regulationAlreadyAccepted || providerHandlesSigning))) {
         setCurrentStep('signing');
       }
 
@@ -293,7 +311,7 @@ export default function PublicContractSigning() {
           },
         }
       });
-      if (error) throw error;
+      if (error) throw new Error((await serverErrorMessage(error)) || error.message);
       if (data?.error) throw new Error(data.error);
       notify.success(t('publicContractSigning.contractSignedSuccessfully'));
       setSignSuccess(true);
@@ -419,9 +437,7 @@ export default function PublicContractSigning() {
     if (data?.error) throw new Error(data.error);
   };
 
-  const isSigned =
-    contract?.signature_status === 'signed' ||
-    contract?.signature_status === 'completed';
+  const isSigned = ['signed', 'completed', 'partially_signed'].includes(contract?.signature_status ?? '');
 
   // Debounced autosave — every keystroke → localStorage; server save 1.5s debounced.
   const autosave = useContractDraftAutosave<Record<string, unknown>>({
@@ -463,7 +479,7 @@ export default function PublicContractSigning() {
       const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
         body: { action: 'submit_signing', token, formData },
       });
-      if (error) throw error;
+      if (error) throw new Error((await serverErrorMessage(error)) || error.message);
       if (data?.error) throw new Error(data.error);
       return data;
     },
@@ -477,8 +493,8 @@ export default function PublicContractSigning() {
       }
     },
     onError: (err: any) => {
+      // não avançar: nada foi submetido (ex.: 422 signature_provider_not_configured)
       notify.error(err?.message || t('publicContract.errors.sendSigningFailed'));
-      setCurrentStep('signing');
     },
   });
 
@@ -1199,7 +1215,7 @@ export default function PublicContractSigning() {
               )}
             </CardHeader>
             <CardContent className="space-y-4">
-              {(signSuccess || sigStatus === 'completed' || sigStatus === 'signed') ? (
+              {(signSuccess || ['completed', 'signed', 'partially_signed'].includes(sigStatus)) ? (
                 <div className="text-center py-8 space-y-3">
                   <CheckCircle2 className="h-16 w-16 mx-auto text-primary" />
                   <h3 className="text-lg font-semibold text-primary">
