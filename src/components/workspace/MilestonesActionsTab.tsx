@@ -220,25 +220,24 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
         });
         if (error) throw error;
         if ((closedCount ?? 0) > 0) {
-          notify.success(
-            t('milestones.cascadeClosed', {
-              count: closedCount,
-              defaultValue: `${closedCount} ação(ões) fechada(s) com o gate`,
-            }),
-          );
+          notify.success(isStaff
+            ? t('milestones.cascadeClosed', { count: closedCount, defaultValue: `${closedCount} ação(ões) fechada(s) com o gate` })
+            : t('milestones.validationRequested', { count: closedCount, defaultValue: '{{count}} ação(ões) enviada(s) para validação do consultor' }));
         }
-        // Fire the same celebration path useUpdateMilestone uses, since this
-        // RPC bypasses that mutation. Idempotent via workspace_celebrations.
-        triggerMilestoneCelebration();
-        void supabase
-          .from('workspace_celebrations')
-          .upsert(
-            { workspace_id: workspaceId, event_key: 'first_milestone_completed' },
-            { onConflict: 'workspace_id,event_key', ignoreDuplicates: true },
-          )
-          .then(({ error: celErr }) => {
-            if (celErr) console.debug('first_milestone_celebration_skip', celErr.message);
-          });
+        // só celebra se o marco ficou mesmo concluído (o founder apenas pede validação)
+        const { data: ms } = await supabase.from('milestones').select('status').eq('id', milestone.id).maybeSingle();
+        if (ms?.status === 'completed') {
+          triggerMilestoneCelebration();
+          void supabase
+            .from('workspace_celebrations')
+            .upsert(
+              { workspace_id: workspaceId, event_key: 'first_milestone_completed' },
+              { onConflict: 'workspace_id,event_key', ignoreDuplicates: true },
+            )
+            .then(({ error: celErr }) => {
+              if (celErr) console.debug('first_milestone_celebration_skip', celErr.message);
+            });
+        }
       } else {
         await updateMilestone.mutateAsync({ id: milestone.id, status });
       }
@@ -411,22 +410,26 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
 
   const handleBulkStatusChange = async (ids: string[], status: string) => {
     try {
+      const targetIds = isStaff ? ids : ids.filter((id) => actionItems?.find((a) => a.id === id)?.status !== 'completed');
+      if (targetIds.length === 0) { notify.error(t('actions.failedToUpdate')); return; }
       // Snapshot prior {id -> status, completed_at} so undo can restore exactly.
       const { data: prior } = await supabase
         .from('action_items')
         .select('id, status, completed_at')
-        .in('id', ids);
-      await bulkUpdate.mutateAsync({ ids, status: status as ActionStatus });
-      notify.success(t('actions.updatedCount', { count: ids.length }), {
+        .in('id', targetIds);
+      const updatedIds = await bulkUpdate.mutateAsync({ ids: targetIds, status: status as ActionStatus });
+      if (updatedIds.length === 0) { notify.error(t('actions.failedToUpdate')); return; }
+      const priorUpdated = (prior ?? []).filter((r) => updatedIds.includes(r.id));
+      notify.success(t('actions.updatedCount', { count: updatedIds.length }), {
         duration: 8000,
-        action: prior && prior.length > 0 ? {
+        action: priorUpdated.length > 0 ? {
           label: t('common.undo'),
           onClick: async () => {
             try {
               // Group by prior status for fewer round trips
               const groups = new Map<string, string[]>();
               const completedAtById = new Map<string, string | null>();
-              for (const r of prior) {
+              for (const r of priorUpdated) {
                 const list = groups.get(r.status as string) || [];
                 list.push(r.id);
                 groups.set(r.status as string, list);
@@ -440,10 +443,10 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
                 if (error) throw error;
               }
               // Restore completed_at per row (rare path, do it sequentially for correctness)
-              for (const r of prior) {
+              for (const r of priorUpdated) {
                 await supabase.from('action_items').update({ completed_at: (r as any).completed_at ?? null }).eq('id', r.id);
               }
-              notify.success(t('actions.statusReverted', { count: ids.length, defaultValue: 'Status reverted' }));
+              notify.success(t('actions.statusReverted', { count: priorUpdated.length, defaultValue: 'Status reverted' }));
             } catch {
               notify.error(t('actions.undoFailed', { defaultValue: 'Could not undo. Please try again.' }));
             } finally {
@@ -453,6 +456,9 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
           },
         } : undefined,
       });
+      if (updatedIds.length < targetIds.length) {
+        notify.warn(t('actions.bulkPartialSkipped', { skipped: targetIds.length - updatedIds.length }));
+      }
       deselectAll();
     } catch { notify.error(t('actions.failedToUpdate')); }
   };
@@ -460,14 +466,16 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
   const handleBulkDelete = async (ids: string[]) => {
     try {
       const { data: snapshots } = await supabase.from('action_items').select('*').in('id', ids);
-      await bulkDelete.mutateAsync(ids);
-      notify.success(t('actions.deletedCount', { count: ids.length }), {
+      const deletedIds = await bulkDelete.mutateAsync(ids);
+      if (deletedIds.length === 0) { notify.error(t('actions.failedToDelete')); return; }
+      const restorable = (snapshots ?? []).filter((s) => deletedIds.includes(s.id)); // só repõe o que foi mesmo apagado
+      notify.success(t('actions.deletedCount', { count: deletedIds.length }), {
         duration: 8000,
-        action: snapshots && snapshots.length > 0 ? {
-          label: t('common.undo'),
-          onClick: () => restoreActions(snapshots),
-        } : undefined,
+        action: restorable.length > 0 ? { label: t('common.undo'), onClick: () => restoreActions(restorable) } : undefined,
       });
+      if (deletedIds.length < ids.length) {
+        notify.warn(t('actions.bulkPartialSkipped', { skipped: ids.length - deletedIds.length }));
+      }
       deselectAll();
     } catch { notify.error(t('actions.failedToDelete')); }
   };
@@ -545,6 +553,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
       </div>
 
       {/* Bulk Actions Bar */}
+      {canWrite && (
       <BulkActionsBar
         items={actionItems || []}
         selectedIds={selectedIds}
@@ -556,10 +565,11 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
           { value: 'pending', label: t('actions.open') },
           { value: 'in_progress', label: t('actions.doing') },
           { value: 'awaiting_validation', label: t('actions.awaitingValidation', 'A aguardar validação') },
-          { value: 'completed', label: t('actions.done') },
+          ...(isStaff ? [{ value: 'completed', label: t('actions.done') }] : []),
         ]}
         getItemId={(item) => item.id}
       />
+      )}
 
       {/* Inline Quick Add — create action with optional milestone */}
       {canWrite && (
@@ -713,7 +723,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
                               onStatusChange={handleStatusChange} onDueDateChange={handleDueDateChange}
                               onDelete={(item) => setDeleteActionTarget(item)}
                               onAddDeliverable={handleAddDeliverable} onCompleteDeliverable={handleCompleteDeliverable}
-                              isSelected={isSelected(item.id)} onToggleSelect={toggleItem}
+                              isSelected={isSelected(item.id)} onToggleSelect={canWrite ? toggleItem : undefined}
                             />
                           </div>
                         ))

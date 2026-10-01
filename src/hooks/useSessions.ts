@@ -333,17 +333,17 @@ export function useCreateSession(workspaceId: string) {
           try {
             const { data: ws } = await supabase
               .from('workspaces')
-              .select('startup:startups(name), owner_user_id')
+              .select('startup:startups(name), assigned_consultor_id')
               .eq('id', workspaceId)
               .maybeSingle();
             startupName = (ws as any)?.startup?.name || undefined;
 
             // Fetch owner/consultant name if available
-            if ((ws as any)?.owner_user_id) {
+            if ((ws as any)?.assigned_consultor_id) {
               const { data: profile } = await supabase
                 .from('profiles_safe')
                 .select('full_name, email')
-                .eq('id', (ws as any).owner_user_id)
+                .eq('id', (ws as any).assigned_consultor_id)
                 .maybeSingle();
               ownerName = profile?.full_name || profile?.email || undefined;
             }
@@ -614,16 +614,16 @@ export function useUpdateSession(workspaceId: string) {
           try {
             const { data: ws } = await supabase
               .from('workspaces')
-              .select('startup:startups(name), owner_user_id')
+              .select('startup:startups(name), assigned_consultor_id')
               .eq('id', workspaceId)
               .maybeSingle();
             startupName = (ws as any)?.startup?.name || undefined;
             
-            if ((ws as any)?.owner_user_id) {
+            if ((ws as any)?.assigned_consultor_id) {
               const { data: profile } = await supabase
                 .from('profiles_safe')
                 .select('full_name, email')
-                .eq('id', (ws as any).owner_user_id)
+                .eq('id', (ws as any).assigned_consultor_id)
                 .maybeSingle();
               ownerName = profile?.full_name || profile?.email || undefined;
             }
