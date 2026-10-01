@@ -16,3 +16,8 @@ export function sanitizeUrl(url: string | null | undefined): string | undefined 
     return undefined;
   }
 }
+
+export const safeExternalHref = (u?: string | null) => {
+  const v = (u ?? '').trim();
+  return v ? sanitizeUrl(/^[a-z][a-z0-9+.-]*:/i.test(v) ? v : `https://${v}`) : undefined;
+};
