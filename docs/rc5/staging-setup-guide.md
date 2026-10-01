@@ -51,9 +51,19 @@ Guarde estes valores como segredos (nunca em ficheiros do projeto):
 | `STAGING_DATABASE_URL` | Ligação direta à base de teste (para a matriz de permissões) |
 | `STAGING_CRON_SECRET` | Segredo das tarefas agendadas de teste |
 | `RC5_ALLOW_STAGING_TESTS` | Tem de ser exatamente `true` |
+| `RC5_DISPOSABLE_DATABASE_URL` | Postgres descartável (não é staging nem produção) usado só por `migrate-fresh-replay.mjs` |
+| `RC5_TEST_WORKSPACE_ID` | O id de workspace que `scripts/rc5/seed.mjs` imprime no fim (`RC5_TEST_WORKSPACE_ID=...`) |
+| `RC5_TEST_ACTOR_ID` | O id do utilizador usado como autor/ator nos passos que precisam de um `user_id` já existente |
 
 As guardas de segurança recusam-se a correr se qualquer destes valores apontar
 para produção.
+
+**Sem a chave de serviço (opção 1, projeto duplicado), `rc5:verify` nunca pode
+devolver `"overall": "pass"`**: a criação/remoção de contas de teste e a limpeza
+de dados exigem `STAGING_SUPABASE_SERVICE_ROLE_KEY`, que essa opção não
+disponibiliza. Sem ela, o resultado fica sempre em `fail`/`NO-GO` para os passos
+de staging — o caminho de verificação totalmente automática só existe com a
+opção 2 (projeto de backend externo).
 
 ## Passo 3 — Contas de teste fictícias
 
@@ -81,12 +91,14 @@ nunca escreve senhas no ecrã ou nos registos.
 ## Passo 4 — Caixa de correio e calendário de teste isolados
 
 - Crie um tenant Microsoft de teste (ou um tenant separado do de produção) e uma
-  aplicação registada só para testes. Guarde `STAGING_GRAPH_TENANT_ID`,
-  `STAGING_GRAPH_CLIENT_ID`, `STAGING_GRAPH_CLIENT_SECRET`.
+  aplicação registada só para testes. Guarde `RC5_GRAPH_TENANT_ID`,
+  `RC5_GRAPH_CLIENT_ID`, `RC5_GRAPH_CLIENT_SECRET` (são os nomes que
+  `probe-graph.mjs` lê).
 - Crie uma caixa de correio dedicada que não pertença a ninguém real e guarde-a
   em `STAGING_GRAPH_TEST_CALENDAR_UPN`.
 - Para email, use um fornecedor em modo de teste (as mensagens ficam retidas e
-  não chegam a ninguém) e guarde `STAGING_EMAIL_SANDBOX_API_KEY`.
+  não chegam a ninguém) e guarde `RC5_EMAIL_SANDBOX_API_KEY`, `RC5_EMAIL_SANDBOX_FROM`
+  e `RC5_EMAIL_SANDBOX_TO` (são os nomes que `probe-email.mjs` lê).
 
 Assim nenhum email ou convite de reunião sai para pessoas reais.
 

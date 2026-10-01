@@ -19,6 +19,7 @@ if (url.includes(PROD_REF)) die('STAGING_SUPABASE_URL points at production. Refu
 
 const PERSONAS = [
   { env: 'FOUNDER', role: 'founder', name: 'RC5 Founder' },
+  { env: 'FOUNDER_UNCLAIMED', role: 'founder', name: 'RC5 Founder Unclaimed', unclaimed: true },
   { env: 'CONSULTANT', role: 'consultor', name: 'RC5 Consultor' },
   { env: 'MENTOR', role: 'mentor_externo', name: 'RC5 Mentor' },
   { env: 'ADMIN', role: 'admin', name: 'RC5 Admin' },
@@ -61,15 +62,22 @@ for (const p of PERSONAS) {
     console.log(`[rc5:personas] refreshed ${p.role}`);
   }
 
+  // founder_unclaimed stays pending/unassigned so tests can exercise the
+  // not-yet-approved founder path; every other persona is approved and roled.
   const { error: eProfile } = await supa
     .from('profiles')
-    .upsert({ id: userId, email, full_name: p.name, account_status: 'approved' }, { onConflict: 'id' });
+    .upsert(
+      { id: userId, email, full_name: p.name, account_status: p.unclaimed ? 'pending' : 'approved' },
+      { onConflict: 'id' },
+    );
   if (eProfile) die(`profiles upsert ${p.role}: ${eProfile.message}`);
 
-  const { error: eRole } = await supa
-    .from('user_roles')
-    .upsert({ user_id: userId, role: p.role }, { onConflict: 'user_id,role' });
-  if (eRole) die(`user_roles upsert ${p.role}: ${eRole.message}`);
+  if (!p.unclaimed) {
+    const { error: eRole } = await supa
+      .from('user_roles')
+      .upsert({ user_id: userId, role: p.role }, { onConflict: 'user_id,role' });
+    if (eRole) die(`user_roles upsert ${p.role}: ${eRole.message}`);
+  }
 }
 
 console.log(`[rc5:personas] OK — ${PERSONAS.length} personas ready (no secrets printed).`);

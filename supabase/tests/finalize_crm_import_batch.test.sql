@@ -1,6 +1,6 @@
 -- P1.6 pgTAP: closing a CRM import batch must run and report partial state.
 BEGIN;
-SELECT plan(4);
+SELECT plan(5);
 
 SELECT has_function('public', 'finalize_crm_import_batch', ARRAY['uuid'],
   'finalize RPC exists');
@@ -13,6 +13,19 @@ SELECT throws_ok(
   $$SELECT public.finalize_crm_import_batch('00000000-0000-0000-0000-000000000000'::uuid)$$,
   '42501', NULL, 'anon cannot finalize a batch');
 RESET role;
+
+-- a founder (authenticated, no admin/backoffice role) must also be rejected.
+INSERT INTO auth.users (id, email) VALUES
+  ('44444444-0000-0000-0000-00000000000b', 'pgtap-crm-founder@example.com')
+ON CONFLICT (id) DO NOTHING;
+
+SET LOCAL role authenticated;
+SET LOCAL request.jwt.claims = '{"sub":"44444444-0000-0000-0000-00000000000b","role":"authenticated"}';
+SELECT throws_ok(
+  $$SELECT public.finalize_crm_import_batch('00000000-0000-0000-0000-000000000000'::uuid)$$,
+  '42501', NULL, 'a founder (non-admin/backoffice) cannot finalize a batch');
+RESET role;
+SELECT set_config('request.jwt.claims', NULL, true);
 
 INSERT INTO auth.users (id, email) VALUES
   ('44444444-0000-0000-0000-00000000000a', 'pgtap-crm@example.com');
@@ -29,6 +42,7 @@ VALUES ('44444444-0000-0000-0000-000000000001', 1, 'h1', 'Valid Co', true, NULL,
 
 INSERT INTO public.user_roles (user_id, role)
 VALUES ('44444444-0000-0000-0000-00000000000a', 'admin');
+SET LOCAL role authenticated;
 SET LOCAL request.jwt.claims = '{"sub":"44444444-0000-0000-0000-00000000000a","role":"authenticated"}';
 
 SELECT is(
