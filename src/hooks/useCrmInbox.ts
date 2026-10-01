@@ -86,7 +86,6 @@ export function isOperationalCustomer(item: {
 export function useCrmInbox(filters?: UseCrmInboxFilters) {
   return useQuery({
     queryKey: ['crm-inbox', filters],
-      // Paginado (o PostgREST corta em 1000 linhas) e com ordem estável entre páginas
       const items = await fetchAllRows((from, to) => {
         let query = supabase
           .from("funnel_items")
@@ -118,7 +117,6 @@ export function useCrmInbox(filters?: UseCrmInboxFilters) {
         }
         return query;
       });
-
       // Fetch owners
       const ownerIds = [...new Set((items || []).filter(i => i.owner_consultant_id).map(i => i.owner_consultant_id))];
       let owners: Record<string, { id: string; full_name: string | null }> = {};

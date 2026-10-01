@@ -35,6 +35,7 @@ export function useCrmPipeline(filters?: UseCrmPipelineFilters) {
   return useQuery({
     queryKey: ['crm-pipeline', filters?.currentUserId ?? null, filters],
     queryFn: async (): Promise<CrmPipelineGroups> => {
+      const stagesFilter = filters?.stages && filters.stages.length > 0 ? filters.stages : PIPELINE_STAGES;
       // Paginado (o PostgREST corta em 1000 linhas) e com ordem estável entre páginas
       const items = await fetchAllRows((from, to) => {
         let query = supabase
