@@ -6,6 +6,11 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { useAutoMaterializeDeliverables } from '@/hooks/useAutoMaterializeDeliverables';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import {
@@ -77,6 +82,11 @@ export default function WorkspaceDetail() {
   const { isAdmin, isConsultor, isMentor, isFounder, isBackoffice, isStaff } = useAuth();
   
   const [showOnboardingWizard, setShowOnboardingWizard] = useState(false);
+  // Convite de cofundadores / equipa (admin e consultor)
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'founder' | 'team_member'>('team_member');
+  const [inviting, setInviting] = useState(false);
   const shouldShowOnboarding = searchParams.get('onboarding') === 'true';
   const { data: myWorkspaceRole } = useUserWorkspaceRole(id);
   const canWrite = isAdmin || isConsultor || isMentor || (isFounder && myWorkspaceRole !== 'team_member');
@@ -347,6 +357,21 @@ export default function WorkspaceDetail() {
   const copyWorkspaceLink = () => {
     navigator.clipboard.writeText(window.location.href);
     notify.success(t('common.linkCopied'));
+  };
+
+  const sendInvite = async () => {
+    setInviting(true);
+    const { error: inviteErr } = await invokeWithAuth('send-workspace-invite', {
+      body: { workspaceId: workspace.id, startupId: workspace.startup_id, email: inviteEmail.trim(), role: inviteRole },
+    });
+    setInviting(false);
+    if (inviteErr) {
+      notify.error(inviteErr.message || t('invite.inviteFailed'));
+      return;
+    }
+    notify.success(t('invite.sentTo', { email: inviteEmail.trim() }));
+    setInviteOpen(false);
+    setInviteEmail('');
   };
 
   const isOverflowTabActive = overflowTabs.some(tab => tab.id === activeTab);

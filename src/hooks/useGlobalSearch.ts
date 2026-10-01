@@ -401,7 +401,7 @@ export function useGlobalSearch(filters: SearchFilters) {
         searchPromises.push((async () => {
           const { data, error } = await supabase
             .from('startup_contracts')
-            .select('id, contract_number, status, updated_at, workspace_id, startup:startups(name)')
+            .select('id, contract_number, status, updated_at, workspace_id, organization_name, workspace:workspaces(startup:startups(name))')
             .or(`contract_number.ilike.${ilikeTerm}`)
             .limit(20);
           if (error) logger.warn('[useGlobalSearch] contract search failed', { error: String(error) });
@@ -410,10 +410,10 @@ export function useGlobalSearch(filters: SearchFilters) {
             id: c.id,
             workspace_id: c.workspace_id || '',
             title: c.contract_number || 'Contract',
-            snippet: `${c.startup?.name || ''} • ${c.status || ''}`,
+            snippet: `${c.workspace?.startup?.name || c.organization_name || ''} • ${c.status || ''}`,
             updated_at: c.updated_at,
-            url: `/admin/contracts?contract=${c.id}`,
-            workspace_name: c.startup?.name,
+            url: `/admin/contracts?open=${c.id}`,
+            workspace_name: c.workspace?.startup?.name || c.organization_name,
           }));
         })());
       }

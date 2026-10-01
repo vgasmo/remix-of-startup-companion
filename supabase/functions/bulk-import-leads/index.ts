@@ -122,6 +122,7 @@ serve(async (req) => {
 
       const dataRows = table.slice(1, 1 + MAX_ROWS);
       const seenEmails = new Set<string>();
+      const seenHashes = new Set<string>();
       const parsed: Array<ParsedRow & { valid: boolean; error: string | null; row_hash: string }> = [];
 
       for (let i = 0; i < dataRows.length; i++) {
@@ -138,15 +139,19 @@ serve(async (req) => {
 
         const hasIdentity = !!(name || email);
         const emailValid = !email || EMAIL_REGEX.test(email);
-        const isDuplicate = !!email && seenEmails.has(email);
+        let row_hash = await sha256Hex([name, email, phone, organization, source, notes, value ?? ""].join("|"));
+        const isDuplicateRow = seenHashes.has(row_hash);
+        const isDuplicate = isDuplicateRow || (!!email && seenEmails.has(email));
         const valid = hasIdentity && emailValid && !isDuplicate;
         let error: string | null = null;
         if (!hasIdentity) error = "Missing name or email";
         else if (!emailValid) error = "Invalid email";
+        else if (isDuplicateRow) error = "Duplicate row in file";
         else if (isDuplicate) error = "Duplicate email in file";
         if (email) seenEmails.add(email);
-
-        const row_hash = await sha256Hex([name, email, phone, organization, source, notes, value ?? ""].join("|"));
+        seenHashes.add(row_hash);
+        // UNIQUE (batch_id, row_hash): uma linha repetida fica inválida e com hash próprio
+        if (isDuplicateRow) row_hash = await sha256Hex(`${row_hash}|dup|${i}`);
         parsed.push({
           row_index: i,
           contact_name: name,
@@ -251,7 +256,7 @@ serve(async (req) => {
       errors,
     }, req);
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "unknown";
+    const msg = (e as { message?: string })?.message ?? "unknown";
     console.error("bulk-import-leads error:", msg);
     return corsJsonResponse({ error: msg }, req, 500);
   }
