@@ -566,18 +566,19 @@ Deno.serve(async (req) => {
         .eq('id', intakeDraft.id)
 
       if (dUpdErr) {
-        return new Response(JSON.stringify({ error: 'Save failed' }), {
+        return new Response(JSON.stringify({ error: "Save failed" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        })
+      }
+
       // CRM: o founder começou a preencher (sem recuar fases posteriores)
       if (patch.status === "intake_in_progress" && intakeDraft.funnel_item_id) {
         await supabase.from("funnel_items").update({ stage: "intake_filling" })
           .eq("id", intakeDraft.funnel_item_id).eq("stage", "intake_requested")
       }
-          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
 
       return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
     }
 

@@ -62,7 +62,6 @@ export function useCrmPipeline(filters?: UseCrmPipelineFilters) {
         }
         return query;
       });
-      if (error) throw error;
 
       // Fetch owners
       const ownerIds = [...new Set((items || []).filter(i => i.owner_consultant_id).map(i => i.owner_consultant_id))];

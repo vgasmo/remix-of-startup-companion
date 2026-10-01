@@ -205,7 +205,6 @@ export default function PublicContractIntake() {
     }
   }, [intake]);
   const isSubmitted = !!intake && !CUSTOMER_EDITABLE_STATES.includes(intake.status as IntakeState);
-  const isSubmitted = intake?.status === 'intake_submitted' || intake?.status === 'review_pending';
   const hasChangesRequested = intake?.status === 'changes_requested';
 
   // Autosave: localStorage-backed draft restoration plus server-side draft
