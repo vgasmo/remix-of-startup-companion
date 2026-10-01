@@ -110,7 +110,7 @@ Deno.serve(async (req: Request) => {
 
   log.info('Sweeping sessions', { candidates: candidates.length, toProcess: toProcess.length });
 
-  const OK_STATUSES = new Set(['imported', 'already_imported', 'not_ready', 'gave_up', 'skipped']);
+  const OK_STATUSES = new Set(['ok', 'imported', 'already_imported', 'not_ready', 'gave_up', 'skipped', 'no_meeting_url', 'not_found']);
   type SweepResult = { session_id: string; status: string; ok: boolean; error?: string };
   const results: SweepResult[] = [];
   const importUrl = `${supabaseUrl}/functions/v1/import-teams-transcript`;

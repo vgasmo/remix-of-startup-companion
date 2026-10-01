@@ -292,7 +292,7 @@ async function resolveAssignedConsultantId(supabase: any, workspaceId: string | 
 }
 
 // ---------- handlers ----------
-async function handle(supabase: any, log: any, body: NotificationRequest): Promise<{ sent: number }> {
+async function handle(supabase: any, log: any, body: NotificationRequest): Promise<{ sent: number; recipients?: number }> {
   const type = body.type;
   const workspaceId = body.workspace_id ?? null;
   const startupName = (await resolveStartupName(supabase, workspaceId)) || null;
@@ -335,6 +335,7 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
     slackTitle = type === 'contract_signed' ? 'Contract signed' : 'Contract activated';
     slackType = 'success';
 
+    let delivered = 0;
     for (const r of recipients) {
       const c = T[r.locale];
       subject = type === 'contract_signed' ? c.contractSignedSubject(s) : c.contractActivatedSubject(s);
@@ -342,7 +343,7 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
       bodyHtml = `<p>${c.greeting(r.name || c.fallbackName)}</p><p>${
         type === 'contract_signed' ? c.contractSignedBody(s) : c.contractActivatedBody(s)
       }</p>`;
-      await sendEmail(supabase, log, { to: r.email, subject, html: shell(r.locale, title, bodyHtml, ctaUrl, c.view) });
+      if (await sendEmail(supabase, log, { to: r.email, subject, html: shell(r.locale, title, bodyHtml, ctaUrl, c.view) })) delivered++;
     }
     await pushSlack(supabase, log, {
       workspaceId,
@@ -351,7 +352,7 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
       type: slackType,
       link: ctaUrl,
     });
-    return { sent: recipients.length };
+    return { sent: delivered, recipients: recipients.length };
   }
 
   if (type === 'document_review_requested' || type === 'document_review_approved') {
@@ -375,6 +376,7 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
     }
     ctaUrl = `${APP_URL}/workspace/${workspaceId}?tab=documents`;
     const s = startupName || 'a startup';
+    let delivered = 0;
     for (const r of recipients) {
       const c = T[r.locale];
       subject = type === 'document_review_requested' ? c.docReviewRequestedSubject(s) : c.docReviewApprovedSubject(docName);
@@ -382,7 +384,7 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
       bodyHtml = `<p>${c.greeting(r.name || c.fallbackName)}</p><p>${
         type === 'document_review_requested' ? c.docReviewRequestedBody(s, docName) : c.docReviewApprovedBody(docName)
       }</p>`;
-      await sendEmail(supabase, log, { to: r.email, subject, html: shell(r.locale, title, bodyHtml, ctaUrl, c.view) });
+      if (await sendEmail(supabase, log, { to: r.email, subject, html: shell(r.locale, title, bodyHtml, ctaUrl, c.view) })) delivered++;
     }
     await pushSlack(supabase, log, {
       workspaceId,
@@ -391,7 +393,7 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
       type: slackType,
       link: ctaUrl,
     });
-    return { sent: recipients.length };
+    return { sent: delivered, recipients: recipients.length };
   }
 
   if (type === 'consultant_assigned') {
@@ -399,9 +401,10 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
     recipients = await enrich([body.consultant_id]);
     const s = startupName || 'a startup';
     ctaUrl = `${APP_URL}/workspace/${workspaceId}`;
+    let delivered = 0;
     for (const r of recipients) {
       const c = T[r.locale];
-      await sendEmail(supabase, log, {
+      if (await sendEmail(supabase, log, {
         to: r.email,
         subject: c.consultantAssignedSubject(s),
         html: shell(
@@ -411,9 +414,9 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
           ctaUrl,
           c.view,
         ),
-      });
+      })) delivered++;
     }
-    return { sent: recipients.length };
+    return { sent: delivered, recipients: recipients.length };
   }
 
   if (type === 'mentor_request_accepted' || type === 'mentor_request_declined') {
@@ -432,10 +435,11 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
       mentorName = p?.full_name ?? null;
     }
     ctaUrl = `${APP_URL}/workspace/${(mr as any).workspace_id}?tab=mentors`;
+    let delivered = 0;
     for (const r of recipients) {
       const c = T[r.locale];
       if (type === 'mentor_request_accepted') {
-        await sendEmail(supabase, log, {
+        if (await sendEmail(supabase, log, {
           to: r.email,
           subject: c.mentorAcceptedSubject,
           html: shell(
@@ -445,12 +449,12 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
             ctaUrl,
             c.view,
           ),
-        });
+        })) delivered++;
       } else {
         const reasonBlock = body.decline_reason
           ? `<p style="color:#666;"><strong>${c.reasonLabel}:</strong> ${body.decline_reason}</p>`
           : '';
-        await sendEmail(supabase, log, {
+        if (await sendEmail(supabase, log, {
           to: r.email,
           subject: c.mentorDeclinedSubject,
           html: shell(
@@ -460,10 +464,10 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
             ctaUrl,
             c.view,
           ),
-        });
+        })) delivered++;
       }
     }
-    return { sent: recipients.length };
+    return { sent: delivered, recipients: recipients.length };
   }
 
   if (type === 'activity_mention') {
@@ -473,9 +477,10 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
     const author = await resolveProfile(supabase, author_id);
     const authorName = author?.full_name || 'Alguém';
     ctaUrl = context_url || `${APP_URL}/my-workspaces`;
+    let delivered = 0;
     for (const r of recipients) {
       const c = T[r.locale];
-      await sendEmail(supabase, log, {
+      if (await sendEmail(supabase, log, {
         to: r.email,
         subject: c.mentionSubject(authorName),
         html: shell(
@@ -485,9 +490,9 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
           ctaUrl,
           c.view,
         ),
-      });
+      })) delivered++;
     }
-    return { sent: recipients.length };
+    return { sent: delivered, recipients: recipients.length };
   }
 
   return { sent: 0 };
@@ -515,7 +520,8 @@ Deno.serve(async (req) => {
     if (!body?.type) return corsJsonResponse({ error: 'type required' }, req, 400);
     log.info('dispatch', { type: body.type, workspace_id: body.workspace_id });
     const result = await handle(supabaseAdmin, log, body);
-    return corsJsonResponse({ success: true, ...result }, req);
+    const ok = (result.recipients ?? 0) === 0 || result.sent > 0;
+    return corsJsonResponse({ success: ok, ...result }, req, ok ? 200 : 502);
   } catch (e) {
     log.error('fatal', e);
     const msg = e instanceof Error ? e.message : 'Unknown';

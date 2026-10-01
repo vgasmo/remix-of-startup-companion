@@ -173,7 +173,7 @@ Deno.serve(async (req) => {
 
       const startupId = (announcement.workspace as any)?.startup?.id;
       const { data: startup } = startupId
-        ? await supabaseAdmin.from("startups").select("founder_email, name").eq("id", startupId).single()
+        ? await supabaseAdmin.from("startups").select("main_contact_email, name").eq("id", startupId).single()
         : { data: null };
 
       const emailsToSend = new Map<string, { email: string; name: string }>();
@@ -185,9 +185,9 @@ Deno.serve(async (req) => {
           });
         }
       }
-      if (startup?.founder_email && !emailsToSend.has(startup.founder_email.toLowerCase())) {
-        emailsToSend.set(startup.founder_email.toLowerCase(), {
-          email: startup.founder_email,
+      if (startup?.main_contact_email && !emailsToSend.has(startup.main_contact_email.toLowerCase())) {
+        emailsToSend.set(startup.main_contact_email.toLowerCase(), {
+          email: startup.main_contact_email,
           name: startup.name || '',
         });
       }

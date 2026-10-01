@@ -257,7 +257,7 @@ Deno.serve(async (req: Request) => {
       .from('sessions')
       .select(`
         id, title, scheduled_at, workspace_id, teams_meeting_url, outlook_event_id, outlook_owner_email, created_by,
-        recording_consent, online_meeting_id, session_type, transcript_import_attempts
+        recording_consent, online_meeting_id, session_type, transcript_import_attempts, transcript_import_status
       `)
       .eq('id', session_id)
       .single();
@@ -280,7 +280,14 @@ Deno.serve(async (req: Request) => {
       online_meeting_id: string | null;
       session_type: string | null;
       transcript_import_attempts: number | null;
+      transcript_import_status: string | null;
     };
+
+    const recordAttempt = (status: string) => supabaseAdmin.from('sessions').update({
+      transcript_import_attempts: (typedSession.transcript_import_attempts ?? 0) + 1,
+      transcript_last_attempt_at: new Date().toISOString(),
+      transcript_import_status: status,
+    }).eq('id', session_id);
 
     // Consent gate — no consent, no transcript. Ever.
     if (!typedSession.recording_consent) {
@@ -303,9 +310,18 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    if (!isCronCall && userId) {
+      const { data: allowed } = await supabaseAdmin.rpc('check_ai_rate_limit', {
+        _user_id: userId, _workspace_id: typedSession.workspace_id,
+        _function_name: 'import-teams-transcript', _max_requests: 10,
+      });
+      if (allowed !== true) return corsJsonResponse({ success: false, error: 'Rate limit exceeded' }, req, 429);
+    }
+
     // Get Graph credentials
     const credentials = await getGraphCredentials(supabaseAdmin, log);
     if (!credentials) {
+      await recordAttempt('error');
       return corsJsonResponse({ 
         success: false, 
         error: 'Microsoft Graph API not configured'
@@ -345,6 +361,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!joinUrl) {
+      await recordAttempt('no_meeting_url');
       return corsJsonResponse({ 
         success: false, 
         status: 'no_meeting_url',
@@ -358,6 +375,7 @@ Deno.serve(async (req: Request) => {
     const organizerEmail = await resolveOrganizerEmail(supabaseAdmin, typedSession, log);
 
     if (!organizerEmail) {
+      await recordAttempt('error');
       return corsJsonResponse({ 
         success: false, 
         error: 'Could not determine meeting organizer email'
@@ -407,6 +425,7 @@ Deno.serve(async (req: Request) => {
               created_at: new Date().toISOString(),
             });
 
+            await recordAttempt('forbidden_policy');
             return corsJsonResponse({
               success: false,
               status: 'forbidden_policy',
@@ -416,6 +435,7 @@ Deno.serve(async (req: Request) => {
         }
 
         if (meetingResponse.status === 404 || errorText.includes('not found')) {
+          await recordAttempt('not_found');
           return corsJsonResponse({
             success: false,
             status: 'not_found',
@@ -430,6 +450,7 @@ Deno.serve(async (req: Request) => {
 
       if (!meetingData.value || meetingData.value.length === 0) {
         log.warn('No online meeting found for join URL');
+        await recordAttempt('not_found');
         return corsJsonResponse({
           success: false,
           status: 'not_found',
@@ -463,6 +484,7 @@ Deno.serve(async (req: Request) => {
       log.error('Failed to list transcripts', null, { status: transcriptsResponse.status });
       
       if (transcriptsResponse.status === 403) {
+        await recordAttempt('forbidden_policy');
         return corsJsonResponse({ 
           success: false, 
           status: 'forbidden_policy',
@@ -558,10 +580,10 @@ Deno.serve(async (req: Request) => {
 
     log.info('Transcript imported successfully', { session_id, textLength: cleanText.length, confidentiality });
 
-    // Chain the AI pipeline once per successful import (fire-and-forget)
-    try {
-      const genUrl = `${supabaseUrl}/functions/v1/generate-session-artifacts`;
-      fetch(genUrl, {
+    // Só na 1.ª importação e só para transcrições visíveis ao workspace
+    const prevStatus = typedSession.transcript_import_status;
+    if (exposeOnSession && prevStatus !== 'imported') {
+      const p = fetch(`${supabaseUrl}/functions/v1/generate-session-artifacts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -569,9 +591,9 @@ Deno.serve(async (req: Request) => {
           'x-cron-secret': expectedCronSecret || '',
         },
         body: JSON.stringify({ session_id, source: 'transcript_import' }),
-      }).catch((e) => log.warn('generate-session-artifacts fire-and-forget failed', { error: safeErrorMessage(e) }));
-    } catch (e) {
-      log.warn('Could not chain generate-session-artifacts', { error: safeErrorMessage(e) });
+      }).catch((e) => log.warn('generate-session-artifacts chain failed', { error: safeErrorMessage(e) }));
+      // deno-lint-ignore no-explicit-any
+      (globalThis as any).EdgeRuntime?.waitUntil?.(p);
     }
 
     return corsJsonResponse({

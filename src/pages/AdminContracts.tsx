@@ -30,7 +30,6 @@ type ContractRow = {
   contract_pdf_path: string | null;
   workspace_id: string | null;
   legal_representative_phone?: string | null;
-  billing_email?: string | null;
   company_address?: string | null;
   company_city?: string | null;
   company_postal_code?: string | null;
@@ -87,7 +86,7 @@ export default function AdminContracts() {
         .select(`
           id, contract_number, status, signature_status, organization_name,
           legal_representative_name, legal_representative_email, legal_representative_phone,
-          billing_email, company_nif, company_address, company_city, company_postal_code,
+          company_nif, company_address, company_city, company_postal_code,
           start_date, signed_at, created_at, document_url, contract_pdf_path, workspace_id,
           workspaces:workspace_id (
             id, startup_id,

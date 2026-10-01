@@ -12955,6 +12955,7 @@ export type Database = {
         Args: { p_command_id: string; p_contract_id: string; p_error?: string }
         Returns: Json
       }
+      reopen_expired_work_queue_snoozes: { Args: never; Returns: number }
       resolve_canonical_booking_token: { Args: never; Returns: string }
       revert_import_row: { Args: { p_row_id: string }; Returns: Json }
       safe_profiles: {

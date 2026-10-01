@@ -31,8 +31,10 @@ import {
   useAllWorkspaces,
 } from '@/hooks/useAdminData';
 
-const ROLES = ['admin', 'consultor', 'mentor_externo', 'founder', 'team_member'] as const;
+const ROLES = ['admin', 'consultor', 'backoffice', 'mentor_externo', 'founder', 'team_member'] as const;
 type Role = typeof ROLES[number];
+const WORKSPACE_ROLES = ['consultor', 'mentor_externo', 'founder', 'team_member'] as const;
+type WorkspaceRole = typeof WORKSPACE_ROLES[number];
 
 export function AdminUsersManager() {
   const { t } = useTranslation();
@@ -59,7 +61,7 @@ export function AdminUsersManager() {
 
   const [assignWsDialog, setAssignWsDialog] = useState<{ userId: string; userName: string; email: string; isFounder: boolean } | null>(null);
   const [selectedWorkspace, setSelectedWorkspace] = useState<string>('');
-  const [wsRole, setWsRole] = useState<Role>('founder');
+  const [wsRole, setWsRole] = useState<WorkspaceRole>('founder');
   const [deleteWsUserTarget, setDeleteWsUserTarget] = useState<string | null>(null);
   const [suspendTarget, setSuspendTarget] = useState<{ userId: string; userName: string; currentStatus: string } | null>(null);
   const [deleteUserTarget, setDeleteUserTarget] = useState<{ userId: string; userName: string } | null>(null);
@@ -528,12 +530,12 @@ export function AdminUsersManager() {
               </div>
               <div>
                 <Label>{t('admin.userManagement.role')}</Label>
-                <Select value={wsRole} onValueChange={(v) => setWsRole(v as Role)}>
+                <Select value={wsRole} onValueChange={(v) => setWsRole(v as WorkspaceRole)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {ROLES.filter(r => r !== 'admin').map(role => (
+                    {WORKSPACE_ROLES.map(role => (
                       <SelectItem key={role} value={role}>{getRoleLabel(role)}</SelectItem>
                     ))}
                   </SelectContent>

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import type { AppRole } from '@/types/database';
 import { logger } from '@/lib/logger';
 
 /** Hard cap for admin-wide lists: keeps us below PostgREST's implicit row cap
@@ -176,7 +177,7 @@ export function useUserRoles() {
 export function useAddUserRole() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ user_id, role }: { user_id: string; role: 'admin' | 'consultor' | 'mentor_externo' | 'founder' | 'team_member' }) => {
+    mutationFn: async ({ user_id, role }: { user_id: string; role: AppRole }) => {
       const { data, error } = await supabase.from('user_roles').insert({ user_id, role }).select().single();
       if (error) throw error;
       return data;

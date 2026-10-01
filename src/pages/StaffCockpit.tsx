@@ -325,7 +325,7 @@ function BackofficeContractsExpiringCard() {
       thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
       const { data, error } = await supabase
         .from('startup_contracts')
-        .select('id, contract_number, end_date, startup_id, startups(name)')
+        .select('id, contract_number, end_date, organization_name, workspace:workspaces(startup:startups(name))')
         .eq('status', 'active')
         .lte('end_date', thirtyDaysFromNow.toISOString())
         .gte('end_date', new Date().toISOString())
@@ -359,7 +359,7 @@ function BackofficeContractsExpiringCard() {
                 <div>
                   <span className="font-medium">{c.contract_number}</span>
                   <span className="text-muted-foreground ml-2">
-                    {(c.startups as any)?.name}
+                    {(c.workspace as any)?.startup?.name ?? c.organization_name}
                   </span>
                 </div>
                 <Badge variant="outline" className="text-warning border-warning/30">

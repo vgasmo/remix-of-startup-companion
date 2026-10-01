@@ -60,7 +60,7 @@ export function FounderRequestsInbox() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('workspaces')
-        .select('id, name, startup:startups(name)')
+        .select('id, startup:startups(name)')
         .in('id', workspaceIds);
       if (error) throw error;
       const map: Record<string, { name: string | null; startupName: string | null }> = {};

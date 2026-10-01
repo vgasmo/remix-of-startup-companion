@@ -8041,6 +8041,7 @@
   },
   "roles": {
     "admin": "Admin",
+    "backoffice": "Backoffice",
     "consultor": "Consultor",
     "founder": "Fundador",
     "mentor": "Mentor",

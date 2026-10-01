@@ -1041,7 +1041,7 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
               onClick={async () => {
                 setSending(true);
                 try {
-                  const { error } = await supabase
+                  const { data: resetRows, error } = await supabase
                     .from('startup_contracts')
                     .update({
                       signature_status: 'draft',
@@ -1050,12 +1050,13 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
                       docusign_envelope_id: null,
                       provider_last_error: null,
                       provider_last_event: null,
-                      canonical_signature_status: null,
                       founder_signer_status: 'pending',
                       counter_signer_status: null,
-                    } as any)
-                    .eq('id', contract.id);
+                    })
+                    .eq('id', contract.id)
+                    .select('id');
                   if (error) throw error;
+                  if (!resetRows?.length) throw new Error(t('contractDetail.resetFailed', { defaultValue: 'Falha ao repor estado' }));
                   notify.success(t('contractDetail.resetOk', { defaultValue: 'Estado reposto. Pode reenviar.' }));
                   queryClient.invalidateQueries({ queryKey: ['contracts'] });
                 } catch (e: any) {

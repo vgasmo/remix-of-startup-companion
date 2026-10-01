@@ -35,11 +35,12 @@ export function DataQualityDashboard() {
       const allIssues: DataIssue[] = [];
 
       // Fetch startups missing NIF
-      const { data: startupsNoNif } = await supabase
+      const { data: startupsNoNif, error: nifErr } = await supabase
         .from('startups')
         .select('id, name, main_contact_email')
         .or('nif.is.null,nif.eq.')
         .order('name');
+      if (nifErr) throw nifErr;
 
       startupsNoNif?.forEach(s => {
         allIssues.push({
@@ -51,20 +52,15 @@ export function DataQualityDashboard() {
       });
 
       // Fetch workspaces without founders
-      const { data: workspacesNoFounder } = await supabase
+      const { data: activeWs, error: wsErr } = await supabase
         .from('workspaces')
-        .select(`
-          id,
-          startup:startups!workspaces_startup_id_fkey(id, name, main_contact_email),
-          workspace_users!inner(user_id, role)
-        `)
+        .select('id, startup:startups!workspaces_startup_id_fkey(id, name, main_contact_email), workspace_users(user_id, role, active)')
         .eq('status', 'active');
+      if (wsErr) throw wsErr;
 
-      const workspaceFounderMap = new Map<string, boolean>();
-      workspacesNoFounder?.forEach(w => {
-        const hasFounder = (w.workspace_users as any[])?.some(
-          (wu: any) => wu.role === 'founder'
-        );
+      activeWs?.forEach(w => {
+        const hasFounder = ((w.workspace_users as { role: string; active: boolean }[]) ?? [])
+          .some((wu) => wu.role === 'founder' && wu.active);
         if (!hasFounder && w.startup) {
           const startup = w.startup as any;
           allIssues.push({
@@ -78,11 +74,12 @@ export function DataQualityDashboard() {
       });
 
       // Fetch startups missing contact info
-      const { data: startupsNoContact } = await supabase
+      const { data: startupsNoContact, error: contactErr } = await supabase
         .from('startups')
         .select('id, name')
         .or('main_contact_email.is.null,main_contact_email.eq.')
         .order('name');
+      if (contactErr) throw contactErr;
 
       startupsNoContact?.forEach(s => {
         allIssues.push({

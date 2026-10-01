@@ -238,6 +238,8 @@ serve(async (req) => {
         : 500;
       return corsJsonResponse({ error: msg }, req, status);
     }
+    const { error: finErr } = await sbSvc.rpc("finalize_crm_import_batch", { p_batch_id: batchId });
+    if (finErr) console.error("finalize_crm_import_batch failed:", finErr.message);
     const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
     const committed = Number(row?.committed ?? 0);
     const errors = Array.isArray(row?.errors) ? row.errors : [];

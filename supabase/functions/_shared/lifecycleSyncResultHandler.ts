@@ -51,7 +51,7 @@ export async function handleLifecycleSyncResult(
     const { data: staffUsers } = await supabase
       .from('user_roles')
       .select('user_id')
-      .in('role', ['admin', 'consultor'])
+      .in('role', ['admin', 'consultor', 'backoffice'])
 
     if (staffUsers?.length) {
       const shortId = ctx.contractId.slice(0, 8)

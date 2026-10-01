@@ -36,7 +36,7 @@ function BillingSnapshotCardInner() {
         supabase
           .from('invoices' as any)
           .select('total, status, due_date')
-          .or(`status.eq.overdue,and(status.eq.pending,due_date.lt.${todayStr})`),
+          .or(`status.eq.overdue,and(status.eq.sent,due_date.lt.${todayStr})`),
         supabase
           .from('startup_contracts' as any)
           .select('id', { count: 'exact', head: true })

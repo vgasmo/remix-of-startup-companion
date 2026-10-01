@@ -63,14 +63,19 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Get transcript if available
+    // Só transcrições do tier 'workspace' alimentam artefactos visíveis a todo o workspace
+    // (vale para a cadeia do import e para chamadas diretas com JWT de founder/membro).
     const { data: transcript } = await supabaseAdmin
       .from('session_transcripts')
       .select('transcript_text')
       .eq('session_id', session_id)
+      .eq('confidentiality', 'workspace')
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
+    if (isCron && !transcript) {
+      return corsJsonResponse({ success: true, skipped: 'no_workspace_transcript' }, req);
+    }
 
     const contentToAnalyze = transcript?.transcript_text || session.notes || session.agenda || '';
 
@@ -166,18 +171,20 @@ Be concise and actionable. Focus on startup progress, mentor advice, and founder
 
     // Update session with summary
     if (artifacts.summary) {
-      await supabaseAdmin
-        .from('sessions')
-        .update({ 
-          summary: artifacts.summary,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', session_id);
+      const risks = (Array.isArray(artifacts.risks) ? artifacts.risks : []) as unknown[];
+      const { error: sumErr } = await supabaseAdmin.from('sessions').update({
+        ai_summary: artifacts.summary,
+        ai_decisions: Array.isArray(artifacts.decisions) ? artifacts.decisions : [],
+        ai_risks: risks.map((r) => (typeof r === 'string' ? { risk: r, severity: 'medium' } : r)),
+        ai_generated_at: new Date().toISOString(),
+        ai_generated_by: userId,
+      }).eq('id', session_id);
+      if (sumErr) return corsJsonResponse({ error: 'Failed to persist artifacts' }, req, 500);
     }
 
     // Create action items
     const createdActions = [];
-    for (const item of artifacts.action_items) {
+    for (const item of artifacts.action_items ?? []) {
       const { data: action, error: actionError } = await supabaseAdmin
         .from('action_items')
         .insert({
@@ -197,19 +204,21 @@ Be concise and actionable. Focus on startup progress, mentor advice, and founder
     }
 
     // Log activity
-    await supabaseAdmin.from('activity_log').insert({
-      workspace_id: session.workspace_id,
-      user_id: userId,
-      entity_type: 'session',
-      entity_id: session_id,
-      action: 'artifacts_generated',
-      metadata: {
-        summary_length: artifacts.summary.length,
-        decisions_count: artifacts.decisions.length,
-        actions_created: createdActions.length,
-        risks_count: artifacts.risks.length,
-      },
-    });
+    if (userId) {
+      await supabaseAdmin.from('activity_log').insert({
+        workspace_id: session.workspace_id,
+        user_id: userId,
+        entity_type: 'session',
+        entity_id: session_id,
+        action: 'artifacts_generated',
+        metadata: {
+          summary_length: artifacts.summary.length,
+          decisions_count: artifacts.decisions.length,
+          actions_created: createdActions.length,
+          risks_count: artifacts.risks.length,
+        },
+      });
+    }
 
     return corsJsonResponse({
       success: true,

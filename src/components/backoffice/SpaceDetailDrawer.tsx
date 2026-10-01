@@ -119,7 +119,6 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
     if (!allocation) return;
     await endAllocation.mutateAsync({ id: allocation.id, roomId: room.id });
     setVacateDialogOpen(false);
-    notify.success(t('admin.backoffice.spaceVacated', { defaultValue: 'Espaço desocupado com sucesso' }));
   };
 
   const handleAssign = async (formData: FormData) => {
@@ -134,7 +133,6 @@ export function SpaceDetailDrawer({ open, onOpenChange, room, buildingName }: Sp
       created_by: user.id,
     });
     setAssignDialogOpen(false);
-    notify.success(t('admin.backoffice.spaceAssigned', { defaultValue: 'Espaço atribuído com sucesso' }));
   };
 
   const handleMaintenance = async () => {
