@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database, TablesUpdate } from '@/integrations/supabase/types';
 import { sendTeamsNotification, getAppUrl } from '@/hooks/useIntegrationTriggers';
 import { Json } from '@/integrations/supabase/types';
 import { triggerMiniCelebration } from '@/lib/confetti';
@@ -376,21 +376,20 @@ export function useBulkUpdateActions(workspaceId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ ids, status }: { ids: string[]; status: ActionStatus }) => {
-      const updateData: Record<string, unknown> = { status };
-      
-      if (status === 'completed') {
-        updateData.completed_at = new Date().toISOString();
-      } else {
-        updateData.completed_at = null;
-      }
+    mutationFn: async ({ ids, status }: { ids: string[]; status: ActionStatus }): Promise<string[]> => {
+      const updateData: TablesUpdate<'action_items'> = {
+        status,
+        completed_at: status === 'completed' ? new Date().toISOString() : null,
+      };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('action_items')
-        .update(updateData as never)
-        .in('id', ids);
+        .update(updateData)
+        .in('id', ids)
+        .select('id');
 
       if (error) throw error;
+      return (data ?? []).map((r) => r.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
@@ -404,13 +403,15 @@ export function useBulkDeleteActions(workspaceId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (ids: string[]) => {
-      const { error } = await supabase
+    mutationFn: async (ids: string[]): Promise<string[]> => {
+      const { data, error } = await supabase
         .from('action_items')
         .delete()
-        .in('id', ids);
+        .in('id', ids)
+        .select('id');
 
       if (error) throw error;
+      return (data ?? []).map((r) => r.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
