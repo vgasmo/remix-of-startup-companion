@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/collapsible';
 import { QuickHelp, GlossaryTooltip } from '@/components/ui/GlossaryTooltip';
 import {
+import { getDateLocale } from '@/lib/dateLocale';
   useUnitEconomicsHistory,
   useCurrentMonthUnitEconomics,
   useSaveUnitEconomics,
@@ -323,7 +324,7 @@ export function UnitEconomicsCalculator({ workspaceId }: UnitEconomicsCalculator
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <div className="text-center min-w-[120px]">
-              <span className="font-medium">{format(selectedMonth, 'MMMM yyyy')}</span>
+              <span className="font-medium">{format(selectedMonth, 'MMMM yyyy', { locale: getDateLocale() })}</span>
               {selectedMonthData && (
                 <p className="text-xs text-muted-foreground">{t('unitEconomics.saved')}</p>
               )}

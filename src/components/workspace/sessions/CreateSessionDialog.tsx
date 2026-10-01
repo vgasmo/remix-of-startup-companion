@@ -891,14 +891,14 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
           </div>
           <div className="space-y-2">
             <Label htmlFor="joinUrl">
-              Meeting Link
-              <span className="text-muted-foreground text-xs ml-1">(optional if using Teams sync)</span>
+              {t('sessions.meetingLink', 'Link da Reunião')}
+              <span className="text-muted-foreground text-xs ml-1">{t('sessions.meetingLinkHint', '(opcional se usar sincronização com Teams)')}</span>
             </Label>
             <Input
               id="joinUrl"
               value={joinUrl}
               onChange={(e) => setJoinUrl(e.target.value)}
-              placeholder="Optional - Teams link added automatically if synced"
+              placeholder={t('sessions.meetingLinkPlaceholder', 'Opcional - link do Teams é adicionado automaticamente se sincronizado')}
             />
           </div>
           </>)}
@@ -927,7 +927,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={createMutation.isPending || isSending} loading={createMutation.isPending}>
               {(createMutation.isPending || isSending) ? 'Scheduling...' : 'Schedule Session'}

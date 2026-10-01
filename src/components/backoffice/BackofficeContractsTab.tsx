@@ -32,6 +32,7 @@ import { AssignWorkspaceDialog } from './contracts/AssignWorkspaceDialog';
 import { useContractIntakes } from '@/hooks/useContractIntakes';
 import { useFunnelItems } from '@/hooks/useFunnel';
 import { useUrlParam } from '@/hooks/useUrlParam';
+import { getDateLocale } from '@/lib/dateLocale';
 
 // Status key set for filter dropdown. Visual styling is owned by <ContractStatusBadge>.
 const STATUS_KEYS = ['draft', 'pending_signature', 'active', 'suspended', 'terminated', 'expired'] as const;
@@ -671,7 +672,7 @@ export function BackofficeContractsTab() {
                           <Badge variant="outline" className="text-xs">{workspace.stage || '-'}</Badge>
                         </TableCell>
                         <TableCell className="text-muted-foreground text-sm">
-                          {workspace.created_at ? format(new Date(workspace.created_at), 'dd MMM yyyy') : '-'}
+                          {workspace.created_at ? format(new Date(workspace.created_at), 'dd MMM yyyy', { locale: getDateLocale() }) : '-'}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -796,7 +797,7 @@ export function BackofficeContractsTab() {
                             </TooltipTrigger>
                             <TooltipContent>
                               <div className="text-xs">
-                                <div>{t('admin.backoffice.startedOn', { defaultValue: 'Started on' })}: {format(new Date(contract.start_date), 'dd MMM yyyy')}</div>
+                                <div>{t('admin.backoffice.startedOn', { defaultValue: 'Started on' })}: {format(new Date(contract.start_date), 'dd MMM yyyy', { locale: getDateLocale() })}</div>
                                 <div>{t('admin.backoffice.totalMonths', { defaultValue: 'Total months' })}: {tenure.months} {t('admin.backoffice.months', { defaultValue: 'months' })}</div>
                                 {alert && (
                                   <div className={cn(

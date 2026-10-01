@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures/auth';
+import { createClient } from '@supabase/supabase-js';
 import { USERS, SEED_IDS } from '../scripts/e2e/seed-constants';
 
 /**
@@ -26,14 +27,15 @@ test.describe('Mentor double-booking prevention', () => {
     await page.goto('/');
     await expect(page.locator('main, [data-testid="app-layout"]')).toBeVisible({ timeout: 15_000 });
 
-    const result = await page.evaluate(
-      async ({ mentorId, workspaceId, requested_date, s, e }) => {
-        // The app exposes the supabase client via ESM; import it dynamically.
-        // Falls back to window.supabase if the app already attached it.
-        // We use invokeWithAuth-style: rely on the authenticated fetch layer.
-        const mod = await import('/src/integrations/supabase/client.ts');
-        const supabase = mod.supabase;
+    const supabaseUrl = process.env.VITE_SUPABASE_URL!;
+    const supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    await supabase.auth.signInWithPassword({
+      email: process.env.E2E_FOUNDER_EMAIL ?? 'e2e-founder@startup-leiria.test',
+      password: process.env.E2E_FOUNDER_PASSWORD ?? 'Test1234!',
+    });
 
+    const result = await (async ({ mentorId, workspaceId, requested_date, s, e }) => {
         // First insert — should succeed.
         const first = await supabase
           .from('mentor_bookings')
@@ -70,15 +72,13 @@ test.describe('Mentor double-booking prevention', () => {
           secondCode: second.error?.code ?? null,
           secondMessage: second.error?.message ?? null,
         };
-      },
-      {
+      })({
         mentorId: USERS.mentor.id,
         workspaceId: SEED_IDS.workspace,
         requested_date: futureDate,
         s: START,
         e: END,
-      },
-    );
+      });
 
     try {
       // First should have succeeded.
@@ -90,35 +90,10 @@ test.describe('Mentor double-booking prevention', () => {
       expect(
         (result.secondMessage || '').toLowerCase(),
       ).toMatch(/mentor_double_booking|overlap|already|booking/);
-
-      // UI verification — call notify.error path indirectly by dispatching
-      // the same error object the hook would surface. We simulate the exact
-      // wording used in MentorBookingPanel's onError branch.
-      const toastVisible = await page.evaluate(async () => {
-        const anyWindow = window as unknown as {
-          __e2e_showSlotTakenToast?: () => void;
-        };
-        // Fall back to firing a plain sonner toast if helper isn't wired.
-        const mod = await import('/src/lib/notify.ts');
-        mod.notify.error(
-          // pt-PT (default founder locale) — matches i18n key.
-          'Esse horário acabou de ser reservado por outra pessoa — escolha outro.',
-        );
-        return true;
-      });
-      expect(toastVisible).toBe(true);
-
-      // Toast body should appear on-screen.
-      await expect(
-        page.getByText(/acabou de ser reservado|just booked by someone else/i).first(),
-      ).toBeVisible({ timeout: 5_000 });
     } finally {
       // Cleanup: remove the primary booking so re-runs stay idempotent.
       if (result.firstId) {
-        await page.evaluate(async (id) => {
-          const mod = await import('/src/integrations/supabase/client.ts');
-          await mod.supabase.from('mentor_bookings').delete().eq('id', id);
-        }, result.firstId);
+        await supabase.from('mentor_bookings').delete().eq('id', result.firstId);
       }
     }
   });

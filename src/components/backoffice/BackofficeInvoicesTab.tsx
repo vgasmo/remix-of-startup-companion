@@ -18,6 +18,7 @@ import { format, differenceInDays } from 'date-fns';
 import { useDateLocale } from '@/lib/dateLocale';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { getDateLocale } from '@/lib/dateLocale';
 
 const STATUS_CONFIG: Record<string, { labelKey: string; className: string }> = {
   draft: { labelKey: 'backoffice.invoiceStatus.draft', className: 'bg-muted text-muted-foreground' },
@@ -194,7 +195,7 @@ export function BackofficeInvoicesTab() {
                       </TableCell>
                       <TableCell>{startup?.name || 'Unnamed'}</TableCell>
                       <TableCell className="text-muted-foreground">
-                        {format(new Date(invoice.issue_date), 'dd MMM yyyy')}
+                        {format(new Date(invoice.issue_date), 'dd MMM yyyy', { locale: getDateLocale() })}
                       </TableCell>
                       <TableCell>
                         <span className={cn(isOverdue && 'text-warning font-medium')}>

@@ -23,6 +23,7 @@ import { format, differenceInDays, isBefore } from 'date-fns';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
 import { HealthScore } from '@/types/database';
 import { cn } from '@/lib/utils';
+import { getDateLocale } from '@/lib/dateLocale';
 
 
 interface MentorSessionPrepEnhancedProps {
@@ -114,7 +115,7 @@ export function MentorSessionPrepEnhanced({ workspaces }: MentorSessionPrepEnhan
             </div>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Calendar className="h-3 w-3" />
-              <span>{format(new Date(w.nextMeetingDate!), "dd MMM 'às' HH:mm")}</span>
+              <span>{format(new Date(w.nextMeetingDate!), "dd MMM 'às' HH:mm", { locale: getDateLocale() })}</span>
               <span className="text-muted-foreground/50">·</span>
               <span>{daysUntil === 0 ? t('common.today') : `${daysUntil}d`}</span>
             </div>

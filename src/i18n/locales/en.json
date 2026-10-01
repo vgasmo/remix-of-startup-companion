@@ -1450,7 +1450,10 @@
       "type": "Type",
       "viewQuestions": "View questions",
       "viewQuestionsDesc": "Questions included in this survey",
-      "viewResponses": "View Responses"
+      "viewResponses": "View Responses",
+      "legendSubmitted": "{{count}} submitted",
+      "legendInProgress": "{{count}} in progress",
+      "legendPending": "{{count}} pending"
     },
     "suspend": "Suspend",
     "suspendUser": "Suspend User",
@@ -2254,6 +2257,14 @@
       "start": "Upload & extract with AI",
       "title": "Upload signed contract PDFs",
       "uploading": "Uploading {{done}} / {{total}}..."
+    },
+    "rowStatus": {
+      "will_create": "New",
+      "will_update": "Update",
+      "committed": "Done",
+      "error": "Error",
+      "pending": "Queued",
+      "skipped": "Skipped"
     }
   },
   "calendar": {
@@ -8498,7 +8509,9 @@
     "withConsultant": "Consultor",
     "withMentor": "Mentor",
     "workspaceMembers": "workspace members",
-    "zoomDesc": "Auto-import meeting recordings and transcripts"
+    "zoomDesc": "Auto-import meeting recordings and transcripts",
+    "meetingLinkHint": "(optional if using Teams sync)",
+    "meetingLinkPlaceholder": "Optional - Teams link added automatically if synced"
   },
   "sessionsEmpty": {
     "description": "Your consultant or program will schedule your first session soon.",
@@ -9139,7 +9152,9 @@
     "typeSelect": "Single Select",
     "typeText": "Text",
     "typeTextarea": "Long Text",
-    "viewResponses": "View Responses"
+    "viewResponses": "View Responses",
+    "saveResponseFailed": "Could not save the survey",
+    "launchFailed": "Could not launch the campaign"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",

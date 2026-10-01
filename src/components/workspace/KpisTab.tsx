@@ -255,7 +255,7 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
         months.push({
           month: monthStr,
           value: val?.value ?? null,
-          label: format(monthDate, 'MMM'),
+          label: format(monthDate, 'MMM', { locale: getDateLocale() }),
         });
       }
       result[kpiId] = months;

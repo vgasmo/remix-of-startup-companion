@@ -1450,7 +1450,10 @@
       "type": "Tipo",
       "viewQuestions": "Ver questões",
       "viewQuestionsDesc": "Questões incluídas neste inquérito",
-      "viewResponses": "Ver Responses"
+      "viewResponses": "Ver Responses",
+      "legendSubmitted": "{{count}} submetidos",
+      "legendInProgress": "{{count}} em progresso",
+      "legendPending": "{{count}} pendentes"
     },
     "suspend": "Suspender",
     "suspendUser": "Suspend Utilizador",
@@ -2254,6 +2257,14 @@
       "start": "Carregar e extrair com IA",
       "title": "Carregar PDFs de contratos assinados",
       "uploading": "A carregar {{done}} / {{total}}..."
+    },
+    "rowStatus": {
+      "will_create": "Novo",
+      "will_update": "Atualizar",
+      "committed": "Concluído",
+      "error": "Erro",
+      "pending": "Em fila",
+      "skipped": "Ignorado"
     }
   },
   "calendar": {
@@ -8498,7 +8509,9 @@
     "withConsultant": "Consultor",
     "withMentor": "Mentor",
     "workspaceMembers": "membros do espaço",
-    "zoomDesc": "Importar gravações e transcrições automaticamente"
+    "zoomDesc": "Importar gravações e transcrições automaticamente",
+    "meetingLinkHint": "(opcional se usar sincronização com Teams)",
+    "meetingLinkPlaceholder": "Opcional - link do Teams é adicionado automaticamente se sincronizado"
   },
   "sessionsEmpty": {
     "description": "O seu consultor ou programa vai agendar a primeira sessão em breve.",
@@ -9139,7 +9152,9 @@
     "typeSelect": "Seleção Única",
     "typeText": "Texto",
     "typeTextarea": "Texto Longo",
-    "viewResponses": "Ver Respostas"
+    "viewResponses": "Ver Respostas",
+    "saveResponseFailed": "Não foi possível guardar o inquérito",
+    "launchFailed": "Não foi possível lançar a campanha"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",
