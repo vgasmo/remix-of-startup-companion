@@ -15,6 +15,7 @@ import { notify } from '@/lib/notify';
 import { suggestRenewalWindow, LIFECYCLE_THRESHOLDS } from '@/lib/contractLifecycle';
 import type { StartupContract } from '@/hooks/useBackoffice';
 import { Loader2, RefreshCw } from 'lucide-react';
+import type { TablesUpdate } from '@/integrations/supabase/types';
 
 interface RenewContractDialogProps {
   contract: StartupContract | null;
@@ -52,12 +53,8 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
       if (!contract) throw new Error('no contract');
       if (!canRenew) throw new Error('invalid_status');
 
-      // Persist new start (if provided) + reset terminated/expired flags on revive.
-      const patch: Record<string, unknown> = {
-        end_date: newEnd,
-        monthly_fee: monthlyFee,
-      };
-      if (newStart) patch.start_date = newStart;
+      // start_date = início da incubação (cron de aniversários, "Ano N", limite de 3 anos): nunca sobrescrever
+      const patch: TablesUpdate<'startup_contracts'> = { end_date: newEnd, monthly_fee: monthlyFee };
       if (contract.status === 'expired') {
         patch.status = 'active';
         patch.terminated_at = null;
@@ -66,7 +63,7 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
 
       const { error: updErr } = await supabase
         .from('startup_contracts')
-        .update(patch as never)
+        .update(patch)
         .eq('id', contract.id);
       if (updErr) throw updErr;
 
@@ -87,15 +84,22 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
         // non-fatal: occupancy sync failure logged only
       }
 
-      // Lifecycle event
-      try {
-        await supabase.from('contract_lifecycle_events').insert({
-          contract_id: contract.id,
-          event_type: 'renewal',
-          event_date: newStart || new Date().toISOString().split('T')[0],
-          notes: `Renovado até ${newEnd} · ${monthlyFee}€/mês`,
-        } as any);
-      } catch { /* non-fatal */ }
+      // Evento de ciclo de vida: a tabela não tem 'notes'; o texto vai em details
+      const { data: authData } = await supabase.auth.getUser();
+      const { error: evErr } = await supabase.from('contract_lifecycle_events').insert({
+        contract_id: contract.id,
+        event_type: 'renewal',
+        event_date: new Date().toISOString().split('T')[0],
+        performed_by: authData.user?.id ?? null,
+        details: {
+          previous_end_date: contract.end_date,
+          new_term_start: newStart || null,
+          new_end_date: newEnd,
+          previous_monthly_fee: contract.monthly_fee,
+          monthly_fee: monthlyFee,
+        },
+      });
+      if (evErr) console.warn('[RenewContractDialog] lifecycle event failed', evErr.message);
 
       // P2.6: fan out via staff-guarded RPC — client-side enumeration of
       // user_roles/workspace_users is blocked by RLS and silently skipped founders.
@@ -152,7 +156,8 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
               id="renew-start"
               type="date"
               value={newStart}
-              onChange={(e) => setNewStart(e.target.value)}
+              readOnly
+              disabled
             />
           </div>
           <div className="space-y-1.5">

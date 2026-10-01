@@ -2975,7 +2975,7 @@
     "renewInvalidStatus": "Só é possível renovar contratos ativos ou expirados.",
     "renewNotifyMsg": "A proposta de renovação foi enviada ao signatário.",
     "renewNotifyTitle": "Renovação enviada",
-    "renewStart": "Novo início",
+    "renewStart": "Início do novo período (a data de início da incubação mantém-se)",
     "renewSuccess": "Contrato renovado",
     "renewTitle": "Renovar contrato",
     "resetAndResend": "Reiniciar e reenviar",
