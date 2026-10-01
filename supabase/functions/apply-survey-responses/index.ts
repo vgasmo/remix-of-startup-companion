@@ -233,6 +233,16 @@ async function applyRecordField(
     return skip(questionId, mapping, 'Data inválida', answer);
   }
 
+  if (mapping.key === 'website') {
+    try {
+      const u = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+      if (!['http:', 'https:'].includes(u.protocol)) return skip(questionId, mapping, 'URL inválido', answer);
+    } catch { return skip(questionId, mapping, 'URL inválido', answer); }
+  }
+  if (mapping.key === 'main_contact_email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    return skip(questionId, mapping, 'Email inválido', answer);
+  }
+
   const { data: current } = await supabase
     .from(table)
     .select(mapping.key)
