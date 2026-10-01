@@ -304,6 +304,7 @@ Deno.serve(async (req) => {
       // === CANONICAL LIFECYCLE SYNC (shared helper) ===
       // Webhook always returns 200 to avoid PandaDoc retry storms, but failures
       // are persisted to contract_lifecycle_events + staff are notified.
+      let resolvedWorkspaceId = contract.workspace_id
       if (canonicalStatus === 'sent_for_signature') {
         const r = await syncIntakeOnSent(supabase, contract.id, null, `pandadoc_webhook_${eventName}`)
         await handleLifecycleSyncResult(supabase, r, {
@@ -312,6 +313,7 @@ Deno.serve(async (req) => {
         })
       } else if (canonicalStatus === 'completed') {
         const r = await syncIntakeOnCompleted(supabase, contract.id, contract.workspace_id, null, `pandadoc_webhook_${eventName}`)
+        resolvedWorkspaceId = r.workspaceId ?? contract.workspace_id
         await handleLifecycleSyncResult(supabase, r, {
           contractId: contract.id, workspaceId: contract.workspace_id,
           source: `pandadoc_webhook_${eventName}_completed`, operation: 'completed',
@@ -393,14 +395,14 @@ Deno.serve(async (req) => {
         if (contract.legal_representative_email) {
           const acctRes = await sharedCreateFounder(supabase, {
             id: contract.id,
-            workspace_id: contract.workspace_id,
+            workspace_id: resolvedWorkspaceId,
             legal_representative_email: contract.legal_representative_email,
             legal_representative_name: contract.legal_representative_name,
           })
           if (!acctRes.ok) {
             await enqueueFounderInviteTask(supabase, {
               id: contract.id,
-              workspace_id: contract.workspace_id,
+              workspace_id: resolvedWorkspaceId,
               legal_representative_email: contract.legal_representative_email,
               legal_representative_name: contract.legal_representative_name,
             }, acctRes.reason || 'unknown')

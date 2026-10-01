@@ -1,3 +1,5 @@
+import { autoCreateFounderAccount } from './founderAccount.ts'
+
 /**
  * Shared Canonical Lifecycle Sync — Server-Side (CANONICAL TRUTH)
  *
@@ -147,35 +149,52 @@ export async function syncIntakeOnCompleted(
       const contactEmail = contractRow?.legal_representative_email || null
       const contactName = contractRow?.legal_representative_name || null
       try {
-        const { data: newStartup, error: startupErr } = await supabase
-          .from('startups')
-          .insert({ name: orgName, main_contact_email: contactEmail, main_contact_name: contactName, stage: 'ideation' })
-          .select('id')
-          .single()
+        // 1) Programa resolvido ANTES de criar linhas (evita startups órfãs)
+        let programId: string | null = null
+        if (fallbackFunnelItemId) {
+          const { data: fi } = await supabase.from('funnel_items').select('program_id').eq('id', fallbackFunnelItemId).maybeSingle()
+          programId = fi?.program_id ?? null
+        }
+        if (!programId) {
+          const { data: active } = await supabase.from('programs').select('id').eq('is_active', true).limit(2)
+          if (active?.length === 1) programId = active[0].id
+        }
+        if (!programId) throw new Error('auto_mint_no_program: associe a lead a um programa e crie o workspace manualmente')
+
+        // 2) startups não tem coluna stage; workspaces.program_id é NOT NULL
+        const { data: newStartup, error: startupErr } = await supabase.from('startups')
+          .insert({ name: orgName, main_contact_email: contactEmail, main_contact_name: contactName })
+          .select('id').single()
         if (startupErr) throw startupErr
-        const { data: newWs, error: wsErr } = await supabase
-          .from('workspaces')
-          .insert({ startup_id: newStartup.id, status: 'pending', needs_onboarding: true })
-          .select('id')
-          .single()
-        if (wsErr) throw wsErr
+        const { data: newWs, error: wsErr } = await supabase.from('workspaces')
+          .insert({ startup_id: newStartup.id, program_id: programId, status: 'pending', needs_onboarding: true })
+          .select('id').single()
+        if (wsErr) {
+          await supabase.from('startups').delete().eq('id', newStartup.id)
+          throw wsErr
+        }
         effectiveWorkspaceId = newWs.id
+
+        // 3) A ativação exige um membro ativo (trigger validate_workspace_status_transition):
+        //    criar já a conta + membro founder (idempotente; põe o workspace em 'claimed')
+        const acct = await autoCreateFounderAccount(supabase, {
+          id: contractId,
+          workspace_id: effectiveWorkspaceId,
+          legal_representative_email: contactEmail,
+          legal_representative_name: contactName,
+        })
+        if (!acct.ok) errors.push(`auto_mint_founder: ${acct.reason ?? 'unknown'}`)
+
+        // 4) Ligar contrato e lead (igual ao código atual)
         const { error: contractLinkErr } = await supabase.from('startup_contracts')
           .update({ workspace_id: effectiveWorkspaceId })
           .eq('id', contractId)
-        if (contractLinkErr) {
-          console.error('[lifecycleSync] contract workspace link failed', { contractId, error: contractLinkErr.message })
-          errors.push(`contract_workspace_link: ${contractLinkErr.message}`)
-        }
+        if (contractLinkErr) errors.push(`contract_workspace_link: ${contractLinkErr.message}`)
         if (fallbackFunnelItemId) {
-          // FIX (N0): funnel_items uses `linked_workspace_id`, not `workspace_id`.
           const { error: funnelLinkErr } = await supabase.from('funnel_items')
             .update({ linked_workspace_id: effectiveWorkspaceId })
             .eq('id', fallbackFunnelItemId)
-          if (funnelLinkErr) {
-            console.error('[lifecycleSync] funnel workspace link failed', { fallbackFunnelItemId, error: funnelLinkErr.message })
-            errors.push(`funnel_workspace_link: ${funnelLinkErr.message}`)
-          }
+          if (funnelLinkErr) errors.push(`funnel_workspace_link: ${funnelLinkErr.message}`)
         }
       } catch (mintErr: any) {
         console.error('[lifecycleSync] auto-mint workspace failed', { contractId, error: mintErr?.message })

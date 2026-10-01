@@ -356,6 +356,7 @@ Deno.serve(async (req) => {
     }
 
     // === CANONICAL LIFECYCLE SYNC (shared helper) ===
+    let resolvedWorkspaceId = contract.workspace_id
     if (status === 'sent_for_signature') {
       const r = await syncIntakeOnSent(supabase, contract.id, null, `docusign_webhook`)
       await handleLifecycleSyncResult(supabase, r, {
@@ -364,6 +365,7 @@ Deno.serve(async (req) => {
       })
     } else if (status === 'completed') {
       const r = await syncIntakeOnCompleted(supabase, contract.id, contract.workspace_id, null, `docusign_webhook`)
+      resolvedWorkspaceId = r.workspaceId ?? contract.workspace_id
       await handleLifecycleSyncResult(supabase, r, {
         contractId: contract.id, workspaceId: contract.workspace_id,
         source: 'docusign_webhook_completed', operation: 'completed',
@@ -417,14 +419,14 @@ Deno.serve(async (req) => {
     if (status === 'completed' && contract.legal_representative_email) {
       const acctRes = await sharedCreateFounder(supabase, {
         id: contract.id,
-        workspace_id: contract.workspace_id,
+        workspace_id: resolvedWorkspaceId,
         legal_representative_email: contract.legal_representative_email,
         legal_representative_name: contract.legal_representative_name,
       })
       if (!acctRes.ok) {
         await enqueueFounderInviteTask(supabase, {
           id: contract.id,
-          workspace_id: contract.workspace_id,
+          workspace_id: resolvedWorkspaceId,
           legal_representative_email: contract.legal_representative_email,
           legal_representative_name: contract.legal_representative_name,
         }, acctRes.reason || 'unknown')

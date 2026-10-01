@@ -95,21 +95,20 @@ function usePendingWorkspaces() {
       if (!workspaces?.length) return [];
 
       const workspaceIds = workspaces.map(w => w.id);
-      const { data: members } = await supabase
+      const founderMap = new Map<string, NonNullable<PendingWorkspace['founder']>>();
+      const { data: members, error: mErr } = await supabase
         .from('workspace_users')
-        .select(`
-          workspace_id,
-          profile:profiles(id, email, full_name, avatar_url)
-        `)
+        .select('workspace_id, user_id')
         .in('workspace_id', workspaceIds)
         .eq('role', 'founder');
-
-      const founderMap = new Map();
-      members?.forEach(m => {
-        if (m.profile) {
-          founderMap.set(m.workspace_id, m.profile);
-        }
-      });
+      if (mErr) throw mErr;
+      const ids = [...new Set((members ?? []).map((m) => m.user_id))];
+      const { data: profs, error: pErr } = ids.length
+        ? await supabase.from('profiles').select('id, email, full_name, avatar_url').in('id', ids)
+        : { data: [], error: null };
+      if (pErr) throw pErr;
+      const byId = new Map((profs ?? []).map((p) => [p.id, p]));
+      members?.forEach((m) => { const p = byId.get(m.user_id); if (p) founderMap.set(m.workspace_id, p); });
 
       return workspaces.map(w => ({
         ...w,

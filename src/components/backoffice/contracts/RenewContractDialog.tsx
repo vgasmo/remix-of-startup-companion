@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { notify } from '@/lib/notify';
 import { suggestRenewalWindow, LIFECYCLE_THRESHOLDS } from '@/lib/contractLifecycle';
 import type { StartupContract } from '@/hooks/useBackoffice';
+import { findContractAllocations } from '@/hooks/useBackoffice';
 import { Loader2, RefreshCw } from 'lucide-react';
 import type { TablesUpdate } from '@/integrations/supabase/types';
 
@@ -67,21 +68,18 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
         .eq('id', contract.id);
       if (updErr) throw updErr;
 
-      // Extend the linked room_allocation end_date so occupancy stays in sync.
+      // Prolonga as alocações em curso deste contrato
       try {
-        const { data: allocs } = await (supabase as any)
-          .from('room_allocations')
-          .select('id, end_date')
-          .eq('contract_id', contract.id)
-          .is('released_at', null);
-        for (const a of allocs || []) {
-          await (supabase as any)
-            .from('room_allocations')
-            .update({ end_date: newEnd })
-            .eq('id', a.id);
+        const today = new Date().toISOString().split('T')[0];
+        const ids = (await findContractAllocations(contract))
+          .filter((a) => a.end_date && a.end_date >= today).map((a) => a.id);
+        if (ids.length) {
+          const { data: upd, error: allocUpdErr } = await supabase.from('room_allocations')
+            .update({ end_date: newEnd }).in('id', ids).select('id');
+          if (allocUpdErr || (upd?.length ?? 0) !== ids.length) throw new Error(allocUpdErr?.message ?? 'rls');
         }
       } catch {
-        // non-fatal: occupancy sync failure logged only
+        notify.warn('Contrato renovado, mas a alocação da sala não foi prolongada. Prolongue-a em Espaços.');
       }
 
       // Evento de ciclo de vida: a tabela não tem 'notes'; o texto vai em details
@@ -123,6 +121,9 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
       queryClient.invalidateQueries({ queryKey: ['lifecycle-events-contracts'] });
       queryClient.invalidateQueries({ queryKey: ['contract-lifecycle-events'] });
       queryClient.invalidateQueries({ queryKey: ['room-allocations'] });
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
+      queryClient.invalidateQueries({ queryKey: ['rooms-with-allocations'] });
+      queryClient.invalidateQueries({ queryKey: ['building-occupancy'] });
       notify.success(t('contractDetail.renewSuccess', { defaultValue: 'Contrato renovado' }));
       onOpenChange(false);
     },

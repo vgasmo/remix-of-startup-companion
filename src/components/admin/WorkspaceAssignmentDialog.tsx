@@ -94,11 +94,11 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
     queryFn: async () => {
       let matchedStartupIds: string[] | null = null;
       if (trimmedSearch) {
-        const pattern = `%${trimmedSearch.replace(/[%_]/g, '')}%`;
+        const pattern = `%${trimmedSearch.replace(/[%_",()\\]/g, '')}%`;
         const { data: startupMatches, error: startupError } = await supabase
           .from('startups')
           .select('id')
-          .or(`name.ilike.${pattern},main_contact_email.ilike.${pattern}`)
+          .or(`name.ilike."${pattern}",main_contact_email.ilike."${pattern}"`)
           .limit(100);
         if (startupError) throw startupError;
         matchedStartupIds = (startupMatches ?? []).map(s => s.id);
@@ -108,6 +108,7 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
       let query = supabase
         .from('workspaces')
         .select('id, status, startup:startups(id, name, main_contact_email)')
+        .in('status', ['imported_unclaimed', 'active', 'claimed', 'pending'])
         .order('created_at', { ascending: false })
         .limit(trimmedSearch ? 100 : 20);
 
@@ -379,7 +380,7 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 {t('common.cancel', { defaultValue: 'Cancelar' })}
               </Button>
-              <Button onClick={handleCreate} disabled={isSubmitting || !(newStartupName.trim() || suggestedName)} loading={isSubmitting}>
+              <Button onClick={handleCreate} disabled={isSubmitting || !newProgramId || !(newStartupName.trim() || suggestedName)} loading={isSubmitting}>
                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
                 {t('admin.createAndAssign', { defaultValue: 'Criar e Atribuir' })}
               </Button>

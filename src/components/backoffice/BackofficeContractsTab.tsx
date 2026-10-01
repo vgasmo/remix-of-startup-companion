@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, FileText, Search, Clock, AlertTriangle, Cake, Zap, Building2, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useContractRoom, buildRoomDeepLink } from '@/hooks/useEntityRoom';
-import { useContracts, useIncubationTypes, useBuildings, useCreateContract, useUpdateContract, type StartupContract, type IncubationType } from '@/hooks/useBackoffice';
+import { useContracts, useIncubationTypes, useBuildings, useCreateContract, useUpdateContract, useCreateRoomAllocation, type StartupContract, type IncubationType } from '@/hooks/useBackoffice';
 import { useWorkspaces, ALL_WORKSPACE_STATUSES } from '@/hooks/useWorkspaces';
 import { format, differenceInMonths, addYears, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -101,6 +101,7 @@ type FlowState = 'idle' | 'upload' | 'review';
 export function BackofficeContractsTab() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const createRoomAllocation = useCreateRoomAllocation();
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Filters
@@ -304,6 +305,33 @@ export function BackofficeContractsTab() {
     };
     const newContract = await createContract.mutateAsync(payload);
 
+    // Só contratos em vigor ou a caminho, com fim no futuro, e só se a sala estiver livre nesse período
+    const todayIso = new Date().toISOString().split('T')[0];
+    const allocatable = ['draft', 'pending_signature', 'active'].includes(rest.status) && (!end_date || end_date >= todayIso);
+    if (newContract?.id && room_id && (workspace_id || crmFunnelId) && allocatable) {
+      const { data: busy, error: busyErr } = await supabase.from('room_allocations').select('id')
+        .eq('room_id', room_id).lte('start_date', end_date || '9999-12-31')
+        .or(`end_date.is.null,end_date.gte.${rest.start_date}`);
+      if (busyErr || (busy?.length ?? 0) > 0) {
+        notify.warn('Contrato criado, mas a sala já está ocupada nesse período. Atribua-a em Espaços.');
+      } else {
+        try {
+          await createRoomAllocation.mutateAsync({
+            room_id,
+            workspace_id: workspace_id || null,
+            funnel_item_id: workspace_id ? null : crmFunnelId,
+            contract_id: newContract.id,
+            allocation_type: 'permanent',
+            start_date: rest.start_date,
+            end_date: end_date || null,
+            created_by: user?.id ?? null,
+          });
+        } catch {
+          // o hook já mostra o erro; o contrato fica criado e a sala pode ser atribuída em Espaços
+        }
+      }
+    }
+
     // === Coordinate sources of truth ===
     // Mirror the header-level discount (kept on startup_contracts for legacy
     // pricing/lifecycle logic) into contract_discounts so the "Descontos" tab
@@ -347,7 +375,7 @@ export function BackofficeContractsTab() {
     setCrmFunnelId(null);
     setCrmOrgName(null);
     setCrmWorkspaceId(null);
-  }, [createContract, user?.id, crmFunnelId]);
+  }, [createContract, createRoomAllocation, user?.id, crmFunnelId]);
 
   const handleCancelReview = useCallback(() => {
     setFlowState('idle');

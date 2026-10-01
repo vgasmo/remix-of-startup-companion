@@ -1393,19 +1393,16 @@ Deno.serve(async (req) => {
         // NOT NULL.
         const wsForQueue = (contract as any).workspace?.id ?? null
         if (wsForQueue) {
-          try {
-            await supabase.from('staff_work_queue_items').insert({
-              workspace_id: wsForQueue,
-              type: 'counter_sign_contract',
-              title: `Contra-assinar contrato — ${(contract as any).workspace?.startup?.name || contract.id.slice(0, 8)}`,
-              description: 'Founder assinou digitalmente. Contra-assinatura por Startup Leiria pendente.',
-              priority: 'high',
-              status: 'open',
-              evidence_json: { contract_id: contract.id, purpose: 'counter_sign_contract' },
-            })
-          } catch (qErr) {
-            console.warn('counter-sign work-queue insert failed (non-fatal):', qErr)
-          }
+          const { error: qErr } = await supabase.from('staff_work_queue_items').insert({
+            workspace_id: wsForQueue,
+            type: 'counter_sign_contract',
+            title: `Contra-assinar contrato — ${(contract as any).workspace?.startup?.name || contract.id.slice(0, 8)}`,
+            description: 'Founder assinou digitalmente. Contra-assinatura por Startup Leiria pendente.',
+            priority: 'high',
+            status: 'open',
+            evidence_json: { contract_id: contract.id, purpose: 'counter_sign_contract' },
+          })
+          if (qErr) console.error('counter-sign work-queue insert failed:', qErr.message)
         }
         return new Response(JSON.stringify({
           status: 'partially_signed',
@@ -1439,17 +1436,18 @@ Deno.serve(async (req) => {
       }
       
       // Auto-create founder account (parity with docusign path)
+      const effectiveWsId = completedSync.workspaceId ?? wsId
       try {
         const acctRes = await autoCreateFounderAccount(supabase, {
           id: contract.id,
-          workspace_id: wsId,
+          workspace_id: effectiveWsId,
           legal_representative_email: (contract as any).legal_representative_email ?? signatureData.signer_email ?? null,
           legal_representative_name: (contract as any).legal_representative_name ?? signatureData.typed_name ?? null,
         })
         if (!acctRes.ok) {
           await enqueueFounderInviteTask(supabase, {
             id: contract.id,
-            workspace_id: wsId,
+            workspace_id: effectiveWsId,
             legal_representative_email: (contract as any).legal_representative_email ?? null,
             legal_representative_name: (contract as any).legal_representative_name ?? null,
           }, acctRes.reason || 'unknown')

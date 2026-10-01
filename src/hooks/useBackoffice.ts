@@ -530,6 +530,37 @@ export function useCreateRoomAllocation() {
   });
 }
 
+// Fim inclusivo: os leitores tratam end_date >= hoje como "atual". Libertar agora = terminar ontem.
+export const releaseNowEndDate = () => new Date(Date.now() - 86_400_000).toISOString().split('T')[0];
+
+// Alocações de um contrato: as dele e as do workspace sem contrato (nunca as de outro contrato ativo).
+export async function findContractAllocations(contract: { id: string; workspace_id: string | null }) {
+  const owner = contract.workspace_id
+    ? `contract_id.eq.${contract.id},workspace_id.eq.${contract.workspace_id}`
+    : `contract_id.eq.${contract.id}`;
+  const { data, error } = await supabase.from('room_allocations')
+    .select('id, room_id, contract_id, end_date').or(owner);
+  if (error) throw error;
+  return (data ?? []).filter((a) => a.contract_id === contract.id || a.contract_id === null);
+}
+
+export async function markRoomsAvailableIfFree(roomIds: string[]) {
+  const today = new Date().toISOString().split('T')[0];
+  for (const roomId of new Set(roomIds)) {
+    const { data: current, error } = await supabase
+      .from('room_allocations').select('id')
+      .eq('room_id', roomId).lte('start_date', today)
+      .or(`end_date.is.null,end_date.gte.${today}`);
+    if (error) throw error;
+    if (!current?.length) {
+      // só salas ocupadas; uma sala em manutenção fica como está
+      const { error: roomErr } = await supabase.from('rooms')
+        .update({ status: 'available' }).eq('id', roomId).eq('status', 'occupied');
+      if (roomErr) throw roomErr;
+    }
+  }
+}
+
 export function useEndRoomAllocation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -537,7 +568,7 @@ export function useEndRoomAllocation() {
       const today = new Date().toISOString().split('T')[0];
       const { error } = await supabase
         .from('room_allocations')
-        .update({ end_date: today })
+        .update({ end_date: releaseNowEndDate() })
         .eq('id', id);
       if (error) throw error;
       

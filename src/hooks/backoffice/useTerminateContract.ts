@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from '@/lib/notify';
 import type { StartupContract } from '@/hooks/useBackoffice';
+import { findContractAllocations, releaseNowEndDate, markRoomsAvailableIfFree } from '@/hooks/useBackoffice';
 
 /** Every query key a termination can invalidate — see useBackoffice invalidation set. */
 const TERMINATION_QUERY_KEYS: string[] = [
@@ -61,15 +62,16 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
     .eq('id', contract.id);
   if (updErr) throw updErr;
 
-  if (contract.workspace_id) {
-    // Close open room allocations. RLS failure here would silently leave the
-    // room allocated forever — surface the error instead of swallowing it.
-    const { error: allocErr } = await (supabase as any)
-      .from('room_allocations')
-      .update({ end_date: today })
-      .eq('workspace_id', contract.workspace_id)
-      .is('end_date', null);
-    if (allocErr) throw new Error(`Failed to close room allocation: ${allocErr.message}`);
+  {
+    // reutiliza `today` de :51
+    const openAllocs = (await findContractAllocations(contract)).filter((a) => !a.end_date || a.end_date >= today);
+    if (openAllocs.length) {
+      const { data: closed, error: allocErr } = await supabase.from('room_allocations')
+        .update({ end_date: releaseNowEndDate() }).in('id', openAllocs.map((a) => a.id)).select('id');
+      if (allocErr) throw new Error(`Failed to close room allocation: ${allocErr.message}`);
+      if ((closed?.length ?? 0) !== openAllocs.length) throw new Error('Sem permissão para libertar a sala (room_allocations).');
+      await markRoomsAvailableIfFree(openAllocs.map((a) => a.room_id));
+    }
   }
 
   if (contract.workspace_id) {
