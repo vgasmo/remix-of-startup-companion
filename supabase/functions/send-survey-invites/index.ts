@@ -14,7 +14,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from 'npm:resend@4.0.0';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { requireCronOrStaff, generateRequestId, createLogger } from '../_shared/security.ts';
+import { generateRequestId, createLogger } from '../_shared/security.ts';
 
 const FUNCTION_NAME = 'send-survey-invites';
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
@@ -165,8 +165,12 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } },
     });
 
-    const authCheck = await requireCronOrStaff(req, userClient, admin);
-    if ('error' in authCheck) return authCheck.error;
+    const jwt = (req.headers.get('Authorization') ?? '').replace('Bearer ', '');
+    const { data: { user }, error: userErr } = await userClient.auth.getUser(jwt);
+    if (userErr || !user) return corsJsonResponse({ error: 'unauthorized' }, req, 401);
+    const { data: adminRole, error: roleErr } = await admin
+      .from('user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle();
+    if (roleErr || !adminRole) return corsJsonResponse({ error: 'forbidden' }, req, 403);
 
     if (!Deno.env.get('RESEND_API_KEY')) {
       return corsJsonResponse({ error: 'email_not_configured' }, req, 500);
@@ -367,7 +371,7 @@ Deno.serve(async (req) => {
         log.warn('allowlist_read_failed', { message: allowedError.message });
       } else {
         const already = new Set((allowed || []).map((a) => (a.email || '').toLowerCase()));
-        const toAllow = unregistered.filter((e) => !already.has(e)).map((email) => ({ email }));
+        const toAllow = unregistered.filter((e) => !already.has(e)).map((email) => ({ email, added_by: user.id }));
         if (toAllow.length > 0) {
           const { error: insertError } = await admin.from('signup_allowlist').insert(toAllow);
           if (insertError) log.warn('allowlist_insert_failed', { message: insertError.message });

@@ -6,6 +6,7 @@
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getCorsHeaders, handleCorsOptions } from '../_shared/cors.ts'
+import { isServiceRoleBearer } from '../_shared/security.ts'
 
 interface ContractData {
   contractNumber: string | null;
@@ -566,7 +567,8 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const token = authHeader.replace('Bearer ', '')
-    const isInternalServiceCall = token === supabaseKey
+    // Chamadas internas (public-contract-onboarding, docusign-send-envelope, pandadoc-send-document)
+    const isInternalServiceCall = isServiceRoleBearer(req)
     let user: { id: string } | null = null
 
     if (!isInternalServiceCall) {
@@ -575,6 +577,16 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: 'Invalid token' }), {
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      // A função grava em startup_contracts e no bucket contract-documents: só staff/backoffice.
+      const { data: callerRoles } = await supabase
+        .from('user_roles').select('role').eq('user_id', authUser.id)
+      const isStaffOrBackoffice = (callerRoles ?? []).some((r: { role: string }) =>
+        r.role === 'admin' || r.role === 'consultor' || r.role === 'backoffice')
+      if (!isStaffOrBackoffice) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
       user = authUser
@@ -607,35 +619,6 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Authorization: caller must be staff (admin/consultor/backoffice) OR an
-    // active member of the contract's workspace. Prevents any authenticated
-    // user from downloading another startup's contract PDF by supplying its ID.
-    if (!isInternalServiceCall) {
-      const { data: staffRoles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user!.id)
-      const isStaff = (staffRoles ?? []).some((r: { role: string }) =>
-        r.role === 'admin' || r.role === 'consultor' || r.role === 'backoffice'
-      )
-      let authorized = isStaff
-      if (!authorized && contract.workspace_id) {
-        const { data: membership } = await supabase
-          .from('workspace_users')
-          .select('user_id')
-          .eq('workspace_id', contract.workspace_id)
-          .eq('user_id', user!.id)
-          .eq('active', true)
-          .maybeSingle()
-        authorized = !!membership
-      }
-      if (!authorized) {
-        return new Response(JSON.stringify({ error: 'Forbidden' }), {
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-    }
 
 
     // Fetch active discounts

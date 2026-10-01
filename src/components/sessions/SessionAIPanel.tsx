@@ -158,8 +158,8 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
         return;
       }
 
-      if (data?.success && data?.status === 'ok' && data?.transcript_text) {
-        setTranscript(data.transcript_text);
+      if (data?.success && data?.status === 'ok') {
+        if (data.transcript_text) setTranscript(data.transcript_text);
         notify.success(t('sessions.transcriçãoImportadaEGuardadaCom'));
         onRefresh?.();
       } else if (data?.status === 'not_ready') {

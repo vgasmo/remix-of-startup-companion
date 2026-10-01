@@ -1,3 +1,4 @@
+import { safeExternalHref } from '@/lib/sanitizeUrl';
 import { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -306,7 +307,7 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
             <div>
               <h3 className="text-xl font-bold">{startup.name}</h3>
               {startup.website && (
-                <a href={startup.website} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline flex items-center gap-1">
+                <a href={safeExternalHref(startup.website)} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline flex items-center gap-1">
                   <Globe className="h-3 w-3" />
                   {startup.website}
                 </a>

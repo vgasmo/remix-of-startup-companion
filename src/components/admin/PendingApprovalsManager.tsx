@@ -1,3 +1,4 @@
+import { safeExternalHref } from '@/lib/sanitizeUrl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
@@ -616,7 +617,7 @@ export function PendingApprovalsManager() {
                       </div>
                       {workspace.startup?.website && (
                         <a 
-                          href={workspace.startup.website} 
+                          href={safeExternalHref(workspace.startup.website)} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 text-primary hover:underline"

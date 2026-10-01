@@ -519,51 +519,41 @@ Deno.serve(async (req: Request) => {
     const cleanText = parseVttToText(vttContent);
     log.info('Parsed transcript to clean text', { length: cleanText.length });
 
-    // Save to session
+    // Tier: numa reimportação mantém o tier já gravado (reclassificação do staff).
+    const sessionType = (typedSession.session_type || '').toLowerCase();
+    const isWorkspaceTier =
+      sessionType.includes('consultor') || sessionType.includes('consultant') ||
+      sessionType === 'check_in' || sessionType === 'follow_up';
+    const { data: existingTranscript } = await supabaseAdmin
+      .from('session_transcripts').select('confidentiality')
+      .eq('session_id', session_id).eq('source', 'teams_graph').maybeSingle();
+    const confidentiality: string =
+      existingTranscript?.confidentiality ?? (isWorkspaceTier ? 'workspace' : 'staff_only');
+    // sessions é legível por qualquer membro: só o tier 'workspace' é copiado.
+    const exposeOnSession = confidentiality === 'workspace';
+
+    const { error: transcriptError } = await supabaseAdmin
+      .from('session_transcripts')
+      .upsert({ session_id, source: 'teams_graph', transcript_text: cleanText, confidentiality },
+              { onConflict: 'session_id,source' });
+    if (transcriptError) {
+      log.error('Failed to persist session_transcripts row', transcriptError);
+      throw transcriptError;
+    }
+
     const { error: updateError } = await supabaseAdmin
       .from('sessions')
       .update({
-        raw_transcript: cleanText,
+        raw_transcript: exposeOnSession ? cleanText : null,
         transcript_import_status: 'imported',
         transcript_last_attempt_at: new Date().toISOString(),
         transcript_import_attempts: (typedSession.transcript_import_attempts ?? 0) + 1,
         updated_at: new Date().toISOString(),
       })
       .eq('id', session_id);
-
     if (updateError) {
       log.error('Failed to save transcript to session', updateError);
       throw updateError;
-    }
-
-    // Persist to session_transcripts with confidentiality tier.
-    // Consultor/founder sessions → workspace-visible; everything else → staff_only.
-    const sessionType = (typedSession.session_type || '').toLowerCase();
-    const isWorkspaceTier =
-      sessionType.includes('consultor') ||
-      sessionType.includes('consultant') ||
-      sessionType === 'check_in' ||
-      sessionType === 'follow_up';
-    const confidentiality = isWorkspaceTier ? 'workspace' : 'staff_only';
-
-    const { error: transcriptError } = await supabaseAdmin
-      .from('session_transcripts')
-      .upsert({
-        session_id,
-        source: 'teams_graph',
-        transcript_text: cleanText,
-        confidentiality,
-      }, { onConflict: 'session_id,source' });
-
-    if (transcriptError) {
-      log.error('Failed to persist session_transcripts row', transcriptError);
-      await supabaseAdmin.from('integration_errors').insert({
-        integration_type: 'teams_transcript',
-        error_message: `session_transcripts upsert failed: ${transcriptError.message}`,
-        error_details: { session_id, code: transcriptError.code },
-        created_at: new Date().toISOString(),
-      });
-      // Do not throw: raw_transcript is already saved on the session.
     }
 
     log.info('Transcript imported successfully', { session_id, textLength: cleanText.length, confidentiality });
@@ -587,7 +577,7 @@ Deno.serve(async (req: Request) => {
     return corsJsonResponse({
       success: true,
       status: 'ok',
-      transcript_text: cleanText,
+      transcript_text: exposeOnSession ? cleanText : null,
       confidentiality,
       message: 'Transcrição importada com sucesso'
     }, req);

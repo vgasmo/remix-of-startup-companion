@@ -103,14 +103,15 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
     if (archErr) throw new Error(`Failed to archive workspace: ${archErr.message}`);
   }
 
-  try {
-    await supabase.from('contract_lifecycle_events').insert({
-      contract_id: contract.id,
-      event_type: 'termination',
-      event_date: today,
-      notes: reason.trim(),
-    } as any);
-  } catch { /* non-fatal */ }
+  const { data: evUser } = await supabase.auth.getUser();
+  const { error: evErr } = await supabase.from('contract_lifecycle_events').insert({
+    contract_id: contract.id,
+    event_type: 'termination',
+    event_date: today,
+    performed_by: evUser.user?.id ?? null,
+    details: { reason: reason.trim() },
+  });
+  if (evErr) console.warn('[useTerminateContract] lifecycle event failed', evErr.message);
 
   // M-terminate: mirror the server-side syncIntakeOnClosed(outcome='terminated')
   // used by webhooks — otherwise the linked intake stays as 'activated' and the

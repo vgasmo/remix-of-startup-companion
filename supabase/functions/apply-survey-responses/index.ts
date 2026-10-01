@@ -233,6 +233,16 @@ async function applyRecordField(
     return skip(questionId, mapping, 'Data inválida', answer);
   }
 
+  if (mapping.key === 'website') {
+    try {
+      const u = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+      if (!['http:', 'https:'].includes(u.protocol)) return skip(questionId, mapping, 'URL inválido', answer);
+    } catch { return skip(questionId, mapping, 'URL inválido', answer); }
+  }
+  if (mapping.key === 'main_contact_email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    return skip(questionId, mapping, 'Email inválido', answer);
+  }
+
   const { data: current } = await supabase
     .from(table)
     .select(mapping.key)
@@ -406,6 +416,17 @@ Deno.serve(async (req) => {
         _workspace_id: instance.workspace_id,
       });
       if (!hasAccess) return json({ error: 'Access denied' }, 403);
+      // Só o founder do workspace ou staff (admin/consultor) disparam o write-back com JWT.
+      const [{ data: staffRoles }, { data: founderRows }] = await Promise.all([
+        supabase.from('user_roles').select('role')
+          .eq('user_id', user.id).in('role', ['admin', 'consultor']),
+        supabase.from('workspace_users').select('id')
+          .eq('workspace_id', instance.workspace_id).eq('user_id', user.id)
+          .eq('active', true).eq('role', 'founder').limit(1),
+      ]);
+      if ((staffRoles ?? []).length === 0 && (founderRows ?? []).length === 0) {
+        return json({ error: 'Access denied' }, 403);
+      }
 
       userId = user.id;
     } else {

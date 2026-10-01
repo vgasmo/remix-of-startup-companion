@@ -132,7 +132,17 @@ serve(async (req) => {
     }
 
     // Prepare content for AI analysis
-    const contentToAnalyze = transcript || session.raw_transcript || session.notes || session.agenda || "";
+    let storedTranscript: string | null = session.raw_transcript ?? null;
+    if (!transcript && !storedTranscript) {
+      // O resumo fica em sessions.ai_summary (lido por todos os membros): só o tier 'workspace' o pode alimentar.
+      const { data: tRow } = await supabaseUser
+        .from("session_transcripts").select("transcript_text")
+        .eq("session_id", sessionId)
+        .eq("confidentiality", "workspace")
+        .order("created_at", { ascending: false }).limit(1).maybeSingle();
+      storedTranscript = tRow?.transcript_text ?? null;
+    }
+    const contentToAnalyze = transcript || storedTranscript || session.notes || session.agenda || "";
     
     if (!contentToAnalyze.trim()) {
       return corsJsonResponse({ error: "No content to analyze. Please add notes, transcript, or agenda first." }, req, 400);
