@@ -2922,6 +2922,7 @@
     }
   },
   "contractDetail": {
+    "notifyFailed": "Contract updated, but notifications failed.",
     "completedAt": "Completed at",
     "configured": "Configured",
     "confirmRenew": "Confirm renewal",

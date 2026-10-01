@@ -206,15 +206,28 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
   const atConnector = lang === 'pt' ? ' às ' : ' at ';
 
   const uploadPitchDeck = async (): Promise<{ path: string | null; failed: boolean }> => {
-    if (!pitchFile) return { path: null, failed: false };
+    if (!pitchFile || !token) return { path: null, failed: false };
     const ext = pitchFile.name.split('.').pop() || 'pdf';
-    const path = `${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from('booking-uploads').upload(path, pitchFile);
-    if (error) {
-      logger.warn('booking_upload_failed', { error: error?.message });
+    try {
+      const { data, error: urlError } = await supabase.functions.invoke('public-get-availability', {
+        body: { token, action: 'upload_url', ext },
+      });
+      if (urlError || !data?.path || !data?.token) {
+        logger.warn('booking_upload_url_failed', { error: urlError?.message });
+        return { path: null, failed: true };
+      }
+      const { error } = await supabase.storage
+        .from('booking-uploads')
+        .uploadToSignedUrl(data.path, data.token, pitchFile);
+      if (error) {
+        logger.warn('booking_upload_failed', { error: error?.message });
+        return { path: null, failed: true };
+      }
+      return { path: data.path, failed: false };
+    } catch (err: any) {
+      logger.warn('booking_upload_failed', { error: err?.message });
       return { path: null, failed: true };
     }
-    return { path, failed: false };
   };
 
   const [invalidFields, setInvalidFields] = useState<Set<string>>(new Set());

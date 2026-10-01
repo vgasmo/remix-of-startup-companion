@@ -78,28 +78,27 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
     // actually surfaces it. Previous behaviour ({assignee_id: null, status: 'open'})
     // made the task invisible to everyone.
     const { data: { user: currentUser } } = await supabase.auth.getUser();
-    try {
-      await (supabase as any).from('staff_tasks').insert({
-        title: t('contractDetail.terminate.staffTaskTitle', { defaultValue: 'Cancelar sessões futuras (contrato terminado)' }),
-        description: t('contractDetail.terminate.staffTaskDesc', {
-          defaultValue: 'Contrato {{ref}} terminado. Reveja e cancele sessões futuras no calendário.',
-          ref: contract.id.slice(0, 8),
-        }),
-        task_type: 'contract_terminated_cleanup',
-        workspace_id: contract.workspace_id,
-        assignee_id: currentUser?.id ?? null,
-        priority: 'medium',
-        status: 'pending',
-        metadata: { contract_id: contract.id, reason: reason.trim() },
-      });
-    } catch { /* non-fatal */ }
+    const { error: taskErr } = await (supabase as any).from('staff_tasks').insert({
+      title: t('contractDetail.terminate.staffTaskTitle', { defaultValue: 'Cancelar sessões futuras (contrato terminado)' }),
+      description: t('contractDetail.terminate.staffTaskDesc', {
+        defaultValue: 'Contrato {{ref}} terminado. Reveja e cancele sessões futuras no calendário.',
+        ref: contract.id.slice(0, 8),
+      }),
+      task_type: 'contract_terminated_cleanup',
+      workspace_id: contract.workspace_id,
+      assignee_id: currentUser?.id ?? null,
+      priority: 'medium',
+      status: 'pending',
+      metadata: { contract_id: contract.id, reason: reason.trim() },
+    });
+    if (taskErr) notify.warn(taskErr.message);
   }
 
   if (archiveWorkspace && contract.workspace_id) {
-    const { error: archErr } = await (supabase as any)
-      .from('workspaces')
-      .update({ status: 'archived', archived_at: nowIso })
-      .eq('id', contract.workspace_id);
+    const { error: archErr } = await supabase.rpc(
+      'backoffice_archive_workspace' as never,
+      { p_workspace_id: contract.workspace_id } as never,
+    );
     if (archErr) throw new Error(`Failed to archive workspace: ${archErr.message}`);
   }
 
@@ -179,6 +178,7 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
   if (notifyErr) {
     // Non-fatal for the termination itself, but must not be invisible.
     console.warn('[useTerminateContract] notify_contract_event failed', notifyErr.message);
+    notify.warn(t('contractDetail.notifyFailed', { defaultValue: 'Contrato atualizado, mas as notificações falharam.' }));
   }
 }
 

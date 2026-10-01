@@ -171,7 +171,7 @@ serve(async (req) => {
       return corsJsonResponse({ error: "Invalid or missing token" }, req, 400);
     }
 
-    if (action !== undefined && action !== 'validate' && action !== 'get_slots') {
+    if (action !== undefined && action !== 'validate' && action !== 'get_slots' && action !== 'upload_url') {
       return corsJsonResponse({ error: "Invalid action" }, req, 400);
     }
 
@@ -381,6 +381,45 @@ serve(async (req) => {
         programId = programs?.[0]?.id || null;
         programName = programs?.[0]?.name || null;
       }
+    }
+
+    if (action === "upload_url") {
+      const ALLOWED_EXTS = new Set(["pdf", "ppt", "pptx", "xls", "xlsx", "png", "jpg", "jpeg"]);
+      const rawExt = (body as { ext?: unknown }).ext;
+      const ext = typeof rawExt === "string" ? rawExt.toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+      if (!ALLOWED_EXTS.has(ext)) {
+        return corsJsonResponse({ error: "Invalid file extension" }, req, 400);
+      }
+
+      // Token must resolve to a valid booking route (same check as "validate"):
+      // the consultant/program resolution above already failed closed for invalid
+      // tokens via empty routingOptions/consultantEmail, but demo/no-link tokens
+      // are still allowed through here just like "validate" does.
+      const { data: rl, error: rlErr } = await supabase.rpc("touch_public_booking_rate_limit", {
+        p_email: `upload:${token}`,
+        p_ip_hash: null,
+      });
+      if (rlErr) {
+        console.warn("upload_url rate-limit check failed:", rlErr.message);
+      } else if (rl) {
+        const counts = rl as { hour_attempts: number; day_attempts: number };
+        if ((counts.hour_attempts ?? 0) > 10 || (counts.day_attempts ?? 0) > 30) {
+          return corsJsonResponse({ error: "Too many upload attempts. Please try again later." }, req, 429);
+        }
+      }
+
+      const path = `pending/${crypto.randomUUID()}.${ext}`;
+      const { data: signed, error: signErr } = await supabase
+        .storage
+        .from("booking-uploads")
+        .createSignedUploadUrl(path);
+
+      if (signErr || !signed) {
+        console.error("createSignedUploadUrl failed:", signErr?.message);
+        return corsJsonResponse({ error: "Could not create upload URL" }, req, 500);
+      }
+
+      return corsJsonResponse({ path: signed.path, token: signed.token }, req);
     }
 
     if (action === "validate") {

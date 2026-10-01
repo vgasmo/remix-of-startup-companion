@@ -60,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // the screen for a user whose roles/profile are already in memory (P0.3-bis).
   const rolesRef = useRef<AppRole[]>([]);
   const profileRef = useRef<ProfileWithStatus | null>(null);
+  const loadedUserIdRef = useRef<string | null>(null);
 
   const fetchUserData = useCallback(async (userId: string, opts?: { isRefetch?: boolean }): Promise<void> => {
     // P0.3: supabase-js never throws — it returns { data, error }. Treating an
@@ -122,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         rolesRef.current = nextRoles;
         setRoles(nextRoles);
         setAuthError(false);
+        loadedUserIdRef.current = userId;
         return;
       } catch (error) {
         logger.error('fetch_user_data_threw', { userId: userId.slice(0, 8), attempt }, error);
@@ -192,6 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setRoles([]);
           profileRef.current = null;
           rolesRef.current = [];
+          loadedUserIdRef.current = null;
           // P0.4: without this, signing back in as the same user hits the
           // duplicate-SIGNED_IN early return and isAuthReady stays false forever.
           initialUserId = null;
@@ -213,6 +216,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             rolesRef.current.length > 0
           ) {
             setIsAuthReady(true);
+            return;
+          }
+          if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && loadedUserIdRef.current === newSession.user.id) {
+            // Refresh silently without dismounting the app (tab visibility re-fires SIGNED_IN).
+            setIsAuthReady(true);
+            void fetchUserData(newSession.user.id, { isRefetch: true });
             return;
           }
           // Detect user switch — clear previous user's cache

@@ -110,22 +110,26 @@ export default function StaffCockpit() {
                   {workspaces.length}
                   <span className="text-muted-foreground font-normal">{t('staffCockpit.pillStartups', { defaultValue: 'startups' })}</span>
                 </Link>
-                <Link
-                  to="/admin?tab=programs-setup"
-                  aria-label={t('staffCockpit.pillProgramsAria', { defaultValue: 'Gerir programas' })}
-                  className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <Zap className="h-3.5 w-3.5 text-primary" />
-                  {programsCount}
-                  <span className="text-muted-foreground font-normal">{t('staffCockpit.pillPrograms', { defaultValue: 'programas' })}</span>
-                </Link>
+                {(isAdmin || isConsultor) && (
+                  <Link
+                    to="/admin?tab=programs-setup"
+                    aria-label={t('staffCockpit.pillProgramsAria', { defaultValue: 'Gerir programas' })}
+                    className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Zap className="h-3.5 w-3.5 text-primary" />
+                    {programsCount}
+                    <span className="text-muted-foreground font-normal">{t('staffCockpit.pillPrograms', { defaultValue: 'programas' })}</span>
+                  </Link>
+                )}
               </>
             )}
           </div>
         </div>
 
-        {/* Quick Actions Bar */}
-        <CockpitQuickActions workspaces={workspaces} compact={false} />
+        {/* Quick Actions Bar — admin/consultor only (programs shortcut inside is out of scope for backoffice) */}
+        {(isAdmin || isConsultor) && (
+          <CockpitQuickActions workspaces={workspaces} compact={false} />
+        )}
 
         {/* First-run "primeiros passos" (per role, dismissible) */}
         {isConsultor && !isAdmin && !isBackoffice && (
@@ -194,7 +198,7 @@ export default function StaffCockpit() {
             <NextBestActionStaff
               contractsAwaitingSignatureCount={backofficeCounts?.contractsAwaitingSignatureCount ?? 0}
               intakesBlockedCount={backofficeCounts?.intakesBlockedCount ?? 0}
-              unassignedActiveWorkspacesCount={backofficeCounts?.unassignedActiveWorkspacesCount ?? 0}
+              unassignedActiveWorkspacesCount={isAdmin ? (backofficeCounts?.unassignedActiveWorkspacesCount ?? 0) : 0}
             />
           </WidgetErrorBoundary>
         )}

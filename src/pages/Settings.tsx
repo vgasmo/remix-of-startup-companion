@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, User, Lock, Mail, Save, Loader2, Phone, Upload, Linkedin, X, Briefcase, Bell, Zap, RotateCcw, CalendarOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,7 +29,8 @@ export default function Settings() {
   const navigate = useNavigate();
   const [settingsParams, setSettingsParams] = useSearchParams();
   const settingsTab = settingsParams.get('tab') || 'profile';
-  const { user, profile, roles } = useAuth();
+  const { user, profile, roles, refreshProfile } = useAuth();
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Profile state
@@ -41,7 +43,31 @@ export default function Settings() {
   const [expertise, setExpertise] = useState<string[]>((profile as any)?.expertise || []);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  
+
+  const { data: fullProfile, isLoading: loadingProfile } = useQuery({
+    queryKey: ['my-profile', user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, avatar_url, phone, linkedin_url, bio, expertise')
+        .eq('id', user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    if (!fullProfile) return;
+    setFullName(fullProfile.full_name ?? '');
+    setAvatarUrl(fullProfile.avatar_url ?? '');
+    setPhone((fullProfile as any).phone ?? '');
+    setLinkedinUrl((fullProfile as any).linkedin_url ?? '');
+    setBio((fullProfile as any).bio ?? '');
+    setExpertise((fullProfile as any).expertise ?? []);
+  }, [fullProfile]);
+
   // Email state
   const [newEmail, setNewEmail] = useState('');
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
@@ -135,7 +161,7 @@ export default function Settings() {
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !fullProfile) return; // never save before current values have loaded
 
     // Validate form data
     const formData = {
@@ -161,6 +187,8 @@ export default function Settings() {
         .eq('id', user.id);
 
       if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['my-profile', user.id] });
+      void refreshProfile();
       notify.success(t('settingsPage.profileUpdated'));
     } catch (error: any) {
       logger.error('Error updating profile', {}, error);
@@ -443,7 +471,7 @@ export default function Settings() {
                     </p>
                   </div>
 
-                  <Button type="submit" disabled={isUpdatingProfile} loading={isUpdatingProfile}>
+                  <Button type="submit" disabled={isUpdatingProfile || loadingProfile || !fullProfile} loading={isUpdatingProfile}>
                     {isUpdatingProfile ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
