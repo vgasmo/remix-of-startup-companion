@@ -12190,6 +12190,7 @@ export type Database = {
       check_automation_health: { Args: never; Returns: undefined }
       check_ecosystem_invariants: { Args: never; Returns: Json }
       check_email_sync_health: { Args: never; Returns: undefined }
+      check_first_contact_outbox: { Args: never; Returns: number }
       check_signup_allowed: { Args: { p_email: string }; Returns: boolean }
       claim_docusign_dispatch_lease: {
         Args: {
