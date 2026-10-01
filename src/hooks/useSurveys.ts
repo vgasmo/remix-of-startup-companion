@@ -293,6 +293,13 @@ export function useCreateSurveyCampaign() {
   });
 }
 
+function invalidateCampaignViews(queryClient: ReturnType<typeof useQueryClient>) {
+  queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
+  queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
+  queryClient.invalidateQueries({ queryKey: ["survey-candidates"] });
+  queryClient.invalidateQueries({ queryKey: ["campaign-stats"] });
+}
+
 export function useLaunchCampaign() {
   const queryClient = useQueryClient();
 
@@ -308,8 +315,7 @@ export function useLaunchCampaign() {
       return { instancesCreated: row?.instances_created ?? 0 };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
-      queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
+      invalidateCampaignViews(queryClient);
       toast.success(t('surveys.campaignLaunched', { instancesCreated: data.instancesCreated }));
     },
     onError: (error) => {
@@ -332,7 +338,7 @@ export function useCloseCampaign() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
+      invalidateCampaignViews(queryClient);
       toast.success("Campaign closed");
     },
     onError: (error) => {
@@ -356,7 +362,7 @@ export function useReopenCampaign() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
+      invalidateCampaignViews(queryClient);
       toast.success(t("admin.surveys.reopened", "Campanha reaberta"));
     },
     onError: (error) => {
@@ -450,8 +456,7 @@ export function useSyncCampaignParticipants() {
       return { added: missing.length };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
-      queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
+      invalidateCampaignViews(queryClient);
       toast.success(
         data.added > 0
           ? t("admin.surveys.participantsAdded", { count: data.added, defaultValue: "{{count}} startups inscritas" })
@@ -583,9 +588,7 @@ export function useToggleCampaignParticipant() {
       return { enrolled: false };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["survey-candidates"] });
-      queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
-      queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
+      invalidateCampaignViews(queryClient);
     },
     onError: (error: Error) => {
       if (error?.message === "submitted") {
@@ -650,9 +653,7 @@ export function useEnrollAllCandidates() {
       return { added: missing.length };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["survey-candidates"] });
-      queryClient.invalidateQueries({ queryKey: ["survey-campaigns"] });
-      queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
+      invalidateCampaignViews(queryClient);
       toast.success(
         data.added > 0
           ? t("admin.surveys.participantsAdded", { count: data.added, defaultValue: "{{count}} startups inscritas" })
@@ -863,6 +864,7 @@ export function useSaveSurveyResponses() {
       queryClient.invalidateQueries({ queryKey: ["workspace-kpi-definitions"] });
       queryClient.invalidateQueries({ queryKey: ["milestones"] });
       queryClient.invalidateQueries({ queryKey: ["survey-writebacks"] });
+      queryClient.invalidateQueries({ queryKey: ["campaign-stats"] });
 
       const applied = result?.writeBack?.applied ?? 0;
       if (applied > 0) {
@@ -960,15 +962,27 @@ export function useSendSurveyInvites() {
     onSuccess: (result, variables) => {
       if (variables.dryRun) return;
       queryClient.invalidateQueries({ queryKey: ["survey-instances"] });
+      const failed = result.failures?.length ?? 0;
+      if (failed > 0) {
+        const show = (result.sent ?? 0) === 0 ? toast.error : toast.warning;
+        show(
+          t("admin.surveys.invitesPartial", {
+            sent: result.sent ?? 0,
+            failed,
+            emails: result.failures!.slice(0, 5).map((f) => f.email).join(", "),
+            defaultValue: "{{sent}} convites enviados, {{failed}} falharam: {{emails}}",
+          }),
+          { duration: 15000 },
+        );
+        logger.warn("survey_invites_partial_failure", { failures: failed });
+        return;
+      }
       toast.success(
         t("admin.surveys.invitesSent", {
           count: result.sent ?? 0,
           defaultValue: "{{count}} convites enviados",
         }),
       );
-      if (result.failures && result.failures.length > 0) {
-        logger.warn("survey_invites_partial_failure", { failures: result.failures.length });
-      }
     },
     onError: (error: Error) => {
       toast.error(t("admin.surveys.invitesFailed", "Não foi possível enviar os convites"));
