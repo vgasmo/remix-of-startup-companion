@@ -10337,5 +10337,11 @@
     "invalidRange": "O fim tem de ser depois do início",
     "empty": "Sem períodos bloqueados.",
     "tab": "Minha Agenda"
+  },
+  "founderRequests": {
+    "sendFailed": "Erro ao enviar pedido",
+    "sent": "Pedido enviado à equipa",
+    "updateFailed": "Erro ao atualizar",
+    "updated": "Pedido atualizado"
   }
 }

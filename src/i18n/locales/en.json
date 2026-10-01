@@ -10337,5 +10337,11 @@
     "invalidRange": "The end must be after the start",
     "empty": "No blocked periods.",
     "tab": "My Calendar"
+  },
+  "founderRequests": {
+    "sendFailed": "Could not send request",
+    "sent": "Request sent to the team",
+    "updateFailed": "Could not update",
+    "updated": "Request updated"
   }
 }

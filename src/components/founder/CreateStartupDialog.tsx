@@ -87,6 +87,7 @@ interface CreateStartupDialogProps {
 
 export function CreateStartupDialog({ open, onOpenChange }: CreateStartupDialogProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { t } = useTranslation();
   const { user } = useAuth();
   const { data: programs, isLoading: loadingPrograms } = usePrograms();
