@@ -172,11 +172,12 @@ export async function canonicalMarkAsSigned(
 
     // 3. Activate workspace only if contract is truly signed
     if (workspaceId) {
-      const { error: wsErr } = await supabase.from('workspaces')
-        .update({ status: 'active', updated_at: new Date().toISOString() } as any)
-        .eq('id', workspaceId)
-        .in('status', ['pending', 'claimed', 'imported_unclaimed']);
+      const { data: wsResult, error: wsErr } = await supabase.rpc(
+        'activate_workspace_for_signed_contract' as never,
+        { p_contract_id: contractId } as never,
+      );
       if (wsErr) syncErrors.push(`workspace_activate: ${wsErr.message}`);
+      else if ((wsResult as unknown) === 'no_signed_contract') syncErrors.push('workspace_activate: no_signed_contract');
     }
 
     // 4. Sync intake to 'activated'
