@@ -92,7 +92,7 @@ export function SystemHealthDashboard() {
         .select('id, job_name, status, duration_ms, error_summary, started_at, finished_at')
         .gte('started_at', since24h)
         .order('started_at', { ascending: false })
-        .limit(200);
+        .limit(1000);
       if (error) throw error;
       return (data ?? []) as CronRunRow[];
     },
@@ -120,12 +120,28 @@ export function SystemHealthDashboard() {
     staleTime: 60_000,
   });
 
+  const summaryQuery = useQuery({
+    enabled: isAdmin,
+    queryKey: ['admin', 'system-health', 'automation-summary'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('automation_health_summary')
+        .select('job_name, health_state, last_started, failures_24h')
+        .eq('enabled', true);
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+
   const errors = errorsQuery.data ?? [];
   const events = eventsQuery.data ?? [];
   const cronRuns = cronRunsQuery.data ?? [];
   const expectations = expectationsQuery.data ?? [];
+  const summaries = summaryQuery.data ?? [];
 
-  const cronUnknown = cronRunsQuery.isError || expectationsQuery.isError;
+  const cronUnknown = cronRunsQuery.isError || expectationsQuery.isError || summaryQuery.isError;
 
   type JobStatus = 'healthy' | 'degraded' | 'failed' | 'stale' | 'never_run' | 'unknown';
   interface JobRow {
@@ -170,30 +186,26 @@ export function SystemHealthDashboard() {
       }
       map.set(r.job_name, cur);
     }
-    // Compute status per job
-    const now = Date.now();
+    // Compute status per job — use server-side truth from automation_health_summary,
+    // which already accounts for each job's own cadence window.
     for (const [name, row] of map) {
-      const exp = expectations.find(e => e.job_name === name);
-      if (row.total === 0) {
-        row.status = 'never_run';
-      } else if (row.failed > 0) {
-        row.status = 'failed';
-      } else if (row.partial > 0) {
-        row.status = 'degraded';
-      } else if (exp && row.lastAt) {
-        const ageSec = (now - new Date(row.lastAt).getTime()) / 1000;
-        if (ageSec > exp.expected_cadence_seconds + exp.grace_seconds) {
-          row.status = 'stale';
-        } else {
-          row.status = 'healthy';
-        }
+      const s = summaries.find(x => x.job_name === name);
+      if (s) {
+        row.lastAt = s.last_started ?? row.lastAt;
+        row.status =
+          s.health_state === 'NEVER_RUN' ? 'never_run' :
+          s.health_state === 'FAILING' ? 'failed' :
+          s.health_state === 'STALE' ? 'stale' :
+          (s.failures_24h ?? 0) > 0 ? (s.health_state === 'RECOVERED' ? 'degraded' : 'failed') :
+          row.partial > 0 ? 'degraded' :
+          (s.health_state === 'OK' || s.health_state === 'RECOVERED') ? 'healthy' : 'unknown';
       } else {
-        row.status = 'healthy';
+        row.status = row.failed > 0 ? 'failed' : row.partial > 0 ? 'degraded' : row.total > 0 ? 'healthy' : 'unknown';
       }
     }
     const rank: Record<JobStatus, number> = { failed: 0, stale: 1, never_run: 2, degraded: 3, unknown: 4, healthy: 5 };
     return Array.from(map.values()).sort((a, b) => rank[a.status] - rank[b.status]);
-  }, [cronRuns, expectations, cronUnknown]);
+  }, [cronRuns, expectations, summaries, cronUnknown]);
 
   const cronFailures24h = cronByJob.filter(r => r.status === 'failed' || r.status === 'degraded' || r.status === 'stale' || r.status === 'never_run').length;
 
