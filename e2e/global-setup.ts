@@ -17,9 +17,18 @@ const DEFAULT_CREDENTIALS: Record<string, { email: string; password: string }> =
   mentor: { email: 'e2e-mentor@startup-leiria.test', password: 'Test1234!' },
 };
 
+function rc5EnvRole(role: string) {
+  // seed-personas.mjs and the staging guide use RC5_TEST_CONSULTANT_* for the
+  // 'consultant' role (the app role key is 'consultor' but the env var says
+  // CONSULTANT); every other role's env name matches its role name.
+  return role === 'consultant' ? 'CONSULTANT' : role.toUpperCase();
+}
+
 function getCredentials(role: string) {
-  const envEmail = process.env[`E2E_${role.toUpperCase()}_EMAIL`];
-  const envPassword = process.env[`E2E_${role.toUpperCase()}_PASSWORD`];
+  const envEmail = process.env[`E2E_${role.toUpperCase()}_EMAIL`]
+    ?? process.env[`RC5_TEST_${rc5EnvRole(role)}_EMAIL`];
+  const envPassword = process.env[`E2E_${role.toUpperCase()}_PASSWORD`]
+    ?? process.env[`RC5_TEST_${rc5EnvRole(role)}_PASSWORD`];
   if (envEmail && envPassword) {
     return { email: envEmail, password: envPassword };
   }

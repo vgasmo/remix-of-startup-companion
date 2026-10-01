@@ -281,7 +281,7 @@ financial_scenario_atomic 4.
 | P2.6 session load retry + duplicate-submit guard | `FIXED + PASS` | source fixes |
 | P2.7 admin deep links | `FIXED + PASS` | source fixes |
 | P2.8 contract PDF requires active membership | `FIXED + PASS` | server-side membership check |
-| P2.9 admin-only surveys + `launch_survey_campaign` | `FIXED + PASS` | RPC + gated UI |
+| P2.9 admin-only surveys + `launch_survey_campaign` | `FAILING REPRO` | RPC + gated UI  Motivo: ver P2.14 — inquéritos públicos ainda não verificados em staging |
 | P2.10 legacy 13-arg `list_ecosystem_items_v2` dropped; active statuses corrected | `FIXED + PASS` | migration 2026-09-08 |
 | P2.11 backoffice keeps access to inactive programs | `FIXED + PASS` | programs SELECT policy rewritten |
 | P2.12 MCP rate limits on all tools; CRM `contact_email` removed | `FIXED + PASS` | `src/lib/mcp/rateLimit.ts` + 6 tools |
@@ -289,10 +289,10 @@ financial_scenario_atomic 4.
 | P3 interpolation + PT-PT leakage + EN-word heuristic | `FIXED + PASS` | `i18n-quality`, `i18n-check` (9071 keys), `i18n-lint` 0 problems |
 | P4.1 CI env guard restricted to public Vite keys | `FIXED + PASS` | `.github/workflows/ci.yml` |
 | P4.2 migration-scan allowlist entry for survey seed | `FIXED + PASS` | `scripts/ci/migration-scan-allowlist.txt` |
-| P4.3 i18n sync clean | `FIXED + PASS` | `scripts/i18n-sync.cjs` -> 0 added/filled/fixed |
+| P4.3 i18n sync clean | `FAILING REPRO` | `scripts/i18n-sync.cjs` -> 0 added/filled/fixed  Motivo: i18n sync ainda reordena/reescreve valores e o guard de CI falhava por ordem, não por conteúdo (corrigido na P5.2) |
 | P4.4 pgTAP coverage for changed RPCs | `FIXED + PASS` | 20 suites under `supabase/tests/`, incl. `serialize_program_tree_privileges` |
 | P4.5 dead edge-function audit | `FIXED + PASS` | `docs/rc5/dead-edge-functions.md` (12 functions, dispositions recorded) |
-| P4.6 contradictory release docs | `FIXED + PASS` | `PUBLISH_READY.md` / `PRODUCTION_READINESS.md` marked SUPERSEDED |
+| P4.6 contradictory release docs | `FAILING REPRO` | `PUBLISH_READY.md` / `PRODUCTION_READINESS.md` marked SUPERSEDED  Motivo: RELEASE_AUDIT.md e REGRESSION_CHECKLIST.md continuavam a dizer GO sem aviso de estarem ultrapassados (corrigido na P5.9) |
 | P4.7 GitHub job logs (`deno-check-edge`, `db-tests`, `e2e`) | `BLOCKED` | logs not reachable from this environment; must be supplied by the release lead |
 | Staging behavioural gates | `NOT PROVEN` | `RC5_ALLOW_STAGING_TESTS` requires a staging project + secrets |
 
@@ -301,7 +301,7 @@ financial_scenario_atomic 4.
 | Item | Estado | Prova |
 |---|---|---|
 | Replay integral das migrações numa base vazia | `PASS` | `scripts/rc5/local-pg-harness.sh` → `forward replay finished (0 failing migration file(s))`. O harness passa agora a falhar (exit != 0) se o replay não estiver limpo, salvo `RC5_ALLOW_REPLAY_FAILURES=1`. |
-| Tabelas sem migração no repositório (`investor_readiness_items`, `workspace_readiness_status`, `investor_update_templates`) | `PASS` | DDL de produção reproduzida em `scripts/rc5/legacy-baseline.sql`, aplicada antes do replay. Colunas/tipos/defaults conferidos contra o esquema real. |
+| Tabelas criadas fora de ordem (`investor_readiness_items`, `investor_update_templates`), referenciadas por `20260103024619`/`20260115005921` mas só criadas em `20260220001543` | `FAILING REPRO` → corrigido | A migração `20260103024618_create_investor_tables_early.sql` cria as duas tabelas cedo (DDL idêntico a `20260220001543:5-28`), antes de serem referenciadas. Em produção é um no-op. `scripts/rc5/legacy-baseline.sql` foi removido: criava as tabelas sem as FKs de produção e mascarava o defeito. |
 | `realtime.messages` ausente do shim | `PASS` | tabela + RLS + grants acrescentados a `scripts/rc5/supabase-shim.sql`. |
 | Suites pgTAP | `PASS` | 23 suites, ok=210, fail=0, errors=0. |
 | Novo: kill switch de notificações a founders (comportamental) | `PASS` | `supabase/tests/founder_notifications_kill_switch.test.sql` ok=7 — OFF entrega, ON descarta founder/team_member, staff mantém-se, helper coerente. |

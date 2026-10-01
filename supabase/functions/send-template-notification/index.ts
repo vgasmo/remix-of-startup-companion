@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireCronOrStaff } from "../_shared/security.ts";
 import { templateSubmittedKey } from "../_shared/notificationEventKey.ts";
+import { isFounderEmailBlocked } from '../_shared/founderKillSwitch.ts';
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -122,6 +123,7 @@ serve(async (req: Request) => {
 
       let emailsSent = 0;
       for (const wu of workspaceUsers) {
+        if (wu.role !== 'admin' && wu.role !== 'consultor' && await isFounderEmailBlocked(supabaseAdmin, wu.user_id as string)) continue;
         const { data: profile } = await supabaseAdmin
           .from("profiles")
           .select("email, full_name")
@@ -219,6 +221,13 @@ serve(async (req: Request) => {
         .select("email, full_name")
         .eq("id", instance.created_by)
         .single();
+
+      if (creator?.email && await isFounderEmailBlocked(supabaseAdmin, instance.created_by)) {
+        return new Response(
+          JSON.stringify({ success: true, emailsSent: 0, reason: "founder_notifications_disabled" }),
+          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
 
       if (!creator?.email) {
         console.log("Creator email not found");

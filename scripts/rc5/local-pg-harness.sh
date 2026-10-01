@@ -71,9 +71,8 @@ createdb -h "$SOCK" -p "$PORT" -U postgres "$DB"
 "${PSQL[@]}" -c "ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
   ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon, authenticated, service_role;
   ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;" >/dev/null
-"${PSQL[@]}" -f "$ROOT/scripts/rc5/legacy-baseline.sql" >/dev/null
 "${PSQL[@]}" -f "$PGTAP_SQL" >/dev/null
-log "base + shim + legacy baseline + pgTAP ready"
+log "base + shim + pgTAP ready"
 
 # ---- forward replay -------------------------------------------------------
 STRIP=$(mktemp -d)

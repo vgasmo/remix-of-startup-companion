@@ -113,7 +113,7 @@ export function AdminUsersManager() {
     return ws?.startup?.name || t('admin.userManagement.noName');
   };
 
-  const getRoleLabel = (role: string) => t(`roles.${role}`) || role;
+  const getRoleLabel = (role: string) => t(`roles.${role}`, { defaultValue: role });
 
   const handleAddRole = async () => {
     if (!addRoleDialog) return;

@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@4.0.0";
 import { requireCronSecret } from "../_shared/security.ts";
 import { withCronRunLogging } from '../_shared/cronRun.ts';
+import { isFounderEmailBlocked } from '../_shared/founderKillSwitch.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -105,6 +106,7 @@ serve(withCronRunLogging('send-milestone-reminders', async (req) => {
 
 
       for (const user of workspaceUsers || []) {
+        if (user.role !== 'admin' && user.role !== 'consultor' && await isFounderEmailBlocked(supabase, user.user_id)) continue;
         const prefs = user.notification_preferences?.[0];
         const reminderDays = prefs?.milestone_reminder_days ?? 3;
         const remindersEnabled = prefs?.milestone_reminders_enabled ?? true;

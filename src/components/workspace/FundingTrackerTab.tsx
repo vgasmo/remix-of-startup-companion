@@ -31,7 +31,7 @@ interface FundingTrackerTabProps {
 }
 
 export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [showRoundDialog, setShowRoundDialog] = useState(false);
   const [showInvestorDialog, setShowInvestorDialog] = useState(false);
   const [showCapTableDialog, setShowCapTableDialog] = useState(false);
@@ -122,7 +122,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(amount);
+    return new Intl.NumberFormat(i18n.language?.startsWith('en') ? 'en-GB' : 'pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(amount);
   };
 
   return (

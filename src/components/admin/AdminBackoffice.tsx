@@ -764,7 +764,7 @@ export function AdminBackoffice() {
                       {/* Status */}
                       <TableCell>
                         <Badge variant={item.status === 'active' ? 'secondary' : item.status === 'blocked' ? 'destructive' : 'outline'}>
-                          {t(`admin.backoffice.${item.status}`)}
+                          {t(`admin.backoffice.${item.status}`, { defaultValue: item.status })}
                         </Badge>
                       </TableCell>
                       

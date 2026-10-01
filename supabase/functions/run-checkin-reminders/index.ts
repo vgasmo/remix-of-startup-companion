@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireCronSecret } from "../_shared/security.ts";
 import { withCronRunLogging } from '../_shared/cronRun.ts';
+import { isFounderEmailBlocked } from '../_shared/founderKillSwitch.ts';
 
 
 
@@ -200,6 +201,7 @@ const handler = async (req: Request): Promise<Response> => {
             const founderName = founder.profile?.full_name || "Founder";
 
             if (!founderEmail) continue;
+            if (await isFounderEmailBlocked(supabase, founder.user_id)) continue;
 
             try {
               const emailResult = await sendEmail(resendApiKey, {

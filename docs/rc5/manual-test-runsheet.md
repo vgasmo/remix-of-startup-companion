@@ -20,7 +20,7 @@ falha, o link do ecrã ou do erro. Um único `FALHA` mantém o veredicto NO-GO.
 | 7 | Percurso do consultor | Consultor | Mover uma startup de etapa, concluir uma sessão | Métricas do painel atualizam sem recarregar | |
 | 8 | Percurso do mentor | Mentor | Aceitar NDA, publicar disponibilidade, aceitar marcação | Sem NDA não há acesso; sem sobreposição de horários | |
 | 9 | Inquérito do ecossistema | Admin | Reabrir campanha, incluir startups, ver respostas | Startups incluídas sem duplicados; respostas visíveis | |
-| 10 | Notificações a founders desligadas | Admin | Confirmar o interruptor em Definições do Sistema | Founders não recebem email nem aviso; staff continua a receber | |
+| 10 | Notificações a founders desligadas | Admin | Confirmar o interruptor em Definições do Sistema | Founders deixam de ver avisos in-app; os emails automáticos para founders também deixam de ser enviados; staff continua a receber | |
 | 11 | Envio de proposta comercial | Backoffice | Enviar uma proposta para um endereço de teste | Email entregue e registado no histórico | |
 | 12 | Saúde das automações | Admin | Abrir Saúde do Sistema | Nenhuma tarefa em `never_run` nem atrasada | |
 

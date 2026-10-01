@@ -877,7 +877,7 @@ export default function AdminDataImport() {
       }
 
       setImportResult({ inserted, updated, errors });
-      notify.success(t('dataImport.importComplete', 'Import complete: {{inserted}} inserted, {{updated}} updated', { inserted, updated }));
+      notify.success(t('dataImport.importSummary', '{{inserted}} records inserted, {{updated}} updated', { inserted, updated }));
       setStep(4);
     } catch (error) {
       logger.error('Import error', {}, error);

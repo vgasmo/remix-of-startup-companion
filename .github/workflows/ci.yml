@@ -101,6 +101,9 @@ jobs:
       - name: i18n key parity check
         run: node scripts/i18n-check.cjs
 
+      - name: i18n extended quality guard
+        run: node scripts/rc5/i18n-quality-ext.mjs
+
   # ──────────────────────────────────────────────
   # Gate: i18n lint (duplicates, EN-in-PT, missing keys)
   # ──────────────────────────────────────────────
@@ -114,9 +117,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: i18n sync (populate missing keys)
-        run: node scripts/i18n-sync.cjs
 
       - name: i18n lint (strict)
         run: node scripts/i18n-lint.mjs
@@ -138,20 +138,11 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Run i18n sync
-        run: node scripts/i18n-sync.cjs
-
-      - name: Verify no changes after sync (fail-on-drift)
+      - name: i18n semantic sync guard (key order ignored)
         run: |
-          if ! git diff --exit-code src/i18n/locales; then
-            echo "❌ i18n sync produced uncommitted changes!"
-            echo "📋 Diff (first 60 lines):"
-            git diff src/i18n/locales | head -60
-            echo ""
-            echo "Fix: run 'node scripts/i18n-sync.cjs' locally and commit the result."
-            exit 1
-          fi
-          echo "✅ i18n locales are in sync"
+          node scripts/ci/i18n-semantic-guard.cjs snapshot
+          node scripts/i18n-sync.cjs
+          node scripts/ci/i18n-semantic-guard.cjs compare
 
   # ──────────────────────────────────────────────
   # Gate: .env leak guard
@@ -167,8 +158,9 @@ jobs:
           # P4.1 — the Lovable runtime rewrites .env on every boot with the three
           # publishable client variables. Only fail on keys beyond that set.
           if [ -f ".env" ]; then
-            BAD=$(grep -oE '^[A-Z0-9_]+' .env \
-              | grep -vE '^(VITE_SUPABASE_PROJECT_ID|VITE_SUPABASE_PUBLISHABLE_KEY|VITE_SUPABASE_URL)$' || true)
+            KEYS=$(grep -oE '^[[:space:]]*(export[[:space:]]+)?[A-Za-z0-9_.-]+[[:space:]]*[=:]' .env \
+              | sed -E 's/^[[:space:]]*(export[[:space:]]+)?//; s/[[:space:]]*[=:]$//' || true)
+            BAD=$(printf '%s\n' "$KEYS" | grep -vE '^(VITE_SUPABASE_PROJECT_ID|VITE_SUPABASE_PUBLISHABLE_KEY|VITE_SUPABASE_URL)?$' || true)
             if [ -n "$BAD" ]; then
               echo "❌ SECURITY: .env contains non-public keys:"
               echo "$BAD"
@@ -338,6 +330,8 @@ jobs:
         run: bunx playwright test
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:5173
+          VITE_SUPABASE_URL: ${{ steps.supabase.outputs.api_url }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ steps.supabase.outputs.anon_key }}
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4

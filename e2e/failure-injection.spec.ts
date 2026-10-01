@@ -13,27 +13,33 @@ test.describe('RC5 failure injection @failure-injection', () => {
   });
 
   test('Graph 429 rate limit surfaces retry, not silent success', async ({ page }) => {
+    test.fixme(true, 'Sem widget email-sync-status com data-testid');
     await page.route('**/graph.microsoft.com/**', (route) => route.fulfill({ status: 429, body: '{}' }));
     await page.goto('/dashboard');
     // The email sync widget must show a warning, not a green tick.
-    await expect(page.getByTestId('email-sync-status')).toContainText(/erro|error|falha|retry/i, { timeout: 10_000 }).catch(() => {
-      // Widget may not be mounted for anon; that is acceptable — the spec exists to fail loudly
-      // once wired to a fixture route. Left explicit so the operator sees it did run.
-    });
+    await expect(page.getByTestId('email-sync-status')).toContainText(/erro|error|falha|retry/i, { timeout: 10_000 });
   });
 
   test('duplicate mentor booking is rejected by idempotency key', async ({ request }) => {
-    const url = process.env.STAGING_APP_URL;
-    test.skip(!url, 'STAGING_APP_URL not set');
-    const key = `rc5-e2e-${Date.now()}`;
-    const body = { idempotency_key: key, mentor_id: 'rc5-e2e-mentor', slot: '2030-01-01T10:00:00Z' };
-    const first = await request.post(`${url}/functions/v1/create-mentor-booking`, { data: body });
-    const second = await request.post(`${url}/functions/v1/create-mentor-booking`, { data: body });
-    expect([200, 201]).toContain(first.status());
-    expect([200, 201, 409]).toContain(second.status());
-    // Both responses must reference the SAME booking id — no duplicate row.
-    const a = await first.json().catch(() => ({}));
-    const b = await second.json().catch(() => ({}));
-    if (a?.id && b?.id) expect(a.id).toBe(b.id);
+    const api = process.env.STAGING_SUPABASE_URL, anon = process.env.STAGING_SUPABASE_ANON_KEY;
+    const mentorId = process.env.RC5_TEST_MENTOR_ID, workspaceId = process.env.RC5_TEST_WORKSPACE_ID;
+    test.skip(!api || !anon || !mentorId || !workspaceId, 'staging API/persona ids not set');
+    const login = await request.post(`${api}/auth/v1/token?grant_type=password`, {
+      headers: { apikey: anon! },
+      data: { email: process.env.RC5_TEST_FOUNDER_EMAIL, password: process.env.RC5_TEST_FOUNDER_PASSWORD },
+    });
+    expect(login.ok()).toBe(true);
+    const { access_token } = await login.json();
+    const headers = { apikey: anon!, Authorization: `Bearer ${access_token}` };
+    const data = {
+      p_mentor_id: mentorId, p_workspace_id: workspaceId, p_requested_date: '2030-01-07',
+      p_requested_start_time: '10:00', p_requested_end_time: '11:00', p_message: 'rc5-e2e',
+      p_idempotency_key: `rc5-e2e-${Date.now()}`,
+    };
+    const first = await request.post(`${api}/rest/v1/rpc/create_mentor_booking_idempotent`, { headers, data });
+    const second = await request.post(`${api}/rest/v1/rpc/create_mentor_booking_idempotent`, { headers, data });
+    expect(first.status()).toBe(200);
+    expect(second.status()).toBe(200);
+    expect((await second.json()).id).toBe((await first.json()).id);
   });
 });

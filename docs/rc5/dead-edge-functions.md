@@ -6,9 +6,11 @@ code, by another function, or by a `pg_cron` job.
 
 Decision: **kept, not deleted** — each is either an operator-triggered tool
 (invoked manually from the backend console) or part of a paused capability whose
-removal would need a product decision. They stay registered with
-`verify_jwt = false` and validate credentials in code, so they are not
-anonymously reachable.
+removal would need a product decision. Correction: only `bulk-create-workspaces`,
+`graph-config-status`, `run-workflow-rules` and `validate-booking-slot` have
+`verify_jwt = false`; the other 8 of the 12 functions listed below have
+`verify_jwt = true` (explicit or by omission) and are not anonymously reachable
+regardless of being unused in-repo.
 
 | Function | Why it has no caller | Disposition |
 |---|---|---|

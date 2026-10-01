@@ -1,6 +1,6 @@
 -- P2.13 — a founder's stage gate review request must land in the staff work queue.
 BEGIN;
-SELECT plan(3);
+SELECT plan(6);
 
 -- Fixtures -------------------------------------------------------------------
 INSERT INTO auth.users (id, email) VALUES
@@ -55,6 +55,49 @@ SELECT is(
      AND type = 'stage_gate_review' LIMIT 1),
   'open',
   'work queue item is open'
+);
+
+-- Second pending request for the same workspace, same item still open (lives_ok;
+-- fails with 23505 without P4.12, passes with it): must still be exactly 1 active item.
+SET LOCAL role TO authenticated;
+SELECT set_config(
+  'request.jwt.claims',
+  '{"sub":"a0000000-0000-4000-8000-00000000f001","role":"authenticated"}',
+  true
+);
+
+SELECT lives_ok(
+  $$INSERT INTO public.stage_gate_reviews (workspace_id, from_stage, to_stage, requested_by, status, evidence_json)
+    VALUES ('a0000000-0000-4000-8000-00000000f003', 'validation', 'mvp',
+            'a0000000-0000-4000-8000-00000000f001', 'pending', '{}'::jsonb)$$,
+  'a second pending review for the same workspace does not break the unique active-item guard'
+);
+
+RESET role;
+SELECT set_config('request.jwt.claims', NULL, true);
+
+SELECT is(
+  (SELECT count(*)::int FROM public.staff_work_queue_items
+   WHERE workspace_id = 'a0000000-0000-4000-8000-00000000f003'
+     AND type = 'stage_gate_review'
+     AND status = 'open'),
+  1,
+  'still exactly 1 active work queue item after a second pending request'
+);
+
+SELECT is(
+  (SELECT created_by FROM public.staff_work_queue_items
+   WHERE workspace_id = 'a0000000-0000-4000-8000-00000000f003'
+     AND type = 'stage_gate_review' LIMIT 1),
+  'a0000000-0000-4000-8000-00000000f001'::uuid,
+  'work queue item created_by matches the requesting founder'
+);
+
+SELECT ok(
+  (SELECT evidence_json ? 'review_id' FROM public.staff_work_queue_items
+   WHERE workspace_id = 'a0000000-0000-4000-8000-00000000f003'
+     AND type = 'stage_gate_review' LIMIT 1),
+  'evidence_json carries the review_id key'
 );
 
 SELECT * FROM finish();

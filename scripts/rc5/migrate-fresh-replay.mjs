@@ -25,6 +25,13 @@ console.log(`[rc5:migrate-fresh-replay] Replaying ${files.length} migrations aga
 let r = spawnSync('psql', [url, '-v', 'ON_ERROR_STOP=1', '-c', 'DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;'], { stdio: 'inherit' });
 if (r.status !== 0) die(`Reset failed (exit ${r.status}).`);
 
+// A disposable Postgres has no Supabase roles/schemas (anon, authenticated,
+// auth.users, etc.). Apply the shim once, before the migration chain, so
+// migrations that reference them succeed from an empty base.
+const shimPath = resolve('scripts/rc5/supabase-shim.sql');
+r = spawnSync('psql', [url, '-v', 'ON_ERROR_STOP=1', '-f', shimPath], { stdio: 'inherit' });
+if (r.status !== 0) die(`supabase-shim.sql failed (exit ${r.status}).`);
+
 for (const f of files) {
   const p = resolve(dir, f);
   r = spawnSync('psql', [url, '-v', 'ON_ERROR_STOP=1', '-f', p], { stdio: 'inherit' });

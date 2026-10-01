@@ -816,12 +816,13 @@ function SummaryStat({ label, value, tone = 'default' }: { label: string; value:
 }
 
 function StatusBadge({ status, method }: { status: string; method: string | null }) {
-  if (status === 'will_create') return <Badge variant="default">New</Badge>;
-  if (status === 'will_update') return <Badge variant="secondary">Update{method ? ` (${method})` : ''}</Badge>;
-  if (status === 'committed') return <Badge variant="default" className="bg-green-600">✓ Done</Badge>;
-  if (status === 'error') return <Badge variant="destructive">Error</Badge>;
+  const { t } = useTranslation();
+  if (status === 'will_create') return <Badge variant="default">{t('bulkImport.rowStatus.will_create', 'New')}</Badge>;
+  if (status === 'will_update') return <Badge variant="secondary">{t('bulkImport.rowStatus.will_update', 'Update')}{method ? ` (${method})` : ''}</Badge>;
+  if (status === 'committed') return <Badge variant="default" className="bg-green-600">✓ {t('bulkImport.rowStatus.committed', 'Done')}</Badge>;
+  if (status === 'error') return <Badge variant="destructive">{t('bulkImport.rowStatus.error', 'Error')}</Badge>;
   if (status === 'extracting') return <Badge variant="outline"><Loader2 className="h-3 w-3 mr-1 animate-spin" />…</Badge>;
-  if (status === 'pending') return <Badge variant="outline">Queued</Badge>;
-  if (status === 'skipped') return <Badge variant="outline">Skipped</Badge>;
+  if (status === 'pending') return <Badge variant="outline">{t('bulkImport.rowStatus.pending', 'Queued')}</Badge>;
+  if (status === 'skipped') return <Badge variant="outline">{t('bulkImport.rowStatus.skipped', 'Skipped')}</Badge>;
   return <Badge variant="outline">{status}</Badge>;
 }

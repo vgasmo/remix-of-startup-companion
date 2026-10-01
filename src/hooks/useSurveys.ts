@@ -877,7 +877,7 @@ export function useSaveSurveyResponses() {
       }
     },
     onError: (error) => {
-      toast.error("Failed to save survey");
+      toast.error(t('surveys.saveResponseFailed', 'Não foi possível guardar o inquérito'));
       logger.error('operation_error', {}, error);
     },
   });

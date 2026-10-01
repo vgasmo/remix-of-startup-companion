@@ -45,7 +45,7 @@
     "assignTo": "Assign to...",
     "assignee": "Assignee",
     "awaitingValidation": "Awaiting validation",
-    "bulkPartialSkipped": "{{skipped}} action(s) skipped due to permissions",
+    "bulkPartialSkipped": "{{skipped}} action(s) were not changed (only the consultant can remove programme deliverables).",
     "cancelled": "Cancelled",
     "clearFilters": "Clear filters",
     "commentAdded": "Comment added",
@@ -430,7 +430,7 @@
       "health": "Health",
       "hero": {
         "eyebrow": "Backoffice",
-        "subline": "Integrated management of spaces, contracts, and operations."
+        "subline": "{{occ}}% occupancy · {{exp}} contracts expiring"
       },
       "hotDesk": "Hot Desk",
       "inSpaceSince": "In space since",
@@ -701,7 +701,11 @@
       "waitlistSuggestions": "Waitlist Suggestions",
       "workspaceBlocked": "Workspace blocked",
       "workspaceUnblocked": "Workspace unblocked",
-      "workspacesWithoutContracts": "Workspaces Without Contracts"
+      "workspacesWithoutContracts": "Workspaces Without Contracts",
+      "claimed": "Claimed",
+      "imported_unclaimed": "Imported (unclaimed)",
+      "pending": "Pending",
+      "rejected": "Rejected"
     },
     "backofficeExtended": {
       "addSpace": "Add Space",
@@ -912,17 +916,17 @@
     "erroAoSuspenderConta": "Failed to suspender conta",
     "exceptionsTitle": "Requires Your Attention",
     "existingWorkspace": "Existing Workspace",
-    "exportAnalytics": "Export Analytics",
-    "exportDescription": "Export Description",
+    "exportAnalytics": "Export",
+    "exportDescription": "Download ecosystem data as CSV reports.",
     "exportReport": "Export Report",
-    "exportTitle": "Export Title",
+    "exportTitle": "Export analytics",
     "externalMentors": "Mentors",
     "failedToAddMentor": "Failed To Add Mentor",
     "failedToApprove": "Failed to approve:{{ message }}",
     "failedToCreateLink": "Failed to create link:{{ message }}",
     "failedToCreateMaterial": "Failed to create material",
     "failedToDeactivate": "Failed to deactivate:{{ message }}",
-    "failedToDelete": "Failed To Delete",
+    "failedToDelete": "Failed to delete: {{message}}",
     "failedToDeleteMaterial": "Failed to delete material",
     "failedToReject": "Failed to reject:{{ message }}",
     "failedToRemoveMentor": "Failed To Remove Mentor",
@@ -1199,7 +1203,6 @@
       },
       "pendingApprovals": "Pending approvals"
     },
-    "recalculadoResultupdatedworkspacesWorkspacesResulthistorysnapshotsSnapshots": "Recalculado: ${result.updatedWorkspaces} workspaces, ${result.historySnapshots} snapshots,{{ alertsCreated }} alertas",
     "recalculate": "Recalculate",
     "recomputeHealth": "Recompute Health Scores",
     "reject": "Reject",
@@ -1450,7 +1453,10 @@
       "type": "Type",
       "viewQuestions": "View questions",
       "viewQuestionsDesc": "Questions included in this survey",
-      "viewResponses": "View Responses"
+      "viewResponses": "View Responses",
+      "legendSubmitted": "{{count}} submitted",
+      "legendInProgress": "{{count}} in progress",
+      "legendPending": "{{count}} pending"
     },
     "suspend": "Suspend",
     "suspendUser": "Suspend User",
@@ -1569,7 +1575,7 @@
       "notAssigned": "Not assigned to any workspace",
       "pageStatus": "{{from}}–{{to}} de {{total}}",
       "reactivate": "Reactivate",
-      "reactivateConfirm": "Are you sure you want to reactivate this user?",
+      "reactivateConfirm": "Are you sure you want to reactivate {{name}}'s account? The user will regain access to the platform.",
       "reactivateTitle": "Reativar Conta",
       "reactivated": "Conta reativada",
       "removeAssignment": "Remove Assignment",
@@ -1583,7 +1589,7 @@
       "statusPending": "Pending",
       "statusSuspended": "Suspensa",
       "suspend": "Suspender",
-      "suspendConfirm": "Suspend Confirm",
+      "suspendConfirm": "Are you sure you want to suspend {{name}}'s account? The user will lose access to the platform.",
       "suspendError": "Error changing account status",
       "suspendTitle": "Suspender Conta",
       "suspended": "Conta suspensa",
@@ -1670,6 +1676,11 @@
       "title": "Workspaces",
       "unblock": "Unblock",
       "unblocked": "Workspace unblocked"
+    },
+    "hero": {
+      "afternoon": "Good afternoon{{name}}",
+      "evening": "Good evening{{name}}",
+      "morning": "Good morning{{name}}"
     }
   },
   "adminContracts": {
@@ -1896,7 +1907,7 @@
     "warning": "Warning"
   },
   "analytics": {
-    "acrossPrograms": "Across Programs",
+    "acrossPrograms": "across {{count}} programs",
     "allPrograms": "All Programs",
     "avgOverdue": "Avg. Overdue",
     "avgOverdueActions": "Overdue Actions (avg.)",
@@ -2105,17 +2116,14 @@
     "withError": "With error"
   },
   "benchmark": {
-    "aboveAverage": "Above average",
     "actions": "Actions Completed",
     "avg": "Average",
-    "belowAverage": "Below average",
-    "cohortRange": "Cohort Range",
+    "cohortRange": "p25: {{p25}} · p50: {{p50}} · p75: {{p75}} · p90: {{p90}}",
     "description": "Anonymous comparison with startups at the same stage",
     "healthScore": "Health Score",
     "milestones": "Milestones Completed",
     "noData": "Benchmark data not yet available. It will appear when there are enough startups in the program.",
     "noPersonalValue": "No current value to compare.",
-    "onAverage": "On average",
     "percentileDesc": "Percentile position among startups at the same stage (minimum 5 to ensure anonymity).",
     "smallCohort": "Not enough data yet. Benchmarks appear once at least 5 startups share your stage.",
     "stageDesc": "Average metrics for each program stage",
@@ -2135,7 +2143,7 @@
     "needAuth": "Inicie sessão para enviar um relatório.",
     "openLabel": "Reportar problema",
     "page": "Página",
-    "pasteHint": "Paste Hint",
+    "pasteHint": "Paste (Ctrl/⌘+V), drag, or choose images — up to {{n}}, {{mb}} MB each.",
     "placeholder": "Steps to reproduce, what you expected vs. what happened…",
     "screenshots": "Screenshots",
     "sent": "Relatório enviado. Obrigado!",
@@ -2176,7 +2184,7 @@
       "status": "Status",
       "typology": "Typology"
     },
-    "commit": "Commit import",
+    "commit": "Import {{count}} contracts",
     "commitSuccess": "Imported {{committed}} contracts ({{failed}} failed)",
     "committing": "Committing...",
     "confirmCommit": "Import {{count}} contracts? This will create/update startups, workspaces, and contracts.",
@@ -2254,6 +2262,14 @@
       "start": "Upload & extract with AI",
       "title": "Upload signed contract PDFs",
       "uploading": "Uploading {{done}} / {{total}}..."
+    },
+    "rowStatus": {
+      "will_create": "New",
+      "will_update": "Update",
+      "committed": "✓ Done",
+      "error": "Error",
+      "pending": "Queued",
+      "skipped": "Skipped"
     }
   },
   "calendar": {
@@ -2475,7 +2491,6 @@
     "download": "Download",
     "draft": "Draft",
     "draftRestored": "Draft recovered — continue where you left off.",
-    "dryRunCompleteResultsummarywould_insertTo": "Dry run complete: ${result.summary.would_insert} to insert,{{ would_update }} to update",
     "edit": "Edit",
     "email": "Email",
     "emailCopied": "Email copied",
@@ -2503,7 +2518,6 @@
     "help": "Help",
     "hide": "Hide",
     "highlights": "Highlights",
-    "importCompleteResultinsertedInserted": "Import complete: ${result.inserted} inserted,{{ updated }} updated",
     "important": "Important",
     "inactive": "Inactive",
     "info": "Information",
@@ -2596,7 +2610,7 @@
     "restored": "Restored",
     "results": "results",
     "resumoGerado": "Resumo gerado",
-    "retry": "Tentar novamente",
+    "retry": "Try again",
     "rowsPerPage": "Rows per page",
     "run": "Run",
     "save": "Save",
@@ -2657,7 +2671,6 @@
     "yes": "Yes"
   },
   "communication": {
-    "communicationLogged": "Communication logged",
     "emailAliasCreated": "Email alias created"
   },
   "communications": {
@@ -2749,7 +2762,10 @@
       "noPriorities": "No startups need urgent attention right now.",
       "subtitle": "Startups that require immediate action",
       "title": "Needs Attention",
-      "triageHint": "Daily triage — focus on what needs attention today. For deep management, use the portfolio."
+      "triageHint": "Daily triage — focus on what needs attention today. For deep management, use the portfolio.",
+      "afternoon": "Good afternoon{{name}}",
+      "evening": "Good evening{{name}}",
+      "morning": "Good morning{{name}}"
     },
     "nudgeFounder": "Nudge",
     "pipeline": {
@@ -2785,7 +2801,7 @@
     "risk": {
       "atRisk": "At Risk",
       "criticalHealth": "Critical Health",
-      "missingKpis": "Missing Kpis",
+      "missingKpis": "Missing KPIs",
       "noRecentSession": "No Recent Session",
       "overdueActions": "Overdue Actions"
     },
@@ -2924,7 +2940,7 @@
     }
   },
   "contractDetail": {
-    "notifyFailed": "Contract updated, but notifications failed.",
+    "notifyFailed": "Contract updated, but the notifications failed.",
     "completedAt": "Completed at",
     "configured": "Configured",
     "confirmRenew": "Confirm renewal",
@@ -2976,8 +2992,8 @@
     "renewError": "Could not renew the contract",
     "renewFee": "Monthly fee (€)",
     "renewInvalidStatus": "Only active or expired contracts can be renewed.",
-    "renewNotifyMsg": "The renewal proposal has been sent to the signer.",
-    "renewNotifyTitle": "Renewal sent",
+    "renewNotifyMsg": "The contract has been renewed until {{end}}.",
+    "renewNotifyTitle": "Contract renewed",
     "renewStart": "New term start (incubation start date is kept)",
     "renewSuccess": "Contract renewed",
     "renewTitle": "Renew contract",
@@ -3006,7 +3022,9 @@
       "sent_for_signature": "Sent for signature",
       "signed": "Signed",
       "viewed": "Viewed",
-      "voided": "Voided"
+      "voided": "Voided",
+      "dispatching": "Sending…",
+      "pending": "Pending"
     },
     "signatureActions": "Actions",
     "signatureProvider": "Signature Provider",
@@ -3188,7 +3206,10 @@
       "title": "Review Contract Details"
     },
     "risk": {
-      "label": "risk"
+      "label": "risk",
+      "high": "High",
+      "low": "Low",
+      "medium": "Medium"
     },
     "startDate": "Start Date",
     "truthHint": "Derived copies (CRM, SharePoint) are informational and do not replace this record.",
@@ -3284,7 +3305,7 @@
     "aiRecap": "AI Recap",
     "aiSummary": "AI Summary",
     "allAssignees": "All Assignees",
-    "allItems": "Todos os Items",
+    "allItems": "All items",
     "allPrograms": "All Programs",
     "allStages": "All Stages",
     "analytics": "Analytics",
@@ -3497,8 +3518,8 @@
       "errorInvalidEmail": "Invalid email",
       "errorNoIdentity": "Nome ou email em falta",
       "hint": "Colunas aceites: name, email, phone, organization, source, notes, deal_value",
-      "importButton": "Import Button",
-      "importing": "crm.import.importButton",
+      "importButton": "Import {{count}} leads",
+      "importing": "Importing...",
       "invalid": "invalid",
       "missingColumns": "CSV precisa de coluna \"name\" ou \"email\"",
       "name": "Nome",
@@ -3531,7 +3552,7 @@
     "lastSync": "Last sync",
     "lastSyncAt": "dd/MM HH:mm",
     "leadContracted": "{{name}} contracted! Create workspace?",
-    "leadContractedPickProgram": "Pick a program to activate this lead",
+    "leadContractedPickProgram": "{{name}} contracted — pick the program to create the workspace.",
     "leadCreated": "Lead created",
     "leadScore": {
       "cold": "Cold Lead",
@@ -3562,7 +3583,7 @@
     "moveError": "Error moving lead",
     "moveTo": "Move to...",
     "movedTo": "Moved to {{stage}}",
-    "myItems": "Meus Items",
+    "myItems": "My items",
     "myItemsOnly": "My items only",
     "nameAngleBracketsError": "Names cannot contain < or >.",
     "nameOrOrg": "Name / Organization",
@@ -3622,7 +3643,6 @@
     "pipeline": "Pipeline",
     "pipelineHealth": {
       "activeLeads": "Active Leads",
-      "bottleneckDesc": "Bottleneck Desc",
       "bottleneckTitle": "Bottleneck Detected",
       "healthScore": "Health Score",
       "last30Days": "Converted (30d)",
@@ -3630,7 +3650,6 @@
       "staleLeads": "Stale Leads",
       "subtitle": "Real-time insights into your sales pipeline",
       "title": "Pipeline Health",
-      "velocityDesc": "Velocity Desc",
       "velocityTitle": "Good Velocity"
     },
     "pricingSyncHint": "Preços e descontos são editados no separador Backoffice → Contratos. As alterações aqui refletem-se automaticamente.",
@@ -3655,7 +3674,7 @@
       "defaultSubject": "Startup Leiria — Commercial proposal",
       "defaultSubjectWithProgram": "Startup Leiria — Proposal for {{program}}",
       "description": "Review and send the proposal to the lead.",
-      "fileTooLarge": "File is too large",
+      "fileTooLarge": "File too large (max {{max}} MB): {{name}}",
       "needsEmail": "Add an email to send a proposal.",
       "noMaterials": "No materials available.",
       "noMaterialsUploadHint": "No approved materials — you can attach files ad-hoc.",
@@ -3669,9 +3688,9 @@
       "sentDesc": "The proposal was sent to the lead.",
       "subject": "Subject",
       "title": "Send commercial proposal",
-      "uploadFailed": "Upload failed",
+      "uploadFailed": "Upload failed: {{name}}",
       "uploadFiles": "Upload files",
-      "uploadHint": "Drag files here or click to browse"
+      "uploadHint": "PDF, DOCX, images — up to {{max}} MB per file."
     },
     "proposedDiscount": "Desconto Proposto (%)",
     "proposedIncubationType": "Proposed incubation type",
@@ -3721,7 +3740,6 @@
     "sourcePlaceholder": "Ex: Website, Event, Referral...",
     "stage": "Stage",
     "stageMoveFailed": "Stage Move Failed",
-    "stageMoved": "Stage Moved",
     "stages": {
       "firstContactBooked": "First Contact Booked",
       "met": "Met",
@@ -3771,7 +3789,7 @@
     "viewSession": "View Session",
     "weighted": "EUR",
     "winProbability": "Probabilidade (%)",
-    "workspaceCreated": "Workspace created"
+    "workspaceCreated": "Workspace created for {{name}}"
   },
   "dashboard": {
     "acrossPrograms": "Across {{count}} program",
@@ -3844,12 +3862,12 @@
     "errors": "Errors",
     "expectedFormat": "Expected Format",
     "expectedFormatDesc": "The file should contain columns like:",
-    "fileParsed": "File Parsed",
+    "fileParsed": "File parsed: {{count}} rows",
     "importAnother": "Import Another File",
-    "importComplete": "Import Complete!",
+    "importComplete": "Import complete!",
     "importConfig": "Import Configuration",
     "importError": "Error during import",
-    "importSummary": "Import Summary",
+    "importSummary": "{{inserted}} records inserted, {{updated}} updated",
     "importing": "Importing...",
     "invalid": "Invalid",
     "invalidRows": "Invalid Rows",
@@ -3866,7 +3884,7 @@
     "safetyTitle": "Safety Checklist",
     "searchRows": "Search by name, email, or NIF...",
     "selectProgram": "Select program",
-    "showingFirst": "Showing First",
+    "showingFirst": "Showing the first {{count}} of {{total}} rows",
     "skipExisting": "Skipped (exists, upsert disabled)",
     "skippedDuplicate": "Duplicates",
     "skippedInvalid": "Invalid",
@@ -3888,9 +3906,9 @@
     "upsertMode": "Update Existing Records",
     "upsertModeDesc": "Update records that match by email",
     "useFileOwner": "Use File Owner",
-    "useFileOwnerDesc": "Use File Owner Desc",
+    "useFileOwnerDesc": "Map \"Deal owner\" to consultant",
     "useFileStage": "Use File Stage",
-    "useFileStageDesc": "Use File Stage Desc",
+    "useFileStageDesc": "Map \"Deal stage\" (Tier A/B/C) to stage",
     "validRows": "Valid Rows",
     "willBeInserted": "will be inserted",
     "willBeUpdated": "will be updated",
@@ -4220,7 +4238,7 @@
     "sectionIntroHintLink": "see Resources →",
     "selectCategory": "Select category",
     "selectDocument": "Select Document",
-    "selectPlaceholder": "Select Placeholder",
+    "selectPlaceholder": "Select a document",
     "subTabs": {
       "all": "All Documents",
       "dataroom": "Data Room",
@@ -4279,20 +4297,20 @@
     "communityTab": "Comunidade",
     "confirmArchiveDesc": "Archive \"{{name}}\"? The workspace will be hidden from active lists but can be restored later.",
     "confirmArchiveTitle": "Archive workspace?",
-    "confirmDeleteDesc": "Confirm Delete Desc",
-    "confirmDeleteTitle": "Eliminar Lead?",
+    "confirmDeleteDesc": "Archive \"{{name}}\"? The lead will no longer appear in the Ecosystem. Notes and history are kept.",
+    "confirmDeleteTitle": "Archive lead?",
     "consultant": "Consultor",
     "consultantAssigned": "Consultant successfully assigned",
     "deleteBlockedByContract": "Cannot delete: there is/are contract(s) linked to this lead.",
     "deleteBlockedByReferences": "Cannot delete: this lead is linked to other records (contract, room, or history).",
-    "deleteLead": "Eliminar Lead",
-    "deleteLeadError": "Error deleting lead",
+    "deleteLead": "Archive lead",
+    "deleteLeadError": "Error archiving lead",
     "description": "Unified view of all workspaces and leads",
     "hasStartupPortugalFilter": "Startup Portugal certified",
     "lastActivity": "Last Activity",
     "lead": "Lead",
-    "leadDeleted": "Lead deleted",
-    "leadRestored": "Lead restaurada",
+    "leadDeleted": "Lead archived",
+    "leadRestored": "Lead restored",
     "leads": "leads",
     "loadError": "Could not load the ecosystem list. Please try again.",
     "loadMore": "Load more",
@@ -4576,7 +4594,7 @@
     "financialModelParsedSuccessfully": "Financial model parsed successfully",
     "mitigation": "Mitigation",
     "payback": "Payback",
-    "synced": "Synced{{ length }} KPIs"
+    "synced": "Synced {{length}} KPIs"
   },
   "financialPanel": {
     "aiFinancialReview": "AI Financial Review",
@@ -4866,7 +4884,10 @@
       "calmHint": "today, one step is enough.",
       "firstWeek": "Welcome! This is your first week — take your time, we're here to help.",
       "week": "Week {{n}}",
-      "weekly": "Have a good week! You have {{actions}} pending actions and {{sessions}} sessions scheduled."
+      "weekly": "Have a good week! You have {{actions}} pending actions and {{sessions}} sessions scheduled.",
+      "afternoon": "Good afternoon{{name}}",
+      "evening": "Good evening{{name}}",
+      "morning": "Good morning{{name}}"
     },
     "journeyMap": "Your Journey",
     "journeyStages": {
@@ -4877,7 +4898,7 @@
       "validation": "Validation"
     },
     "multiWorkspace": {
-      "hint": "Está a ver ",
+      "hint": "You are viewing \"{{name}}\". Pick another one below.",
       "title": "Tem {{count}} startups associadas"
     },
     "nextGateIn": "Next gate ({{name}}) in {{count}}w",
@@ -4947,7 +4968,13 @@
       "titleDefault": "Awaiting workspace activation",
       "titleOnboarding": "Welcome! Setting up your workspace",
       "titlePending": "Application submitted",
-      "whatNext": "What happens next?"
+      "whatNext": "What happens next?",
+      "checklist": {
+        "await_validation": "Wait for team validation",
+        "confirm_contacts": "Confirm contact details",
+        "explore_resources": "Explore available resources",
+        "prepare_docs": "Prepare the startup's documents"
+      }
     },
     "weekProgress": "Week {{current}} of {{total}}",
     "youAreHere": "You are here"
@@ -5353,7 +5380,7 @@
       "thriving": "Exceeding expectations",
       "unknown": "Score not calculated"
     },
-    "healthScoresRecalculados": "Health scores recalculados",
+    "healthScoresRecalculados": "Health scores recalculated",
     "healthy": "Saudável",
     "howCalculated": "How is it calculated?",
     "latestComputation": "Latest computation ({{score}}/100):",
@@ -5465,7 +5492,13 @@
     "thisWeek": "This week",
     "title": "Smart Inbox",
     "today": "Today",
-    "viewAll": "View all"
+    "viewAll": "View all",
+    "tab": {
+      "actions": "Actions",
+      "all": "All",
+      "insights": "Insights",
+      "mentorship": "Mentorship"
+    }
   },
   "intake": {
     "changesRequested": "Changes Requested",
@@ -5554,7 +5587,7 @@
     "meetingWebhook": "Meeting Webhook",
     "microsoftTeams": "Microsoft Teams",
     "milestoneReminders": "Milestone Reminders",
-    "milestoneRemindersDesc": "Milestone Reminders Desc",
+    "milestoneRemindersDesc": "Send reminders before milestone deadlines",
     "movedToSettings": "Integrations now live in Settings → Integrations.",
     "pandadoc": {
       "step1": "Aceda ao",
@@ -5573,19 +5606,19 @@
     "reminderTiming": "Reminder Timing",
     "remindersDisabled": "Reminders Disabled",
     "remindersEnabled": "Reminders Enabled",
-    "remindersNotifyDesc": "Reminders Notify Desc",
+    "remindersNotifyDesc": "Notify startups via Slack/Teams when a milestone is approaching",
     "sending": "Sending",
     "sessãoSincronizadaComOCalendário": "Session sincronizada com o calendário Outlook",
     "setupGuide": "Integrations Setup Guide",
     "setupInstructions": "To configure:",
     "sincronizaçãoOutlookNãoConfiguradaPara": "Outlook sync not configured for this workspace",
-    "slackDesc": "Slack Desc",
+    "slackDesc": "Receive platform notifications in a Slack channel",
     "slackDisabled": "Slack Disabled",
     "slackEnabled": "Slack Enabled",
     "slackIntegration": "Slack Integration",
-    "slackNotificationsDesc": "Slack Notifications Desc",
+    "slackNotificationsDesc": "Send platform notifications to the configured Slack channel",
     "slackTestFailed": "Slack Test Failed",
-    "slackTestSent": "Slack Test Sent",
+    "slackTestSent": "Test message sent to Slack",
     "slackWebhookRequired": "Slack Webhook Required",
     "teamsDisabled": "Teams integration disabled",
     "teamsEnabled": "Teams integration enabled",
@@ -5599,7 +5632,7 @@
     "title": "Integrations & Capture",
     "userId": "User ID (Impersonation)",
     "webhookSaved": "Webhook Saved",
-    "webhookUrl": "Webhook Url",
+    "webhookUrl": "Webhook URL",
     "webhookUrlSaved": "Webhook URL saved",
     "zoomMeet": "Zoom / Google Meet",
     "zoomMeetNote": "Use Zapier or Make.com to connect your meetings to this webhook endpoint."
@@ -5956,7 +5989,8 @@
       "tab": "Lifecycle",
       "terminated": "Terminated",
       "upcomingEvents": "Lifecycle Events",
-      "yearN": "Year {{n}}"
+      "yearN": "Year {{n}}",
+      "changes_requested": "Changes requested"
     },
     "subtitle": "Manage the complete journey from lead to renewal",
     "tabAlerts": "Alerts",
@@ -5979,7 +6013,7 @@
     "assignOrCreateTitle": "Assign workspace to contract",
     "assignSuccess": "Workspace assigned",
     "closedContractActiveWorkspace": {
-      "detail": "contract.status=",
+      "detail": "contract.status=\"{{cstate}}\" / workspace.status=\"active\"",
       "title": "Contrato terminado/anulado mas workspace continua activo"
     },
     "contractActiveWorkspaceNot": {
@@ -5993,7 +6027,7 @@
       "title": "Contracted lead without a linked contract"
     },
     "crmStaleLinkedContract": {
-      "detail": "contract.status=",
+      "detail": "contract.status=\"{{cstate}}\" / funnel.stage=\"{{fstate}}\"",
       "title": "Lead ligada a contrato encerrado sem actualização de fase"
     },
     "disclaimer": "Read-only. No automatic repair. Use the existing actions on each record.",
@@ -6008,7 +6042,7 @@
       "title": "Intake signed but contract not yet active"
     },
     "intakeBehindContract": {
-      "detail": "intake.status=",
+      "detail": "intake.status=\"{{istate}}\" / contract.status=\"{{cstate}}\"",
       "title": "Intake ainda em recolha mas contrato já avançou"
     },
     "newProgram": "Program",
@@ -6111,7 +6145,10 @@
     "healthyStartups": "Healthy startups",
     "hero": {
       "eyebrow": "Mentor dashboard",
-      "subline": "{{count}} startups · {{sessions}} sessions this week"
+      "subline": "{{count}} startups · {{sessions}} sessions this week",
+      "afternoon": "Good afternoon{{name}}",
+      "evening": "Good evening{{name}}",
+      "morning": "Good morning{{name}}"
     },
     "hours": "Hours",
     "hoursByStartup": "Hours by Startup",
@@ -6621,7 +6658,7 @@
     "continue": "Continue",
     "continueWork": "Continue Work",
     "derived": "derived from real state",
-    "dueOn": "Due On",
+    "dueOn": "Due: {{date}}",
     "founder": {
       "checkin": {
         "title": "Submit pending weekly check-in",
@@ -6659,7 +6696,7 @@
     "prepare": "Prepare",
     "prepareSession": "Prepare session",
     "review": "Review",
-    "sessionOn": "Session On",
+    "sessionOn": "\"{{title}}\" — {{date}}",
     "staff": {
       "intakesBlocked": {
         "title": "Review intakes blocked by missing data",
@@ -7171,7 +7208,9 @@
       "reviewNote": "Nota de review...",
       "submit": "Submeter",
       "title": "Evidência",
-      "verified": "Verificado"
+      "verified": "Verificado",
+      "approved": "Approved",
+      "rejected": "Rejected"
     },
     "evidenceApproved": "Evidence approved",
     "evidenceError": "Error submitting evidence",
@@ -7273,7 +7312,12 @@
     "staffOnly": "Só staff",
     "title": "Documentos privados",
     "tooLarge": "Ficheiro demasiado grande (max 20MB)",
-    "uploadOk": "Documento privado carregado"
+    "uploadOk": "Documento privado carregado",
+    "source": {
+      "intake": "Intake",
+      "onboarding": "Onboarding",
+      "staff": "Staff"
+    }
   },
   "programSetup": {
     "acceleration": {
@@ -7429,7 +7473,7 @@
   "programSwitcher": {
     "acceleration": "Aceleração",
     "confirm": "Confirmar",
-    "confirmDesc": "A startup será movida de ",
+    "confirmDesc": "The startup will be moved from \"{{from}}\" to \"{{to}}\". The stage and current week will be reset — existing milestones and actions are kept.",
     "confirmTitle": "Alterar programa?",
     "incubation": "Incubação",
     "label": "Programa",
@@ -7500,7 +7544,7 @@
     }
   },
   "publicBooking": {
-    "backToBook": "Back To Book",
+    "backToBook": "Back to Founders Book",
     "backToSite": "Back to site",
     "bookFirstMeeting": "Book Your First Meeting",
     "bookFirstMeetingDesc": "Schedule a free consultation to learn how we can help your startup grow.",
@@ -7963,7 +8007,6 @@
     "addedBy": "Added By",
     "category": "Categoria",
     "curatedDesc": "Curated resources for startups",
-    "deleteConfirm": "Delete Confirm",
     "deleteTitle": "Delete resource?",
     "description": "Description",
     "docsHint": "Looking for your startup files (pitch deck, financial model)?",
@@ -8042,11 +8085,12 @@
     "team": "Team",
     "topPriorities": "Top priorities",
     "traction": "Traction",
-    "viewReview": "Review deliverable"
+    "viewReview": "Review deliverable",
+    "needs_revision": "Needs revision"
   },
   "roles": {
     "admin": "Admin",
-    "backoffice": "Backoffice",
+    "backoffice": "Back office",
     "consultor": "Consultant",
     "founder": "Founder",
     "mentor": "Mentor",
@@ -8169,7 +8213,6 @@
     "reviewOverdueActions": "Review {{count}} overdue action items",
     "suggestions": "Prep suggestions",
     "title": "Session Prep",
-    "toDo": "To Discuss",
     "toRead": "To Review",
     "upcomingMilestones": "Upcoming Milestones",
     "upcomingSession": "Upcoming Session"
@@ -8203,18 +8246,16 @@
       "teamsNotReady": "Teams meeting not available",
       "teamsTranscriptHint": "Add a Teams meeting link to the session to auto-import the transcript."
     },
-    "aiAssistant": "Ai Assistant",
-    "aiAssistantDesc": "Ai Assistant Desc",
+    "aiAssistant": "AI Assistant",
     "aiDescription": "Generate AI summary, actions, and insights from meeting notes or transcript",
     "aiPrepSheet": "AI Prep Sheet",
     "aiSessionAnalysis": "AI Session Analysis",
     "aiSuggestions": "Ai Suggestions",
     "aiSuggestionsFailed": "Ai Suggestions Failed",
-    "aiTemporarilyUnavailable": "AI assistance is temporarily resting. Please try again in a few moments.",
+    "aiTemporarilyUnavailable": "The AI assistant is temporarily unavailable. Please try again in a few moments.",
     "aiUnavailable": "AI analysis unavailable at this moment. You can add notes manually and try again later.",
     "aindaNãoHáTranscriçãoDisponível": "No transcript available yet. Please try again ~10 min after the meeting ends.",
     "analyzing": "Analyzing...",
-    "appendToDecisions": "Append To Decisions",
     "appendToNotes": "Append To Notes",
     "applyAll": "Aplicar Todas",
     "applySelected": "Apply Selected",
@@ -8254,10 +8295,9 @@
     "confirmCancel": "Cancel session",
     "confirmNoShow": "Mark as no-show",
     "conflictMentor": "The mentor already has a session at this time.",
-    "conflictWorkspace": "This workspace already has a session at this time.",
+    "conflictWorkspace": "There is already a session at this time: \"{{title}}\".",
     "connectMeetingTools": "Connect meeting tools",
     "convertDecisionsToActions": "Convert decisions into actions",
-    "copiedToClipboard": "Copied to clipboard",
     "createFirstSession": "Create your first mentoring session",
     "createNewSession": "Create a new mentoring session",
     "createSession": "Create Session",
@@ -8265,7 +8305,7 @@
     "dateLabel": "Data",
     "dateTime": "Date & Time *",
     "decisions": "Decisions",
-    "decisionsConverted": "Decisions converted into actions.",
+    "decisionsConverted": "{{count}} action(s) created from the decisions.",
     "decisionsLabel": "Decisions",
     "decisionsPlaceholder": "Decisions taken…",
     "defaultTitleWith": "Session with {{name}}",
@@ -8302,7 +8342,7 @@
     "generatePrepSheet": "✨ Generate AI Prep Sheet",
     "generateSuggestions": "Generate Suggestions",
     "generateSummaryActions": "Generate Summary & Actions",
-    "generatedSummaryAnd": "Generated summary and{{ length }} action items",
+    "generatedSummaryAnd": "Summary generated and {{length}} action items created",
     "generating": "Generating",
     "generatingPrepSheet": "Generating prep sheet…",
     "googleMeetDesc": "Sync your Google Meet sessions automatically",
@@ -8320,7 +8360,7 @@
     "keyDecisions": "Key Decisions",
     "keyDecisionsPlaceholder": "Key decisions made during this session...",
     "kpisToUpdate": "KPIs to Update",
-    "lastGenerated": "Last Generated",
+    "lastGenerated": "Last generated: {{date}}",
     "loadError": "Could not load sessions.",
     "location": "Location",
     "locationLabel": "Local",
@@ -8408,7 +8448,7 @@
     "saving": "Saving...",
     "scheduleSession": "Schedule Session",
     "scheduleSessionDesc": "Schedule a new mentoring session",
-    "scheduleWithConsultant": "Schedule With Consultant",
+    "scheduleWithConsultant": "Schedule based on {{name}}'s availability",
     "scheduledAt": "Scheduled at",
     "scheduling": "Scheduling...",
     "searchSessions": "Search sessions...",
@@ -8420,12 +8460,12 @@
     "sendCalendarInvite": "Send calendar invite",
     "sendCalendarInvites": "Send calendar invites by email",
     "sendInviteBtn": "Send invite",
-    "sendInviteDescription": "Send invite (.ics) to participants from ",
+    "sendInviteDescription": "Send an invite (.ics) to the participants of \"{{title}}\"",
     "sendInvites": "Send email invites",
     "sendInvitesHelp": "Participants will receive a calendar invite.",
     "sendInvitesNone": "No participants to invite.",
     "sending": "Sending...",
-    "sent": "Sent{{ length }} invite(s)",
+    "sent": "Sent {{length}} invite(s)",
     "sessionCreated": "Session created",
     "sessionDeleted": "Session deleted",
     "sessionFeedback": "Session Feedback",
@@ -8446,7 +8486,7 @@
     "statusNoShow": "No-show",
     "stopRecording": "Stop",
     "suggestedActions": "Suggested actions",
-    "suggestedDue": "Suggested Due",
+    "suggestedDue": "Suggested due: {{days}} day(s)",
     "summary": "Summary",
     "syncFailed": "Sync failed",
     "syncNotConfigured": "Outlook sync not configured for this workspace",
@@ -8498,7 +8538,9 @@
     "withConsultant": "Consultor",
     "withMentor": "Mentor",
     "workspaceMembers": "workspace members",
-    "zoomDesc": "Auto-import meeting recordings and transcripts"
+    "zoomDesc": "Auto-import meeting recordings and transcripts",
+    "meetingLinkHint": "(optional if using Teams sync)",
+    "meetingLinkPlaceholder": "Optional — Teams link added automatically if synced"
   },
   "sessionsEmpty": {
     "description": "Your consultant or program will schedule your first session soon.",
@@ -8873,9 +8915,13 @@
     "failedToUpdatePriority": "Failed to update priority",
     "pleaseFillAllFields": "Please fill all fields",
     "pleaseFillRequiredFields": "Please fill required fields",
-    "prioritySetToPriorityFor": "Priority set to ${priority} for{{ selectedCount }} workspaces",
     "sessionScheduledSuccessfully": "Session scheduled successfully",
-    "taskTitleIsRequired": "Task title is required"
+    "taskTitleIsRequired": "Task title is required",
+    "hero": {
+      "afternoon": "Good afternoon{{name}}",
+      "evening": "Good evening{{name}}",
+      "morning": "Good morning{{name}}"
+    }
   },
   "staffCockpit": {
     "claimRequests": "Claim Requests",
@@ -8992,16 +9038,19 @@
     "validation": "Validation"
   },
   "startupChangeRequests": {
-    "approvalNotice": "Approval Notice",
+    "approvalNotice": "Changes to legal/tax fields (name, VAT number, address, contacts) will be sent to the team for validation.",
     "cancelled": "Cancelado",
     "description": "Alterações a campos sensíveis são validadas pela equipa antes de serem aplicadas.",
     "justification": "Justificação (opcional)",
-    "justificationPlaceholder": "Justification Placeholder",
+    "justificationPlaceholder": "e.g. We moved office, please update the address.",
     "pendingShort": "pendente(s)",
     "reviewNotes": "Nota da equipa",
     "submitButton": "Enviar para validação",
     "submitted": "Pedido(s) enviado(s) para validação da equipa",
-    "title": "Pedidos de alteração"
+    "title": "Pedidos de alteração",
+    "approved": "Approved",
+    "pending": "Awaiting validation",
+    "rejected": "Rejected"
   },
   "startupSettings": {
     "address": "Address",
@@ -9009,7 +9058,7 @@
     "contactName": "Contact name",
     "contactPhone": "Contact phone",
     "description": "Description",
-    "descriptionPlaceholder": "Description Placeholder",
+    "descriptionPlaceholder": "Describe your startup, its mission and what you're building...",
     "editDescription": "Edit your startup's public information",
     "foundedDate": "Founded Date",
     "imageSizeLimit": "Image must be less than 2MB",
@@ -9045,7 +9094,13 @@
   "story": {
     "desc": "Journey timeline — milestones, sessions, and progress.",
     "empty": "Your story begins when you complete your first milestone, session, or KPI.",
-    "title": "A tua história"
+    "title": "A tua história",
+    "kind": {
+      "kpi": "KPI",
+      "milestone": "Milestone",
+      "session": "Session",
+      "stage": "Stage"
+    }
   },
   "streakHero": {
     "keepItUp": "Keep coming back weekly to build your streak.",
@@ -9070,7 +9125,7 @@
     "campaignCreated": "Survey campaign created",
     "campaignDescription": "Description",
     "campaignLaunchFailed": "Failed to launch campaign",
-    "campaignLaunched": "Campaign launched!",
+    "campaignLaunched": "Campaign launched — {{instancesCreated}} surveys created.",
     "campaignName": "Campaign Name",
     "campaigns": "Campaigns",
     "closeCampaign": "Close Campaign",
@@ -9139,7 +9194,9 @@
     "typeSelect": "Single Select",
     "typeText": "Text",
     "typeTextarea": "Long Text",
-    "viewResponses": "View Responses"
+    "viewResponses": "View Responses",
+    "saveResponseFailed": "Failed to save survey",
+    "launchFailed": "Failed to launch campaign"
   },
   "systemSettings": {
     "configureCredentials": "Configurar credenciais",
@@ -9203,7 +9260,7 @@
     "noMembersDesc": "No co-founders added yet",
     "noMembersTitle": "No team members yet",
     "phone": "Phone",
-    "removeMemberConfirm": "Remove this co-founder?",
+    "removeMemberConfirm": "Remove {{name}} from the team?",
     "removeMemberTitle": "Remove co-founder?",
     "role": "Role",
     "saveChanges": "Save Changes",
@@ -9262,7 +9319,6 @@
   "templates": {
     "actionsCreatedFromAI": "Created {{count}} action items from AI recommendations",
     "aiAnalysis": "AI Analysis",
-    "aiAnalysisComplete": "AI analysis complete",
     "aiAnalyze": "AI Analyze",
     "aiCoach": "AI Coach",
     "aiCoachComplete": "AI Coach analysis complete",
@@ -9696,7 +9752,6 @@
     "generateAnalysis": "Generate Analysis",
     "hiddenFromFounder": "Hidden from founder",
     "hideFromFounder": "Hide from founder",
-    "improvements": "Suggested Improvements",
     "inProgress": "In Progress",
     "kpiSuggestions": "KPI Suggestions",
     "locationContract": "Location & Contract",
@@ -9758,7 +9813,6 @@
       "medium": "Medium",
       "urgent": "Urgent"
     },
-    "questions": "Questions to Consider",
     "reAnalyze": "Re-analyze",
     "reanalyze": "Re-analyze",
     "recommendApprove": "Recommend Approve",
@@ -9865,7 +9919,6 @@
   },
   "triage": {
     "chaseError": "Failed to send follow-up message",
-    "chaseSuccess": "Follow-up sent",
     "chaseSuccessDescription": "The founder has been notified about overdue actions",
     "chaseTooltip": "Chase Tooltip",
     "filters": {
@@ -10124,7 +10177,10 @@
       "schedule_session": "Schedule Session",
       "stage_gate_review": "Stage Review",
       "triage": "Triage",
-      "validate_actions": "Validate Actions"
+      "validate_actions": "Validate Actions",
+      "counter_sign_contract": "Counter-sign contract",
+      "financial_assumption_skipped": "Review financial assumption",
+      "milestone_missed": "Missed milestone"
     },
     "updateFailed": "Failed to update work queue",
     "updated": "Work queue updated",
@@ -10226,7 +10282,7 @@
     "reports": "Reports",
     "requestMentor": "Request Mentor",
     "responsibleConsultant": "Your Consultant",
-    "review": "Review{{ decision }}",
+    "review": "Review recorded: {{decision}}",
     "scheduleSession": "Schedule Session",
     "sessions": "Sessions",
     "settings": "Settings",

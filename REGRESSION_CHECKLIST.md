@@ -1,3 +1,5 @@
+> **SUPERSEDED** — documento histórico. O estado em vigor está em `PUBLISH_READY.md`.
+
 # Regression Checklist — Startup Leiria Ecosystem OS (Release Candidate RC-3)
 
 **Date**: 2026-02-20  

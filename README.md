@@ -117,3 +117,13 @@ Ensure environment variables are configured in your hosting platform.
 ## License
 
 Private - All rights reserved.
+
+## Contribution rules (RC9 lessons)
+
+- Every new migration with `CREATE FUNCTION … SECURITY DEFINER` ends with `REVOKE ALL ON FUNCTION … FROM PUBLIC, anon, authenticated;` before the intended `GRANT`s. `REVOKE FROM PUBLIC` alone is not enough on Supabase.
+- No client `update`/`delete`/`insert` without `.select('id')` and a check of affected rows when the result matters to the user. A success toast only fires after that check.
+- No `try/catch` around supabase-js calls, `invokeWithAuth`, or Resend: read the `{ error }` instead.
+- No `as any`/`as never` on `insert`/`update` payloads. Twelve of this round's defects were non-existent columns that `tsc` would have caught.
+- Buttons visible only to users RLS lets write. The client's `isStaff` includes backoffice; the database's `is_staff()` does not. Use `can_access_backoffice()` in the database and `isBackoffice` on the client when the backoffice owns the flow.
+- New i18n keys ship with hand-written PT and EN in the same commit.
+- pgTAP before the SQL, run on the harness with Supabase default privileges emulated (P1.11).

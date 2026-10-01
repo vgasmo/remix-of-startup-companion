@@ -119,7 +119,7 @@ export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }
         status: decision,
         conditions: decision === 'conditional' ? conditions.trim() : undefined,
       });
-      notify.success(t('workspace.review', { decision: decision }));
+      notify.success(t('workspace.review', { decision: t(`governance.${decision}`) }));
       setShowApproveDialog(false);
       setSelectedReview(null);
       setDecision('approved');

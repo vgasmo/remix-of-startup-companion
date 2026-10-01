@@ -1,7 +1,7 @@
 # Estado de publicação (Publish Readiness)
 
-**Última verificação:** 2026-09-08 (12:40 UTC)
-**Veredicto:** ⚠️ **NO-GO** — todos os testes automáticos locais passam, falta a validação em ambiente de teste (staging).
+**Última verificação:** 2026-10-01 — auditoria da RC9, Parte 1/5. Cobre o código e os documentos descritos nesta ronda; não cobre nenhuma validação em staging nem o smoke manual de 14/set.
+**Veredicto:** ❌ **NO-GO** — quatro jobs do CI estão vermelhos em `main`, há seis migrações aplicadas depois da última verificação, e o ledger regista itens `FIXED + PASS` que na verdade falham (P4.3, P4.6, P2.9).
 
 Fonte de verdade: `docs/rc5/results.md` / `docs/rc5/results.json` (gerados por `bun run rc5:verify`)
 e `docs/rc5/evidence-ledger.md`.
@@ -34,6 +34,8 @@ e `docs/rc5/evidence-ledger.md`.
 |---|---|---|
 | Testes de comportamento em staging (E2E por perfil, 4 tamanhos de ecrã) | Exigem um ambiente de teste separado com credenciais próprias | Responsável de release (ops) |
 | Testes de falha de serviços externos (Graph / email) | Precisam de tenant e caixa de correio de teste | Responsável de release |
+| CI verde em `main` | Quatro jobs estão vermelhos (i18n-sync-guard, db-tests, e2e, deno-check-edge) | Equipa de engenharia |
+| Verificação das entregas de 14/set | Nome da startup no registo, pesquisa em Atribuir Workspace, ausências, inquéritos públicos — ainda por confirmar | Equipa de engenharia / QA |
 
 Comando único para fechar estes pontos (a correr por quem tem acesso a staging):
 
@@ -47,8 +49,7 @@ Os testes manuais estão listados, um a um, em
 São os únicos passos que exigem uma pessoa: dependem de contas reais, caixa de
 correio e do tenant Microsoft, por isso não podem ser automatizados aqui.
 
-Quando `docs/rc5/results.json` indicar `"overall": "pass"` e o smoke manual
-(`docs/rc5/release-checklist.md`) estiver limpo, o veredicto passa a **GO**.
+O veredicto só passa a **GO** quando todos os jobs do CI estiverem verdes no SHA a publicar, `docs/rc5/results.json` indicar `"overall": "pass"`, e o smoke manual (`docs/rc5/release-checklist.md`) estiver limpo.
 
 ---
 
