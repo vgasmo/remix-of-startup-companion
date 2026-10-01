@@ -1,3 +1,5 @@
+> **SUPERSEDED** — documento histórico. O estado em vigor está em `PUBLISH_READY.md`.
+
 # RELEASE CANDIDATE AUDIT — UX + i18n + Navigation + Security
 
 **Date**: 2026-02-19  
