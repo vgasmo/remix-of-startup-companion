@@ -14,6 +14,43 @@ function generateSecurePassword(): string {
   return Array.from(arr, b => chars[b % chars.length]).join('')
 }
 
+/**
+ * Envia ao founder criado agora o email de acesso (definir password).
+ * O cliente de auth é PKCE: o link usa o hashed_token e é validado em /reset-password com verifyOtp.
+ * Best-effort: nunca lança e devolve false se não enviou.
+ */
+async function sendFounderAccessEmail(supabase: any, email: string, fullName: string): Promise<boolean> {
+  const resendKey = Deno.env.get('RESEND_API_KEY')
+  if (!resendKey) return false
+  const appUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://fb.startupleiria.com'
+  const { data: link, error: linkErr } = await supabase.auth.admin.generateLink({ type: 'recovery', email })
+  const hashed: string | undefined = link?.properties?.hashed_token
+  if (linkErr || !hashed) {
+    console.warn('[founderAccount] generateLink failed:', linkErr?.message)
+    return false
+  }
+  const accessUrl = `${appUrl}/reset-password?token_hash=${encodeURIComponent(hashed)}&type=recovery`
+  const safeName = fullName.replace(/[&<>]/g, (c) => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'))
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'Startup Leiria <noreply@startupleiria.com>',
+        to: [email],
+        subject: 'A sua conta na plataforma Startup Leiria',
+        html: `<p>Olá ${safeName},</p><p>O contrato foi assinado e a sua conta na plataforma Startup Leiria já está criada.</p><p><a href='${accessUrl}'>Definir a minha password</a></p><p>Se o link expirar, use «Esqueci-me da password» em ${appUrl}/login com este email.</p>`,
+      }),
+    })
+    if (!res.ok) console.warn('[founderAccount] access email failed:', res.status, await res.text())
+    return res.ok
+  } catch (e) {
+    // fetch lança em erro de rede
+    console.warn('[founderAccount] access email failed:', String(e))
+    return false
+  }
+}
+
 export type FounderContractInput = {
   id: string
   workspace_id: string | null
@@ -58,6 +95,7 @@ export async function autoCreateFounderAccount(
     }
 
     let userId: string
+    let createdNow = false
     if (existingUser) {
       userId = existingUser.id
     } else {
@@ -75,29 +113,33 @@ export async function autoCreateFounderAccount(
       })
       if (createErr) throw createErr
       userId = newUser.user.id
-
-      try {
-        await supabase.auth.admin.generateLink({
-          type: 'recovery',
-          email,
-          options: {
-            redirectTo: `${Deno.env.get('PUBLIC_APP_URL') || 'https://fb.startupleiria.com'}/reset-password`,
-          },
-        })
-      } catch (linkErr) {
-        console.warn('[founderAccount] recovery link failed (non-fatal):', linkErr)
-      }
+      createdNow = true
     }
 
-    // Ensure a profile row exists so the founder shows up in the user list
-    // even if the auth account pre-existed (in which case the on_auth_user_created
-    // trigger has already fired and won't fire again).
+    // Conta existente: nunca reativar uma conta suspensa (só o admin reativa, P1.1/P2.1).
+    // Os chamadores abrem a triagem 'Convidar founder' quando ok=false; o staff decide.
+    const { data: currentProfile } = await supabase
+      .from('profiles')
+      .select('account_status')
+      .eq('id', userId)
+      .maybeSingle()
+    if (currentProfile?.account_status === 'suspended') {
+      return { ok: false, userId, reason: 'account_suspended' }
+    }
+
+    // Garantir o perfil (a conta pode ser anterior ao trigger on_auth_user_created) sem reescrever
+    // o nome de um perfil existente, e aprovar só contas pendentes.
     await supabase
       .from('profiles')
       .upsert(
         { id: userId, email, full_name: fullName, account_status: 'approved' },
-        { onConflict: 'id' },
+        { onConflict: 'id', ignoreDuplicates: true },
       )
+    await supabase
+      .from('profiles')
+      .update({ account_status: 'approved', updated_at: new Date().toISOString() })
+      .eq('id', userId)
+      .eq('account_status', 'pending')
 
     await supabase
       .from('user_roles')
@@ -122,6 +164,23 @@ export async function autoCreateFounderAccount(
         .from('workspaces')
         .update({ status: 'claimed', updated_at: new Date().toISOString() })
         .eq('id', contract.workspace_id)
+    }
+
+    // Fechar a triagem 'Convidar founder' que o reconcile_contract_founders abriu (trigger ao ativar/ligar
+    // o contrato) antes de a conta existir. Só a 'missing_auth_user': a de 'access_email_failed' fica aberta.
+    await supabase
+      .from('staff_work_queue_items')
+      .update({ status: 'done', updated_at: new Date().toISOString() })
+      .eq('workspace_id', contract.workspace_id)
+      .eq('type', 'triage')
+      .in('status', ['open', 'in_progress'])
+      .contains('evidence_json', { purpose: 'invite_founder', contract_id: contract.id, reason: 'missing_auth_user' })
+
+    // Conta criada agora: o founder ainda não tem password, enviar-lhe o acesso.
+    // Se o email falhar, o staff recebe a triagem para enviar o acesso à mão.
+    if (createdNow) {
+      const sent = await sendFounderAccessEmail(supabase, email, fullName)
+      if (!sent) await enqueueFounderInviteTask(supabase, contract, 'access_email_failed')
     }
 
     return { ok: true, userId }
@@ -160,4 +219,3 @@ export async function enqueueFounderInviteTask(
     console.warn('[founderAccount] enqueue work-queue failed (non-fatal):', err)
   }
 }
-

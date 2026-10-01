@@ -278,7 +278,7 @@ Deno.serve(async (req) => {
       // update returns no rows and we hand out a link that will 404.
       const { data: existing, error: existingErr } = await supabase
         .from('startup_contracts')
-        .select('id, status, contract_number, organization_name, legal_representative_email, legal_representative_name, workspace:workspaces(startup:startups(name))')
+        .select('id, status, contract_number, organization_name, legal_representative_email, legal_representative_name, signature_provider, workspace:workspaces(startup:startups(name))')
         .eq('id', contractId)
         .maybeSingle()
 
@@ -292,6 +292,16 @@ Deno.serve(async (req) => {
         })
       }
 
+      // Só se emite link para contratos por assinar (nunca para assinados, terminados ou expirados)
+      if (!['draft', 'pending_signature'].includes(String((existing as any).status))) {
+        return new Response(JSON.stringify({
+          error: 'contract_not_signable',
+          message: 'O contrato já não está por assinar.',
+        }), {
+          status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
       const onboardingToken = generateToken()
       const onboardingTokenHashStore = await sha256Hex(onboardingToken)
       const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
@@ -301,6 +311,8 @@ Deno.serve(async (req) => {
         .update({
           onboarding_token_hash: onboardingTokenHashStore,
           onboarding_token_expires_at: expiresAt.toISOString(),
+          // O link /contract-signing é o da assinatura nativa: sem fornecedor definido, fica 'assinatura_digital'
+          ...((existing as any).signature_provider ? {} : { signature_provider: 'assinatura_digital' }),
         })
         .eq('id', contractId)
 
@@ -851,6 +863,22 @@ Deno.serve(async (req) => {
       })
     }
 
+    // O link só aceita escritas enquanto o contrato está por assinar
+    const linkContractStatus = String((contract as any).status ?? '')
+    const linkSigStatus = String((contract as any).signature_status ?? '')
+    if (['terminated', 'expired', 'suspended'].includes(linkContractStatus)) {
+      return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
+        status: 410, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const signingClosed = linkContractStatus === 'active'
+      || ['completed', 'signed', 'partially_signed', 'declined', 'voided'].includes(linkSigStatus)
+    if (signingClosed && action !== 'get_contract' && action !== 'download_pdf') {
+      return new Response(JSON.stringify({ error: 'contract_already_signed' }), {
+        status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // === GET contract data ===
     if (action === 'get_contract') {
       const { onboarding_token_expires_at, ...safeContract } = contract as any
@@ -871,6 +899,14 @@ Deno.serve(async (req) => {
       // Validate docKey: alphanumeric + underscore/hyphen, max 100 chars
       const SAFE_KEY_REGEX = /^[a-zA-Z0-9_-]{1,100}$/
       if (!SAFE_KEY_REGEX.test(docKey)) {
+        return new Response(JSON.stringify({ error: 'Invalid document key' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      // Só os documentos pedidos na página pública de assinatura
+      const ALLOWED_DOC_KEYS = new Set(['certidao_comercial', 'id_representante', 'comprovativo_morada', 'comprovativo_iban', 'pitch_deck', 'docs_associacoes'])
+      if (!ALLOWED_DOC_KEYS.has(docKey)) {
         return new Response(JSON.stringify({ error: 'Invalid document key' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
@@ -1088,6 +1124,13 @@ Deno.serve(async (req) => {
       finalPatch.legal_representative_email = finalPatch.legal_representative_email ?? signerEmail
       finalPatch.company_nif = finalPatch.company_nif ?? contract.company_nif
 
+      // A rota nativa não tem contra-assinatura: limpar o contra-assinante herdado de um envio DocuSign/PandaDoc
+      if (provider === 'assinatura_digital') {
+        finalPatch.counter_signer_email = null
+        finalPatch.counter_signer_name = null
+        finalPatch.counter_signer_status = null
+      }
+
       const { error: preSubmitErr } = await supabase
         .from('startup_contracts')
         .update(finalPatch)
@@ -1246,6 +1289,18 @@ Deno.serve(async (req) => {
     // NOTE: we do NOT claim "eIDAS compliant" — that requires a QTSP.
     if (action === 'digital_sign') {
       const { signatureData, consent } = body
+
+      // Só se assina pela rota nativa depois do submit_signing (dados, documentos e Regulamento aceites)
+      if ((contract as any).signature_provider !== 'assinatura_digital'
+          || (contract as any).signature_status !== 'sent_for_signature'
+          || !(contract as any).regulation_accepted_at) {
+        return new Response(JSON.stringify({
+          error: 'signing_not_ready',
+          message: 'Complete os passos anteriores (dados, documentos e Regulamento) antes de assinar.',
+        }), {
+          status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
 
       if (!signatureData?.typed_name || signatureData.typed_name.length < 3) {
         return new Response(JSON.stringify({ error: 'invalid_signature_name' }), {
@@ -1414,10 +1469,18 @@ Deno.serve(async (req) => {
       // === CANONICAL LIFECYCLE SYNC (shared helper): contract + workspace + intake + CRM ===
       // Public digital signing has no provider to retry — surface failure to the
       // founder so they can contact staff instead of silently appearing successful.
-      await supabase
+      const { error: activateErr } = await supabase
         .from('startup_contracts')
-        .update({ status: 'active' })
+        .update({
+          status: 'active',
+          onboarding_completed_at: new Date().toISOString(),
+          // o link público deixa de servir depois de assinado (como nos webhooks DocuSign/PandaDoc)
+          onboarding_token_hash: null,
+          onboarding_token_expires_at: null,
+        })
         .eq('id', contract.id)
+        .in('status', ['draft', 'pending_signature'])
+      if (activateErr) console.error('digital_sign: contract activation failed', activateErr.message)
 
       const wsId = (contract as any).workspace?.id ?? null
       const completedSync = await syncIntakeOnCompleted(supabase, contract.id, wsId, null, 'digital_sign_onboarding')

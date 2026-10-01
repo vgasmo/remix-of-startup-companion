@@ -116,7 +116,8 @@ serve(async (req) => {
     }
     
     const roles = userRoles?.map(r => r.role) || [];
-    if (!roles.includes('admin') && !roles.includes('consultor')) {
+    const isAdminOrConsultor = roles.includes('admin') || roles.includes('consultor');
+    if (!isAdminOrConsultor && !roles.includes('backoffice')) {
       return corsJsonResponse({ error: "Forbidden: Only staff can send invitations" }, req, 403);
     }
     
@@ -137,6 +138,43 @@ serve(async (req) => {
     
     const startup = workspace.startup as unknown as { id: string; name: string; main_contact_email: string | null; main_contact_name: string | null } | null;
     const startupName = startup?.name || 'Your Startup';
+
+    // Backoffice (converte leads, P2.2, mas não é membro das startups): só convida o founder da própria startup,
+    // ou seja o contacto principal ou o representante legal de um contrato deste workspace; nunca o próprio
+    // email nem uma conta da equipa (seria um auto-convite para ganhar acesso de membro).
+    if (!isAdminOrConsultor) {
+      const inviteEmail = payload.email.toLowerCase().trim();
+      if (payload.role !== 'founder' || inviteEmail === (user.email ?? '').toLowerCase().trim()) {
+        return corsJsonResponse({ error: "Forbidden: backoffice can only invite the startup founder" }, req, 403);
+      }
+      const { data: wsContracts } = await supabaseService
+        .from('startup_contracts')
+        .select('legal_representative_email')
+        .eq('workspace_id', payload.workspaceId);
+      const allowed = new Set(
+        [startup?.main_contact_email, ...(wsContracts ?? []).map((c: { legal_representative_email: string | null }) => c.legal_representative_email)]
+          .filter((e): e is string => !!e)
+          .map((e) => e.toLowerCase().trim()),
+      );
+      if (!allowed.has(inviteEmail)) {
+        return corsJsonResponse({ error: "Forbidden: backoffice can only invite the startup founder" }, req, 403);
+      }
+      const { data: invitedProfile } = await supabaseService
+        .from('profiles')
+        .select('id')
+        .eq('email', inviteEmail)
+        .maybeSingle();
+      if (invitedProfile?.id) {
+        const { data: invitedStaffRoles } = await supabaseService
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', invitedProfile.id)
+          .in('role', ['admin', 'consultor', 'backoffice', 'mentor_externo']);
+        if (invitedStaffRoles?.length) {
+          return corsJsonResponse({ error: "Este email pertence a uma conta da equipa." }, req, 403);
+        }
+      }
+    }
     
     // Check if invitation already exists
     const { data: existingInvite } = await supabaseService
