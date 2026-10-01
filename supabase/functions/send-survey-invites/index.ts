@@ -420,6 +420,12 @@ Deno.serve(async (req) => {
       if (ok) {
         sent += 1;
         recipient.instanceIds.forEach((id) => sentInstanceIds.add(id));
+        // Record immediately: a request timeout must not lose the sent state.
+        const { error: touchError } = await admin
+          .from('survey_instances')
+          .update({ last_reminder_sent_at: new Date().toISOString() })
+          .in('id', recipient.instanceIds);
+        if (touchError) log.warn('instance_touch_failed', { message: touchError.message });
       } else {
         failures.push({ email: recipient.email, error: lastError });
         log.warn('survey_invite_failed', { error: lastError });
