@@ -67,37 +67,18 @@ Deno.serve(async (req) => {
       return corsJsonResponse({ error: 'integration_type required' }, req, 400);
     }
 
-    // Validate UUID format for Graph API settings
+    const rawSettings = body.settings ?? body.settings_json;
     if (body.integration_type === 'graph_api') {
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      const settings = (body.settings ?? {}) as { tenant_id?: string; client_id?: string };
-      if (settings.tenant_id && !uuidRegex.test(settings.tenant_id)) {
-        return corsJsonResponse({ error: 'Invalid tenant_id format' }, req, 400);
-      }
-      if (settings.client_id && !uuidRegex.test(settings.client_id)) {
-        return corsJsonResponse({ error: 'Invalid client_id format' }, req, 400);
-      }
+      const s = (rawSettings ?? {}) as { tenant_id?: string; client_id?: string };
+      if (s.tenant_id && !uuidRegex.test(s.tenant_id)) return corsJsonResponse({ error: 'Invalid tenant_id format' }, req, 400);
+      if (s.client_id && !uuidRegex.test(s.client_id)) return corsJsonResponse({ error: 'Invalid client_id format' }, req, 400);
     }
-
-
-    // SECURITY: Never store client_secret in database
-    // Accept both 'settings' and 'settings_json' from client
-    const rawSettings = body.settings ?? body.settings_json;
     const { client_secret: _removed, ...sanitizedSettings } = rawSettings ?? {};
-    const finalSettings = { ...sanitizedSettings };
-
-    if (_removed) {
-      log.warn('Rejected attempt to store client_secret in database - use MS_GRAPH_CLIENT_SECRET env var');
-    }
-
-    // When the caller omits settings entirely (e.g. a pure enable/disable toggle),
-    // never clobber the stored credentials.
-    const payload: Record<string, unknown> = {
-      integration_type: body.integration_type,
-      is_enabled: body.is_enabled ?? true,
-      created_by: user.id,
-    };
-    if (rawSettings !== undefined) payload.settings_json = finalSettings;
+    if (_removed) log.warn('Rejected attempt to store client_secret in database - use MS_GRAPH_CLIENT_SECRET env var');
+    const payload: Record<string, unknown> = { integration_type: body.integration_type, created_by: user.id };
+    if (body.is_enabled !== undefined) payload.is_enabled = body.is_enabled;
+    if (rawSettings !== undefined) payload.settings_json = sanitizedSettings;
 
     // Upsert settings using service role
     const { data, error } = await supabase
@@ -123,8 +104,8 @@ Deno.serve(async (req) => {
         created_at: data.created_at,
         updated_at: data.updated_at,
         settings_json: {
-          tenant_id: finalSettings.tenant_id,
-          client_id: finalSettings.client_id,
+          tenant_id: sanitizedSettings.tenant_id,
+          client_id: sanitizedSettings.client_id,
           // NEVER return client_secret
         },
       },

@@ -47,20 +47,25 @@ serve(async (req) => {
 
     console.log(`Sending Slack notification for workspace ${workspace_id}`);
 
-    // Get workspace users with Slack enabled
-    const { data: workspaceUsers, error: usersError } = await supabase
-      .from("workspace_users")
-      .select(`
-        user_id,
-        notification_preferences(slack_enabled, slack_webhook_url)
-      `)
-      .eq("workspace_id", workspace_id)
-      .eq("active", true);
-
-    if (usersError) {
-      console.error("Error fetching users:", usersError);
-      throw usersError;
-    }
+    // Sem FK workspace_users -> notification_preferences: o embed dá PGRST200.
+    const { data: members, error: usersError } = await supabase
+      .from("workspace_users").select("user_id")
+      .eq("workspace_id", workspace_id).eq("active", true);
+    if (usersError) throw usersError;
+    const ids = (members ?? []).map((m: { user_id: string }) => m.user_id);
+    const { data: prefsRows, error: prefsError } = ids.length
+      ? await supabase.from("notification_preferences")
+          .select("user_id, slack_enabled, slack_webhook_url").in("user_id", ids)
+      : { data: [], error: null };
+    if (prefsError) throw prefsError;
+    type SlackPrefs = { user_id: string; slack_enabled: boolean | null; slack_webhook_url: string | null };
+    const prefsByUser = new Map<string, SlackPrefs>(
+      ((prefsRows ?? []) as SlackPrefs[]).map((p): [string, SlackPrefs] => [p.user_id, p]),
+    );
+    const workspaceUsers = ids.map((id: string) => ({
+      user_id: id,
+      notification_preferences: prefsByUser.has(id) ? [prefsByUser.get(id)!] : [],
+    }));
 
     const emoji = {
       info: "ℹ️",
@@ -109,7 +114,7 @@ serve(async (req) => {
           });
         }
 
-        await fetch(prefs.slack_webhook_url, {
+        const res = await fetch(prefs.slack_webhook_url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -123,6 +128,10 @@ serve(async (req) => {
           }),
         });
 
+        if (!res.ok) {
+          console.error(`Slack webhook ${res.status} for user ${user.user_id}`);
+          continue;
+        }
         sentCount++;
         console.log(`Slack notification sent to user ${user.user_id}`);
       } catch (slackError) {

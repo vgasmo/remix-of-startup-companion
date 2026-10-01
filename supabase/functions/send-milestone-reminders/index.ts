@@ -67,28 +67,41 @@ serve(withCronRunLogging('send-milestone-reminders', async (req) => {
       today.setHours(0, 0, 0, 0);
       const daysUntilDue = Math.ceil((targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-      // Get workspace users with their notification preferences
-      const { data: workspaceUsers, error: usersError } = await supabase
-        .from("workspace_users")
-        .select(`
-          user_id,
-          role,
-          profiles!inner(id, email, full_name, preferred_language),
-          notification_preferences(
-            milestone_reminders_enabled,
-            milestone_reminder_days,
-            email_on_founder_delays,
-            slack_enabled,
-            slack_webhook_url
-          )
-        `)
-        .eq("workspace_id", milestone.workspace_id)
-        .eq("active", true);
+      // Sem FK workspace_users -> profiles / notification_preferences: o embed dá PGRST200.
+      const { data: members, error: usersError } = await supabase
+        .from("workspace_users").select("user_id, role")
+        .eq("workspace_id", milestone.workspace_id).eq("active", true);
+      if (usersError) { console.error("Error fetching workspace users:", usersError); continue; }
+      type MemberProfile = { id: string; email: string | null; full_name: string | null; preferred_language: string | null };
+      type ReminderPrefs = { user_id: string; milestone_reminders_enabled: boolean | null; milestone_reminder_days: number | null;
+        email_on_founder_delays: boolean | null; slack_enabled: boolean | null; slack_webhook_url: string | null };
+      const memberIds = ((members ?? []) as { user_id: string }[]).map((m) => m.user_id);
+      const { data: profileRows, error: profilesError } = memberIds.length
+        ? await supabase.from("profiles").select("id, email, full_name, preferred_language").in("id", memberIds)
+        : { data: [], error: null };
+      const { data: prefRows, error: prefsError } = memberIds.length
+        ? await supabase.from("notification_preferences")
+            .select("user_id, milestone_reminders_enabled, milestone_reminder_days, email_on_founder_delays, slack_enabled, slack_webhook_url")
+            .in("user_id", memberIds)
+        : { data: [], error: null };
+      if (profilesError || prefsError) { console.error("Error fetching member profiles/preferences:", profilesError ?? prefsError); continue; }
+      const profileById = new Map<string, MemberProfile>(((profileRows ?? []) as MemberProfile[]).map((p): [string, MemberProfile] => [p.id, p]));
+      const prefsByUser = new Map<string, ReminderPrefs>(((prefRows ?? []) as ReminderPrefs[]).map((p): [string, ReminderPrefs] => [p.user_id, p]));
+      const workspaceUsers = ((members ?? []) as { user_id: string; role: string }[])
+        .filter((m) => profileById.has(m.user_id)) // equivalente ao profiles!inner
+        .map((m) => ({ ...m, profiles: profileById.get(m.user_id)!,
+          notification_preferences: prefsByUser.has(m.user_id) ? [prefsByUser.get(m.user_id)!] : [] }));
 
-      if (usersError) {
-        console.error("Error fetching workspace users:", usersError);
+      // Um registo por (marco, dias antes): verificar uma vez, antes do ciclo, para todos os membros receberem
+      const { data: existingReminder } = await supabase
+        .from("milestone_reminders").select("id")
+        .eq("milestone_id", milestone.id).eq("days_before", daysUntilDue)
+        .limit(1).maybeSingle();
+      if (existingReminder) {
+        console.log(`Reminder already sent for milestone ${milestone.id}`);
         continue;
       }
+      let notifiedAny = false;
 
 
       for (const user of workspaceUsers || []) {
@@ -98,19 +111,6 @@ serve(withCronRunLogging('send-milestone-reminders', async (req) => {
 
         // Skip if reminders disabled or not the right day
         if (!remindersEnabled || daysUntilDue !== reminderDays) {
-          continue;
-        }
-
-        // Check if we already sent this reminder
-        const { data: existingReminder } = await supabase
-          .from("milestone_reminders")
-          .select("id")
-          .eq("milestone_id", milestone.id)
-          .eq("days_before", daysUntilDue)
-          .single();
-
-        if (existingReminder) {
-          console.log(`Reminder already sent for milestone ${milestone.id}`);
           continue;
         }
 
@@ -207,7 +207,7 @@ serve(withCronRunLogging('send-milestone-reminders', async (req) => {
         // Send Slack notification if enabled
         if (prefs?.slack_enabled && prefs?.slack_webhook_url) {
           try {
-            await fetch(prefs.slack_webhook_url, {
+            const res = await fetch(prefs.slack_webhook_url, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -223,36 +223,38 @@ serve(withCronRunLogging('send-milestone-reminders', async (req) => {
                 ],
               }),
             });
-            slackSent++;
-            console.log(`Slack notification sent for milestone ${milestone.id}`);
+            if (res.ok) {
+              slackSent++;
+              console.log(`Slack notification sent for milestone ${milestone.id}`);
+            } else {
+              console.error(`Slack webhook ${res.status} for milestone ${milestone.id}`);
+            }
           } catch (slackError) {
             console.error("Error sending Slack:", slackError);
           }
         }
 
         // Create in-app notification
-        try {
-          await supabase.from("notifications").insert({
-            user_id: user.user_id,
-            type: "milestone_reminder",
-            title: s.notifTitle(daysUntilDue, dayWord),
-            message: s.notifMessage(milestone.title, startupName, dateStr),
-            link: `/workspace/${milestone.workspace_id}?tab=milestones-actions`,
-            metadata: { milestone_id: milestone.id, days_until_due: daysUntilDue },
-          });
-          notificationsSent++;
-        } catch (notifError) {
-          console.error("Error creating notification:", notifError);
-        }
+        const { error: nErr } = await supabase.from("notifications").insert({
+          user_id: user.user_id,
+          type: "milestone_reminder",
+          title: s.notifTitle(daysUntilDue, dayWord),
+          message: s.notifMessage(milestone.title, startupName, dateStr),
+          link: `/workspace/${milestone.workspace_id}?tab=milestones-actions`,
+          metadata: { milestone_id: milestone.id, days_until_due: daysUntilDue },
+        });
+        if (nErr) console.error("Error creating notification:", nErr); else notificationsSent++;
 
-        // Record that we sent this reminder
+        notifiedAny = true;
+      }
+
+      if (notifiedAny) {
         await supabase.from("milestone_reminders").insert({
           milestone_id: milestone.id,
           workspace_id: milestone.workspace_id,
           reminder_type: "combined",
           days_before: daysUntilDue,
         });
-
       }
     }
 

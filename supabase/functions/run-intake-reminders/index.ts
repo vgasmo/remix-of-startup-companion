@@ -253,8 +253,11 @@ Deno.serve(withCronRunLogging('run-intake-reminders', async (req) => {
       }
     }
 
+    const failed = intakesFailed + signatureFailed;
+    const sent = intakesSent + signatureSent;
     return new Response(JSON.stringify({
-      success: true,
+      success: failed === 0,
+      status: failed === 0 ? 'ok' : (sent > 0 ? 'partial' : 'failed'),
       intakeRemindersSent: intakesSent,
       intakeRemindersFailed: intakesFailed,
       signatureRemindersSent: signatureSent,
