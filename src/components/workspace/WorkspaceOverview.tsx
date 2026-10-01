@@ -34,7 +34,6 @@ import {
 import { useWorkspaceActions, useWorkspaceKpis, useWorkspaceMilestones, useWorkspaceNextSession, useWorkspaceSessions, useStages } from '@/hooks/useWorkspaceData';
 import { HealthScorePanel } from '@/components/workspace/HealthScorePanel';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { WorkspaceOnboardingWizard } from '@/components/workspace/WorkspaceOnboardingWizard';
 import { ProgressTimeline } from '@/components/workspace/ProgressTimeline';
 import { ProgressReportView } from '@/components/workspace/ProgressReportView';
 import { MonthlyCheckinBanner } from '@/components/checkins/MonthlyCheckinBanner';
@@ -126,7 +125,6 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
   // Auto-materialize acceleration deliverables into workspace milestones/actions
   useAutoMaterializeDeliverables(workspace.id, workspace.program_id, workspace.program?.program_type ?? undefined);
 
-  const [showOnboardingWizard, setShowOnboardingWizard] = useState(false);
   const [showQuickKpiModal, setShowQuickKpiModal] = useState(false);
   const [activeSurveyId, setActiveSurveyId] = useState<string | null>(null);
   const [showPrepSheet, setShowPrepSheet] = useState(false);
@@ -379,15 +377,6 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
         </DialogContent>
       </Dialog>
 
-      {/* Onboarding Wizard */}
-      <WorkspaceOnboardingWizard
-        open={showOnboardingWizard}
-        onOpenChange={setShowOnboardingWizard}
-        workspaceId={workspace.id}
-        stage={workspace.stage}
-        startupName={workspace.startup?.name || 'Workspace'}
-      />
-      
       {/* Onboarding CTA for empty workspaces - FOUNDERS ONLY */}
       {isWorkspaceEmpty && canWrite && isFounder && (
         <Card className="border-dashed border-primary/50 bg-primary/5">
@@ -404,7 +393,8 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
                   </p>
                 </div>
               </div>
-              <Button onClick={() => setShowOnboardingWizard(true)}>
+              {/* abre o assistente completo do WorkspaceDetail (com o passo Empresa e a conclusão do onboarding) */}
+              <Button onClick={() => setSearchParams({ onboarding: 'true' })}>
                 <Sparkles className="h-4 w-4 mr-2" />
                 {t('workspaceOverview.runSetupWizard')}
               </Button>

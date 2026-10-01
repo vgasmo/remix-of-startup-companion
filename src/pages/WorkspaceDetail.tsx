@@ -92,10 +92,19 @@ export default function WorkspaceDetail() {
   useAutoMaterializeDeliverables(workspace?.id, workspace?.program_id, programType);
   
   useEffect(() => {
-    if (shouldShowOnboarding && workspace && isFounder && myWorkspaceRole !== undefined && myWorkspaceRole !== 'team_member') {
+    if (!workspace || !isFounder || myWorkspaceRole === undefined || myWorkspaceRole === 'team_member') return;
+    // Workspace ativo com o onboarding por fazer: abrir o assistente uma vez por sessão (sem precisar de ?onboarding=true)
+    const pending = workspace.needs_onboarding === true && (workspace.status === 'active' || workspace.status === 'claimed');
+    const autoKey = `ws-onboarding-autoshown-${workspace.id}`;
+    let autoShown = false;
+    try { autoShown = sessionStorage.getItem(autoKey) === '1'; } catch { /* sessionStorage indisponível */ }
+    if (shouldShowOnboarding || (pending && !autoShown)) {
       setShowOnboardingWizard(true);
-      searchParams.delete('onboarding');
-      setSearchParams(searchParams, { replace: true });
+      try { sessionStorage.setItem(autoKey, '1'); } catch { /* sessionStorage indisponível */ }
+      if (shouldShowOnboarding) {
+        searchParams.delete('onboarding');
+        setSearchParams(searchParams, { replace: true });
+      }
     }
   }, [shouldShowOnboarding, workspace, isFounder, myWorkspaceRole, searchParams, setSearchParams]);
 

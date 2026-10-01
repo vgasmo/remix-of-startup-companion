@@ -34,6 +34,16 @@ export default function ResetPassword() {
     const verifyRecovery = async () => {
       try {
         const url = new URL(window.location.href);
+        // Link de acesso do founder criado pelo contrato (token_hash do generateLink; o cliente é PKCE)
+        const tokenHash = url.searchParams.get('token_hash');
+        if (tokenHash && url.searchParams.get('type') === 'recovery') {
+          const { error: otpErr } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+          if (otpErr) throw otpErr;
+          recoveryConfirmed = true;
+          window.history.replaceState({}, '', '/reset-password');
+          setVerifying(false);
+          return;
+        }
         const code = url.searchParams.get('code');
         const errorParam = url.searchParams.get('error') || url.searchParams.get('error_description');
         const hash = window.location.hash || '';

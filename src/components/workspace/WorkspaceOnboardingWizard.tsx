@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { format, addDays, addWeeks } from 'date-fns';
 import {
   Sparkles,
@@ -306,6 +307,7 @@ export function WorkspaceOnboardingWizard({
   const [currentStep, setCurrentStep] = useState<WizardStep>('welcome');
   const [prevStep, setPrevStep] = useState<WizardStep>('welcome');
   const { t, i18n } = useTranslation();
+  const queryClient = useQueryClient();
   const lang = i18n.language === 'pt' ? 'pt' : 'en';
   const [isProcessing, setIsProcessing] = useState(false);
   const confettiTriggered = useRef(false);
@@ -517,7 +519,11 @@ export function WorkspaceOnboardingWizard({
       goToStep('kpis');
     } catch (err) {
       logger.error('Failed to save company details', {}, err);
-      notify.error(t('onboardingWizard.companyFailed', { defaultValue: 'Failed to save company details' }));
+      // P4.2: dados de uma startup já estabelecida só mudam por pedido de alteração
+      const msg = (err as { message?: string })?.message ?? '';
+      notify.error(msg.includes('startup_change_requires_approval')
+        ? t('onboardingWizard.changeNeedsApproval', { defaultValue: 'Estes dados já estão validados. Use Definições → pedido de alteração.' })
+        : t('onboardingWizard.companyFailed', { defaultValue: 'Failed to save company details' }));
     } finally {
       setIsProcessing(false);
     }
@@ -526,16 +532,19 @@ export function WorkspaceOnboardingWizard({
   // Mark onboarding as complete only when wizard reaches the 'complete' step
   const handleCompleteOnboarding = async () => {
     if (isFounderOnboarding) {
-      try {
-        // RPC bypasses the missing UPDATE policy on workspaces for founders.
-        const { error } = await supabase.rpc('complete_workspace_onboarding', {
-          p_workspace_id: workspaceId,
-        });
-        if (error) throw error;
-        logger.debug('onboarding_completed', { workspaceId });
-      } catch (err) {
-        logger.error('onboarding_completion_failed', { workspaceId }, err);
+      // RPC bypasses the missing UPDATE policy on workspaces for founders.
+      const { error } = await supabase.rpc('complete_workspace_onboarding', {
+        p_workspace_id: workspaceId,
+      });
+      if (error) {
+        logger.error('onboarding_completion_failed', { workspaceId }, error);
+        notify.error(t('onboardingWizard.completeFailed', { defaultValue: 'Não foi possível concluir o onboarding. Tente novamente.' }));
+        return;
       }
+      logger.debug('onboarding_completed', { workspaceId });
+      await queryClient.invalidateQueries({ queryKey: ['founder-onboarding-state'] });
+      queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
     }
     onOpenChange(false);
   };

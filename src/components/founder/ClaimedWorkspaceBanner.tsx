@@ -27,6 +27,29 @@ export function ClaimedWorkspaceBanner({ founderState }: ClaimedWorkspaceBannerP
     return null;
   }
 
+  // Workspace ativo com o onboarding por fazer (criado por contrato, conversão ou candidatura aprovada)
+  if (founderState.status === 'needs_onboarding' && founderState.activeWorkspaceId) {
+    return (
+      <Card className="rounded-xl border-primary/30 bg-primary/5">
+        <CardContent className="py-4 flex items-start gap-3">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Rocket className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-sm">{t('claimStartup.onboardingTitle', { defaultValue: 'Configurar o seu workspace' })}</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('claimStartup.onboardingDesc', { defaultValue: 'Complete o processo de configuração para começar a utilizar a plataforma.' })}</p>
+            <div className="flex flex-wrap gap-2 mt-3">
+              <Button size="sm" className="h-7 text-xs gap-1" onClick={() => navigate(`/workspace/${founderState.activeWorkspaceId}?onboarding=true`)}>
+                <ArrowRight className="h-3 w-3" />
+                {t('claimStartup.startOnboarding', { defaultValue: 'Iniciar configuração' })}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (founderState.status === 'has_pending_workspace') {
     return (
       <Card className="rounded-xl border-warning/60 dark:border-warning/40 bg-warning/5 dark:bg-warning/5">
