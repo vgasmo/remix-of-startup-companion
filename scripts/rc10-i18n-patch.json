@@ -1,0 +1,75 @@
+{
+  "_leia_primeiro": "Anexo i18n do RC10. Mesmo formato e mesmo script do anexo do RC9 (scripts/rc9/apply-i18n-patch.mjs): 'update' altera chaves que já existem, 'add' cria chaves novas (se já existirem com o mesmo valor, nada muda). As chaves de ecosystem.* e workQueue.types.* têm exatamente os valores do anexo do RC9, por isso a ordem de aplicação dos dois anexos é indiferente.",
+  "pt": {
+    "update": {
+      "team.inviteHint": "Para dar acesso à plataforma a cofundadores ou à equipa, peça ao seu consultor (botão «Convidar» no topo do workspace).",
+      "crm.convertInviteFailed": "Workspace criado, mas não foi possível enviar o convite para {{email}}. Peça a um consultor que o envie com o botão «Convidar» no topo do workspace.",
+      "approval.responseTime": "Pode voltar a entrar a qualquer momento: assim que a conta for aprovada, entra diretamente.",
+      "claimStartup.pendingTiming": "Volte a entrar mais tarde para ver o resultado.",
+      "claimStartup.applicationPendingDesc": "A sua candidatura foi recebida e está a ser analisada pela nossa equipa. Volte a entrar mais tarde para ver o resultado.",
+      "founder.transitional.step3Pending": "Depois da aprovação, o workspace fica disponível na próxima vez que entrar.",
+      "founder.claimed.pendingDesc": "A sua candidatura está a ser analisada pela equipa. O workspace fica disponível assim que for aprovada.",
+      "founder.claimed.pendingDescNamed": "A sua candidatura para \"{{name}}\" está a ser analisada pela equipa. O workspace fica disponível assim que for aprovada.",
+      "founder.claimed.claimDesc": "O seu pedido de associação aguarda revisão pela equipa. Volte a entrar mais tarde para ver o resultado.",
+      "ecosystem.deleteLead": "Arquivar lead",
+      "ecosystem.leadDeleted": "Lead arquivada",
+      "ecosystem.confirmDeleteTitle": "Arquivar lead?",
+      "ecosystem.confirmDeleteDesc": "Arquivar \"{{name}}\"? A lead deixa de aparecer no Ecossistema. As notas e o histórico ficam guardados.",
+      "ecosystem.deleteLeadError": "Erro ao arquivar a lead"
+    },
+    "add": {
+      "contractDetail.markedSignedAwaitingFounder": "Contrato assinado, mas o workspace continua pendente porque ainda não tem membros ativos. Convide o founder (ou atribua um consultor) e depois aprove o workspace em Aprovações.",
+      "contractDetail.terminate.archiveFailed": "Contrato terminado, mas o workspace não foi arquivado: {{msg}}",
+      "contractDetail.terminate.archiveSkipped": "Contrato terminado. O workspace não foi arquivado porque tem outro contrato em vigor.",
+      "onboardingWizard.completeFailed": "Não foi possível concluir o onboarding. Tente novamente.",
+      "onboardingWizard.changeNeedsApproval": "Estes dados já estão validados. Peça a alteração em Definições.",
+      "invite.inviteMember": "Convidar",
+      "invite.inviteTitle": "Convidar para o workspace",
+      "invite.role": "Papel",
+      "invite.wrongAccount": "Este convite foi enviado para outro email. Termine sessão e entre com o email convidado.",
+      "invite.expiredDesc": "Este convite expirou. Peça um novo à equipa.",
+      "invite.switchAccount": "Terminar sessão e entrar com outro email",
+      "lifecycleMismatch.programRequired": "Escolha o programa",
+      "workQueue.types.counter_sign_contract": "Contra-assinar contrato",
+      "workQueue.types.financial_assumption_skipped": "Rever pressuposto financeiro",
+      "workQueue.types.milestone_missed": "Marco falhado"
+    }
+  },
+  "en": {
+    "update": {
+      "team.inviteHint": "To give co-founders or team members platform access, ask your consultant (\"Invite\" button at the top of the workspace).",
+      "crm.convertInviteFailed": "Workspace created, but the invitation to {{email}} could not be sent. Ask a consultant to send it with the \"Invite\" button at the top of the workspace.",
+      "approval.responseTime": "You can sign in again at any time: once your account is approved you will go straight in.",
+      "claimStartup.pendingTiming": "Sign in again later to see the outcome.",
+      "claimStartup.applicationPendingDesc": "Your application has been received and is being reviewed by our team. Sign in again later to see the outcome.",
+      "founder.transitional.step3Pending": "After approval, the workspace becomes available the next time you sign in.",
+      "founder.claimed.pendingDesc": "Your application is being reviewed by the team. The workspace becomes available once it is approved.",
+      "founder.claimed.pendingDescNamed": "Your application for \"{{name}}\" is being reviewed by the team. The workspace becomes available once it is approved.",
+      "founder.claimed.claimDesc": "Your association request is awaiting review by the team. Sign in again later to see the outcome.",
+      "ecosystem.deleteLead": "Archive lead",
+      "ecosystem.leadDeleted": "Lead archived",
+      "ecosystem.confirmDeleteTitle": "Archive lead?",
+      "ecosystem.confirmDeleteDesc": "Archive \"{{name}}\"? The lead will no longer appear in the Ecosystem. Notes and history are kept.",
+      "ecosystem.deleteLeadError": "Error archiving lead",
+      "ecosystem.leadRestored": "Lead restored"
+    },
+    "add": {
+      "contractDetail.markedSignedAwaitingFounder": "Contract signed, but the workspace stays pending because it has no active members yet. Invite the founder (or assign a consultant) and then approve the workspace in Approvals.",
+      "contractDetail.terminate.archiveFailed": "Contract terminated, but the workspace was not archived: {{msg}}",
+      "contractDetail.terminate.archiveSkipped": "Contract terminated. The workspace was not archived because it has another contract in force.",
+      "onboardingWizard.completeFailed": "Could not complete onboarding. Please try again.",
+      "onboardingWizard.changeNeedsApproval": "These details are already validated. Request the change in Settings.",
+      "invite.inviteMember": "Invite",
+      "invite.inviteTitle": "Invite to the workspace",
+      "invite.role": "Role",
+      "invite.wrongAccount": "This invitation was sent to another email. Sign out and sign in with the invited email.",
+      "invite.expiredDesc": "This invitation has expired. Ask the team for a new one.",
+      "invite.switchAccount": "Sign out and use another email",
+      "lifecycleMismatch.programRequired": "Choose the program",
+      "workQueue.types.counter_sign_contract": "Counter-sign contract",
+      "workQueue.types.financial_assumption_skipped": "Review financial assumption",
+      "workQueue.types.milestone_missed": "Missed milestone"
+    }
+  },
+  "remove": []
+}
