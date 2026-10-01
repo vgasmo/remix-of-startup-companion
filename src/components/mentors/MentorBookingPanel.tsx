@@ -74,7 +74,7 @@ export function MentorBookingPanel({
   // founder A already took.
   const { data: mentorBusySlots } = useMentorBusySlots(mentorId);
   // Blocked days/hours declared by the mentor/consultant — never bookable.
-  const { data: mentorTimeOff } = useConsultantTimeOff(mentorId);
+  const { data: mentorTimeOff, refetch: refetchTimeOff } = useConsultantTimeOff(mentorId);
   const createBooking = useCreateBooking();
   const updateStatus = useUpdateBookingStatus();
 
@@ -142,8 +142,8 @@ export function MentorBookingPanel({
 
   const isDateAvailable = (date: Date) => {
     if (isBefore(date, startOfDay(new Date()))) return false;
-    const dayOfWeek = date.getDay();
-    return availability?.some(a => a.day_of_week === dayOfWeek) || false;
+    if (!availability?.some(a => a.day_of_week === date.getDay())) return false;
+    return getAvailableSlotsForDate(date, 30).length > 0;
   };
 
   const handleBookSession = () => {
@@ -177,6 +177,7 @@ export function MentorBookingPanel({
           notify.error(t('mentors.bookingTimeOff', {
             defaultValue: 'O consultor bloqueou esse período. Escolha outro horário.',
           }));
+          void refetchTimeOff();
         } else if (msg.includes('24 hours notice')) {
           notify.error(t('mentors.bookingMinNotice', {
             defaultValue: 'As marcações devem ser feitas com pelo menos 24 horas de antecedência.',

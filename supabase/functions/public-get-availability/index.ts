@@ -8,6 +8,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { addDays, format } from "https://esm.sh/date-fns@3.6.0";
 import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { resolveFirstContactRoute, NoRouteError } from '../_shared/first-contact-routing.ts';
+import { lisbonWallClockToDate } from '../_shared/lisbonTime.ts';
 
 interface TimeSlot {
   date: string;
@@ -568,17 +569,20 @@ serve(async (req) => {
       // even when the Outlook calendar shows the time as free.
       if (consultantId) {
         try {
-          const { data: timeOff } = await supabase.rpc('get_consultant_time_off', {
+          const { data: timeOff, error: timeOffErr } = await supabase.rpc('get_consultant_time_off', {
             p_consultant_id: consultantId,
             p_from: format(now, 'yyyy-MM-dd'),
             p_to: format(addDays(now, 21), 'yyyy-MM-dd'),
           });
+          if (timeOffErr) {
+            return failClosed('time_off_unavailable', 'high', { message: timeOffErr.message });
+          }
           const blocks = (timeOff ?? []) as Array<{ starts_at: string; ends_at: string }>;
           if (blocks.length > 0) {
             for (const slot of slots) {
               if (!slot.available) continue;
-              // Lisbon wall clock (UTC+1/+2) — compare against absolute instants.
-              const slotStart = new Date(`${slot.date}T${slot.time}:00+01:00`);
+              // Lisbon wall clock (WET UTC+0 / WEST UTC+1)
+              const slotStart = lisbonWallClockToDate(slot.date, slot.time);
               const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
               const blocked = blocks.some((b) =>
                 new Date(b.starts_at) < slotEnd && new Date(b.ends_at) > slotStart

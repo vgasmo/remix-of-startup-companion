@@ -29,6 +29,14 @@ import {
 import { toast } from "sonner";
 import { Json } from "@/integrations/supabase/types";
 
+export const STAGE_LABELS: Record<string, string> = {
+  ideation: "Ideação",
+  validation: "Validação",
+  mvp: "MVP / Produto no mercado",
+  growth: "Crescimento",
+  scale: "Escala",
+};
+
 interface SurveyFormProps {
   instanceId: string;
   onComplete?: () => void;
@@ -76,14 +84,18 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
     });
 
     // Apply auto-fill from instance data
-    const autoFillData = data.instance.auto_filled_data as Record<string, unknown>;
+    const autoFillData = (data.instance.auto_filled_data ?? {}) as Record<string, unknown>;
     questions.forEach((q) => {
-      if (q.autoFillKey && autoFillData[q.autoFillKey] && !initial[q.id]) {
-        const value = autoFillData[q.autoFillKey];
-        if (value !== null && value !== undefined) {
-          initial[q.id] = String(value);
-          autoKeys.add(q.id);
-        }
+      const raw = q.autoFillKey ? autoFillData[q.autoFillKey] : undefined;
+      if (!q.autoFillKey || raw === null || raw === undefined || initial[q.id]) return;
+      let seeded = String(raw);
+      if (q.type === "select" && q.options && !q.options.includes(seeded)) {
+        const label = STAGE_LABELS[seeded];
+        seeded = label && q.options.includes(label) ? label : "";
+      }
+      if (seeded) {
+        initial[q.id] = seeded;
+        autoKeys.add(q.id);
       }
     });
 
@@ -378,7 +390,7 @@ export function QuestionField({
           disabled={disabled}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select an option" />
+            <SelectValue placeholder={t("surveys.selectOption", "Selecione uma opção")} />
           </SelectTrigger>
           <SelectContent>
             {question.options?.map((option) => (

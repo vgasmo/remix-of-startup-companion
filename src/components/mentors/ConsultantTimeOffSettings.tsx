@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,7 +33,7 @@ export function ConsultantTimeOffSettings() {
   const handleAdd = async () => {
     const startsAt = allDay ? toIso(startDate, '00:00') : toIso(startDate, startTime);
     const endsAt = allDay
-      ? new Date(new Date(`${endDate}T00:00:00`).getTime() + 24 * 60 * 60 * 1000).toISOString()
+      ? addDays(new Date(`${endDate}T00:00:00`), 1).toISOString() // meia-noite local seguinte (respeita a mudança de hora)
       : toIso(startDate, endTime);
 
     if (new Date(endsAt) <= new Date(startsAt)) {

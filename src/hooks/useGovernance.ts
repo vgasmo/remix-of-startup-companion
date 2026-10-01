@@ -229,12 +229,13 @@ export function useApproveStageGateReview() {
       });
 
       // Mark work queue item as done
-      await supabase
+      const { error: queueErr } = await supabase
         .from('staff_work_queue_items')
         .update({ status: 'done' })
         .eq('workspace_id', workspaceId)
         .eq('type', 'stage_gate_review')
-        .eq('status', 'open');
+        .in('status', ['open', 'in_progress']);
+      if (queueErr) notify.error(queueErr.message);
     },
     onSuccess: (_, { workspaceId }) => {
       queryClient.invalidateQueries({ queryKey: ['stage-gate-reviews', workspaceId] });

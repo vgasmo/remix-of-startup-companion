@@ -45,6 +45,7 @@
     "assignTo": "Atribuir a...",
     "assignee": "Responsável",
     "awaitingValidation": "A aguardar validação",
+    "bulkPartialSkipped": "{{skipped}} ação(ões) ignorada(s) por falta de permissões",
     "cancelled": "Cancelada",
     "clearFilters": "Limpar filtros",
     "commentAdded": "Comentário adicionado",
@@ -1395,6 +1396,7 @@
       "enrolledCount": "{{count}} de {{total}} incluídas",
       "exitPreview": "Sair da pré-visualização",
       "invitesFailed": "Não foi possível enviar os convites",
+      "invitesPartial": "{{sent}} convites enviados, {{failed}} falharam: {{emails}}",
       "invitesSent": "{{count}} convites enviados",
       "launch": "Lançar",
       "manageParticipants": "Gerir participantes",
@@ -6268,6 +6270,7 @@
     "bookingDeclined": "Marcação recusada",
     "bookingMinNotice": "As marcações devem ser feitas com pelo menos 24 horas de antecedência.",
     "bookingRequestSent": "Pedido de marcação enviado!",
+    "bookingTimeOff": "O consultor bloqueou esse período. Escolha outro horário.",
     "chooseTimeSlot": "Escolha um horário",
     "confirmAssignment": "Confirmar Assignment",
     "confirmed": "Confirmado",
@@ -6293,6 +6296,7 @@
     "noAvailabilityYet": "Este mentor ainda não definiu a sua disponibilidade.",
     "noMatchingMentors": "Nenhum mentor corresponde à especialidade selecionada",
     "noPendingRequests": "Sem pedidos de marcação pendentes",
+    "noSlotsForDate": "Sem horários livres neste dia. Escolha outra data.",
     "optionalMessage": "Mensagem (opcional)",
     "partialMatch": "Compatibilidade Parcial",
     "pending": "Pendente",
@@ -6315,8 +6319,7 @@
     "slotAlreadyTaken": "Esse horário acabou de ser reservado por outra pessoa — escolha outro.",
     "startTime": "Hora de início",
     "whatToDiscuss": "O que gostaria de discutir?",
-    "yourBookings": "As Suas Marcações",
-    "bookingTimeOff": "O consultor bloqueou esse período. Escolha outro horário."
+    "yourBookings": "As Suas Marcações"
   },
   "mentorsPage": {
     "accept": "Aceitar",
@@ -6461,7 +6464,8 @@
     "title": "Marcos",
     "titleLabel": "Título",
     "titlePlaceholder": "ex: Lançar MVP",
-    "titleRequired": "Título é obrigatório"
+    "titleRequired": "Título é obrigatório",
+    "validationRequested": "{{count}} ação(ões) enviada(s) para validação do consultor"
   },
   "momentum": {
     "panelTitle": "Momentum das startups",
@@ -7763,6 +7767,7 @@
   "publicSurvey": {
     "closed": "Este inquérito já não está disponível.",
     "deadline": "Data limite",
+    "draftSaved": "Rascunho guardado",
     "forStartup": "Startup:",
     "invalidLink": "Este link não é válido. Confirme o endereço no email que recebeu.",
     "loadFailed": "Não foi possível abrir o inquérito. Tente novamente.",
@@ -9103,6 +9108,7 @@
     "saveFailed": "Falha ao guardar questionário",
     "saveTemplate": "Guardar Template",
     "section": "Secção",
+    "selectOption": "Selecione uma opção",
     "selectTemplate": "Selecionar Template",
     "snapshotDrift": "{{accepted}} respostas guardadas. {{dropped}} foram ignoradas porque a questão já não existe neste inquérito.",
     "startDate": "Data de Início",

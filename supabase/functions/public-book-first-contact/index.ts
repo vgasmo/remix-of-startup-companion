@@ -9,6 +9,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { resolveFirstContactRoute, NoRouteError, deriveBookingIdempotencyKey } from '../_shared/first-contact-routing.ts';
+import { lisbonWallClockToDate } from '../_shared/lisbonTime.ts';
 
 // Input validation constants
 const MAX_NAME_LENGTH = 200;
@@ -395,7 +396,8 @@ serve(async (req) => {
 
     // Consultant blocked period (declared day/hour off) — refuse before committing.
     if (consultantId) {
-      const slotStart = new Date(`${slot.date}T${slot.time}:00+01:00`);
+      // Lisbon wall clock (WET UTC+0 / WEST UTC+1)
+      const slotStart = lisbonWallClockToDate(slot.date, slot.time);
       const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
       const { data: isBlocked, error: blockErr } = await supabase.rpc('consultant_time_off_blocks', {
         p_consultant_id: consultantId,
@@ -404,6 +406,11 @@ serve(async (req) => {
       });
       if (blockErr) {
         console.error('time-off check failed:', blockErr.message);
+        return corsJsonResponse({
+          success: false,
+          error: 'Não foi possível confirmar a disponibilidade. Tente novamente.',
+          reason: 'time_off_check_failed',
+        }, req, 503);
       } else if (isBlocked === true) {
         return corsJsonResponse({
           success: false,

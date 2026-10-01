@@ -45,6 +45,7 @@
     "assignTo": "Assign to...",
     "assignee": "Assignee",
     "awaitingValidation": "Awaiting validation",
+    "bulkPartialSkipped": "{{skipped}} action(s) skipped due to permissions",
     "cancelled": "Cancelled",
     "clearFilters": "Clear filters",
     "commentAdded": "Comment added",
@@ -1395,6 +1396,7 @@
       "enrolledCount": "{{count}} of {{total}} included",
       "exitPreview": "Exit preview",
       "invitesFailed": "Could not send the invitations",
+      "invitesPartial": "{{sent}} invitations sent, {{failed}} failed: {{emails}}",
       "invitesSent": "{{count}} invitations sent",
       "launch": "Launch",
       "manageParticipants": "Manage participants",
@@ -6268,6 +6270,7 @@
     "bookingDeclined": "Booking declined",
     "bookingMinNotice": "Bookings must be made at least 24 hours in advance.",
     "bookingRequestSent": "Booking request sent!",
+    "bookingTimeOff": "The consultant blocked that period. Please pick another slot.",
     "chooseTimeSlot": "Choose a time slot",
     "confirmAssignment": "Confirm Assignment",
     "confirmed": "Confirmed",
@@ -6293,6 +6296,7 @@
     "noAvailabilityYet": "This mentor hasn't set their availability yet.",
     "noMatchingMentors": "No mentors match the selected expertise",
     "noPendingRequests": "No pending booking requests",
+    "noSlotsForDate": "No free slots on this day. Choose another date.",
     "optionalMessage": "Message (optional)",
     "partialMatch": "Partial Match",
     "pending": "Pending",
@@ -6315,8 +6319,7 @@
     "slotAlreadyTaken": "That slot was just booked by someone else — please pick another one.",
     "startTime": "Hora de início",
     "whatToDiscuss": "What would you like to discuss?",
-    "yourBookings": "Your Bookings",
-    "bookingTimeOff": "The consultant blocked that period. Please pick another slot."
+    "yourBookings": "Your Bookings"
   },
   "mentorsPage": {
     "accept": "Accept",
@@ -6461,7 +6464,8 @@
     "title": "Milestones",
     "titleLabel": "Title",
     "titlePlaceholder": "e.g., Launch MVP",
-    "titleRequired": "Title is required"
+    "titleRequired": "Title is required",
+    "validationRequested": "{{count}} action(s) sent for consultant validation"
   },
   "momentum": {
     "panelTitle": "Startup momentum",
@@ -7763,6 +7767,7 @@
   "publicSurvey": {
     "closed": "This survey is no longer available.",
     "deadline": "Deadline",
+    "draftSaved": "Draft saved",
     "forStartup": "Startup:",
     "invalidLink": "This link is not valid. Please check the address in the email you received.",
     "loadFailed": "We could not open the survey. Please try again.",
@@ -9103,6 +9108,7 @@
     "saveFailed": "Failed to save survey",
     "saveTemplate": "Save Template",
     "section": "Section",
+    "selectOption": "Select an option",
     "selectTemplate": "Select Template",
     "snapshotDrift": "{{accepted}} answers saved. {{dropped}} were ignored because the question no longer exists in this survey.",
     "startDate": "Start Date",
