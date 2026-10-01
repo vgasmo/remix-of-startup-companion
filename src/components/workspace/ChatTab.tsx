@@ -187,7 +187,7 @@ export function ChatTab({ workspaceId }: ChatTabProps) {
 
   const handleSend = useCallback(() => {
     const trimmed = newMessage.trim();
-    if (!trimmed || !conversation?.id) return;
+    if (!trimmed || !conversation?.id || sendMutation.isPending) return;
     sendMutation.mutate(
       { conversationId: conversation.id, content: trimmed },
       {

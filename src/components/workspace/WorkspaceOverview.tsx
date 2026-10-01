@@ -138,18 +138,22 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
     (milestones?.length === 0) && 
     !nextSession;
 
+  const canChangeStage = isAdmin || isConsultor;
+
   const handleStageChange = async (newStage: StartupStage) => {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('workspaces')
       .update({ stage: newStage })
-      .eq('id', workspace.id);
+      .eq('id', workspace.id)
+      .select('id');
 
-    if (error) {
+    if (error || !data?.length) {
       notify.error(t('workspaceOverview.stageUpdateFailed', { defaultValue: 'Falha ao atualizar fase' }));
-    } else {
-      notify.success(t('workspaceOverview.stageUpdated', { defaultValue: 'Fase atualizada' }));
-      queryClient.invalidateQueries({ queryKey: ['workspace', workspace.id] });
+      return;
     }
+    notify.success(t('workspaceOverview.stageUpdated', { defaultValue: 'Fase atualizada' }));
+    queryClient.invalidateQueries({ queryKey: ['workspace', workspace.id] });
+    queryClient.invalidateQueries({ queryKey: ['workspaces'] });
   };
 
   // Calculate milestone counts
@@ -240,7 +244,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
                   />
                 </>
               )}
-              {canWrite ? (
+              {canChangeStage ? (
                 <Select value={workspace.stage} onValueChange={(v) => handleStageChange(v as StartupStage)}>
                   <SelectTrigger className="w-[140px]">
                     <SelectValue />
@@ -603,7 +607,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
                 <HealthScoreCard workspaceId={workspace.id} programId={workspace.program_id} canManage={false} />
                 <InteractionsCard
                   workspaceId={workspace.id}
-                  onViewAll={() => setSearchParams({ tab: 'communications' })}
+                  onViewAll={() => setSearchParams({ tab: 'agenda' })}
                 />
                 <LocationContractCard workspaceId={workspace.id} />
                 <WorkspaceAlertsSection workspaceId={workspace.id} canManage={canWrite} />

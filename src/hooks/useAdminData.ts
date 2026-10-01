@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger';
  *  and makes truncation observable instead of silent. */
 const ADMIN_LIST_LIMIT = 5000;
 import { notify } from "@/lib/notify";
+import { fetchAllRows } from '@/lib/fetchAllRows';
 
 import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
@@ -209,16 +210,13 @@ export function useWorkspaceUsers() {
   return useQuery({
     queryKey: ['admin-workspace-users'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('workspace_users')
-        .select('id, workspace_id, user_id, role, active, created_at')
-        .order('created_at', { ascending: false })
-        .limit(ADMIN_LIST_LIMIT);
-      if (error) throw error;
-      if (data && data.length === ADMIN_LIST_LIMIT) {
-        logger.warn('[useWorkspaceUsers] result truncated at limit', { limit: ADMIN_LIST_LIMIT });
-      }
-      return data;
+      return fetchAllRows((from, to) =>
+        supabase
+          .from('workspace_users')
+          .select('id, workspace_id, user_id, role, active, created_at')
+          .order('created_at', { ascending: false })
+          .range(from, to),
+      );
     },
   });
 }
@@ -294,20 +292,17 @@ export function useAllWorkspaces() {
   return useQuery({
     queryKey: ['admin-all-workspaces'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('workspaces')
-        .select(`
-          id,
-          startup:startups(id, name),
-          program:programs(id, name)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(ADMIN_LIST_LIMIT);
-      if (error) throw error;
-      if (data && data.length === ADMIN_LIST_LIMIT) {
-        logger.warn('[useAllWorkspaces] result truncated at limit', { limit: ADMIN_LIST_LIMIT });
-      }
-      return data;
+      return fetchAllRows((from, to) =>
+        supabase
+          .from('workspaces')
+          .select(`
+            id,
+            startup:startups(id, name),
+            program:programs(id, name)
+          `)
+          .order('created_at', { ascending: false })
+          .range(from, to),
+      );
     },
   });
 }

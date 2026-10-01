@@ -73,6 +73,7 @@ import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
 import { useQuery } from '@tanstack/react-query';
+import { lisbonWallClockToUtcIso } from '@/lib/dateUtils';
 
 
 interface CalendarTabProps {
@@ -239,7 +240,7 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
     if (!formData.title || !formData.date || !formData.startTime) return;
 
     try {
-      const scheduled_at = new Date(`${formData.date}T${formData.startTime}`).toISOString();
+      const scheduled_at = lisbonWallClockToUtcIso(`${formData.date}T${formData.startTime}`);
       const duration = parseInt(formData.duration);
 
       const newSession = await createSession.mutateAsync({
@@ -282,7 +283,7 @@ export function CalendarTab({ workspaceId, canWrite, startupName }: CalendarTabP
   const handleEditSession = async () => {
     if (!editingSession || !formData.title || !formData.date || !formData.startTime) return;
 
-    const scheduled_at = new Date(`${formData.date}T${formData.startTime}`).toISOString();
+    const scheduled_at = lisbonWallClockToUtcIso(`${formData.date}T${formData.startTime}`);
     const duration = parseInt(formData.duration);
 
     try {

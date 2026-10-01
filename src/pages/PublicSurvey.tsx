@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { QuestionField } from "@/components/surveys/SurveyForm";
+import { QuestionField, STAGE_LABELS } from "@/components/surveys/SurveyForm";
 import type { SurveyQuestion } from "@/hooks/useSurveys";
 
 const FUNCTIONS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-survey`;
@@ -44,6 +44,7 @@ export default function PublicSurvey() {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
 
   const locale = i18n.language === "pt" ? pt : undefined;
 
@@ -92,9 +93,15 @@ export default function PublicSurvey() {
     });
 
     questions.forEach((q) => {
-      const value = state.data.autoFill?.[q.autoFillKey ?? ""];
-      if (q.autoFillKey && value !== null && value !== undefined && !initial[q.id]) {
-        initial[q.id] = String(value);
+      const raw = q.autoFillKey ? state.data.autoFill?.[q.autoFillKey] : undefined;
+      if (!q.autoFillKey || raw === null || raw === undefined || initial[q.id]) return;
+      let seeded = String(raw);
+      if (q.type === "select" && q.options && !q.options.includes(seeded)) {
+        const label = STAGE_LABELS[seeded];
+        seeded = label && q.options.includes(label) ? label : "";
+      }
+      if (seeded) {
+        initial[q.id] = seeded;
         autoKeys.add(q.id);
       }
     });
@@ -169,13 +176,24 @@ export default function PublicSurvey() {
       const body = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        const code = body?.error;
+        if (code === "already_submitted") {
+          setState((prev) =>
+            prev.kind === "ready" ? { kind: "ready", data: { ...prev.data, status: "submitted" } } : prev,
+          );
+          return;
+        }
         setSubmitError(
-          body?.error === "required_missing"
+          code === "required_missing"
             ? t("publicSurvey.requiredMissing", "Responda a todas as perguntas obrigatórias antes de submeter.")
-            : t("publicSurvey.saveFailed", "Não foi possível guardar. Tente novamente."),
+            : code === "survey_closed"
+              ? t("publicSurvey.closed", "Este inquérito já não está disponível.")
+              : t("publicSurvey.saveFailed", "Não foi possível guardar. Tente novamente."),
         );
         return;
       }
+
+      if (!submit) setSavedAt(new Date());
 
       if (submit) {
         setState((prev) =>
@@ -369,15 +387,22 @@ export default function PublicSurvey() {
                 {t("common.previous", "Anterior")}
               </Button>
 
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => handleSave(false)} disabled={saving}>
-                  <Save className="h-4 w-4 mr-2" />
-                  {t("publicSurvey.saveDraft", "Guardar rascunho")}
-                </Button>
-                <Button onClick={() => handleSave(true)} disabled={saving} loading={saving}>
-                  <Send className="h-4 w-4 mr-2" />
-                  {t("publicSurvey.submit", "Submeter respostas")}
-                </Button>
+              <div className="flex flex-col items-end gap-2">
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => handleSave(false)} disabled={saving}>
+                    <Save className="h-4 w-4 mr-2" />
+                    {t("publicSurvey.saveDraft", "Guardar rascunho")}
+                  </Button>
+                  <Button onClick={() => handleSave(true)} disabled={saving} loading={saving}>
+                    <Send className="h-4 w-4 mr-2" />
+                    {t("publicSurvey.submit", "Submeter respostas")}
+                  </Button>
+                </div>
+                {savedAt && (
+                  <p className="text-sm text-muted-foreground">
+                    {t("publicSurvey.draftSaved", "Rascunho guardado")}
+                  </p>
+                )}
               </div>
 
               <Button

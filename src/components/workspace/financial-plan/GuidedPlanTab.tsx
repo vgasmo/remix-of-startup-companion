@@ -15,6 +15,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { notify } from '@/lib/notify';
+import { logger } from '@/lib/logger';
 import {
   ArrowRight, CheckCircle2, ChevronRight, HelpCircle, Sparkles, ThumbsDown, ThumbsUp,
   FileSpreadsheet, Save, SkipForward, Trash2, Wand2, Download, Loader2, Pencil, X,
@@ -91,38 +92,15 @@ async function enqueueConsultorReview(
   scenario: PlanScenario,
   t: (k: string, opts?: any) => string,
 ) {
-  try {
-    const { supabase } = await import('@/lib/supabaseClient');
-    const evidenceMatch = `${assumptionKey}::${scenario}`;
-    const { data: existing } = await supabase
-      .from('staff_work_queue_items')
-      .select('id')
-      .eq('workspace_id', workspaceId)
-      .eq('type', 'financial_assumption_skipped')
-      .eq('status', 'pending')
-      .contains('evidence_json', { assumption_key: assumptionKey, scenario })
-      .limit(1)
-      .maybeSingle();
-    if (existing?.id) return;
-    await supabase.from('staff_work_queue_items').insert({
-      workspace_id: workspaceId,
-      type: 'financial_assumption_skipped',
-      title: t('financialPlan.queue.skippedTitle', {
-        defaultValue: 'Review skipped assumption: {{label}}',
-        label: assumptionLabelText,
-      }),
-      description: t('financialPlan.queue.skippedDesc', {
-        defaultValue: 'The founder marked "{{label}}" as unknown in the {{scenario}} scenario — help them find a defensible value.',
-        label: assumptionLabelText,
-        scenario,
-      }),
-      priority: 'medium',
-      status: 'pending',
-      evidence_json: { assumption_key: assumptionKey, scenario, source: 'guided_financial_plan' },
-    });
-  } catch {
-    /* best-effort — never block the founder's flow on queue insertion */
-  }
+  const { supabase } = await import('@/lib/supabaseClient');
+  const { error } = await supabase.rpc('enqueue_financial_assumption_review', {
+    p_workspace_id: workspaceId,
+    p_assumption_key: assumptionKey,
+    p_scenario: scenario,
+    p_title: t('financialPlan.queue.skippedTitle', { defaultValue: 'Rever pressuposto: {{label}}', label: assumptionLabelText }),
+    p_description: t('financialPlan.queue.skippedDesc', { defaultValue: 'O founder marcou "{{label}}" como desconhecido no cenário {{scenario}}.', label: assumptionLabelText, scenario }),
+  });
+  if (error) logger.warn('financial_assumption_enqueue_failed', { workspaceId, error: error.message });
 }
 
 export function GuidedPlanTab({ workspaceId, canWrite }: Props) {

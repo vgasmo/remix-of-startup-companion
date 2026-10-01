@@ -324,7 +324,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsAuthReady(false);
       resetSession(queryClient, 'logout');
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        logger.error('signout_failed', {}, error);
+        await supabase.auth.signOut({ scope: 'local' });
+      }
     } catch (e) {
       logger.error('signout_failed', {}, e);
     } finally {

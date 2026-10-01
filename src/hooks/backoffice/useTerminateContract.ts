@@ -229,9 +229,10 @@ export function useBulkTerminateContracts() {
     },
     onSuccess: ({ ok, failed }) => {
       invalidateTerminationViews(queryClient);
-      notify.success(t('contracts.bulk.terminateSuccess', { count: ok, defaultValue: '{{count}} contratos terminados' }));
-      if (failed > 0) {
-        notify.error(t('contracts.bulk.terminatePartial', { count: failed, defaultValue: '{{count}} contratos não foram terminados' }));
+      if (failed === 0) {
+        notify.success(t('contracts.bulk.terminateSuccess', { count: ok, defaultValue: '{{count}} contratos terminados' }));
+      } else {
+        notify.error(t('contracts.bulk.terminatePartial', { ok, failed, defaultValue: '{{ok}} contratos terminados, {{failed}} falharam' }));
       }
     },
     onError: (err: any) => {

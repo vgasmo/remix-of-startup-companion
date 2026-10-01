@@ -195,6 +195,8 @@ export interface SessionFormData {
   join_url?: string | null;
   session_type?: string | null;
   source?: string | null;
+  primary_consultant_id?: string | null;
+  primary_mentor_id?: string | null;
 }
 
 export function useSessions(workspaceId: string | undefined) {
@@ -281,6 +283,9 @@ export function useCreateSession(workspaceId: string) {
           created_by: user?.id,
           source: session.source || null,
           outlook_sync_status: 'pending', // Mark for sync
+          session_type: session.session_type || 'general',
+          primary_consultant_id: session.primary_consultant_id ?? null,
+          primary_mentor_id: session.primary_mentor_id ?? null,
         })
         .select()
         .single();
@@ -328,17 +333,17 @@ export function useCreateSession(workspaceId: string) {
           try {
             const { data: ws } = await supabase
               .from('workspaces')
-              .select('startup:startups(name), owner_user_id')
+              .select('startup:startups(name), assigned_consultor_id')
               .eq('id', workspaceId)
               .maybeSingle();
             startupName = (ws as any)?.startup?.name || undefined;
 
             // Fetch owner/consultant name if available
-            if ((ws as any)?.owner_user_id) {
+            if ((ws as any)?.assigned_consultor_id) {
               const { data: profile } = await supabase
                 .from('profiles_safe')
                 .select('full_name, email')
-                .eq('id', (ws as any).owner_user_id)
+                .eq('id', (ws as any).assigned_consultor_id)
                 .maybeSingle();
               ownerName = profile?.full_name || profile?.email || undefined;
             }
@@ -609,16 +614,16 @@ export function useUpdateSession(workspaceId: string) {
           try {
             const { data: ws } = await supabase
               .from('workspaces')
-              .select('startup:startups(name), owner_user_id')
+              .select('startup:startups(name), assigned_consultor_id')
               .eq('id', workspaceId)
               .maybeSingle();
             startupName = (ws as any)?.startup?.name || undefined;
             
-            if ((ws as any)?.owner_user_id) {
+            if ((ws as any)?.assigned_consultor_id) {
               const { data: profile } = await supabase
                 .from('profiles_safe')
                 .select('full_name, email')
-                .eq('id', (ws as any).owner_user_id)
+                .eq('id', (ws as any).assigned_consultor_id)
                 .maybeSingle();
               ownerName = profile?.full_name || profile?.email || undefined;
             }
