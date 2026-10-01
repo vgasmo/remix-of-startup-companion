@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
 
     const { data: contract, error: cErr } = await admin
       .from('startup_contracts')
-      .select('id, status, workspace_id, organization_name, legal_representative_email, legal_representative_name')
+      .select('id, status, workspace_id, funnel_item_id, organization_name, legal_representative_email, legal_representative_name')
       .eq('id', contractId)
       .single();
     if (cErr || !contract) {
@@ -165,6 +165,17 @@ Deno.serve(async (req) => {
     if (updErr) throw updErr;
 
     log.info('contract_workspace_assigned', { contractId, workspaceId, actorId: user.id });
+
+    // Ligar a lead do CRM ao workspace (senão o CRM continua a tratar a lead como não convertida)
+    if (contract.funnel_item_id) {
+      const { data: wsRow } = await admin.from('workspaces').select('startup_id').eq('id', workspaceId).maybeSingle();
+      const { error: leadErr } = await admin
+        .from('funnel_items')
+        .update({ linked_workspace_id: workspaceId, linked_startup_id: wsRow?.startup_id ?? null, updated_at: new Date().toISOString() })
+        .eq('id', contract.funnel_item_id)
+        .is('linked_workspace_id', null);
+      if (leadErr) log.warn('funnel_link_failed', { error: leadErr.message });
+    }
 
     // If contract is active and we have a founder email, ensure founder account exists.
     let founder: { ok: boolean; userId?: string; reason?: string } = { ok: false, reason: 'skipped' };

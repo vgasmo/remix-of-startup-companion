@@ -1,4 +1,4 @@
-import { autoCreateFounderAccount } from './founderAccount.ts'
+import { autoCreateFounderAccount, enqueueFounderInviteTask } from './founderAccount.ts'
 
 /**
  * Shared Canonical Lifecycle Sync — Server-Side (CANONICAL TRUTH)
@@ -100,10 +100,12 @@ export async function syncIntakeOnSent(
 
 /**
  * When a contract is completed/signed:
- * 1. Update linked intake: current → signed → activated
- * 2. Log audit events for each transition
- * 3. Sync CRM funnel_item.stage to 'contracted' (valid fine-grained DB stage)
- * 4. Activate workspace (only from pre-active states)
+ * 1. Contrato sem workspace: criar ou reutilizar startup + workspace (RPC ensure_contract_workspace)
+ * 2. Workspace ainda por ativar: criar a conta + membro founder antes de ativar
+ * 3. Update linked intake: current → signed → activated (+ audit events)
+ * 4. Sync CRM funnel_item.stage to 'contracted' (valid fine-grained DB stage)
+ * 5. Activate workspace (only from pre-active states); sem membros ativos fica pendente
+ *    (awaitingFounder) com a triagem 'Convidar founder', em vez de falhar a assinatura
  *
  * Errors are captured and returned. Workspace activation is attempted even if intake
  * sync partially fails so a signed contract is not left without an active workspace.
@@ -114,9 +116,10 @@ export async function syncIntakeOnCompleted(
   workspaceId: string | null,
   performedBy: string | null,
   source: string,
-): Promise<SyncResult & { workspaceId?: string | null }> {
+): Promise<SyncResult & { workspaceId?: string | null; awaitingFounder?: boolean }> {
   const errors: string[] = []
   let effectiveWorkspaceId = workspaceId
+  let awaitingFounder = false
 
   const { data: intake, error: findErr } = await supabase
     .from('contract_intakes')
@@ -131,77 +134,51 @@ export async function syncIntakeOnCompleted(
     errors.push(`find_intake: ${findErr.message}`)
   }
 
-  // ── Fallback: CRM-direct contracts have no intake → resolve funnel via contract row
+  // ── Contratos sem intake (CRM direto): a lead resolve-se pelo contrato
   let fallbackFunnelItemId: string | null = null
   if (!intake) {
     const { data: contractRow } = await supabase
       .from('startup_contracts')
-      .select('funnel_item_id, workspace_id, organization_name, legal_representative_email, legal_representative_name')
+      .select('funnel_item_id')
       .eq('id', contractId)
       .maybeSingle()
     fallbackFunnelItemId = contractRow?.funnel_item_id ?? null
+  }
 
-    // If no workspace on the contract either, mint startup + workspace from CRM/organization data
-    if (!effectiveWorkspaceId && !contractRow?.workspace_id) {
-      const orgName = contractRow?.organization_name
-        || (fallbackFunnelItemId ? (await supabase.from('funnel_items').select('organization_name').eq('id', fallbackFunnelItemId).maybeSingle()).data?.organization_name : null)
-        || 'Startup'
-      const contactEmail = contractRow?.legal_representative_email || null
-      const contactName = contractRow?.legal_representative_name || null
-      try {
-        // 1) Programa resolvido ANTES de criar linhas (evita startups órfãs)
-        let programId: string | null = null
-        if (fallbackFunnelItemId) {
-          const { data: fi } = await supabase.from('funnel_items').select('program_id').eq('id', fallbackFunnelItemId).maybeSingle()
-          programId = fi?.program_id ?? null
-        }
-        if (!programId) {
-          const { data: active } = await supabase.from('programs').select('id').eq('is_active', true).limit(2)
-          if (active?.length === 1) programId = active[0].id
-        }
-        if (!programId) throw new Error('auto_mint_no_program: associe a lead a um programa e crie o workspace manualmente')
+  // ── Contrato sem workspace (lead do CRM, com ou sem intake): criar ou reutilizar startup + workspace.
+  //    A RPC é idempotente: lê o workspace do contrato, reutiliza o da lead já convertida ou cria um 'pending'.
+  if (!effectiveWorkspaceId) {
+    const { data: mintedWs, error: mintErr } = await supabase.rpc('ensure_contract_workspace', { p_contract_id: contractId })
+    if (mintErr) {
+      console.error('[lifecycleSync] ensure_contract_workspace failed', { contractId, error: mintErr.message })
+      errors.push(`auto_mint_workspace: ${mintErr.message}`)
+    } else {
+      effectiveWorkspaceId = (mintedWs as string | null) ?? null
+    }
+  }
 
-        // 2) startups não tem coluna stage; workspaces.program_id é NOT NULL
-        const { data: newStartup, error: startupErr } = await supabase.from('startups')
-          .insert({ name: orgName, main_contact_email: contactEmail, main_contact_name: contactName })
-          .select('id').single()
-        if (startupErr) throw startupErr
-        const { data: newWs, error: wsErr } = await supabase.from('workspaces')
-          .insert({ startup_id: newStartup.id, program_id: programId, status: 'pending', needs_onboarding: true })
-          .select('id').single()
-        if (wsErr) {
-          await supabase.from('startups').delete().eq('id', newStartup.id)
-          throw wsErr
-        }
-        effectiveWorkspaceId = newWs.id
-
-        // 3) A ativação exige um membro ativo (trigger validate_workspace_status_transition):
-        //    criar já a conta + membro founder (idempotente; põe o workspace em 'claimed')
-        const acct = await autoCreateFounderAccount(supabase, {
-          id: contractId,
-          workspace_id: effectiveWorkspaceId,
-          legal_representative_email: contactEmail,
-          legal_representative_name: contactName,
-        })
-        if (!acct.ok) errors.push(`auto_mint_founder: ${acct.reason ?? 'unknown'}`)
-
-        // 4) Ligar contrato e lead (igual ao código atual)
-        const { error: contractLinkErr } = await supabase.from('startup_contracts')
-          .update({ workspace_id: effectiveWorkspaceId })
-          .eq('id', contractId)
-        if (contractLinkErr) errors.push(`contract_workspace_link: ${contractLinkErr.message}`)
-        if (fallbackFunnelItemId) {
-          const { error: funnelLinkErr } = await supabase.from('funnel_items')
-            .update({ linked_workspace_id: effectiveWorkspaceId })
-            .eq('id', fallbackFunnelItemId)
-          if (funnelLinkErr) errors.push(`funnel_workspace_link: ${funnelLinkErr.message}`)
-        }
-      } catch (mintErr: any) {
-        console.error('[lifecycleSync] auto-mint workspace failed', { contractId, error: mintErr?.message })
-        errors.push(`auto_mint_workspace: ${mintErr?.message || mintErr}`)
+  // ── A ativação exige um membro ativo (trigger validate_workspace_status_transition): com o workspace
+  //    ainda por ativar, criar já a conta + membro founder (idempotente) ANTES de ativar
+  if (effectiveWorkspaceId) {
+    const { data: wsNow } = await supabase
+      .from('workspaces')
+      .select('status')
+      .eq('id', effectiveWorkspaceId)
+      .maybeSingle()
+    if (wsNow && ['pending', 'claimed', 'imported_unclaimed', 'draft'].includes(wsNow.status)) {
+      const { data: signer } = await supabase
+        .from('startup_contracts')
+        .select('legal_representative_email, legal_representative_name')
+        .eq('id', contractId)
+        .maybeSingle()
+      const founderInput = {
+        id: contractId,
+        workspace_id: effectiveWorkspaceId,
+        legal_representative_email: signer?.legal_representative_email ?? null,
+        legal_representative_name: signer?.legal_representative_name ?? null,
       }
-    } else if (!effectiveWorkspaceId) {
-      effectiveWorkspaceId = contractRow?.workspace_id ?? null
+      const acct = await autoCreateFounderAccount(supabase, founderInput)
+      if (!acct.ok) await enqueueFounderInviteTask(supabase, founderInput, acct.reason || 'unknown')
     }
   }
 
@@ -268,13 +245,25 @@ export async function syncIntakeOnCompleted(
   }
 
   if (effectiveWorkspaceId) {
-    const { error: wsErr } = await supabase.from('workspaces')
-      .update({ status: 'active', updated_at: new Date().toISOString() })
-      .eq('id', effectiveWorkspaceId)
-      .in('status', ['pending', 'claimed', 'imported_unclaimed'])
-    if (wsErr) {
-      console.error('[lifecycleSync] workspace activation failed', { workspaceId: effectiveWorkspaceId, error: wsErr.message })
-      errors.push(`workspace_activate: ${wsErr.message}`)
+    // Sem membros ativos (sem email do representante, conta suspensa) o trigger recusaria a ativação:
+    // o workspace fica pendente com a triagem 'Convidar founder' em vez de falhar a assinatura.
+    const { count: activeMembers, error: membersErr } = await supabase
+      .from('workspace_users')
+      .select('user_id', { count: 'exact', head: true })
+      .eq('workspace_id', effectiveWorkspaceId)
+      .eq('active', true)
+    if (!membersErr && (activeMembers ?? 0) === 0) {
+      console.warn('[lifecycleSync] workspace without active members, activation deferred', { workspaceId: effectiveWorkspaceId })
+      awaitingFounder = true
+    } else {
+      const { error: wsErr } = await supabase.from('workspaces')
+        .update({ status: 'active', updated_at: new Date().toISOString() })
+        .eq('id', effectiveWorkspaceId)
+        .in('status', ['pending', 'claimed', 'imported_unclaimed'])
+      if (wsErr) {
+        console.error('[lifecycleSync] workspace activation failed', { workspaceId: effectiveWorkspaceId, error: wsErr.message })
+        errors.push(`workspace_activate: ${wsErr.message}`)
+      }
     }
   }
 
@@ -282,17 +271,16 @@ export async function syncIntakeOnCompleted(
     synced: errors.length === 0,
     intakeId: intake?.id,
     workspaceId: effectiveWorkspaceId,
+    awaitingFounder,
     errors: errors.length ? errors : undefined,
   }
 }
 
 /**
  * When a contract is declined / voided / terminated:
- * 1. Update linked intake to matching status (declined | voided | terminated)
+ * 1. Close the linked intake as 'cancelled' (the intake_status enum has no declined/voided/terminated;
+ *    the outcome goes in the event). An intake already signed/activated is left as is.
  * 2. Log audit event
- * 3. Move CRM funnel_item.stage → 'rejected' (declined/voided) or 'archived' (terminated)
- *
- * Errors are captured (not thrown) so callers keep going.
  */
 export async function syncIntakeOnClosed(
   supabase: any,
@@ -320,12 +308,12 @@ export async function syncIntakeOnClosed(
   let funnelItemId: string | null = intake?.funnel_item_id ?? null
 
   if (intake) {
-    // Don't regress terminal statuses
-    const TERMINAL = ['declined', 'voided', 'terminated']
-    if (!TERMINAL.includes(intake.status)) {
+    // O enum intake_status não tem declined/voided/terminated: o intake fecha como 'cancelled' e o motivo
+    // fica no evento. Um intake já ativado (contrato assinado e depois terminado) mantém 'activated'.
+    if (!['cancelled', 'rejected', 'signed', 'activated'].includes(intake.status)) {
       const { error: updErr } = await supabase
         .from('contract_intakes')
-        .update({ status: outcome })
+        .update({ status: 'cancelled' })
         .eq('id', intake.id)
       if (updErr) {
         console.error('[lifecycleSync] intake close update failed', { intakeId: intake.id, outcome, error: updErr.message })
@@ -335,9 +323,9 @@ export async function syncIntakeOnClosed(
           intake_id: intake.id,
           event_type: `lifecycle_sync_${outcome}`,
           from_status: intake.status,
-          to_status: outcome,
+          to_status: 'cancelled',
           performed_by: performedBy,
-          metadata: { source, contract_id: contractId },
+          metadata: { source, contract_id: contractId, outcome },
         })
         if (evtErr) errors.push(`intake_event: ${evtErr.message}`)
       }
