@@ -67,7 +67,6 @@ const StaffCockpit = lazy(lazyWithRetry(() => import("./pages/StaffCockpit"), "l
 const SystemSettings = lazy(lazyWithRetry(() => import("./pages/SystemSettings"), "lazy:system-settings"));
 const ClaimStartup = lazy(lazyWithRetry(() => import("./pages/ClaimStartup"), "lazy:claim-startup"));
 const ResourceGuide = lazy(lazyWithRetry(() => import("./pages/ResourceGuide"), "lazy:resource-guide"));
-const ContractOnboarding = lazy(lazyWithRetry(() => import("./pages/ContractOnboarding"), "lazy:contract-onboarding"));
 const PublicContractSigning = lazy(lazyWithRetry(() => import("./pages/PublicContractSigning"), "lazy:public-contract-signing"));
 const PublicContractIntake = lazy(lazyWithRetry(() => import("./pages/PublicContractIntake"), "lazy:public-contract-intake"));
 const AppDiagnostics = lazy(lazyWithRetry(() => import("./pages/AppDiagnostics"), "lazy:app-diagnostics"));
@@ -195,7 +194,6 @@ function AppRoutes() {
         <Route path="/accept-invite" element={<AcceptInvite />} />
         <Route path="/mentor-nda" element={<ProtectedRoute><MentorNda /></ProtectedRoute>} />
         <Route path="/claim-startup" element={<ProtectedRoute><ClaimStartup /></ProtectedRoute>} />
-        <Route path="/contract-onboarding/:contractId" element={<ProtectedRoute><ContractOnboarding /></ProtectedRoute>} />
         <Route path="/" element={<Navigate to="/my-workspaces" replace />} />
         <Route path="/my-workspaces" element={<ProtectedRoute><MyWorkspaces /></ProtectedRoute>} />
         <Route path="/workspace/:id" element={<ProtectedRoute><WorkspaceDetail /></ProtectedRoute>} />
