@@ -91,7 +91,7 @@ const SEGMENT_STAGES: Record<CrmSegment, FunnelStage[] | undefined> = {
 
 export default function CRM() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, isAdmin, isConsultor } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedItem, setSelectedItem] = useState<FunnelItem | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -494,7 +494,7 @@ export default function CRM() {
           <div />
           <div className="flex items-center gap-2">
             <NewLeadDialog />
-            <CsvLeadImport />
+            {(isAdmin || isConsultor) && <CsvLeadImport />}
           </div>
         </div>
         <Tabs value={crmView} onValueChange={handleViewChange} className="space-y-4">

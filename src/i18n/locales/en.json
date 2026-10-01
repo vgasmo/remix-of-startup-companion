@@ -2366,8 +2366,6 @@
     "newStartupHint": "Have a new startup that isn't in the system yet?",
     "noMatchHint": "If we can't find a match, our team will review your request.",
     "noRequests": "No pending claim requests.",
-    "onboardingDesc": "Complete the setup process to start using the platform.",
-    "onboardingTitle": "Set up your workspace",
     "orSubmitNew": "Or, if you prefer, you can submit a new startup application:",
     "pendingDesc": "We couldn't find an automatic match, but our team will review and link you manually. This is normal for our invite-only model.",
     "pendingReassurance": "You don't need to do anything else. You'll get access as soon as the team confirms.",
@@ -2381,7 +2379,6 @@
     "searchingHint": "Isto demora apenas alguns segundos.",
     "securityNote": "Secure and confidential process. Your data will not be shared externally.",
     "selectStartup": "Select startup...",
-    "startOnboarding": "Start setup",
     "step1": "We check if there's a startup associated with your email in our system.",
     "step2": "If found, the startup is automatically associated with your account.",
     "step3": "If not, the request is sent to the team for manual review.",
@@ -2673,6 +2670,25 @@
     "years": "years",
     "yes": "Yes"
   },
+  "common.archive": "common.archive",
+  "common.cancel": "common.cancel",
+  "common.copyLink": "common.copyLink",
+  "common.delete": "common.delete",
+  "common.edit": "Editar",
+  "common.first": "First",
+  "common.lastPage": "Last page",
+  "common.linkCopied": "common.linkCopied",
+  "common.loading": "common.loading",
+  "common.moreActions": "More actions",
+  "common.moreDetails": "Mais",
+  "common.nextPage": "Next page",
+  "common.open": "Abrir",
+  "common.previousPage": "Previous page",
+  "common.rowsPerPage": "Rows per page",
+  "common.showingResults": "common.showingResults",
+  "common.undo": "Anular",
+  "common.undoFailed": "Não foi possível anular",
+  "common.unknown": "Unknown",
   "communication": {
     "emailAliasCreated": "Email alias created"
   },
@@ -3067,6 +3083,18 @@
     "viewWorkspace": "View Workspace",
     "voidedNotice": "This contract has been voided."
   },
+  "contractDetail.notifyFailed": "Contrato atualizado, mas as notificações falharam.",
+  "contractDetail.terminate.archiveFailed": "contractDetail.terminate.archiveFailed",
+  "contractDetail.terminate.archiveSkipped": "contractDetail.terminate.archiveSkipped",
+  "contractDetail.terminate.error": "Não foi possível terminar o contrato",
+  "contractDetail.terminate.notifyFounderMsg": "contractDetail.terminate.notifyFounderMsg",
+  "contractDetail.terminate.notifyFounderTitle": "O seu contrato foi terminado",
+  "contractDetail.terminate.notifyStaffMsg": "contractDetail.terminate.notifyStaffMsg",
+  "contractDetail.terminate.notifyStaffTitle": "Contrato terminado",
+  "contractDetail.terminate.reasonRequired": "Indique o motivo da terminação.",
+  "contractDetail.terminate.staffTaskDesc": "contractDetail.terminate.staffTaskDesc",
+  "contractDetail.terminate.staffTaskTitle": "Cancelar sessões futuras (contrato terminado)",
+  "contractDetail.terminate.success": "Contrato terminado",
   "contractOnboarding": {
     "acceptContract": "I have read and accept the terms of the Incubation Contract, including the conditions of service, obligations and rights of the parties.",
     "acceptRegulation": "I have read and accept the Startup Leiria Regulation, committing to comply with the rules and procedures established therein.",
@@ -3237,6 +3265,8 @@
       "uploading": "Uploading document..."
     }
   },
+  "contracts.bulk.terminatePartial": "contracts.bulk.terminatePartial",
+  "contracts.bulk.terminateSuccess": "contracts.bulk.terminateSuccess",
   "copilot": {
     "askAnything": "Ask me anything about your startup, tasks, KPIs, or ecosystem.",
     "askInputLabel": "Pergunte ao copiloto",
@@ -3795,6 +3825,16 @@
     "winProbability": "Probabilidade (%)",
     "workspaceCreated": "Workspace created for {{name}}"
   },
+  "crm.contract": "Contrato",
+  "crm.contractArchivedNotice": "O contrato vinculado foi arquivado.",
+  "crm.contractMissingNotice": "O contrato vinculado já não existe (foi eliminado ou arquivado).",
+  "crm.createAndSendContract": "Criar contrato e enviar",
+  "crm.initiateContract": "Iniciar Contrato",
+  "crm.linkedContext": "Contexto Vinculado",
+  "crm.noContractsAvailable": "Sem contratos neste workspace",
+  "crm.noLinkedContext": "Sem contexto associado.",
+  "crm.sendContract": "Enviar Contrato",
+  "crm.startupNoWorkspace": "Sem workspace",
   "dashboard": {
     "acrossPrograms": "Across {{count}} program",
     "acrossPrograms_plural": "Across {{count}} programs",
@@ -4348,6 +4388,32 @@
     "tierUnclassified": "No Tier",
     "tierValue": "Tier {{tier}}"
   },
+  "ecosystem.archiveError": "Erro ao arquivar workspace",
+  "ecosystem.archiveWorkspace": "Arquivar Workspace",
+  "ecosystem.confirmArchiveDesc": "ecosystem.confirmArchiveDesc",
+  "ecosystem.confirmArchiveTitle": "ecosystem.confirmArchiveTitle",
+  "ecosystem.confirmDeleteDesc": "ecosystem.confirmDeleteDesc",
+  "ecosystem.confirmDeleteTitle": "Eliminar Lead?",
+  "ecosystem.deleteLead": "Eliminar Lead",
+  "ecosystem.deleteLeadError": "Erro ao arquivar a lead",
+  "ecosystem.lastActivity": "Last Activity",
+  "ecosystem.lead": "Lead",
+  "ecosystem.leadDeleted": "Lead arquivada",
+  "ecosystem.leadRestored": "Lead restaurada",
+  "ecosystem.manageTeam": "Manage Team",
+  "ecosystem.name": "Name",
+  "ecosystem.noItems": "No items found",
+  "ecosystem.noItemsDesc": "Try adjusting your filters or search criteria",
+  "ecosystem.openDetail": "Open Details",
+  "ecosystem.owner": "Owner",
+  "ecosystem.scheduleSession": "Schedule Session",
+  "ecosystem.startupPortugalBadge": "Estatuto Startup Portugal",
+  "ecosystem.startupPortugalShort": "SP",
+  "ecosystem.tier": "Tier",
+  "ecosystem.type": "Type",
+  "ecosystem.workspace": "Workspace",
+  "ecosystem.workspaceArchived": "Workspace arquivado",
+  "ecosystem.workspaceRestored": "Workspace restaurado",
   "ecosystemHub": {
     "navLabel": "Management Hub",
     "subtitle": "Manage startups, mentors, programs and operational workflows",
@@ -4502,6 +4568,7 @@
     "unauthorized": "You are not authorized for this action.",
     "validationError": "Please check the data you entered."
   },
+  "errors.noPermission": "Sem permissão para esta ação.",
   "exercises": {
     "addMaterial": "Add material",
     "addStep": "Add step",
@@ -5043,6 +5110,12 @@
     "title": "Project Readiness",
     "updateKpis": "Update"
   },
+  "founderRequests": {
+    "sendFailed": "Could not send request",
+    "sent": "Request sent to the team",
+    "updateFailed": "Could not update",
+    "updated": "Request updated"
+  },
   "founderWizard": {
     "done": "Done",
     "next": "Next",
@@ -5448,6 +5521,16 @@
     "supportNote": "For urgent matters, please contact your consultant directly through the messaging system.",
     "supportTitle": "Contacto de Suporte"
   },
+  "id, contract_number, status, archived_at, start_date, end_date, monthly_fee, currency, square_meters, incubation_type:incubation_types(name), building:buildings(name, code)": "id, contract_number, status, archived_at, start_date, end_date, monthly_fee, currency, square_meters, incubation_type:incubation_types(name), building:buildings(name, code)",
+  "id, contract_number, status, updated_at, workspace_id, organization_name, workspace:workspaces(startup:startups(name))": "id, contract_number, status, updated_at, workspace_id, organization_name, workspace:workspaces(startup:startups(name))",
+  "id, name, main_contact_email, main_contact_name": "id, name, main_contact_email, main_contact_name",
+  "id, organization_name, contact_name, contact_email, stage, updated_at": "id, organization_name, contact_name, contact_email, stage, updated_at",
+  "id, stage, status, startup:startups(id, name, main_contact_email, main_contact_name), program:programs(id, name)": "id, stage, status, startup:startups(id, name, main_contact_email, main_contact_name), program:programs(id, name)",
+  "id, stage, status, updated_at, startup:startups(name), program:programs(name)": "id, stage, status, updated_at, startup:startups(name), program:programs(name)",
+  "id, workspace_id, content, updated_at, workspaces!inner(startup:startups(name))": "id, workspace_id, content, updated_at, workspaces!inner(startup:startups(name))",
+  "id, workspace_id, name, description, updated_at, workspaces!inner(startup:startups(name))": "id, workspace_id, name, description, updated_at, workspaces!inner(startup:startups(name))",
+  "id, workspace_id, title, description, updated_at, workspaces!inner(startup:startups(name))": "id, workspace_id, title, description, updated_at, workspaces!inner(startup:startups(name))",
+  "id, workspace_id, title, notes, updated_at, workspaces!inner(startup:startups(name))": "id, workspace_id, title, notes, updated_at, workspaces!inner(startup:startups(name))",
   "impact": {
     "adoptionErrorTitle": "Failed to load adoption",
     "avgDuration": "Average duration",
@@ -5641,6 +5724,8 @@
     "zoomMeet": "Zoom / Google Meet",
     "zoomMeetNote": "Use Zapier or Make.com to connect your meetings to this webhook endpoint."
   },
+  "integrations.pesquisaGuardada": "integrations.pesquisaGuardada",
+  "integrations.pesquisaRemovida": "integrations.pesquisaRemovida",
   "investorReadiness": {
     "createLink": "Create Link",
     "createUpdate": "Create Update",
@@ -5765,6 +5850,12 @@
     "verifyingDesc": "Please wait while we verify your invitation...",
     "wrongEmail": "This invitation was sent to {{email}}. Please sign in with that email address."
   },
+  "invite.inviteFailed": "invite.inviteFailed",
+  "invite.inviteMember": "Convidar",
+  "invite.inviteTitle": "Convidar para o workspace",
+  "invite.role": "Papel",
+  "invite.sendInvite": "invite.sendInvite",
+  "invite.sentTo": "invite.sentTo",
   "journey": {
     "actionsCompleted": "{{completed}}/{{total}} actions completed",
     "aiInsight": "AI Insight",
@@ -6640,6 +6731,7 @@
     "usersPermissions": "Users & Permissions",
     "workspaces": "Workspaces"
   },
+  "nav.workspaces": "nav.workspaces",
   "nda": {
     "acceptButton": "Accept & Continue",
     "acceptLabel": "I have read, understand and accept the terms of this Confidentiality Agreement",
@@ -8103,6 +8195,8 @@
     "mentor_externo": "External Mentor",
     "team_member": "Team Member"
   },
+  "roles.founder": "Founder",
+  "roles.team_member": "Membro da equipa",
   "savedViews": {
     "deleteFailed": "Failed to delete view",
     "deleted": "View deleted",
@@ -9273,6 +9367,29 @@
     "teamMembers": "Co-founders",
     "title": "Co-founders"
   },
+  "team.addMember": "team.addMember",
+  "team.editMember": "team.editMember",
+  "team.email": "team.email",
+  "team.failedToRemove": "team.failedToRemove",
+  "team.failedToSave": "team.failedToSave",
+  "team.fullName": "team.fullName",
+  "team.inviteHint": "Para dar acesso à plataforma a cofounders ou à equipa, use o botão \"Convidar\" na página do workspace.",
+  "team.jobTitle": "team.jobTitle",
+  "team.jobTitlePlaceholder": "team.jobTitlePlaceholder",
+  "team.linkedinUrl": "team.linkedinUrl",
+  "team.memberAdded": "team.memberAdded",
+  "team.memberCount": "team.memberCount",
+  "team.memberRemoved": "team.memberRemoved",
+  "team.memberUpdated": "team.memberUpdated",
+  "team.nameRequired": "team.nameRequired",
+  "team.noMembersDesc": "team.noMembersDesc",
+  "team.noMembersTitle": "Sem membros de equipa ainda",
+  "team.phone": "team.phone",
+  "team.removeMemberConfirm": "team.removeMemberConfirm",
+  "team.removeMemberTitle": "Remover membro?",
+  "team.role": "team.role",
+  "team.saveChanges": "team.saveChanges",
+  "team.teamMembers": "team.teamMembers",
   "templateRequests": {
     "adminEmpty": "No requests in this state.",
     "adminNote": "Team note",
@@ -9886,6 +10003,26 @@
     "validHoursRequired": "Please enter valid hours",
     "whatDidYouWorkOn": "What did you work on?"
   },
+  "timeOff": {
+    "title": "Days and hours without meetings",
+    "description": "Block holidays, whole days or hour ranges when you don't want meetings. These periods stop appearing in booking screens and are rejected server-side.",
+    "allDay": "Full day(s)",
+    "from": "From",
+    "to": "To",
+    "day": "Day",
+    "startTime": "From",
+    "endTime": "To",
+    "reason": "Reason (optional, visible to staff only)",
+    "reasonPlaceholder": "Holidays, training, internal work…",
+    "add": "Block period",
+    "added": "Period blocked",
+    "addFailed": "Could not block the period",
+    "removed": "Block removed",
+    "removeFailed": "Could not remove",
+    "invalidRange": "The end must be after the start",
+    "empty": "No blocked periods.",
+    "tab": "My Calendar"
+  },
   "topBar": {
     "accountSettings": "Account Settings",
     "noRoles": "No roles assigned",
@@ -10305,6 +10442,16 @@
     "yourMentor": "Your Mentor",
     "yourTeam": "Your Team"
   },
+  "workspace.category": "Cat.",
+  "workspace.header.addDescription": "+ Adicionar descrição",
+  "workspace.header.fromValueProp": "Do canvas de proposta de valor",
+  "workspace.healthScore": "Health",
+  "workspace.invalidTab": "workspace.invalidTab",
+  "workspace.noPermission": "workspace.noPermission",
+  "workspace.notAccessible": "workspace.notAccessible",
+  "workspace.program": "Program",
+  "workspace.stage": "Stage",
+  "workspace.tabs": "Workspace sections",
   "workspaceCard": {
     "actions": "Actions",
     "kpiTrend": "KPI Trend",
@@ -10379,31 +10526,5 @@
     "upcomingSession": "Session coming up",
     "updateKpis": "Update your KPIs",
     "viewActions": "View Actions"
-  },
-  "timeOff": {
-    "title": "Days and hours without meetings",
-    "description": "Block holidays, whole days or hour ranges when you don't want meetings. These periods stop appearing in booking screens and are rejected server-side.",
-    "allDay": "Full day(s)",
-    "from": "From",
-    "to": "To",
-    "day": "Day",
-    "startTime": "From",
-    "endTime": "To",
-    "reason": "Reason (optional, visible to staff only)",
-    "reasonPlaceholder": "Holidays, training, internal work…",
-    "add": "Block period",
-    "added": "Period blocked",
-    "addFailed": "Could not block the period",
-    "removed": "Block removed",
-    "removeFailed": "Could not remove",
-    "invalidRange": "The end must be after the start",
-    "empty": "No blocked periods.",
-    "tab": "My Calendar"
-  },
-  "founderRequests": {
-    "sendFailed": "Could not send request",
-    "sent": "Request sent to the team",
-    "updateFailed": "Could not update",
-    "updated": "Request updated"
   }
 }

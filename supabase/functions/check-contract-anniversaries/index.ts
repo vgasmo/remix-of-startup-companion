@@ -270,18 +270,29 @@ Deno.serve(withCronRunLogging('check-contract-anniversaries', async (req) => {
           if (autoRenew) {
             const newEnd = new Date(endDate)
             newEnd.setMonth(newEnd.getMonth() + renewalMonths)
-            await supabase.from('startup_contracts')
-              .update({ end_date: newEnd.toISOString().split('T')[0] })
-              .eq('id', contract.id)
-            await supabase.from('contract_lifecycle_events').insert({
+            const newEndStr = newEnd.toISOString().split("T")[0]
+            await supabase.from("startup_contracts")
+              .update({ end_date: newEndStr })
+              .eq("id", contract.id)
+            // Mesma regra da renovação manual (P3.1): as alocações deste contrato e as do workspace
+            // sem contrato que acabavam com ele acompanham a renovação
+            const allocOwner = contract.workspace_id
+              ? `contract_id.eq.${contract.id},and(workspace_id.eq.${contract.workspace_id},contract_id.is.null)`
+              : `contract_id.eq.${contract.id}`
+            const { error: allocErr } = await supabase.from("room_allocations")
+              .update({ end_date: newEndStr })
+              .or(allocOwner)
+              .eq("end_date", contract.end_date)
+            if (allocErr) console.warn("[check-contract-anniversaries] room allocation not extended", allocErr.message)
+            await supabase.from("contract_lifecycle_events").insert({
               contract_id: contract.id,
-              event_type: 'auto_renewed',
+              event_type: "auto_renewed",
               event_date: todayStr,
               details: {
                 previous_end_date: contract.end_date,
-                new_end_date: newEnd.toISOString().split('T')[0],
+                new_end_date: newEndStr,
                 startup_name: startupName,
-                regulation_reference: 'Cláusula 10.ª — Renovação automática',
+                regulation_reference: "Cláusula 10.ª — Renovação automática",
               },
             })
             alerts.push({
@@ -289,7 +300,7 @@ Deno.serve(withCronRunLogging('check-contract-anniversaries', async (req) => {
               workspaceId: contract.workspace_id,
               startupName,
               type: 'auto_renewed',
-              newEnd: newEnd.toISOString().split('T')[0],
+              newEnd: newEndStr,
             })
           } else {
             await supabase.from('startup_contracts')

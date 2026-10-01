@@ -149,7 +149,7 @@ export function TeamTab({ startupId, canEdit = false }: TeamTabProps) {
               {t('team.memberCount', { count: members?.length || 0 })}
               {' · '}
               <span className="text-xs">
-                {t('team.inviteHint', 'Para dar acesso à plataforma a cofounders, use o botão "Convidar Founder" na página da startup.')}
+                {t('team.inviteHint', { defaultValue: 'Para dar acesso à plataforma a cofounders ou à equipa, use o botão "Convidar" na página do workspace.' })}
               </span>
             </CardDescription>
           </div>

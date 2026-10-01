@@ -6,6 +6,11 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { useAutoMaterializeDeliverables } from '@/hooks/useAutoMaterializeDeliverables';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { AccessDenied } from '@/components/ui/AccessDenied';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import {
@@ -77,6 +82,11 @@ export default function WorkspaceDetail() {
   const { isAdmin, isConsultor, isMentor, isFounder, isBackoffice, isStaff } = useAuth();
   
   const [showOnboardingWizard, setShowOnboardingWizard] = useState(false);
+  // Convite de cofundadores / equipa (admin e consultor)
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'founder' | 'team_member'>('team_member');
+  const [inviting, setInviting] = useState(false);
   const shouldShowOnboarding = searchParams.get('onboarding') === 'true';
   const { data: myWorkspaceRole } = useUserWorkspaceRole(id);
   const canWrite = isAdmin || isConsultor || isMentor || (isFounder && myWorkspaceRole !== 'team_member');
@@ -349,6 +359,21 @@ export default function WorkspaceDetail() {
     notify.success(t('common.linkCopied'));
   };
 
+  const sendInvite = async () => {
+    setInviting(true);
+    const { error: inviteErr } = await invokeWithAuth('send-workspace-invite', {
+      body: { workspaceId: workspace.id, startupId: workspace.startup_id, email: inviteEmail.trim(), role: inviteRole },
+    });
+    setInviting(false);
+    if (inviteErr) {
+      notify.error(inviteErr.message || t('invite.inviteFailed'));
+      return;
+    }
+    notify.success(t('invite.sentTo', { email: inviteEmail.trim() }));
+    setInviteOpen(false);
+    setInviteEmail('');
+  };
+
   const isOverflowTabActive = overflowTabs.some(tab => tab.id === activeTab);
 
   const mainContact = startup?.main_contact_name || startup?.main_contact_email;
@@ -414,6 +439,12 @@ export default function WorkspaceDetail() {
       subtitle={subtitleNode}
       actions={
         <div className="flex gap-1 sm:gap-2">
+          {(isAdmin || isConsultor) && (
+            <Button variant="outline" size="sm" onClick={() => setInviteOpen(true)} className="px-2 sm:px-3">
+              <Mail className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">{t('invite.inviteMember', { defaultValue: 'Convidar' })}</span>
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={copyWorkspaceLink} className="px-2 sm:px-3">
             <Copy className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">{t('common.copyLink')}</span>
@@ -665,6 +696,34 @@ export default function WorkspaceDetail() {
           isFounderOnboarding={isFounder}
         />
       )}
+
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('invite.inviteTitle', { defaultValue: 'Convidar para o workspace' })}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="invite-email">Email</Label>
+              <Input id="invite-email" type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>{t('invite.role', { defaultValue: 'Papel' })}</Label>
+              <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as 'founder' | 'team_member')}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="founder">{t('roles.founder', { defaultValue: 'Founder' })}</SelectItem>
+                  <SelectItem value="team_member">{t('roles.team_member', { defaultValue: 'Membro da equipa' })}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteOpen(false)}>{t('common.cancel')}</Button>
+            <Button onClick={sendInvite} disabled={inviting || !inviteEmail.includes('@')}>{t('invite.sendInvite')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

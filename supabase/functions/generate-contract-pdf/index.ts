@@ -605,7 +605,7 @@ Deno.serve(async (req) => {
       .from('startup_contracts')
       .select(`
         *,
-        workspace:workspaces(id, startup:startups(name, nif, main_contact_name, main_contact_email, description, website)),
+        workspace:workspaces(id, startup:startups(name, nif, main_contact_name, main_contact_email, description, website, address)),
         incubation_type:incubation_types(name, equity_percentage, is_virtual),
         building:buildings(name, code, address, city)
       `)
@@ -638,12 +638,15 @@ Deno.serve(async (req) => {
 
     const contractData: ContractData = {
       contractNumber: contract.contract_number,
-      startupName: startup?.name || 'N/A',
+      // Segundo Outorgante: os dados legais do contrato primeiro, a ficha da startup como recurso
+      // (a morada do edifício não é a sede da startup; sem dados a linha fica em branco)
+      startupName: contract.organization_name || startup?.name || 'N/A',
       startupDescription: startup?.description || null,
-      nif: startup?.nif || null,
-      contactName: startup?.main_contact_name || null,
-      contactEmail: startup?.main_contact_email || null,
-      address: building ? `${building.address || ''}, ${building.city || 'Leiria'}` : null,
+      nif: contract.company_nif || startup?.nif || null,
+      contactName: contract.legal_representative_name || startup?.main_contact_name || null,
+      contactEmail: contract.legal_representative_email || startup?.main_contact_email || null,
+      address: [contract.company_address, contract.company_postal_code, contract.company_city].filter(Boolean).join(', ')
+        || startup?.address || null,
       incubationType: incType?.name || 'Standard',
       isVirtual: incType?.is_virtual ?? true,
       buildingName: building?.name || null,
@@ -657,63 +660,66 @@ Deno.serve(async (req) => {
       equityPercentage: incType?.equity_percentage || contract.equity_percentage,
       startDate: contract.start_date,
       endDate: contract.end_date,
-      projectName: startup?.name || null,
+      projectName: contract.project_name || startup?.name || contract.organization_name || null,
     }
 
     // Generate PDF bytes
     const pdfBytes = generateContractPdf(contractData)
 
-    // Store the generated document
+    // Contrato fechado (assinado/ativo/terminado/expirado): devolve só a pré-visualização, nunca regrava o PDF canónico
+    const isLocked = !!contract.signed_at || !['draft', 'pending_signature'].includes(String(contract.status))
     const fileName = `contract_${contract.contract_number || contractId.slice(0, 8)}_${Date.now()}.pdf`
-    
-    const { error: uploadError } = await supabase.storage
-      .from('contract-documents')
-      .upload(`generated/${fileName}`, pdfBytes, {
-        contentType: 'application/pdf',
-        upsert: true,
-      })
-
-    if (uploadError) {
-      console.error('Upload error:', uploadError)
-    }
-
-    // Update contract with document URL + pricing snapshot
     const documentPath = `generated/${fileName}`
-    const pricingSnapshot = {
-      monthly_fee: contractData.monthlyFee,
-      effective_fee: contractData.effectiveFee,
-      discount_percentage: contractData.discountPercentage,
-      discount_months: contractData.discountMonths,
-      incubation_type: contractData.incubationType,
-      is_virtual: contractData.isVirtual,
-      square_meters: contractData.squareMeters,
-      building: contractData.buildingName,
-      currency: contractData.currency,
-      snapshot_date: new Date().toISOString(),
-      regulation_version: 'V11-REG-2026',
-      contract_template_version: 'V9',
-    }
-    await supabase
-      .from('startup_contracts')
-      .update({ 
-        document_url: documentPath,
+
+    if (!isLocked) {
+      const { error: uploadError } = await supabase.storage
+        .from('contract-documents')
+        .upload(`generated/${fileName}`, pdfBytes, {
+          contentType: 'application/pdf',
+          upsert: true,
+        })
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError)
+      }
+
+      const pricingSnapshot = {
+        monthly_fee: contractData.monthlyFee,
+        effective_fee: contractData.effectiveFee,
+        discount_percentage: contractData.discountPercentage,
+        discount_months: contractData.discountMonths,
+        incubation_type: contractData.incubationType,
+        is_virtual: contractData.isVirtual,
+        square_meters: contractData.squareMeters,
+        building: contractData.buildingName,
+        currency: contractData.currency,
+        snapshot_date: new Date().toISOString(),
         regulation_version: 'V11-REG-2026',
         contract_template_version: 'V9',
-        pricing_snapshot_json: pricingSnapshot,
-      })
-      .eq('id', contractId)
+      }
+      const { error: docUpdErr } = await supabase
+        .from('startup_contracts')
+        .update({
+          document_url: documentPath,
+          regulation_version: 'V11-REG-2026',
+          contract_template_version: 'V9',
+          pricing_snapshot_json: pricingSnapshot,
+        })
+        .eq('id', contractId)
+      if (docUpdErr) console.error('document_url update failed:', docUpdErr.message)
 
-    // Log direct user-initiated generation. Internal public-token generation is
-    // already mediated by public-contract-onboarding and has no authenticated user.
-    if (user) {
-      await supabase.from('activity_log').insert({
-        user_id: user.id,
-        entity_type: 'contract',
-        entity_id: contractId,
-        action: 'pdf_generated',
-        workspace_id: contract.workspace_id,
-        metadata: { document_path: documentPath },
-      })
+      // Log direct user-initiated generation. Internal public-token generation is
+      // already mediated by public-contract-onboarding and has no authenticated user.
+      if (user) {
+        await supabase.from('activity_log').insert({
+          user_id: user.id,
+          entity_type: 'contract',
+          entity_id: contractId,
+          action: 'pdf_generated',
+          workspace_id: contract.workspace_id,
+          metadata: { document_path: documentPath },
+        })
+      }
     }
 
     // Convert to base64 for response

@@ -99,12 +99,22 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
     if (taskErr) notify.warn(taskErr.message);
   }
 
+  // Sem lançar: o contrato já está terminado e os passos seguintes (evento, intake, CRM, notificações) têm de correr
   if (archiveWorkspace && contract.workspace_id) {
-    const { error: archErr } = await supabase.rpc(
+    const { data: archived, error: archErr } = await supabase.rpc(
       'backoffice_archive_workspace' as never,
       { p_workspace_id: contract.workspace_id } as never,
     );
-    if (archErr) throw new Error(`Failed to archive workspace: ${archErr.message}`);
+    if (archErr) {
+      notify.warn(t('contractDetail.terminate.archiveFailed', {
+        defaultValue: 'Contrato terminado, mas o workspace não foi arquivado: {{msg}}',
+        msg: archErr.message,
+      }));
+    } else if (archived === false) {
+      notify.warn(t('contractDetail.terminate.archiveSkipped', {
+        defaultValue: 'Contrato terminado. O workspace não foi arquivado porque tem outro contrato em vigor.',
+      }));
+    }
   }
 
   const { data: evUser } = await supabase.auth.getUser();

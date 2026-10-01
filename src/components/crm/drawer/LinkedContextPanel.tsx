@@ -101,7 +101,7 @@ export function LinkedContextPanel({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('workspaces')
-        .select('id, stage, status, startup:startups(id, name, sector, main_contact_email, main_contact_name), program:programs(id, name)')
+        .select('id, stage, status, startup:startups(id, name, main_contact_email, main_contact_name), program:programs(id, name)')
         .eq('id', linkedWorkspaceId!)
         .maybeSingle();
       if (error) throw error;
@@ -117,7 +117,7 @@ export function LinkedContextPanel({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('startups')
-        .select('id, name, sector, main_contact_email, main_contact_name')
+        .select('id, name, main_contact_email, main_contact_name')
         .eq('id', linkedStartupId!)
         .maybeSingle();
       if (error) throw error;
@@ -252,11 +252,6 @@ export function LinkedContextPanel({
                   {(workspace as any).program.name}
                 </Badge>
               )}
-              {(workspace as any).startup?.sector && (
-                <Badge variant="outline" className="text-[10px] h-5">
-                  {(workspace as any).startup.sector}
-                </Badge>
-              )}
             </div>
             {(workspace as any).startup?.main_contact_email && (
               <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -276,13 +271,6 @@ export function LinkedContextPanel({
               <Badge variant="outline" className="text-[10px] h-5">
                 {t('crm.startupNoWorkspace', { defaultValue: 'Sem workspace' })}
               </Badge>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {(startupOnly as any).sector && (
-                <Badge variant="outline" className="text-[10px] h-5">
-                  {(startupOnly as any).sector}
-                </Badge>
-              )}
             </div>
             {(startupOnly as any).main_contact_email && (
               <p className="text-xs text-muted-foreground flex items-center gap-1">
