@@ -15,6 +15,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from 'npm:resend@4.0.0';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { generateRequestId, createLogger } from '../_shared/security.ts';
+import { foundersGloballyDisabled } from '../_shared/founderKillSwitch.ts';
 
 const FUNCTION_NAME = 'send-survey-invites';
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
@@ -392,10 +393,12 @@ Deno.serve(async (req) => {
     const failures: { email: string; error: string }[] = [];
     const sentInstanceIds = new Set<string>();
 
-    if (!dryRunGuardSkip && await foundersGloballyDisabled(admin)) {
-      return new Response(JSON.stringify({ error: 'founder_notifications_disabled', message: 'Notificações a founders estão desligadas pelo administrador.' }), {
-        status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (await foundersGloballyDisabled(admin)) {
+      return corsJsonResponse(
+        { error: 'founder_notifications_disabled', message: 'Notificações a founders estão desligadas pelo administrador.' },
+        req,
+        409,
+      );
     }
 
     for (const recipient of recipients.values()) {

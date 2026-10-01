@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@4.0.0";
 import { requireCronSecret } from "../_shared/security.ts";
 import { withCronRunLogging } from '../_shared/cronRun.ts';
+import { isFounderEmailBlocked } from '../_shared/founderKillSwitch.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
