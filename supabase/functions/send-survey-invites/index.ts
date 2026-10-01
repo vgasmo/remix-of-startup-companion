@@ -392,6 +392,12 @@ Deno.serve(async (req) => {
     const failures: { email: string; error: string }[] = [];
     const sentInstanceIds = new Set<string>();
 
+    if (!dryRunGuardSkip && await foundersGloballyDisabled(admin)) {
+      return new Response(JSON.stringify({ error: 'founder_notifications_disabled', message: 'Notificações a founders estão desligadas pelo administrador.' }), {
+        status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     for (const recipient of recipients.values()) {
       const { subject, html } = buildEmail(recipient, campaign.name, deadline, appUrl);
       let attempt = 0;

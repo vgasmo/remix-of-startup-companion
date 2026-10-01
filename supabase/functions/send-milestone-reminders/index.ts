@@ -105,6 +105,7 @@ serve(withCronRunLogging('send-milestone-reminders', async (req) => {
 
 
       for (const user of workspaceUsers || []) {
+        if (user.role !== 'admin' && user.role !== 'consultor' && await isFounderEmailBlocked(supabase, user.user_id)) continue;
         const prefs = user.notification_preferences?.[0];
         const reminderDays = prefs?.milestone_reminder_days ?? 3;
         const remindersEnabled = prefs?.milestone_reminders_enabled ?? true;

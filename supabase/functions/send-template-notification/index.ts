@@ -122,6 +122,7 @@ serve(async (req: Request) => {
 
       let emailsSent = 0;
       for (const wu of workspaceUsers) {
+        if (wu.role !== 'admin' && wu.role !== 'consultor' && await isFounderEmailBlocked(supabaseAdmin, wu.user_id as string)) continue;
         const { data: profile } = await supabaseAdmin
           .from("profiles")
           .select("email, full_name")

@@ -200,6 +200,7 @@ const handler = async (req: Request): Promise<Response> => {
             const founderName = founder.profile?.full_name || "Founder";
 
             if (!founderEmail) continue;
+            if (await isFounderEmailBlocked(supabase, founder.user_id)) continue;
 
             try {
               const emailResult = await sendEmail(resendApiKey, {
