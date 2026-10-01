@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { notify } from '@/lib/notify';
+import i18n from '@/i18n';
 
 export type FounderRequestType =
   | 'iban_change'
@@ -69,9 +70,9 @@ export function useCreateFounderRequest() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['founder-staff-requests'] });
-      notify.success('Pedido enviado à equipa');
+      notify.success(i18n.t('founderRequests.sent', { defaultValue: 'Pedido enviado à equipa' }));
     },
-    onError: (e: any) => notify.error(e?.message || 'Erro ao enviar pedido'),
+    onError: (e: any) => notify.error(e?.message || i18n.t('founderRequests.sendFailed', { defaultValue: 'Erro ao enviar pedido' })),
   });
 }
 
@@ -102,8 +103,8 @@ export function useUpdateFounderRequest() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['founder-staff-requests'] });
-      notify.success('Pedido atualizado');
+      notify.success(i18n.t('founderRequests.updated', { defaultValue: 'Pedido atualizado' }));
     },
-    onError: (e: any) => notify.error(e?.message || 'Erro ao atualizar'),
+    onError: (e: any) => notify.error(e?.message || i18n.t('founderRequests.updateFailed', { defaultValue: 'Erro ao atualizar' })),
   });
 }

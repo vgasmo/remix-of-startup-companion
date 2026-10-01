@@ -754,7 +754,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
                   onStatusChange={handleStatusChange} onDueDateChange={handleDueDateChange}
                   onDelete={(item) => setDeleteActionTarget(item)}
                   onAddDeliverable={handleAddDeliverable} onCompleteDeliverable={handleCompleteDeliverable}
-                  isSelected={isSelected(item.id)} onToggleSelect={toggleItem}
+                  isSelected={isSelected(item.id)} onToggleSelect={canWrite ? toggleItem : undefined}
                 />
               </div>
             ))}
