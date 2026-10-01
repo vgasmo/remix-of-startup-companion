@@ -487,7 +487,7 @@ Deno.serve(async (req) => {
       const tokenHashDraft = await sha256Hex(token)
       const { data: intakeDraft, error: dErr } = await supabase
         .from('contract_intakes')
-        .select('id, status, intake_token_expires_at')
+        .select('id, status, intake_token_expires_at, funnel_item_id')
         .eq('intake_token_hash', tokenHashDraft)
         .maybeSingle()
 
@@ -558,13 +558,19 @@ Deno.serve(async (req) => {
         .eq('id', intakeDraft.id)
 
       if (dUpdErr) {
-        return new Response(JSON.stringify({ error: 'Save failed' }), {
-          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        return new Response(JSON.stringify({ error: "Save failed" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         })
       }
 
+      // CRM: o founder começou a preencher (sem recuar fases posteriores)
+      if (patch.status === "intake_in_progress" && intakeDraft.funnel_item_id) {
+        await supabase.from("funnel_items").update({ stage: "intake_filling" })
+          .eq("id", intakeDraft.funnel_item_id).eq("stage", "intake_requested")
+      }
+
       return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
     }
 
@@ -586,7 +592,7 @@ Deno.serve(async (req) => {
       const tokenHash = await sha256Hex(token)
       const { data: intake, error: iErr } = await supabase
         .from('contract_intakes')
-        .select('id, status, intake_token_expires_at')
+        .select('id, status, intake_token_expires_at, funnel_item_id')
         .eq('intake_token_hash', tokenHash)
         .maybeSingle()
 
@@ -643,6 +649,14 @@ Deno.serve(async (req) => {
         .eq('id', intake.id)
 
       if (updateErr) throw updateErr
+      // CRM: a lead passa a "Submetido" (sem recuar fases posteriores)
+      if (intake.funnel_item_id) {
+        const { error: crmErr } = await supabase.from("funnel_items")
+          .update({ stage: "intake_submitted" })
+          .eq("id", intake.funnel_item_id)
+          .in("stage", ["intake_requested", "intake_filling", "intake_changes_requested"])
+        if (crmErr) console.warn("[intake_submit] funnel stage sync failed:", crmErr.message)
+      }
 
       // Audit event
       await supabase.from('intake_events').insert({
@@ -666,6 +680,10 @@ Deno.serve(async (req) => {
         if (intakeMeta?.reviewed_by) recipientIds.add(intakeMeta.reviewed_by)
         if (intakeMeta?.assigned_to) recipientIds.add(intakeMeta.assigned_to)
         if (intakeMeta?.created_by) recipientIds.add(intakeMeta.created_by)
+
+        // O backoffice é o dono operacional dos intakes (aprova para assinatura): recebe sempre o aviso
+        const { data: boUsers } = await supabase.from("user_roles").select("user_id").eq("role", "backoffice")
+        boUsers?.forEach((s: any) => recipientIds.add(s.user_id))
 
         // Fallback: notify all admin/backoffice staff when we have no specific recipient.
         if (recipientIds.size === 0) {

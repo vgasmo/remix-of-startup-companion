@@ -56,7 +56,8 @@ export function useFounderOnboardingState(): FounderOnboardingState {
         .eq('user_id', user.id)
         .eq('active', true)
         .in('role', ['founder', 'team_member'])
-        .limit(5);
+        .in('workspaces.status', ['active', 'claimed', 'pending'])
+        .limit(50);
 
       if (workspaceError) throw workspaceError;
 

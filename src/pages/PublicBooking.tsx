@@ -127,10 +127,16 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
         body: { token, action: 'get_slots', program_id: selectedProgramId },
       });
 
-      // Fail-closed: server returns 503 { status: 'unavailable', reason } when
+      // Fail-closed: server returns 503 { status: "unavailable", reason } when
       // Graph is not configured, credentials fail, or every schedule call fails.
       // Never fabricate weekday slots on the client either.
-      if (data?.status === 'unavailable') {
+      // Numa resposta non-2xx o corpo vem em error.context (FunctionsHttpError), não em data.
+      let payload = data;
+      const ctx = (error as { context?: unknown } | null)?.context;
+      if (error && ctx instanceof Response) {
+        try { payload = await ctx.clone().json(); } catch { /* corpo não-JSON */ }
+      }
+      if (payload?.status === "unavailable") {
         return {
           slots: [] as TimeSlot[],
           consultantName: null,
@@ -162,13 +168,20 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
         body: {
           token,
           slot: selectedSlot,
-          contact: { ...formData, pitch_deck_path: pitchDeckPath || undefined },
           program_id: selectedProgramId,
           recording_consent: recordingConsent,
         },
       });
       
-      if (error) throw error;
+      if (error) {
+        // mostrar a razão do servidor (ex.: 409 hora já ocupada) em vez do texto genérico do cliente
+        const ctx = (error as { context?: unknown }).context;
+        let msg = error.message;
+        if (ctx instanceof Response) {
+          try { const body = await ctx.clone().json(); if (typeof body?.error === "string") msg = body.error; } catch { /* corpo não-JSON */ }
+        }
+        throw new Error(msg);
+      }
       if (!data?.success) throw new Error(data?.error || 'Booking failed');
       
       return data;

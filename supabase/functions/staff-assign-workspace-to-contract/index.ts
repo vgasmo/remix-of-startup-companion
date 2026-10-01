@@ -89,6 +89,19 @@ Deno.serve(async (req) => {
       }
       const programId = create.program_id || null;
 
+      // workspaces.program_id é NOT NULL: sem programa o insert falhava e deixava uma startup órfã
+      if (!programId) {
+        return errorResponse(req, 'program_id required to create workspace', ErrorCode.BAD_REQUEST, 400);
+      }
+      // workspaces.program_id é NOT NULL: sem programa o insert falhava e deixava uma startup órfã
+      if (!programId) {
+        return errorResponse(req, "program_id required to create workspace", ErrorCode.BAD_REQUEST, 400);
+      }
+      // workspaces.program_id é NOT NULL: sem programa o insert falhava e deixava uma startup órfã
+      if (!programId) {
+        return errorResponse(req, "program_id required to create workspace", ErrorCode.BAD_REQUEST, 400);
+      }
+
       // Duplicate guard: same startup name + program already has a non-archived workspace.
       const { data: existingMatches, error: dupErr } = await admin
         .from('workspaces')

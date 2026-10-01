@@ -202,6 +202,10 @@ async function getGraphAccessToken(credentials: {
   return data.access_token;
 }
 
+// Os campos do visitante entram no HTML do evento: escapar sempre
+const escHtml = (s: string) =>
+  s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+
 // Create calendar event with Teams meeting
 async function createCalendarEvent(
   accessToken: string,
@@ -216,15 +220,15 @@ async function createCalendarEvent(
   const endDateTime = `${slot.date}T${endTime}:00`;
   
   const eventPayload = {
-    subject: `First Contact Meeting - ${contact.name}${contact.organization ? ` (${contact.organization})` : ''}`,
+    subject: `First Contact Meeting - ${escHtml(contact.name)}${contact.organization ? ` (${escHtml(contact.organization)})` : ''}`,
     body: {
       contentType: "HTML",
       content: `
         <p><strong>First Contact Meeting</strong></p>
-        <p><strong>Contact:</strong> ${contact.name}</p>
-        <p><strong>Email:</strong> ${contact.email}</p>
-        ${contact.organization ? `<p><strong>Organization:</strong> ${contact.organization}</p>` : ''}
-        ${contact.message ? `<p><strong>Notes:</strong> ${contact.message}</p>` : ''}
+        <p><strong>Contact:</strong> ${escHtml(contact.name)}</p>
+        <p><strong>Email:</strong> ${escHtml(contact.email)}</p>
+        ${contact.organization ? `<p><strong>Organization:</strong> ${escHtml(contact.organization)}</p>` : ''}
+        ${contact.message ? `<p><strong>Notes:</strong> ${escHtml(contact.message)}</p>` : ''}
         <p><em>Booked via Startup Leiria public booking</em></p>
       `,
     },
@@ -375,7 +379,7 @@ serve(async (req) => {
           await supabase.from('system_alerts').upsert({
             kind: 'first_contact_no_route',
             severity: 'high',
-            dedupe_key: `first_contact_no_route:${e.reason}:${contact.email}`,
+            dedupe_key: `first_contact_no_route:${e.reason}:${escHtml(contact.email)}`,
             payload: {
               reason: e.reason,
               trace: e.trace,
@@ -630,11 +634,11 @@ serve(async (req) => {
     try {
       if (consultantId) {
         const dt = `${slot.date} ${slot.time}`;
-        const orgLabel = contact.organization ? ` (${contact.organization})` : '';
+        const orgLabel = contact.organization ? ` (${escHtml(contact.organization)})` : '';
         await supabase.from('notifications').insert({
           user_id: consultantId,
           type: 'first_contact_booked',
-          title: `Nova marcação de Primeiro Contacto — ${contact.name}${orgLabel}`,
+          title: `Nova marcação de Primeiro Contacto — ${escHtml(contact.name)}${orgLabel}`,
           message: `Agendado para ${dt} (Europe/Lisbon). Lead já visível no pipeline do CRM.`,
           link: `/crm?open=${funnelItemId}`,
           entity_type: 'funnel_item',
@@ -741,7 +745,7 @@ serve(async (req) => {
             from: 'Startup Leiria <noreply@startupleiria.com>',
             to: [consultantEmail],
             reply_to: contact.email,
-            subject: `Nova marcação: ${contact.name} — ${slot.date} ${slot.time}`,
+            subject: `Nova marcação: ${escHtml(contact.name)} — ${slot.date} ${slot.time}`,
             html,
           }),
         });
@@ -760,7 +764,7 @@ serve(async (req) => {
             await supabase.from('email_log').insert({
               email_type: 'first_contact_booking_alert',
               recipients: [{ email: consultantEmail, user_id: consultantId }],
-              subject: `Nova marcação: ${contact.name} — ${slot.date} ${slot.time}`,
+              subject: `Nova marcação: ${escHtml(contact.name)} — ${slot.date} ${slot.time}`,
               status: 'sent',
               sent_at: new Date().toISOString(),
             });

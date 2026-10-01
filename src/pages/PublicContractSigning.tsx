@@ -225,9 +225,13 @@ export default function PublicContractSigning() {
       }
 
       // Restore already-uploaded documents so they don't disappear on reload.
-      const docsJson = (contract as any).documents_json as Record<string, { name: string; path: string; size: number }> | undefined;
-      if (docsJson && typeof docsJson === 'object') {
-        setUploadedDocs(prev => ({ ...prev, ...docsJson }));
+      // O servidor grava { path, file_name, size? }: normalizar para { name, path, size }.
+      const docsJson = (contract as any).documents_json as Record<string, { path: string; file_name?: string; name?: string; size?: number } | null> | undefined;
+      if (docsJson && typeof docsJson === "object") {
+        const restored = Object.fromEntries(
+          Object.entries(docsJson).map(([k, v]) => [k, v ? { name: v.file_name ?? v.name ?? k, path: v.path, size: v.size ?? 0 } : null]),
+        );
+        setUploadedDocs(prev => ({ ...prev, ...restored }));
       }
     }
   }, [contract]);
@@ -937,7 +941,7 @@ export default function PublicContractSigning() {
                                 {uploaded.name}
                               </span>
                               <span className="text-[10px] text-muted-foreground">
-                                ({(uploaded.size / 1024).toFixed(0)} KB)
+                                {uploaded.size > 0 && <span>({(uploaded.size / 1024).toFixed(0)} KB)</span>}
                               </span>
                             </div>
                           )}

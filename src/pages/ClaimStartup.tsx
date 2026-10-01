@@ -343,7 +343,7 @@ export default function ClaimStartup() {
               <p className="text-xs text-muted-foreground max-w-xs">
                 {t('claimStartup.error', { defaultValue: 'Ocorreu um erro temporário. Os seus dados estão seguros. Por favor tente novamente.' })}
               </p>
-              <Button onClick={() => setPageState('idle')} variant="outline" className="gap-2">
+              <Button onClick={() => { setPageState('idle'); void queryClient.invalidateQueries({ queryKey: ['founder-onboarding-state'] }); }} variant="outline" className="gap-2">
                 {t('common.retry', { defaultValue: 'Tentar novamente' })}
               </Button>
             </div>

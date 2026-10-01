@@ -74,7 +74,9 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
       const { data: workspaces } = await supabase
         .from('workspaces')
         .select('id, startup_id, status, stage, program:programs(id, name)')
-        .in('startup_id', startupIds);
+        .in('startup_id', startupIds)
+        // nunca sugerir workspaces arquivadas ou rejeitadas ('Associar' reativava-as)
+        .in('status', ['imported_unclaimed', 'active', 'claimed', 'pending']);
 
       return data.map(s => ({
         ...s,

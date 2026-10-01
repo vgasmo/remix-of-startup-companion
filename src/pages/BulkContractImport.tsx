@@ -227,11 +227,9 @@ export default function BulkContractImport() {
     for (let i = 0; i < pendingRows.length; i++) {
       if (cancelRef.current) break;
       const rowId = pendingRows[i].id;
-      try {
-        await invokeWithAuth('bulk-import-extract', { body: { row_id: rowId } });
-      } catch (e) {
-        logger.warn('Extract failed', { rowId, err: e });
-      }
+      // invokeWithAuth não lança: ler o erro (a linha fica por extrair e o ciclo continua)
+      const { error: extractErr } = await invokeWithAuth("bulk-import-extract", { body: { row_id: rowId } });
+      if (extractErr) logger.warn("Extract failed", { rowId, error: extractErr.message });
       setExtractProgress({ done: i + 1, total: pendingRows.length });
       await refreshRows(id);
     }

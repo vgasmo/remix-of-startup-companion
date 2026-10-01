@@ -1,3 +1,4 @@
+import { fetchAllRows } from "@/lib/fetchAllRows";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { PIPELINE_STAGES, type FunnelStage } from '@/constants/funnelStages';
@@ -35,28 +36,34 @@ export function useCrmPipeline(filters?: UseCrmPipelineFilters) {
     queryKey: ['crm-pipeline', filters?.currentUserId ?? null, filters],
     queryFn: async (): Promise<CrmPipelineGroups> => {
       const stagesFilter = filters?.stages && filters.stages.length > 0 ? filters.stages : PIPELINE_STAGES;
-      let query = supabase
-        .from('funnel_items')
-        .select(FUNNEL_ITEM_FIELDS)
-        .in('stage', stagesFilter)
-        .order('next_action_at', { ascending: true, nullsFirst: false });
+      // Paginado (o PostgREST corta em 1000 linhas) e com ordem estável entre páginas
+      const items = await fetchAllRows((from, to) => {
+        let query = supabase
+          .from("funnel_items")
+          .select(FUNNEL_ITEM_FIELDS)
+          .in("stage", stagesFilter)
+          .order("next_action_at", { ascending: true, nullsFirst: false })
+          .order("id")
+          .range(from, to);
 
-      if (filters?.programId) {
-        query = query.eq('program_id', filters.programId);
-      }
-      if (filters?.assigneeId) {
-        query = query.eq('owner_consultant_id', filters.assigneeId);
-      }
-      if (filters?.myItemsOnly && filters?.currentUserId) {
-        query = query.eq('owner_consultant_id', filters.currentUserId);
-      }
-      if (filters?.search) {
-        const searchTerm = `%${filters.search}%`;
-        query = query.or(`organization_name.ilike.${searchTerm},contact_name.ilike.${searchTerm},contact_email.ilike.${searchTerm}`);
-      }
-
-      const { data: items, error } = await query;
-      if (error) throw error;
+        if (filters?.programId) {
+          query = query.eq("program_id", filters.programId);
+        }
+        if (filters?.assigneeId) {
+          query = query.eq("owner_consultant_id", filters.assigneeId);
+        }
+        if (filters?.myItemsOnly && filters?.currentUserId) {
+          query = query.eq("owner_consultant_id", filters.currentUserId);
+        }
+        // vírgulas e parênteses partem o filtro .or() do PostgREST
+        const term = filters?.search?.replace(/[,()]/g, " ").trim();
+        if (term) {
+          const searchTerm = `%${term}%`;
+          query = query.or(`organization_name.ilike.${searchTerm},contact_name.ilike.${searchTerm},contact_email.ilike.${searchTerm}`);
+        }
+        return query;
+      });
+      if (!items) throw new Error("Failed to fetch pipeline items");
 
       // Fetch owners
       const ownerIds = [...new Set((items || []).filter(i => i.owner_consultant_id).map(i => i.owner_consultant_id))];

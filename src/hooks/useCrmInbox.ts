@@ -1,3 +1,4 @@
+import { fetchAllRows } from "@/lib/fetchAllRows";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { startOfDay, endOfDay, addDays, subDays } from 'date-fns';
@@ -86,34 +87,38 @@ export function useCrmInbox(filters?: UseCrmInboxFilters) {
   return useQuery({
     queryKey: ['crm-inbox', filters],
     queryFn: async (): Promise<CrmInboxGroups> => {
-      let query = supabase
-        .from('funnel_items')
-        .select(FUNNEL_ITEM_FIELDS)
-        .not('stage', 'in', '(rejected,archived)')
-        .order('next_action_at', { ascending: true, nullsFirst: false });
+      const items = await fetchAllRows((from, to) => {
+        let query = supabase
+          .from("funnel_items")
+          .select(FUNNEL_ITEM_FIELDS)
+          .not("stage", "in", "(rejected,archived)")
+          .order("next_action_at", { ascending: true, nullsFirst: false })
+          .order("id")
+          .range(from, to);
 
-      if (filters?.programId) {
-        query = query.eq('program_id', filters.programId);
-      }
-      if (filters?.stages && filters.stages.length > 0) {
-        query = query.in('stage', filters.stages);
-      } else if (filters?.stage) {
-        query = query.eq('stage', filters.stage);
-      }
-      if (filters?.assigneeId) {
-        query = query.eq('owner_consultant_id', filters.assigneeId);
-      }
-      if (filters?.myItemsOnly && filters?.currentUserId) {
-        query = query.eq('owner_consultant_id', filters.currentUserId);
-      }
-      if (filters?.search) {
-        const searchTerm = `%${filters.search}%`;
-        query = query.or(`organization_name.ilike.${searchTerm},contact_name.ilike.${searchTerm},contact_email.ilike.${searchTerm}`);
-      }
-
-      const { data: items, error } = await query;
-      if (error) throw error;
-
+        if (filters?.programId) {
+          query = query.eq("program_id", filters.programId);
+        }
+        if (filters?.stages && filters.stages.length > 0) {
+          query = query.in("stage", filters.stages);
+        } else if (filters?.stage) {
+          query = query.eq("stage", filters.stage);
+        }
+        if (filters?.assigneeId) {
+          query = query.eq("owner_consultant_id", filters.assigneeId);
+        }
+        if (filters?.myItemsOnly && filters?.currentUserId) {
+          query = query.eq("owner_consultant_id", filters.currentUserId);
+        }
+        // vírgulas e parênteses partem o filtro .or() do PostgREST
+        const term = filters?.search?.replace(/[,()]/g, " ").trim();
+        if (term) {
+          const searchTerm = `%${term}%`;
+          query = query.or(`organization_name.ilike.${searchTerm},contact_name.ilike.${searchTerm},contact_email.ilike.${searchTerm}`);
+        }
+        return query;
+      });
+      if (!items) throw new Error("Failed to fetch inbox items");
       // Fetch owners
       const ownerIds = [...new Set((items || []).filter(i => i.owner_consultant_id).map(i => i.owner_consultant_id))];
       let owners: Record<string, { id: string; full_name: string | null }> = {};
@@ -220,7 +225,6 @@ export function useCrmTasksDue(filters?: UseCrmInboxFilters) {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
 
       const now = new Date();
       const todayStart = startOfDay(now);

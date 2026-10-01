@@ -99,7 +99,7 @@ Deno.serve(withCronRunLogging('run-intake-reminders', async (req) => {
     // ── 1. INTAKE REMINDERS ──
     const { data: pendingIntakes, error: intakesErr } = await supabase
       .from('contract_intakes')
-      .select('id, organization_name, legal_representative_email, legal_representative_name, created_at, last_reminder_sent_at, reminder_count, status')
+      .select('id, organization_name, legal_representative_email, legal_representative_name, created_at, last_reminder_sent_at, reminder_count, status, updated_at')
       .in('status', ['intake_requested', 'intake_in_progress', 'changes_requested'])
       .not('legal_representative_email', 'is', null)
 
@@ -114,19 +114,20 @@ Deno.serve(withCronRunLogging('run-intake-reminders', async (req) => {
       const now = new Date()
 
       for (const intake of pendingIntakes) {
-        const createdAt = new Date(intake.created_at)
-        const daysSinceCreated = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
+        // Depois de "Pedir correções" a contagem recomeça nesse momento (updated_at), não na criação
+        const baseDate = new Date(intake.status === "changes_requested" ? (intake.updated_at ?? intake.created_at) : intake.created_at)
+        const daysSinceBase = Math.floor((now.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24))
         const lastReminder = intake.last_reminder_sent_at ? new Date(intake.last_reminder_sent_at) : null
         const daysSinceLastReminder = lastReminder
           ? Math.floor((now.getTime() - lastReminder.getTime()) / (1000 * 60 * 60 * 24))
           : Infinity
         const count = intake.reminder_count || 0
 
-        // Cadence: D+2, D+5, D+10, then weekly
         let shouldSend = false
-        if (count === 0 && daysSinceCreated >= 2) shouldSend = true
-        else if (count === 1 && daysSinceCreated >= 5) shouldSend = true
-        else if (count === 2 && daysSinceCreated >= 10) shouldSend = true
+        // (intervalos contados desde o último lembrete: D+2, D+5, D+10 e depois semanal)
+        if (count === 0 && daysSinceBase >= 2) shouldSend = true
+        else if (count === 1 && daysSinceLastReminder >= 3) shouldSend = true
+        else if (count === 2 && daysSinceLastReminder >= 5) shouldSend = true
         else if (count >= 3 && daysSinceLastReminder >= 7) shouldSend = true
 
         if (!shouldSend) continue

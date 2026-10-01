@@ -835,15 +835,17 @@ function StartupCategorySelector({ workspaceId }: { workspaceId: string }) {
   const handleChange = async (value: string) => {
     const newValue = value === 'none' ? null : value;
     setCurrentCategory(newValue);
-    const { error } = await supabase
-      .from('workspaces')
+    // Sem permissão o UPDATE devolve 0 linhas sem erro (RLS): confirmar com .select()
+    const { data: updated, error } = await supabase
+      .from("workspaces")
       .update({ startup_category: newValue })
-      .eq('id', workspaceId);
-    if (error) {
-      notify.error(t('common.error'));
+      .eq("id", workspaceId)
+      .select("id");
+    if (error || !updated?.length) {
+      notify.error(error ? t("common.error") : t("errors.noPermission", { defaultValue: "Sem permissão para esta ação." }));
     } else {
-      notify.success(t('crm.categoryUpdated', { defaultValue: 'Categoria atualizada' }));
-      queryClient.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
+      notify.success(t("crm.categoryUpdated", { defaultValue: "Categoria atualizada" }));
+      queryClient.invalidateQueries({ queryKey: ["ecosystem-items-v2"] });
     }
   };
 
