@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -54,6 +55,7 @@ Versão: ${CURRENT_NDA_VERSION}`;
 export default function MentorNda() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, isMentor, isLoading: authLoading } = useAuth();
   
   const [accepted, setAccepted] = useState(false);
