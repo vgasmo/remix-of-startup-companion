@@ -205,6 +205,12 @@ export default function PublicContractSigning() {
       if (contract.signature_status === 'sent_for_signature' || contract.signature_status === 'completed') {
         setCurrentStep('signing');
       }
+
+      // Restore already-uploaded documents so they don't disappear on reload.
+      const docsJson = (contract as any).documents_json as Record<string, { name: string; path: string; size: number }> | undefined;
+      if (docsJson && typeof docsJson === 'object') {
+        setUploadedDocs(prev => ({ ...prev, ...docsJson }));
+      }
     }
   }, [contract]);
 

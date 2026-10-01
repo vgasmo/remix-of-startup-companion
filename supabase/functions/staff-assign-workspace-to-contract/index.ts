@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id);
-    const isStaff = (roles || []).some((r: any) => ['admin', 'consultor'].includes(r.role));
+    const isStaff = (roles || []).some((r: any) => ['admin', 'consultor', 'backoffice'].includes(r.role));
     if (!isStaff) {
       return errorResponse(req, 'Staff role required', ErrorCode.FORBIDDEN, 403);
     }

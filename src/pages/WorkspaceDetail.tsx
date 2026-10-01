@@ -31,6 +31,7 @@ import { useWorkspaceTabBadges } from '@/hooks/useWorkspaceTabBadges';
 import { useTrackEngagement, type EngagementTargetType } from '@/hooks/useEngagementEvents';
 import { useWorkspaceTags } from '@/hooks/useGlobalSearch';
 import { useValuePropArtifacts } from '@/hooks/useValueProp';
+import { useUserWorkspaceRole } from '@/hooks/useKpis';
 
 
 // Lazy-loaded tab panels — each becomes its own async chunk so the initial
@@ -77,7 +78,8 @@ export default function WorkspaceDetail() {
   
   const [showOnboardingWizard, setShowOnboardingWizard] = useState(false);
   const shouldShowOnboarding = searchParams.get('onboarding') === 'true';
-  const canWrite = isAdmin || isConsultor || isMentor || isFounder;
+  const { data: myWorkspaceRole } = useUserWorkspaceRole(id);
+  const canWrite = isAdmin || isConsultor || isMentor || (isFounder && myWorkspaceRole !== 'team_member');
   const tabBadges = useWorkspaceTabBadges(id);
   const { data: workspaceTags = [] } = useWorkspaceTags(id);
   // Must be called unconditionally before any early return — moving this below
@@ -90,12 +92,12 @@ export default function WorkspaceDetail() {
   useAutoMaterializeDeliverables(workspace?.id, workspace?.program_id, programType);
   
   useEffect(() => {
-    if (shouldShowOnboarding && workspace && isFounder) {
+    if (shouldShowOnboarding && workspace && isFounder && myWorkspaceRole !== undefined && myWorkspaceRole !== 'team_member') {
       setShowOnboardingWizard(true);
       searchParams.delete('onboarding');
       setSearchParams(searchParams, { replace: true });
     }
-  }, [shouldShowOnboarding, workspace, isFounder, searchParams, setSearchParams]);
+  }, [shouldShowOnboarding, workspace, isFounder, myWorkspaceRole, searchParams, setSearchParams]);
 
   // Extract startup/program early for tab computation
   const startup = workspace?.startup as { id: string; name: string; description: string | null; website: string | null; logo_url: string | null; founded_date: string | null; phone: string | null; address: string | null; nif: string | null; main_contact_name: string | null; main_contact_email: string | null; main_contact_phone: string | null; has_startup_portugal_status: boolean | null; startup_portugal_document_path: string | null } | null ?? null;

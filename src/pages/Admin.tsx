@@ -69,6 +69,10 @@ const ADMIN_ONLY_TABS = new Set([
 // backoffice operators need it, admins too. Consultants stay locked out.
 const STAFF_ONLY_TABS = new Set(['backoffice']);
 
+// P2.2: Programs/KPIs/Templates/Support materials are owned by admin and
+// consultor; backoffice is operational (contracts/spaces) and must not see these.
+const CONSULTOR_TABS = new Set(['programs-setup', 'kpis', 'templates', 'support-materials']);
+
 const TAB_GROUPS_BASE: Record<string, string[]> = {
   operations: ['approvals', 'enrollment', 'backoffice', 'announcements'],
   programs: ['programs-setup', 'kpis', 'templates', 'template-requests', 'support-materials', 'surveys'],
@@ -78,7 +82,7 @@ const TAB_GROUPS_BASE: Record<string, string[]> = {
 
 export default function Admin() {
   const { t } = useTranslation();
-  const { isAdmin, isBackoffice } = useAuth();
+  const { isAdmin, isBackoffice, isConsultor } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const TAB_GROUPS = useMemo(() => {
@@ -87,12 +91,13 @@ export default function Admin() {
       const visibleTabs = tabs.filter(tab => {
         if (ADMIN_ONLY_TABS.has(tab)) return isAdmin;
         if (STAFF_ONLY_TABS.has(tab)) return isAdmin || isBackoffice;
+        if (CONSULTOR_TABS.has(tab)) return isAdmin || isConsultor;
         return true;
       });
       if (visibleTabs.length > 0) filtered[group] = visibleTabs;
     }
     return filtered;
-  }, [isAdmin, isBackoffice]);
+  }, [isAdmin, isBackoffice, isConsultor]);
 
 
   const validTabs = useMemo(() => {

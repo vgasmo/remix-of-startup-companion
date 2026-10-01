@@ -116,7 +116,10 @@ function validateBookingRequest(body: unknown): { valid: true; data: BookingRequ
   const stage = typeof contact.stage === 'string' ? contact.stage.trim().slice(0, 100) : undefined;
   const referral_source = typeof contact.referral_source === 'string' ? contact.referral_source.trim().slice(0, 100) : undefined;
   const has_team = typeof contact.has_team === 'string' ? contact.has_team.trim().slice(0, 20) : undefined;
-  const pitch_deck_path = typeof contact.pitch_deck_path === 'string' ? contact.pitch_deck_path.trim().slice(0, 500) : undefined;
+  let pitch_deck_path = typeof contact.pitch_deck_path === 'string' ? contact.pitch_deck_path.trim().slice(0, 500) : undefined;
+  if (pitch_deck_path && !pitch_deck_path.startsWith('pending/')) {
+    pitch_deck_path = undefined;
+  }
   const has_tech = typeof contact.has_tech === 'string' ? contact.has_tech.trim().slice(0, 20) : undefined;
   const is_iies = typeof contact.is_iies === 'string' ? contact.is_iies.trim().slice(0, 20) : undefined;
   const vertical = typeof contact.vertical === 'string' ? contact.vertical.trim().slice(0, 100) : undefined;

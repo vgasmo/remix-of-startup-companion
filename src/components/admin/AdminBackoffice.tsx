@@ -203,8 +203,9 @@ export function AdminBackoffice() {
   // Mutations
   const changeStageMutation = useMutation({
     mutationFn: async ({ workspaceId, stage }: { workspaceId: string; stage: StartupStage }) => {
-      const { error } = await supabase.from('workspaces').update({ stage }).eq('id', workspaceId);
+      const { data, error } = await supabase.from('workspaces').update({ stage }).eq('id', workspaceId).select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', { defaultValue: 'Sem permissão para esta ação.' }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['backoffice-unified'] });
@@ -215,8 +216,9 @@ export function AdminBackoffice() {
 
   const changePriorityMutation = useMutation({
     mutationFn: async ({ workspaceId, priority }: { workspaceId: string; priority: WorkspacePriority }) => {
-      const { error } = await supabase.from('workspaces').update({ priority_level: priority }).eq('id', workspaceId);
+      const { data, error } = await supabase.from('workspaces').update({ priority_level: priority }).eq('id', workspaceId).select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', { defaultValue: 'Sem permissão para esta ação.' }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['backoffice-unified'] });
@@ -236,8 +238,9 @@ export function AdminBackoffice() {
         stage_id: null,
         current_week: targetType === 'acceleration' ? 1 : null,
       };
-      const { error } = await supabase.from('workspaces').update(patch as never).eq('id', workspaceId);
+      const { data, error } = await supabase.from('workspaces').update(patch as never).eq('id', workspaceId).select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', { defaultValue: 'Sem permissão para esta ação.' }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['backoffice-unified'] });
@@ -269,8 +272,9 @@ export function AdminBackoffice() {
 
   const removeConsultorMutation = useMutation({
     mutationFn: async (workspaceId: string) => {
-      const { error: wsErr } = await supabase.from('workspaces').update({ assigned_consultor_id: null }).eq('id', workspaceId);
+      const { data: wsData, error: wsErr } = await supabase.from('workspaces').update({ assigned_consultor_id: null }).eq('id', workspaceId).select('id');
       if (wsErr) throw wsErr;
+      if (!wsData?.length) throw new Error(t('errors.noPermission', { defaultValue: 'Sem permissão para esta ação.' }));
       const { error: wuErr } = await supabase.from('workspace_users').delete().eq('workspace_id', workspaceId).eq('role', 'consultor');
       if (wuErr) throw wuErr;
     },
@@ -570,87 +574,104 @@ export function AdminBackoffice() {
                         )}
                       </TableCell>
                       
-                      {/* Program - inline editable */}
+                      {/* Program - inline editable, admin-only (consultants/backoffice can't write program_id) */}
                       <TableCell>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button className="flex items-center gap-1 hover:bg-muted rounded px-1 -ml-1 text-sm">
-                              {item.program_name || <span className="text-muted-foreground">{t('admin.backoffice.noProgram')}</span>}
-                              <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-48 p-1">
-                            <button
-                              onClick={() => changeProgramMutation.mutate({ workspaceId: item.workspace_id, programId: null })}
-                              className="w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded text-muted-foreground"
-                            >
-                              {t('common.none')}
-                            </button>
-                            {programs?.map(p => (
-                              <button
-                                key={p.id}
-                                onClick={() => changeProgramMutation.mutate({ workspaceId: item.workspace_id, programId: p.id })}
-                                className="w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded"
-                              >
-                                {p.name}
+                        {isAdmin ? (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className="flex items-center gap-1 hover:bg-muted rounded px-1 -ml-1 text-sm">
+                                {item.program_name || <span className="text-muted-foreground">{t('admin.backoffice.noProgram')}</span>}
+                                <ChevronDown className="h-3 w-3 text-muted-foreground" />
                               </button>
-                            ))}
-                          </PopoverContent>
-                        </Popover>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-48 p-1">
+                              <button
+                                onClick={() => changeProgramMutation.mutate({ workspaceId: item.workspace_id, programId: null })}
+                                className="w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded text-muted-foreground"
+                              >
+                                {t('common.none')}
+                              </button>
+                              {programs?.map(p => (
+                                <button
+                                  key={p.id}
+                                  onClick={() => changeProgramMutation.mutate({ workspaceId: item.workspace_id, programId: p.id })}
+                                  className="w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded"
+                                >
+                                  {p.name}
+                                </button>
+                              ))}
+                            </PopoverContent>
+                          </Popover>
+                        ) : (
+                          item.program_name || <span className="text-muted-foreground text-sm">{t('admin.backoffice.noProgram')}</span>
+                        )}
                       </TableCell>
                       
-                      {/* Stage - inline editable */}
+                      {/* Stage - inline editable, admin-only */}
                       <TableCell>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button className="flex items-center gap-1 hover:bg-muted rounded px-1 -ml-1">
-                              <StageBadge stage={item.stage as any} />
-                              <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-40 p-1">
-                            {STAGES.map(s => (
-                              <button
-                                key={s}
-                                onClick={() => changeStageMutation.mutate({ workspaceId: item.workspace_id, stage: s })}
-                                className="w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded capitalize"
-                              >
-                                {t(`stages.${s}`)}
+                        {isAdmin ? (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className="flex items-center gap-1 hover:bg-muted rounded px-1 -ml-1">
+                                <StageBadge stage={item.stage as any} />
+                                <ChevronDown className="h-3 w-3 text-muted-foreground" />
                               </button>
-                            ))}
-                          </PopoverContent>
-                        </Popover>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-40 p-1">
+                              {STAGES.map(s => (
+                                <button
+                                  key={s}
+                                  onClick={() => changeStageMutation.mutate({ workspaceId: item.workspace_id, stage: s })}
+                                  className="w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded capitalize"
+                                >
+                                  {t(`stages.${s}`)}
+                                </button>
+                              ))}
+                            </PopoverContent>
+                          </Popover>
+                        ) : (
+                          <StageBadge stage={item.stage as any} />
+                        )}
                       </TableCell>
                       
-                      {/* Priority - inline editable */}
+                      {/* Priority - inline editable, admin-only */}
                       <TableCell>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button className="flex items-center gap-1 hover:bg-muted rounded px-1 -ml-1">
-                              {item.priority_level === 'star' && <Star className="h-4 w-4 text-[hsl(var(--warning))] fill-[hsl(var(--warning))]" />}
-                              {item.priority_level === 'high' && <Star className="h-4 w-4 text-[hsl(var(--warning))]" />}
-                              {item.priority_level === 'standard' && <span className="text-sm text-muted-foreground">—</span>}
-                              {item.priority_level === 'maintenance' && <span className="text-xs text-muted-foreground">🔧</span>}
-                              {!item.priority_level && <span className="text-sm text-muted-foreground">—</span>}
-                              <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-40 p-1">
-                            {PRIORITY_LEVELS.map(p => (
-                              <button
-                                key={p}
-                                onClick={() => changePriorityMutation.mutate({ workspaceId: item.workspace_id, priority: p })}
-                                className="w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded flex items-center gap-2"
-                              >
-                                {p === 'star' && <Star className="h-4 w-4 text-[hsl(var(--warning))] fill-[hsl(var(--warning))]" />}
-                                {p === 'high' && <Star className="h-4 w-4 text-[hsl(var(--warning))]" />}
-                                {p === 'standard' && <span className="h-4 w-4 text-center">—</span>}
-                                {p === 'maintenance' && <span className="h-4 w-4 text-center">🔧</span>}
-                                <span className="capitalize">{t(`admin.backoffice.priorityLevels.${p}`)}</span>
+                        {isAdmin ? (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className="flex items-center gap-1 hover:bg-muted rounded px-1 -ml-1">
+                                {item.priority_level === 'star' && <Star className="h-4 w-4 text-[hsl(var(--warning))] fill-[hsl(var(--warning))]" />}
+                                {item.priority_level === 'high' && <Star className="h-4 w-4 text-[hsl(var(--warning))]" />}
+                                {item.priority_level === 'standard' && <span className="text-sm text-muted-foreground">—</span>}
+                                {item.priority_level === 'maintenance' && <span className="text-xs text-muted-foreground">🔧</span>}
+                                {!item.priority_level && <span className="text-sm text-muted-foreground">—</span>}
+                                <ChevronDown className="h-3 w-3 text-muted-foreground" />
                               </button>
-                            ))}
-                          </PopoverContent>
-                        </Popover>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-40 p-1">
+                              {PRIORITY_LEVELS.map(p => (
+                                <button
+                                  key={p}
+                                  onClick={() => changePriorityMutation.mutate({ workspaceId: item.workspace_id, priority: p })}
+                                  className="w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded flex items-center gap-2"
+                                >
+                                  {p === 'star' && <Star className="h-4 w-4 text-[hsl(var(--warning))] fill-[hsl(var(--warning))]" />}
+                                  {p === 'high' && <Star className="h-4 w-4 text-[hsl(var(--warning))]" />}
+                                  {p === 'standard' && <span className="h-4 w-4 text-center">—</span>}
+                                  {p === 'maintenance' && <span className="h-4 w-4 text-center">🔧</span>}
+                                  <span className="capitalize">{t(`admin.backoffice.priorityLevels.${p}`)}</span>
+                                </button>
+                              ))}
+                            </PopoverContent>
+                          </Popover>
+                        ) : (
+                          <>
+                            {item.priority_level === 'star' && <Star className="h-4 w-4 text-[hsl(var(--warning))] fill-[hsl(var(--warning))]" />}
+                            {item.priority_level === 'high' && <Star className="h-4 w-4 text-[hsl(var(--warning))]" />}
+                            {(item.priority_level === 'standard' || !item.priority_level) && <span className="text-sm text-muted-foreground">—</span>}
+                            {item.priority_level === 'maintenance' && <span className="text-xs text-muted-foreground">🔧</span>}
+                          </>
+                        )}
                       </TableCell>
                       
                       {/* Health */}
@@ -660,63 +681,72 @@ export function AdminBackoffice() {
                         </span>
                       </TableCell>
                       
-                      {/* Consultant - inline editable */}
+                      {/* Consultant - inline editable, admin-only */}
                       <TableCell>
-                        <Popover 
-                          open={openConsultorPopover === item.workspace_id} 
-                          onOpenChange={(open) => {
-                            setOpenConsultorPopover(open ? item.workspace_id : null);
-                            if (!open) setConsultorSearch('');
-                          }}
-                        >
-                          <PopoverTrigger asChild>
-                            <button className="flex items-center gap-1 hover:bg-muted rounded px-1 -ml-1 text-sm">
-                              {item.assigned_consultant_name ? (
-                              <>
-                                  <User className="h-3 w-3 text-muted-foreground" />
-                                  {item.assigned_consultant_name}
-                                </>
-                              ) : (
-                                <span className="text-muted-foreground">{t('admin.backoffice.unassigned')}</span>
-                              )}
-                              <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-64 p-2">
-                            <Input
-                              placeholder={t('admin.backoffice.searchConsultant')}
-                              value={consultorSearch}
-                              onChange={(e) => setConsultorSearch(e.target.value)}
-                              className="mb-2"
-                            />
-                            <div className="max-h-40 overflow-y-auto space-y-1">
-                              {filteredConsultors?.map(c => (
-                                <button
-                                  key={c.id}
-                                  onClick={() => assignConsultorMutation.mutate({ workspaceId: item.workspace_id, consultorId: c.id })}
-                                  className="w-full flex items-center gap-2 p-2 hover:bg-muted rounded text-left"
+                        {isAdmin ? (
+                          <Popover 
+                            open={openConsultorPopover === item.workspace_id} 
+                            onOpenChange={(open) => {
+                              setOpenConsultorPopover(open ? item.workspace_id : null);
+                              if (!open) setConsultorSearch('');
+                            }}
+                          >
+                            <PopoverTrigger asChild>
+                              <button className="flex items-center gap-1 hover:bg-muted rounded px-1 -ml-1 text-sm">
+                                {item.assigned_consultant_name ? (
+                                <>
+                                    <User className="h-3 w-3 text-muted-foreground" />
+                                    {item.assigned_consultant_name}
+                                  </>
+                                ) : (
+                                  <span className="text-muted-foreground">{t('admin.backoffice.unassigned')}</span>
+                                )}
+                                <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-2">
+                              <Input
+                                placeholder={t('admin.backoffice.searchConsultant')}
+                                value={consultorSearch}
+                                onChange={(e) => setConsultorSearch(e.target.value)}
+                                className="mb-2"
+                              />
+                              <div className="max-h-40 overflow-y-auto space-y-1">
+                                {filteredConsultors?.map(c => (
+                                  <button
+                                    key={c.id}
+                                    onClick={() => assignConsultorMutation.mutate({ workspaceId: item.workspace_id, consultorId: c.id })}
+                                    className="w-full flex items-center gap-2 p-2 hover:bg-muted rounded text-left"
+                                  >
+                                    <Avatar className="h-6 w-6">
+                                      <AvatarImage src={c.avatar_url || undefined} />
+                                      <AvatarFallback className="text-xs">{c.full_name?.slice(0, 2) || c.email?.slice(0, 2)}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-sm truncate">{c.full_name || c.email}</span>
+                                  </button>
+                                ))}
+                              </div>
+                              {item.assigned_consultant_id && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full mt-2 text-destructive"
+                                  onClick={() => removeConsultorMutation.mutate(item.workspace_id)}
                                 >
-                                  <Avatar className="h-6 w-6">
-                                    <AvatarImage src={c.avatar_url || undefined} />
-                                    <AvatarFallback className="text-xs">{c.full_name?.slice(0, 2) || c.email?.slice(0, 2)}</AvatarFallback>
-                                  </Avatar>
-                                  <span className="text-sm truncate">{c.full_name || c.email}</span>
-                                </button>
-                              ))}
-                            </div>
-                            {item.assigned_consultant_id && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-full mt-2 text-destructive"
-                                onClick={() => removeConsultorMutation.mutate(item.workspace_id)}
-                              >
-                                <Trash2 className="h-3 w-3 mr-1" />
-                                {t('admin.backoffice.removeConsultant')}
-                              </Button>
-                            )}
-                          </PopoverContent>
-                        </Popover>
+                                  <Trash2 className="h-3 w-3 mr-1" />
+                                  {t('admin.backoffice.removeConsultant')}
+                                </Button>
+                              )}
+                            </PopoverContent>
+                          </Popover>
+                        ) : item.assigned_consultant_name ? (
+                          <span className="flex items-center gap-1 text-sm">
+                            <User className="h-3 w-3 text-muted-foreground" />
+                            {item.assigned_consultant_name}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">{t('admin.backoffice.unassigned')}</span>
+                        )}
                       </TableCell>
                       
                       {/* Next Session */}
@@ -738,9 +768,9 @@ export function AdminBackoffice() {
                         </Badge>
                       </TableCell>
                       
-                      {/* Actions */}
+                      {/* Actions, admin-only */}
                       <TableCell>
-                        {item.status === 'blocked' ? (
+                        {!isAdmin ? null : item.status === 'blocked' ? (
                           <Button
                             variant="ghost"
                             size="sm"

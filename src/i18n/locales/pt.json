@@ -2922,6 +2922,7 @@
     }
   },
   "contractDetail": {
+    "notifyFailed": "Contrato atualizado, mas as notificações falharam.",
     "completedAt": "Concluído em",
     "configured": "Configurado",
     "confirmRenew": "Confirmar renovação",

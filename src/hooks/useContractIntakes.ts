@@ -352,7 +352,6 @@ export function useTransitionIntakeStatus() {
             legal_representative_name: current.legal_representative_name,
             legal_representative_email: current.legal_representative_email,
             legal_representative_phone: current.legal_representative_phone,
-            billing_email: current.billing_email,
             iban: current.iban,
           } as any)
           .eq('id', intakeFull.contract_id);

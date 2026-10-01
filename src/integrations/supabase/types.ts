@@ -8644,6 +8644,7 @@ export type Database = {
           discount_reason: string | null
           discount_start_date: string | null
           document_url: string | null
+          documents_json: Json
           docusign_envelope_id: string | null
           end_date: string | null
           envelope_command_id: string | null
@@ -8733,6 +8734,7 @@ export type Database = {
           discount_reason?: string | null
           discount_start_date?: string | null
           document_url?: string | null
+          documents_json?: Json
           docusign_envelope_id?: string | null
           end_date?: string | null
           envelope_command_id?: string | null
@@ -8822,6 +8824,7 @@ export type Database = {
           discount_reason?: string | null
           discount_start_date?: string | null
           document_url?: string | null
+          documents_json?: Json
           docusign_envelope_id?: string | null
           end_date?: string | null
           envelope_command_id?: string | null
@@ -12062,6 +12065,10 @@ export type Database = {
         Args: { p_token_hash: string }
         Returns: Json
       }
+      activate_workspace_for_signed_contract: {
+        Args: { p_contract_id: string }
+        Returns: string
+      }
       admin_commit_crm_import_job: { Args: { p_job_id: string }; Returns: Json }
       admin_rollback_crm_import_job: {
         Args: { p_job_id: string }
@@ -12124,6 +12131,10 @@ export type Database = {
       assign_mentor_request: {
         Args: { _mentor_id: string; _request_id: string }
         Returns: Json
+      }
+      backoffice_archive_workspace: {
+        Args: { p_workspace_id: string }
+        Returns: boolean
       }
       block_workspace: {
         Args: { _reason?: string; _workspace_id: string }

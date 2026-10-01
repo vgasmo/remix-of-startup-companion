@@ -1,6 +1,7 @@
 import { safeExternalHref } from '@/lib/sanitizeUrl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
 import i18n from '@/i18n';
 import { Check, X, Clock, Building2, User, Calendar, ExternalLink, UserCheck, Mail, Link2, Search, Plus, Rocket } from 'lucide-react';
 
@@ -212,11 +213,13 @@ function useApproveWorkspace() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (workspaceId: string) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('workspaces')
         .update({ status: 'active' })
-        .eq('id', workspaceId);
+        .eq('id', workspaceId)
+        .select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', 'Sem permissão para esta ação.'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-workspaces'] });
@@ -230,11 +233,13 @@ function useRejectWorkspace() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (workspaceId: string) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('workspaces')
         .update({ status: 'rejected' })
-        .eq('id', workspaceId);
+        .eq('id', workspaceId)
+        .select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', 'Sem permissão para esta ação.'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-workspaces'] });
@@ -247,6 +252,7 @@ export function PendingApprovalsManager() {
   const { t } = useTranslation();
   const dateLocale = useDateLocale();
   const queryClient = useQueryClient();
+  const { isAdmin, isConsultor } = useAuth();
   const { data: pendingWorkspaces, isLoading: loadingWs } = usePendingWorkspaces();
   const { data: pendingUsers, isLoading: loadingUsers } = usePendingUsers();
   const { data: pendingClaims, isLoading: loadingClaims } = usePendingClaims();
@@ -321,14 +327,7 @@ export function PendingApprovalsManager() {
 
       if (approveError) throw approveError;
 
-      // P0 fix: was a bare `.update` that silently no-op'd against RLS.
-      // Approve the account via the RPC and check it.
-      const { data: approvedOk, error: acctErr } = await supabase.rpc('approve_user_account', {
-        p_user_id: assignClaimTarget.user_id,
-      });
-      if (acctErr || approvedOk === false) {
-        throw acctErr || new Error('approve_user_account returned false');
-      }
+      // approve_startup_claim already approves the account in the same transaction.
 
       notify.success(t('admin.claimAprovadoEFounderAssociado'));
       queryClient.invalidateQueries({ queryKey: ['pending-claim-requests'] });
@@ -484,6 +483,7 @@ export function PendingApprovalsManager() {
                       </div>
                     </div>
                     <div className="flex gap-2 flex-wrap justify-end">
+                      {isAdmin && (
                       <Button
                         size="sm"
                         variant="outline"
@@ -492,7 +492,8 @@ export function PendingApprovalsManager() {
                         <X className="h-4 w-4 mr-1" />
                         {t('admin.reject', { defaultValue: 'Rejeitar' })}
                       </Button>
-                      {user.roles.includes('founder') && (
+                      )}
+                      {(isAdmin || isConsultor) && user.roles.includes('founder') && (
                         <Button
                           size="sm"
                           variant="secondary"

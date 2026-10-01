@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -54,6 +55,7 @@ Versão: ${CURRENT_NDA_VERSION}`;
 export default function MentorNda() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, isMentor, isLoading: authLoading } = useAuth();
   
   const [accepted, setAccepted] = useState(false);
@@ -109,7 +111,9 @@ export default function MentorNda() {
       }
       
       notify.success(t('nda.acceptedSuccess'));
-      navigate('/my-workspaces');
+      queryClient.setQueryData(['mentor-nda-gate', user?.id], true);
+      await queryClient.invalidateQueries({ queryKey: ['mentor-nda-gate'] });
+      navigate('/my-workspaces', { replace: true });
     } catch (error: any) {
       logger.error('NDA submission error', {}, error);
       notify.error(error.message || t('nda.failedToAccept'));

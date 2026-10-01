@@ -150,12 +150,14 @@ export function useDeleteTemplate() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('templates')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select('id');
 
       if (error) throw error;
+      if (!data?.length) throw new Error('Sem permissão para esta ação.');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['templates'] });

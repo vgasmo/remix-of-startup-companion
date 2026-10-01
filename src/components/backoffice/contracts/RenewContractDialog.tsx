@@ -113,7 +113,10 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
         p_founder_link: contract.workspace_id ? `/workspace/${contract.workspace_id}` : '/my-workspaces',
         p_staff_link: '/admin?tab=backoffice&subtab=contracts',
       });
-      if (notifyErr) console.warn('[RenewContractDialog] notify_contract_event failed', notifyErr.message);
+      if (notifyErr) {
+        console.warn('[RenewContractDialog] notify_contract_event failed', notifyErr.message);
+        notify.warn(t('contractDetail.notifyFailed', { defaultValue: 'Contrato atualizado, mas as notificações falharam.' }));
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts'] });

@@ -50,23 +50,25 @@ export function useFounderOnboardingState(): FounderOnboardingState {
         .from('workspace_users')
         .select(`
           workspace_id,
+          role,
           workspaces!inner(id, status, needs_onboarding, startup_id, startups(name))
         `)
         .eq('user_id', user.id)
         .eq('active', true)
-        .eq('role', 'founder')
+        .in('role', ['founder', 'team_member'])
         .limit(5);
 
       if (workspaceError) throw workspaceError;
 
       if (workspaceData && workspaceData.length > 0) {
         // Check for active/claimed workspace
-        const activeWs = workspaceData.find((w: any) => 
-          w.workspaces?.status === 'active' || w.workspaces?.status === 'claimed'
-        );
+        const isLive = (w: any) => w.workspaces?.status === 'active' || w.workspaces?.status === 'claimed';
+        const activeWs: any =
+          workspaceData.find((w: any) => w.role === 'founder' && isLive(w)) ??
+          workspaceData.find((w: any) => isLive(w));
         if (activeWs) {
           // Check if onboarding is still needed
-          const needsOnboarding = (activeWs as any).workspaces?.needs_onboarding === true;
+          const needsOnboarding = activeWs.role === 'founder' && activeWs.workspaces?.needs_onboarding === true;
           if (needsOnboarding) {
             return {
               status: 'needs_onboarding',

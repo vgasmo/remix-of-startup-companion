@@ -37,6 +37,14 @@ export default function Login() {
   // Handle returnTo param for invite flow
   const returnTo = searchParams.get('returnTo');
   const initialMode = searchParams.get('mode') === 'signup' ? 'signup' : 'login';
+  const safeReturnTo = useMemo(() => {
+    if (!returnTo) return undefined;
+    try {
+      const d = decodeURIComponent(returnTo);
+      return d.startsWith('/') && !d.startsWith('//') && !d.startsWith('/\\') ? d : undefined;
+    } catch { return undefined; }
+  }, [returnTo]);
+  const isInviteSignup = !!safeReturnTo?.startsWith('/accept-invite');
   
   const [activeTab, setActiveTab] = useState(initialMode);
   const [email, setEmail] = useState('');
@@ -110,7 +118,7 @@ export default function Login() {
     e.preventDefault();
     setError(null);
 
-    if (!isConsultorEmail && selectedRole === 'founder' && startupName.trim().length < 2) {
+    if (!isInviteSignup && !isConsultorEmail && selectedRole === 'founder' && startupName.trim().length < 2) {
       setError(t('login.startupNameRequired', 'Indique o nome do projeto ou startup.'));
       return;
     }
@@ -149,7 +157,7 @@ export default function Login() {
 
     // Only pass role if not a consultor email (consultor role is auto-assigned by the database)
     const roleToAssign = isConsultorEmail ? undefined : selectedRole;
-    const { error } = await signUp(email, password, fullName, roleToAssign, undefined, startupName.trim() || undefined);
+    const { error } = await signUp(email, password, fullName, roleToAssign, safeReturnTo, startupName.trim() || undefined);
     setIsSubmitting(false);
 
     if (error) {
@@ -450,7 +458,7 @@ export default function Login() {
                         />
                       </div>
                     </div>
-                    {!isConsultorEmail && selectedRole === 'founder' && (
+                    {!isInviteSignup && !isConsultorEmail && selectedRole === 'founder' && (
                       <div className="space-y-2">
                         <Label htmlFor="signup-startup">{t('login.startupName', 'Nome do projeto / startup')}</Label>
                         <div className="relative group">

@@ -44,7 +44,7 @@ export function useWorkQueue(filters?: { status?: string; statuses?: string[]; t
         .order('due_at', { ascending: true });
 
       if (scopeToConsultor) {
-        query = query.eq('workspace.assigned_consultor_id', user!.id);
+        query = query.or(`assigned_consultor_id.eq.${user!.id},assigned_consultor_id.is.null`, { referencedTable: 'workspace' });
       }
 
       if (filters?.status) {
