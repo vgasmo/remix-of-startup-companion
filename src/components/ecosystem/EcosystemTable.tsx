@@ -139,11 +139,13 @@ export function EcosystemTable({ items, onOpenItem, totalCount, hasNextPage, isF
         .maybeSingle();
       const prevStatus = (prev?.status as string) || 'active';
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('workspaces')
         .update({ status: 'archived' })
-        .eq('id', item.workspace_id);
+        .eq('id', item.workspace_id)
+        .select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', { defaultValue: 'Sem permissão para esta ação.' }));
       notify.success(t('ecosystem.workspaceArchived', { defaultValue: 'Workspace arquivado' }), {
         duration: 8000,
         action: {

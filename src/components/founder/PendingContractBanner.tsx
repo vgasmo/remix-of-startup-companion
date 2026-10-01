@@ -26,7 +26,7 @@ export function PendingContractBanner({ workspaceId }: PendingContractBannerProp
         .from('startup_contracts')
         .select('id, contract_number, status, signature_status, monthly_fee, start_date, incubation_type:incubation_types(name)')
         .eq('workspace_id', workspaceId)
-        .in('signature_status', ['sent_for_signature', 'intake_requested'])
+        .in('signature_status', ['sent_for_signature'])
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data || [];
@@ -83,16 +83,7 @@ export function PendingContractBanner({ workspaceId }: PendingContractBannerProp
                       <CheckCircle2 className="h-4 w-4" />
                       {t('founder.pendingContract.signedStatus', { defaultValue: 'Assinado' })}
                     </div>
-                  ) : (
-                    <Button
-                      size="sm"
-                      onClick={() => navigate(`/contract-onboarding/${c.id}`)}
-                      className="gap-1.5"
-                    >
-                      {t('founder.pendingContract.cta', { defaultValue: 'Assinar Contrato' })}
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </CardContent>

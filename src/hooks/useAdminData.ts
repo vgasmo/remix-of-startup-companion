@@ -62,8 +62,9 @@ export function useDeleteProgram() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('programs').delete().eq('id', id);
+      const { data, error } = await supabase.from('programs').delete().eq('id', id).select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', 'Sem permissão para esta ação.'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['programs'] });
@@ -127,8 +128,9 @@ export function useDeleteStage() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, program_id }: { id: string; program_id: string }) => {
-      const { error } = await supabase.from('stages').delete().eq('id', id);
+      const { data, error } = await supabase.from('stages').delete().eq('id', id).select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', 'Sem permissão para esta ação.'));
     },
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ['admin-stages', vars.program_id] });
@@ -190,8 +192,9 @@ export function useRemoveUserRole() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('user_roles').delete().eq('id', id);
+      const { data, error } = await supabase.from('user_roles').delete().eq('id', id).select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', 'Sem permissão para esta ação.'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
@@ -274,8 +277,9 @@ export function useRemoveWorkspaceUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('workspace_users').delete().eq('id', id);
+      const { data, error } = await supabase.from('workspace_users').delete().eq('id', id).select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', 'Sem permissão para esta ação.'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workspace-users'] });
@@ -356,8 +360,9 @@ export function useDeleteKpiDefinition() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('kpi_definitions').delete().eq('id', id);
+      const { data, error } = await supabase.from('kpi_definitions').delete().eq('id', id).select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', 'Sem permissão para esta ação.'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-kpi-definitions'] });

@@ -25,11 +25,13 @@ export function InlineConsultantSelect({
   const handleAssign = async (consultantId: string | null) => {
     setSaving(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('workspaces')
         .update({ assigned_consultor_id: consultantId })
-        .eq('id', workspaceId);
+        .eq('id', workspaceId)
+        .select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', { defaultValue: 'Sem permissão para esta ação.' }));
       notify.success(
         t('ecosystem.consultantAssigned', {
           defaultValue: 'Consultor atribuído com sucesso',

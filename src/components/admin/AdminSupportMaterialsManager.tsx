@@ -99,11 +99,13 @@ export function AdminSupportMaterialsManager() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('support_materials')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select('id');
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission', { defaultValue: 'Sem permissão para esta ação.' }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-support-materials'] });
