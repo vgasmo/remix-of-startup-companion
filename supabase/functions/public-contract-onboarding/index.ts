@@ -317,14 +317,6 @@ Deno.serve(async (req) => {
         .eq('id', contractId)
 
       if (updateErr) throw updateErr
-      // CRM: a lead passa a "Submetido" (sem recuar fases posteriores)
-      if (intake.funnel_item_id) {
-        const { error: crmErr } = await supabase.from("funnel_items")
-          .update({ stage: "intake_submitted" })
-          .eq("id", intake.funnel_item_id)
-          .in("stage", ["intake_requested", "intake_filling", "intake_changes_requested"])
-        if (crmErr) console.warn("[intake_submit] funnel stage sync failed:", crmErr.message)
-      }
 
       const publicUrl = `${req.headers.get('origin') || Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/contract-signing/${onboardingToken}`
 
