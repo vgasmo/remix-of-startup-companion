@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, CheckCircle, XCircle, Mail, LogIn } from 'lucide-react';
 import { BackToHomeLink } from '@/components/ui/BackToHomeLink';
 import { Button } from '@/components/ui/button';
@@ -9,13 +10,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
-import { invokeWithAuth } from "@/lib/invokeWithAuth";
+
 
 type InviteStatus = 'loading' | 'needs_login' | 'processing' | 'success' | 'error';
 
 export default function AcceptInvite() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const { user, isAuthReady, refreshProfile } = useAuth();
   
@@ -23,6 +25,7 @@ export default function AcceptInvite() {
   const [error, setError] = useState<string | null>(null);
   const [expectedEmail, setExpectedEmail] = useState<string | null>(null);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  const [wrongAccount, setWrongAccount] = useState(false);
   
   const token = searchParams.get('token');
   
@@ -49,14 +52,23 @@ export default function AcceptInvite() {
     setStatus('processing');
     
     try {
-      const { data, error } = await invokeWithAuth('accept-workspace-invite', {
-        body: { token: inviteToken }
+      // Chamada direta para ler o estado HTTP (403 outra conta, 400 expirado, 404 inválido)
+      const { data: sess } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke('accept-workspace-invite', {
+        body: { token: inviteToken },
+        headers: { Authorization: `Bearer ${sess.session?.access_token ?? ''}` },
       });
       
       if (error) {
         logger.error('Error accepting invite', {}, error);
+        const httpStatus = ((error as { context?: unknown }).context as Response | undefined)?.status;
         setStatus('error');
-        setError(error.message || t('invite.acceptFailed'));
+        setWrongAccount(httpStatus === 403);
+        setError(httpStatus === 403
+          ? t('invite.wrongAccount', { defaultValue: 'Este convite foi enviado para outro email. Termine sessão e entre com o email convidado.' })
+          : httpStatus === 400 ? t('invite.expiredDesc', { defaultValue: 'Este convite expirou. Peça um novo à equipa.' })
+          : httpStatus === 404 ? t('invite.invalidToken')
+          : t('invite.acceptFailed'));
         return;
       }
       
@@ -78,6 +90,8 @@ export default function AcceptInvite() {
 
       // Refresh profile so the pending-approval gate lifts before we navigate.
       await refreshProfile?.();
+      await queryClient.invalidateQueries({ queryKey: ['founder-onboarding-state'] });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
 
       notify.success(t('invite.acceptedSuccess'));
 
@@ -168,6 +182,18 @@ export default function AcceptInvite() {
             </div>
           )}
           
+                    {status === 'error' && wrongAccount && (
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+              }}
+            >
+              {t('invite.switchAccount', { defaultValue: 'Terminar sessão e entrar com outro email' })}
+            </Button>
+          )}
           {status === 'error' && expectedEmail && (
             <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
               <p className="text-sm text-amber-800 dark:text-amber-200">

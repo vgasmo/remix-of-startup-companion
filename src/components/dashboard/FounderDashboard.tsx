@@ -57,6 +57,7 @@ import { MySupportTeamCard } from '@/components/founder/MySupportTeamCard';
 import { FounderPulseCard } from '@/components/dashboard/FounderPulseCard';
 import { useFeatureFlag } from '@/hooks/useFeatureFlags';
 import { BrandSurface } from '@/components/ui/BrandSurface';
+import { WorkspaceEmptyState } from '@/components/workspace/WorkspaceEmptyState';
 import { WelcomeSplash } from '@/components/founder/WelcomeSplash';
 import { useIsFirstWeek } from '@/hooks/useIsFirstWeek';
 import { useKpiAnomalyNudge } from '@/hooks/useKpiAnomalyNudge';
@@ -206,11 +207,7 @@ export const FounderDashboard = memo(function FounderDashboard({
         />
       );
     }
-    return (
-      <div className="space-y-6 max-w-5xl">
-        <ContentSkeleton type="stats" count={3} />
-      </div>
-    );
+    return (<WorkspaceEmptyState hasFilters={false} onClearFilters={() => {}} isFounder onCreateStartup={onCreateStartup} />);
   }
 
   // LOCAL DETECTION: If the workspace exists but is not truly 'active',

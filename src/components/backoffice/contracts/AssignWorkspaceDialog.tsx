@@ -175,7 +175,7 @@ export function AssignWorkspaceDialog({
       : t('lifecycleMismatch.assignConfirm', { defaultValue: 'Atribuir workspace' });
 
   const submitDisabled =
-    submitting || (mode === 'assign' ? !selectedId : !newName.trim());
+    submitting || (mode === 'assign' ? !selectedId : (!newName.trim() || !newProgramId));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -282,9 +282,9 @@ export function AssignWorkspaceDialog({
               <Label className="text-xs">
                 {t('lifecycleMismatch.newProgram', { defaultValue: 'Programa' })}
               </Label>
-              <Select value={newProgramId || '__none__'} onValueChange={(v) => setNewProgramId(v === '__none__' ? '' : v)}>
+              <Select value={newProgramId} onValueChange={setNewProgramId}>
                 <SelectTrigger>
-                  <SelectValue placeholder={t('common.optional', { defaultValue: 'Opcional' })} />
+                  <SelectValue placeholder={t('lifecycleMismatch.programRequired', { defaultValue: 'Escolha o programa' })} />
                 </SelectTrigger>
                 <SelectContent>
                   {(programs || []).map((p: any) => (

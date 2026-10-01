@@ -86,6 +86,7 @@ export function isOperationalCustomer(item: {
 export function useCrmInbox(filters?: UseCrmInboxFilters) {
   return useQuery({
     queryKey: ['crm-inbox', filters],
+    queryFn: async (): Promise<CrmInboxGroups> => {
       const items = await fetchAllRows((from, to) => {
         let query = supabase
           .from("funnel_items")
@@ -117,6 +118,7 @@ export function useCrmInbox(filters?: UseCrmInboxFilters) {
         }
         return query;
       });
+      if (!items) throw new Error("Failed to fetch inbox items");
       // Fetch owners
       const ownerIds = [...new Set((items || []).filter(i => i.owner_consultant_id).map(i => i.owner_consultant_id))];
       let owners: Record<string, { id: string; full_name: string | null }> = {};
@@ -223,7 +225,6 @@ export function useCrmTasksDue(filters?: UseCrmInboxFilters) {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
 
       const now = new Date();
       const todayStart = startOfDay(now);

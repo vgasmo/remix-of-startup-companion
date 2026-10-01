@@ -88,6 +88,15 @@ Deno.serve(async (req) => {
         return errorResponse(req, 'startup_name required to create workspace', ErrorCode.BAD_REQUEST, 400);
       }
       const programId = create.program_id || null;
+
+      // workspaces.program_id é NOT NULL: sem programa o insert falhava e deixava uma startup órfã
+      if (!programId) {
+        return errorResponse(req, 'program_id required to create workspace', ErrorCode.BAD_REQUEST, 400);
+      }
+      // workspaces.program_id é NOT NULL: sem programa o insert falhava e deixava uma startup órfã
+      if (!programId) {
+        return errorResponse(req, "program_id required to create workspace", ErrorCode.BAD_REQUEST, 400);
+      }
       // workspaces.program_id é NOT NULL: sem programa o insert falhava e deixava uma startup órfã
       if (!programId) {
         return errorResponse(req, "program_id required to create workspace", ErrorCode.BAD_REQUEST, 400);

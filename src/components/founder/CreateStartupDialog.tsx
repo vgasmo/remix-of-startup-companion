@@ -185,7 +185,7 @@ export function CreateStartupDialog({ open, onOpenChange }: CreateStartupDialogP
       if (draftKey) window.sessionStorage.removeItem(draftKey);
       onOpenChange(false);
 
-      queryClient.invalidateQueries({ queryKey: ['founder-onboarding-state'] });
+      await queryClient.invalidateQueries({ queryKey: ['founder-onboarding-state'] });
       queryClient.invalidateQueries({ queryKey: ['my-pending-workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
 

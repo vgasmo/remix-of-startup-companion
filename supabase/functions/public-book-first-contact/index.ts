@@ -202,6 +202,10 @@ async function getGraphAccessToken(credentials: {
   return data.access_token;
 }
 
+// Os campos do visitante entram no HTML do evento: escapar sempre
+const escHtml = (s: string) =>
+  s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+
 // Create calendar event with Teams meeting
 async function createCalendarEvent(
   accessToken: string,
