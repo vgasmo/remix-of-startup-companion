@@ -335,19 +335,10 @@ Deno.serve(async (req) => {
       updatePayload.status = 'active'
       updatePayload.onboarding_completed_at = new Date().toISOString()
       updatePayload.provider_completed_at = new Date().toISOString()
-      updatePayload.canonical_signature_status = 'completed'
       updatePayload.onboarding_token_hash = null
       updatePayload.onboarding_token_expires_at = null
       updatePayload.founder_signer_status = 'signed'
       if (contract.counter_signer_email) updatePayload.counter_signer_status = 'signed'
-    } else if (status === 'declined') {
-      updatePayload.canonical_signature_status = 'declined'
-    } else if (status === 'voided') {
-      updatePayload.canonical_signature_status = 'voided'
-    } else if (status === 'sent_for_signature') {
-      updatePayload.canonical_signature_status = 'sent'
-    } else if (status === 'viewed') {
-      updatePayload.canonical_signature_status = 'viewed'
     }
 
     const { error: contractUpdateErr } = await supabase
