@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions } from '../_shared/cors.ts';
 import { validateUUID, parseAndValidateBody } from '../_shared/validation.ts';
+import { isServiceRoleBearer } from '../_shared/security.ts';
 
 /**
  * apply-survey-responses
@@ -399,7 +400,7 @@ Deno.serve(async (req) => {
     if (!instance) return json({ error: 'Survey instance not found' }, 404);
 
     // Auth: the founder's own JWT, or an internal call carrying the cron secret.
-    const isInternal = Boolean(cronSecret) && req.headers.get('x-cron-secret') === cronSecret;
+    const isInternal = isServiceRoleBearer(req) || (Boolean(cronSecret) && req.headers.get('x-cron-secret') === cronSecret);
     let userId: string | null = null;
 
     if (!isInternal) {
@@ -450,13 +451,15 @@ Deno.serve(async (req) => {
 
     const { data: responses, error: responsesError } = await supabase
       .from('survey_responses')
-      .select('question_id, response_value, response_json')
+      .select('question_id, response_value, response_json, is_auto_filled')
       .eq('instance_id', instanceId);
 
     if (responsesError) throw responsesError;
 
+    const autoFilled = new Set<string>();
     const answers = new Map<string, string>();
     for (const response of responses ?? []) {
+      if (response.is_auto_filled === true) { autoFilled.add(response.question_id); continue; }
       const raw = response.response_value
         ?? (Array.isArray(response.response_json) ? response.response_json.join(', ') : null);
       if (raw !== null && raw !== undefined && String(raw).trim() !== '') {
@@ -474,6 +477,7 @@ Deno.serve(async (req) => {
     const results: WriteBackResult[] = [];
 
     for (const [questionId, mapping] of Object.entries(mappings)) {
+      if (autoFilled.has(questionId)) { results.push(skip(questionId, mapping, 'Pré-preenchido, não confirmado')); continue; }
       const answer = answers.get(questionId);
       if (!answer) {
         results.push(skip(questionId, mapping, 'Sem resposta'));
@@ -543,14 +547,13 @@ Deno.serve(async (req) => {
     const skipped = results.filter((r) => r.status === 'skipped').length;
     const errors = results.filter((r) => r.status === 'error').length;
 
-    await supabase.from('activity_log').insert({
-      workspace_id: instance.workspace_id,
-      user_id: userId ?? 'system',
-      entity_type: 'survey',
-      entity_id: instanceId,
-      action: 'write_back',
-      metadata: { campaign: campaign?.name, applied, skipped, errors, period_month: periodMonth },
-    });
+    if (userId) {
+      const { error: logErr } = await supabase.from('activity_log').insert({
+        workspace_id: instance.workspace_id, user_id: userId, entity_type: 'survey', entity_id: instanceId,
+        action: 'write_back', metadata: { campaign: campaign?.name, applied, skipped, errors, period_month: periodMonth },
+      });
+      if (logErr) console.error('[apply-survey-responses] activity_log failed', logErr.message);
+    }
 
     // Fresh KPI data changes the health score; recompute for this workspace only.
     if (applied > 0 && cronSecret) {
