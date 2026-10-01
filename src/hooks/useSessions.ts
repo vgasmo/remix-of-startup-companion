@@ -195,6 +195,8 @@ export interface SessionFormData {
   join_url?: string | null;
   session_type?: string | null;
   source?: string | null;
+  primary_consultant_id?: string | null;
+  primary_mentor_id?: string | null;
 }
 
 export function useSessions(workspaceId: string | undefined) {
@@ -281,6 +283,9 @@ export function useCreateSession(workspaceId: string) {
           created_by: user?.id,
           source: session.source || null,
           outlook_sync_status: 'pending', // Mark for sync
+          session_type: session.session_type || 'general',
+          primary_consultant_id: session.primary_consultant_id ?? null,
+          primary_mentor_id: session.primary_mentor_id ?? null,
         })
         .select()
         .single();
