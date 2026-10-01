@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
+import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Rocket, Building2, Globe, FileText, Phone, Mail, RotateCcw } from 'lucide-react';
@@ -182,6 +183,10 @@ export function CreateStartupDialog({ open, onOpenChange }: CreateStartupDialogP
       notify.success(t('createStartup.successMessage'));
       if (draftKey) window.sessionStorage.removeItem(draftKey);
       onOpenChange(false);
+
+      queryClient.invalidateQueries({ queryKey: ['founder-onboarding-state'] });
+      queryClient.invalidateQueries({ queryKey: ['my-pending-workspaces'] });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
 
       const workspaceId = (data as any)?.workspace_id as string | undefined;
       if (workspaceId) navigate(`/workspace/${workspaceId}`);

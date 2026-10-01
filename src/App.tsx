@@ -132,6 +132,8 @@ function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { ch
     '/resources',
     '/help',
   ];
+  const isPendingWorkspaceRoute =
+    founderState.status === 'has_pending_workspace' && location.pathname.startsWith('/workspace/');
   if (
     !founderState.isLoading &&
     founderState.status !== 'not_founder' &&
@@ -139,7 +141,8 @@ function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { ch
     founderState.status !== 'has_active_workspace' &&
     founderState.status !== 'needs_onboarding' &&
     founderState.status !== 'error' &&
-    !claimExemptPaths.some((p) => location.pathname === p || location.pathname.startsWith(p + '/'))
+    !claimExemptPaths.some((p) => location.pathname === p || location.pathname.startsWith(p + '/')) &&
+    !isPendingWorkspaceRoute
   ) {
     return <Navigate to="/claim-startup" replace />;
   }
