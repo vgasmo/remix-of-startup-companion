@@ -169,6 +169,10 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
           token,
           slot: selectedSlot,
           program_id: selectedProgramId,
+          contact: {
+            ...formData,
+            ...(pitchDeckPath ? { pitch_deck_path: pitchDeckPath } : {}),
+          },
           recording_consent: recordingConsent,
         },
       });
