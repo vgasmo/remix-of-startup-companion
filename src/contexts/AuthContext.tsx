@@ -270,7 +270,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'user_roles', filter: `user_id=eq.${uid}` }, refetch)
       .subscribe();
 
-    const onFocus = () => refetch();
+    // Throttle focus refetches (max 1/min) to avoid amplifying DB load.
+    let lastFocusFetch = Date.now();
+    const onFocus = () => {
+      const now = Date.now();
+      if (now - lastFocusFetch < 60_000) return;
+      lastFocusFetch = now;
+      refetch();
+    };
     window.addEventListener('focus', onFocus);
 
     return () => {
