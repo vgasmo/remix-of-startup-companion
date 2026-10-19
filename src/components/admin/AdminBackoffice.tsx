@@ -101,7 +101,8 @@ export function AdminBackoffice() {
       const { data: workspaces, error } = await supabase
         .from('workspaces')
         .select('id, stage, status, health_score, priority_level, assigned_consultor_id, created_at, startup_id, program_id')
-        .order('updated_at', { ascending: false });
+        .order('updated_at', { ascending: false })
+        .limit(1000);
 
       if (error) throw error;
       if (!workspaces || workspaces.length === 0) return [];

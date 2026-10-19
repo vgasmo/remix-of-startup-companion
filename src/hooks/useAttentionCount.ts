@@ -49,7 +49,8 @@ export function useAttentionCount() {
       let wsQuery = supabase
         .from('workspaces')
         .select('id, health_score, health_score_override')
-        .eq('status', 'active');
+        .eq('status', 'active')
+        .limit(1000);
       if (assignedWorkspaceIds) {
         wsQuery = wsQuery.in('id', assignedWorkspaceIds);
       }
@@ -87,7 +88,8 @@ export function useAttentionCount() {
       };
     },
     enabled: !!userId,
-    staleTime: 30 * 1000,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
     // Realtime (useRealtimeWorkspaces) invalidates this key when
     // workspace_health_alerts / action_items change. Long safety net only.
     refetchInterval: 10 * 60_000,
