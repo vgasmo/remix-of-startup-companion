@@ -220,7 +220,7 @@ async function createCalendarEvent(
   const endDateTime = `${slot.date}T${endTime}:00`;
   
   const eventPayload = {
-    subject: `First Contact Meeting - ${escHtml(contact.name)}${contact.organization ? ` (${escHtml(contact.organization)})` : ''}`,
+    subject: `Reunião de Primeiro Contacto (Teams) - Startup Leiria - ${escHtml(contact.name)}${contact.organization ? ` (${escHtml(contact.organization)})` : ''}`,
     body: {
       contentType: "HTML",
       content: `
@@ -257,10 +257,33 @@ async function createCalendarEvent(
   }
 
   const event = await response.json();
-  
+  const joinUrl: string | null = event.onlineMeeting?.joinUrl || null;
+
+  // Put a prominent "join" button at the TOP of the invite body — Teams
+  // otherwise appends the link at the very bottom, and invitees miss it.
+  if (joinUrl && event.id) {
+    const safeUrl = escHtml(joinUrl);
+    const topBlock = `
+      <div style="margin:0 0 20px 0;padding:16px;border:2px solid #111;border-radius:8px;">
+        <p style="margin:0 0 8px 0;font-size:16px;"><strong>Link da reunião / Meeting link</strong></p>
+        <p style="margin:0 0 12px 0;"><a href="${safeUrl}" style="display:inline-block;padding:12px 22px;background:#111;color:#fff;text-decoration:none;border-radius:6px;font-size:16px;font-weight:bold;">Entrar na reunião (Teams)</a></p>
+        <p style="margin:0;font-size:12px;">Se o botão não funcionar, copie este link / If the button doesn't work, copy this link:<br><a href="${safeUrl}">${safeUrl}</a></p>
+      </div>`;
+    try {
+      const patchRes = await fetch(`${url}/${encodeURIComponent(event.id)}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body: { contentType: 'HTML', content: topBlock + eventPayload.body.content } }),
+      });
+      if (!patchRes.ok) console.warn('Failed to add join link to event body:', await patchRes.text());
+    } catch (e) {
+      console.warn('Error patching event body with join link:', e);
+    }
+  }
+
   return {
     eventId: event.id,
-    teamsLink: event.onlineMeeting?.joinUrl || null,
+    teamsLink: joinUrl,
   };
 }
 
