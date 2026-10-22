@@ -494,18 +494,35 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
               {isEditing && (
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">{t('admin.backoffice.status')}</Label>
-                  <Select value={editValues.status} onValueChange={(v) => setEditValues(p => ({ ...p, status: v }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STATUS_OPTIONS.map(s => (
-                        <SelectItem key={s} value={s}>
-                          {t(`admin.backoffice.contractStatus.${s}`, { defaultValue: s })}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {(() => {
+                    // D.11: only active <-> suspended can be switched here.
+                    // Activation requires signature; termination uses its own action.
+                    const editable = ['active', 'suspended'].includes(contract.status);
+                    const options = editable ? ['active', 'suspended'] : [contract.status];
+                    return (
+                      <>
+                        <Select
+                          value={editValues.status}
+                          disabled={!editable}
+                          onValueChange={(v) => { if (options.includes(v)) setEditValues(p => ({ ...p, status: v })); }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {options.map(s => (
+                              <SelectItem key={s} value={s}>
+                                {t(`admin.backoffice.contractStatus.${s}`, { defaultValue: s })}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          {t('contractDetail.statusEditHint', { defaultValue: 'Só é possível alternar entre ativo e suspenso aqui. Para ativar, o contrato tem de ser assinado; para terminar, usa o botão próprio.' })}
+                        </p>
+                      </>
+                    );
+                  })()}
                 </div>
               )}
 
