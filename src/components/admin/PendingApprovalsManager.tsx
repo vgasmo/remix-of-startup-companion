@@ -25,6 +25,9 @@ import { usePrograms } from '@/hooks/useWorkspaces';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { useState } from 'react';
+import { ChevronsUpDown } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { WorkspaceAssignmentDialog } from './WorkspaceAssignmentDialog';
 
 import { StartupStage } from '@/types/database';
@@ -262,6 +265,7 @@ export function PendingApprovalsManager() {
   const [rejectTarget, setRejectTarget] = useState<string | null>(null);
   const [assignClaimTarget, setAssignClaimTarget] = useState<PendingClaim | null>(null);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>('');
+  const [wsPickerOpen, setWsPickerOpen] = useState(false);
   const [claimDialogTab, setClaimDialogTab] = useState<string>('existing');
   const [newStartupName, setNewStartupName] = useState('');
   const [newStartupDesc, setNewStartupDesc] = useState('');
@@ -725,18 +729,49 @@ export function PendingApprovalsManager() {
               <TabsContent value="existing" className="space-y-3 mt-3">
                 <div>
                   <Label className="text-sm font-medium mb-1.5 block">{t('admin.selectWorkspace', 'Selecionar Workspace')}</Label>
-                  <Select value={selectedWorkspaceId} onValueChange={setSelectedWorkspaceId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Escolher workspace..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableWorkspaces?.map((ws: any) => (
-                        <SelectItem key={ws.id} value={ws.id}>
-                          {(ws.startup as any)?.name || 'Sem nome'} ({ws.status})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={wsPickerOpen} onOpenChange={setWsPickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                        <span className="truncate">
+                          {(() => {
+                            const ws: any = availableWorkspaces?.find((w: any) => w.id === selectedWorkspaceId);
+                            return ws ? ((ws.startup as any)?.name || t('common.noName', 'Sem nome')) : t('admin.chooseWorkspace', 'Escolher workspace...');
+                          })()}
+                        </span>
+                        <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0 w-[--radix-popover-trigger-width]" align="start" side="bottom" avoidCollisions={false}>
+                      <Command>
+                        <CommandInput placeholder={t('admin.searchWorkspace', 'Pesquisar startup...')} />
+                        <CommandList className="max-h-64">
+                          <CommandEmpty>{t('common.noResults', 'Sem resultados')}</CommandEmpty>
+                          {[...(availableWorkspaces || [])]
+                            .sort((a: any, b: any) => ((a.startup as any)?.name || '').localeCompare((b.startup as any)?.name || '', 'pt'))
+                            .map((ws: any) => {
+                              const name = (ws.startup as any)?.name || t('common.noName', 'Sem nome');
+                              const statusLabel = ws.status === 'active'
+                                ? t('admin.wsStatusActive', 'Ativo')
+                                : ws.status === 'imported_unclaimed'
+                                  ? t('admin.wsStatusUnclaimed', 'Sem founder')
+                                  : ws.status;
+                              return (
+                                <CommandItem
+                                  key={ws.id}
+                                  value={`${name} ${ws.id}`}
+                                  onSelect={() => { setSelectedWorkspaceId(ws.id); setWsPickerOpen(false); }}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Check className={`h-4 w-4 shrink-0 ${selectedWorkspaceId === ws.id ? 'opacity-100' : 'opacity-0'}`} />
+                                  <span className="flex-1 truncate">{name}</span>
+                                  <Badge variant={ws.status === 'active' ? 'default' : 'secondary'} className="shrink-0 text-[10px]">{statusLabel}</Badge>
+                                </CommandItem>
+                              );
+                            })}
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={resetClaimDialog}>{t('common.cancel', 'Cancelar')}</Button>
