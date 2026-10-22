@@ -123,6 +123,9 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [ccOwner, setCcOwner] = useState(true);
   const [sending, setSending] = useState(false);
+  // RC11 D.11: a chave mantém-se entre tentativas do mesmo envio; só muda ao reabrir o diálogo
+  const idempotencyKeyRef = useRef<string | null>(null);
+  useEffect(() => { if (open) idempotencyKeyRef.current = null; }, [open]);
   const [adHocFiles, setAdHocFiles] = useState<AdHocFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -224,10 +227,13 @@ export function SendProposalDialog({ open, onOpenChange, item }: SendProposalDia
     // Stable idempotency key per dialog-send attempt. If the user retries the
     // same click (network hiccup, double-tap) the edge function short-circuits
     // via notification_ledger and returns duplicate=true instead of double-sending.
-    const idempotencyKey =
-      typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? crypto.randomUUID()
-        : `${item.id}-${Date.now()}`;
+    if (!idempotencyKeyRef.current) {
+      idempotencyKeyRef.current =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `${item.id}-${Date.now()}`;
+    }
+    const idempotencyKey = idempotencyKeyRef.current;
     try {
       const { data, error } = await invokeWithAuth<{
         success: boolean;

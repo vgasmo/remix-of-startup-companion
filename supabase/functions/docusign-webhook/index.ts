@@ -374,8 +374,9 @@ Deno.serve(async (req) => {
       await markInboxProcessed(supabase, claim.inboxId, {
         status: 'failed', httpStatus: 500, errorMessage: `contract_update_failed:${contractUpdateErr.message}`, contractId: contract.id,
       })
+      // RC11 D.10: 503 para o DocuSign voltar a entregar (o inbox failed é reprocessável)
       return new Response(JSON.stringify({ ok: false, error: 'contract_update_failed' }), {
-        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 

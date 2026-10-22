@@ -9,6 +9,7 @@
  * Provider-agnostic: dispatches to docusign, pandadoc, or manual based on
  * the contract's `signature_provider` field. Never assumes a default provider.
  */
+import { notifyStaff } from '../_shared/staffNotify.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { syncIntakeOnSent, syncIntakeOnCompleted } from '../_shared/lifecycleSync.ts'
 import { handleLifecycleSyncResult } from '../_shared/lifecycleSyncResultHandler.ts'
@@ -1056,6 +1057,21 @@ Deno.serve(async (req) => {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
+      // RC11 D.10: validar email e NIF do signatário antes de gravar
+      {
+        const em = formData.legal_representative_email
+        if (em != null && em !== '' && (typeof em !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em.trim()) || em.length > 255)) {
+          return new Response(JSON.stringify({ error: 'invalid_signer_email' }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+        const nif = formData.company_nif
+        if (nif != null && nif !== '' && (typeof nif !== 'string' || !/^\d{9}$/.test(nif.replace(/\s/g, '')))) {
+          return new Response(JSON.stringify({ error: 'invalid_nif' }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+      }
 
       // SAFETY: only persist keys actually present in the payload so this flow
       // (which doesn't render certidao_permanente_code or additional_representatives)
@@ -1227,6 +1243,7 @@ Deno.serve(async (req) => {
           } else {
             const errText = await dsRes.text()
             console.warn('DocuSign send failed:', errText)
+            await notifyStaff(supabase, { title: 'Falha no envio para assinatura (DocuSign)', message: `O contrato ${contract.contract_number || contract.id.slice(0, 8)} não foi enviado ao DocuSign: ${errText.slice(0, 200)}`, entityId: contract.id })
             await supabase.from('startup_contracts').update({
               signature_status: 'failed',
               provider_last_error: `docusign_send: ${errText.slice(0, 500)}`,
@@ -1257,6 +1274,7 @@ Deno.serve(async (req) => {
           } else {
             const errText = await pdRes.text()
             console.warn('PandaDoc send failed:', errText)
+            await notifyStaff(supabase, { title: 'Falha no envio para assinatura (PandaDoc)', message: `O contrato ${contract.contract_number || contract.id.slice(0, 8)} não foi enviado ao PandaDoc: ${errText.slice(0, 200)}`, entityId: contract.id })
             await supabase.from('startup_contracts').update({
               signature_status: 'failed',
               provider_last_error: `pandadoc_send: ${errText.slice(0, 500)}`,
@@ -1491,6 +1509,14 @@ Deno.serve(async (req) => {
             evidence_json: { contract_id: contract.id, purpose: 'counter_sign_contract' },
           })
           if (qErr) console.error('counter-sign work-queue insert failed:', qErr.message)
+        } else {
+          // RC11 D.10: sem workspace não há fila — avisar admin/backoffice para não ficar parado
+          await notifyStaff(supabase, {
+            title: 'Contrato aguarda contra-assinatura',
+            message: `O founder assinou o contrato ${contract.contract_number || contract.id.slice(0, 8)}, que ainda não tem workspace. Falta a contra-assinatura da Startup Leiria.`,
+            entityId: contract.id,
+            eventKey: `counter_sign_pending:${contract.id}`,
+          })
         }
         return new Response(JSON.stringify({
           status: 'partially_signed',

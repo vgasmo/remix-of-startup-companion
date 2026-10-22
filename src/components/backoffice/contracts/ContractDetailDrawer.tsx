@@ -559,7 +559,8 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                         setEditValues(p => ({
                           ...p,
                           incubation_type_id: selectedTypeId,
-                          monthly_fee: selectedType?.base_monthly_fee ?? p.monthly_fee,
+                          // RC11 D.11: mantém a mensalidade negociada; só usa a base se estiver vazia
+                          monthly_fee: p.monthly_fee > 0 ? p.monthly_fee : (selectedType?.base_monthly_fee ?? p.monthly_fee),
                         }));
                       }}
                     >

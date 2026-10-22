@@ -895,7 +895,8 @@ function IntakeActionsForDrawer({ item, user }: { item: FunnelItem; user: any })
   const createIntake = useCreateIntake();
 
   const preIntakeStages = ['new', 'first_contact_booked', 'met', 'qualified', 'proposal_sent', 'negotiating'];
-  const showCreateCTA = preIntakeStages.includes(item.stage) && !intake;
+  // RC11 D.11: um pedido cancelado permite criar um novo
+  const showCreateCTA = (preIntakeStages.includes(item.stage) && !intake) || intake?.status === 'cancelled';
 
   if (isLoading) return null;
 
@@ -984,6 +985,8 @@ function IntakeActionsForDrawer({ item, user }: { item: FunnelItem; user: any })
                 variant="outline"
                 className="h-7 text-xs gap-1"
                 onClick={async () => {
+                  // RC11 D.11: gerar um link novo anula o que já foi enviado ao cliente
+                  if (!window.confirm(t('crm.newIntakeLinkConfirm', 'Gerar um link novo? O link já enviado ao cliente deixa de funcionar.'))) return;
                   const { data: freshToken, error } = await supabase.rpc('staff_rotate_intake_token', { p_intake_id: intake.id });
                   if (error || !freshToken) {
                     notify.error(t('crm.linkCopyFailed', 'Falha ao gerar o link'));
@@ -995,7 +998,7 @@ function IntakeActionsForDrawer({ item, user }: { item: FunnelItem; user: any })
                 }}
               >
                 <Copy className="h-3 w-3" />
-                Copiar Link
+                {t('crm.newIntakeLink', 'Gerar novo link')}
               </Button>
             </CardContent>
           </Card>

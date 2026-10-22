@@ -1,3 +1,4 @@
+import { FUNNEL_STAGES } from '@/constants/funnelStages';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -217,6 +218,8 @@ export default function AdminDataImport() {
   const mapHubSpotStage = (hubspotStage: string): string | null => {
     if (!hubspotStage) return null;
     const stage = hubspotStage.toLowerCase().trim();
+    // RC11 D.11: "disqualified" contém "qualified" — testar perdidos primeiro
+    if (stage.includes('disqualified') || stage.includes('lost') || stage.includes('perdido') || stage.includes('desqualificad')) return 'rejected';
     // Map all qualified/tier leads to contracted
     if (stage.includes('tier a')) return 'contracted';
     if (stage.includes('tier b')) return 'contracted';
@@ -530,7 +533,7 @@ export default function AdminDataImport() {
         ? await supabase
             .from('funnel_items')
             .select('id, contact_email, organization_name')
-            .in('contact_email', emails)
+            .or(emails.map(e => `contact_email.ilike.${e.replace(/[,()*%]/g, '')}`).join(','))
         : { data: [] };
 
       // Build lookup maps
@@ -646,7 +649,7 @@ export default function AdminDataImport() {
         ? await supabase
             .from('funnel_items')
             .select('id, contact_email')
-            .in('contact_email', emails)
+            .or(emails.map(e => `contact_email.ilike.${e.replace(/[,()*%]/g, '')}`).join(','))
         : { data: [] };
 
       const existingEmailMap = new Map<string, string>();
@@ -728,7 +731,7 @@ export default function AdminDataImport() {
             // Always append to notes, don't overwrite
             const { data: existing } = await supabase
               .from('funnel_items')
-              .select('notes, tags')
+              .select('notes, tags, stage')
               .eq('id', existingId)
               .single();
 
@@ -743,8 +746,12 @@ export default function AdminDataImport() {
             updateData.tags = [...new Set([...existingTags, 'hubspot_import'])];
 
             // Update stage only if allowed
+            // RC11 D.11: nunca fazer recuar a fase de uma lead existente
             if (config.allow_stage_update) {
-              updateData.stage = config.default_stage;
+              const ORDER = FUNNEL_STAGES.filter(st => st !== 'rejected' && st !== 'archived') as readonly string[];
+              const cur = ORDER.indexOf(String(existing?.stage ?? ''));
+              const nxt = ORDER.indexOf(String(config.default_stage));
+              if (cur < 0 || (nxt >= 0 && nxt > cur)) updateData.stage = config.default_stage;
             }
 
             // Set owner only if not already set
@@ -801,7 +808,7 @@ export default function AdminDataImport() {
               
               // Create startup if not found
               if (!startupId) {
-                const { data: newStartup } = await supabase
+                const { data: newStartup, error: startupErr } = await supabase
                   .from('startups')
                   .insert({
                     name: row.organization_name,
@@ -812,6 +819,7 @@ export default function AdminDataImport() {
                   })
                   .select('id')
                   .single();
+                if (startupErr) throw new Error(`startup: ${startupErr.message}`);
                 if (newStartup) startupId = newStartup.id;
               }
               
@@ -827,7 +835,7 @@ export default function AdminDataImport() {
                 if (existingWs) {
                   workspaceId = existingWs.id;
                 } else {
-                  const { data: newWs } = await supabase
+                  const { data: newWs, error: wsErr } = await supabase
                     .from('workspaces')
                     .insert({
                       startup_id: startupId,
@@ -836,6 +844,7 @@ export default function AdminDataImport() {
                     })
                     .select('id')
                     .single();
+                  if (wsErr) throw new Error(`workspace: ${wsErr.message}`);
                   if (newWs) workspaceId = newWs.id;
                 }
               }

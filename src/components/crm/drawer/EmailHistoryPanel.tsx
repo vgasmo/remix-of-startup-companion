@@ -89,11 +89,14 @@ export function EmailHistoryPanel({ funnelItemId, workspaceId, onSyncEmails, isS
 
   const archiveMutation = useMutation({
     mutationFn: async ({ id, archive }: { id: string; archive: boolean }) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('communication_log')
         .update({ archived_at: archive ? new Date().toISOString() : null })
-        .eq('id', id);
+        .eq('id', id)
+        .select('id');
       if (error) throw error;
+      // RC11 D.11: sem permissão a atualização devolve 0 linhas — não mostrar sucesso falso
+      if (!data?.length) throw new Error(t('crm.emailArchiveForbidden', { defaultValue: 'Sem permissão para arquivar este email.' }));
     },
     onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: ['crm-emails'] });
