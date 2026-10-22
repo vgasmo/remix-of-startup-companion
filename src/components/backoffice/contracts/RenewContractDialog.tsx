@@ -53,6 +53,11 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
     mutationFn: async () => {
       if (!contract) throw new Error('no contract');
       if (!canRenew) throw new Error('invalid_status');
+      // RC11 D.11: a nova data de fim tem de ser posterior à atual
+      if (!newEnd || (contract.end_date && newEnd <= contract.end_date)) {
+        notify.error('A nova data de fim tem de ser posterior à data de fim atual.');
+        throw new Error('end_date_not_after_current');
+      }
 
       // start_date = início da incubação (cron de aniversários, "Ano N", limite de 3 anos): nunca sobrescrever
       const patch: TablesUpdate<'startup_contracts'> = { end_date: newEnd, monthly_fee: monthlyFee };
@@ -72,7 +77,10 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
       try {
         const today = new Date().toISOString().split('T')[0];
         const ids = (await findContractAllocations(contract))
-          .filter((a) => a.end_date && a.end_date >= today).map((a) => a.id);
+          .filter((a) => a.end_date && (a.end_date >= today
+            // contrato expirado: prolonga também a sala que terminou com o contrato
+            || (contract.status === 'expired' && !!contract.end_date && a.end_date >= contract.end_date)))
+          .map((a) => a.id);
         if (ids.length) {
           const { data: upd, error: allocUpdErr } = await supabase.from('room_allocations')
             .update({ end_date: newEnd }).in('id', ids).select('id');
