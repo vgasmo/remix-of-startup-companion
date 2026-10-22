@@ -9929,7 +9929,6 @@
     "addWeekly": "Block every week",
     "weeklyList": "Every week",
     "datesList": "Specific dates",
-    "everyWeekday": "Every {{day}}",
     "period": {
       "day": "Whole day",
       "morning": "Morning (9am–1pm)",
@@ -9944,6 +9943,15 @@
       "4": "Thursday",
       "5": "Friday",
       "6": "Saturday"
+    },
+    "every": {
+      "0": "Every Sunday",
+      "1": "Every Monday",
+      "2": "Every Tuesday",
+      "3": "Every Wednesday",
+      "4": "Every Thursday",
+      "5": "Every Friday",
+      "6": "Every Saturday"
     }
   },
   "topBar": {

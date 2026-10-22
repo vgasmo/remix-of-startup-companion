@@ -244,7 +244,7 @@ export function ConsultantTimeOffSettings() {
               <div key={r.id} className="flex items-center justify-between gap-3 rounded-lg border px-4 py-3">
                 <div className="min-w-0">
                   <p className="text-sm font-medium">
-                    {t('timeOff.everyWeekday', 'Todas as {{day}}s', { day: weekdayName(r.weekday).toLowerCase() })} · {' '}
+                    {t(`timeOff.every.${r.weekday}`)} · {' '}
                     {r.start_time ? `${r.start_time.slice(0, 5)} – ${r.end_time?.slice(0, 5)}` : t('timeOff.period.day', 'Dia inteiro')}
                   </p>
                   {r.reason && <p className="truncate text-xs text-muted-foreground">{r.reason}</p>}
