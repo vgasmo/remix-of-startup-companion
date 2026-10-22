@@ -264,12 +264,16 @@ export async function canonicalMarkAsSent(
       });
     }
 
-    const { error } = await supabase
+    // RC11: so contratos por assinar podem passar a pending_signature
+    const { data: sentRows, error } = await supabase
       .from('startup_contracts')
       .update(updatePayload as any)
-      .eq('id', contractId);
+      .eq('id', contractId)
+      .in('status', ['draft', 'pending_signature'])
+      .select('id');
 
     if (error) throw error;
+    if (!sentRows?.length) throw new Error('O contrato já não está por assinar.');
 
     void track('contract_sent_for_signature', { properties: { contractId, provider } });
 

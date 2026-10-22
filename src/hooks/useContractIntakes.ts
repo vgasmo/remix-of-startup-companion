@@ -259,7 +259,7 @@ export function useTransitionIntakeStatus() {
       // Get current status
       const { data: current, error: fetchErr } = await supabase
         .from('contract_intakes')
-        .select('status, funnel_item_id, organization_name, company_nif, company_address, company_city, company_postal_code, iban, legal_representative_name, legal_representative_email, legal_representative_phone, billing_email, startup_description, website, documents_json, missing_documents, submitted_at')
+        .select('status, funnel_item_id, organization_name, company_nif, company_address, company_city, company_postal_code, iban, legal_representative_name, legal_representative_email, legal_representative_phone, billing_email, startup_description, website, documents_json, missing_documents, submitted_at, project_name, certidao_permanente_code, additional_representatives')
         .eq('id', params.intakeId)
         .single();
       if (fetchErr) throw fetchErr;
@@ -342,18 +342,31 @@ export function useTransitionIntakeStatus() {
         // FIX (N3): supabase updates RETURN errors, not throw — check explicitly
         // and BLOCK approval on failure so the signing view can't ship without
         // NIF / morada / representative data.
+        // RC11: o contrato tem de ter mensalidade e estar por assinar
+        if (!(Number(linkedContract.monthly_fee) > 0)) {
+          throw new Error('Contrato sem mensalidade definida. Complete as condições comerciais antes de aprovar.');
+        }
+        if (!['draft', 'pending_signature'].includes(String(linkedContract.status))) {
+          throw new Error(`Contrato em estado ${linkedContract.status}: não pode ir para assinatura.`);
+        }
+        // RC11: copiar tambem projeto, certidao e representantes; nunca escrever null por cima de dados ja preenchidos
+        const cur = current as any;
+        const copy = Object.fromEntries(Object.entries({
+          organization_name: cur.organization_name,
+          company_nif: cur.company_nif,
+          company_address: cur.company_address,
+          company_city: cur.company_city,
+          company_postal_code: cur.company_postal_code,
+          legal_representative_name: cur.legal_representative_name,
+          legal_representative_email: cur.legal_representative_email,
+          legal_representative_phone: cur.legal_representative_phone,
+          iban: cur.iban,
+          project_name: cur.project_name,
+          certidao_permanente_code: cur.certidao_permanente_code,
+          additional_representatives: Array.isArray(cur.additional_representatives) && cur.additional_representatives.length ? cur.additional_representatives : null,
+        }).filter(([, v]) => v !== null && v !== undefined && v !== ''));
         const { error: copyErr } = await supabase.from('startup_contracts')
-          .update({
-            organization_name: current.organization_name,
-            company_nif: current.company_nif,
-            company_address: current.company_address,
-            company_city: current.company_city,
-            company_postal_code: current.company_postal_code,
-            legal_representative_name: current.legal_representative_name,
-            legal_representative_email: current.legal_representative_email,
-            legal_representative_phone: current.legal_representative_phone,
-            iban: current.iban,
-          } as any)
+          .update(copy as any)
           .eq('id', intakeFull.contract_id);
         if (copyErr) {
           logger.error('intake_snapshot_copy_to_contract_failed', { error: copyErr.message });

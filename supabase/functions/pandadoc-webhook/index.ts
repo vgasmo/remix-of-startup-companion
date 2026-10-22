@@ -269,9 +269,9 @@ Deno.serve(async (req) => {
       // Once a contract is completed / voided / declined, provider events must
       // not regress it (protects against out-of-order deliveries).
       if (
-        TERMINAL_SIGNATURE_STATUSES.has(String(contract.signature_status)) &&
-        contract.signature_status !== canonicalStatus
+        TERMINAL_SIGNATURE_STATUSES.has(String(contract.signature_status))
       ) {
+        // RC11: estado terminal igual (reentrega do provider) tambem e no-op
         console.log(`PandaDoc webhook: ignoring ${canonicalStatus} — contract already in terminal state ${contract.signature_status}`)
         await markInboxProcessed(supabase, claim.inboxId, {
           status: 'processed', httpStatus: 200, errorMessage: `terminal_state_${contract.signature_status}`, contractId: contract.id,
@@ -279,6 +279,14 @@ Deno.serve(async (req) => {
         continue
       }
 
+
+      // RC11: um documento concluido nunca reativa um contrato terminado, suspenso ou expirado
+      if (canonicalStatus === 'completed' && !['draft', 'pending_signature'].includes(String((contract as any).contract_status))) {
+        await markInboxProcessed(supabase, claim.inboxId, {
+          status: 'processed', httpStatus: 200, errorMessage: `contract_not_signable_${(contract as any).contract_status}`, contractId: contract.id,
+        })
+        continue
+      }
 
       const updatePayload: Record<string, unknown> = {
         signature_status: canonicalStatus,
