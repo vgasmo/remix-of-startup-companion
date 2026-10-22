@@ -249,8 +249,13 @@ export default function BulkContractImport() {
     }
   };
 
+  // RC11 D.11: usa a versão mais recente da linha para não perder correções anteriores
+  const latestRowsRef = useRef(rows);
+  latestRowsRef.current = rows;
   const updateEditedField = async (row: BatchRow, key: string, value: string) => {
-    const merged = { ...(row.edited_json || row.extracted_json || {}), [key]: value };
+    const current = latestRowsRef.current.find(r => r.id === row.id) ?? row;
+    const merged = { ...(current.edited_json || current.extracted_json || {}), [key]: value };
+    latestRowsRef.current = latestRowsRef.current.map(r => (r.id === row.id ? { ...r, edited_json: merged } : r));
     await updateRow(row.id, { edited_json: merged });
   };
 
