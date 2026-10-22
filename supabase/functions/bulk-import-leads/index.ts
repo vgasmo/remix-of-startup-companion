@@ -124,6 +124,20 @@ serve(async (req) => {
       const seenEmails = new Set<string>();
       const seenHashes = new Set<string>();
       const parsed: Array<ParsedRow & { valid: boolean; error: string | null; row_hash: string }> = [];
+      // RC11 D.10: deduplicar também contra leads já existentes no CRM
+      const existingEmails = new Set<string>();
+      {
+        const fileEmails = [...new Set(dataRows.map((c) => (emailIdx >= 0 && emailIdx < c.length ? c[emailIdx].trim().toLowerCase() : "")).filter(Boolean))];
+        for (let k = 0; k < fileEmails.length; k += 200) {
+          const slice = fileEmails.slice(k, k + 200);
+          const { data: hits, error: hitErr } = await sbSvc.from("funnel_items").select("contact_email").in("contact_email", slice);
+          if (hitErr) throw hitErr;
+          for (const h of hits ?? []) if (h.contact_email) existingEmails.add(String(h.contact_email).toLowerCase());
+          // emails guardados com maiúsculas
+          const { data: ciHits } = await sbSvc.from("funnel_items").select("contact_email").or(slice.map((e) => `contact_email.ilike.${e.replace(/[,()]/g, "")}`).join(","));
+          for (const h of ciHits ?? []) if (h.contact_email) existingEmails.add(String(h.contact_email).toLowerCase());
+        }
+      }
 
       for (let i = 0; i < dataRows.length; i++) {
         const cols = dataRows[i];
@@ -142,12 +156,14 @@ serve(async (req) => {
         let row_hash = await sha256Hex([name, email, phone, organization, source, notes, value ?? ""].join("|"));
         const isDuplicateRow = seenHashes.has(row_hash);
         const isDuplicate = isDuplicateRow || (!!email && seenEmails.has(email));
-        const valid = hasIdentity && emailValid && !isDuplicate;
+        const existsInCrm = !!email && existingEmails.has(email);
+        const valid = hasIdentity && emailValid && !isDuplicate && !existsInCrm;
         let error: string | null = null;
         if (!hasIdentity) error = "Missing name or email";
         else if (!emailValid) error = "Invalid email";
         else if (isDuplicateRow) error = "Duplicate row in file";
         else if (isDuplicate) error = "Duplicate email in file";
+        else if (existsInCrm) error = "Lead already exists in CRM";
         if (email) seenEmails.add(email);
         seenHashes.add(row_hash);
         // UNIQUE (batch_id, row_hash): uma linha repetida fica inválida e com hash próprio
