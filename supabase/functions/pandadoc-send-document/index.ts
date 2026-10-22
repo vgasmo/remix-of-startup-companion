@@ -268,41 +268,59 @@ Deno.serve(async (req) => {
       offset += part.length
     }
 
-    const createRes = await fetch(`${PANDADOC_API}/documents`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `API-Key ${pandadocApiKey}`,
-        'Content-Type': `multipart/form-data; boundary=${boundary}`,
-      },
-      body: bodyBytes,
-    })
-
-    if (!createRes.ok) {
-      const errText = await createRes.text()
-      await supabase.from('startup_contracts').update({
-        provider_last_error: `PandaDoc create failed [${createRes.status}]: ${errText.slice(0, 500)}`,
-        provider_last_sync_at: new Date().toISOString(),
-      }).eq('id', contractId)
-
-      throw new Error(`PandaDoc API error [${createRes.status}]: ${errText}`)
+    // RC11 D.10: reutilizar o documento PandaDoc já criado numa tentativa anterior
+    let pandadocDocId: string | null = null
+    if (contract.signature_provider === 'pandadoc' && contract.provider_document_id) {
+      const existingRes = await fetch(`${PANDADOC_API}/documents/${contract.provider_document_id}`, {
+        headers: { 'Authorization': `API-Key ${pandadocApiKey}` },
+      })
+      if (existingRes.ok) {
+        const existing = await existingRes.json()
+        if (!['document.voided', 'document.declined', 'document.deleted'].includes(existing?.status)) {
+          pandadocDocId = contract.provider_document_id
+        }
+      } else {
+        await existingRes.text()
+      }
     }
 
-    const doc = await createRes.json()
-    const pandadocDocId = doc.id
+    if (!pandadocDocId) {
+      const createRes = await fetch(`${PANDADOC_API}/documents`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `API-Key ${pandadocApiKey}`,
+          'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        },
+        body: bodyBytes,
+      })
 
-    await supabase.from('startup_contracts').update({
-      signature_provider: 'pandadoc',
-      provider_document_id: pandadocDocId,
-      signature_status: 'draft',
-      signature_requested_at: new Date().toISOString(),
-      provider_last_sync_at: new Date().toISOString(),
-      provider_last_event: 'document.created',
-      provider_last_error: null,
-      founder_signer_status: 'pending',
-      counter_signer_name: counterSignerName || null,
-      counter_signer_email: counterSignerEmail || null,
-      counter_signer_status: counterSignerEmail ? 'pending' : null,
-    }).eq('id', contractId)
+      if (!createRes.ok) {
+        const errText = await createRes.text()
+        await supabase.from('startup_contracts').update({
+          provider_last_error: `PandaDoc create failed [${createRes.status}]: ${errText.slice(0, 500)}`,
+          provider_last_sync_at: new Date().toISOString(),
+        }).eq('id', contractId)
+
+        throw new Error(`PandaDoc API error [${createRes.status}]: ${errText}`)
+      }
+
+      const doc = await createRes.json()
+      pandadocDocId = doc.id
+
+      await supabase.from('startup_contracts').update({
+        signature_provider: 'pandadoc',
+        provider_document_id: pandadocDocId,
+        signature_status: 'draft',
+        signature_requested_at: new Date().toISOString(),
+        provider_last_sync_at: new Date().toISOString(),
+        provider_last_event: 'document.created',
+        provider_last_error: null,
+        founder_signer_status: 'pending',
+        counter_signer_name: counterSignerName || null,
+        counter_signer_email: counterSignerEmail || null,
+        counter_signer_status: counterSignerEmail ? 'pending' : null,
+      }).eq('id', contractId)
+    }
 
     // Wait for document processing
     await new Promise(resolve => setTimeout(resolve, 3000))
