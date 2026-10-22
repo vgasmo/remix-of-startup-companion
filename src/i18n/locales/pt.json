@@ -9920,7 +9920,31 @@
     "removeFailed": "Não foi possível remover",
     "invalidRange": "O fim tem de ser depois do início",
     "empty": "Sem períodos bloqueados.",
-    "tab": "Minha Agenda"
+    "tab": "Minha Agenda",
+    "modeWeekly": "Todas as semanas",
+    "modeDates": "Datas específicas",
+    "weekdays": "Dias da semana",
+    "periodLabel": "Período",
+    "pickWeekday": "Escolha pelo menos um dia da semana",
+    "addWeekly": "Bloquear todas as semanas",
+    "weeklyList": "Todas as semanas",
+    "datesList": "Datas específicas",
+    "everyWeekday": "Todas as {{day}}s",
+    "period": {
+      "day": "Dia inteiro",
+      "morning": "Manhã (09–13h)",
+      "afternoon": "Tarde (13–19h)",
+      "custom": "Outras horas"
+    },
+    "weekday": {
+      "0": "Domingo",
+      "1": "Segunda",
+      "2": "Terça",
+      "3": "Quarta",
+      "4": "Quinta",
+      "5": "Sexta",
+      "6": "Sábado"
+    }
   },
   "topBar": {
     "accountSettings": "Definições da Conta",
