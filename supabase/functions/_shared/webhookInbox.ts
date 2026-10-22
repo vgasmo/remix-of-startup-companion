@@ -120,6 +120,12 @@ export async function claimWebhookDelivery(
   if (error) {
     // Postgres unique_violation
     if ((error as any).code === '23505') {
+      // RC11 D.10: uma entrega anterior que falhou pode ser reprocessada
+      let q = supabase.from('webhook_inbox').update({ status: 'received', error_message: null })
+        .eq('provider', input.provider).eq('status', 'failed')
+      q = input.eventId ? q.eq('event_id', input.eventId) : q.eq('payload_hash', input.payloadHash)
+      const { data: reclaimed } = await q.select('id').maybeSingle()
+      if (reclaimed?.id) return { ok: true, inboxId: reclaimed.id, duplicate: false }
       return { ok: true, inboxId: null, duplicate: true }
     }
     return { ok: false, inboxId: null, duplicate: false, error: error.message }
