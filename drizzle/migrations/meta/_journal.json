@@ -36,6 +36,13 @@
       "when": 1792666804933,
       "tag": "0004_rc11_part_d_db",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792668415085,
+      "tag": "0005_rc11_d10_contract_reminders_types",
+      "breakpoints": true
     }
   ]
 }
