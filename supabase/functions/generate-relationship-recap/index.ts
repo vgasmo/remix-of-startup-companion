@@ -90,16 +90,8 @@ Deno.serve(async (req) => {
     }
 
     // Staff check for funnel access
-    if (funnel_item_id) {
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id);
-
-      const isStaff = roles?.some((r) => r.role === 'admin' || r.role === 'consultor');
-      if (!isStaff) {
-        return corsJsonResponse({ error: 'Funnel access denied' }, req, 403);
-      }
+    if (funnel_item_id && !callerIsStaff) {
+      return corsJsonResponse({ error: 'Funnel access denied' }, req, 403);
     }
 
     // Gather activities
@@ -118,6 +110,11 @@ Deno.serve(async (req) => {
       commQuery.eq('funnel_item_id', funnel_item_id);
     }
 
+    // RC11 B13: nao staff nunca resume notas e emails internos (visibility 'staff')
+    if (!callerIsStaff) {
+      commQuery.eq('visibility', 'shared');
+    }
+
     const { data: commLogs } = await commQuery;
     if (commLogs) {
       activities.push(...commLogs.map((c) => ({
@@ -130,7 +127,7 @@ Deno.serve(async (req) => {
     }
 
     // Session notes if workspace
-    if (workspace_id) {
+    if (workspace_id && callerIsStaff) {
       const { data: sessions } = await supabase
         .from('sessions')
         .select('id, title, scheduled_at, notes, ai_summary')
@@ -310,6 +307,8 @@ ${activities.map((a, i) => `${i + 1}. [${a.type}] ${a.date}: ${a.subject || ''} 
       generated_at: new Date().toISOString(),
       generated_by: user.id,
       language,
+      // RC11 B13: a RLS so mostra a founders e mentores resumos com audience 'shared'
+      audience: callerIsStaff ? 'staff' : 'shared',
     };
 
     if (workspace_id) {
