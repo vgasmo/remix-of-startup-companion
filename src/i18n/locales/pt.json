@@ -3795,7 +3795,8 @@
     "winProbability": "Probabilidade (%)",
     "workspaceCreated": "Workspace criado para {{name}}",
     "newIntakeLink": "Gerar novo link",
-    "newIntakeLinkConfirm": "Gerar um link novo? O link já enviado ao cliente deixa de funcionar."
+    "newIntakeLinkConfirm": "Gerar um link novo? O link já enviado ao cliente deixa de funcionar.",
+    "emailArchiveForbidden": "Sem permissão para arquivar este email."
   },
   "dashboard": {
     "acrossPrograms": "Em {{count}} programa",
