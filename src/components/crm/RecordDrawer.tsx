@@ -250,7 +250,7 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
     return groups;
   }, [otherActivities, t, dateLocale]);
 
-  const handleAddActivity = async (type: ActivityType, data: { subject: string; preview: string; shareWithFounder?: boolean }) => {
+  const handleAddActivity = async (type: ActivityType, data: { subject: string; preview: string; shareWithFounder?: boolean; occurredAt?: string }) => {
     if (!item) return;
     
     await addActivity.mutateAsync({
@@ -259,6 +259,7 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
       subject: data.subject,
       preview: data.preview,
       visibility: data.shareWithFounder ? 'shared' : 'staff',
+      occurred_at: data.occurredAt,
     });
     
     setAddActivityDialog(null);

@@ -29,10 +29,16 @@ interface AddActivityDialogProps {
   type: ActivityType | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (type: ActivityType, data: { subject: string; preview: string; shareWithFounder?: boolean }) => void;
+  onSubmit: (type: ActivityType, data: { subject: string; preview: string; shareWithFounder?: boolean; occurredAt?: string }) => void;
   isPending: boolean;
   hasWorkspace: boolean;
 }
+
+const nowLocal = () => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
+};
 
 export function AddActivityDialog({
   type,
@@ -46,13 +52,32 @@ export function AddActivityDialog({
   const [subject, setSubject] = useState('');
   const [preview, setPreview] = useState('');
   const [shareWithFounder, setShareWithFounder] = useState(false);
+  const [occurredAt, setOccurredAt] = useState(nowLocal());
+
+  useEffect(() => {
+    if (open) setOccurredAt(nowLocal());
+    else { setSubject(''); setPreview(''); setShareWithFounder(false); }
+  }, [open]);
+
+  const typeLabel: Partial<Record<ActivityType, string>> = {
+    call: t('crm.call', { defaultValue: 'Chamada' }),
+    note: t('crm.note', { defaultValue: 'Nota' }),
+    meeting: t('crm.meeting', { defaultValue: 'Reunião' }),
+    email: t('crm.email', { defaultValue: 'Email' }),
+  };
+  const datePart = occurredAt ? `${occurredAt.slice(8, 10)}/${occurredAt.slice(5, 7)}` : '';
+  const effectiveSubject = subject.trim() || (type && typeLabel[type] ? `${typeLabel[type]} — ${datePart}` : '');
+  const showDate = type === 'meeting' || type === 'call';
+  const futureDate = !!occurredAt && new Date(occurredAt) > new Date();
 
   const handleSubmit = () => {
-    if (!type || !subject.trim()) return;
-    onSubmit(type, { subject, preview, shareWithFounder });
-    setSubject('');
-    setPreview('');
-    setShareWithFounder(false);
+    if (!type || !effectiveSubject || futureDate) return;
+    onSubmit(type, {
+      subject: effectiveSubject,
+      preview,
+      shareWithFounder,
+      occurredAt: showDate && occurredAt ? new Date(occurredAt).toISOString() : undefined,
+    });
   };
 
   const titles: Record<ActivityType, string> = {
@@ -71,21 +96,35 @@ export function AddActivityDialog({
           <DialogTitle>{type ? titles[type] : ''}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
+          {showDate && (
+            <div className="space-y-2">
+              <Label htmlFor="occurred-at">{t('crm.meetingDate', { defaultValue: 'Data' })}</Label>
+              <Input
+                id="occurred-at"
+                type="datetime-local"
+                value={occurredAt}
+                max={nowLocal()}
+                onChange={(e) => setOccurredAt(e.target.value)}
+              />
+            </div>
+          )}
           <div className="space-y-2">
-            <Label>{t('crm.title')}</Label>
-            <Input
-              placeholder={t('crm.titlePlaceholder')}
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>{t('crm.details')}</Label>
+            <Label htmlFor="activity-details">{t('crm.details')}</Label>
             <Textarea
+              id="activity-details"
+              autoFocus
               placeholder={t('crm.detailsPlaceholder')}
               value={preview}
               onChange={(e) => setPreview(e.target.value)}
-              rows={3}
+              rows={4}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>{t('crm.title')}</Label>
+            <Input
+              placeholder={effectiveSubject || t('crm.titlePlaceholder')}
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
             />
           </div>
           {hasWorkspace && (
@@ -100,7 +139,7 @@ export function AddActivityDialog({
               </Label>
             </div>
           )}
-          <Button onClick={handleSubmit} disabled={isPending || !subject.trim()} loading={isPending} className="w-full">
+          <Button onClick={handleSubmit} disabled={isPending || !effectiveSubject || futureDate} loading={isPending} className="w-full">
             {isPending ? t('common.saving') : t('common.save')}
           </Button>
         </div>
@@ -213,7 +252,7 @@ export function AddTaskDialog({
               </Label>
             </div>
           )}
-          <Button onClick={handleSubmit} disabled={isPending || !subject.trim()} loading={isPending} className="w-full">
+          <Button onClick={handleSubmit} disabled={isPending || !effectiveSubject || futureDate} loading={isPending} className="w-full">
             {isPending ? t('common.saving') : t('common.save')}
           </Button>
         </div>

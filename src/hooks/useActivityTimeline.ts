@@ -195,6 +195,7 @@ export function useAddActivity() {
       direction?: string;
       visibility?: VisibilityType;
       metadata_json?: Json;
+      occurred_at?: string;
     }) => {
       // G0 fix: workspace_id on communication_log is nullable (migration
       // 20260415001509 dropped the NOT NULL). Insert into communication_log
@@ -210,6 +211,7 @@ export function useAddActivity() {
         visibility: entry.visibility ?? 'staff',
         metadata_json: entry.metadata_json,
       };
+      if (entry.occurred_at) insertData.occurred_at = entry.occurred_at;
 
       if (entry.workspace_id) {
         insertData.workspace_id = entry.workspace_id;
