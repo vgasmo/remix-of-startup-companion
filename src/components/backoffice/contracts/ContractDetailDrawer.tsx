@@ -40,7 +40,6 @@ import { cn } from '@/lib/utils';
 import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 
-const STATUS_OPTIONS = ['draft', 'pending_signature', 'active', 'suspended', 'terminated', 'expired'];
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground',
