@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     }
 
     // 2. Try to insert log entry (idempotency check via UNIQUE constraint)
-    const { data: logEntry, error: logError } = await supabaseAdmin
+    let { data: logEntry, error: logError } = await supabaseAdmin
       .from('crm_stage_email_log')
       .insert({
         funnel_item_id,
@@ -82,11 +82,22 @@ Deno.serve(async (req) => {
 
     if (logError) {
       // If UNIQUE constraint violation, email was already sent
-      if (logError.code === '23505') {
+      if (logError.code !== '23505') throw logError;
+      // RC11 D.10: uma tentativa anterior que falhou volta a ser enviada
+      const { data: reclaimed } = await supabaseAdmin
+        .from('crm_stage_email_log')
+        .update({ status: 'queued', error_message: null })
+        .eq('funnel_item_id', funnel_item_id)
+        .eq('from_stage', from_stage)
+        .eq('to_stage', to_stage)
+        .eq('status', 'failed')
+        .select()
+        .maybeSingle();
+      if (!reclaimed) {
         console.log(`Email already sent for this transition (idempotency check)`);
         return corsJsonResponse({ success: true, action: 'already_sent', sent: false }, req);
       }
-      throw logError;
+      logEntry = reclaimed;
     }
 
     // 3. Get funnel item details
