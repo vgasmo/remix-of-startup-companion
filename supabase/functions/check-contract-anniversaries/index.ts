@@ -80,7 +80,7 @@ Deno.serve(withCronRunLogging('check-contract-anniversaries', async (req) => {
             .select('id')
             .eq('contract_id', contract.id)
             .eq('reminder_type', reminderType)
-            .gte('scheduled_date', new Date(today.getFullYear(), today.getMonth(), 1).toISOString())
+            .gte('scheduled_date', new Date(anniversaryDate.getTime() - 8 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
 
           if (!existing?.length) {
             alerts.push({
