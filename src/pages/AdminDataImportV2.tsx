@@ -147,9 +147,33 @@ export default function AdminDataImportV2() {
 
   const goReconcile = useCallback(async () => {
     if (!prepared) return;
-    await loadRows(prepared.job_id);
+    // RC11 D.11: se o mapeamento mudou, voltar a preparar o ficheiro com as colunas escolhidas
+    const changed = source === 'hubspot' && file &&
+      JSON.stringify(mapping) !== JSON.stringify(prepared.column_mapping ?? {});
+    if (changed) {
+      setIsLoading(true);
+      try {
+        const content_base64 = await fileToBase64(file!);
+        const { data, error } = await invokeWithAuth<PrepareResponse>('prepare-hubspot-import', {
+          body: {
+            filename: file!.name, content_base64, mime_type: file!.type, program_id: programId,
+            stage_map: stageMap, config: { default_stage: 'new' }, column_mapping: mapping,
+          },
+        });
+        if (error) throw error;
+        setPrepared(data!);
+        await loadRows(data!.job_id);
+      } catch (e: any) {
+        notify.error(e?.message ?? 'Prepare failed');
+        return;
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      await loadRows(prepared.job_id);
+    }
     setStep('reconcile');
-  }, [prepared, loadRows]);
+  }, [prepared, loadRows, source, file, mapping, programId, stageMap]);
 
   // Auto-approve only rows whose match confidence clears the safety threshold.
   // Anything below stays 'pending' so a human explicitly reviews the fuzzy /
