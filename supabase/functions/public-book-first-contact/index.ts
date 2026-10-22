@@ -478,6 +478,19 @@ serve(async (req) => {
     if (contact.help_expectation) bookingMetadata.help_expectation = contact.help_expectation;
     if (contact.personal_intro) bookingMetadata.personal_intro = contact.personal_intro;
 
+    // RC11 D.5: capture the previous owner/event of an early-stage lead so a rebook can clean up.
+    const { data: priorItem } = await supabase
+      .from('funnel_items')
+      .select('id, owner_consultant_id, metadata_json')
+      .eq('contact_email', String(contact.email).toLowerCase())
+      .in('stage', ['new', 'first_contact_booked'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const previousOwnerId: string | null = priorItem?.owner_consultant_id ?? null;
+    const previousEventId: string | null =
+      ((priorItem?.metadata_json as Record<string, unknown> | null)?.calendar_event_id as string | null) ?? null;
+
     // === ATOMIC COMMIT (C3) ===
     // Single-transaction RPC does idempotency lookup, early-stage reuse or
     // fresh insert, and event log. Prevents partial writes on interrupt.
@@ -499,7 +512,13 @@ serve(async (req) => {
         p_routing_decision: routingDecision,
       },
     );
-    if (commitErr) throw commitErr;
+    if (commitErr) {
+      // RC11 D.0: another lead already holds this consultant's slot
+      if (String(commitErr.message ?? '').includes('slot_taken') || (commitErr as { code?: string }).code === '23505') {
+        return corsJsonResponse({ error: 'slot_taken', message: 'Este horário acabou de ser reservado. Escolhe outro.' }, req, 409);
+      }
+      throw commitErr;
+    }
     const commitRow = Array.isArray(commitResult) ? commitResult[0] : commitResult;
     const funnelItemId: string = commitRow?.funnel_item_id;
     const commitMode: string = commitRow?.mode ?? 'created';
@@ -564,6 +583,38 @@ serve(async (req) => {
       // but the funnel item is already durable, so we surface a partial-success
       // response rather than losing the lead.
       console.error('first_contact_outbox intent insert failed:', outErr);
+    }
+
+    // RC11 D.5: rebook of an early-stage lead — remove the old Graph event and tell the previous consultant.
+    if (commitMode === 'reused_early_stage') {
+      const prevCreds = previousEventId ? await getGraphCredentials(supabase) : null;
+      if (prevCreds && previousEventId && previousOwnerId) {
+        try {
+          const { data: prevProfile } = await supabase.from('profiles').select('email').eq('id', previousOwnerId).maybeSingle();
+          if (prevProfile?.email) {
+            const tok = await getGraphAccessToken(prevCreds);
+            const delRes = await fetch(
+              `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(prevProfile.email)}/events/${encodeURIComponent(previousEventId)}`,
+              { method: 'DELETE', headers: { Authorization: `Bearer ${tok}` } },
+            );
+            if (!delRes.ok && delRes.status !== 404) console.warn('previous event delete failed', delRes.status);
+          }
+        } catch (e) {
+          console.warn('previous event cleanup failed', e);
+        }
+      }
+      if (previousOwnerId && previousOwnerId !== consultantId) {
+        await supabase.from('notifications').insert({
+          user_id: previousOwnerId,
+          type: 'first_contact_reassigned',
+          title: `Primeiro Contacto remarcado — ${escHtml(contact.name)}`,
+          message: 'A lead remarcou e ficou atribuída a outro consultor. O evento anterior foi cancelado.',
+          link: `/crm?open=${funnelItemId}`,
+          entity_type: 'funnel_item',
+          entity_id: funnelItemId,
+          event_key: `first_contact_reassigned:${funnelItemId}:${slot.date}T${slot.time}`,
+        });
+      }
     }
 
     // Create calendar event via Graph API if configured
