@@ -1057,6 +1057,21 @@ Deno.serve(async (req) => {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
+      // RC11 D.10: validar email e NIF do signatário antes de gravar
+      {
+        const em = formData.legal_representative_email
+        if (em != null && em !== '' && (typeof em !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em.trim()) || em.length > 255)) {
+          return new Response(JSON.stringify({ error: 'invalid_signer_email' }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+        const nif = formData.company_nif
+        if (nif != null && nif !== '' && (typeof nif !== 'string' || !/^\d{9}$/.test(nif.replace(/\s/g, '')))) {
+          return new Response(JSON.stringify({ error: 'invalid_nif' }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+      }
 
       // SAFETY: only persist keys actually present in the payload so this flow
       // (which doesn't render certidao_permanente_code or additional_representatives)
