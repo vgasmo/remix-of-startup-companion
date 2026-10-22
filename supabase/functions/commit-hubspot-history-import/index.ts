@@ -102,11 +102,11 @@ Deno.serve(async (req) => {
       const { data: batch, error: bErr } = await sbSvc
         .from('bulk_import_batches')
         .insert({
-          source: 'hubspot_history',
-          label: body.batch_label ?? `hubspot_history_${new Date().toISOString()}`,
+          // RC11 D.10: colunas reais de bulk_import_batches
+          notes: `hubspot_history: ${body.batch_label ?? new Date().toISOString()}`,
           created_by: uid,
-          status: 'processing',
-          total_rows: body.entries.length,
+          status: 'committing',
+          total_files: body.entries.length,
         } as any)
         .select('id')
         .single();
@@ -128,11 +128,14 @@ Deno.serve(async (req) => {
         // Insert; unique index on (external_source, external_id) prevents duplicates.
         const { error: insErr } = await sbSvc.from('communication_log').insert({
           funnel_item_id: funnelId,
-          kind: e.kind,
+          activity_type: e.kind,
+          channel: e.kind,
           direction: e.direction ?? null,
           subject: e.subject ?? null,
-          summary: e.summary ?? null,
-          body: e.body ?? null,
+          preview: e.summary ?? null,
+          body: e.body ?? e.summary ?? null,
+          visibility: 'staff',
+          status: 'done',
           occurred_at: e.original_timestamp,
           original_timestamp: e.original_timestamp,
           external_source: 'hubspot',
@@ -154,11 +157,11 @@ Deno.serve(async (req) => {
 
     if (batchId) {
       await sbSvc.from('bulk_import_batches').update({
-        status: summary.failed > 0 ? 'completed_with_errors' : 'completed',
-        processed_rows: summary.inserted + summary.skipped_duplicate,
-        error_rows: summary.failed,
+        status: summary.failed > 0 ? 'partially_failed' : 'completed',
+        committed_count: summary.inserted + summary.skipped_duplicate,
+        failed_count: summary.failed,
         completed_at: new Date().toISOString(),
-        summary_json: summary,
+        dry_run_report: summary,
       } as any).eq('id', batchId);
     }
 
