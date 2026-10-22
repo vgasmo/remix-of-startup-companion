@@ -97,3 +97,70 @@ export function useConsultantTimeOff(consultantId: string | undefined, from?: st
     },
   });
 }
+
+export interface RecurringBlock {
+  id: string;
+  consultant_id: string;
+  weekday: number; // 0 = domingo
+  start_time: string | null;
+  end_time: string | null;
+  reason: string | null;
+}
+
+/** Bloqueios semanais (ex.: todas as segundas, terças à tarde). */
+export function useMyRecurringBlocks() {
+  const { user } = useAuth();
+  const userId = user?.id;
+  return useQuery({
+    queryKey: ['my-recurring-blocks', userId],
+    enabled: !!userId,
+    queryFn: async (): Promise<RecurringBlock[]> => {
+      const { data, error } = await supabase
+        .from('consultant_recurring_blocks')
+        .select('*')
+        .eq('consultant_id', userId!)
+        .order('weekday')
+        .order('start_time', { nullsFirst: true });
+      if (error) throw error;
+      return (data ?? []) as RecurringBlock[];
+    },
+  });
+}
+
+export function useAddRecurringBlocks() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { weekdays: number[]; start_time: string | null; end_time: string | null; reason?: string | null }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      const rows = input.weekdays.map((weekday) => ({
+        consultant_id: user.id,
+        created_by: user.id,
+        weekday,
+        start_time: input.start_time,
+        end_time: input.end_time,
+        reason: input.reason?.trim() || null,
+      }));
+      const { error } = await supabase.from('consultant_recurring_blocks').insert(rows);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-recurring-blocks'] });
+      queryClient.invalidateQueries({ queryKey: ['consultant-time-off'] });
+    },
+  });
+}
+
+export function useDeleteRecurringBlock() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('consultant_recurring_blocks').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-recurring-blocks'] });
+      queryClient.invalidateQueries({ queryKey: ['consultant-time-off'] });
+    },
+  });
+}
