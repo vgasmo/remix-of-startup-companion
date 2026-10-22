@@ -1574,6 +1574,39 @@ export type Database = {
           },
         ]
       }
+      consultant_recurring_blocks: {
+        Row: {
+          consultant_id: string
+          created_at: string
+          created_by: string | null
+          end_time: string | null
+          id: string
+          reason: string | null
+          start_time: string | null
+          weekday: number
+        }
+        Insert: {
+          consultant_id: string
+          created_at?: string
+          created_by?: string | null
+          end_time?: string | null
+          id?: string
+          reason?: string | null
+          start_time?: string | null
+          weekday: number
+        }
+        Update: {
+          consultant_id?: string
+          created_at?: string
+          created_by?: string | null
+          end_time?: string | null
+          id?: string
+          reason?: string | null
+          start_time?: string | null
+          weekday?: number
+        }
+        Relationships: []
+      }
       consultant_time_off: {
         Row: {
           all_day: boolean
@@ -12461,6 +12494,14 @@ export type Database = {
         Returns: string
       }
       ensure_founder_role: { Args: never; Returns: undefined }
+      expand_recurring_blocks: {
+        Args: { p_consultant_id: string; p_from: string; p_to: string }
+        Returns: {
+          all_day: boolean
+          ends_at: string
+          starts_at: string
+        }[]
+      }
       finalize_crm_import_batch: {
         Args: { p_batch_id: string }
         Returns: string

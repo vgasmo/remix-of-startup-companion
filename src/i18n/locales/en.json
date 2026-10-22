@@ -9920,7 +9920,39 @@
     "removeFailed": "Could not remove",
     "invalidRange": "The end must be after the start",
     "empty": "No blocked periods.",
-    "tab": "My Calendar"
+    "tab": "My Calendar",
+    "modeWeekly": "Every week",
+    "modeDates": "Specific dates",
+    "weekdays": "Weekdays",
+    "periodLabel": "Period",
+    "pickWeekday": "Pick at least one weekday",
+    "addWeekly": "Block every week",
+    "weeklyList": "Every week",
+    "datesList": "Specific dates",
+    "period": {
+      "day": "Whole day",
+      "morning": "Morning (9am–1pm)",
+      "afternoon": "Afternoon (1–7pm)",
+      "custom": "Other hours"
+    },
+    "weekday": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
+    },
+    "every": {
+      "0": "Every Sunday",
+      "1": "Every Monday",
+      "2": "Every Tuesday",
+      "3": "Every Wednesday",
+      "4": "Every Thursday",
+      "5": "Every Friday",
+      "6": "Every Saturday"
+    }
   },
   "topBar": {
     "accountSettings": "Account Settings",
