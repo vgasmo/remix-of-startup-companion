@@ -3793,7 +3793,9 @@
     "viewSession": "View Session",
     "weighted": "EUR",
     "winProbability": "Probabilidade (%)",
-    "workspaceCreated": "Workspace created for {{name}}"
+    "workspaceCreated": "Workspace created for {{name}}",
+    "newIntakeLink": "Generate new link",
+    "newIntakeLinkConfirm": "Generate a new link? The link already sent to the client will stop working."
   },
   "dashboard": {
     "acrossPrograms": "Across {{count}} program",
