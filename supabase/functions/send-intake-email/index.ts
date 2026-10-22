@@ -181,13 +181,41 @@ Deno.serve(async (req) => {
         </div>
       `
     } else if (type === 'signature_reminder') {
+      // RC11 D.10: texto por fornecedor e, na assinatura nativa, link novo para /contract-signing
+      let providerText = 'Por favor, verifique o seu email para o link de assinatura ou contacte a nossa equipa se necessitar de ajuda.'
+      let signUrl: string | null = null
+      if (intakeId) {
+        const { data: intakeRow } = await supabase.from('contract_intakes').select('contract_id').eq('id', intakeId).maybeSingle()
+        if (intakeRow?.contract_id) {
+          const { data: c } = await supabase.from('startup_contracts')
+            .select('id, status, signature_provider').eq('id', intakeRow.contract_id).maybeSingle()
+          const prov = c?.signature_provider
+          if (prov === 'docusign') providerText = 'Procure no seu email a mensagem do DocuSign com o link de assinatura, ou contacte a nossa equipa se necessitar de ajuda.'
+          else if (prov === 'pandadoc') providerText = 'Procure no seu email a mensagem do PandaDoc com o link de assinatura, ou contacte a nossa equipa se necessitar de ajuda.'
+          else if (c && ['draft', 'pending_signature'].includes(String(c.status))) {
+            const arr = new Uint8Array(32); crypto.getRandomValues(arr)
+            const token = Array.from(arr, b => b.toString(16).padStart(2, '0')).join('')
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token))
+            const hash = Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join('')
+            const { error: tokErr } = await supabase.from('startup_contracts').update({
+              onboarding_token_hash: hash,
+              onboarding_token_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            }).eq('id', c.id).in('status', ['draft', 'pending_signature'])
+            if (!tokErr) {
+              signUrl = `${Deno.env.get('PUBLIC_APP_URL') || 'https://fb.startupleiria.com'}/contract-signing/${token}`
+              providerText = 'Pode assinar diretamente no botão abaixo. Este link substitui os anteriores.'
+            }
+          }
+        }
+      }
       subject = `Lembrete — Assinatura de Contrato Pendente — Startup Leiria`
       html = `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
           <h2 style="color:#1a1a2e">Assinatura Pendente</h2>
           <p>Olá${safeName ? ' ' + safeName : ''},</p>
           <p>O contrato${safeOrg ? ' para <strong>' + safeOrg + '</strong>' : ''} foi enviado para assinatura e aguarda a sua ação.</p>
-          <p>Por favor, verifique o seu email para o link de assinatura do fornecedor (DocuSign / PandaDoc) ou contacte a nossa equipa se necessitar de ajuda.</p>
+          <p>${providerText}</p>
+          ${signUrl ? `<p style="text-align:center;margin:25px 0"><a href="${signUrl}" style="background:#1a1a2e;color:#fff;padding:12px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block">Assinar Contrato</a></p>` : ''}
           <p style="font-size:13px;color:#666">Se já assinou, pode ignorar esta mensagem.</p>
           <hr style="border:none;border-top:1px solid #eee;margin:25px 0"/>
           <p style="font-size:12px;color:#999">Startup Leiria — Ecossistema de Inovação</p>
