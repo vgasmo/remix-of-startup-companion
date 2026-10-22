@@ -90,6 +90,7 @@ Deno.serve(async (req) => {
         .eq('funnel_item_id', funnel_item_id)
         .eq('from_stage', from_stage)
         .eq('to_stage', to_stage)
+        .eq('rule_id', rule.id)
         .eq('status', 'failed')
         .select()
         .maybeSingle();

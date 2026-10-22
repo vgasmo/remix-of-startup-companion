@@ -184,8 +184,8 @@ Deno.serve(async (req) => {
       // RC11 D.10: texto por fornecedor e, na assinatura nativa, link novo para /contract-signing
       let providerText = 'Por favor, verifique o seu email para o link de assinatura ou contacte a nossa equipa se necessitar de ajuda.'
       let signUrl: string | null = null
-      if (intakeId) {
-        const { data: intakeRow } = await supabase.from('contract_intakes').select('contract_id').eq('id', intakeId).maybeSingle()
+      if (body.intakeId) {
+        const { data: intakeRow } = await supabase.from('contract_intakes').select('contract_id').eq("id", body.intakeId).maybeSingle()
         if (intakeRow?.contract_id) {
           const { data: c } = await supabase.from('startup_contracts')
             .select('id, status, signature_provider').eq('id', intakeRow.contract_id).maybeSingle()
