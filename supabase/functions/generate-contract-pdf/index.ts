@@ -25,6 +25,7 @@ interface ContractData {
   currency: string;
   discountPercentage: number;
   discountMonths: number;
+  discountStartLabel?: string | null;
   effectiveFee: number;
   equityPercentage: number | null;
   startDate: string;
@@ -414,7 +415,7 @@ function generateContractPdf(data: ContractData): Uint8Array {
   let c6p1 = `1. O Segundo Outorgante pagará ao Primeiro Outorgante, pelo conjunto de serviços técnicos na modalidade de ${modalityName}, a quantia mensal de ${feeStr} (${feeWords}).`;
   
   if (data.discountPercentage > 0) {
-    c6p1 += ` Por deliberação do Conselho de Administração, terá um desconto de ${data.discountPercentage}% sobre o valor base, durante um período de ${data.discountMonths} (${numberToWords(data.discountMonths)}) meses, a partir da data de entrada em vigor do presente contrato. Findo esse período, o segundo outorgante pagará o valor mensal correspondente ao da tabela de preços em vigor.`;
+    c6p1 += ` Por deliberação do Conselho de Administração, terá um desconto de ${data.discountPercentage}% sobre o valor base, durante um período de ${data.discountMonths} (${numberToWords(data.discountMonths)}) meses, a partir ${data.discountStartLabel ? `de ${data.discountStartLabel}` : 'da data de entrada em vigor do presente contrato'}. Findo esse período, o segundo outorgante pagará o valor mensal correspondente ao da tabela de preços em vigor.`;
   }
   addWrapped(ps, MARGIN_L, c6p1, 10, 'F1', indentChars);
   addBlank(ps, 4);
@@ -665,10 +666,21 @@ Deno.serve(async (req) => {
       .from('contract_discounts')
       .select('*')
       .eq('contract_id', contractId)
-      .lte('start_date', new Date().toISOString())
       .or(`end_date.is.null,end_date.gte.${new Date().toISOString()}`)
 
-    const maxDiscount = discounts?.reduce((max, d) => Math.max(max, d.discount_percentage), 0) || 0
+    // RC11 D.10: inclui descontos com início futuro e usa a duração real do desconto
+    const topDiscount = (discounts ?? []).reduce((best: any, d: any) => (!best || d.discount_percentage > best.discount_percentage ? d : best), null)
+    const maxDiscount = topDiscount?.discount_percentage || 0
+    let discountMonthsReal = 6
+    let discountStartLabel: string | null = null
+    if (topDiscount?.start_date && topDiscount?.end_date) {
+      const a = new Date(topDiscount.start_date), b = new Date(topDiscount.end_date)
+      discountMonthsReal = Math.max(1, Math.round((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24 * 30.4375)))
+    }
+    if (topDiscount?.start_date && contract.start_date && String(topDiscount.start_date).slice(0, 10) > String(contract.start_date).slice(0, 10)) {
+      const d = new Date(topDiscount.start_date)
+      discountStartLabel = `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}`
+    }
     const effectiveFee = contract.monthly_fee * (1 - maxDiscount / 100)
 
     const startup = contract.workspace?.startup
@@ -694,7 +706,8 @@ Deno.serve(async (req) => {
       monthlyFee: contract.monthly_fee || 0,
       currency: contract.currency || 'EUR',
       discountPercentage: contract.discount_percentage || maxDiscount,
-      discountMonths: 6,
+      discountMonths: discountMonthsReal,
+      discountStartLabel,
       effectiveFee,
       equityPercentage: incType?.equity_percentage || contract.equity_percentage,
       startDate: contract.start_date,
