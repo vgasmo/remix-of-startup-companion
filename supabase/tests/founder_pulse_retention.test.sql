@@ -63,7 +63,7 @@ SELECT is(
 SELECT is(
   (SELECT (blockers, wins, ask) FROM public.founder_pulse_responses
     WHERE id = '33333333-0000-0000-0000-000000000007'),
-  ('recent blocker', 'recent win', 'recent ask'),
+  ('recent blocker'::text, 'recent win'::text, 'recent ask'::text),
   'blockers/wins/ask are untouched on the recent response');
 
 SELECT is(

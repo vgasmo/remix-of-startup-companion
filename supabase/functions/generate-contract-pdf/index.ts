@@ -484,6 +484,11 @@ function generateContractPdf(data: ContractData): Uint8Array {
   ps.y -= LINE_H;
   addLineR(ps, MARGIN_L, 'Pelo Primeiro Outorgante', 9);
   ps.lines.push(`BT /F1 9 Tf ${PAGE_W - MARGIN_R - 150} ${ps.y + LINE_H} Td (${encodePdfString('Pelo Segundo Outorgante')}) Tj ET`);
+  // RC11: ancoras invisiveis (texto branco, 1 pt) para as signHereTabs e dateSignedTabs do DocuSign
+  ps.lines.push(`q 1 1 1 rg BT /F1 1 Tf ${MARGIN_L} ${ps.y + LINE_H + 6} Td (/sl_sig/) Tj ET Q`);
+  ps.lines.push(`q 1 1 1 rg BT /F1 1 Tf ${MARGIN_L} ${ps.y - 4} Td (/sl_date/) Tj ET Q`);
+  ps.lines.push(`q 1 1 1 rg BT /F1 1 Tf ${PAGE_W - MARGIN_R - 180} ${ps.y + LINE_H + 6} Td (/founder_sig/) Tj ET Q`);
+  ps.lines.push(`q 1 1 1 rg BT /F1 1 Tf ${PAGE_W - MARGIN_R - 180} ${ps.y - 4} Td (/founder_date/) Tj ET Q`);
 
   // ========== BUILD PDF ==========
   // Object 1: Catalog

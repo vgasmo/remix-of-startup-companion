@@ -11,6 +11,35 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// RC11: o JWT exige base64url sem padding; o DocuSign entrega chaves PKCS#1 (cabecalho RSA) e o WebCrypto so importa PKCS#8
+export function base64UrlEncode(input: string | Uint8Array): string {
+  const bin = typeof input === 'string' ? input : String.fromCharCode(...input)
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+function derLength(n: number): number[] {
+  if (n < 0x80) return [n]
+  const out: number[] = []
+  while (n > 0) { out.unshift(n & 0xff); n >>= 8 }
+  return [0x80 | out.length, ...out]
+}
+export function pkcs1ToPkcs8(pkcs1: Uint8Array): Uint8Array {
+  const version = [0x02, 0x01, 0x00]
+  const algId = [0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00]
+  const octetHeader = [0x04, ...derLength(pkcs1.length)]
+  const bodyLen = version.length + algId.length + octetHeader.length + pkcs1.length
+  const head = [0x30, ...derLength(bodyLen), ...version, ...algId, ...octetHeader]
+  const out = new Uint8Array(head.length + pkcs1.length)
+  out.set(head, 0)
+  out.set(pkcs1, head.length)
+  return out
+}
+export function privateKeyPemToPkcs8(pem: string): Uint8Array {
+  const isPkcs1 = pem.includes('BEGIN RSA')
+  const b64 = pem.replace(/-{5}(BEGIN|END)[^-]*-{5}/g, '').replace(/\s+/g, '')
+  const der = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+  return isPkcs1 ? pkcs1ToPkcs8(der) : der
+}
+
 async function getDocuSignAccessToken(): Promise<{ accessToken: string; accountId: string }> {
   const integrationKey = Deno.env.get('DOCUSIGN_INTEGRATION_KEY')!
   const userId = Deno.env.get('DOCUSIGN_USER_ID')!
@@ -19,8 +48,8 @@ async function getDocuSignAccessToken(): Promise<{ accessToken: string; accountI
   const baseUrl = Deno.env.get('DOCUSIGN_BASE_URL') || 'https://demo.docusign.net'
 
   const now = Math.floor(Date.now() / 1000)
-  const header = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
-  const payload = btoa(JSON.stringify({
+  const header = base64UrlEncode(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
+  const payload = base64UrlEncode(JSON.stringify({
     iss: integrationKey,
     sub: userId,
     aud: baseUrl.includes('demo') ? 'account-d.docusign.com' : 'account.docusign.com',
@@ -36,8 +65,7 @@ async function getDocuSignAccessToken(): Promise<{ accessToken: string; accountI
   )
   const signatureData = new TextEncoder().encode(`${header}.${payload}`)
   const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', cryptoKey, signatureData)
-  const jwt = `${header}.${payload}.${btoa(String.fromCharCode(...new Uint8Array(signature)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')}`
+  const jwt = `${header}.${payload}.${base64UrlEncode(new Uint8Array(signature))}`
 
   const tokenUrl = baseUrl.includes('demo')
     ? 'https://account-d.docusign.com/oauth/token'

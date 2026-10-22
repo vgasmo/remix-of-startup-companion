@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { handleCorsOptions, corsJsonResponse } from "../_shared/cors.ts";
 import { normalizeLocale, pickLang, type Locale } from "../_shared/i18n.ts";
+import { escapeHtml, REPORT_CSP_META } from "../_shared/html.ts";
 
 const M = {
   title: { pt: 'Impacto Vitalício', en: 'Lifetime Impact' },
@@ -120,7 +121,7 @@ serve(async (req) => {
     const reportDate = new Date().toLocaleDateString(dateLocale, { day: '2-digit', month: 'long', year: 'numeric' });
 
     const html = `<!DOCTYPE html>
-<html lang="${locale}"><head><meta charset="utf-8"><title>${tm(locale, 'titleTab')} — ${profile?.full_name || ''}</title>
+<html lang="${locale}"><head><meta charset="utf-8">${REPORT_CSP_META}<title>${tm(locale, 'titleTab')} — ${escapeHtml(profile?.full_name || '')}</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a1a; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
   .header { text-align: center; padding: 32px 0; border-bottom: 2px solid #6366f1; margin-bottom: 32px; }
@@ -140,7 +141,7 @@ serve(async (req) => {
 </style></head><body>
   <div class="header">
     <h1>${tm(locale, 'title')}</h1>
-    <p class="subtitle">${profile?.full_name || tm(locale, 'mentor')} · Startup Leiria</p>
+    <p class="subtitle">${escapeHtml(profile?.full_name || tm(locale, 'mentor'))} · Startup Leiria</p>
   </div>
 
   <div class="stat-grid">
@@ -151,7 +152,7 @@ serve(async (req) => {
 
   <h2>${tm(locale, 'startupsTitle')}</h2>
   <div class="startup-list">
-    ${startupList.length ? startupList.map((n: string) => `<span class="chip">${n}</span>`).join('') : `<p style="color:#9ca3af">${tm(locale, 'noStartups')}</p>`}
+    ${startupList.length ? startupList.map((n: string) => `<span class="chip">${escapeHtml(n)}</span>`).join('') : `<p style="color:#9ca3af">${tm(locale, 'noStartups')}</p>`}
   </div>
 
   <h2>${tm(locale, 'avgRating')}</h2>
@@ -161,7 +162,7 @@ serve(async (req) => {
   <h2>${tm(locale, 'testimonials')}</h2>
   ${publicTestimonials.map((f: any) => `
     <div class="testimonial">
-      <p class="testimonial-text">"${(f.feedback || '').replace(/</g, '&lt;')}"</p>
+      <p class="testimonial-text">"${escapeHtml(f.feedback || '')}"</p>
       ${f.rating ? `<div class="testimonial-rating">${'★'.repeat(f.rating)}${'☆'.repeat(5 - f.rating)}</div>` : ''}
     </div>
   `).join('')}

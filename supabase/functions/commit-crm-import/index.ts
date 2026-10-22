@@ -39,7 +39,7 @@ function buildPhcPayload(row: any, config: any): { payload: any; external_ids: R
     contact_email: n.contact_email ?? n.organization_email,
     contact_phone: n.organization_phone,
     program_id: config.program_id ?? null,
-    type: 'startup',
+    type: 'lead',
     phc_customer_id: n.phc_customer_id,
     nif_normalized: n.nif_normalized,
     source_updated_at: null,
@@ -65,9 +65,17 @@ function buildPhcPayload(row: any, config: any): { payload: any; external_ids: R
   const external_ids: Record<string, string> = {};
   if (n.phc_customer_id) external_ids['phc/customer'] = n.phc_customer_id;
 
-  const final_stage = config.default_stage ?? 'customer';
+  // RC11: 'customer' nao existe em funnel_items_stage_check; clientes PHC entram como 'contracted'
+  const final_stage = VALID_FUNNEL_STAGES.has(config.default_stage) ? config.default_stage : 'contracted';
   return { payload, external_ids, final_stage, tags };
 }
+
+// RC11: vocabulario de funnel_items_stage_check (20260330104621)
+const VALID_FUNNEL_STAGES = new Set([
+  'new', 'first_contact_booked', 'met', 'qualified', 'proposal_sent', 'negotiating', 'intake_requested', 'intake_filling',
+  'intake_submitted', 'intake_review', 'intake_changes_requested', 'approved_for_signature', 'sent_for_signature',
+  'contracted', 'incubating', 'accelerating', 'rejected', 'archived',
+]);
 
 function buildHubspotPayload(row: any, config: any): { payload: any; external_ids: Record<string, string>; final_stage: string; tags: string[] } {
   const n = row.normalized_json ?? {};
@@ -80,7 +88,7 @@ function buildHubspotPayload(row: any, config: any): { payload: any; external_id
     contact_email: n.contact_email,
     contact_phone: n.phone,
     program_id: config.program_id ?? null,
-    type: 'startup',
+    type: 'lead',
     hubspot_deal_id: n.deal_id,
     hubspot_company_id: n.company_id,
     nif_normalized: n.nif ?? null,
@@ -106,7 +114,8 @@ function buildHubspotPayload(row: any, config: any): { payload: any; external_id
   if (n.company_id) external_ids['hubspot/company'] = n.company_id;
   if (n.contact_id) external_ids['hubspot/contact'] = n.contact_id;
 
-  const final_stage = n.resolved_stage ?? config.default_stage ?? 'new';
+  const candidateStage = n.resolved_stage ?? config.default_stage ?? 'new';
+  const final_stage = VALID_FUNNEL_STAGES.has(candidateStage) ? candidateStage : 'new';
   return { payload, external_ids, final_stage, tags };
 }
 

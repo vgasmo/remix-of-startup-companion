@@ -151,9 +151,15 @@ Deno.serve(async (req) => {
       const xmlText = rawBody
       rawPayload = { xml: xmlText }
       const envelopeIdMatch = xmlText.match(/<EnvelopeID>([^<]+)<\/EnvelopeID>/i)
-      const statusMatch = xmlText.match(/<Status>([^<]+)<\/Status>/i)
+      // RC11: o primeiro <Status> do XML e o de um destinatario; retirar RecipientStatuses antes de ler o do envelope
+      const envelopeXml = xmlText.replace(/<RecipientStatuses>[\s\S]*?<\/RecipientStatuses>/i, '')
+      const statusMatch = envelopeXml.match(/<Status>([^<]+)<\/Status>/i)
       envelopeId = envelopeIdMatch?.[1] || null
-      status = statusMatch?.[1]?.toLowerCase() || null
+      const xmlStatusMap: Record<string, string> = {
+        sent: 'sent_for_signature', delivered: 'viewed', completed: 'completed', declined: 'declined', voided: 'voided',
+      }
+      const rawXmlStatus = statusMatch?.[1]?.toLowerCase() || null
+      status = rawXmlStatus ? (xmlStatusMap[rawXmlStatus] ?? rawXmlStatus) : null
       // No synthetic eventId; the inbox dedupes on payload_hash.
       eventId = null
     }

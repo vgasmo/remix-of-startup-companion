@@ -46,6 +46,10 @@ ON CONFLICT DO NOTHING;
 INSERT INTO public.founder_pulse_cycles (id, workspace_id, period_month, status)
 VALUES ('b0000000-0000-4000-8000-00000000f005', 'b0000000-0000-4000-8000-00000000f004',
         date_trunc('month', now())::date, 'open')
+-- founder_notifications_blocked decide pelo papel em user_roles, nao pela adesao ao workspace
+INSERT INTO public.user_roles (user_id, role)
+VALUES ('b0000000-0000-4000-8000-00000000f001', 'founder')
+ON CONFLICT DO NOTHING;
 ON CONFLICT (id) DO NOTHING;
 
 -- Flag still off: enqueue must no-op.
@@ -58,7 +62,7 @@ SELECT is(
 -- Turn the flag on and verify behavior toggles with the per-founder kill-switch.
 INSERT INTO public.feature_flags (key, enabled, scope)
 VALUES ('founder_monthly_pulse', true, 'global')
-ON CONFLICT (key) DO UPDATE SET enabled = true, scope = 'global';
+ON CONFLICT (key) WHERE scope = 'global' DO UPDATE SET enabled = true;
 
 INSERT INTO public.system_settings (key, value)
 VALUES ('notifications.founders_disabled', 'true'::jsonb)

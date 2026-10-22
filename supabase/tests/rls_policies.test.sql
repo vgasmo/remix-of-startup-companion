@@ -14,56 +14,56 @@ SELECT plan(39);
 
 SELECT has_table('public', 'action_items', 'action_items table exists');
 SELECT row_eq(
-  $$SELECT relrowsecurity FROM pg_class WHERE relname = 'action_items'$$,
+  $$SELECT relrowsecurity FROM pg_class WHERE oid = 'public.action_items'::regclass$$,
   ROW(true),
   'RLS is enabled on action_items'
 );
 
 SELECT has_table('public', 'workspaces', 'workspaces table exists');
 SELECT row_eq(
-  $$SELECT relrowsecurity FROM pg_class WHERE relname = 'workspaces'$$,
+  $$SELECT relrowsecurity FROM pg_class WHERE oid = 'public.workspaces'::regclass$$,
   ROW(true),
   'RLS is enabled on workspaces'
 );
 
 SELECT has_table('public', 'sessions', 'sessions table exists');
 SELECT row_eq(
-  $$SELECT relrowsecurity FROM pg_class WHERE relname = 'sessions'$$,
+  $$SELECT relrowsecurity FROM pg_class WHERE oid = 'public.sessions'::regclass$$,
   ROW(true),
   'RLS is enabled on sessions'
 );
 
 SELECT has_table('public', 'contracts', 'contracts table exists');
 SELECT row_eq(
-  $$SELECT relrowsecurity FROM pg_class WHERE relname = 'contracts'$$,
+  $$SELECT relrowsecurity FROM pg_class WHERE oid = 'public.contracts'::regclass$$,
   ROW(true),
   'RLS is enabled on contracts'
 );
 
 SELECT has_table('public', 'invoices', 'invoices table exists');
 SELECT row_eq(
-  $$SELECT relrowsecurity FROM pg_class WHERE relname = 'invoices'$$,
+  $$SELECT relrowsecurity FROM pg_class WHERE oid = 'public.invoices'::regclass$$,
   ROW(true),
   'RLS is enabled on invoices'
 );
 
 SELECT has_table('public', 'funnel_items', 'funnel_items (CRM) table exists');
 SELECT row_eq(
-  $$SELECT relrowsecurity FROM pg_class WHERE relname = 'funnel_items'$$,
+  $$SELECT relrowsecurity FROM pg_class WHERE oid = 'public.funnel_items'::regclass$$,
   ROW(true),
   'RLS is enabled on funnel_items'
 );
 
 SELECT has_table('public', 'office_spaces', 'office_spaces table exists');
 SELECT row_eq(
-  $$SELECT relrowsecurity FROM pg_class WHERE relname = 'office_spaces'$$,
+  $$SELECT relrowsecurity FROM pg_class WHERE oid = 'public.office_spaces'::regclass$$,
   ROW(true),
   'RLS is enabled on office_spaces'
 );
 
 SELECT has_table('public', 'startup_claim_requests', 'startup_claim_requests table exists');
 SELECT row_eq(
-  $$SELECT relrowsecurity FROM pg_class WHERE relname = 'startup_claim_requests'$$,
+  $$SELECT relrowsecurity FROM pg_class WHERE oid = 'public.startup_claim_requests'::regclass$$,
   ROW(true),
   'RLS is enabled on startup_claim_requests'
 );
@@ -110,7 +110,7 @@ SELECT col_not_null('public', 'invoices', 'workspace_id', 'invoices.workspace_id
 
 SELECT has_table('public', 'session_transcripts', 'session_transcripts table exists');
 SELECT row_eq(
-  $$SELECT relrowsecurity FROM pg_class WHERE relname = 'session_transcripts'$$,
+  $$SELECT relrowsecurity FROM pg_class WHERE oid = 'public.session_transcripts'::regclass$$,
   ROW(true),
   'RLS is enabled on session_transcripts'
 );

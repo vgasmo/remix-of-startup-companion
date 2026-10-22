@@ -441,7 +441,9 @@ Deno.serve(async (req) => {
     // All destructive writes (stages, gates, weeks, KPI defaults, core KPIs,
     // playbooks + items, alert rules, health model) run inside a single
     // Postgres transaction. Any failure rolls back the whole publish.
-    const { data: rpcResult, error: rpcError } = await supabase.rpc('publish_program_setup', {
+    // RC11 A2: o RPC exige auth.uid() com papel admin ou consultor; o cliente service_role nao tem sub e era sempre
+    // rejeitado com "Not authenticated". Chamar com o JWT do utilizador, ja validado acima.
+    const { data: rpcResult, error: rpcError } = await userClient.rpc('publish_program_setup', {
       p_draft_id: draft_id,
       p_program_id: programId,
       p_draft_json: draftData as unknown as Record<string, unknown>,

@@ -15,6 +15,7 @@ import { notify } from "@/lib/notify";
 import { HealthScore, StartupStage } from '@/types/database';
 import { logger } from '@/lib/logger';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
+import { printHtmlSandboxed } from "@/lib/printHtml";
 
 interface ProgressReportViewProps {
   workspaceId: string;
