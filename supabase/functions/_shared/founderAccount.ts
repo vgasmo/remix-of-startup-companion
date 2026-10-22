@@ -51,6 +51,31 @@ async function sendFounderAccessEmail(supabase: any, email: string, fullName: st
   }
 }
 
+// RC11 D.10: founder com conta já existente — aviso de contrato ativo, sem link de recuperação
+async function sendFounderContractActiveEmail(email: string, fullName: string): Promise<boolean> {
+  const resendKey = Deno.env.get('RESEND_API_KEY')
+  if (!resendKey) return false
+  const appUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://fb.startupleiria.com'
+  const safeName = fullName.replace(/[&<>]/g, (c) => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'))
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'Startup Leiria <noreply@startupleiria.com>',
+        to: [email],
+        subject: 'O seu contrato com a Startup Leiria está ativo',
+        html: `<p>Olá ${safeName},</p><p>O contrato foi assinado e está ativo. Pode entrar na plataforma Startup Leiria com a sua conta habitual.</p><p><a href='${appUrl}/login'>Entrar na plataforma</a></p>`,
+      }),
+    })
+    if (!res.ok) console.warn('[founderAccount] contract-active email failed:', res.status, await res.text())
+    return res.ok
+  } catch (e) {
+    console.warn('[founderAccount] contract-active email failed:', String(e))
+    return false
+  }
+}
+
 export type FounderContractInput = {
   id: string
   workspace_id: string | null
@@ -181,6 +206,8 @@ export async function autoCreateFounderAccount(
     if (createdNow) {
       const sent = await sendFounderAccessEmail(supabase, email, fullName)
       if (!sent) await enqueueFounderInviteTask(supabase, contract, 'access_email_failed')
+    } else {
+      await sendFounderContractActiveEmail(email, fullName)
     }
 
     return { ok: true, userId }
