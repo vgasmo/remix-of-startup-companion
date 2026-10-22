@@ -265,6 +265,7 @@ export function PendingApprovalsManager() {
   const [rejectTarget, setRejectTarget] = useState<string | null>(null);
   const [assignClaimTarget, setAssignClaimTarget] = useState<PendingClaim | null>(null);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>('');
+  const [wsPickerOpen, setWsPickerOpen] = useState(false);
   const [claimDialogTab, setClaimDialogTab] = useState<string>('existing');
   const [newStartupName, setNewStartupName] = useState('');
   const [newStartupDesc, setNewStartupDesc] = useState('');
