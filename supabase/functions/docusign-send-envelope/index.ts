@@ -60,7 +60,7 @@ async function getDocuSignAccessToken(): Promise<{ accessToken: string; accountI
 
   const binaryKey = privateKeyPemToPkcs8(rsaPrivateKey)
   const cryptoKey = await crypto.subtle.importKey(
-    'pkcs8', binaryKey, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']
+    'pkcs8', binaryKey as BufferSource, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']
   )
   const signatureData = new TextEncoder().encode(`${header}.${payload}`)
   const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', cryptoKey, signatureData)
