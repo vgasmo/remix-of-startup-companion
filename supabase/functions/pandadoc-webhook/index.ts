@@ -164,6 +164,7 @@ Deno.serve(async (req) => {
 
     const events = Array.isArray(body) ? body : [body]
 
+    let hadUpdateFailure = false
     for (const event of events) {
       const pandadocDocId = event.data?.id || event.uuid || null
       // RC11: event.event e o tipo (document_state_changed); o estado vem em data.status (document.completed)
@@ -314,6 +315,7 @@ Deno.serve(async (req) => {
         await markInboxProcessed(supabase, claim.inboxId, {
           status: 'failed', httpStatus: 500, errorMessage: `contract_update_failed:${contractUpdateErr.message}`, contractId: contract.id,
         })
+        hadUpdateFailure = true
         continue
       }
 
@@ -459,6 +461,12 @@ Deno.serve(async (req) => {
     }
 
 
+    if (hadUpdateFailure) {
+      // RC11 D.10: 503 para o PandaDoc voltar a entregar
+      return new Response(JSON.stringify({ ok: false, error: 'contract_update_failed' }), {
+        status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
