@@ -50,6 +50,13 @@ Deno.serve(async (req) => {
 
     // Service client for privileged operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // RC11 B13: quem chama decide o que entra no resumo. Staff ve tudo; founders e mentores so veem
+    // communication_log com visibility 'shared' e o resumo fica marcado com audience 'shared'.
+    const { data: callerRoles } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id);
+    const callerIsStaff = callerRoles?.some((r) => r.role === 'admin' || r.role === 'consultor') ?? false;
 
     // Check feature flag
     const { data: flag } = await supabase

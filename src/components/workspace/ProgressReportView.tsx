@@ -71,17 +71,7 @@ export function ProgressReportView({ workspaceId, workspace }: ProgressReportVie
 
       if (error) throw error;
 
-      // Create a blob from HTML and trigger download
-      const blob = new Blob([data.html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      
-      // Open in new tab for printing/saving as PDF
-      const printWindow = window.open(url, '_blank');
-      if (printWindow) {
-        printWindow.onload = () => {
-          printWindow.print();
-        };
-      }
+      printHtmlSandboxed(data.html);
 
       notify.success(t('common.success'));
     } catch (error) {
