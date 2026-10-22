@@ -27,7 +27,7 @@ const FORBIDDEN_TOGGLES = [
   'run_automations',
 ];
 
-function buildPhcPayload(row: any, config: any): { payload: any; external_ids: Record<string, string>; final_stage: string; tags: string[] } {
+function buildPhcPayload(row: any, config: any): { payload: any; external_ids: Record<string, string>; final_stage: string | null; tags: string[] } {
   const n = row.normalized_json ?? {};
   const tags: string[] = ['phc_import'];
   if (n.phc_department) tags.push(`phc_department:${n.phc_department}`);
@@ -66,7 +66,7 @@ function buildPhcPayload(row: any, config: any): { payload: any; external_ids: R
   if (n.phc_customer_id) external_ids['phc/customer'] = n.phc_customer_id;
 
   // RC11: 'customer' nao existe em funnel_items_stage_check; clientes PHC entram como 'contracted'
-  const final_stage = VALID_FUNNEL_STAGES.has(config.default_stage) ? config.default_stage : 'contracted';
+  const final_stage = row.match_entity_id ? null : (VALID_FUNNEL_STAGES.has(config.default_stage) ? config.default_stage : 'contracted');
   return { payload, external_ids, final_stage, tags };
 }
 
@@ -77,7 +77,7 @@ const VALID_FUNNEL_STAGES = new Set([
   'contracted', 'incubating', 'accelerating', 'rejected', 'archived',
 ]);
 
-function buildHubspotPayload(row: any, config: any): { payload: any; external_ids: Record<string, string>; final_stage: string; tags: string[] } {
+function buildHubspotPayload(row: any, config: any): { payload: any; external_ids: Record<string, string>; final_stage: string | null; tags: string[] } {
   const n = row.normalized_json ?? {};
   const tags: string[] = ['hubspot_import'];
   if (n.sector) tags.push(`sector:${n.sector}`);
@@ -114,8 +114,10 @@ function buildHubspotPayload(row: any, config: any): { payload: any; external_id
   if (n.company_id) external_ids['hubspot/company'] = n.company_id;
   if (n.contact_id) external_ids['hubspot/contact'] = n.contact_id;
 
-  const candidateStage = n.resolved_stage ?? config.default_stage ?? 'new';
-  const final_stage = VALID_FUNNEL_STAGES.has(candidateStage) ? candidateStage : 'new';
+  // RC11: numa lead existente so o deal stage do HubSpot mapeado muda a fase; o default_stage vale apenas para leads novas
+  const isUpdate = !!row.match_entity_id;
+  const candidateStage = isUpdate ? (n.resolved_stage ?? null) : (n.resolved_stage ?? config.default_stage ?? 'new');
+  const final_stage = candidateStage && VALID_FUNNEL_STAGES.has(candidateStage) ? candidateStage : (isUpdate ? null : 'new');
   return { payload, external_ids, final_stage, tags };
 }
 

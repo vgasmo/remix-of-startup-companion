@@ -215,13 +215,16 @@ export function useUpdateFunnelItem() {
       
       // E1: Auto-suggest workspace creation when lead reaches "contracted"
       if (updates.stage === 'contracted') {
-        // G1: caches are keyed ['funnel-items', filters] — exact getQueryData
-        // never hit and the event never fired. Scan all matching caches.
-        const caches = queryClient.getQueriesData<FunnelItem[]>({ queryKey: ['funnel-items'] });
-        let current: FunnelItem | undefined;
-        for (const [, data] of caches) {
-          current = data?.find(i => i.id === id);
-          if (current) break;
+        // RC11: usar a linha devolvida pelo update; a pagina /crm nao monta a cache ['funnel-items'],
+        // por isso a procura nas caches falhava e a conversao nunca era proposta
+        let current: FunnelItem | undefined =
+          _data && typeof _data === 'object' && 'id' in (_data as object) ? (_data as FunnelItem) : undefined;
+        if (!current) {
+          const caches = queryClient.getQueriesData<FunnelItem[]>({ queryKey: ['funnel-items'] });
+          for (const [, data] of caches) {
+            current = data?.find(i => i.id === id);
+            if (current) break;
+          }
         }
         if (current && !current.linked_workspace_id) {
           window.dispatchEvent(new CustomEvent('crm:lead-contracted', {

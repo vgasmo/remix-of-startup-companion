@@ -57,7 +57,16 @@ Deno.serve(async (req: Request) => {
 
     // Convert PDF to base64 for AI analysis
     const arrayBuffer = await fileData.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    // RC11: conversao por blocos; o spread de um PDF de varios MB excedia o limite de argumentos
+    const bytes = new Uint8Array(arrayBuffer);
+    if (bytes.length > 10 * 1024 * 1024) {
+      return corsJsonResponse({ error: 'File too large (max 10MB)' }, req, 413);
+    }
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += 32768) {
+      binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + 32768)));
+    }
+    const base64 = btoa(binary);
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {

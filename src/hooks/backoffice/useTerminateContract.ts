@@ -52,7 +52,7 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
   const today = new Date().toISOString().split('T')[0];
   const nowIso = new Date().toISOString();
 
-  const { error: updErr } = await supabase
+  const { data: termRows, error: updErr } = await supabase
     .from('startup_contracts')
     .update({
       status: 'terminated',
@@ -62,8 +62,12 @@ async function terminateOne(input: TerminateInput, t: (k: string, o?: any) => st
       onboarding_token_hash: null,
       onboarding_token_expires_at: null,
     })
-    .eq('id', contract.id);
+    .eq('id', contract.id)
+    // RC11: so contratos terminaveis; um contrato ja terminado mantem a data e o motivo originais
+    .in('status', ['active', 'suspended', 'pending_signature'])
+    .select('id');
   if (updErr) throw updErr;
+  if (!termRows?.length) throw new Error('Contrato não está num estado terminável.');
 
   {
     // reutiliza `today` de :51

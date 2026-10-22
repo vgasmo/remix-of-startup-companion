@@ -100,7 +100,41 @@ function formatCurrency(value: number): string {
   return value.toFixed(2).replace('.', ',') + ' €';
 }
 
-function numberToWords(n: number): string {
+// RC11: numero inteiro por extenso (0 a 999 999 999), em portugues de Portugal
+export function numberToWords(n: number): string {
+  n = Math.floor(Math.abs(n));
+  if (n === 0) return 'zero';
+  const below1000 = (x: number): string => {
+    if (x === 0) return '';
+    if (x === 100) return 'cem';
+    return numberToWordsBelow1000(x);
+  };
+  const parts: string[] = [];
+  const millions = Math.floor(n / 1_000_000);
+  const thousands = Math.floor((n % 1_000_000) / 1000);
+  const rest = n % 1000;
+  if (millions > 0) parts.push(millions === 1 ? 'um milhão' : `${below1000(millions)} milhões`);
+  if (thousands > 0) parts.push(thousands === 1 ? 'mil' : `${below1000(thousands)} mil`);
+  if (rest > 0) parts.push(below1000(rest));
+  // "e" antes do ultimo grupo quando este e menor que 100 ou centena exata (mil e cinquenta, mil e duzentos)
+  if (parts.length > 1 && (rest < 100 || rest % 100 === 0) && rest > 0) {
+    const last = parts.pop() as string;
+    return `${parts.join(' ')} e ${last}`;
+  }
+  return parts.join(' ');
+}
+
+// RC11: valor monetario por extenso com centimos (1250,50 = mil duzentos e cinquenta euros e cinquenta cêntimos)
+export function amountToWords(value: number): string {
+  const cents = Math.round(Math.abs(value) * 100);
+  const euros = Math.floor(cents / 100);
+  const c = cents % 100;
+  const de = euros >= 1_000_000 && euros % 1_000_000 === 0 ? 'de ' : '';
+  const eurosTxt = `${numberToWords(euros)} ${de}${euros === 1 ? 'euro' : 'euros'}`;
+  return c > 0 ? `${eurosTxt} e ${numberToWords(c)} ${c === 1 ? 'cêntimo' : 'cêntimos'}` : eurosTxt;
+}
+
+function numberToWordsBelow1000(n: number): string {
   const units = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
   const teens = ['dez', 'onze', 'doze', 'treze', 'catorze', 'quinze', 'dezasseis', 'dezassete', 'dezoito', 'dezanove'];
   const tens = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
@@ -375,9 +409,9 @@ function generateContractPdf(data: ContractData): Uint8Array {
   ps.y -= LINE_H + 4;
 
   const feeStr = formatCurrency(data.monthlyFee);
-  const feeWords = numberToWords(Math.floor(data.monthlyFee));
+  const feeWords = amountToWords(data.monthlyFee);
   
-  let c6p1 = `1. O Segundo Outorgante pagará ao Primeiro Outorgante, pelo conjunto de serviços técnicos na modalidade de ${modalityName}, a quantia mensal de ${feeStr} (${feeWords} euros).`;
+  let c6p1 = `1. O Segundo Outorgante pagará ao Primeiro Outorgante, pelo conjunto de serviços técnicos na modalidade de ${modalityName}, a quantia mensal de ${feeStr} (${feeWords}).`;
   
   if (data.discountPercentage > 0) {
     c6p1 += ` Por deliberação do Conselho de Administração, terá um desconto de ${data.discountPercentage}% sobre o valor base, durante um período de ${data.discountMonths} (${numberToWords(data.discountMonths)}) meses, a partir da data de entrada em vigor do presente contrato. Findo esse período, o segundo outorgante pagará o valor mensal correspondente ao da tabela de preços em vigor.`;

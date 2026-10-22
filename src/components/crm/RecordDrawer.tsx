@@ -623,6 +623,14 @@ export function RecordDrawer({ item, open, onOpenChange, siblingIds, onNavigateS
                       .update({ linked_contract_id: newContract.id })
                       .eq('id', item.id);
                     if (linkErr) throw linkErr;
+                    // RC11: ligar o contrato ao intake em curso; sem isto a aprovacao bloqueia e o staff cria um segundo contrato
+                    const { error: intakeLinkErr } = await supabase
+                      .from('contract_intakes')
+                      .update({ contract_id: newContract.id } as any)
+                      .eq('funnel_item_id', item.id)
+                      .is('contract_id', null)
+                      .not('status', 'in', '(cancelled,rejected)');
+                    if (intakeLinkErr) throw intakeLinkErr;
 
                     // Refresh CRM caches so the linked-contract block in the
                     // still-open drawer stops showing the pre-write null state.

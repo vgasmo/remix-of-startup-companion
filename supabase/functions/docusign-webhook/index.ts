@@ -260,9 +260,9 @@ Deno.serve(async (req) => {
     if (
       typeof status === 'string' &&
       !status.startsWith('recipient:') &&
-      TERMINAL_SIGNATURE_STATUSES.has(String(contract.signature_status)) &&
-      contract.signature_status !== status
+      TERMINAL_SIGNATURE_STATUSES.has(String(contract.signature_status))
     ) {
+      // RC11: estado terminal igual (reentrega do provider) tambem e no-op: nao reescreve signed_at nem duplica emails
       console.log(`DocuSign webhook: ignoring ${status} — contract already in terminal state ${contract.signature_status}`)
       await markInboxProcessed(supabase, claim.inboxId, {
         status: 'processed', httpStatus: 200, errorMessage: `terminal_state_${contract.signature_status}`, contractId: contract.id,
@@ -272,6 +272,24 @@ Deno.serve(async (req) => {
       })
     }
 
+
+    // RC11: um envelope concluido nunca reativa um contrato terminado, suspenso ou expirado
+    if (status === 'completed' && !['draft', 'pending_signature'].includes(String(contract.contract_status))) {
+      await markInboxProcessed(supabase, claim.inboxId, {
+        status: 'processed', httpStatus: 200, errorMessage: `contract_not_signable_${contract.contract_status}`, contractId: contract.id,
+      })
+      const { data: staffUsers } = await supabase.from('user_roles').select('user_id').in('role', ['admin', 'backoffice'])
+      if (staffUsers?.length) {
+        await supabase.from('notifications').insert(staffUsers.map((s: any) => ({
+          user_id: s.user_id, type: 'system', title: 'Envelope DocuSign concluido num contrato fechado',
+          message: `O envelope ${envelopeId} foi assinado, mas o contrato esta ${contract.contract_status}. Nada foi ativado.`,
+          entity_type: 'contract', entity_id: contract.id, link: '/admin?tab=backoffice&subtab=contracts',
+        })))
+      }
+      return new Response(JSON.stringify({ ok: true, message: 'Contract not signable; nothing activated' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     // ═══ AUDIT: Log event to contract_lifecycle_events ═══
     await supabase.from('contract_lifecycle_events').insert({

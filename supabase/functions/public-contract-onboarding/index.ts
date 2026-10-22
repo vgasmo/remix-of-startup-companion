@@ -144,6 +144,14 @@ Deno.serve(async (req) => {
           })
         }
 
+        // RC11: so se envia para assinatura um contrato por assinar
+        if (!['draft', 'pending_signature'].includes(String((contract as any).status))
+            || ['completed', 'signed', 'partially_signed'].includes(String((contract as any).signature_status))) {
+          return new Response(JSON.stringify({ error: 'contract_not_signable', message: 'O contrato já não está por assinar.' }), {
+            status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+
         // Use provider from body or from contract record
         const provider: string | null = body.signatureProvider || (contract as any).signature_provider || null
 
@@ -318,7 +326,8 @@ Deno.serve(async (req) => {
 
       if (updateErr) throw updateErr
 
-      const publicUrl = `${req.headers.get('origin') || Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/contract-signing/${onboardingToken}`
+      // RC11: o link do email usa sempre o dominio configurado, nunca o Origin de quem chama
+      const publicUrl = `${Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/contract-signing/${onboardingToken}`
 
       // === Email the public signing link to the founder (best-effort) ===
       let emailSent = false
@@ -777,6 +786,12 @@ Deno.serve(async (req) => {
       if (intakeRow.intake_token_expires_at && new Date(intakeRow.intake_token_expires_at) < new Date()) {
         return new Response(JSON.stringify({ error: 'This link has expired' }), {
           status: 410, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      // RC11: depois de submetido, aprovado ou assinado o intake ja nao aceita documentos
+      if (!['intake_requested', 'intake_in_progress', 'changes_requested'].includes(String(intakeRow.status))) {
+        return new Response(JSON.stringify({ error: 'Form already submitted' }), {
+          status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
 
