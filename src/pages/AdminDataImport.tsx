@@ -1,3 +1,4 @@
+import { FUNNEL_STAGES } from '@/constants/funnelStages';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -730,7 +731,7 @@ export default function AdminDataImport() {
             // Always append to notes, don't overwrite
             const { data: existing } = await supabase
               .from('funnel_items')
-              .select('notes, tags')
+              .select('notes, tags, stage')
               .eq('id', existingId)
               .single();
 
@@ -747,7 +748,7 @@ export default function AdminDataImport() {
             // Update stage only if allowed
             // RC11 D.11: nunca fazer recuar a fase de uma lead existente
             if (config.allow_stage_update) {
-              const ORDER = ['new', 'first_contact_booked', 'met', 'qualified', 'proposal_sent', 'negotiating', 'intake_in_progress', 'signing', 'contracted'];
+              const ORDER = FUNNEL_STAGES.filter(st => st !== 'rejected' && st !== 'archived') as readonly string[];
               const cur = ORDER.indexOf(String(existing?.stage ?? ''));
               const nxt = ORDER.indexOf(String(config.default_stage));
               if (cur < 0 || (nxt >= 0 && nxt > cur)) updateData.stage = config.default_stage;
