@@ -234,7 +234,6 @@ export default function CRM() {
       ...(inbox.noNextAction || []), ...(inbox.stale || []),
     ].find((i) => i.id === selectedItem.id);
     if (fresh && fresh !== (selectedItem as unknown)) setSelectedItem(fresh as unknown as FunnelItem);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inbox]);
 
   // Deep-link support: ?open=<funnel_item_id>
