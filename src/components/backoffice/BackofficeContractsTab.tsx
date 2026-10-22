@@ -236,7 +236,7 @@ export function BackofficeContractsTab() {
         await createContract.mutateAsync({
           workspace_id: workspaceId,
           incubation_type_id: bulkIncubationType || null,
-          building_id: bulkBuilding || null,
+          building_id: bulkBuilding && bulkBuilding !== 'none' && bulkBuilding !== '__none__' ? bulkBuilding : null,
           status: 'draft',
           start_date: new Date().toISOString().split('T')[0],
           monthly_fee: selectedType?.base_monthly_fee || 0,
@@ -697,7 +697,8 @@ export function BackofficeContractsTab() {
         onOpenChange={setBulkTerminateOpen}
         contracts={
           (contracts || [])
-            .filter(c => selectedContractIds.has(c.id))
+            // RC11 D.11: só contratos que podem ser terminados
+            .filter(c => selectedContractIds.has(c.id) && ['active', 'suspended'].includes(c.status))
             .map(c => ({ id: c.id, workspace_id: c.workspace_id }))
         }
         onDone={() => setSelectedContractIds(new Set())}
