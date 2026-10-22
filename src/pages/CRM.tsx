@@ -226,6 +226,17 @@ export default function CRM() {
     setSearchParams(next, { replace: false });
   }, [searchParams, setSearchParams, openDrawerDirect]);
 
+  // RC11 D.11: depois de um refetch, o detalhe aberto passa a mostrar os dados frescos
+  useEffect(() => {
+    if (!drawerOpen || !selectedItem || !inbox) return;
+    const fresh = [
+      ...(inbox.overdue || []), ...(inbox.today || []), ...(inbox.upcoming || []),
+      ...(inbox.noNextAction || []), ...(inbox.stale || []),
+    ].find((i) => i.id === selectedItem.id);
+    if (fresh && fresh !== (selectedItem as unknown)) setSelectedItem(fresh as unknown as FunnelItem);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inbox]);
+
   // Deep-link support: ?open=<funnel_item_id>
   useEffect(() => {
     const openId = searchParams.get('open');
