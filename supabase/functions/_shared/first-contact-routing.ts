@@ -128,7 +128,9 @@ export async function resolveFirstContactRoute({
     expires_at: string | null;
   } | null = null;
 
-  if (token !== 'demo') {
+  // RC11: 'demo' so e aceite com PUBLIC_BOOKING_ALLOW_DEMO=true (nunca em producao); caso contrario e um token desconhecido
+  const demoAllowed = token === 'demo' && Deno.env.get('PUBLIC_BOOKING_ALLOW_DEMO') === 'true';
+  if (!demoAllowed) {
     const tokenHex = await sha256Hex(token);
     const { data } = await supabase
       .from('public_booking_links')

@@ -77,4 +77,3 @@ BEGIN
     END IF;$q$);
   EXECUTE d;
 END $$;
-```

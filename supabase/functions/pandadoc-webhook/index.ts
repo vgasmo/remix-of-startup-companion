@@ -166,7 +166,9 @@ Deno.serve(async (req) => {
 
     for (const event of events) {
       const pandadocDocId = event.data?.id || event.uuid || null
-      const eventName = event.event || event.data?.status || 'unknown'
+      // RC11: event.event e o tipo (document_state_changed); o estado vem em data.status (document.completed)
+      const eventType: string = event.event || 'unknown'
+      const eventName: string = event.data?.status || (eventType === 'document_deleted' ? 'document.deleted' : eventType)
       // Provider-issued id ONLY — no Date.now() fallback. When absent, the
       // webhook inbox dedupes on the payload SHA-256 hash instead.
       const eventId: string | null = event.event_id || event.id || null
@@ -254,8 +256,14 @@ Deno.serve(async (req) => {
         if (inboxBackfillErr) console.warn('pandadoc-webhook: inbox backfill failed', inboxBackfillErr.message)
       }
 
-      // Map to canonical status
-      const canonicalStatus = PANDADOC_STATUS_MAP[eventName] || contract.signature_status || 'draft'
+      // Map to canonical status (RC11: evento sem estado conhecido e ignorado, nunca reaplica o estado atual)
+      if (!PANDADOC_STATUS_MAP[eventName]) {
+        await markInboxProcessed(supabase, claim.inboxId, {
+          status: 'processed', httpStatus: 200, errorMessage: `ignored_event_${eventType}`, contractId: contract.id,
+        })
+        continue
+      }
+      const canonicalStatus = PANDADOC_STATUS_MAP[eventName]
 
       // ═══ TERMINAL-STATE GUARD ═══
       // Once a contract is completed / voided / declined, provider events must

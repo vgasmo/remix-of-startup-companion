@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { normalizeLocale, pickLang, type Locale } from '../_shared/i18n.ts';
+import { escapeHtml, REPORT_CSP_META } from '../_shared/html.ts';
 
 const STRINGS = {
   title: { pt: 'Relatório de Progresso', en: 'Progress Report' },
@@ -244,11 +245,12 @@ serve(async (req) => {
     .summary-title { font-size: 14px; font-weight: 600; color: #0369a1; margin-bottom: 8px; }
     .summary-text { font-size: 14px; color: #334155; }
   </style>
+  ${REPORT_CSP_META}
 </head>
 <body>
   <div class="header">
-    <h1>${startup?.name || s(locale, 'title')}</h1>
-    <p class="subtitle">${program?.name || ''}</p>
+    <h1>${escapeHtml(startup?.name || s(locale, 'title'))}</h1>
+    <p class="subtitle">${escapeHtml(program?.name || '')}</p>
     <p class="date">${s(locale, 'reportFor')} ${reportMonth} • ${s(locale, 'generated')} ${reportDate}</p>
   </div>
 
@@ -274,7 +276,7 @@ serve(async (req) => {
   ${aiSummary ? `
   <div class="summary-box">
     <div class="summary-title">✨ ${s(locale, 'aiSummary')}</div>
-    <p class="summary-text">${aiSummary}</p>
+    <p class="summary-text">${escapeHtml(aiSummary)}</p>
   </div>
   ` : ''}
 
@@ -283,9 +285,9 @@ serve(async (req) => {
   <div class="kpi-grid">
     ${kpis.slice(0, 6).map((kpi: any) => `
     <div class="kpi-card">
-      <div class="kpi-name">${kpi.name}</div>
+      <div class="kpi-name">${escapeHtml(kpi.name)}</div>
       <div class="kpi-value">
-        ${kpi.value?.toLocaleString() ?? '—'}${kpi.unit ? ` <span style="font-size: 12px; color: #999;">${kpi.unit}</span>` : ''}
+        ${kpi.value?.toLocaleString() ?? '—'}${kpi.unit ? ` <span style="font-size: 12px; color: #999;">${escapeHtml(kpi.unit)}</span>` : ''}
         ${kpi.trend === 'up' ? '<span class="trend-up"> ↑</span>' : kpi.trend === 'down' ? '<span class="trend-down"> ↓</span>' : ''}
       </div>
       ${kpi.target ? `<div class="kpi-meta">${s(locale, 'target')}: ${kpi.target.toLocaleString()}</div>` : ''}
@@ -302,7 +304,7 @@ serve(async (req) => {
     <div class="list-item">
       <span>
         <span class="status-dot ${m.status === 'completed' ? 'dot-green' : m.status === 'in_progress' ? 'dot-blue' : m.status === 'delayed' ? 'dot-red' : 'dot-gray'}"></span>
-        ${m.title}
+        ${escapeHtml(m.title)}
       </span>
       <span class="badge ${m.status === 'completed' ? 'badge-green' : m.status === 'in_progress' ? 'badge-blue' : m.status === 'delayed' ? 'badge-red' : 'badge-yellow'}" style="text-transform: capitalize;">
         ${m.status.replace('_', ' ')}
@@ -333,9 +335,9 @@ serve(async (req) => {
   <div>
     ${sessions.slice(0, 5).map((sess: any) => `
     <div class="session-item">
-      <div class="session-title">${sess.title}</div>
+      <div class="session-title">${escapeHtml(sess.title)}</div>
       <div class="session-date">${new Date(sess.scheduled_at).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-      ${sess.notes ? `<div class="session-notes">${sess.notes.slice(0, 200)}${sess.notes.length > 200 ? '...' : ''}</div>` : ''}
+      ${sess.notes ? `<div class="session-notes">${escapeHtml(sess.notes.slice(0, 200))}${sess.notes.length > 200 ? '...' : ''}</div>` : ''}
     </div>
     `).join('')}
   </div>

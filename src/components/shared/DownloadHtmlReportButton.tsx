@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { printHtmlSandboxed } from "@/lib/printHtml";
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { FileDown, Loader2 } from 'lucide-react';
@@ -31,13 +32,7 @@ export function DownloadHtmlReportButton({
       const { data, error } = await invokeWithAuth(functionName, { body: body ?? {} });
       if (error) throw error;
       if (!data?.html) throw new Error('No HTML returned');
-      const blob = new Blob([data.html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const w = window.open(url, '_blank');
-      if (w) {
-        w.onload = () => setTimeout(() => w.print(), 400);
-      }
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      printHtmlSandboxed(data.html);
     } catch (err: any) {
       notify.error(t('reports.errorTitle', 'Não foi possível gerar o relatório'), err?.message || '');
     } finally {

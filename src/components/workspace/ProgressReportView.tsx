@@ -15,6 +15,7 @@ import { notify } from "@/lib/notify";
 import { HealthScore, StartupStage } from '@/types/database';
 import { logger } from '@/lib/logger';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
+import { printHtmlSandboxed } from "@/lib/printHtml";
 
 interface ProgressReportViewProps {
   workspaceId: string;
@@ -70,17 +71,7 @@ export function ProgressReportView({ workspaceId, workspace }: ProgressReportVie
 
       if (error) throw error;
 
-      // Create a blob from HTML and trigger download
-      const blob = new Blob([data.html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      
-      // Open in new tab for printing/saving as PDF
-      const printWindow = window.open(url, '_blank');
-      if (printWindow) {
-        printWindow.onload = () => {
-          printWindow.print();
-        };
-      }
+      printHtmlSandboxed(data.html);
 
       notify.success(t('common.success'));
     } catch (error) {

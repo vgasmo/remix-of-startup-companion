@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { normalizeLocale, pickLang, type Locale } from '../_shared/i18n.ts';
+import { escapeHtml, REPORT_CSP_META } from '../_shared/html.ts';
 
 const T = {
   title: { pt: '📊 Relatório de Saúde da Coorte', en: '📊 Cohort Health Report' },
@@ -169,7 +170,8 @@ serve(async (req) => {
 <html lang="${locale}">
 <head>
   <meta charset="UTF-8">
-  <title>${tr(locale, 'title')} - ${program.name}</title>
+  ${REPORT_CSP_META}
+  <title>${tr(locale, 'title')} - ${escapeHtml(program.name)}</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 40px; }
     h1 { color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
@@ -195,7 +197,7 @@ serve(async (req) => {
 <body>
   <h1>${tr(locale, 'title')}</h1>
   <div class="meta">
-    <strong>${tr(locale, 'program')}:</strong> ${program.name}<br>
+    <strong>${tr(locale, 'program')}:</strong> ${escapeHtml(program.name)}<br>
     <strong>${tr(locale, 'period')}:</strong> ${startDate.toLocaleDateString(dateLocale)} - ${endDate.toLocaleDateString(dateLocale)}<br>
     <strong>${tr(locale, 'generated')}:</strong> ${now.toLocaleString(dateLocale)}
   </div>
@@ -233,7 +235,7 @@ serve(async (req) => {
       ${topImproved.map(([id, trend]) => {
         const ws = workspaces?.find(w => w.id === id);
         return `<tr>
-          <td>${getStartupName(ws)}</td>
+          <td>${escapeHtml(getStartupName(ws))}</td>
           <td>${trend.startScore}</td>
           <td>${trend.endScore}</td>
           <td class="positive">+${trend.delta}</td>
@@ -252,7 +254,7 @@ serve(async (req) => {
       ${topDeclined.map(([id, trend]) => {
         const ws = workspaces?.find(w => w.id === id);
         return `<tr>
-          <td>${getStartupName(ws)}</td>
+          <td>${escapeHtml(getStartupName(ws))}</td>
           <td>${trend.startScore}</td>
           <td>${trend.endScore}</td>
           <td class="negative">${trend.delta}</td>
@@ -271,7 +273,7 @@ serve(async (req) => {
       ${(workspaces || []).map(ws => {
         const components = (ws as any).health_score_components || {};
         return `<tr>
-          <td>${getStartupName(ws)}</td>
+          <td>${escapeHtml(getStartupName(ws))}</td>
           <td>${(ws as any).health_score_numeric || '-'}</td>
           <td>${(ws as any).health_score || '-'}</td>
           <td>${components.actions ?? '-'}</td>

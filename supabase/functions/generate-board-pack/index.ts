@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { handleCorsOptions, corsJsonResponse } from "../_shared/cors.ts";
 import { normalizeLocale, pickLang, type Locale } from "../_shared/i18n.ts";
+import { escapeHtml, REPORT_CSP_META } from "../_shared/html.ts";
 
 const B = {
   title: { pt: 'Board Pack', en: 'Board Pack' },
@@ -116,17 +117,17 @@ serve(async (req) => {
   <h2>${tb(locale, 'stageDist')}</h2>
   ${Object.entries(byStage).map(([stage, count]) => {
     const pct = Math.round(((count as number) / Math.max(active, 1)) * 100);
-    return `<div class="stage-row"><div class="stage-label">${stage}</div><div class="stage-bar"><div class="stage-fill" style="width:${pct}%"></div></div><div style="width:60px;text-align:right;font-size:13px;color:#475569;">${count} (${pct}%)</div></div>`;
+    return `<div class="stage-row"><div class="stage-label">${escapeHtml(stage)}</div><div class="stage-bar"><div class="stage-fill" style="width:${pct}%"></div></div><div style="width:60px;text-align:right;font-size:13px;color:#475569;">${count} (${pct}%)</div></div>`;
   }).join('')}
 
   <h2>${tb(locale, 'topHealthy')}</h2>
   <ul class="list">
-    ${healthyTop.length ? healthyTop.map((w: any) => `<li><span>${w.startups?.name || w.id}</span><span class="pill pill-ok">${Math.round(w.health_score_numeric ?? 0)}</span></li>`).join('') : `<li style="color:#94a3b8;">${tb(locale, 'noData')}</li>`}
+    ${healthyTop.length ? healthyTop.map((w: any) => `<li><span>${escapeHtml(w.startups?.name || w.id)}</span><span class="pill pill-ok">${Math.round(w.health_score_numeric ?? 0)}</span></li>`).join('') : `<li style="color:#94a3b8;">${tb(locale, 'noData')}</li>`}
   </ul>
 
   <h2>${tb(locale, 'atRisk')}</h2>
   <ul class="list">
-    ${atRisk.length ? atRisk.map((w: any) => `<li><span>${w.startups?.name || w.id}</span><span class="pill pill-risk">${w.health_status || tb(locale, 'riskLabel')}</span></li>`).join('') : `<li style="color:#94a3b8;">${tb(locale, 'noneCritical')}</li>`}
+    ${atRisk.length ? atRisk.map((w: any) => `<li><span>${escapeHtml(w.startups?.name || w.id)}</span><span class="pill pill-risk">${escapeHtml(w.health_status || tb(locale, 'riskLabel'))}</span></li>`).join('') : `<li style="color:#94a3b8;">${tb(locale, 'noneCritical')}</li>`}
   </ul>
 
   <div class="footer">${tb(locale, 'footer')}</div>

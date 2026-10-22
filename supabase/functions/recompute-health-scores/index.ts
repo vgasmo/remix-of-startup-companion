@@ -217,8 +217,22 @@ serve(withCronRunLogging('recompute-health-scores', async (req) => {
 
     for (const workspace of workspaces || []) {
       const model = modelsByProgram[workspace.program_id] || defaultModel;
-      const weights = model.weights_json;
-      const thresholds = model.thresholds_json;
+      // RC11: o wizard grava on_track/needs_attention e o peso milestones; normalizar para as chaves que o motor le
+      const num = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite(v) ? v : d);
+      const rawThr = (model.thresholds_json ?? {}) as Record<string, unknown>;
+      const thresholds: HealthModel["thresholds_json"] = {
+        thriving: num(rawThr.thriving, defaultModel.thresholds_json.thriving),
+        healthy: num(rawThr.healthy ?? rawThr.on_track, defaultModel.thresholds_json.healthy),
+        stable: num(rawThr.stable ?? rawThr.needs_attention, defaultModel.thresholds_json.stable),
+        at_risk: num(rawThr.at_risk, defaultModel.thresholds_json.at_risk),
+      };
+      const rawW = (model.weights_json ?? {}) as Record<string, unknown>;
+      const normalizedWeights: HealthModel["weights_json"] = {
+        actions: num(rawW.actions, 0), sessions: num(rawW.sessions, 0), kpis: num(rawW.kpis, 0), checkins: num(rawW.checkins, 0),
+      };
+      const weights = (normalizedWeights.actions + normalizedWeights.sessions + normalizedWeights.kpis + normalizedWeights.checkins) > 0
+        ? normalizedWeights
+        : defaultModel.weights_json;
       const modelVersionId = latestVersionByProgram[workspace.program_id] || null;
       const explanation: ExplanationFactor[] = [];
 

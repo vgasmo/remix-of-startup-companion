@@ -6819,6 +6819,7 @@ export type Database = {
       }
       relationship_recaps: {
         Row: {
+          audience: string
           created_at: string
           funnel_item_id: string | null
           generated_at: string
@@ -6835,6 +6836,7 @@ export type Database = {
           workspace_id: string | null
         }
         Insert: {
+          audience?: string
           created_at?: string
           funnel_item_id?: string | null
           generated_at?: string
@@ -6851,6 +6853,7 @@ export type Database = {
           workspace_id?: string | null
         }
         Update: {
+          audience?: string
           created_at?: string
           funnel_item_id?: string | null
           generated_at?: string
@@ -12065,6 +12068,7 @@ export type Database = {
         Args: { p_token_hash: string }
         Returns: Json
       }
+      account_not_suspended: { Args: { _user_id: string }; Returns: boolean }
       activate_workspace_for_signed_contract: {
         Args: { p_contract_id: string }
         Returns: string

@@ -73,8 +73,16 @@ Deno.serve(async (req) => {
     }
 
     const body: SyncRequest = await req.json();
-    const { funnel_item_id, workspace_id, lookback_days = 90, max_messages = 200, dry_run = false } = body;
+    const { funnel_item_id, workspace_id, dry_run = false } = body;
     let { consultant_user_id } = body;
+    // RC11: um consultor so sincroniza a propria mailbox; so o admin escolhe outra. Limites numericos validados.
+    const callerIsAdmin = roles?.some((r) => r.role === 'admin') ?? false;
+    if (consultant_user_id && consultant_user_id !== user.id && !callerIsAdmin) {
+      return corsJsonResponse({ error: 'Forbidden: consultant_user_id must be the caller' }, req, 403);
+    }
+    if (!consultant_user_id && !callerIsAdmin) consultant_user_id = user.id;
+    const lookback_days = Math.min(Math.max(Math.trunc(Number(body.lookback_days ?? 90)) || 90, 1), 365);
+    const max_messages = Math.min(Math.max(Math.trunc(Number(body.max_messages ?? 200)) || 200, 1), 500);
 
     if (!funnel_item_id && !workspace_id) {
       return corsJsonResponse({ error: 'funnel_item_id or workspace_id required' }, req, 400);

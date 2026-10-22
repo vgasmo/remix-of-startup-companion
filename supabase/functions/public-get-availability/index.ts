@@ -197,7 +197,9 @@ serve(async (req) => {
     let programName: string | null = null;
     let routingOptions: Array<{ program_id: string | null; program_name: string; scope: string }> = [];
 
-    if (token === 'demo') {
+    // RC11: o modo demo so existe com PUBLIC_BOOKING_ALLOW_DEMO=true (nunca em producao)
+    const demoAllowed = token === 'demo' && Deno.env.get('PUBLIC_BOOKING_ALLOW_DEMO') === 'true';
+    if (demoAllowed) {
       // Fetch ALL active routings
       const { data: allRoutings } = await supabase
         .from("intake_routing")
@@ -395,7 +397,7 @@ serve(async (req) => {
       // O token tem de ser um link ativo e não expirado (ou 'demo'). A ação 'validate' aceita qualquer token,
       // por isso não basta "fazer como no validate"; e não usamos resolveFirstContactRoute aqui
       // (falharia sem rota global quando o visitante escolheu um programa).
-      if (token !== 'demo') {
+      if (!(token === 'demo' && Deno.env.get('PUBLIC_BOOKING_ALLOW_DEMO') === 'true')) {
         const upHashBuf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
         const upHash = Array.from(new Uint8Array(upHashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
         const { data: upLink } = await supabase
