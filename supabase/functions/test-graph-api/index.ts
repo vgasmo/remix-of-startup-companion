@@ -9,7 +9,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { createLogger, generateRequestId, requireUser, safeErrorMessage } from '../_shared/security.ts';
+import { createLogger, generateRequestId, requireUser, safeErrorMessage, isAccountActive } from '../_shared/security.ts';
 
 const FUNCTION_NAME = 'test-graph-api';
 
@@ -117,12 +117,15 @@ Deno.serve(async (req: Request) => {
     const userId = authResult.user.id;
 
     // Check if user is admin
-    const { data: isAdmin } = await supabaseAdmin.rpc('is_admin', { _user_id: userId });
-    if (!isAdmin) {
+    const { data: isAdmin, error: roleError } = await supabaseAdmin.rpc('is_admin', { _user_id: userId });
+    if (roleError || isAdmin !== true) {
       return corsJsonResponse({ 
         success: false, 
         error: 'Only admins can test Graph API' 
       }, req, 403);
+    }
+    if (!(await isAccountActive(supabaseAdmin, userId))) {
+      return corsJsonResponse({ success: false, error: 'Account access denied' }, req, 403);
     }
 
     const body = await req.json() as TestRequest;

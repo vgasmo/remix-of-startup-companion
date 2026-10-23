@@ -14,7 +14,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from 'npm:resend@4.0.0';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { generateRequestId, createLogger } from '../_shared/security.ts';
+import { generateRequestId, createLogger, isAccountActive } from '../_shared/security.ts';
 import { foundersGloballyDisabled } from '../_shared/founderKillSwitch.ts';
 
 const FUNCTION_NAME = 'send-survey-invites';
@@ -172,6 +172,9 @@ Deno.serve(async (req) => {
     const { data: adminRole, error: roleErr } = await admin
       .from('user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle();
     if (roleErr || !adminRole) return corsJsonResponse({ error: 'forbidden' }, req, 403);
+    if (!(await isAccountActive(admin, user.id))) {
+      return corsJsonResponse({ error: 'account_access_denied' }, req, 403);
+    }
 
     if (!Deno.env.get('RESEND_API_KEY')) {
       return corsJsonResponse({ error: 'email_not_configured' }, req, 500);

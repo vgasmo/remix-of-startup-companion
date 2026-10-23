@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
+import { isAccountActive } from '../_shared/security.ts';
 
 interface SyncRequest {
   funnel_item_id?: string;
@@ -50,14 +51,17 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Check if user is staff
-    const { data: roles } = await supabase
+    const { data: roles, error: roleError } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id);
 
     const isStaff = roles?.some((r) => r.role === 'admin' || r.role === 'consultor');
-    if (!isStaff) {
+    if (roleError || !isStaff) {
       return corsJsonResponse({ error: 'Forbidden: Staff only' }, req, 403);
+    }
+    if (!(await isAccountActive(supabase, user.id))) {
+      return corsJsonResponse({ error: 'Account access denied' }, req, 403);
     }
 
     // Check feature flag

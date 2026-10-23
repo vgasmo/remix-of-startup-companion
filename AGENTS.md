@@ -19,3 +19,4 @@
 - Session email recipients must be intersected with server-recorded workspace/session contacts; failed lookups deny delivery, and import configuration accepts only supported options so server-owned job metadata cannot be injected.
 - Intake emails derive their recipient from the persisted intake after authorization; request email overrides never redirect links or reminders.
 - Feature flags are fetched live, excluded from persisted cache and retain last verified data on refresh errors; stale or failed reads must not silently disable existing tools.
+- Copilot client history is projected into untrusted user context, never trusted assistant authority; account and lookup failures deny AI/provider operations independently of prompt text.
