@@ -93,7 +93,17 @@ Deno.test("scrubWebhookPreview tolerates non-JSON input", () => {
 // ─── claimWebhookDelivery — mock supabase ─────────────────────────────────
 type Insert = { table: string; row: Record<string, unknown> };
 
-function makeMockSupabase(behavior: "ok" | "duplicate" | "error") {
+function updateChain(result: { data: { id: string } | null; error: { message: string } | null }) {
+  const chain = {
+    eq: (_key: string, _value: unknown) => chain,
+    select: (_fields: string) => chain,
+    maybeSingle: async () => result,
+    then: (resolve: (value: typeof result) => unknown) => Promise.resolve(result).then(resolve),
+  };
+  return chain;
+}
+
+function makeMockSupabase(behavior: "ok" | "duplicate" | "error", reclaim = { data: null as { id: string } | null, error: null as { message: string } | null }) {
   const calls: Insert[] = [];
   const client = {
     from(table: string) {
@@ -127,9 +137,7 @@ function makeMockSupabase(behavior: "ok" | "duplicate" | "error") {
         },
         update(patch: Record<string, unknown>) {
           calls.push({ table: `${table}:update`, row: patch });
-          return {
-            eq: async () => ({ data: null, error: null }),
-          };
+          return updateChain(reclaim);
         },
       };
     },
@@ -177,6 +185,18 @@ Deno.test("claimWebhookDelivery: non-unique DB error is surfaced so provider ret
   assertEquals(result.duplicate, false);
   assertEquals(result.inboxId, null);
   assertEquals(result.error, "boom");
+});
+
+Deno.test("claimWebhookDelivery: failed delivery is reclaimed for retry", async () => {
+  const { client } = makeMockSupabase("duplicate", { data: { id: "inbox-failed" }, error: null });
+  const result = await claimWebhookDelivery(client, baseInput);
+  assertEquals(result, { ok: true, inboxId: "inbox-failed", duplicate: false });
+});
+
+Deno.test("claimWebhookDelivery: recovery DB failure must not acknowledge a duplicate", async () => {
+  const { client } = makeMockSupabase("duplicate", { data: null, error: { message: "recovery offline" } });
+  const result = await claimWebhookDelivery(client, baseInput);
+  assertEquals(result, { ok: false, inboxId: null, duplicate: false, error: "recovery offline" });
 });
 
 Deno.test("claimWebhookDelivery: null event_id (XML deliveries) still inserts — dedupe falls back to payload_hash", async () => {
@@ -243,6 +263,7 @@ Deno.test("retry simulation: same event_id delivered N times yields exactly one 
   const client = {
     from(_table: string) {
       return {
+        update: () => updateChain({ data: null, error: null }),
         insert(row: Record<string, unknown>) {
           const key = `${row.provider}:${row.event_id ?? row.payload_hash}`;
           const isDup = store.has(key);
@@ -282,6 +303,7 @@ Deno.test("retry simulation: XML-style deliveries (event_id=null) dedupe on payl
   const client = {
     from(_table: string) {
       return {
+        update: () => updateChain({ data: null, error: null }),
         insert(row: Record<string, unknown>) {
           const key = `${row.provider}:${row.event_id ?? row.payload_hash}`;
           const isDup = store.has(key);

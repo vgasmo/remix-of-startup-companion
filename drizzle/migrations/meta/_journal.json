@@ -92,6 +92,13 @@
       "when": 1792749417052,
       "tag": "0012_atomic_contract_document_metadata",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792750184875,
+      "tag": "0013_scope_private_lookup_helpers",
+      "breakpoints": true
     }
   ]
 }

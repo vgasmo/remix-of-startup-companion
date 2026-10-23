@@ -113,13 +113,15 @@ files=("$@")
 [ ${#files[@]} -eq 0 ] && files=("$ROOT"/supabase/tests/*.test.sql)
 rc=0
 for t in "${files[@]}"; do
-  out=$(psql -h "$SOCK" -p "$PORT" -U postgres -d "$DB" -f "$t" 2>&1) || true
+  [ -f "$t" ] || die "test file missing: $t"
+  psql_rc=0
+  out=$(psql -h "$SOCK" -p "$PORT" -U postgres -d "$DB" -f "$t" 2>&1) || psql_rc=$?
   printf '%s\n' "$out" > "$LOG_DIR/$(basename "$t" .test.sql).log"
   ok=$(printf '%s' "$out" | grep -cE '^ ok [0-9]+' || true)
   nok=$(printf '%s' "$out" | grep -cE '^ not ok [0-9]+' || true)
   err=$(printf '%s' "$out" | grep -c 'ERROR:' || true)
   echo "[rc5:local-pg] $(basename "$t"): ok=$ok fail=$nok errors=$err"
-  if [ "$nok" != "0" ] || [ "$err" != "0" ]; then
+  if [ "$psql_rc" != "0" ] || [ "$ok" = "0" ] || [ "$nok" != "0" ] || [ "$err" != "0" ]; then
     rc=1
     printf '%s\n' "$out" | grep -E '^ not ok|# Failed test|caught:|wanted:|ERROR:' | head -12
   fi

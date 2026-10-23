@@ -57,6 +57,10 @@ export async function syncIntakeOnContractEvent(
       return { synced: false, error: 'no_linked_intake' };
     }
 
+    // Cancellation is terminal; signature retries must not reopen the intake or CRM.
+    if (intake.status === 'cancelled') {
+      return { synced: false, intakeId: intake.id, error: 'would_regress' };
+    }
     // Don't regress intake status (e.g., don't go from 'activated' back to 'signed')
     const STATUS_ORDER: IntakeState[] = [
       'draft_internal', 'intake_requested', 'intake_in_progress', 'intake_submitted',
@@ -66,7 +70,7 @@ export async function syncIntakeOnContractEvent(
     const currentIdx = STATUS_ORDER.indexOf(intake.status as IntakeState);
     const targetIdx = STATUS_ORDER.indexOf(targetIntakeStatus);
     
-    if (currentIdx > targetIdx && intake.status !== 'cancelled') {
+    if (currentIdx > targetIdx) {
       logger.info('lifecycle_sync_skip_regression', {
         contractId, intakeId: intake.id,
         currentStatus: intake.status, targetStatus: targetIntakeStatus,

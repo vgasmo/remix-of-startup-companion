@@ -1,7 +1,15 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { documentUploadedKey } from "./notificationEventKey.ts";
 
-const DB_URL = Deno.env.get("DB_URL") || Deno.env.get("SUPABASE_DB_URL") || "";
+// Never inherit a hosted connection for tests that insert/delete data.
+// This suite requires an explicitly selected disposable loopback database.
+const DB_URL = Deno.env.get("RC5_DISPOSABLE_DB_URL") || "";
+if (DB_URL) {
+  const url = new URL(DB_URL);
+  if (!['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)) {
+    throw new Error('Notification performance tests require a disposable loopback database');
+  }
+}
 
 /**
  * Helper: runs a SQL command via psql and returns { stdout, stderr, code }.
@@ -34,7 +42,7 @@ async function psqlFile(sql: string): Promise<{ stdout: string; stderr: string; 
   };
 }
 
-Deno.test("upsert retries do not create duplicates and stay fast", { ignore: !DB_URL }, async () => {
+Deno.test({ name: "upsert retries do not create duplicates and stay fast", ignore: !DB_URL, fn: async () => {
   const testUserId = crypto.randomUUID();
   const testEventKey = documentUploadedKey("perf-doc-1", testUserId);
   const iterations = 50;
@@ -77,9 +85,9 @@ Deno.test("upsert retries do not create duplicates and stay fast", { ignore: !DB
 
   // Cleanup
   await psql(`DELETE FROM public.notifications WHERE event_key = '${testEventKey}'`);
-});
+} });
 
-Deno.test("performance indexes exist on notifications table", { ignore: !DB_URL }, async () => {
+Deno.test({ name: "performance indexes exist on notifications table", ignore: !DB_URL, fn: async () => {
   const { stdout } = await psql(`
     SELECT indexname FROM pg_indexes
     WHERE tablename = 'notifications'
@@ -100,4 +108,4 @@ Deno.test("performance indexes exist on notifications table", { ignore: !DB_URL 
     true,
     "missing unique index notifications_event_key_user_unique on (user_id, event_key)",
   );
-});
+} });

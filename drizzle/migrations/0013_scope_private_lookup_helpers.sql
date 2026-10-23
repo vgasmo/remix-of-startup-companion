@@ -1,0 +1,9 @@
+CREATE OR REPLACE FUNCTION public.get_dataroom_workspace_id(_dataroom_id uuid) RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$ SELECT workspace_id FROM public.datarooms WHERE id = _dataroom_id AND (auth.role() = 'service_role' OR public.has_workspace_access(workspace_id)); $$;
+CREATE OR REPLACE FUNCTION public.get_session_workspace_id(_session_id uuid) RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$ SELECT workspace_id FROM public.sessions WHERE id = _session_id AND (auth.role() = 'service_role' OR public.has_workspace_access(workspace_id)); $$;
+REVOKE ALL ON FUNCTION public.get_dataroom_workspace_id(uuid), public.get_session_workspace_id(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.get_dataroom_workspace_id(uuid), public.get_session_workspace_id(uuid) TO authenticated, service_role;
+CREATE OR REPLACE FUNCTION public.account_not_suspended(_user_id uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$ SELECT CASE WHEN auth.role() = 'anon' OR (auth.uid() IS NULL AND auth.role() IS DISTINCT FROM 'service_role') THEN false ELSE _user_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = _user_id AND p.account_status = 'suspended') END; $$;
+REVOKE ALL ON FUNCTION public.is_feature_flag_enabled(text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.is_feature_flag_enabled(text) TO authenticated, service_role;
+COMMENT ON FUNCTION public.get_dataroom_workspace_id(uuid) IS 'RLS helper: returns parent workspace only when caller can access it; service role retained.';
+COMMENT ON FUNCTION public.get_session_workspace_id(uuid) IS 'RLS helper: returns parent workspace only when caller can access it; service role retained.';

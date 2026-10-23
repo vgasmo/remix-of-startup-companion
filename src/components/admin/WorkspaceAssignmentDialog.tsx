@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import { Loader2, Building2, Plus, Sparkles, Search } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { usePrograms } from '@/hooks/useAdminData';
 import { notify } from "@/lib/notify";
+import { ASSIGNMENT_PAGE_SIZE, searchAssignmentWorkspaces } from '@/lib/assignmentWorkspaceSearch';
 
 interface WorkspaceAssignmentDialogProps {
   open: boolean;
@@ -91,41 +92,15 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
   // workspaces were fetched and filtered in the browser, so older startups
   // (e.g. imported ones) could never be found by name.
   const trimmedSearch = searchQuery.trim();
-  const { data: allWorkspaces, isFetching: searching } = useQuery({
+  const { data: allWorkspaces, isFetching: searching, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['all-workspaces-for-assignment', trimmedSearch],
-    queryFn: async () => {
-      let matchedStartupIds: string[] | null = null;
-      if (trimmedSearch) {
-        const pattern = `%${trimmedSearch.replace(/[%_",()\\]/g, '')}%`;
-        const { data: startupMatches, error: startupError } = await supabase
-          .from('startups')
-          .select('id')
-          .or(`name.ilike."${pattern}",main_contact_email.ilike."${pattern}"`)
-          .limit(100);
-        if (startupError) throw startupError;
-        matchedStartupIds = (startupMatches ?? []).map(s => s.id);
-        if (!matchedStartupIds.length) return [];
-      }
-
-      let query = supabase
-        .from('workspaces')
-        .select('id, status, startup:startups(id, name, main_contact_email)')
-        .in('status', ['imported_unclaimed', 'active', 'claimed', 'pending'])
-        .order('created_at', { ascending: false })
-        .limit(trimmedSearch ? 100 : 20);
-
-      if (matchedStartupIds) {
-        query = query.in('startup_id', matchedStartupIds);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data || [];
-    },
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => searchAssignmentWorkspaces(trimmedSearch, pageParam),
+    getNextPageParam: (last, pages) => last.length === ASSIGNMENT_PAGE_SIZE ? pages.length : undefined,
     enabled: open && tab === 'search',
   });
 
-  const filteredWorkspaces = allWorkspaces ?? [];
+  const filteredWorkspaces = allWorkspaces?.pages.flat() ?? [];
 
   const handleAssign = async (workspaceId: string) => {
     setIsSubmitting(true);
@@ -315,6 +290,7 @@ export function WorkspaceAssignmentDialog({ open, onOpenChange, user }: Workspac
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                 </div>
               )}
+              {hasNextPage && <Button variant="outline" className="w-full" loading={isFetchingNextPage} disabled={isFetchingNextPage} onClick={() => void fetchNextPage()}>{t('ecosystem.loadMore')}</Button>}
               {!searching && filteredWorkspaces.length === 0 && (
                 <p className="text-center text-sm text-muted-foreground py-4">
                   {t('admin.noWorkspacesFound', { defaultValue: 'Nenhum workspace encontrado.' })}
