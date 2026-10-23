@@ -1,8 +1,8 @@
 
 ## Aprovações de contas (14 Set)
-- [ ] Pedir nome do projeto/startup no registo do founder e mostrá-lo nas Aprovações Pendentes
-- [ ] Corrigir busca de workspaces no diálogo "Atribuir Workspace" (ex. VYNHELIX não aparece)
-- [ ] Bloqueios de agenda ("Dias e horas sem reuniões") acessíveis e óbvios para consultores
+- [x] Nome da startup já recolhido no registo e mostrado nas aprovações; confirmado no código nesta ronda.
+- [x] Pesquisa por startup no servidor sem corte prévio de IDs, páginas de 50 com carregar mais; VYNHELIX encontrado na aplicação autenticada.
+- [x] Agenda semanal acessível em Definições → Minha Agenda; separadores sem sobreposição, verificados na aplicação autenticada.
 
 ## 19 Out
 - [ ] Papel "mentorado NDA" + onboarding de mentorado que cria lead no CRM (definir requisitos com o user)
@@ -15,7 +15,7 @@
 - [x] Indicar as próximas melhorias prioritárias ao utilizador.
 
 ## Correções de segurança — 23 Out 2026
-- [ ] Ronda de conclusão: corrigir erro atual de preparação, reparar testes/replay de webhooks, verificar pendências de aprovações e reavaliar avisos atuais com evidência individual.
+- [x] Ronda de conclusão: erro de preparação corrigido, webhooks/replay/testes reparados, aprovações e agenda verificadas; inventário atual revisto sem certificar todos os ramos privilegiados.
 - [x] Corrigir importação financeira, permissões Data Room e mensagens de contas suspensas; funções publicadas e testes de guardas passaram.
 - [x] Proteger os pontos de HTML, CSV e logs pessoais identificados na auditoria; 19 testes partilhados e 6 CSV passaram.
 - [x] Reavaliar permissões condicionais e dependências; relatório v3 documenta correções e limites.
@@ -26,9 +26,13 @@
 - [x] Executar regressões e verificar permissões aplicadas; 210 testes da aplicação passaram.
 - [ ] Validar assinatura/recuperação/mentor ponta a ponta — bloqueado por ambiente isolado e identidades/cenários externos não disponíveis.
 - [ ] Decidir validade/renovação NDA e regra canónica de preços — aguarda decisão do utilizador.
-- [ ] Corrigir aviso residual braces — versão superior a 3.0.3 indisponível; manter sem ocultar.
-- [ ] Fechar revisão integral dos 142 avisos históricos — contagem atual e cobertura individual não certificadas; revisão parcial de funções não equivale a aprovação.
+- [x] Aviso braces eliminado retirando vite-plugin-pwa não usado; guardas de limpeza do antigo worker mantidas. Scanner atual: zero vulnerabilidades conhecidas em 67 dependências de produção.
+- [ ] Certificar todos os ramos dos avisos privilegiados — inventário revisto: 117 funções, 142 grants + extensão = 143 avisos atuais; helpers de RLS/agenda preservados, duas divulgações de parent IDs e consulta anónima de suspensão corrigidas; falta prova positiva/negativa de todos os ramos.
 - [x] Tornar metadados de uploads atómicos; 5 testes SQL passaram e função pública publicada.
 - [x] Limitar cada consulta de portefólio, limitar páginas RPC, cancelar pedidos presos e não apresentar falhas estatísticas como zero.
 - [ ] Separar consulta de lista/estatísticas mantendo contagens e filtros rápidos globais — necessita teste de volume num ambiente isolado antes de substituir o fluxo atual.
 - [ ] Reconciliar os 23 avisos contratuais históricos — exige prova documental; não inferir assinaturas nem alterar contratos automaticamente.
+- [x] Restaurar referência XLSM original (hash exato) e executar os três testes de preservação de macros.
+- [ ] Teste de volume das notificações — execução apenas em base descartável explícita; não autorizado implicitamente contra ligação alojada.
+- [ ] Privacidade de logos/avatares e restantes lookups de identidades — requer confirmar visibilidade pretendida; não restringir diretório/agenda por inferência.
+- [ ] Configuração alojada de confirmação de email — sem leitura disponível nas ferramentas; não alterar configuração para tentar verificá-la.

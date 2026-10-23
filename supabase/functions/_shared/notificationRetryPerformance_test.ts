@@ -1,7 +1,15 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { documentUploadedKey } from "./notificationEventKey.ts";
 
-const DB_URL = Deno.env.get("DB_URL") || Deno.env.get("SUPABASE_DB_URL") || "";
+// Never inherit a hosted connection for tests that insert/delete data.
+// This suite requires an explicitly selected disposable loopback database.
+const DB_URL = Deno.env.get("RC5_DISPOSABLE_DB_URL") || "";
+if (DB_URL) {
+  const url = new URL(DB_URL);
+  if (!['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)) {
+    throw new Error('Notification performance tests require a disposable loopback database');
+  }
+}
 
 /**
  * Helper: runs a SQL command via psql and returns { stdout, stderr, code }.
