@@ -271,7 +271,7 @@ export default function Settings() {
 
       <div className="max-w-2xl">
         <Tabs value={settingsTab} onValueChange={(v) => setSettingsParams({ tab: v }, { replace: false })} className="space-y-6">
-          <TabsList className={canManageTimeOff ? 'grid w-full grid-cols-6' : 'grid w-full grid-cols-5'}>
+          <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1">
             <TabsTrigger value="profile" className="gap-2">
               <User className="h-4 w-4" aria-hidden="true" />
               <span className="hidden sm:inline">{t('settingsPage.profile')}</span>
