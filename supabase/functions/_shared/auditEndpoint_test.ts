@@ -8,7 +8,7 @@ import { parseCopilotMessages } from './copilotInput.ts';
 async function loadHandler(name: string, client: unknown, providerFetch: typeof fetch) {
   const source = await Deno.readTextFile(new URL(`../${name}/index.ts`, import.meta.url));
   const globals = globalThis as unknown as Record<string, unknown>;
-  const key = `audit_${name.replaceAll('-', '_')}`;
+  const key = `audit_${name.replaceAll('-', '_')}_${crypto.randomUUID().replaceAll('-', '')}`;
   globals[key] = {
     ...security, ...cors, parseCopilotMessages,
     createClient: () => client,
@@ -25,7 +25,7 @@ async function loadHandler(name: string, client: unknown, providerFetch: typeof 
   return module.default as (req: Request) => Promise<Response>;
 }
 
-function fixture(account: boolean | null, accountError: boolean, options: { workspaceError?: boolean; rate?: boolean; rateError?: boolean; roleError?: boolean } = {}) {
+function fixture(account: boolean | null, accountError: boolean, options: { workspaceError?: boolean; roleError?: boolean } = {}) {
   const operations: string[] = [];
   const chain = (table: string) => {
     operations.push(table);
