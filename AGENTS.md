@@ -20,3 +20,4 @@
 - Intake emails derive their recipient from the persisted intake after authorization; request email overrides never redirect links or reminders.
 - Feature flags are fetched live, excluded from persisted cache and retain last verified data on refresh errors; stale or failed reads must not silently disable existing tools.
 - Copilot client history is projected into untrusted user context, never trusted assistant authority; account and lookup failures deny AI/provider operations independently of prompt text.
+- Communication endpoints resolve recipient eligibility from persisted parent/contact relationships through the shared communication recipient helper, fail closed on lookup errors, and validate before provider calls; signature dispatch remains a separately authorized workflow.
