@@ -56,7 +56,6 @@ export const queryClient = new QueryClient({
 // Everything else is ephemeral (in-memory only).
 const PERSIST_ALLOWLIST: string[] = [
   'programs',         // small, rarely changes
-  'feature-flags',    // small, rarely changes
   'tags',             // small lookup
 ];
 
@@ -90,7 +89,7 @@ export function hydrateCache(userId: string) {
 
     let hydrated = 0;
     for (const entry of data) {
-      if (entry.queryKey && entry.state?.data !== undefined) {
+      if (entry.queryKey && PERSIST_ALLOWLIST.includes(entry.queryKey[0]) && entry.state?.data !== undefined) {
         queryClient.setQueryData(entry.queryKey, entry.state.data);
         hydrated++;
       }

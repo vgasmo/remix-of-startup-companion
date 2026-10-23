@@ -84,17 +84,17 @@ export function useFeatureFlags() {
         .order('key');
 
       if (error) {
-        // Demote to warn: a transient RLS/network failure here just falls back to "off",
-        // which is the safe default. No user impact.
-        logger.warn('[useFeatureFlags] Falling back to empty flag set', { code: error.code, message: error.message });
-        return [];
+        // Preserve a previously verified flag set on transient failure, but never invent enabled flags.
+        logger.warn('[useFeatureFlags] Could not refresh flags', { code: error.code, message: error.message });
+        throw error;
       }
 
       return (data ?? []) as FeatureFlag[];
     },
     staleTime: 60000, // 1 minute
     gcTime: 300000, // 5 minutes
-    retry: false,
+    retry: 1,
+    refetchOnWindowFocus: true,
   });
 }
 
