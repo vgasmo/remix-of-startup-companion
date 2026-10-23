@@ -2,6 +2,7 @@ import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts';
 import * as security from './security.ts';
 import * as cors from './cors.ts';
 import { parseCopilotMessages } from './copilotInput.ts';
+import { getCommunicationContacts, selectCommunicationEmails, selectCommunicationPhone } from './communicationRecipients.ts';
 
 // Execute the real handler, substituting only transport/SDK imports and listener registration.
 // No hosted credentials, provider calls, or persistent writes are used.
@@ -10,14 +11,14 @@ async function loadHandler(name: string, client: unknown, providerFetch: typeof 
   const globals = globalThis as unknown as Record<string, unknown>;
   const key = `audit_${name.replaceAll('-', '_')}_${crypto.randomUUID().replaceAll('-', '')}`;
   globals[key] = {
-    ...security, ...cors, parseCopilotMessages,
+    ...security, ...cors, parseCopilotMessages, getCommunicationContacts, selectCommunicationEmails, selectCommunicationPhone,
     createClient: () => client,
     Resend: class {},
     foundersGloballyDisabled: () => false,
     fetch: providerFetch,
     Deno: { env: { get: (key: string) => key === 'SUPABASE_URL' ? 'https://local.test' : 'test-only-value' } },
   };
-  const names = 'createClient, Resend, foundersGloballyDisabled, parseCopilotMessages, getCorsHeaders, handleCorsOptions, corsJsonResponse, generateRequestId, createLogger, isAccountActive, requireUser, safeErrorMessage, fetch, Deno';
+  const names = 'createClient, Resend, foundersGloballyDisabled, parseCopilotMessages, getCommunicationContacts, selectCommunicationEmails, selectCommunicationPhone, getCorsHeaders, handleCorsOptions, corsJsonResponse, generateRequestId, createLogger, isAccountActive, requireUser, safeErrorMessage, fetch, Deno';
   const code = `const { ${names} } = globalThis.${key};\n` + source
     .replace(/^import\s+[\s\S]*?;\s*$/gm, '')
     .replace(/(?:Deno\.serve|serve)\(async\s*\(/, 'export default (async (');
