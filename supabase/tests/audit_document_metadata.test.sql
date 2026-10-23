@@ -1,0 +1,14 @@
+BEGIN;
+SELECT plan(5);
+INSERT INTO public.startup_contracts(id,start_date,status,monthly_fee) VALUES ('f1250000-0000-0000-0000-000000000001',current_date,'draft',150);
+SELECT set_config('request.jwt.claims','{"role":"service_role"}',true);
+SELECT lives_ok($$SELECT public.merge_contract_document_metadata('f1250000-0000-0000-0000-000000000001','pitch_deck','{"path":"deck.pdf"}')$$,'first metadata merge succeeds');
+SELECT lives_ok($$SELECT public.merge_contract_document_metadata('f1250000-0000-0000-0000-000000000001','certidao_comercial','{"path":"certificate.pdf"}')$$,'second key merge succeeds');
+SELECT is((SELECT documents_json FROM public.startup_contracts WHERE id='f1250000-0000-0000-0000-000000000001'),'{"pitch_deck":{"path":"deck.pdf"},"certidao_comercial":{"path":"certificate.pdf"}}'::jsonb,'merges preserve both document keys');
+SELECT throws_ok($$SELECT public.merge_contract_document_metadata('f1250000-0000-0000-0000-000000000001','arbitrary','{}')$$,'22023','invalid_document_metadata','unknown document keys rejected');
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claims','{"role":"authenticated"}',true);
+SELECT throws_ok($$SELECT public.merge_contract_document_metadata('f1250000-0000-0000-0000-000000000001','pitch_deck','{}')$$,'42501',NULL,'client cannot bypass token validated upload');
+RESET ROLE;
+SELECT * FROM finish();
+ROLLBACK;
