@@ -15,6 +15,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { requireCronOrStaff, generateRequestId, createLogger } from '../_shared/security.ts';
 import { resolveLocalesByUserIds, type Locale } from '../_shared/i18n.ts';
+import { getCommunicationContacts } from '../_shared/communicationRecipients.ts';
 
 const FUNCTION_NAME = 'send-notification-email';
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
@@ -284,11 +285,12 @@ async function resolveFounderIds(supabase: any, workspaceId: string | null | und
 
 async function resolveAssignedConsultantId(supabase: any, workspaceId: string | null | undefined): Promise<string | null> {
   if (!workspaceId) return null;
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('workspaces')
     .select('assigned_consultor_id')
     .eq('id', workspaceId)
     .single();
+  if (error) throw new Error('recipient_lookup_failed');
   return (data as any)?.assigned_consultor_id ?? null;
 }
 
@@ -399,7 +401,9 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
 
   if (type === 'consultant_assigned') {
     if (!body.consultant_id) return { sent: 0 };
-    recipients = await enrich([body.consultant_id]);
+    const assignedId = await resolveAssignedConsultantId(supabase, workspaceId);
+    if (!assignedId || assignedId !== body.consultant_id) throw new Error('recipient_not_authorized');
+    recipients = await enrich([assignedId]);
     const s = startupName || 'a startup';
     ctaUrl = `${APP_URL}/workspace/${workspaceId}`;
     let delivered = 0;
@@ -474,6 +478,9 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
   if (type === 'activity_mention') {
     if (!body.mention) return { sent: 0 };
     const { mentioned_user_id, author_id, text, context_url } = body.mention;
+    if (!workspaceId || typeof mentioned_user_id !== 'string' || typeof author_id !== 'string' || typeof text !== 'string' || !text.trim() || text.length > 10000) throw new Error('invalid_recipients');
+    const contacts = await getCommunicationContacts(supabase, { workspace_id: workspaceId });
+    if (!contacts.userIds.includes(mentioned_user_id)) throw new Error('recipient_not_authorized');
     recipients = await enrich([mentioned_user_id]);
     const author = await resolveProfile(supabase, author_id);
     const authorName = author?.full_name || 'Alguém';
@@ -519,6 +526,10 @@ Deno.serve(async (req) => {
   try {
     const body = (await req.json()) as NotificationRequest;
     if (!body?.type) return corsJsonResponse({ error: 'type required' }, req, 400);
+    if (body.type === 'activity_mention' && body.mention && auth.userId) {
+      // An authenticated caller cannot impersonate another comment author.
+      body.mention.author_id = auth.userId;
+    }
     log.info('dispatch', { type: body.type, workspace_id: body.workspace_id });
     const result = await handle(supabaseAdmin, log, body);
     const ok = (result.recipients ?? 0) === 0 || result.sent > 0;
@@ -526,6 +537,6 @@ Deno.serve(async (req) => {
   } catch (e) {
     log.error('fatal', e);
     const msg = e instanceof Error ? e.message : 'Unknown';
-    return corsJsonResponse({ error: msg }, req, 500);
+    return corsJsonResponse({ error: msg }, req, msg === 'recipient_not_authorized' ? 403 : msg === 'invalid_recipients' ? 400 : msg === 'recipient_lookup_failed' ? 503 : 500);
   }
 });

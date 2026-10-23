@@ -15,15 +15,16 @@
 - [x] Indicar as próximas melhorias prioritárias ao utilizador.
 
 ## Correções de segurança — 23 Out 2026
+- [x] Aplicar decisões de 13:28 UTC: destinatários de emails/propostas/inquéritos/SMS associados no servidor; preservar email alternativo de assinatura, claim sem aprovação e catálogos/imagens autenticados; 26 novas regressões, quatro funções publicadas, relatório v8.
 - [x] Concluir análise aprofundada anterior e validar alertas: 4 guardas de conta corrigidas/publicadas, histórico IA isolado, 24 novas regressões, relatório v7; 19 alertas ativos separados por decisão/configuração/limite.
-- [ ] Incorporar nova análise automática iniciada às 11:08 UTC — aguarda conclusão automática, sem polling.
+- [x] Incorporar análise automática concluída às 11:20 UTC: 19 código + 9 DB; após esta ronda, 3 corrigidos, 9 avisos de visibilidade aceites por decisão explícita, 16 código continuam ativos.
 - [x] Corrigir causas de desaparecimento do resumo IA: não hidratar flags antigas; erros não substituem dados verificados por lista vazia. Regressão passou; Arete mantém resumo após 503 simulado, zero erros JS, build OK. Ausência original na conta da consultora e geração real não reproduzidas.
 - [x] Incorporar rescan concluído: 16 código + 11 DB; PHC corrigido, testado e publicado; pedido alojado 400. Relatório v6 corrige contagens/conclusões provisórias e documenta os 27 alertas.
 - [x] Rever os 47 alertas iniciais e novo rescan; relatório v6 com evidências e limites. 227 Vitest anteriores + 1 regressão cache, 108 Deno (2 ignorados), 15 SQL passaram; pedidos alojados confirmam destinatários/importação/intake bloqueados.
 - [x] Validar histórico assistant forjado: convertido em contexto user explicitamente não confiável, campos adicionais removidos; testes adversariais e conversa autenticada de 2 turnos passaram. Não certifica resistência universal a prompt injection.
-- [ ] Decidir destinatários extra de inquéritos admin e mailbox de testes Graph; fluxos existentes preservados, sem envios/eventos reais.
-- [ ] Decidir propriedade de revogação Data Room, alteração de email de signatário público/staff e destinatários WhatsApp — quatro alertas error conservados; fluxos estabelecidos não alterados.
-- [ ] Confirmar classificação/visibilidade dos sete catálogos e logos/avatares — nove avisos/notas conservados, incluindo conflito entre memória de privacidade e migrações/diretório; não restringir por inferência.
+- [x] Inquéritos/WhatsApp limitados a contactos associados; alternativas de signatário preservadas por decisão explícita, sem certificar identidade/entrega externa.
+- [ ] Decidir mailbox dedicada para testes Graph e propriedade de revogação Data Room — perguntas anteriores não respondidas.
+- [x] Catálogos/logos/avatares: visibilidade autenticada aprovada; nove avisos/notas ignorados com motivo documentado, sem alargar escritas ou relações privadas.
 - [x] Reconciliar os cinco alertas bloqueantes de leitura ampla: políticas e revogações anónimas alojadas confirmadas, rescan sem esses erros, 10 testes SQL passaram e cinco alertas marcados corrigidos (não ignorados). Pré-visualização /login HTTP 200, sem erros JS/overlay; teste esbuild passou. Não reproduzida falha atual de build; configuração preservada.
 - [x] Ronda de conclusão: erro de preparação corrigido, webhooks/replay/testes reparados, aprovações e agenda verificadas; inventário atual revisto sem certificar todos os ramos privilegiados.
 - [x] Corrigir importação financeira, permissões Data Room e mensagens de contas suspensas; funções publicadas e testes de guardas passaram.
@@ -44,6 +45,6 @@
 - [ ] Reconciliar os 23 avisos contratuais históricos — exige prova documental; não inferir assinaturas nem alterar contratos automaticamente.
 - [x] Restaurar referência XLSM original (hash exato) e executar os três testes de preservação de macros.
 - [ ] Teste de volume das notificações — execução apenas em base descartável explícita; não autorizado implicitamente contra ligação alojada.
-- [ ] Privacidade de logos/avatares e restantes lookups de identidades — requer confirmar visibilidade pretendida; não restringir diretório/agenda por inferência.
+- [x] Privacidade de logos/avatares: leitura autenticada aprovada. Outros campos pessoais continuam sujeitos às regras de isolamento existentes.
 - [ ] Configuração alojada de confirmação de email — sem leitura disponível nas ferramentas; não alterar configuração para tentar verificá-la.
 - [ ] Marcação pública ponta a ponta — falta reserva real autorizada com link válido e confirmação no CRM; não certificada nesta ronda.
