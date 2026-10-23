@@ -4,6 +4,7 @@ import * as cors from './cors.ts';
 import * as recipients from './communicationRecipients.ts';
 import * as html from './html.ts';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { selectSessionRecipients } from './sessionRecipients.ts';
 
 // Run actual handlers with isolated SDK/provider transports. No hosted mutations or real messages.
 async function setup(name: string, options: { lookupError?: boolean; approved?: boolean } = {}) {
@@ -18,6 +19,7 @@ async function setup(name: string, options: { lookupError?: boolean; approved?: 
     workspace_users: [{ workspace_id: workspaceId, user_id: 'caller' }], team_members: [],
     profiles: [{ id: 'caller', email: 'recorded@test.local', phone: '+351912345678', full_name: 'Caller' }],
     signup_allowlist: [],
+    funnel_items: { id: 'lead-1111', contact_email: 'recorded@test.local', contact_name: 'Founder', owner_consultant_id: 'caller', metadata_json: {}, stage: 'new' },
   };
   const client = {
     auth: { getUser: () => Promise.resolve({ data: { user: { id: 'caller' } }, error: null }) },
@@ -35,8 +37,10 @@ async function setup(name: string, options: { lookupError?: boolean; approved?: 
   const globals = globalThis as unknown as Record<string, unknown>;
   const key = `communication_${crypto.randomUUID().replaceAll('-', '')}`;
   globals[key] = { ...security, ...cors, ...recipients, ...html, corsHeaders,
+    selectSessionRecipients,
+    claimLedgerKey: () => ({ claimed: true }), releaseLedgerKey: () => {}, stampLedgerDelivery: () => {},
     createClient: () => client,
-    Resend: class { emails = { send: (message: Record<string, unknown>) => { sends.push(message); return Promise.resolve({ error: null }); } }; },
+    Resend: class { emails = { send: (message: Record<string, unknown>) => { sends.push(message); return Promise.resolve({ data: { id: 'test-email' }, error: null }); } }; },
     foundersGloballyDisabled: () => false,
     resolveLocalesByUserIds: () => new Map([['caller', 'pt']]),
     fetch: async (_url: unknown, init: RequestInit) => { sends.push({ payload: init.body }); return new Response(JSON.stringify({ sid: 'test-only' })); },
@@ -94,4 +98,11 @@ Deno.test('assignment notification rejects consultant not assigned in server rec
   const f = await setup('send-notification-email');
   assertEquals((await f.run({ type: 'consultant_assigned', workspace_id: f.workspaceId, consultant_id: 'outsider' })).status, 403);
   assertEquals(f.sends.length, 0);
+});
+Deno.test('proposal destination ignores request email overrides and CC stays with persisted owner', async () => {
+  const f = await setup('send-commercial-proposal');
+  await f.run({ funnel_item_id: 'lead-1111', subject: 'Test proposal', body_text: 'Test proposal content', to: 'outsider@test.local', recipient_email: 'outsider@test.local', cc_owner: true });
+  assertEquals(f.sends.length, 1);
+  assertEquals(f.sends[0].to, ['recorded@test.local']);
+  assertEquals(f.sends[0].cc, ['recorded@test.local']);
 });

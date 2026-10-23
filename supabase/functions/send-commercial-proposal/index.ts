@@ -16,6 +16,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from 'npm:resend@4.0.0';
 import { requireCronOrStaff } from '../_shared/security.ts';
 import { claimLedgerKey, releaseLedgerKey, stampLedgerDelivery } from '../_shared/notificationLedger.ts';
+import { selectSessionRecipients } from '../_shared/sessionRecipients.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -264,6 +265,17 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+    let toList: string[];
+    try { toList = selectSessionRecipients([item.contact_email], [item.contact_email]); } catch {
+      return new Response(JSON.stringify({ error: 'invalid_recipients' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    // CC owner means the persisted lead owner, not an unrelated calling staff member.
+    let cc: string[] | undefined;
+    if (body.cc_owner && item.owner_consultant_id) {
+      const owner = await admin.from('profiles').select('email').eq('id', item.owner_consultant_id).eq('account_status', 'approved').maybeSingle();
+      if (owner.error) return new Response(JSON.stringify({ error: 'recipient_lookup_failed' }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      if (owner.data?.email) cc = selectSessionRecipients([owner.data.email], [owner.data.email]);
+    }
 
     const programId = body.program_id || item.program_id || null;
     let programName: string | null = null;
@@ -373,8 +385,6 @@ Deno.serve(async (req) => {
     }
 
     const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
-    const toList = [item.contact_email];
-    const cc = body.cc_owner && senderEmail ? [senderEmail] : undefined;
 
     const { data: emailResult, error: emailErr } = await resend.emails.send({
       from: 'Startup Leiria <noreply@startupleiria.com>',
