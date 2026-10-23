@@ -6,3 +6,8 @@
 
 ## 19 Out
 - [ ] Papel "mentorado NDA" + onboarding de mentorado que cria lead no CRM (definir requisitos com o user)
+
+## Auditoria completa — 23 Out 2026
+- [x] Auditar código, testes, segurança, dados operacionais e navegação sem alterar dados reais.
+- [x] Entregar relatório com problemas confirmados, prioridades e limites de verificação.
+- [ ] Incorporar o resultado da análise aprofundada de segurança — aguarda conclusão do serviço.
