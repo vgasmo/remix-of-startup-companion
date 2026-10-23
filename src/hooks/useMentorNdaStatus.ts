@@ -13,19 +13,18 @@ export function useMentorNdaStatus() {
   const isMentorExterno = roles.includes('mentor_externo');
   const shouldCheck = !!user && isMentorExterno && !isStaff;
 
-  const { data: hasAccepted, isLoading } = useQuery({
+  const { data: hasAccepted, isLoading, isError, refetch } = useQuery({
     queryKey: ['mentor-nda-gate', user?.id],
     queryFn: async () => {
       if (!user) return true;
-      const { data, error } = await supabase
-        .from('mentor_nda_acceptances')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('nda_version', CURRENT_NDA_VERSION)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc('has_accepted_nda', {
+        _user_id: user.id,
+        _nda_version: CURRENT_NDA_VERSION,
+      });
 
       if (error) throw error;
-      return !!data;
+      if (typeof data !== 'boolean') throw new Error('nda_verification_unavailable');
+      return data;
     },
     enabled: shouldCheck,
     staleTime: 5 * 60 * 1000, // cache for 5 minutes
@@ -34,5 +33,7 @@ export function useMentorNdaStatus() {
   return {
     needsNda: shouldCheck && hasAccepted === false,
     isLoading: shouldCheck && isLoading,
+    verificationError: shouldCheck && isError,
+    retryVerification: refetch,
   };
 }

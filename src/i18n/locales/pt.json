@@ -3065,7 +3065,8 @@
     "viewInvoices": "Ver Faturas",
     "viewWorkspace": "Ver Workspace",
     "voidedNotice": "Este contrato foi anulado.",
-    "statusEditHint": "Só é possível alternar entre ativo e suspenso aqui. Para ativar, o contrato tem de ser assinado; para terminar, usa o botão próprio."
+    "statusEditHint": "Só é possível alternar entre ativo e suspenso aqui. Para ativar, o contrato tem de ser assinado; para terminar, usa o botão próprio.",
+    "signedTermsLocked": "Os termos assinados estão protegidos. A renovação continua disponível na ação própria."
   },
   "contractOnboarding": {
     "acceptContract": "Li e aceito os termos do Contrato de Incubação, incluindo as condições de prestação de serviços, obrigações e direitos das partes.",
@@ -7762,6 +7763,7 @@
     "contractSentViaProvider": "Contrato enviado via {{provider}}",
     "contractSigned": "Contrato Assinado!",
     "contractSignedSuccessfully": "Contrato assinado com sucesso",
+    "activationPending": "A assinatura foi registada. A ativação está pendente de conclusão; não precisa de assinar novamente.",
     "contractSubmittedForManualSignature": "Contrato submetido para assinatura manual",
     "contractSummary": "Resumo do Contrato",
     "couldNotLoadThePdfPreview": "Não foi possível carregar a pré-visualização do PDF.",

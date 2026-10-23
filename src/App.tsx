@@ -73,7 +73,7 @@ const AppDiagnostics = lazy(lazyWithRetry(() => import("./pages/AppDiagnostics")
 
 function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { children: React.ReactNode; adminOnly?: boolean; staffOnly?: boolean }) {
   const { user, isLoading, isAuthReady, isAdmin, isStaff, isAccountPending, isAccountSuspended, authError, retryUserData, signOut } = useAuth();
-  const { needsNda, isLoading: ndaLoading } = useMentorNdaStatus();
+  const { needsNda, isLoading: ndaLoading, verificationError, retryVerification } = useMentorNdaStatus();
   const founderState = useFounderOnboardingState();
   const location = useLocation();
   const { t } = useTranslation();
@@ -115,6 +115,16 @@ function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { ch
 
   if (isAccountPending && !isStaff) {
     return <Navigate to="/pending-approval" replace />;
+  }
+
+  if (verificationError) {
+    return (
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-4 p-6 text-center">
+        <p className="text-lg font-semibold">{t('auth.loadError.title')}</p>
+        <p className="text-sm text-muted-foreground">{t('auth.loadError.hint')}</p>
+        <Button onClick={() => void retryVerification()}>{t('common.retry')}</Button>
+      </div>
+    );
   }
 
   if (needsNda && location.pathname !== '/mentor-nda') {

@@ -89,6 +89,12 @@ for f in "$STRIP"/*.sql; do
   fi
 done
 log "forward replay finished ($failed failing migration file(s))"
+if [ -n "${RC5_EXTRA_MIGRATIONS:-}" ]; then
+  IFS=: read -r -a extras <<< "$RC5_EXTRA_MIGRATIONS"
+  for f in "${extras[@]}"; do
+    "${PSQL[@]}" -f "$f" > "$LOG_DIR/$(basename "$f").log" 2>&1 || die "extra replay failed: $f (see local log)"
+  done
+fi
 if [ "$failed" != "0" ] && [ "${RC5_ALLOW_REPLAY_FAILURES:-0}" != "1" ]; then
   die "forward replay is not clean ($failed file(s)); set RC5_ALLOW_REPLAY_FAILURES=1 to inspect anyway"
 fi

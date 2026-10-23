@@ -50,6 +50,34 @@
       "when": 1792668674899,
       "tag": "0006_consultant_recurring_blocks",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792747796879,
+      "tag": "0007_audit_access_and_contract_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792747897996,
+      "tag": "0008_durable_contract_activation_recovery",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792747918316,
+      "tag": "0009_guard_activation_recovery_without_rls_recursion",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792748062371,
+      "tag": "0010_verified_signature_downstream_and_recovery_wakeup",
+      "breakpoints": true
     }
   ]
 }

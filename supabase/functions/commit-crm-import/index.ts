@@ -10,6 +10,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.1';
 import { getCorsHeaders, handleCorsOptions } from '../_shared/cors.ts';
+import { isAccountActive } from '../_shared/security.ts';
 
 interface CommitBody {
   job_id: string;
@@ -139,6 +140,7 @@ Deno.serve(async (req) => {
     const { data: userData } = await sbUser.auth.getUser();
     const uid = userData.user?.id;
     if (!uid) return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: jsonHeaders });
+    if (!(await isAccountActive(sbSvc, uid))) return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: jsonHeaders });
 
     const { data: roles } = await sbSvc.from('user_roles').select('role').eq('user_id', uid);
     const isAdmin = (roles ?? []).some((r: any) => r.role === 'admin');

@@ -14,6 +14,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.48.1";
 import { handleCorsOptions, corsJsonResponse } from "../_shared/cors.ts";
+import { isAccountActive } from '../_shared/security.ts';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_ROWS = 5000;
@@ -74,6 +75,7 @@ async function assertStaff(sbUser: ReturnType<typeof createClient>, sbSvc: Retur
   const { data: userData } = await sbUser.auth.getUser();
   const uid = userData.user?.id;
   if (!uid) return { ok: false as const, status: 401, error: "unauthorized" };
+  if (!(await isAccountActive(sbSvc, uid))) return { ok: false as const, status: 403, error: 'forbidden' };
   const { data: roles } = await sbSvc.from("user_roles").select("role").eq("user_id", uid);
   const isStaff = (roles ?? []).some((r: { role: unknown }) => r.role === "admin" || r.role === "consultor");
   if (!isStaff) return { ok: false as const, status: 403, error: "forbidden" };

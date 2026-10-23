@@ -288,6 +288,9 @@ export async function requireCronOrStaff(
     };
   }
 
+  if (!(await isAccountActive(supabaseAdminClient, user.id))) {
+    return { error: errorResponse(req, 'Account access denied', ErrorCode.FORBIDDEN, 403) };
+  }
   return { valid: true, userId: user.id };
 }
 
@@ -348,6 +351,9 @@ export async function requireCronOrGovernance(
     };
   }
 
+  if (!(await isAccountActive(supabaseAdminClient, user.id))) {
+    return { error: errorResponse(req, 'Account access denied', ErrorCode.FORBIDDEN, 403) };
+  }
   return { valid: true, userId: user.id };
 }
 
@@ -380,11 +386,11 @@ export async function isAccountActive(
   supabase: SupabaseClient,
   userId: string
 ): Promise<boolean> {
-  const { data: isActive } = await supabase.rpc('is_account_active', {
+  const { data: isActive, error } = await supabase.rpc('is_account_active', {
     _user_id: userId,
   });
 
-  return isActive === true;
+  return !error && isActive === true;
 }
 
 /**

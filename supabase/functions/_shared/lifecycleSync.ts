@@ -120,6 +120,24 @@ export async function syncIntakeOnCompleted(
   const errors: string[] = []
   let effectiveWorkspaceId = workspaceId
   let awaitingFounder = false
+  let workspaceActivated = false
+
+  // No completion side effects without a persisted complete signature.
+  const { data: signedContract, error: contractErr } = await supabase.from('startup_contracts')
+    .select('status, signed_at, signature_status, workspace_id')
+    .eq('id', contractId).maybeSingle()
+  if (contractErr || !signedContract?.signed_at || !['signed', 'completed'].includes(signedContract.signature_status)
+      || !['draft', 'pending_signature', 'active'].includes(signedContract.status)) {
+    return { synced: false, errors: ['contract_signature_not_verified'] }
+  }
+  // A caller-provided workspace is never authority over an unrelated workspace.
+  effectiveWorkspaceId = signedContract.workspace_id
+  if (signedContract.status !== 'active') {
+    const { data: activated, error } = await supabase.from('startup_contracts')
+      .update({ status: 'active', updated_at: new Date().toISOString() })
+      .eq('id', contractId).in('status', ['draft', 'pending_signature']).select('id')
+    if (error || !activated?.length) return { synced: false, errors: ['contract_activation_failed'] }
+  }
 
   const { data: intake, error: findErr } = await supabase
     .from('contract_intakes')
@@ -132,6 +150,9 @@ export async function syncIntakeOnCompleted(
   if (findErr) {
     console.warn('[lifecycleSync] syncIntakeOnCompleted find error', { contractId, error: findErr.message })
     errors.push(`find_intake: ${findErr.message}`)
+  }
+  if (intake && ['cancelled', 'rejected'].includes(intake.status)) {
+    return { synced: false, errors: ['intake_closed'] }
   }
 
   // ── Contratos sem intake (CRM direto): a lead resolve-se pelo contrato
@@ -156,6 +177,7 @@ export async function syncIntakeOnCompleted(
       effectiveWorkspaceId = (mintedWs as string | null) ?? null
     }
   }
+  if (!effectiveWorkspaceId) errors.push('workspace_not_linked')
 
   // ── A ativação exige um membro ativo (trigger validate_workspace_status_transition): com o workspace
   //    ainda por ativar, criar já a conta + membro founder (idempotente) ANTES de ativar
@@ -205,26 +227,6 @@ export async function syncIntakeOnCompleted(
       }
     }
 
-    if (intake.status !== 'activated') {
-      const { error: actErr } = await supabase
-        .from('contract_intakes')
-        .update({ status: 'activated' })
-        .eq('id', intake.id)
-      if (actErr) {
-        console.error('[lifecycleSync] intake → activated failed', { intakeId: intake.id, error: actErr.message })
-        errors.push(`intake_activated: ${actErr.message}`)
-      } else {
-        await supabase.from('intake_events').insert({
-          intake_id: intake.id,
-          event_type: 'lifecycle_sync_activated',
-          from_status: 'signed',
-          to_status: 'activated',
-          performed_by: performedBy,
-          metadata: { source, contract_id: contractId },
-        })
-      }
-    }
-
     if (intake.funnel_item_id) {
       const { error: crmErr } = await supabase.from('funnel_items')
         .update({ stage: 'contracted' })
@@ -252,19 +254,45 @@ export async function syncIntakeOnCompleted(
       .select('user_id', { count: 'exact', head: true })
       .eq('workspace_id', effectiveWorkspaceId)
       .eq('active', true)
-    if (!membersErr && (activeMembers ?? 0) === 0) {
+    if (membersErr) {
+      errors.push(`workspace_members: ${membersErr.message}`)
+    } else if ((activeMembers ?? 0) === 0) {
       console.warn('[lifecycleSync] workspace without active members, activation deferred', { workspaceId: effectiveWorkspaceId })
       awaitingFounder = true
     } else {
       const { error: wsErr } = await supabase.from('workspaces')
         .update({ status: 'active', updated_at: new Date().toISOString() })
         .eq('id', effectiveWorkspaceId)
+        .is('blocked_at', null)
         .in('status', ['pending', 'claimed', 'imported_unclaimed'])
       if (wsErr) {
         console.error('[lifecycleSync] workspace activation failed', { workspaceId: effectiveWorkspaceId, error: wsErr.message })
         errors.push(`workspace_activate: ${wsErr.message}`)
       }
+      const { data: verified, error: verifyErr } = await supabase.from('workspaces')
+        .select('status, blocked_at').eq('id', effectiveWorkspaceId).maybeSingle()
+      workspaceActivated = !verifyErr && verified?.status === 'active' && !verified.blocked_at
+      if (!workspaceActivated) errors.push('workspace_activate: not_active')
     }
+  }
+
+  if (workspaceActivated && errors.length === 0 && intake && intake.status !== 'activated') {
+    const { error: actErr } = await supabase.from('contract_intakes')
+      .update({ status: 'activated' }).eq('id', intake.id).in('status', ['signed'])
+    if (actErr) errors.push(`intake_activated: ${actErr.message}`)
+    else {
+      const { error: eventErr } = await supabase.from('intake_events').insert({
+        intake_id: intake.id, event_type: 'lifecycle_sync_activated', from_status: 'signed',
+        to_status: 'activated', performed_by: performedBy, metadata: { source, contract_id: contractId },
+      })
+      if (eventErr) errors.push(`intake_event: ${eventErr.message}`)
+    }
+  }
+  // Persisted at signature time by a trigger, cleared only after verified completion.
+  if (workspaceActivated && errors.length === 0) {
+    const { error: clearErr } = await supabase.from('startup_contracts')
+      .update({ activation_sync_pending: false }).eq('id', contractId)
+    if (clearErr) errors.push(`activation_recovery: ${clearErr.message}`)
   }
 
   return {

@@ -3065,7 +3065,8 @@
     "viewInvoices": "View Invoices",
     "viewWorkspace": "View Workspace",
     "voidedNotice": "This contract has been voided.",
-    "statusEditHint": "Only active and suspended can be switched here. To activate, the contract must be signed; to terminate, use the dedicated button."
+    "statusEditHint": "Only active and suspended can be switched here. To activate, the contract must be signed; to terminate, use the dedicated button.",
+    "signedTermsLocked": "Signed terms are protected. Renewal remains available through its dedicated action."
   },
   "contractOnboarding": {
     "acceptContract": "I have read and accept the terms of the Incubation Contract, including the conditions of service, obligations and rights of the parties.",
@@ -7762,6 +7763,7 @@
     "contractSentViaProvider": "Contract sent via {{provider}}",
     "contractSigned": "Contract Signed!",
     "contractSignedSuccessfully": "Contract signed successfully",
+    "activationPending": "Your signature has been recorded. Activation is pending completion; you do not need to sign again.",
     "contractSubmittedForManualSignature": "Contract submitted for manual signature",
     "contractSummary": "Contract Summary",
     "couldNotLoadThePdfPreview": "Could not load the PDF preview.",

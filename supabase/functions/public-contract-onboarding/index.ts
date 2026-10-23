@@ -14,6 +14,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { syncIntakeOnSent, syncIntakeOnCompleted } from '../_shared/lifecycleSync.ts'
 import { handleLifecycleSyncResult } from '../_shared/lifecycleSyncResultHandler.ts'
 import { autoCreateFounderAccount, enqueueFounderInviteTask } from '../_shared/founderAccount.ts'
+import { isAccountActive } from '../_shared/security.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -102,6 +103,11 @@ Deno.serve(async (req) => {
       if (claimsErr || !claims.user) {
         return new Response(JSON.stringify({ error: 'Invalid token' }), {
           status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      if (!(await isAccountActive(supabase, claims.user.id))) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
 
@@ -1484,10 +1490,11 @@ Deno.serve(async (req) => {
 
 
       // Persist the eIDAS proof snapshot on the contract as well (auditable copy).
-      await supabase
+      const { error: proofErr } = await supabase
         .from('startup_contracts')
         .update({ signature_proof_json: signatureProof })
         .eq('id', contract.id)
+      if (proofErr) console.error('digital_sign: proof snapshot failed', proofErr.message)
 
       const overallStatus = (rpcResult as any)?.signature_status ?? null
       const isFullySigned = overallStatus === 'completed'
@@ -1528,7 +1535,7 @@ Deno.serve(async (req) => {
       // === CANONICAL LIFECYCLE SYNC (shared helper): contract + workspace + intake + CRM ===
       // Public digital signing has no provider to retry — surface failure to the
       // founder so they can contact staff instead of silently appearing successful.
-      const { error: activateErr } = await supabase
+      const { data: activationRows, error: activateErr } = await supabase
         .from('startup_contracts')
         .update({
           status: 'active',
@@ -1539,7 +1546,15 @@ Deno.serve(async (req) => {
         })
         .eq('id', contract.id)
         .in('status', ['draft', 'pending_signature'])
-      if (activateErr) console.error('digital_sign: contract activation failed', activateErr.message)
+        .select('id')
+      if (activateErr || !activationRows?.length) {
+        // The signature trigger already queued durable recovery. Do not retry signing.
+        console.error('digital_sign: contract activation deferred', activateErr?.message ?? 'no_matching_contract')
+        return new Response(JSON.stringify({
+          status: 'signed', activation_pending: true,
+          message: 'Assinatura registada. A ativação está pendente de conclusão.',
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
 
       const wsId = (contract as any).workspace?.id ?? null
       const completedSync = await syncIntakeOnCompleted(supabase, contract.id, wsId, null, 'digital_sign_onboarding')
@@ -1547,13 +1562,12 @@ Deno.serve(async (req) => {
         contractId: contract.id, workspaceId: wsId,
         source: 'digital_sign_onboarding', operation: 'completed',
       })
-      if (!syncOk) {
+      if (!syncOk || completedSync.awaitingFounder || !completedSync.workspaceId) {
         return new Response(JSON.stringify({
-          error: 'lifecycle_sync_failed',
-          message: 'A assinatura foi registada, mas a ativação do workspace falhou. Contacte o staff.',
-          details: completedSync.errors,
+          status: 'signed', activation_pending: true,
+          message: 'Assinatura registada. A ativação está pendente de conclusão.',
         }), {
-          status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
       

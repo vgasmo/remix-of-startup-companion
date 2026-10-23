@@ -354,3 +354,7 @@ verify_jwt = false
 # Inquérito público — acesso anónimo mediado por public_token validado em runtime.
 [functions.public-survey]
 verify_jwt = false
+
+# One-use cron token validated by requireCronSecret in the handler.
+[functions.reconcile-contract-activation]
+verify_jwt = false

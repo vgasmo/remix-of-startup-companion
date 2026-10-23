@@ -153,6 +153,7 @@ export default function PublicContractSigning() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [signingError, setSigningError] = useState<string | null>(null);
   const [signSuccess, setSignSuccess] = useState(false);
+  const [activationPending, setActivationPending] = useState(false);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   // Per-field validation surfaced on submit. Reuses the exact required-field
@@ -317,6 +318,7 @@ export default function PublicContractSigning() {
       });
       if (error) throw new Error((await serverErrorMessage(error)) || error.message);
       if (data?.error) throw new Error(data.error);
+      setActivationPending(data?.activation_pending === true);
       notify.success(t('publicContractSigning.contractSignedSuccessfully'));
       setSignSuccess(true);
     } catch (e: any) {
@@ -1226,7 +1228,7 @@ export default function PublicContractSigning() {
                     {t('publicContractSigning.contractSigned')}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    {t('publicContractSigning.theContractHasBeenSigned')}
+                    {t(activationPending ? 'publicContractSigning.activationPending' : 'publicContractSigning.theContractHasBeenSigned')}
                   </p>
                 </div>
 
