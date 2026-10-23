@@ -124,7 +124,8 @@ export async function claimWebhookDelivery(
       let q = supabase.from('webhook_inbox').update({ status: 'received', error_message: null })
         .eq('provider', input.provider).eq('status', 'failed')
       q = input.eventId ? q.eq('event_id', input.eventId) : q.eq('payload_hash', input.payloadHash)
-      const { data: reclaimed } = await q.select('id').maybeSingle()
+      const { data: reclaimed, error: reclaimError } = await q.select('id').maybeSingle()
+      if (reclaimError) return { ok: false, inboxId: null, duplicate: false, error: reclaimError.message }
       if (reclaimed?.id) return { ok: true, inboxId: reclaimed.id, duplicate: false }
       return { ok: true, inboxId: null, duplicate: true }
     }
