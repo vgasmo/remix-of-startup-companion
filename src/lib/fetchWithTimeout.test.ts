@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createFetchWithTimeout } from './fetchWithTimeout';
 
-const stalled: typeof fetch = async (_input, init) => new Promise((_resolve, reject) => {
+const stalled: typeof fetch = async (_input, init) => new Promise<Response>((_resolve, reject) => {
   const signal = init?.signal;
   if (signal?.aborted) reject(signal.reason);
   else signal?.addEventListener('abort', () => reject(signal.reason), { once: true });
