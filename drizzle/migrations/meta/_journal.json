@@ -99,6 +99,13 @@
       "when": 1792750184875,
       "tag": "0013_scope_private_lookup_helpers",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792751414445,
+      "tag": "0014_restore_template_read_boundaries",
+      "breakpoints": true
     }
   ]
 }
