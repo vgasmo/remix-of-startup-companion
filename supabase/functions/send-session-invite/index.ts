@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { isAccountActive } from '../_shared/security.ts';
+import { getSessionRecipientEmails, selectSessionRecipients } from '../_shared/sessionRecipients.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -203,6 +205,11 @@ serve(async (req) => {
     
     // Verify user has access to the workspace using service role client
     const supabaseService = createClient(supabaseUrl, supabaseServiceKey);
+    if (!(await isAccountActive(supabaseService, user.id))) {
+      return new Response(JSON.stringify({ error: 'Access denied' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     const { data: hasAccess, error: accessError } = await supabaseService.rpc('has_workspace_access', {
       _user_id: user.id,
@@ -241,6 +248,16 @@ serve(async (req) => {
       );
     }
     
+    try {
+      payload.recipientEmails = selectSessionRecipients(payload.recipientEmails,
+        await getSessionRecipientEmails(supabaseService, payload.sessionId, payload.workspaceId));
+    } catch (error) {
+      const lookupFailed = error instanceof Error && error.message === 'recipient_lookup_failed';
+      return new Response(JSON.stringify({ error: lookupFailed ? 'recipient_lookup_failed' : 'recipient_not_authorized' }), {
+        status: lookupFailed ? 503 : 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     console.log("Sending session invite:", {
       userId: user.id,
       sessionId: payload.sessionId,

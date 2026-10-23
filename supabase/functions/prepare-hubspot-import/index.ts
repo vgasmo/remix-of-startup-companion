@@ -6,6 +6,8 @@
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.1';
 import { getCorsHeaders, handleCorsOptions } from '../_shared/cors.ts';
+import { isAccountActive } from '../_shared/security.ts';
+import { parseHubspotConfig } from '../_shared/importConfig.ts';
 import {
   autoMapHeaders, normalizeRow, validateRow, matchRow, rowHash, fileSha256,
   NormalizedRow, MatchResult,
@@ -194,6 +196,7 @@ Deno.serve(async (req) => {
     const { data: userData } = await sbUser.auth.getUser();
     const uid = userData.user?.id;
     if (!uid) return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: jsonHeaders });
+    if (!(await isAccountActive(sbSvc, uid))) return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: jsonHeaders });
 
     // Role check: admin or backoffice
     const { data: roles } = await sbSvc.from('user_roles').select('role').eq('user_id', uid);
@@ -201,6 +204,10 @@ Deno.serve(async (req) => {
     if (!isStaff) return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: jsonHeaders });
 
     const body = await req.json() as PrepareBody;
+    let config: ReturnType<typeof parseHubspotConfig>;
+    try { config = parseHubspotConfig(body.config); } catch {
+      return new Response(JSON.stringify({ error: 'invalid_config' }), { status: 400, headers: jsonHeaders });
+    }
     if (!body?.filename || !body?.content_base64) {
       return new Response(JSON.stringify({ error: 'invalid_input' }), { status: 400, headers: jsonHeaders });
     }
@@ -248,7 +255,7 @@ Deno.serve(async (req) => {
       file_hash,
       status: 'prepared',
       config_json: {
-        ...body.config,
+        ...config,
         program_id: body.program_id ?? null,
         column_mapping: mapping,
         stage_map: body.stage_map ?? {},

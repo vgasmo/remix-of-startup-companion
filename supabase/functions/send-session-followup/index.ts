@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@4.0.0";
+import { isAccountActive } from '../_shared/security.ts';
+import { getSessionRecipientEmails, selectSessionRecipients } from '../_shared/sessionRecipients.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -75,6 +77,11 @@ serve(async (req) => {
     }
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    if (!(await isAccountActive(supabaseAdmin, user.id))) {
+      return new Response(JSON.stringify({ error: 'Access denied' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Fetch session with AI outputs
     const { data: session, error: sessionError } = await supabaseAdmin
@@ -109,23 +116,26 @@ serve(async (req) => {
       });
     }
 
-    // Get recipients if not provided
-    let recipients = recipientEmails || [];
-    if (recipients.length === 0) {
-      const { data: members } = await supabaseAdmin
-        .from("workspace_users")
-        .select("user_id")
-        .eq("workspace_id", session.workspace_id)
-        .eq("active", true);
-
-      if (members && members.length > 0) {
-        const { data: profiles } = await supabaseAdmin
-          .from("profiles")
-          .select("email")
-          .in("id", members.map(m => m.user_id));
-
-        recipients = profiles?.map(p => p.email).filter(Boolean) || [];
+    // Never let a caller export private session content to an unrelated address.
+    let recipients: string[];
+    try {
+      const allowed = await getSessionRecipientEmails(supabaseAdmin, sessionId, session.workspace_id);
+      if (recipientEmails == null || (Array.isArray(recipientEmails) && recipientEmails.length === 0)) {
+        // Preserve the existing default audience: active workspace members only.
+        const members = await supabaseAdmin.from('workspace_users').select('user_id').eq('workspace_id', session.workspace_id).eq('active', true);
+        if (members.error) throw new Error('recipient_lookup_failed');
+        const ids = (members.data ?? []).map(row => row.user_id);
+        const profiles = ids.length ? await supabaseAdmin.from('profiles').select('email').in('id', ids).eq('account_status', 'approved') : { data: [], error: null };
+        if (profiles.error) throw new Error('recipient_lookup_failed');
+        recipients = selectSessionRecipients((profiles.data ?? []).map(row => row.email).filter(Boolean), allowed);
+      } else {
+        recipients = selectSessionRecipients(recipientEmails, allowed);
       }
+    } catch (error) {
+      const lookupFailed = error instanceof Error && error.message === 'recipient_lookup_failed';
+      return new Response(JSON.stringify({ error: lookupFailed ? 'recipient_lookup_failed' : 'recipient_not_authorized' }), {
+        status: lookupFailed ? 503 : 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     if (recipients.length === 0) {

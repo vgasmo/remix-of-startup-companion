@@ -16,3 +16,4 @@
 - Parent-ID RLS helpers check access to the parent workspace without querying the child-policy table recursively; public account predicates fail closed for anonymous callers.
 - Workspace assignment searches filter joined startup fields server-side and paginate with a stable ID tie-breaker; never first truncate matching startup IDs.
 - Destructive notification performance tests require an explicit disposable loopback connection and never inherit hosted database environment variables; SQL harnesses reject missing files, empty suites and nonzero command exits.
+- Session email recipients must be intersected with server-recorded workspace/session contacts; failed lookups deny delivery, and import configuration accepts only supported options so server-owned job metadata cannot be injected.
