@@ -1,4 +1,5 @@
 import { isAccountActive } from '../_shared/security.ts';
+import { getCommunicationContacts, selectCommunicationPhone } from '../_shared/communicationRecipients.ts';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -27,28 +28,32 @@ serve(async (req) => {
     if (error || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
-    const { data: staffRoles } = await supabase.from('user_roles').select('role').eq('user_id', user.id).in('role', ['admin', 'consultor']);
-    if (!staffRoles || staffRoles.length === 0 || !(await isAccountActive(supabase, user.id))) {
+    const { data: staffRoles, error: roleError } = await supabase.from('user_roles').select('role').eq('user_id', user.id).in('role', ['admin', 'consultor']);
+    if (roleError || !staffRoles || staffRoles.length === 0 || !(await isAccountActive(supabase, user.id))) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
+    const { to, message, type = 'sms', workspace_id, startup_id, session_id, funnel_item_id } = await req.json();
 
-    const TWILIO_API_KEY = Deno.env.get('TWILIO_API_KEY');
-    if (!TWILIO_API_KEY) throw new Error('TWILIO_API_KEY is not configured. Connect Twilio in project settings.');
-
-    const TWILIO_PHONE = Deno.env.get('TWILIO_PHONE_NUMBER');
-    if (!TWILIO_PHONE) throw new Error('TWILIO_PHONE_NUMBER is not configured');
-
-    const { to, message, type = 'sms' } = await req.json();
-
-    if (typeof to !== 'string' || !/^\+[1-9]\d{6,14}$/.test(to) || typeof message !== 'string' || !message.trim() || !['sms', 'whatsapp'].includes(type)) {
+    if (typeof to !== 'string' || !/^\+[1-9]\d{6,14}$/.test(to) || typeof message !== 'string' || !message.trim() || message.length > 4000 || !['sms', 'whatsapp'].includes(type) ||
+      [workspace_id, startup_id, session_id, funnel_item_id].some(id => id != null && (typeof id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)))) {
       return new Response(JSON.stringify({ error: 'Missing to or message' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    try {
+      selectCommunicationPhone(to, await getCommunicationContacts(supabase, { workspace_id, startup_id, session_id, funnel_item_id }));
+    } catch (error) {
+      const code = error instanceof Error ? error.message : 'recipient_lookup_failed';
+      return new Response(JSON.stringify({ error: code }), { status: code === 'recipient_lookup_failed' ? 503 : code === 'invalid_recipient_scope' ? 400 : 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const TWILIO_API_KEY = Deno.env.get('TWILIO_API_KEY');
+    const TWILIO_PHONE = Deno.env.get('TWILIO_PHONE_NUMBER');
+    if (!LOVABLE_API_KEY || !TWILIO_API_KEY || !TWILIO_PHONE) throw new Error('Messaging not configured');
 
     // Send via Twilio Gateway
     const body: Record<string, string> = {

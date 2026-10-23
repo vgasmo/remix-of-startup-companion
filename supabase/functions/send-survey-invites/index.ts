@@ -16,6 +16,7 @@ import { Resend } from 'npm:resend@4.0.0';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { generateRequestId, createLogger, isAccountActive } from '../_shared/security.ts';
 import { foundersGloballyDisabled } from '../_shared/founderKillSwitch.ts';
+import { getCommunicationContacts, selectCommunicationEmails } from '../_shared/communicationRecipients.ts';
 
 const FUNCTION_NAME = 'send-survey-invites';
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
@@ -34,7 +35,7 @@ interface Body {
   /** Optional denylist: these addresses are skipped (e.g. already invited). */
   exclude_emails?: string[];
 
-  /** Optional ad-hoc recipients attached to a workspace's instance (not stored as contacts). */
+  /** Additional recipients must already be recorded contacts of this workspace/startup. */
   extra_recipients?: { email: string; name?: string | null; workspace_id: string }[];
 }
 
@@ -185,6 +186,9 @@ Deno.serve(async (req) => {
       return corsJsonResponse({ error: 'campaign_id_required' }, req, 400);
     }
     const dryRun = body.dry_run === true;
+    if (body.extra_recipients != null && (!Array.isArray(body.extra_recipients) || body.extra_recipients.length > 50 || body.extra_recipients.some(extra => !extra || typeof extra.email !== 'string' || typeof extra.workspace_id !== 'string'))) {
+      return corsJsonResponse({ error: 'invalid_recipients' }, req, 400);
+    }
 
     const { data: campaign, error: campaignError } = await admin
       .from('survey_campaigns')
@@ -300,11 +304,17 @@ Deno.serve(async (req) => {
       if (!added) skipped += 1;
     }
 
-    // Ad-hoc recipients: known contacts that are not stored on the startup record.
+    // Validate the entire extra list before allowlist changes or any provider call.
     const instanceByWorkspace = new Map(instances.map((i) => [i.workspace_id, i]));
     for (const extra of body.extra_recipients ?? []) {
       const instance = instanceByWorkspace.get(extra.workspace_id);
-      if (!instance) continue;
+      if (!instance) return corsJsonResponse({ error: 'recipient_not_authorized' }, req, 403);
+      try {
+        selectCommunicationEmails([extra.email], await getCommunicationContacts(admin, { workspace_id: instance.workspace_id }));
+      } catch (error) {
+        const code = error instanceof Error ? error.message : 'recipient_lookup_failed';
+        return corsJsonResponse({ error: code }, req, code === 'recipient_lookup_failed' ? 503 : code === 'invalid_recipients' ? 400 : 403);
+      }
       const startup = startupByWorkspace.get(instance.workspace_id);
       add(
         extra.email ?? null,
