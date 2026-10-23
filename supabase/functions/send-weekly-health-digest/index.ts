@@ -1,3 +1,4 @@
+import { escapeHtml } from '../_shared/html.ts';
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@4.0.0";
@@ -147,7 +148,7 @@ serve(withCronRunLogging('send-weekly-health-digest', async (req) => {
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
                 <a href="${baseUrl}/workspace/${w.id}" style="color: #2563eb; text-decoration: none; font-weight: 500;">
-                  ${getStartupName(w)}
+                  ${escapeHtml(getStartupName(w))}
                 </a>
               </td>
               <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center;">
@@ -166,13 +167,13 @@ serve(withCronRunLogging('send-weekly-health-digest', async (req) => {
 
         const improvedHtml = mostImproved.map(([id, trend]) => {
           const ws = workspaces?.find(w => w.id === id);
-          return `<li style="padding: 8px 0;"><strong>${getStartupName(ws)}</strong>:
+          return `<li style="padding: 8px 0;"><strong>${escapeHtml(getStartupName(ws))}</strong>:
             <span style="color: #059669;">+${trend.delta} pts</span> (${trend.start} → ${trend.end})</li>`;
         }).join('');
 
         const declinedHtml = mostDeclined.map(([id, trend]) => {
           const ws = workspaces?.find(w => w.id === id);
-          return `<li style="padding: 8px 0;"><strong>${getStartupName(ws)}</strong>:
+          return `<li style="padding: 8px 0;"><strong>${escapeHtml(getStartupName(ws))}</strong>:
             <span style="color: #dc2626;">${trend.delta} pts</span> (${trend.start} → ${trend.end})</li>`;
         }).join('');
 
@@ -222,14 +223,14 @@ serve(withCronRunLogging('send-weekly-health-digest', async (req) => {
           html,
         });
         if (sendError) {
-          console.error(`Resend rejected digest to ${profile.email}:`, sendError);
+          console.error("Resend rejected digest", { userId: profile.id });
           continue;
         }
 
         emailsSent++;
         await new Promise(r => setTimeout(r, 600));
       } catch (emailError) {
-        console.error(`Failed to send digest to ${profile.email}:`, emailError);
+        console.error("Digest delivery failed", { userId: profile.id });
       }
     }
 

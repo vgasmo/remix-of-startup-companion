@@ -1,3 +1,5 @@
+import { canMutateWorkspace } from '../_shared/workspaceWrite.ts';
+import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 // Financial model importer.
 //
 // Two-track parser:
@@ -20,10 +22,7 @@ import JSZip from "https://esm.sh/jszip@3.10.1";
 import { openXlsmReader } from "../_shared/xlsmCellReader.ts";
 import { parseLocalizedNumber } from "../_shared/xlsxLocale.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+
 
 interface KeyMetrics {
   runway_months: number | null;
@@ -276,20 +275,23 @@ serve(async (req) => {
 
     console.log(`[import-financial-model] user=${user.id} version=${version_id}`);
 
-    await supabase.from("financial_model_versions").update({ status: "parsing" }).eq("id", version_id);
 
     const { data: version, error: versionError } = await supabase
       .from("financial_model_versions").select("*, documents(*)").eq("id", version_id).single();
     if (versionError || !version) throw new Error(`Version not found: ${versionError?.message}`);
 
-    const { data: hasAccess } = await supabase.rpc("has_workspace_access", {
-      _user_id: user.id, _workspace_id: version.workspace_id,
-    });
-    if (!hasAccess) {
+    const supabaseUser = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    if (!(await canMutateWorkspace(supabaseUser, supabase, user.id, version.workspace_id, true))) {
       return new Response(JSON.stringify({ error: "Access denied" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const { error: parsingError } = await supabase.from("financial_model_versions")
+      .update({ status: "parsing" }).eq("id", version_id);
+    if (parsingError) throw parsingError;
 
     const document = version.documents;
     if (!document?.file_path) throw new Error("Document has no file path");

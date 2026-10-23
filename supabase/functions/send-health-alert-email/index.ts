@@ -1,3 +1,4 @@
+import { escapeHtml } from '../_shared/html.ts';
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@4.0.0";
@@ -98,26 +99,26 @@ serve(async (req) => {
         const html = `
           <div lang="${htmlLang}" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <h1 style="color: ${alert.severity === 'critical' ? '#dc2626' : '#f59e0b'}; margin-bottom: 20px;">
-              ${s.header(startupName)}
+              ${s.header(escapeHtml(startupName))}
             </h1>
             <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-              <h2 style="margin: 0 0 10px 0; font-size: 18px;">${alert.reason}</h2>
+              <h2 style="margin: 0 0 10px 0; font-size: 18px;">${escapeHtml(alert.reason)}</h2>
               <p style="color: #6b7280; margin: 0;">
-                ${s.severityLabel}: <strong style="color: ${alert.severity === 'critical' ? '#dc2626' : '#f59e0b'}">${alert.severity.toUpperCase()}</strong>
+                ${s.severityLabel}: <strong style="color: ${alert.severity === 'critical' ? '#dc2626' : '#f59e0b'}">${escapeHtml(alert.severity.toUpperCase())}</strong>
               </p>
             </div>
             ${evidence.prev_score !== undefined ? `
               <div style="margin-bottom: 20px;">
                 <h3 style="margin-bottom: 10px;">${s.scoreChange}</h3>
                 <p style="font-size: 24px; margin: 0;">
-                  <span style="color: #6b7280;">${evidence.prev_score}</span>
+                  <span style="color: #6b7280;">${escapeHtml(evidence.prev_score)}</span>
                   <span style="margin: 0 10px;">→</span>
-                  <span style="color: ${alert.severity === 'critical' ? '#dc2626' : '#f59e0b'}">${evidence.new_score}</span>
-                  <span style="color: #dc2626; font-size: 14px; margin-left: 10px;">(-${evidence.delta || 0})</span>
+                  <span style="color: ${alert.severity === 'critical' ? '#dc2626' : '#f59e0b'}">${escapeHtml(evidence.new_score)}</span>
+                  <span style="color: #dc2626; font-size: 14px; margin-left: 10px;">(-${escapeHtml(evidence.delta || 0)})</span>
                 </p>
               </div>
             ` : ''}
-            <a href="${baseUrl}/workspace/${alert.workspace_id}"
+            <a href="${baseUrl}/workspace/${encodeURIComponent(alert.workspace_id)}"
                style="display: inline-block; background: #2563eb; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">
               ${s.cta}
             </a>
@@ -136,15 +137,15 @@ serve(async (req) => {
           html,
         });
         if (sendError) {
-          console.error(`Resend rejected email to ${profile.email}:`, sendError);
+          console.error("Resend rejected health alert", { userId: profile.id });
           continue;
         }
 
         emailsSent++;
-        console.log(`Email sent to ${profile.email} (${locale})`);
+        console.log("Health alert sent", { userId: profile.id, locale });
         await new Promise(r => setTimeout(r, 600));
       } catch (emailError) {
-        console.error(`Failed to send email to ${profile.email}:`, emailError);
+        console.error("Health alert delivery failed", { userId: profile.id });
       }
     }
 

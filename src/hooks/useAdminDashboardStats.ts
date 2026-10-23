@@ -54,6 +54,7 @@ export function useAdminDashboardStats() {
       for (const [name, res] of checks) {
         if (res.error) {
           logger.warn('admin_dashboard_stat_failed', { stat: name, error: String(res.error) });
+          throw res.error;
         }
       }
 

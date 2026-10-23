@@ -219,7 +219,7 @@ export default function MyWorkspaces() {
   const hasClientOnlyFilters = Object.values(quickFilters).some(Boolean);
   const useServer = showListView && !hasClientOnlyFilters;
   const debouncedSearch = useDebounce(search, 300);
-  const { data: pagedData, isLoading: pagedLoading } = useWorkspacesPaged({
+  const { data: pagedData, isLoading: pagedLoading, error: pagedError } = useWorkspacesPaged({
     search: debouncedSearch,
     programId: programFilter,
     stage: stageFilter,
@@ -493,7 +493,7 @@ export default function MyWorkspaces() {
                 </div>
               </CardContent>
             </Card>
-          ) : error ? (
+          ) : (useServer ? pagedError : error) ? (
             <Card className="border-destructive/50 bg-destructive/5">
               <CardContent className="flex items-center gap-3 p-6">
                 <AlertTriangle className="h-5 w-5 text-destructive" />

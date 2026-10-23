@@ -5,6 +5,8 @@
  * a PDF-backed floor map (keeps ~500 KiB out of the main bundle).
  */
 
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+
 interface RenderPdfResult {
   dataUrl: string;
   width: number;
@@ -16,7 +18,7 @@ async function loadPdfjs() {
   if (!pdfjsPromise) {
     pdfjsPromise = import('pdfjs-dist').then((mod) => {
       mod.GlobalWorkerOptions.workerSrc =
-        `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.worker.min.mjs`;
+        pdfWorkerUrl;
       return mod;
     });
   }

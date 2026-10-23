@@ -1,5 +1,6 @@
+import { canMutateWorkspace } from '../_shared/workspaceWrite.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
+import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight
@@ -33,7 +34,7 @@ Deno.serve(async (req: Request) => {
     // Parse request
     const { link_id } = await req.json();
 
-    if (!link_id) {
+    if (typeof link_id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(link_id)) {
       return corsJsonResponse({ error: 'link_id is required' }, req, 400);
     }
 
@@ -53,17 +54,7 @@ Deno.serve(async (req: Request) => {
 
     const workspaceId = (shareLink.dataroom as any)?.workspace_id;
 
-    // Check user access
-    const { data: hasAccess } = await supabaseAdmin.rpc('has_workspace_access', {
-      _user_id: user.id,
-      _workspace_id: workspaceId
-    });
-
-    const { data: isAdmin } = await supabaseAdmin.rpc('is_admin', {
-      _user_id: user.id
-    });
-
-    if (!hasAccess && !isAdmin) {
+    if (!(await canMutateWorkspace(supabaseUser, supabaseAdmin, user.id, workspaceId))) {
       return corsJsonResponse({ error: 'Access denied' }, req, 403);
     }
 

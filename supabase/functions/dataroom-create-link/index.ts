@@ -1,5 +1,6 @@
+import { canMutateWorkspace } from '../_shared/workspaceWrite.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
+import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 
 // SHA-256 hash function
 async function sha256(str: string): Promise<string> {
@@ -51,27 +52,16 @@ Deno.serve(async (req: Request) => {
     // Parse request
     const { workspace_id, expires_in_days, allow_download = true } = await req.json();
 
-    if (!workspace_id) {
+    if (typeof workspace_id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(workspace_id) || typeof allow_download !== 'boolean' || (expires_in_days != null && (typeof expires_in_days !== 'number' || !Number.isFinite(expires_in_days) || expires_in_days < 0))) {
       return corsJsonResponse({ error: 'workspace_id is required' }, req, 400);
     }
 
-    // Check user access to workspace
-    const { data: hasAccess } = await supabaseAdmin.rpc('has_workspace_access', {
-      _user_id: user.id,
-      _workspace_id: workspace_id
-    });
-
-    // Check if admin
-    const { data: isAdmin } = await supabaseAdmin.rpc('is_admin', {
-      _user_id: user.id
-    });
-
-    if (!hasAccess && !isAdmin) {
-      return corsJsonResponse({ error: 'Access denied to this workspace' }, req, 403);
+    if (!(await canMutateWorkspace(supabaseUser, supabaseAdmin, user.id, workspace_id))) {
+      return corsJsonResponse({ error: 'Access denied' }, req, 403);
     }
 
     // Ensure dataroom exists
-    const { data: dataroomId, error: dataroomError } = await supabaseAdmin.rpc('ensure_dataroom_exists', {
+    const { data: dataroomId, error: dataroomError } = await supabaseUser.rpc('ensure_dataroom_exists', {
       _workspace_id: workspace_id
     });
 
@@ -111,7 +101,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Build share URL
-    const appUrl = Deno.env.get('APP_URL') || 'https://lovable.dev';
+    const appUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://fb.startupleiria.com';
     const shareUrl = `${appUrl}/dataroom/shared/${token}`;
 
     return corsJsonResponse({

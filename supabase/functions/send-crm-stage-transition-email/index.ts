@@ -1,3 +1,4 @@
+import { interpolateHtml } from '../_shared/html.ts';
 /**
  * Edge Function: send-crm-stage-transition-email
  * 
@@ -134,11 +135,10 @@ Deno.serve(async (req) => {
       .replace('{{from_stage}}', from_stage)
       .replace('{{to_stage}}', to_stage);
 
-    const bodyHtml = rule.body_html
-      .replace(/\{\{name\}\}/g, recipientName)
-      .replace(/\{\{organization\}\}/g, funnelItem.organization_name || '')
-      .replace(/\{\{from_stage\}\}/g, from_stage)
-      .replace(/\{\{to_stage\}\}/g, to_stage);
+    const bodyHtml = interpolateHtml(rule.body_html, {
+      name: recipientName, organization: funnelItem.organization_name || '',
+      from_stage, to_stage,
+    });
 
     // 5. Send email via Resend
     try {
@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
         throw new Error(emailResult.error.message || 'resend_send_failed');
       }
 
-      console.log(`Email sent successfully to ${funnelItem.contact_email}`);
+      console.log(`Stage transition email sent for item ${funnel_item_id}`);
 
       // Update log entry with success
       await supabaseAdmin

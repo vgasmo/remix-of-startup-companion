@@ -1,3 +1,4 @@
+import { serializeCsv } from '@/lib/csv';
 import { useMemo, useState } from 'react';
 import { clickableProps } from '@/lib/clickable';
 import { useTranslation } from 'react-i18next';
@@ -75,25 +76,18 @@ export function ComplianceDashboard() {
   const exportCSV = () => {
     if (!workspaces) return;
 
-    const escapeCSV = (val: string) => {
-      if (val.startsWith('=') || val.startsWith('+') || val.startsWith('-') || val.startsWith('@')) {
-        val = "'" + val;
-      }
-      return `"${val.replace(/"/g, '""')}"`;
-    };
-
     const headers = ['Startup', 'Program', 'Stage', 'Health', 'Overdue Actions', 'Last Session', 'Status'];
     const rows = workspaces.map(w => [
-      escapeCSV(w.startup?.name || 'Unknown'),
-      escapeCSV(w.program?.name || 'Unknown'),
-      escapeCSV(w.stage || ''),
-      escapeCSV((w.health_score_override || w.health_score) || 'stable'),
+      w.startup?.name || 'Unknown',
+      w.program?.name || 'Unknown',
+      w.stage || '',
+      (w.health_score_override || w.health_score) || 'stable',
       String(w.overdueActionsCount || 0),
       w.lastSession?.scheduled_at ? format(new Date(w.lastSession.scheduled_at), 'yyyy-MM-dd') : 'Never',
       'Active',
     ]);
 
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const csv = serializeCsv([headers, ...rows]);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

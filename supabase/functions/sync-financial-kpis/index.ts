@@ -1,10 +1,9 @@
+import { canMutateWorkspace } from '../_shared/workspaceWrite.ts';
+import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+
 
 interface SyncResult {
   synced: { metric: string; kpi_name: string; value: number }[];
@@ -50,7 +49,7 @@ serve(async (req) => {
 
     const { version_id } = await req.json();
     
-    if (!version_id) {
+    if (typeof version_id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(version_id)) {
       return new Response(JSON.stringify({ error: "version_id is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -72,17 +71,9 @@ serve(async (req) => {
 
     const workspaceId = version.workspace_id;
 
-    // SECURITY: Validate user has access to this workspace
-    const { data: hasAccess } = await supabase.rpc("has_workspace_access", {
-      _user_id: user.id,
-      _workspace_id: workspaceId,
-    });
-
-    if (!hasAccess) {
-      console.error("[sync-financial-kpis] Access denied for user:", user.id, "workspace:", workspaceId);
+    if (!(await canMutateWorkspace(supabaseUser, supabase, user.id, workspaceId, true))) {
       return new Response(JSON.stringify({ error: "Access denied to this workspace" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 

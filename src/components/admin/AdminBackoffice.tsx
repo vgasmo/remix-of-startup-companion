@@ -26,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useDateLocale } from '@/lib/dateLocale';
 import { notify } from "@/lib/notify";
+import { serializeCsv } from '@/lib/csv';
 import type { StartupStage, WorkspacePriority } from '@/types/database';
 
 // Backoffice sub-tab components
@@ -345,20 +346,20 @@ export function AdminBackoffice() {
   const hasActiveFilters = search || stageFilter !== 'all' || programFilter !== 'all' || consultantFilter !== 'all' || statusFilter !== 'all';
 
   const handleExport = () => {
-    const csvContent = [
-      [t('admin.backoffice.startup'), t('admin.backoffice.nif'), t('admin.backoffice.program'), t('admin.backoffice.stage'), t('admin.backoffice.status'), t('admin.backoffice.health'), t('admin.backoffice.consultant'), t('admin.backoffice.nextSession'), t('admin.backoffice.lastCheckin')].join(','),
+    const csvContent = serializeCsv([
+      [t('admin.backoffice.startup'), t('admin.backoffice.nif'), t('admin.backoffice.program'), t('admin.backoffice.stage'), t('admin.backoffice.status'), t('admin.backoffice.health'), t('admin.backoffice.consultant'), t('admin.backoffice.nextSession'), t('admin.backoffice.lastCheckin')],
       ...filteredData.map(item => [
-        `"${item.startup_name}"`,
-        `"${item.startup_nif || ''}"`,
-        `"${item.program_name || ''}"`,
+        item.startup_name,
+        item.startup_nif || '',
+        item.program_name || '',
         item.stage,
         item.status,
         item.health_score?.toString() || '',
-        `"${item.assigned_consultant_name || ''}"`,
+        item.assigned_consultant_name || '',
         item.next_session_date ? format(new Date(item.next_session_date), 'yyyy-MM-dd') : '',
         item.last_checkin_date ? format(new Date(item.last_checkin_date), 'yyyy-MM-dd') : '',
-      ].join(','))
-    ].join('\n');
+      ])
+    ]);
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -366,6 +367,7 @@ export function AdminBackoffice() {
     a.href = url;
     a.download = `backoffice-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click();
+    URL.revokeObjectURL(url);
   };
 
   const filteredConsultors = consultants?.filter(c =>
