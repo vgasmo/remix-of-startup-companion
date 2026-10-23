@@ -15,7 +15,9 @@
 - [x] Indicar as próximas melhorias prioritárias ao utilizador.
 
 ## Correções de segurança — 23 Out 2026
-- [ ] Rever os 47 alertas restantes, corrigir vulnerabilidades confirmadas com regressões, reconciliar correções anteriores e entregar relatório v5 separando decisões pendentes.
+- [x] Rever os 47 alertas restantes: 7 corrigidos nesta ronda, 27 correções anteriores reconciliadas (1 removido no scan), 13 mantidos ativos; relatório v5 com inventário individual, gravidade, evidências e limites. 227 Vitest, 107 Deno (2 ignorados), 15 SQL passaram; pedidos alojados autenticados confirmaram bloqueios de destinatários/importação/intake sem envios reais.
+- [ ] Decidir propriedade de revogação Data Room, alteração de email de signatário público/staff e destinatários WhatsApp — quatro alertas error conservados; fluxos estabelecidos não alterados.
+- [ ] Confirmar classificação/visibilidade dos sete catálogos e logos/avatares — nove avisos/notas conservados, incluindo conflito entre memória de privacidade e migrações/diretório; não restringir por inferência.
 - [x] Reconciliar os cinco alertas bloqueantes de leitura ampla: políticas e revogações anónimas alojadas confirmadas, rescan sem esses erros, 10 testes SQL passaram e cinco alertas marcados corrigidos (não ignorados). Pré-visualização /login HTTP 200, sem erros JS/overlay; teste esbuild passou. Não reproduzida falha atual de build; configuração preservada.
 - [x] Ronda de conclusão: erro de preparação corrigido, webhooks/replay/testes reparados, aprovações e agenda verificadas; inventário atual revisto sem certificar todos os ramos privilegiados.
 - [x] Corrigir importação financeira, permissões Data Room e mensagens de contas suspensas; funções publicadas e testes de guardas passaram.
