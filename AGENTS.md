@@ -10,5 +10,5 @@
 - Email templates escape inserted data and restrict notification links to the application origin; CSV exports share the formula-neutralizing serializer.- Contract document uploads persist metadata through a service-only atomic key merge after token validation, preventing concurrent reference loss.
 - The canonical browser client bounds requests with cancellation; failed statistics are errors, never fabricated zero values.
 - PDF workers are bundled from the installed renderer version so library upgrades cannot mismatch external workers.
-- Dependency security overrides stay on compatible library APIs and are checked against the lockfile and regression tests; let each build-tool consumer resolve its own supported esbuild range rather than forcing one global major/minor.
+- Dependency security overrides stay on compatible library APIs and are checked against the lockfile, browser-target transform tests and automatic build; never upgrade a build tool beyond a verified compatible version merely to clear a warning.
 - Failed webhook delivery reclamation uses a conditional failed-state update; database failures request a provider retry instead of acknowledging an unprocessed duplicate.
