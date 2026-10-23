@@ -15,6 +15,7 @@
 - [x] Indicar as próximas melhorias prioritárias ao utilizador.
 
 ## Correções de segurança — 23 Out 2026
+- [ ] Aplicar decisões de 13:28 UTC: destinatários de emails/propostas/inquéritos/SMS associados no servidor; preservar email alternativo de assinatura, claim sem aprovação e catálogos/imagens autenticados; testar e atualizar relatório.
 - [x] Concluir análise aprofundada anterior e validar alertas: 4 guardas de conta corrigidas/publicadas, histórico IA isolado, 24 novas regressões, relatório v7; 19 alertas ativos separados por decisão/configuração/limite.
 - [ ] Incorporar nova análise automática iniciada às 11:08 UTC — aguarda conclusão automática, sem polling.
 - [x] Corrigir causas de desaparecimento do resumo IA: não hidratar flags antigas; erros não substituem dados verificados por lista vazia. Regressão passou; Arete mantém resumo após 503 simulado, zero erros JS, build OK. Ausência original na conta da consultora e geração real não reproduzidas.
