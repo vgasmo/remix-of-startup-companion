@@ -167,6 +167,7 @@ export function useWorkspaces(
 
       if (statsError) {
         logger.error('Failed to get workspace stats', {}, statsError);
+        throw statsError;
       }
 
       // Build lookup map for stats

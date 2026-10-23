@@ -1000,33 +1000,18 @@ Deno.serve(async (req) => {
 
       if (uploadErr) throw uploadErr
 
-      // Persist into documents_json so UI can show "uploaded" badge across reloads.
-      // B2: refetch `documents_json` immediately before merging to defeat the
-      // classic read-modify-write race where two concurrent uploads for
-      // distinct docKeys would each wipe the other. The initial `contract`
-      // snapshot fetched at request start is NOT authoritative here.
+      // Merge one key in a single database UPDATE; concurrent keys cannot overwrite each other.
       try {
-        const { data: fresh } = await supabase
-          .from('startup_contracts')
-          .select('documents_json')
-          .eq('id', contract.id)
-          .single()
-        const currentDocs = fresh?.documents_json && typeof fresh.documents_json === 'object'
-          ? fresh.documents_json as Record<string, any>
-          : {}
-        const nextDocs = {
-          ...currentDocs,
-          [docKey]: {
+        const { error: persistErr } = await supabase.rpc('merge_contract_document_metadata', {
+          _contract_id: contract.id,
+          _doc_key: docKey,
+          _metadata: {
             path,
             file_name: fileName || `${docKey}.${ext}`,
             mime_type: safeContentType,
             uploaded_at: new Date().toISOString(),
           },
-        }
-        const { error: persistErr } = await supabase
-          .from('startup_contracts')
-          .update({ documents_json: nextDocs })
-          .eq('id', contract.id)
+        })
         if (persistErr) {
           // Storage upload already succeeded — surface metadata failure so the
           // caller knows the badge won't render and can retry, rather than

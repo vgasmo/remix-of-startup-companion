@@ -50,6 +50,9 @@ export function useWorkspacesPaged(args: UseWorkspacesPagedArgs) {
     enabled = true,
   } = args;
 
+  const boundedPageSize = Number.isFinite(pageSize) ? Math.min(100, Math.max(1, Math.floor(pageSize))) : 25;
+  const boundedPage = Number.isFinite(page) ? Math.max(1, Math.floor(page)) : 1;
+
   return useQuery({
     enabled: enabled && !!userId,
     placeholderData: keepPreviousData,
@@ -62,7 +65,7 @@ export function useWorkspacesPaged(args: UseWorkspacesPagedArgs) {
       { search, programId, stage, health, priority, missingKpi, overdueActions, sortBy, statuses: statuses.slice().sort().join(','), assignedOnly, page, pageSize },
     ],
     queryFn: async (): Promise<UseWorkspacesPagedResult> => {
-      const offset = Math.max(0, (page - 1) * pageSize);
+      const offset = Math.max(0, (boundedPage - 1) * boundedPageSize);
       const { data, error } = await supabase.rpc('search_workspaces_paged', {
         _statuses: statuses,
         _assigned_to: assignedOnly && userId ? userId : null,
@@ -72,7 +75,7 @@ export function useWorkspacesPaged(args: UseWorkspacesPagedArgs) {
         _health: health !== 'all' ? health : null,
         _priority: priority !== 'all' ? priority : null,
         _sort_by: sortBy,
-        _limit: pageSize,
+        _limit: boundedPageSize,
         _offset: offset,
         _missing_kpi_this_month: missingKpi,
         _overdue_actions: overdueActions,
@@ -85,7 +88,10 @@ export function useWorkspacesPaged(args: UseWorkspacesPagedArgs) {
 
       const ids = rows.map(r => r.id);
       const { data: stats, error: statsErr } = await supabase.rpc('get_workspace_stats', { workspace_ids: ids });
-      if (statsErr) logger.warn('useWorkspacesPaged: stats fetch failed', { statsErr });
+      if (statsErr) {
+        logger.warn('useWorkspacesPaged: stats fetch failed', { statsErr });
+        throw statsErr;
+      }
 
       const statsMap = new Map((stats || []).map((s: any) => [s.workspace_id, s]));
 
