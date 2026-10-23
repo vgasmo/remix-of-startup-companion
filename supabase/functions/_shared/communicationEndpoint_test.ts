@@ -43,7 +43,7 @@ async function setup(name: string, options: { lookupError?: boolean; approved?: 
     Deno: { env: { get: (key: string) => key === 'SUPABASE_URL' ? 'https://local.test' : key === 'PUBLIC_APP_URL' ? 'https://app.test' : 'test-only-value' } },
   };
   const source = await Deno.readTextFile(new URL(`../${name}/index.ts`, import.meta.url));
-  const names = Object.keys(globals[key] as object).join(',');
+  const names = Object.keys(globals[key] as object).filter(name => !new RegExp(`(?:function|const) ${name}\\b`).test(source)).join(',');
   const code = `const { ${names} } = globalThis.${key};\n` + source.replace(/^import\s+[\s\S]*?;\s*$/gm, '').replace(/(?:Deno\.serve|serve)\(async\s*\(/, 'export default (async (');
   const mod = await import(`data:application/typescript;base64,${btoa(unescape(encodeURIComponent(code)))}`);
   return { sends, writes, workspaceId, run: (body: unknown) => mod.default(new Request('https://app.test', { method: 'POST', headers: { Authorization: 'Bearer test' }, body: JSON.stringify(body) })) as Promise<Response> };
