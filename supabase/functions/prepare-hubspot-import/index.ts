@@ -4,7 +4,7 @@
 // startups, workspaces, or startup_contracts.
 
 // deno-lint-ignore-file no-explicit-any
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.1';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions } from '../_shared/cors.ts';
 import { isAccountActive } from '../_shared/security.ts';
 import { parseHubspotConfig } from '../_shared/importConfig.ts';
