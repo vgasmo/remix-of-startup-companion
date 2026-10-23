@@ -85,6 +85,13 @@
       "when": 1792749066185,
       "tag": "0011_audit_workspace_write_and_conversation_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792749417052,
+      "tag": "0012_atomic_contract_document_metadata",
+      "breakpoints": true
     }
   ]
 }

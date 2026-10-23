@@ -12924,6 +12924,10 @@ export type Database = {
         Args: { p_booking_id: string; p_target_state: string }
         Returns: Json
       }
+      merge_contract_document_metadata: {
+        Args: { _contract_id: string; _doc_key: string; _metadata: Json }
+        Returns: undefined
+      }
       normalize_ident: { Args: { _v: string }; Returns: string }
       notify_contract_event: {
         Args: {
