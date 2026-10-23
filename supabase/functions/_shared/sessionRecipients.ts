@@ -27,7 +27,7 @@ export async function getSessionRecipientEmails(admin: SupabaseClient, sessionId
     ...(participants.data ?? []).map(row => row.user_id),
     session.data?.primary_consultant_id, session.data?.primary_mentor_id,
   ].filter((id): id is string => typeof id === 'string'))];
-  const startup = workspace.data?.startup;
+  const startup = workspace.data?.startup as unknown as { main_contact_email?: unknown } | { main_contact_email?: unknown }[] | null;
   const contact = Array.isArray(startup) ? startup[0]?.main_contact_email : startup?.main_contact_email;
   const emails: string[] = typeof contact === 'string' && contact.trim() ? [contact] : [];
   if (ids.length) {
