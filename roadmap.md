@@ -15,6 +15,7 @@
 - [x] Indicar as próximas melhorias prioritárias ao utilizador.
 
 ## Correções de segurança — 23 Out 2026
+- [x] Reconciliar os cinco alertas bloqueantes de leitura ampla: políticas e revogações anónimas alojadas confirmadas, rescan sem esses erros, 10 testes SQL passaram e cinco alertas marcados corrigidos (não ignorados). Pré-visualização /login HTTP 200, sem erros JS/overlay; teste esbuild passou. Não reproduzida falha atual de build; configuração preservada.
 - [x] Ronda de conclusão: erro de preparação corrigido, webhooks/replay/testes reparados, aprovações e agenda verificadas; inventário atual revisto sem certificar todos os ramos privilegiados.
 - [x] Corrigir importação financeira, permissões Data Room e mensagens de contas suspensas; funções publicadas e testes de guardas passaram.
 - [x] Proteger os pontos de HTML, CSV e logs pessoais identificados na auditoria; 19 testes partilhados e 6 CSV passaram.
