@@ -15,6 +15,7 @@
 - [x] Indicar as próximas melhorias prioritárias ao utilizador.
 
 ## Correções de segurança — 23 Out 2026
+- [ ] Concluir validação dos alertas restantes com testes adversariais e relatório v7; distinguir correções, decisões e verificações externas.
 - [x] Corrigir causas de desaparecimento do resumo IA: não hidratar flags antigas; erros não substituem dados verificados por lista vazia. Regressão passou; Arete mantém resumo após 503 simulado, zero erros JS, build OK. Ausência original na conta da consultora e geração real não reproduzidas.
 - [x] Incorporar rescan concluído: 16 código + 11 DB; PHC corrigido, testado e publicado; pedido alojado 400. Relatório v6 corrige contagens/conclusões provisórias e documenta os 27 alertas.
 - [x] Rever os 47 alertas iniciais e novo rescan; relatório v6 com evidências e limites. 227 Vitest anteriores + 1 regressão cache, 108 Deno (2 ignorados), 15 SQL passaram; pedidos alojados confirmam destinatários/importação/intake bloqueados.
