@@ -42,7 +42,7 @@ async function psqlFile(sql: string): Promise<{ stdout: string; stderr: string; 
   };
 }
 
-Deno.test("upsert retries do not create duplicates and stay fast", { ignore: !DB_URL }, async () => {
+Deno.test({ name: "upsert retries do not create duplicates and stay fast", ignore: !DB_URL, fn: async () => {
   const testUserId = crypto.randomUUID();
   const testEventKey = documentUploadedKey("perf-doc-1", testUserId);
   const iterations = 50;
@@ -85,9 +85,9 @@ Deno.test("upsert retries do not create duplicates and stay fast", { ignore: !DB
 
   // Cleanup
   await psql(`DELETE FROM public.notifications WHERE event_key = '${testEventKey}'`);
-});
+} });
 
-Deno.test("performance indexes exist on notifications table", { ignore: !DB_URL }, async () => {
+Deno.test({ name: "performance indexes exist on notifications table", ignore: !DB_URL, fn: async () => {
   const { stdout } = await psql(`
     SELECT indexname FROM pg_indexes
     WHERE tablename = 'notifications'
@@ -108,4 +108,4 @@ Deno.test("performance indexes exist on notifications table", { ignore: !DB_URL 
     true,
     "missing unique index notifications_event_key_user_unique on (user_id, event_key)",
   );
-});
+} });
