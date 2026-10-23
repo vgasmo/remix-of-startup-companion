@@ -49,7 +49,7 @@ const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLo
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const { data: stats, isLoading: statsLoading } = useAdminDashboardStats();
+  const { data: stats, isLoading: statsLoading, isError: statsError } = useAdminDashboardStats();
 
   const [showExport, setShowExport] = useState(false);
   const isLoading = workspacesLoading || statsLoading;
@@ -89,7 +89,7 @@ const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLo
     {
       key: 'approvals',
       label: t('admin.pendingApprovals'),
-      value: stats?.pendingApprovalsCount ?? 0,
+      value: statsError ? '—' : (stats?.pendingApprovalsCount ?? 0),
       icon: Users,
       href: '/admin?tab=approvals',
       variant: 'warning' as const,
@@ -97,7 +97,7 @@ const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLo
     {
       key: 'renewals',
       label: t('admin.contractRenewals'),
-      value: stats?.contractRenewals30d ?? 0,
+      value: statsError ? '—' : (stats?.contractRenewals30d ?? 0),
       icon: FileText,
       href: '/admin?tab=backoffice',
       variant: 'info' as const,
@@ -140,6 +140,7 @@ const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLo
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {statsError && <p role="alert" className="text-destructive">{t('common.errorLoading')}</p>}
       {/* 1. GREETING HERO — branded surface, absorbs the Command Center header */}
       <BrandSurface
         intensity="hero"
