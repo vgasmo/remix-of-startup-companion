@@ -222,14 +222,14 @@ serve(withCronRunLogging('send-weekly-health-digest', async (req) => {
           html,
         });
         if (sendError) {
-          console.error(`Resend rejected digest to ${profile.email}:`, sendError);
+          console.error("Resend rejected digest", { userId: profile.id });
           continue;
         }
 
         emailsSent++;
         await new Promise(r => setTimeout(r, 600));
       } catch (emailError) {
-        console.error(`Failed to send digest to ${profile.email}:`, emailError);
+        console.error("Digest delivery failed", { userId: profile.id });
       }
     }
 

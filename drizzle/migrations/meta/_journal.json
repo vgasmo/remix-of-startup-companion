@@ -78,6 +78,13 @@
       "when": 1792748062371,
       "tag": "0010_verified_signature_downstream_and_recovery_wakeup",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792749066185,
+      "tag": "0011_audit_workspace_write_and_conversation_guards",
+      "breakpoints": true
     }
   ]
 }

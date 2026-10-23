@@ -1,3 +1,4 @@
+import { escapeHtml } from '../_shared/html.ts';
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireCronOrStaff } from "../_shared/security.ts";
@@ -38,7 +39,7 @@ serve(async (req: Request) => {
     }
 
     const body: TemplateNotificationRequest = await req.json();
-    console.log("Template notification request:", body);
+    console.log("Template notification request", { type: body.type, instanceId: body.instanceId });
 
     // Get template instance with related data
     const { data: instance, error: instanceError } = await supabaseAdmin
@@ -157,10 +158,10 @@ serve(async (req: Request) => {
 
           if (emailResponse.ok) {
             emailsSent++;
-            console.log(`Submitted notification sent to ${profile.email}`);
+            console.log("Submitted notification sent", { userId: wu.user_id });
           }
         } catch (e) {
-          console.error(`Failed to send email to ${profile.email}:`, e);
+          console.error("Submitted notification failed", { userId: wu.user_id });
         }
       }
 
@@ -281,14 +282,14 @@ serve(async (req: Request) => {
         });
 
         if (emailResponse.ok) {
-          console.log(`Review notification sent to ${creator.email}`);
+          console.log("Review notification sent", { userId: instance.created_by });
           return new Response(
             JSON.stringify({ success: true, emailsSent: 1 }),
             { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
           );
         }
       } catch (e) {
-        console.error(`Failed to send email to ${creator.email}:`, e);
+        console.error("Review notification failed", { userId: instance.created_by });
       }
     }
 
@@ -315,7 +316,7 @@ interface SubmittedEmailData {
 
 function buildSubmittedEmail(data: SubmittedEmailData): string {
   const appUrl = Deno.env.get("PUBLIC_APP_URL") || "https://fb.startupleiria.com";
-  const url = `${appUrl}/workspace/${data.workspaceId}?tab=templates`;
+  const url = `${appUrl}/workspace/${encodeURIComponent(data.workspaceId)}?tab=templates`;
 
   return `
     <!DOCTYPE html>
@@ -331,14 +332,14 @@ function buildSubmittedEmail(data: SubmittedEmailData): string {
       </div>
       
       <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 12px 12px;">
-        <p style="margin-top: 0;">Olá ${data.reviewerName},</p>
+        <p style="margin-top: 0;">Olá ${escapeHtml(data.reviewerName)},</p>
         
-        <p>${data.submitterName} submeteu um template para revisão:</p>
+        <p>${escapeHtml(data.submitterName)} submeteu um template para revisão:</p>
         
         <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #c8e53d; margin: 20px 0;">
-          <h2 style="margin: 0 0 10px 0; font-size: 18px;">${data.templateName}</h2>
+          <h2 style="margin: 0 0 10px 0; font-size: 18px;">${escapeHtml(data.templateName)}</h2>
           <p style="color: #888; font-size: 14px; margin: 0;">
-            <strong>Startup:</strong> ${data.startupName}
+            <strong>Startup:</strong> ${escapeHtml(data.startupName)}
           </p>
         </div>
         
@@ -374,7 +375,7 @@ interface ReviewedEmailData {
 
 function buildReviewedEmail(data: ReviewedEmailData): string {
   const reviewAppUrl = Deno.env.get("PUBLIC_APP_URL") || "https://fb.startupleiria.com";
-  const url = `${reviewAppUrl}/workspace/${data.workspaceId}?tab=templates`;
+  const url = `${reviewAppUrl}/workspace/${encodeURIComponent(data.workspaceId)}?tab=templates`;
   
   const statusText = data.isApproved ? "foi aprovado" : "precisa de alterações";
   const statusColor = data.isApproved ? "#22c55e" : "#f59e0b";
@@ -394,18 +395,18 @@ function buildReviewedEmail(data: ReviewedEmailData): string {
       </div>
       
       <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 12px 12px;">
-        <p style="margin-top: 0;">Olá ${data.founderName},</p>
+        <p style="margin-top: 0;">Olá ${escapeHtml(data.founderName)},</p>
         
-        <p>O teu template <strong>${data.templateName}</strong> ${statusText}.</p>
+        <p>O teu template <strong>${escapeHtml(data.templateName)}</strong> ${statusText}.</p>
         
         <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid ${statusColor}; margin: 20px 0;">
           <p style="margin: 0; color: #666;">
-            <strong>Revisor:</strong> ${data.reviewerName}
+            <strong>Revisor:</strong> ${escapeHtml(data.reviewerName)}
           </p>
           ${data.reviewNotes ? `
             <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;">
             <p style="margin: 0;"><strong>Feedback:</strong></p>
-            <p style="margin: 10px 0 0 0; color: #333;">${data.reviewNotes}</p>
+            <p style="margin: 10px 0 0 0; color: #333;">${escapeHtml(data.reviewNotes)}</p>
           ` : ''}
         </div>
         

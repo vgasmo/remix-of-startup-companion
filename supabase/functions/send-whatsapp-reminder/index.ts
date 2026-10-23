@@ -1,10 +1,9 @@
+import { isAccountActive } from '../_shared/security.ts';
+import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+
 
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/twilio';
 
@@ -29,7 +28,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
     const { data: staffRoles } = await supabase.from('user_roles').select('role').eq('user_id', user.id).in('role', ['admin', 'consultor']);
-    if (!staffRoles || staffRoles.length === 0) {
+    if (!staffRoles || staffRoles.length === 0 || !(await isAccountActive(supabase, user.id))) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
@@ -44,7 +43,7 @@ serve(async (req) => {
 
     const { to, message, type = 'sms' } = await req.json();
 
-    if (!to || !message) {
+    if (typeof to !== 'string' || !/^\+[1-9]\d{6,14}$/.test(to) || typeof message !== 'string' || !message.trim() || !['sms', 'whatsapp'].includes(type)) {
       return new Response(JSON.stringify({ error: 'Missing to or message' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -70,7 +69,7 @@ serve(async (req) => {
 
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(`Twilio API error [${response.status}]: ${JSON.stringify(data)}`);
+      throw new Error(`Twilio API error [${response.status}]`);
     }
 
     return new Response(JSON.stringify({ success: true, sid: data.sid }), {
@@ -78,8 +77,8 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {
-    console.error('WhatsApp reminder error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('WhatsApp reminder failed');
+    const errorMessage = 'Failed to send reminder';
     return new Response(JSON.stringify({ success: false, error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

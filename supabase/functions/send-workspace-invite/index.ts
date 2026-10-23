@@ -349,7 +349,7 @@ serve(async (req) => {
       throw new Error(emailResult.error.message || 'resend_send_failed');
     }
 
-    console.log(`Invitation sent to ${payload.email} for workspace ${payload.workspaceId}`, emailResult.data?.id);
+    console.log("Workspace invitation sent", { workspaceId: payload.workspaceId, messageId: emailResult.data?.id });
     
     return corsJsonResponse({ 
       success: true, 

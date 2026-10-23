@@ -248,6 +248,7 @@ Deno.serve(async (req) => {
       file_hash,
       status: 'prepared',
       config_json: {
+        ...body.config,
         program_id: body.program_id ?? null,
         column_mapping: mapping,
         stage_map: body.stage_map ?? {},
@@ -256,7 +257,6 @@ Deno.serve(async (req) => {
         create_startups: false,
         create_workspaces: false,
         create_contract_proposals: false,
-        ...body.config,
       },
       created_by: uid,
       prepared_at: new Date().toISOString(),

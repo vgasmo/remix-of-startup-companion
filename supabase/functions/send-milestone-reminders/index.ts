@@ -1,3 +1,4 @@
+import { escapeHtml } from '../_shared/html.ts';
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@4.0.0";
@@ -168,17 +169,17 @@ serve(withCronRunLogging('send-milestone-reminders', async (req) => {
           const emailHtml = `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
               <h2 style="color: #333;">${s.heading}</h2>
-              <p>${s.greeting(profile.full_name || (locale === 'pt' ? 'utilizador' : 'there'))}</p>
+              <p>${s.greeting(escapeHtml(profile.full_name || (locale === 'pt' ? 'utilizador' : 'there')))}</p>
               <p>${s.body(daysUntilDue, dayWord)}</p>
               <div style="background: #f5f5f5; padding: 16px; border-radius: 8px; margin: 16px 0;">
-                <h3 style="margin: 0 0 8px 0; color: #333;">${milestone.title}</h3>
+                <h3 style="margin: 0 0 8px 0; color: #333;">${escapeHtml(milestone.title)}</h3>
                 <p style="margin: 0; color: #666;">
-                  <strong>${s.startup}:</strong> ${startupName}<br/>
-                  <strong>${s.dueDate}:</strong> ${dateStr}
+                  <strong>${s.startup}:</strong> ${escapeHtml(startupName)}<br/>
+                  <strong>${s.dueDate}:</strong> ${escapeHtml(dateStr)}
                 </p>
               </div>
               <p>
-                <a href="${Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/workspace/${milestone.workspace_id}?tab=milestones-actions"
+                <a href="${Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/workspace/${encodeURIComponent(milestone.workspace_id)}?tab=milestones-actions"
                    style="background: #6366f1; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block;">
                   ${s.cta}
                 </a>
@@ -197,13 +198,13 @@ serve(withCronRunLogging('send-milestone-reminders', async (req) => {
             html: emailHtml,
           });
           if (sendError) {
-            console.error("Resend rejected milestone reminder:", sendError);
+            console.error("Resend rejected milestone reminder", { milestoneId: milestone.id, userId: user.user_id });
           } else {
             emailsSent++;
           }
-          console.log(`Email sent to ${profile.email} for milestone ${milestone.id}`);
+          console.log("Milestone email attempt completed", { milestoneId: milestone.id, userId: user.user_id, success: !sendError });
         } catch (emailError) {
-          console.error("Error sending email:", emailError);
+          console.error("Milestone email delivery failed", { milestoneId: milestone.id, userId: user.user_id });
         }
 
         // Send Slack notification if enabled

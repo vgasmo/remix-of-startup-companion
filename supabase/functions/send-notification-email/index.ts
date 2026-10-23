@@ -1,3 +1,4 @@
+import { escapeHtml, safeAppUrl } from '../_shared/html.ts';
 /**
  * Unified transactional dispatcher for event-driven notifications.
  * Handles: contract_signed, contract_activated, document_review_requested,
@@ -153,7 +154,7 @@ function shell(locale: Locale, title: string, body: string, ctaUrl: string, ctaL
     ${body}
     ${extra}
     <div style="text-align:center;margin-top:30px;">
-      <a href="${ctaUrl}" style="display:inline-block;background:#c03c3c;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500;">${ctaLabel}</a>
+      <a href="${escapeHtml(safeAppUrl(ctaUrl, APP_URL))}" style="display:inline-block;background:#c03c3c;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500;">${ctaLabel}</a>
     </div>
     <hr style="border:none;border-top:1px solid #eee;margin:30px 0;">
     <p style="color:#666;font-size:12px;text-align:center;margin-bottom:0;">
@@ -340,8 +341,8 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
       const c = T[r.locale];
       subject = type === 'contract_signed' ? c.contractSignedSubject(s) : c.contractActivatedSubject(s);
       title = type === 'contract_signed' ? c.contractSignedTitle : c.contractActivatedTitle;
-      bodyHtml = `<p>${c.greeting(r.name || c.fallbackName)}</p><p>${
-        type === 'contract_signed' ? c.contractSignedBody(s) : c.contractActivatedBody(s)
+      bodyHtml = `<p>${c.greeting(escapeHtml(r.name || c.fallbackName))}</p><p>${
+        type === 'contract_signed' ? c.contractSignedBody(escapeHtml(s)) : c.contractActivatedBody(escapeHtml(s))
       }</p>`;
       if (await sendEmail(supabase, log, { to: r.email, subject, html: shell(r.locale, title, bodyHtml, ctaUrl, c.view) })) delivered++;
     }
@@ -381,8 +382,8 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
       const c = T[r.locale];
       subject = type === 'document_review_requested' ? c.docReviewRequestedSubject(s) : c.docReviewApprovedSubject(docName);
       title = type === 'document_review_requested' ? c.docReviewRequestedTitle : c.docReviewApprovedTitle;
-      bodyHtml = `<p>${c.greeting(r.name || c.fallbackName)}</p><p>${
-        type === 'document_review_requested' ? c.docReviewRequestedBody(s, docName) : c.docReviewApprovedBody(docName)
+      bodyHtml = `<p>${c.greeting(escapeHtml(r.name || c.fallbackName))}</p><p>${
+        type === 'document_review_requested' ? c.docReviewRequestedBody(escapeHtml(s), escapeHtml(docName)) : c.docReviewApprovedBody(escapeHtml(docName))
       }</p>`;
       if (await sendEmail(supabase, log, { to: r.email, subject, html: shell(r.locale, title, bodyHtml, ctaUrl, c.view) })) delivered++;
     }
@@ -410,7 +411,7 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
         html: shell(
           r.locale,
           c.consultantAssignedTitle,
-          `<p>${c.greeting(r.name || c.fallbackName)}</p><p>${c.consultantAssignedBody(s)}</p>`,
+          `<p>${c.greeting(escapeHtml(r.name || c.fallbackName))}</p><p>${c.consultantAssignedBody(escapeHtml(s))}</p>`,
           ctaUrl,
           c.view,
         ),
@@ -445,14 +446,14 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
           html: shell(
             r.locale,
             c.mentorAcceptedTitle,
-            `<p>${c.greeting(r.name || c.fallbackName)}</p><p>${c.mentorAcceptedBody(mentorName || c.unknownMentor)}</p>`,
+            `<p>${c.greeting(escapeHtml(r.name || c.fallbackName))}</p><p>${c.mentorAcceptedBody(escapeHtml(mentorName || c.unknownMentor))}</p>`,
             ctaUrl,
             c.view,
           ),
         })) delivered++;
       } else {
         const reasonBlock = body.decline_reason
-          ? `<p style="color:#666;"><strong>${c.reasonLabel}:</strong> ${body.decline_reason}</p>`
+          ? `<p style="color:#666;"><strong>${c.reasonLabel}:</strong> ${escapeHtml(body.decline_reason)}</p>`
           : '';
         if (await sendEmail(supabase, log, {
           to: r.email,
@@ -460,7 +461,7 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
           html: shell(
             r.locale,
             c.mentorDeclinedTitle,
-            `<p>${c.greeting(r.name || c.fallbackName)}</p><p>${c.mentorDeclinedBody}</p>${reasonBlock}`,
+            `<p>${c.greeting(escapeHtml(r.name || c.fallbackName))}</p><p>${c.mentorDeclinedBody}</p>${reasonBlock}`,
             ctaUrl,
             c.view,
           ),
@@ -486,7 +487,7 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
         html: shell(
           r.locale,
           c.mentionTitle,
-          `<p>${c.greeting(r.name || c.fallbackName)}</p><p>${c.mentionBody(authorName)}</p><blockquote style="border-left:3px solid #c8e53d;padding:8px 12px;margin:12px 0;color:#555;background:#fff;">${text.slice(0, 500)}</blockquote>`,
+          `<p>${c.greeting(escapeHtml(r.name || c.fallbackName))}</p><p>${c.mentionBody(escapeHtml(authorName))}</p><blockquote style="border-left:3px solid #c8e53d;padding:8px 12px;margin:12px 0;color:#555;background:#fff;">${escapeHtml(text.slice(0, 500))}</blockquote>`,
           ctaUrl,
           c.view,
         ),

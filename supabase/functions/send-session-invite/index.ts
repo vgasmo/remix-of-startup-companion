@@ -408,15 +408,15 @@ serve(async (req) => {
         });
         if (result.error) {
           // Resend returns { data, error } and never throws.
-          console.error(`Resend rejected email to ${email}:`, result.error);
+          console.error("Resend rejected session invite", { sessionId: payload.sessionId });
           results.push({ email, success: false, error: result.error.message || 'resend_send_failed' });
         } else {
-          console.log(`Email sent to ${email}: ${result.data?.id ?? 'ok'}`);
+          console.log("Session invite sent", { sessionId: payload.sessionId, messageId: result.data?.id });
           results.push({ email, success: true, result });
         }
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : String(err);
-        console.error(`Failed to send email to ${email}:`, err);
+        console.error("Session invite delivery failed", { sessionId: payload.sessionId });
         results.push({ email, success: false, error: errorMessage });
       }
     }

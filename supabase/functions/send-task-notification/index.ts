@@ -1,3 +1,4 @@
+import { escapeHtml } from '../_shared/html.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { requireCronOrStaff, generateRequestId, createLogger } from '../_shared/security.ts';
@@ -214,9 +215,9 @@ async function sendOverdueNotifications(supabase: any, log: any) {
           html: emailHtml,
         }),
       });
-      if (emailResponse.ok) { emailsSent++; log.info('Overdue email sent', { email: assignee.email, locale }); }
+      if (emailResponse.ok) { emailsSent++; log.info('Overdue email sent', { assigneeId, locale }); }
     } catch (e) {
-      log.error('Failed to send overdue email', e, { email: assignee.email });
+      log.warn('Failed to send overdue email', { assigneeId });
     }
   }
 
@@ -245,7 +246,7 @@ function buildAssignedEmail(data: AssignedEmailData, locale: Locale): string {
 
   const appUrl = Deno.env.get("PUBLIC_APP_URL") || "https://fb.startupleiria.com";
   const workspaceUrl = data.workspaceId
-    ? `${appUrl}/workspace/${data.workspaceId}?tab=notes`
+    ? `${appUrl}/workspace/${encodeURIComponent(data.workspaceId)}?tab=notes`
     : `${appUrl}/my-workspaces`;
 
   return `
@@ -258,14 +259,14 @@ function buildAssignedEmail(data: AssignedEmailData, locale: Locale): string {
         <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">${s.brand}</p>
       </div>
       <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 12px 12px;">
-        <p style="margin-top: 0;">${s.greeting(data.assigneeName)}</p>
-        <p>${s.assignedIntro(data.creatorName)}</p>
+        <p style="margin-top: 0;">${s.greeting(escapeHtml(data.assigneeName))}</p>
+        <p>${s.assignedIntro(escapeHtml(data.creatorName))}</p>
         <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #c03c3c; margin: 20px 0;">
-          <h2 style="margin: 0 0 10px 0; font-size: 18px;">${data.taskTitle} ${priorityBadge}</h2>
-          ${data.taskDescription ? `<p style="color: #666; margin: 10px 0;">${data.taskDescription}</p>` : ''}
+          <h2 style="margin: 0 0 10px 0; font-size: 18px;">${escapeHtml(data.taskTitle)} ${priorityBadge}</h2>
+          ${data.taskDescription ? `<p style="color: #666; margin: 10px 0;">${escapeHtml(data.taskDescription)}</p>` : ''}
           <p style="color: #888; font-size: 14px; margin: 10px 0 0 0;">
-            <strong>${s.startupLabel}:</strong> ${data.startupName}
-            ${data.dueDate ? `<br><strong>${s.dueLabel}:</strong> ${data.dueDate}` : ''}
+            <strong>${s.startupLabel}:</strong> ${escapeHtml(data.startupName)}
+            ${data.dueDate ? `<br><strong>${s.dueLabel}:</strong> ${escapeHtml(data.dueDate)}` : ''}
           </p>
         </div>
         <div style="text-align: center; margin-top: 30px;">
@@ -296,11 +297,11 @@ function buildOverdueEmail(data: OverdueEmailData, locale: Locale): string {
 
   const tasksList = data.tasks.map(t => {
     const daysOverdue = Math.floor((new Date().getTime() - new Date(t.dueDate).getTime()) / (1000 * 60 * 60 * 24));
-    const workspaceUrl = t.workspaceId ? `${taskAppUrl}/workspace/${t.workspaceId}?tab=notes` : "#";
+    const workspaceUrl = t.workspaceId ? `${taskAppUrl}/workspace/${encodeURIComponent(t.workspaceId)}?tab=notes` : "#";
     return `
       <li style="margin-bottom: 12px;">
-        <a href="${workspaceUrl}" style="color: #c03c3c; text-decoration: none; font-weight: 500;">${t.title}</a>
-        <br><span style="color: #888; font-size: 13px;">${t.startupName} • ${s.daysOverdue(daysOverdue)}</span>
+        <a href="${workspaceUrl}" style="color: #c03c3c; text-decoration: none; font-weight: 500;">${escapeHtml(t.title)}</a>
+        <br><span style="color: #888; font-size: 13px;">${escapeHtml(t.startupName)} • ${s.daysOverdue(daysOverdue)}</span>
       </li>
     `;
   }).join("");
@@ -315,7 +316,7 @@ function buildOverdueEmail(data: OverdueEmailData, locale: Locale): string {
         <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">${s.brand}</p>
       </div>
       <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 12px 12px;">
-        <p style="margin-top: 0;">${s.greeting(data.assigneeName)}</p>
+        <p style="margin-top: 0;">${s.greeting(escapeHtml(data.assigneeName))}</p>
         <p>${s.overdueIntro(data.tasks.length)}</p>
         <ul style="background: white; padding: 20px 20px 20px 40px; border-radius: 8px; border-left: 4px solid #ef4444;">
           ${tasksList}

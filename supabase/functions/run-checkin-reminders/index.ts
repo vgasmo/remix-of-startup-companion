@@ -1,3 +1,4 @@
+import { escapeHtml } from '../_shared/html.ts';
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireCronSecret } from "../_shared/security.ts";
@@ -210,12 +211,12 @@ const handler = async (req: Request): Promise<Response> => {
                 subject: `📋 Monthly check-in: ${startupName}`,
                 html: `
                   <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #333;">Hi ${founderName},</h2>
-                    <p>Your <strong>${definitionName}</strong> for <strong>${startupName}</strong> is ready.</p>
+                    <h2 style="color: #333;">Hi ${escapeHtml(founderName)},</h2>
+                    <p>Your <strong>${escapeHtml(definitionName)}</strong> for <strong>${escapeHtml(startupName)}</strong> is ready.</p>
                     <p><strong>Due date:</strong> ${new Date(checkin.due_date).toLocaleDateString("pt-PT", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
                     <p>This monthly check-in helps us track progress and provide better support.</p>
                     <div style="margin: 24px 0;">
-                      <a href="${Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/workspace/${checkin.workspace_id}?tab=overview"
+                      <a href="${Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'}/workspace/${encodeURIComponent(checkin.workspace_id)}?tab=overview"
                          style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
                         Complete monthly check-in
                       </a>
@@ -247,7 +248,7 @@ const handler = async (req: Request): Promise<Response> => {
               // Rate limiting: 600ms delay between emails
               await new Promise((resolve) => setTimeout(resolve, 600));
             } catch (emailError: any) {
-              console.error(`[run-checkin-reminders] Error sending email to ${founderEmail}:`, emailError);
+              console.error("[run-checkin-reminders] Email delivery failed", { userId: founder.user_id, checkinId: checkin.id });
 
               // Log failed email
               await supabase.from("email_log").insert({
@@ -259,7 +260,7 @@ const handler = async (req: Request): Promise<Response> => {
                 error_message: emailError.message,
               });
 
-              results.errors.push(`Email to ${founderEmail}: ${emailError.message}`);
+              results.errors.push(`Email delivery failed for check-in ${checkin.id}`);
             }
           }
         }
