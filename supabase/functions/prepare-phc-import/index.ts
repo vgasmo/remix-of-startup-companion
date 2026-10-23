@@ -5,7 +5,9 @@
 // invitations, notifications, or automations. Dry-run scaffolding only.
 //
 // deno-lint-ignore-file no-explicit-any
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.1';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { isAccountActive } from '../_shared/security.ts';
+import { parsePhcConfig } from '../_shared/importConfig.ts';
 import { getCorsHeaders, handleCorsOptions } from '../_shared/cors.ts';
 import { parseCsv, parseXlsx } from '../_shared/spreadsheetParse.ts';
 import { fileSha256 } from '../_shared/hubspotImport.ts';
@@ -40,12 +42,17 @@ Deno.serve(async (req) => {
     const { data: userData } = await sbUser.auth.getUser();
     const uid = userData.user?.id;
     if (!uid) return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: jsonHeaders });
+    if (!(await isAccountActive(sbSvc, uid))) return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: jsonHeaders });
 
     const { data: roles } = await sbSvc.from('user_roles').select('role').eq('user_id', uid);
     const isStaff = (roles ?? []).some((r: any) => r.role === 'admin' || r.role === 'backoffice');
     if (!isStaff) return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: jsonHeaders });
 
     const body = await req.json() as PrepareBody;
+    let config: ReturnType<typeof parsePhcConfig>;
+    try { config = parsePhcConfig(body.config); } catch {
+      return new Response(JSON.stringify({ error: 'invalid_config' }), { status: 400, headers: jsonHeaders });
+    }
     if (!body?.filename || !body?.content_base64) {
       return new Response(JSON.stringify({ error: 'invalid_input' }), { status: 400, headers: jsonHeaders });
     }
@@ -107,7 +114,7 @@ Deno.serve(async (req) => {
         create_contract_proposals: false,
         create_users: false,
         create_invitations: false,
-        ...body.config,
+        ...config,
       },
       created_by: uid,
       prepared_at: new Date().toISOString(),

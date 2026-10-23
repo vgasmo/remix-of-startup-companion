@@ -15,6 +15,7 @@
 - [x] Indicar as próximas melhorias prioritárias ao utilizador.
 
 ## Correções de segurança — 23 Out 2026
+- [ ] Incorporar rescan aprofundado concluído às 10:39: 16 alertas de código; corrigir configuração PHC, validar novos avisos e atualizar revisão final sem alterar regras pendentes.
 - [x] Rever os 47 alertas restantes: 7 corrigidos nesta ronda, 27 correções anteriores reconciliadas (1 removido no scan), 13 mantidos ativos; relatório v5 com inventário individual, gravidade, evidências e limites. 227 Vitest, 107 Deno (2 ignorados), 15 SQL passaram; pedidos alojados autenticados confirmaram bloqueios de destinatários/importação/intake sem envios reais.
 - [ ] Decidir propriedade de revogação Data Room, alteração de email de signatário público/staff e destinatários WhatsApp — quatro alertas error conservados; fluxos estabelecidos não alterados.
 - [ ] Confirmar classificação/visibilidade dos sete catálogos e logos/avatares — nove avisos/notas conservados, incluindo conflito entre memória de privacidade e migrações/diretório; não restringir por inferência.
