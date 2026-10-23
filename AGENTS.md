@@ -12,3 +12,4 @@
 - PDF workers are bundled from the installed renderer version so library upgrades cannot mismatch external workers.
 - Dependency security overrides stay on compatible library APIs and are checked against the lockfile, browser-target transform tests and automatic build; never upgrade a build tool beyond a verified compatible version merely to clear a warning.
 - Failed webhook delivery reclamation uses a conditional failed-state update; database failures request a provider retry instead of acknowledging an unprocessed duplicate.
+- Parent-ID RLS helpers check access to the parent workspace without querying the child-policy table recursively; public account predicates fail closed for anonymous callers.

@@ -1,0 +1,13 @@
+BEGIN;
+SELECT plan(6);
+SET LOCAL ROLE anon;
+SELECT set_config('request.jwt.claims','{"role":"anon"}',true);
+SELECT is(public.account_not_suspended('f1230000-0000-0000-0000-000000000001'),false,'anonymous lookup cannot reveal account state');
+SELECT is(has_function_privilege('anon','public.is_feature_flag_enabled(text)','execute'),false,'anonymous feature flag access revoked');
+SELECT is(has_function_privilege('anon','public.get_dataroom_workspace_id(uuid)','execute'),false,'anonymous dataroom lookup revoked');
+RESET ROLE;
+SELECT like(pg_get_functiondef('public.get_dataroom_workspace_id(uuid)'::regprocedure),'%has_workspace_access(workspace_id)%','dataroom parent lookup checks caller workspace access');
+SELECT like(pg_get_functiondef('public.get_session_workspace_id(uuid)'::regprocedure),'%has_workspace_access(workspace_id)%','session parent lookup checks caller workspace access');
+SELECT is(has_function_privilege('service_role','public.get_session_workspace_id(uuid)','execute'),true,'trusted session lookup remains available');
+SELECT * FROM finish();
+ROLLBACK;
