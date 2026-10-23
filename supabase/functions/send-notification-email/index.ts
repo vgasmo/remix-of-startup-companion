@@ -179,7 +179,7 @@ async function sendEmail(supabase: any, log: any, args: {
   html: string;
 }): Promise<boolean> {
   if (!RESEND_API_KEY) {
-    log.warn('RESEND_API_KEY not set — email skipped', { to: args.to });
+    log.warn('RESEND_API_KEY not set — email skipped');
     return false;
   }
 
@@ -200,7 +200,7 @@ async function sendEmail(supabase: any, log: any, args: {
       });
       if (res.ok) return true;
 
-      const text = await res.text();
+      await res.body?.cancel();
       const retryable = res.status === 429 || res.status >= 500;
       if (retryable && attempt < MAX_SEND_ATTEMPTS) {
         const retryAfter = Number(res.headers.get('retry-after')) || 0;
@@ -209,7 +209,7 @@ async function sendEmail(supabase: any, log: any, args: {
         await sleep(backoff);
         continue;
       }
-      log.warn('resend_error', { status: res.status, attempt, body: text.slice(0, 300) });
+      log.warn('resend_error', { status: res.status, attempt });
       return false;
     } catch (e) {
       if (attempt < MAX_SEND_ATTEMPTS) {
