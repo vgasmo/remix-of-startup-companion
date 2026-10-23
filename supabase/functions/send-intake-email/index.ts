@@ -9,6 +9,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { Resend } from 'npm:resend@4.0.0'
 import { requireCronOrStaff } from '../_shared/security.ts'
+import { intakeRecipient } from '../_shared/intakeRecipient.ts'
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
 
@@ -57,16 +58,31 @@ Deno.serve(async (req) => {
 
 
     const body: EmailRequest = await req.json()
-    const { type, recipientEmail, recipientName, organizationName, intakeToken, changesNotes, senderName } = body
+    const { type, recipientName, organizationName, intakeToken, changesNotes, senderName } = body
 
-    if (!recipientEmail || !type) {
-      return new Response(JSON.stringify({ error: 'recipientEmail and type required' }), {
+    if (!body.intakeId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.intakeId) || !type) {
+      return new Response(JSON.stringify({ error: 'intakeId and type required' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
+    const { data: savedIntake, error: intakeError } = await supabase.from('contract_intakes')
+      .select('legal_representative_email').eq('id', body.intakeId).maybeSingle()
+    if (intakeError) return new Response(JSON.stringify({ error: 'intake_lookup_failed' }), {
+      status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+    if (!savedIntake) return new Response(JSON.stringify({ error: 'intake_not_found' }), {
+      status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+    let recipientEmail: string
+    try { recipientEmail = intakeRecipient(savedIntake.legal_representative_email) } catch {
+      return new Response(JSON.stringify({ error: 'intake_recipient_missing' }), {
+        status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const appUrl = Deno.env.get("PUBLIC_APP_URL") || 'https://fb.startupleiria.com'
-    const intakeUrl = intakeToken ? `${appUrl}/contract-intake/${intakeToken}` : ''
+    const intakeUrl = intakeToken ? `${appUrl}/contract-intake/${encodeURIComponent(intakeToken)}` : ''
     const safeName = escapeHtml(recipientName || '')
     const safeOrg = escapeHtml(organizationName || '')
     const safeSender = escapeHtml(senderName || 'Startup Leiria')
