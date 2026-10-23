@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
+import { escapeHtml } from '../_shared/html.ts';
 import { requireUser, generateRequestId, createLogger } from '../_shared/security.ts';
 
 const FUNCTION_NAME = 'send-message-email-alert';
@@ -117,9 +118,9 @@ Deno.serve(async (req) => {
 
       const convTitle = conv?.title || senderName;
       const linkUrl = `${APP_URL}/messages?conversation=${message.conversation_id}`;
-      const safeContent = String(message.content || '')
-        .slice(0, 500)
-        .replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c] as string));
+      const safeContent = escapeHtml(String(message.content || '').slice(0, 500));
+      const safeSender = escapeHtml(senderName);
+      const safeTitle = escapeHtml(convTitle);
 
       const html = `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #111;">
@@ -127,8 +128,8 @@ Deno.serve(async (req) => {
             <strong style="font-size: 14px; color: #666;">Startup Leiria</strong>
           </div>
           <div style="padding: 24px;">
-            <h2 style="margin: 0 0 12px; font-size: 18px;">Nova mensagem de ${senderName}</h2>
-            <p style="margin: 0 0 8px; color: #666; font-size: 13px;">${convTitle}</p>
+            <h2 style="margin: 0 0 12px; font-size: 18px;">Nova mensagem de ${safeSender}</h2>
+            <p style="margin: 0 0 8px; color: #666; font-size: 13px;">${safeTitle}</p>
             <blockquote style="margin: 16px 0; padding: 12px 16px; border-left: 3px solid #d1d5db; background: #f9fafb; white-space: pre-wrap; font-size: 14px;">${safeContent}</blockquote>
             <a href="${linkUrl}" style="display: inline-block; margin-top: 12px; padding: 10px 18px; background: #111; color: #fff; text-decoration: none; border-radius: 6px; font-size: 14px;">Abrir conversa</a>
           </div>
@@ -146,7 +147,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           from: 'Startup Leiria <noreply@startupleiria.com>',
           to: [recipient.email],
-          subject: `Nova mensagem de ${senderName}`,
+          subject: `Nova mensagem de ${String(senderName).replace(/[\r\n]+/g, ' ').slice(0, 120)}`,
           html,
         }),
       });

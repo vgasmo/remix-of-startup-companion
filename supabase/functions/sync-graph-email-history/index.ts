@@ -383,7 +383,7 @@ Deno.serve(async (req) => {
       result.inserted = 0;
     }
 
-    console.log(`[sync-graph-email-history] Completed: ${JSON.stringify(result)}`);
+    console.log('[sync-graph-email-history] Completed', { inserted: (result as any).inserted ?? 0, skipped: (result as any).skipped ?? 0, dry_run: Boolean((result as any).dry_run) });
 
     // SECURITY: Never return secrets in response
     return corsJsonResponse(result, req, 200);
