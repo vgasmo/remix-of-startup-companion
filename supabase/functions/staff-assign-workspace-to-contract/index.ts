@@ -10,7 +10,7 @@
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { requireUser, generateRequestId, createLogger, errorResponse, ErrorCode } from '../_shared/security.ts';
+import { requireUser, generateRequestId, createLogger, errorResponse, ErrorCode, isAccountActive } from '../_shared/security.ts';
 import { autoCreateFounderAccount, enqueueFounderInviteTask } from '../_shared/founderAccount.ts';
 
 const FUNCTION_NAME = 'staff-assign-workspace-to-contract';
@@ -34,6 +34,7 @@ Deno.serve(async (req) => {
     const { user } = authRes;
 
     const admin = createClient(supabaseUrl, serviceKey);
+    if (!(await isAccountActive(admin, user.id))) return errorResponse(req, 'Account access denied', ErrorCode.FORBIDDEN, 403);
 
     // Staff check
     const { data: roles } = await admin

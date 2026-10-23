@@ -3,6 +3,7 @@
 // Pricing is snapshotted from edited_json (immutability rule).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { isAccountActive } from '../_shared/security.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -52,6 +53,7 @@ Deno.serve(async (req) => {
     if (!userData?.user) return jsonResponse({ error: "Not authenticated" }, 401);
 
     const admin = createClient(supabaseUrl, serviceKey);
+    if (!(await isAccountActive(admin, userData.user.id))) return jsonResponse({ error: 'Forbidden' }, 403);
     const { data: roleRow } = await admin
       .from("user_roles")
       .select("role")

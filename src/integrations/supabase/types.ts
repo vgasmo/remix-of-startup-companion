@@ -8649,6 +8649,7 @@ export type Database = {
       }
       startup_contracts: {
         Row: {
+          activation_sync_pending: boolean
           additional_representatives: Json
           archive_attempt_count: number | null
           archive_checksum: string | null
@@ -8739,6 +8740,7 @@ export type Database = {
           workspace_id: string | null
         }
         Insert: {
+          activation_sync_pending?: boolean
           additional_representatives?: Json
           archive_attempt_count?: number | null
           archive_checksum?: string | null
@@ -8829,6 +8831,7 @@ export type Database = {
           workspace_id?: string | null
         }
         Update: {
+          activation_sync_pending?: boolean
           additional_representatives?: Json
           archive_attempt_count?: number | null
           archive_checksum?: string | null
@@ -12456,6 +12459,7 @@ export type Database = {
         Args: { p_function: string; p_job_name: string }
         Returns: undefined
       }
+      dispatch_contract_activation_recovery: { Args: never; Returns: undefined }
       ecosystem_aggregates_v2: {
         Args: {
           p_building_id?: string
@@ -13239,6 +13243,19 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      staff_record_manual_contract_signature: {
+        Args: { p_contract_id: string }
+        Returns: undefined
+      }
+      staff_renew_contract: {
+        Args: {
+          p_contract_id: string
+          p_end_date: string
+          p_monthly_fee: number
+          p_term_start?: string
+        }
+        Returns: undefined
       }
       staff_rotate_intake_token: {
         Args: { p_intake_id: string }

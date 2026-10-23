@@ -66,7 +66,7 @@ export async function syncIntakeOnContractEvent(
     const currentIdx = STATUS_ORDER.indexOf(intake.status as IntakeState);
     const targetIdx = STATUS_ORDER.indexOf(targetIntakeStatus);
     
-    if (currentIdx >= targetIdx && intake.status !== 'cancelled') {
+    if (currentIdx > targetIdx && intake.status !== 'cancelled') {
       logger.info('lifecycle_sync_skip_regression', {
         contractId, intakeId: intake.id,
         currentStatus: intake.status, targetStatus: targetIntakeStatus,
@@ -75,7 +75,7 @@ export async function syncIntakeOnContractEvent(
     }
 
     // Update intake status
-    const { error: updateErr } = await supabase
+    const { error: updateErr } = currentIdx === targetIdx ? { error: null } : await supabase
       .from('contract_intakes')
       .update({ status: targetIntakeStatus })
       .eq('id', intake.id);
@@ -86,7 +86,7 @@ export async function syncIntakeOnContractEvent(
     }
 
     // Log audit event
-    await supabase.from('intake_events').insert({
+    if (currentIdx !== targetIdx) await supabase.from('intake_events').insert({
       intake_id: intake.id,
       event_type: `lifecycle_sync_${targetIntakeStatus}`,
       from_status: intake.status,
@@ -154,21 +154,15 @@ export async function canonicalMarkAsSigned(
 ): Promise<{ success: boolean; error?: string; syncError?: string; awaitingFounder?: boolean }> {
   try {
     // 1. Update contract to signed (as duas partes, para não ficar em 'partially_signed')
-    const { error: contractErr } = await supabase
-      .from('startup_contracts')
-      .update({
-        signature_status: 'signed',
-        signed_at: new Date().toISOString(),
-        status: 'active',
-        founder_signer_status: 'signed',
-        counter_signer_status: 'signed',
-      })
-      .eq('id', contractId);
+    const { error: contractErr } = await supabase.rpc('staff_record_manual_contract_signature', {
+      p_contract_id: contractId,
+    });
 
     if (contractErr) throw contractErr;
 
     const syncErrors: string[] = [];
     let awaitingFounder = false;
+    let workspaceActivated = false;
 
     // 2. Sync intake to 'signed'
     const signedRes = await syncIntakeOnContractEvent(contractId, 'signed', userId);
@@ -199,11 +193,18 @@ export async function canonicalMarkAsSigned(
       if (wsErr) syncErrors.push(`workspace_activate: ${wsErr.message}`);
       else if (wsResult === 'no_signed_contract') syncErrors.push('workspace_activate: no_signed_contract');
       else if (wsResult === 'awaiting_founder') awaitingFounder = true;
+      else {
+        const { data: verifiedWs, error: verifyErr } = await supabase.from('workspaces').select('status, blocked_at').eq('id', wsId).maybeSingle();
+        workspaceActivated = !verifyErr && verifiedWs?.status === 'active' && !verifiedWs.blocked_at;
+        if (!workspaceActivated) syncErrors.push('workspace_activate: not_active');
+      }
     }
 
     // 4. Sync intake to 'activated'
-    const activatedRes = await syncIntakeOnContractEvent(contractId, 'activated', userId);
-    if (isRealSyncFailure(activatedRes)) syncErrors.push(`intake_activated: ${activatedRes.error}`);
+    if (workspaceActivated && syncErrors.length === 0) {
+      const activatedRes = await syncIntakeOnContractEvent(contractId, 'activated', userId);
+      if (isRealSyncFailure(activatedRes)) syncErrors.push(`intake_activated: ${activatedRes.error}`);
+    }
 
     if (syncErrors.length > 0) {
       logger.warn('canonical_mark_signed_partial', { contractId, syncErrors });

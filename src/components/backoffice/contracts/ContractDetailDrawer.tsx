@@ -217,6 +217,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
   });
 
   if (!contract) return null;
+  const termsLocked = !!contract.signed_at || ['signed', 'completed', 'partially_signed'].includes(contract.signature_status ?? '');
 
   const startEditing = () => {
     setEditValues({
@@ -236,11 +237,13 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
     try {
       await updateContract.mutateAsync({
         id: contract.id,
-        ...editValues,
-        end_date: editValues.end_date || null,
-        incubation_type_id: editValues.incubation_type_id || null,
-        building_id: editValues.building_id || null,
-        notes: editValues.notes || null,
+        ...(termsLocked ? { status: editValues.status, notes: editValues.notes || null } : {
+          ...editValues,
+          end_date: editValues.end_date || null,
+          incubation_type_id: editValues.incubation_type_id || null,
+          building_id: editValues.building_id || null,
+          notes: editValues.notes || null,
+        }),
       });
       setIsEditing(false);
       notify.success(t('contracts.updated'));
@@ -487,6 +490,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
 
             {/* Details Tab */}
             <TabsContent value="details" className="mt-4 space-y-5 pb-8">
+              {isEditing && termsLocked && <p className="text-sm text-muted-foreground">{t('contractDetail.signedTermsLocked')}</p>}
               {/* Stream F: Contract readiness checklist (read-only) */}
               <ContractReadinessChecklist contract={contract} intake={linkedIntake as any} />
               {/* Status (editable) */}
@@ -532,7 +536,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                   icon={<FileText className="h-3 w-3" />}
                 >
                   {isEditing ? (
-                    <Input value={editValues.contract_number} onChange={e => setEditValues(p => ({ ...p, contract_number: e.target.value }))} className="h-8 text-sm" />
+                    <Input disabled={termsLocked} value={editValues.contract_number} onChange={e => setEditValues(p => ({ ...p, contract_number: e.target.value }))} className="h-8 text-sm" />
                   ) : (
                     <span className="text-sm font-medium">{contract.contract_number || '—'}</span>
                   )}
@@ -543,7 +547,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                   icon={<Euro className="h-3 w-3" />}
                 >
                   {isEditing ? (
-                    <Input type="number" step="0.01" value={editValues.monthly_fee} onChange={e => setEditValues(p => ({ ...p, monthly_fee: parseFloat(e.target.value) || 0 }))} className="h-8 text-sm" />
+                    <Input disabled={termsLocked} type="number" step="0.01" value={editValues.monthly_fee} onChange={e => setEditValues(p => ({ ...p, monthly_fee: parseFloat(e.target.value) || 0 }))} className="h-8 text-sm" />
                   ) : (
                     <span className="text-sm font-semibold">€{contract.monthly_fee.toFixed(2)}</span>
                   )}
@@ -553,6 +557,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                   {isEditing ? (
                     <Select
                       value={editValues.incubation_type_id || '__none__'}
+                      disabled={termsLocked}
                       onValueChange={v => {
                         const selectedTypeId = v === '__none__' ? '' : v;
                         const selectedType = incubationTypes?.find(it => it.id === selectedTypeId);
@@ -584,6 +589,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                   {isEditing ? (
                     <Select
                       value={editValues.building_id || '__none__'}
+                      disabled={termsLocked}
                       onValueChange={v => setEditValues(p => ({ ...p, building_id: v === '__none__' ? '' : v }))}
                     >
                       <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="—" /></SelectTrigger>
@@ -604,7 +610,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                   icon={<Calendar className="h-3 w-3" />}
                 >
                   {isEditing ? (
-                    <Input type="date" value={editValues.start_date} onChange={e => setEditValues(p => ({ ...p, start_date: e.target.value }))} className="h-8 text-sm" />
+                    <Input disabled={termsLocked} type="date" value={editValues.start_date} onChange={e => setEditValues(p => ({ ...p, start_date: e.target.value }))} className="h-8 text-sm" />
                   ) : (
                     <span className="text-sm font-medium">{format(startDate, 'dd MMM yyyy', { locale: dateLocale })}</span>
                   )}
@@ -615,7 +621,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
                   icon={<Calendar className="h-3 w-3" />}
                 >
                   {isEditing ? (
-                    <Input type="date" value={editValues.end_date} onChange={e => setEditValues(p => ({ ...p, end_date: e.target.value }))} className="h-8 text-sm" />
+                    <Input disabled={termsLocked} type="date" value={editValues.end_date} onChange={e => setEditValues(p => ({ ...p, end_date: e.target.value }))} className="h-8 text-sm" />
                   ) : (
                     <span className="text-sm font-medium">{contract.end_date ? format(new Date(contract.end_date), 'dd MMM yyyy', { locale: dateLocale }) : '—'}</span>
                   )}

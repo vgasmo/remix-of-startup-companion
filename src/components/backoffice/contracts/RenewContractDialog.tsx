@@ -16,7 +16,6 @@ import { suggestRenewalWindow, LIFECYCLE_THRESHOLDS } from '@/lib/contractLifecy
 import type { StartupContract } from '@/hooks/useBackoffice';
 import { findContractAllocations } from '@/hooks/useBackoffice';
 import { Loader2, RefreshCw } from 'lucide-react';
-import type { TablesUpdate } from '@/integrations/supabase/types';
 
 interface RenewContractDialogProps {
   contract: StartupContract | null;
@@ -60,17 +59,12 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
       }
 
       // start_date = início da incubação (cron de aniversários, "Ano N", limite de 3 anos): nunca sobrescrever
-      const patch: TablesUpdate<'startup_contracts'> = { end_date: newEnd, monthly_fee: monthlyFee };
-      if (contract.status === 'expired') {
-        patch.status = 'active';
-        patch.terminated_at = null;
-        patch.termination_reason = null;
-      }
-
-      const { error: updErr } = await supabase
-        .from('startup_contracts')
-        .update(patch)
-        .eq('id', contract.id);
+      const { error: updErr } = await supabase.rpc('staff_renew_contract', {
+        p_contract_id: contract.id,
+        p_end_date: newEnd,
+        p_monthly_fee: monthlyFee,
+        p_term_start: newStart || undefined,
+      });
       if (updErr) throw updErr;
 
       // Prolonga as alocações em curso deste contrato
@@ -90,22 +84,7 @@ export function RenewContractDialog({ contract, open, onOpenChange }: RenewContr
         notify.warn('Contrato renovado, mas a alocação da sala não foi prolongada. Prolongue-a em Espaços.');
       }
 
-      // Evento de ciclo de vida: a tabela não tem 'notes'; o texto vai em details
-      const { data: authData } = await supabase.auth.getUser();
-      const { error: evErr } = await supabase.from('contract_lifecycle_events').insert({
-        contract_id: contract.id,
-        event_type: 'renewal',
-        event_date: new Date().toISOString().split('T')[0],
-        performed_by: authData.user?.id ?? null,
-        details: {
-          previous_end_date: contract.end_date,
-          new_term_start: newStart || null,
-          new_end_date: newEnd,
-          previous_monthly_fee: contract.monthly_fee,
-          monthly_fee: monthlyFee,
-        },
-      });
-      if (evErr) console.warn('[RenewContractDialog] lifecycle event failed', evErr.message);
+      // The server records the renewal and its audit event in one transaction.
 
       // P2.6: fan out via staff-guarded RPC — client-side enumeration of
       // user_roles/workspace_users is blocked by RLS and silently skipped founders.
