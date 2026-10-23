@@ -1,4 +1,3 @@
-/* eslint-env serviceworker */
 /* global self, caches */
 self.addEventListener('install', () => {
   self.skipWaiting();
