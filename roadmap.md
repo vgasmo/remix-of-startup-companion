@@ -15,6 +15,7 @@
 - [x] Indicar as próximas melhorias prioritárias ao utilizador.
 
 ## Correções de segurança — 23 Out 2026
+- [ ] Ronda de conclusão: corrigir erro atual de preparação, reparar testes/replay de webhooks, verificar pendências de aprovações e reavaliar avisos atuais com evidência individual.
 - [x] Corrigir importação financeira, permissões Data Room e mensagens de contas suspensas; funções publicadas e testes de guardas passaram.
 - [x] Proteger os pontos de HTML, CSV e logs pessoais identificados na auditoria; 19 testes partilhados e 6 CSV passaram.
 - [x] Reavaliar permissões condicionais e dependências; relatório v3 documenta correções e limites.
