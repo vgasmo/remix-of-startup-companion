@@ -15,11 +15,12 @@
 - [x] Indicar as próximas melhorias prioritárias ao utilizador.
 
 ## Correções de segurança — 23 Out 2026
-- [ ] Concluir validação dos alertas restantes com testes adversariais e relatório v7; distinguir correções, decisões e verificações externas.
+- [x] Concluir análise aprofundada anterior e validar alertas: 4 guardas de conta corrigidas/publicadas, histórico IA isolado, 24 novas regressões, relatório v7; 19 alertas ativos separados por decisão/configuração/limite.
+- [ ] Incorporar nova análise automática iniciada às 11:08 UTC — aguarda conclusão automática, sem polling.
 - [x] Corrigir causas de desaparecimento do resumo IA: não hidratar flags antigas; erros não substituem dados verificados por lista vazia. Regressão passou; Arete mantém resumo após 503 simulado, zero erros JS, build OK. Ausência original na conta da consultora e geração real não reproduzidas.
 - [x] Incorporar rescan concluído: 16 código + 11 DB; PHC corrigido, testado e publicado; pedido alojado 400. Relatório v6 corrige contagens/conclusões provisórias e documenta os 27 alertas.
 - [x] Rever os 47 alertas iniciais e novo rescan; relatório v6 com evidências e limites. 227 Vitest anteriores + 1 regressão cache, 108 Deno (2 ignorados), 15 SQL passaram; pedidos alojados confirmam destinatários/importação/intake bloqueados.
-- [ ] Validar histórico assistant forjado com teste adversarial e política de histórico confiável; não certificado nesta ronda.
+- [x] Validar histórico assistant forjado: convertido em contexto user explicitamente não confiável, campos adicionais removidos; testes adversariais e conversa autenticada de 2 turnos passaram. Não certifica resistência universal a prompt injection.
 - [ ] Decidir destinatários extra de inquéritos admin e mailbox de testes Graph; fluxos existentes preservados, sem envios/eventos reais.
 - [ ] Decidir propriedade de revogação Data Room, alteração de email de signatário público/staff e destinatários WhatsApp — quatro alertas error conservados; fluxos estabelecidos não alterados.
 - [ ] Confirmar classificação/visibilidade dos sete catálogos e logos/avatares — nove avisos/notas conservados, incluindo conflito entre memória de privacidade e migrações/diretório; não restringir por inferência.

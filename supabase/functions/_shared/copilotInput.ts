@@ -9,7 +9,7 @@ export function parseCopilotMessages(value: unknown): GatewayMessage[] {
   return value.map((entry: unknown) => {
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) throw new Error('invalid_messages');
     const message = entry as Record<string, unknown>;
-    if (!['user', 'assistant'].includes(String(message.role)) ||
+    if (typeof message.role !== 'string' || !['user', 'assistant'].includes(message.role) ||
         typeof message.content !== 'string' || message.content.length > 4000) {
       throw new Error('invalid_messages');
     }
