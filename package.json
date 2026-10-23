@@ -142,6 +142,8 @@
     "picomatch": "2.3.2",
     "brace-expansion": "2.1.7",
     "glob": "10.5.0",
-    "minimatch": "9.0.9"
+    "minimatch": "9.0.9",
+    "rollup": "4.65.0",
+    "esbuild": "0.28.2"
   }
 }

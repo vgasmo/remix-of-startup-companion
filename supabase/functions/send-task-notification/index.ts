@@ -152,9 +152,9 @@ async function sendAssignedNotification(supabase: any, taskId: string, log: any)
   });
 
   if (!emailResponse.ok) {
-    const errorText = await emailResponse.text();
-    log.error('Resend API error', new Error(errorText));
-    return { success: false, error: errorText };
+    await emailResponse.body?.cancel();
+    log.warn('Resend API error', { status: emailResponse.status });
+    return { success: false, error: 'email_delivery_failed' };
   }
 
   const result = await emailResponse.json();
