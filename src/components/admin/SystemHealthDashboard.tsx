@@ -1,3 +1,4 @@
+import { serializeCsv } from '@/lib/csv';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -240,11 +241,7 @@ export function SystemHealthDashboard() {
   }
 
   const downloadCsv = (filename: string, headers: string[], rows: (string | number | null)[][]) => {
-    const escape = (v: string | number | null) => {
-      const s = v === null || v === undefined ? '' : String(v);
-      return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-    };
-    const csv = [headers.join(','), ...rows.map(r => r.map(escape).join(','))].join('\n');
+    const csv = serializeCsv([headers, ...rows]);
     const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

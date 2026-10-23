@@ -1,3 +1,4 @@
+import { serializeCsv } from '@/lib/csv';
 // AdminDataImportV2
 // Feature-flagged rebuild of the HubSpot importer:
 // Upload → Column Mapping → Reconciliation → Approval/Commit → Results
@@ -244,7 +245,7 @@ export default function AdminDataImportV2() {
   const downloadExceptions = useCallback(() => {
     if (!rows.length) return;
     const headers = ['row_number', 'proposed_action', 'match_method', 'confidence', 'approval_state', 'errors', 'organization_name', 'contact_email', 'deal_id', 'company_id'];
-    const lines = [headers.join(',')];
+    const lines: unknown[][] = [headers];
     for (const r of rows) {
       const n = r.normalized_json ?? {};
       const cells = [
@@ -259,9 +260,9 @@ export default function AdminDataImportV2() {
         (n.deal_id ?? ''),
         (n.company_id ?? ''),
       ];
-      lines.push(cells.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(','));
+      lines.push(cells);
     }
-    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const blob = new Blob([serializeCsv(lines)], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = `hubspot-import-${prepared?.job_id ?? 'job'}.csv`;

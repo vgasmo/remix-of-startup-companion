@@ -110,7 +110,8 @@ export function useWorkspaces(
           program:programs(id, name, program_type)
         `)
         .in('status', statuses) // Only include requested statuses
-        .order('updated_at', { ascending: false });
+        .order('updated_at', { ascending: false })
+        .order('id');
 
       // If assignedOnly, filter by assigned workspace IDs
       if (assignedOnly && assignedWorkspaceIds !== null) {
@@ -139,8 +140,14 @@ export function useWorkspaces(
       if (filters.priority && filters.priority !== 'all') {
         query = query.eq('priority_level', filters.priority);
       }
-      const { data: workspaces, error } = await query;
-      if (error) throw error;
+      // Fetch bounded pages without silently truncating local search or portfolio totals.
+      const workspaces: NonNullable<Awaited<typeof query>['data']> = [];
+      for (let offset = 0; ; offset += 250) {
+        const { data, error } = await query.range(offset, offset + 249);
+        if (error) throw error;
+        workspaces.push(...(data ?? []));
+        if (!data || data.length < 250) break;
+      }
 
       // P4.8: fall back to RPC-fetched startup basics for roles (team_member/mentor)
       // whose RLS blocks reading `startups` directly, so names/logos aren't missing.

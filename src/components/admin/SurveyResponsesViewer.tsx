@@ -1,3 +1,4 @@
+import { csvCell } from '@/lib/csv';
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
@@ -60,11 +61,6 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
   const handleExportCSV = async () => {
     setExporting(true);
     try {
-      const esc = (v: unknown) => {
-        let s = String(v ?? "");
-        if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
-        return `"${s.replace(/"/g, '""')}"`;
-      };
       const { data: camp, error: cErr } = await supabase
         .from("survey_campaigns")
         .select("survey_definition:survey_definitions(questions_json)")
@@ -114,7 +110,7 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
         ...questions.map((q) => byInst[inst.id]?.[q.id] ?? ""),
       ]);
 
-      const csv = [headers, ...rows].map((r) => r.map(esc).join(";")).join("\r\n");
+      const csv = [headers, ...rows].map((r) => r.map(csvCell).join(";")).join("\r\n");
       const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
