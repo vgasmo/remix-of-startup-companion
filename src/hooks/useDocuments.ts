@@ -236,7 +236,7 @@ export function useGetDocumentUrl() {
   return async (filePath: string) => {
     const { data, error } = await supabase.storage
       .from('workspace-documents')
-      .createSignedUrl(filePath, 3600); // 1 hour expiry
+      .createSignedUrl(filePath, 300); // short-lived: opened immediately on click
 
     if (error) throw error;
     return data.signedUrl;
