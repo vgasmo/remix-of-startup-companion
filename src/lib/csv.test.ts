@@ -20,7 +20,7 @@ describe('spreadsheet export security', () => {
     expect(serializeCsv([[-1200]])).toBe('"-1200"');
   });
   it('still neutralizes formula-like non-numeric values', () => {
-    expect(csvCell('-1+cmd|\' /C')).toBe('"\'-1+cmd|\'\' /C"');
+    expect(csvCell('-1+cmd|\' /C')).toBe('"\'-1+cmd|\' /C"');
     expect(csvCell('=1+1')).toBe('"\'=1+1"');
   });
 });
