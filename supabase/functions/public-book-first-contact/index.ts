@@ -585,36 +585,22 @@ serve(async (req) => {
       console.error('first_contact_outbox intent insert failed:', outErr);
     }
 
-    // RC11 D.5: rebook of an early-stage lead — remove the old Graph event and tell the previous consultant.
-    if (commitMode === 'reused_early_stage') {
-      const prevCreds = previousEventId ? await getGraphCredentials(supabase) : null;
-      if (prevCreds && previousEventId && previousOwnerId) {
-        try {
-          const { data: prevProfile } = await supabase.from('profiles').select('email').eq('id', previousOwnerId).maybeSingle();
-          if (prevProfile?.email) {
-            const tok = await getGraphAccessToken(prevCreds);
-            const delRes = await fetch(
-              `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(prevProfile.email)}/events/${encodeURIComponent(previousEventId)}`,
-              { method: 'DELETE', headers: { Authorization: `Bearer ${tok}` } },
-            );
-            if (!delRes.ok && delRes.status !== 404) console.warn('previous event delete failed', delRes.status);
-          }
-        } catch (e) {
-          console.warn('previous event cleanup failed', e);
-        }
-      }
-      if (previousOwnerId && previousOwnerId !== consultantId) {
-        await supabase.from('notifications').insert({
-          user_id: previousOwnerId,
-          type: 'first_contact_reassigned',
-          title: `Primeiro Contacto remarcado — ${escHtml(contact.name)}`,
-          message: 'A lead remarcou e ficou atribuída a outro consultor. O evento anterior foi cancelado.',
-          link: `/crm?open=${funnelItemId}`,
-          entity_type: 'funnel_item',
-          entity_id: funnelItemId,
-          event_key: `first_contact_reassigned:${funnelItemId}:${slot.date}T${slot.time}`,
-        });
-      }
+    // Rebook of an early-stage lead: never cancel the previous event automatically
+    // (a public caller can type someone else's email). Only tell the previous
+    // consultant so staff resolve the duplicate in the CRM.
+    if (commitMode === 'reused_early_stage' && previousOwnerId) {
+      await supabase.from('notifications').insert({
+        user_id: previousOwnerId,
+        type: 'first_contact_reassigned',
+        title: `Primeiro Contacto remarcado — ${escHtml(contact.name)}`,
+        message: previousEventId
+          ? 'Foi feita uma nova marcação para esta lead. A reunião anterior NÃO foi cancelada — confirma com a lead e cancela a que já não serve.'
+          : 'Foi feita uma nova marcação para esta lead.',
+        link: `/crm?open=${funnelItemId}`,
+        entity_type: 'funnel_item',
+        entity_id: funnelItemId,
+        event_key: `first_contact_reassigned:${funnelItemId}:${slot.date}T${slot.time}`,
+      });
     }
 
     // Create calendar event via Graph API if configured
