@@ -244,15 +244,15 @@ Deno.serve(async (req) => {
 
           if (!emailResponse.ok) {
             const errorText = await emailResponse.text();
-            log.error('Resend API error', { email: recipient.email, error: errorText });
+            log.error('Resend API error', { announcementId: announcement.id, error: errorText.slice(0, 300) });
             errors.push(`Failed to send to ${recipient.email}`);
             continue;
           }
 
           totalEmailsSent++;
-          log.info('Email sent', { email: recipient.email, locale });
+          log.info('Email sent', { announcementId: announcement.id, locale });
         } catch (emailError) {
-          log.error('Email send error', emailError, { email: recipient.email });
+          log.error('Email send error', emailError, { announcementId: announcement.id });
           errors.push(`Error sending to ${recipient.email}`);
         }
       }
