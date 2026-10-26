@@ -132,17 +132,36 @@ Deno.serve(async (req) => {
     if ('error' in authResult) { log.warn('Unauthorized access attempt'); return authResult.error; }
 
     const { announcement_ids } = await req.json() as AnnouncementRequest;
-    if (!announcement_ids || announcement_ids.length === 0) {
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!Array.isArray(announcement_ids) || announcement_ids.length === 0
+      || announcement_ids.length > 500
+      || !announcement_ids.every((id) => typeof id === 'string' && uuidRe.test(id))) {
       return corsJsonResponse({ error: 'No announcement IDs provided' }, req, 400);
     }
 
     log.info('Sending announcement emails', { count: announcement_ids.length });
 
+    // Atomically claim: only email-enabled announcements never emailed before,
+    // and for user callers only announcements they created themselves.
+    let claim = supabaseAdmin
+      .from("admin_announcements")
+      .update({ email_sent_at: new Date().toISOString() })
+      .in("id", announcement_ids)
+      .eq("send_email", true)
+      .is("email_sent_at", null);
+    if (authResult.userId) claim = claim.eq("created_by", authResult.userId);
+    const { data: claimed, error: claimError } = await claim.select("id");
+    if (claimError) throw claimError;
+    const claimedIds = (claimed ?? []).map((r: { id: string }) => r.id);
+    if (claimedIds.length === 0) {
+      return corsJsonResponse({ success: true, emailsSent: 0 }, req);
+    }
+
     const { data: announcements, error: annError } = await supabaseAdmin
       .from("admin_announcements")
       .select(`id, workspace_id, category, title, message,
         workspace:workspaces(id, startup:startups(id, name))`)
-      .in("id", announcement_ids);
+      .in("id", claimedIds);
 
     if (annError) throw annError;
     if (!announcements || announcements.length === 0) {
@@ -225,15 +244,15 @@ Deno.serve(async (req) => {
 
           if (!emailResponse.ok) {
             const errorText = await emailResponse.text();
-            log.error('Resend API error', { email: recipient.email, error: errorText });
+            log.error('Resend API error', { announcementId: announcement.id, error: errorText.slice(0, 300) });
             errors.push(`Failed to send to ${recipient.email}`);
             continue;
           }
 
           totalEmailsSent++;
-          log.info('Email sent', { email: recipient.email, locale });
+          log.info('Email sent', { announcementId: announcement.id, locale });
         } catch (emailError) {
-          log.error('Email send error', emailError, { email: recipient.email });
+          log.error('Email send error', emailError, { announcementId: announcement.id });
           errors.push(`Error sending to ${recipient.email}`);
         }
       }
