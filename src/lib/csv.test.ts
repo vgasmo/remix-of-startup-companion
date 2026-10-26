@@ -13,4 +13,14 @@ describe('spreadsheet export security', () => {
   it('preserves ordinary text without formula prefix', () => {
     expect(csvCell('Startup Leiria')).toBe('"Startup Leiria"');
   });
+  it('keeps negative and positive numbers numeric, without stray apostrophe', () => {
+    expect(csvCell(-12000)).toBe('"-12000"');
+    expect(csvCell('-12000')).toBe('"-12000"');
+    expect(csvCell(42.5)).toBe('"42.5"');
+    expect(serializeCsv([[-1200]])).toBe('"-1200"');
+  });
+  it('still neutralizes formula-like non-numeric values', () => {
+    expect(csvCell('-1+cmd|\' /C')).toBe('"\'-1+cmd|\' /C"');
+    expect(csvCell('=1+1')).toBe('"\'=1+1"');
+  });
 });
