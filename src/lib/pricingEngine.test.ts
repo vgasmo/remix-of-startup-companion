@@ -306,3 +306,17 @@ describe('formatContractCurrency', () => {
     expect(s).toMatch(/€/);
   });
 });
+
+describe('calculateContractPricing — discounts never stack', () => {
+  it('associate (10%) + Startup Portugal (5%) + CA 12% applies only 12%', () => {
+    const r = calculateContractPricing({
+      incubationType: baseType, isAssociate: true, hasStartupPortugalStatus: true,
+      discounts: [{ id: 'd', discount_percentage: 12, reason: 'CA', start_date: '2020-01-01', end_date: null } as never],
+    });
+    expect(r.totalDiscountPercentage).toBe(12);
+  });
+  it('associate (10%) + Startup Portugal (5%) applies only 10%', () => {
+    const r = calculateContractPricing({ incubationType: baseType, isAssociate: true, hasStartupPortugalStatus: true });
+    expect(r.totalDiscountPercentage).toBe(10);
+  });
+});

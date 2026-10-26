@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { computeEffectiveDiscount } from './contractLifecycle';
-import { calculatePricing } from './pricingEngine';
 
 const today = new Date('2026-10-26');
 const row = (pct: number, reason = 'CA') => ({ discount_percentage: pct, start_date: '2026-01-01', end_date: null, reason }) as never;
