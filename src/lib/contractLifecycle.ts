@@ -157,16 +157,19 @@ export function computeEffectiveDiscount(
     const end = d.end_date ? new Date(d.end_date) : null;
     return start <= today && (!end || end >= today);
   });
-  if (active.length) {
-    // Best (highest) — matches resolveApplicableDiscounts behaviour.
-    const best = active.reduce((a, b) => (b.discount_percentage > a.discount_percentage ? b : a));
+  // Discounts never stack: the single largest applicable discount wins.
+  const legacy = Number(legacyPct) || 0;
+  const best = active.length
+    ? active.reduce((a, b) => (b.discount_percentage > a.discount_percentage ? b : a))
+    : null;
+  const bestPct = best ? Number(best.discount_percentage) || 0 : 0;
+  if (best && bestPct >= legacy) {
     return {
-      effectivePct: Number(best.discount_percentage) || 0,
+      effectivePct: bestPct,
       source: 'table',
       reason: best.reason || 'Deliberação CA',
     };
   }
-  const legacy = Number(legacyPct) || 0;
   if (legacy > 0) {
     return { effectivePct: legacy, source: 'legacy', reason: legacyReason || '' };
   }
