@@ -40,6 +40,7 @@ import { useConsultors } from '@/hooks/useWorkspaceOwner';
 import { useCompleteTask } from '@/hooks/useCrmTasks';
 import { useAuth } from '@/contexts/AuthContext';
 import { RecordDrawer } from '@/components/crm/RecordDrawer';
+import { ConvertLeadDialog } from '@/components/crm/ConvertLeadDialog';
 import { formatRelativeTime } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { SavedViewsDropdown } from '@/components/crm/SavedViewsDropdown';
@@ -95,6 +96,16 @@ export default function CRM() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedItem, setSelectedItem] = useState<FunnelItem | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [contractedLead, setContractedLead] = useState<FunnelItem | null>(null);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ item: FunnelItem }>).detail;
+      if (detail?.item) setContractedLead(detail.item);
+    };
+    window.addEventListener('crm:lead-contracted', handler);
+    return () => window.removeEventListener('crm:lead-contracted', handler);
+  }, []);
 
   // Filters live in the URL so refresh survives and views are shareable
   const programFilter = searchParams.get('program') || 'all';
@@ -717,6 +728,15 @@ export default function CRM() {
           </TabsContent>
         </Tabs>
 
+        {contractedLead && (
+          <ConvertLeadDialog
+            item={contractedLead}
+            open
+            markContracted
+            onOpenChange={(open) => { if (!open) setContractedLead(null); }}
+            onConverted={() => setContractedLead(null)}
+          />
+        )}
         <RecordDrawer
           item={selectedItem}
           open={drawerOpen}
