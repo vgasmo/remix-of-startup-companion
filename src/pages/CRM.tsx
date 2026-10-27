@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { clickableProps } from '@/lib/clickable';
 
 import { useTranslation } from 'react-i18next';
@@ -96,6 +97,16 @@ export default function CRM() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedItem, setSelectedItem] = useState<FunnelItem | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { data: refreshedSelectedItem } = useQuery({
+    queryKey: ['funnel-items', 'record', selectedItem?.id],
+    enabled: drawerOpen && !!selectedItem?.id,
+    queryFn: async () => {
+      if (!selectedItem?.id) return null;
+      const { data, error } = await supabase.from('funnel_items').select('*').eq('id', selectedItem.id).single();
+      if (error) throw error;
+      return data as FunnelItem;
+    },
+  });
   const [contractedLead, setContractedLead] = useState<FunnelItem | null>(null);
 
   useEffect(() => {
@@ -738,7 +749,7 @@ export default function CRM() {
           />
         )}
         <RecordDrawer
-          item={selectedItem}
+          item={refreshedSelectedItem ?? selectedItem}
           open={drawerOpen}
           onOpenChange={(open) => {
             setDrawerOpen(open);
