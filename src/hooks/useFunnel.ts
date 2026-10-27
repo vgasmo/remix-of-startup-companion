@@ -160,6 +160,10 @@ export function useUpdateFunnelItem() {
           stage: inferLeadStage(current.metadata_json as Record<string, unknown> | null),
           markContracted: true,
         });
+        const { data: converted, error: conversionReadError } = await supabase
+          .from('funnel_items').select('*').eq('id', id).single();
+        if (conversionReadError) throw conversionReadError;
+        return converted;
       }
 
       const { data, error } = await supabase
@@ -318,11 +322,11 @@ export function useConvertToStartup() {
       // contract stub + funnel update + event in one atomic step. Any failure
       // rolls back the whole set on the server.
       const { data: rpcData, error: rpcError } = markContracted
-        ? await supabase.rpc('staff_mark_funnel_item_contracted' as never, {
+        ? await supabase.rpc('staff_mark_funnel_item_contracted', {
             p_funnel_item_id: funnelItemId,
             p_program_id: programId,
             p_stage: stage,
-          } as never)
+          })
         : await supabase.rpc(
         'staff_convert_funnel_item_to_startup',
         {
