@@ -1,4 +1,7 @@
 
+## Conversão CRM — 27 Out 2026
+- [ ] Corrigir conversão de leads contratadas nos contratos internos/externos, preservar dados, testar e verificar na aplicação.
+
 ## Aprovações de contas (14 Set)
 - [x] Nome da startup já recolhido no registo e mostrado nas aprovações; confirmado no código nesta ronda.
 - [x] Pesquisa por startup no servidor sem corte prévio de IDs, páginas de 50 com carregar mais; VYNHELIX encontrado na aplicação autenticada.
