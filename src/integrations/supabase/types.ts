@@ -13225,6 +13225,14 @@ export type Database = {
           severity: string
         }[]
       }
+      staff_mark_funnel_item_contracted: {
+        Args: {
+          p_funnel_item_id: string
+          p_program_id: string
+          p_stage?: string
+        }
+        Returns: Json
+      }
       staff_reclassify_transcript_confidentiality: {
         Args: {
           p_new_confidentiality: string
