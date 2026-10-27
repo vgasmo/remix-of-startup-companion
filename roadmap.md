@@ -1,4 +1,7 @@
 
+## Conversão CRM — 27 Out 2026
+- [x] Conversão contratada atómica e escolha de programa na página; notas/contactos preservados, histórico ligado, sem ativação/assinatura forjada. Lead de teste convertida e workspace aberto; registos de teste arquivados. 238 testes da app, regressões SQL isoladas e lint passaram; build OK. Não publicado o frontend; assinaturas externas não repetidas nesta ronda.
+
 ## Aprovações de contas (14 Set)
 - [x] Nome da startup já recolhido no registo e mostrado nas aprovações; confirmado no código nesta ronda.
 - [x] Pesquisa por startup no servidor sem corte prévio de IDs, páginas de 50 com carregar mais; VYNHELIX encontrado na aplicação autenticada.

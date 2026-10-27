@@ -1,5 +1,7 @@
 # Security architecture
 
+- Contracted CRM transitions use the atomic staff conversion command; program selection is page-owned, history is linked without duplication, and commercial attestation never substitutes for verified contract activation.
+
 - Enforce signed contract term immutability and verified activation in database triggers; UI restrictions alone are bypassable.
 - Route manual signature attestations and renewals through role-checked, auditable database commands; preserve established manual and renewal workflows without permitting generic edits.
 - Verify privileged user account status through the shared security helper before service-role operations; account-check errors deny access.

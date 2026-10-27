@@ -4,6 +4,7 @@ import { notify } from "@/lib/notify";
 import { type FunnelStage, type FunnelType } from '@/constants/funnelStages';
 import { logger } from '@/lib/logger';
 import { fetchAllRows } from '@/lib/fetchAllRows';
+import { inferLeadStage, needsContractedConversion } from '@/lib/crmConversion';
 
 /** Explicit cap so the CRM board never silently drops leads past PostgREST's default. */
 const FUNNEL_ITEMS_LIMIT = 5000;
@@ -132,15 +133,38 @@ export function useCreateFunnelItem() {
 
 export function useUpdateFunnelItem() {
   const queryClient = useQueryClient();
+  const convert = useConvertToStartup();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<FunnelItem> & { id: string }) => {
       // Get current item for event logging
-      const { data: current } = await supabase
+      const { data: current, error: currentError } = await supabase
         .from('funnel_items')
-        .select('stage')
+        .select('*')
         .eq('id', id)
         .single();
+      if (currentError) throw currentError;
+
+      if (needsContractedConversion({ ...current, ...updates })) {
+        const programId = updates.program_id || current.program_id;
+        if (!programId) {
+          // No commercial change is committed until the required program is chosen.
+          window.dispatchEvent(new CustomEvent('crm:lead-contracted', {
+            detail: { item: { ...current, ...updates }, markContracted: true },
+          }));
+          return current;
+        }
+        await convert.mutateAsync({
+          funnelItemId: id,
+          programId,
+          stage: inferLeadStage(current.metadata_json as Record<string, unknown> | null),
+          markContracted: true,
+        });
+        const { data: converted, error: conversionReadError } = await supabase
+          .from('funnel_items').select('*').eq('id', id).single();
+        if (conversionReadError) throw conversionReadError;
+        return converted;
+      }
 
       const { data, error } = await supabase
         .from('funnel_items')
@@ -210,27 +234,9 @@ export function useUpdateFunnelItem() {
       }
       notify.error(e.message);
     },
-    onSuccess: (_data, { id, ...updates }) => {
-      notify.success(t('crm.updated'));
-      
-      // E1: Auto-suggest workspace creation when lead reaches "contracted"
-      if (updates.stage === 'contracted') {
-        // RC11: usar a linha devolvida pelo update; a pagina /crm nao monta a cache ['funnel-items'],
-        // por isso a procura nas caches falhava e a conversao nunca era proposta
-        let current: FunnelItem | undefined =
-          _data && typeof _data === 'object' && 'id' in (_data as object) ? (_data as FunnelItem) : undefined;
-        if (!current) {
-          const caches = queryClient.getQueriesData<FunnelItem[]>({ queryKey: ['funnel-items'] });
-          for (const [, data] of caches) {
-            current = data?.find(i => i.id === id);
-            if (current) break;
-          }
-        }
-        if (current && !current.linked_workspace_id) {
-          window.dispatchEvent(new CustomEvent('crm:lead-contracted', {
-            detail: { itemId: id, name: current.organization_name || current.contact_name || '' }
-          }));
-        }
+    onSuccess: (data, updates) => {
+      if (updates.stage !== 'contracted' || data.stage === 'contracted') {
+        notify.success(t('crm.updated'));
       }
     },
     onSettled: () => {
@@ -253,6 +259,7 @@ export function useConvertToStartup() {
       buildingId,
       squareMeters,
       monthlyFee,
+      markContracted = false,
     }: {
       funnelItemId: string;
       programId: string;
@@ -261,6 +268,7 @@ export function useConvertToStartup() {
       buildingId?: string;
       squareMeters?: number;
       monthlyFee?: number;
+      markContracted?: boolean;
     }) => {
       // Load the lead once client-side to compose enriched name/description/notes.
       // The RPC does the transactional writes atomically — no client compensation needed.
@@ -270,12 +278,6 @@ export function useConvertToStartup() {
         .eq('id', funnelItemId)
         .single();
       if (itemError) throw itemError;
-
-      if (item.linked_workspace_id) {
-        throw new Error(
-          'Este lead já foi convertido num workspace. Abra o workspace existente em vez de criar um novo.',
-        );
-      }
 
       const meta = (item.metadata_json as Record<string, unknown> | null) || {};
       const projectName =
@@ -319,7 +321,13 @@ export function useConvertToStartup() {
       // Transactional RPC — creates startup + workspace + membership + optional
       // contract stub + funnel update + event in one atomic step. Any failure
       // rolls back the whole set on the server.
-      const { data: rpcData, error: rpcError } = await supabase.rpc(
+      const { data: rpcData, error: rpcError } = markContracted
+        ? await supabase.rpc('staff_mark_funnel_item_contracted', {
+            p_funnel_item_id: funnelItemId,
+            p_program_id: programId,
+            p_stage: stage,
+          })
+        : await supabase.rpc(
         'staff_convert_funnel_item_to_startup',
         {
           p_funnel_item_id: funnelItemId,
@@ -423,6 +431,10 @@ export function useConvertToStartup() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
+      queryClient.invalidateQueries({ queryKey: ['startups'] });
+      queryClient.invalidateQueries({ queryKey: ['activity-timeline'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
       notify.success(t('crm.convertedToStartup'));
