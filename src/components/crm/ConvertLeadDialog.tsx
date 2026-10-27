@@ -20,17 +20,19 @@ import {
 import { Loader2, Briefcase } from 'lucide-react';
 import { useConvertToStartup, type FunnelItem } from '@/hooks/useFunnel';
 import { usePrograms } from '@/hooks/useAdminData';
+import { inferLeadStage } from '@/lib/crmConversion';
 
 interface ConvertLeadDialogProps {
   item: FunnelItem;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConverted?: (workspaceId: string) => void;
+  markContracted?: boolean;
 }
 
 const STAGES = ['ideation', 'validation', 'mvp', 'growth', 'scale'] as const;
 
-export function ConvertLeadDialog({ item, open, onOpenChange, onConverted }: ConvertLeadDialogProps) {
+export function ConvertLeadDialog({ item, open, onOpenChange, onConverted, markContracted = false }: ConvertLeadDialogProps) {
   const { t } = useTranslation();
   const { data: programs, isLoading: loadingPrograms } = usePrograms();
   const convert = useConvertToStartup();
@@ -41,9 +43,9 @@ export function ConvertLeadDialog({ item, open, onOpenChange, onConverted }: Con
   useEffect(() => {
     if (open) {
       setProgramId(item.program_id || '');
-      setStage('ideation');
+      setStage(inferLeadStage(item.metadata_json));
     }
-  }, [open, item.program_id]);
+  }, [open, item.id, item.program_id, item.metadata_json]);
 
   const activePrograms = (programs || []).filter((p: any) => p.is_active !== false);
 
@@ -54,6 +56,7 @@ export function ConvertLeadDialog({ item, open, onOpenChange, onConverted }: Con
         funnelItemId: item.id,
         programId,
         stage,
+        markContracted,
       });
       onConverted?.(result.workspace.id);
       onOpenChange(false);
