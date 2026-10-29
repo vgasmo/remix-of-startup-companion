@@ -4,7 +4,7 @@ import { notify } from "@/lib/notify";
 import { type FunnelStage, type FunnelType } from '@/constants/funnelStages';
 import { logger } from '@/lib/logger';
 import { fetchAllRows } from '@/lib/fetchAllRows';
-import { inferLeadStage, needsContractedConversion } from '@/lib/crmConversion';
+import { inferLeadStage, isContractedTransition } from '@/lib/crmConversion';
 
 /** Explicit cap so the CRM board never silently drops leads past PostgREST's default. */
 const FUNNEL_ITEMS_LIMIT = 5000;
@@ -145,7 +145,10 @@ export function useUpdateFunnelItem() {
         .single();
       if (currentError) throw currentError;
 
-      if (needsContractedConversion({ ...current, ...updates })) {
+      // Only the stage transition INTO 'contracted' triggers workspace
+      // conversion. Edits to a lead already contracted (owner, deal value,
+      // proposal) must persist through the normal update path below.
+      if (isContractedTransition(current, updates)) {
         const programId = updates.program_id || current.program_id;
         if (!programId) {
           // No commercial change is committed until the required program is chosen.
