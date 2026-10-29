@@ -19,3 +19,25 @@ describe('Contracted CRM conversion', () => {
     expect(inferLeadStage(null)).toBe('ideation');
   });
 });
+
+describe('isContractedTransition', () => {
+  it('triggers only when the update moves the lead into contracted', () => {
+    expect(
+      isContractedTransition({ stage: 'negotiation', linked_workspace_id: null }, { stage: 'contracted' }),
+    ).toBe(true);
+  });
+  it('does not trigger for edits to a lead already contracted without workspace', () => {
+    // Regression: owner/deal-value edits on legacy contracted leads must persist.
+    expect(
+      isContractedTransition({ stage: 'contracted', linked_workspace_id: null }, { deal_value: 500 } as never),
+    ).toBe(false);
+    expect(
+      isContractedTransition({ stage: 'contracted', linked_workspace_id: null }, { stage: 'contracted' }),
+    ).toBe(false);
+  });
+  it('does not trigger when a workspace already exists', () => {
+    expect(
+      isContractedTransition({ stage: 'negotiation', linked_workspace_id: 'ws-1' }, { stage: 'contracted' }),
+    ).toBe(false);
+  });
+});
