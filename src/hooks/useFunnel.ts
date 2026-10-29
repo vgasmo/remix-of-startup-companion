@@ -145,7 +145,10 @@ export function useUpdateFunnelItem() {
         .single();
       if (currentError) throw currentError;
 
-      if (needsContractedConversion({ ...current, ...updates })) {
+      // Only the stage transition INTO 'contracted' triggers workspace
+      // conversion. Edits to a lead already contracted (owner, deal value,
+      // proposal) must persist through the normal update path below.
+      if (isContractedTransition(current, updates)) {
         const programId = updates.program_id || current.program_id;
         if (!programId) {
           // No commercial change is committed until the required program is chosen.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { inferLeadStage, needsContractedConversion } from './crmConversion';
+import { inferLeadStage, isContractedTransition, needsContractedConversion } from './crmConversion';
 
 describe('Contracted CRM conversion', () => {
   it('requires workspace conversion for external contracted leads', () => {
