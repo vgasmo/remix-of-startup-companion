@@ -4,7 +4,7 @@ import { notify } from "@/lib/notify";
 import { type FunnelStage, type FunnelType } from '@/constants/funnelStages';
 import { logger } from '@/lib/logger';
 import { fetchAllRows } from '@/lib/fetchAllRows';
-import { inferLeadStage, needsContractedConversion } from '@/lib/crmConversion';
+import { inferLeadStage, isContractedTransition } from '@/lib/crmConversion';
 
 /** Explicit cap so the CRM board never silently drops leads past PostgREST's default. */
 const FUNNEL_ITEMS_LIMIT = 5000;
