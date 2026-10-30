@@ -90,6 +90,13 @@ export function AppSidebar() {
     return () => window.removeEventListener('messaging:open', onOpen as EventListener);
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.has('conversation') || params.get('messaging') === 'open') {
+      setMessagingOpen(true);
+    }
+  }, [location.search]);
+
   // Get founder's workspace for contact info
   const { data: workspaces = [] } = useWorkspaces();
   const workspaceIdFromRoute = location.pathname.startsWith('/workspace/')

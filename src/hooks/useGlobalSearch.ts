@@ -313,7 +313,7 @@ export function useGlobalSearch(filters: SearchFilters) {
                 title: conv?.title || 'Message',
                 snippet: m.content.slice(0, 150),
                 updated_at: m.updated_at,
-                url: `/messages?conversation=${m.conversation_id}`,
+                url: `/my-workspaces?conversation=${encodeURIComponent(m.conversation_id)}`,
                 workspace_name: conv?.workspace?.startup?.name,
               };
             });
