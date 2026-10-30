@@ -90,6 +90,7 @@ export const WorkspaceTable = memo(function WorkspaceTable({
   onSortByChange,
 }: WorkspaceTableProps) {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const dateLocale = useDateLocale();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(25);
@@ -353,7 +354,7 @@ export const WorkspaceTable = memo(function WorkspaceTable({
                       <Button variant="destructive" size="sm" className="h-7 min-w-[2rem] px-2"
                         onClick={(e) => {
                           e.stopPropagation();
-                          window.location.assign(`/workspace/${workspace.id}?tab=milestones-actions&overdue=true`);
+                          navigate(`/workspace/${workspace.id}?tab=milestones-actions&overdue=true`);
                         }}
                         aria-label={t('filters.overdueActions')}>
                         {workspace.overdueActionsCount}

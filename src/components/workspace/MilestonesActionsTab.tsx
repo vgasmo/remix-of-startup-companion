@@ -137,7 +137,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
 
   useEffect(() => {
     if (!filters.overdue || !actionItems) return;
-    setExpandedMilestones(new Set(actionItems.filter(isActionOverdue).flatMap(a => a.milestone_id ? [a.milestone_id] : [])));
+    setExpandedMilestones(new Set(actionItems.filter(a => isActionOverdue(a)).flatMap(a => a.milestone_id ? [a.milestone_id] : [])));
   }, [filters.overdue, actionItems]);
 
   // Auto-expand milestones on first load
