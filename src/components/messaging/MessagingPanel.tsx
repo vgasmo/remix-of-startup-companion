@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 
 import { MessageCircle, Send, ArrowLeft, Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSearchParams } from 'react-router-dom';
 import { NewConversationDialog } from './NewConversationDialog';
 
 interface MessagingPanelProps {
@@ -25,11 +26,30 @@ export const MessagingPanel = React.forwardRef<HTMLDivElement, MessagingPanelPro
   const [showNewConversation, setShowNewConversation] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedConversation = searchParams.get('conversation');
 
   const { data: conversations, isLoading: loadingConvs } = useConversations();
   const { data: messages } = useMessages(selectedConversation?.id);
   const sendMessage = useSendMessage();
   const markRead = useMarkConversationRead();
+
+  useEffect(() => {
+    if (!open || !requestedConversation || !conversations) return;
+    // Resolve only from the authenticated user's accessible conversations.
+    const conversation = conversations.find(c => c.id === requestedConversation);
+    if (conversation) setSelectedConversation(conversation);
+  }, [open, requestedConversation, conversations]);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && (searchParams.has('conversation') || searchParams.has('messaging'))) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('conversation');
+      next.delete('messaging');
+      setSearchParams(next, { replace: true });
+    }
+    onOpenChange(nextOpen);
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -61,7 +81,7 @@ export const MessagingPanel = React.forwardRef<HTMLDivElement, MessagingPanelPro
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
         {selectedConversation ? (
           <>

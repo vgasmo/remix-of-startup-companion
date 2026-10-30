@@ -5,7 +5,7 @@ import { requireUser, generateRequestId, createLogger } from '../_shared/securit
 
 const FUNCTION_NAME = 'send-message-email-alert';
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const APP_URL = Deno.env.get("APP_URL") || "https://fb.startupleiria.com";
+const APP_URL = (Deno.env.get("PUBLIC_APP_URL") || Deno.env.get("APP_URL") || "https://fb.startupleiria.com").replace(/\/$/, '');
 // Don't re-alert if recipient already received a message-email in last N minutes
 const COOLDOWN_MINUTES = 10;
 // Don't alert if recipient was active in the last N minutes
@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
       }
 
       const convTitle = conv?.title || senderName;
-      const linkUrl = `${APP_URL}/messages?conversation=${message.conversation_id}`;
+      const linkUrl = `${APP_URL}/my-workspaces?conversation=${encodeURIComponent(message.conversation_id)}`;
       const safeContent = escapeHtml(String(message.content || '').slice(0, 500));
       const safeSender = escapeHtml(senderName);
       const safeTitle = escapeHtml(convTitle);

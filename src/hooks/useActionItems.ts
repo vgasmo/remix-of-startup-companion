@@ -65,7 +65,17 @@ export function useActionItems(workspaceId: string | undefined) {
         .order('due_date', { ascending: true, nullsFirst: false });
 
       if (error) throw error;
-      
+
+      // Archived milestones are historical, not operational actions or counters.
+      const { data: archivedMilestones, error: archivedError } = await supabase
+        .from('milestones')
+        .select('id')
+        .eq('workspace_id', workspaceId)
+        .not('archived_at', 'is', null);
+      if (archivedError) throw archivedError;
+      const archivedIds = new Set((archivedMilestones || []).map(m => m.id));
+      const visibleActions = (data || []).filter(a => !a.milestone_id || !archivedIds.has(a.milestone_id));
+
       // Fetch owner profiles separately
       const ownerIds = [...new Set(data?.filter(a => a.owner_user_id).map(a => a.owner_user_id) || [])];
       let profiles: { id: string; full_name: string | null; avatar_url: string | null }[] = [];
@@ -78,7 +88,7 @@ export function useActionItems(workspaceId: string | undefined) {
         profiles = profilesData || [];
       }
 
-      return (data || []).map(item => ({
+      return visibleActions.map(item => ({
         ...item,
         owner: item.owner_user_id 
           ? profiles.find(p => p.id === item.owner_user_id) || null 

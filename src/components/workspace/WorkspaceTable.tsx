@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { WorkspaceWithDetails, SortOption } from '@/hooks/useWorkspaces';
+import { useNavigate } from 'react-router-dom';
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
@@ -89,6 +90,7 @@ export const WorkspaceTable = memo(function WorkspaceTable({
   onSortByChange,
 }: WorkspaceTableProps) {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const dateLocale = useDateLocale();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(25);
@@ -349,9 +351,14 @@ export const WorkspaceTable = memo(function WorkspaceTable({
                   </TableCell>
                   <TableCell className="text-center">
                     {workspace.overdueActionsCount > 0 ? (
-                      <Badge variant="destructive" className="min-w-[2rem]">
+                      <Button variant="destructive" size="sm" className="h-7 min-w-[2rem] px-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/workspace/${workspace.id}?tab=milestones-actions&overdue=true`);
+                        }}
+                        aria-label={t('filters.overdueActions')}>
                         {workspace.overdueActionsCount}
-                      </Badge>
+                      </Button>
                     ) : (
                       <span className="text-muted-foreground">0</span>
                     )}

@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { queryClient } from "@/lib/queryClient";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { notify } from "@/lib/notify";
+import { legacyConversationLink } from '@/lib/conversationLink';
 
 // Eager: lightweight / critical-path pages
 import Login from "./pages/Login";
@@ -83,7 +84,8 @@ function ProtectedRoute({ children, adminOnly = false, staffOnly = false }: { ch
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    const returnTo = location.pathname + location.search + location.hash;
+    return <Navigate to={`/login?returnTo=${encodeURIComponent(returnTo)}`} replace />;
   }
 
   // P0.3-bis: profile/roles could not be loaded — never render the app as if the
@@ -187,6 +189,11 @@ function IntegrationsSetupRedirect() {
   return <Navigate to="/settings?tab=integrations" replace />;
 }
 
+function LegacyMessagesRedirect() {
+  const location = useLocation();
+  return <Navigate to={legacyConversationLink(location.search)} replace />;
+}
+
 function AppRoutes() {
   useVersionCheck();
   return (
@@ -209,6 +216,7 @@ function AppRoutes() {
         <Route path="/claim-startup" element={<ProtectedRoute><ClaimStartup /></ProtectedRoute>} />
         <Route path="/" element={<Navigate to="/my-workspaces" replace />} />
         <Route path="/my-workspaces" element={<ProtectedRoute><MyWorkspaces /></ProtectedRoute>} />
+        <Route path="/messages" element={<LegacyMessagesRedirect />} />
         <Route path="/workspace/:id" element={<ProtectedRoute><WorkspaceDetail /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="/mentors" element={<ProtectedRoute><Mentors /></ProtectedRoute>} />

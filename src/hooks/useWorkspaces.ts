@@ -69,35 +69,9 @@ export function useWorkspaces(
   const userId = user?.id ?? null;
   return useQuery({
     queryKey: ['workspaces', userId, filters, assignedOnly, statuses.slice().sort().join(',')],
+    enabled: !!userId,
     queryFn: async (): Promise<WorkspaceWithDetails[]> => {
-      // If assignedOnly, first get the user's assigned workspace IDs
-      let assignedWorkspaceIds: string[] | null = null;
-      
-      if (assignedOnly) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          // Get workspaces via workspace_users membership
-          const { data: memberships } = await supabase
-            .from('workspace_users')
-            .select('workspace_id')
-            .eq('user_id', user.id)
-            .eq('role', 'consultor')
-            .eq('active', true);
-          
-          const membershipIds = memberships?.map(m => m.workspace_id) || [];
-          
-          // Also get workspaces where this user is the assigned consultant
-          const { data: assignedWorkspaces } = await supabase
-            .from('workspaces')
-            .select('id')
-            .eq('assigned_consultor_id', user.id);
-          
-          const assignedIds = assignedWorkspaces?.map(w => w.id) || [];
-          
-          // Merge both lists (deduplicate)
-          assignedWorkspaceIds = [...new Set([...membershipIds, ...assignedIds])];
-        }
-      }
+      if (!userId) return [];
       
       // P0.3: Fetch workspaces with only needed columns
       let query = supabase
@@ -113,13 +87,8 @@ export function useWorkspaces(
         .order('updated_at', { ascending: false })
         .order('id');
 
-      // If assignedOnly, filter by assigned workspace IDs
-      if (assignedOnly && assignedWorkspaceIds !== null) {
-        if (assignedWorkspaceIds.length === 0) {
-          return []; // No assigned workspaces
-        }
-        query = query.in('id', assignedWorkspaceIds);
-      }
+      // Portfolio ownership is the primary assignment, not historical membership.
+      if (assignedOnly) query = query.eq('assigned_consultor_id', userId);
 
       // Apply stage filter
       if (filters.stage && filters.stage !== 'all') {

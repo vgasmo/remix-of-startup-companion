@@ -1,4 +1,8 @@
 
+## Correções reportadas — 30 Out 2026
+- [x] Corrigir ligações de email para conversas, incluindo links antigos e destino preservado após login; função publicada, conversa real aberta sem 404 nem erros JS.
+- [x] Portefólio atribuído usa responsável principal; contagens e ações excluem marcos arquivados sem alterar histórico. Flourishmode verificada na UI: 0 atrasos e 29/29 ações. 14 regressões novas, SQL descartável e lint aprovados; build OK. Brisas do Lis permanece como workspace ativo não atribuído na vista global, sem alteração automática dos dados. Frontend ainda não publicado.
+
 ## Conversão CRM — 27 Out 2026
 - [x] Conversão contratada atómica e escolha de programa na página; notas/contactos preservados, histórico ligado, sem ativação/assinatura forjada. Lead de teste convertida e workspace aberto; registos de teste arquivados. 238 testes da app, regressões SQL isoladas e lint passaram; build OK. Não publicado o frontend; assinaturas externas não repetidas nesta ronda.
 
