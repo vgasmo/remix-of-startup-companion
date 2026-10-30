@@ -1,5 +1,8 @@
 # Security architecture
 
+- Conversation deep links use the authenticated messaging panel and retain their target through login; legacy email URLs redirect there.
+- Assigned-only portfolios filter by primary consultant assignment, not historical membership; overdue links show open overdue actions separately from validation requests.
+
 - Contracted CRM transitions use the atomic staff conversion command; program selection is page-owned, history is linked without duplication, and commercial attestation never substitutes for verified contract activation.
 
 - Enforce signed contract term immutability and verified activation in database triggers; UI restrictions alone are bypassable.

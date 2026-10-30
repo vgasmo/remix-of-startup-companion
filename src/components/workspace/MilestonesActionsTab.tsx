@@ -38,6 +38,7 @@ import { buildPlatformDocumentOptions } from '@/lib/platformDocuments';
 import { notify } from '@/lib/notify';
 
 import { toTitleCase } from '@/lib/textUtils';
+import { isActionOverdue } from '@/lib/actionOverdue';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
@@ -95,7 +96,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
 
   // State
   const [expandedMilestones, setExpandedMilestones] = useState<Set<string>>(() => new Set());
-  const [filters, setFilters] = useState({ overdue: false, priority: 'all' });
+  const [filters, setFilters] = useState({ overdue: new URLSearchParams(window.location.search).get('overdue') === 'true', priority: 'all' });
   const [createMilestoneDialogOpen, setCreateMilestoneDialogOpen] = useState(false);
   const [createActionDialogOpen, setCreateActionDialogOpen] = useState(false);
   const [deleteMilestoneTarget, setDeleteMilestoneTarget] = useState<Milestone | null>(null);
@@ -119,7 +120,7 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
       let passes = true;
       if (filters.priority !== 'all' && item.priority !== filters.priority) passes = false;
       if (filters.overdue) {
-        const isOverdue = item.due_date && isPast(parseISO(item.due_date)) && !isToday(parseISO(item.due_date)) && item.status !== 'completed' && item.status !== 'awaiting_validation';
+        const isOverdue = isActionOverdue(item);
         if (!isOverdue) passes = false;
       }
       if (!passes) return;
@@ -133,6 +134,11 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
     });
     return { grouped, unassigned };
   }, [actionItems, filters]);
+
+  useEffect(() => {
+    if (!filters.overdue || !actionItems) return;
+    setExpandedMilestones(new Set(actionItems.filter(isActionOverdue).flatMap(a => a.milestone_id ? [a.milestone_id] : [])));
+  }, [filters.overdue, actionItems]);
 
   // Auto-expand milestones on first load
   useMemo(() => {
