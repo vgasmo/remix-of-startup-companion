@@ -127,6 +127,13 @@
       "when": 1793372108044,
       "tag": "0017_portfolio_assignment_and_overdue_consistency",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793372252021,
+      "tag": "0018_exclude_archived_milestone_actions_from_stats",
+      "breakpoints": true
     }
   ]
 }
