@@ -120,6 +120,13 @@
       "when": 1793273818305,
       "tag": "0016_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793372108044,
+      "tag": "0017_portfolio_assignment_and_overdue_consistency",
+      "breakpoints": true
     }
   ]
 }
