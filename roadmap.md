@@ -1,4 +1,8 @@
 
+## Correções reportadas — 30 Out 2026
+- [ ] Corrigir ligações de email para conversas, incluindo links antigos.
+- [ ] Verificar âmbito do portefólio do consultor e contagens de atraso; testar regressões.
+
 ## Conversão CRM — 27 Out 2026
 - [x] Conversão contratada atómica e escolha de programa na página; notas/contactos preservados, histórico ligado, sem ativação/assinatura forjada. Lead de teste convertida e workspace aberto; registos de teste arquivados. 238 testes da app, regressões SQL isoladas e lint passaram; build OK. Não publicado o frontend; assinaturas externas não repetidas nesta ronda.
 
