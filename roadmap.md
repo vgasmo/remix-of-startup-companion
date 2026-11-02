@@ -1,4 +1,7 @@
 
+## Validação externa da release — 2 Nov 2026
+- [ ] Retomar verificações externas seguras, recolher evidências atuais e entregar relatório atualizado com acessos bloqueantes, sem alterar regras nem enviar convites externos não autorizados.
+
 ## Correções reportadas — 30 Out 2026
 - [x] Corrigir ligações de email para conversas, incluindo links antigos e destino preservado após login; função publicada, conversa real aberta sem 404 nem erros JS.
 - [x] Portefólio atribuído usa responsável principal; contagens e ações excluem marcos arquivados sem alterar histórico. Flourishmode verificada na UI: 0 atrasos e 29/29 ações. 14 regressões novas, SQL descartável e lint aprovados; build OK. Brisas do Lis permanece como workspace ativo não atribuído na vista global, sem alteração automática dos dados. Frontend ainda não publicado.
