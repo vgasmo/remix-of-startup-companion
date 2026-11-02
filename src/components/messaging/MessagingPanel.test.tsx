@@ -53,21 +53,26 @@ describe('MessagingPanel deep link', () => {
     );
   });
 
-  it('does not reselect the linked conversation when the list refetches', async () => {
-    const { rerender } = renderPanel('/my-workspaces?conversation=c1');
+  it('does not reselect the linked conversation after Back when the list refetches', async () => {
+    const tree = (entry: string) =>
+      createElement(
+        MemoryRouter,
+        { initialEntries: [entry] },
+        createElement(MessagingPanel, { open: true, onOpenChange: vi.fn() }),
+        createElement(SearchParamProbe),
+      );
+    const { rerender } = render(tree('/my-workspaces?conversation=c1'));
+    // Deep link opened the conversation (Back button visible).
+    const back = await screen.findByRole('button', { name: /back|voltar/i });
+    back.click();
     await waitFor(() =>
-      expect(screen.getByTestId('params').textContent ?? '').not.toContain('conversation='),
+      expect(screen.queryByRole('button', { name: /back|voltar/i })).toBeNull(),
     );
     // Simulate a conversations refetch (new array reference, as React Query does).
     state.conversations = [...state.conversations];
-    rerender(
-      createElement(
-        MemoryRouter,
-        { initialEntries: ['/my-workspaces'] },
-        createElement(MessagingPanel, { open: true, onOpenChange: vi.fn() }),
-        createElement(SearchParamProbe),
-      ),
+    rerender(tree('/my-workspaces'));
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: /back|voltar/i })).toBeNull(),
     );
-    expect(screen.queryByText('Linked')).toBeNull();
   });
 });
