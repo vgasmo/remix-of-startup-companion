@@ -1,6 +1,7 @@
 import { createElement, type ReactNode } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, useSearchParams } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const state = vi.hoisted(() => ({
@@ -30,15 +31,23 @@ function SearchParamProbe() {
   return createElement('output', { 'data-testid': 'params' }, params.toString());
 }
 
-function renderPanel(initialEntry: string) {
-  return render(
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+function tree(entry: string) {
+  return createElement(
+    QueryClientProvider,
+    { client: queryClient },
     createElement(
       MemoryRouter,
-      { initialEntries: [initialEntry] },
+      { initialEntries: [entry] },
       createElement(MessagingPanel, { open: true, onOpenChange: vi.fn() }),
       createElement(SearchParamProbe),
     ),
   );
+}
+
+function renderPanel(initialEntry: string) {
+  return render(tree(initialEntry));
 }
 
 describe('MessagingPanel deep link', () => {
@@ -55,13 +64,6 @@ describe('MessagingPanel deep link', () => {
   });
 
   it('does not reselect the linked conversation after Back when the list refetches', async () => {
-    const tree = (entry: string) =>
-      createElement(
-        MemoryRouter,
-        { initialEntries: [entry] },
-        createElement(MessagingPanel, { open: true, onOpenChange: vi.fn() }),
-        createElement(SearchParamProbe),
-      );
     const { rerender } = render(tree('/my-workspaces?conversation=c1'));
     // Deep link opened the conversation (Back button visible).
     const back = await screen.findByRole('button', { name: /back|voltar/i });
