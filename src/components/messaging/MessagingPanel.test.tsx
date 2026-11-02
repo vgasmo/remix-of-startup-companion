@@ -21,6 +21,9 @@ vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user: { id: 'u1' } 
 
 import { MessagingPanel } from './MessagingPanel';
 
+// jsdom does not implement scrollIntoView.
+Element.prototype.scrollIntoView = vi.fn();
+
 function SearchParamProbe() {
   const [params] = useSearchParams();
   return createElement('output', { 'data-testid': 'params' }, params.toString());
