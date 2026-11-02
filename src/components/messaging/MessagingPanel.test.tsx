@@ -16,6 +16,7 @@ vi.mock('@/hooks/useMessaging', () => ({
   useMessages: () => ({ data: [] }),
   useSendMessage: () => ({ mutateAsync: vi.fn() }),
   useMarkConversationRead: () => ({ mutate: state.markRead }),
+  useCreateConversation: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 
