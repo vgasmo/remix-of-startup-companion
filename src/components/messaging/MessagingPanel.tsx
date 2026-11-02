@@ -39,6 +39,11 @@ export const MessagingPanel = React.forwardRef<HTMLDivElement, MessagingPanelPro
     // Resolve only from the authenticated user's accessible conversations.
     const conversation = conversations.find(c => c.id === requestedConversation);
     if (conversation) setSelectedConversation(conversation);
+    // Consume the deep link once: clear the param so later conversation
+    // refetches don't override the user's own selection or Back navigation.
+    const next = new URLSearchParams(searchParams);
+    next.delete('conversation');
+    setSearchParams(next, { replace: true });
   }, [open, requestedConversation, conversations]);
 
   const handleOpenChange = (nextOpen: boolean) => {
