@@ -113,7 +113,9 @@ export function BookingLinksManager() {
         .from('public_booking_links')
         .insert({
           token_hash: tokenHash,
-          owner_consultant_id: user.id,
+          // No fixed owner: the consultant is chosen by the intake routing
+          // rules, so changing the routing applies to existing links too.
+          owner_consultant_id: null,
           owner_email: profile?.email,
           program_id: selectedProgram || null,
           expires_at: expiresAt,
