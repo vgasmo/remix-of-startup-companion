@@ -19,12 +19,12 @@ const ACTIVITY_KEY = 'sl-last-activity';
 
 interface SessionTimeoutWarningProps {
   warningTimeMs?: number; // Time before timeout to show warning (default: 10 minutes)
-  timeoutMs?: number; // Total inactivity timeout (default: 24 hours for founders)
+  timeoutMs?: number; // Total inactivity timeout (default: 8 hours)
 }
 
 export function SessionTimeoutWarning({
   warningTimeMs = 10 * 60 * 1000, // 10 minutes warning
-  timeoutMs = 24 * 60 * 60 * 1000, // 24 hours (founder-friendly)
+  timeoutMs = 8 * 60 * 60 * 1000,
 }: SessionTimeoutWarningProps) {
   const { t } = useTranslation();
   const { signOut, session } = useAuth();
@@ -35,6 +35,7 @@ export function SessionTimeoutWarning({
   // (supabase.auth.signOut() default scope) while they work in another tab.
   const lastActivityRef = useRef(Date.now());
   const showWarningRef = useRef(false);
+  const expiredRef = useRef(false);
   showWarningRef.current = showWarning;
 
   const readSharedActivity = () => {
@@ -89,7 +90,10 @@ export function SessionTimeoutWarning({
 
       if (timeUntilTimeout <= 0) {
         // Session timed out - sign out gracefully
-        signOut();
+        if (!expiredRef.current) {
+          expiredRef.current = true;
+          void signOut();
+        }
       } else if (timeUntilTimeout <= warningTimeMs) {
         setShowWarning(true);
         setCountdown(Math.max(0, Math.ceil(timeUntilTimeout / 1000)));
@@ -116,8 +120,7 @@ export function SessionTimeoutWarning({
 
   const handleContinue = async () => {
     // Refresh session when user clicks continue
-    await refreshSession();
-    resetActivity();
+    if (await refreshSession()) resetActivity();
   };
 
   const handleLogout = () => {
