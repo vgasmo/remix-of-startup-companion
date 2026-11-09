@@ -1,12 +1,14 @@
 
 ## RC12 — 9 Nov 2026
-- [ ] Pedido 23:32 UTC: completar testes FEX-21/ProtectedRoute e suite de 18 asserções; corrigir documentação OPS-14, manifesto/reconciliador e procedimento de restauro SCH-16 a partir das descrições; verificar localmente sem executar reparações ou envios reais.
+- [x] Pedido 23:32 UTC: completar testes FEX-21/ProtectedRoute e suite de 18 asserções; corrigir documentação OPS-14, manifesto/reconciliador e procedimento de restauro SCH-16 a partir das descrições; verificar localmente sem executar reparações ou envios reais. Concluído: 325 Vitest, 12 testes manifesto, reconstrução nova PG17 com 391 asserções/38 suites, lint/i18n/secret scan/build OK; aplicação autenticada abre sem erros.
 - [x] Pedido 10:58 UTC: 29 diffs opcionais compatíveis e cinco migrações aplicadas; 23 funções publicadas; 298 Vitest, 202 Deno e 373 asserções SQL passam. Limites e secções sem patch em docs/RC12-APPLIED.md; frontend não publicado.
 - [x] Pedido 10:37 UTC: Partes 3–15 aplicadas; 288 Vitest, 198 Deno (5 ignorados) e 61 asserções pgTAP passam; 45 funções publicadas, 10 migrações e reparações de dados aplicadas. Navegação autenticada Espaços/Contratos confirmada; lint/i18n/build OK. Limites e adaptações em docs/RC12-APPLIED.md.
 - [x] Aplicar anexo i18n exato e validar os dois gates antes das correções: 9379 chaves em paridade, zero problemas.
 - [x] Aplicar pacote essencial: Partes 1–15 aplicadas; evidências e limites de certificação registados em docs/RC12-APPLIED.md.
-- [ ] Concluir secções opcionais sem patch: E2E-05/FEX-21 testes e OPS-14 documentos; autorização recebida para implementar pelas descrições. HRD-10 logger e ED2-06/FEF-07 Data Room já aplicados no essencial; config gerida não alterada.
+- [x] Concluir secções opcionais sem patch: E2E-05/FEX-21 testes e OPS-14 documentos; autorização recebida para implementar pelas descrições. HRD-10 logger e ED2-06/FEF-07 Data Room já aplicados no essencial; config gerida não alterada; CI local PG17 e sequência explícita de replay preparados.
 - [x] Parte 2 aplicada: nove diffs, 71 funções afetadas publicadas, 282 Vitest e 56 Deno passam; lint/gates i18n e cinco verificações Deno limpos, build OK. Modelo preservado pelo SDK obrigatório. Copilot autenticado abriu e enviou pedido, mas resposta real excedeu inatividade; não certificado. Partes 3–15 concluídas abaixo; opcional pendente.
+
+- [ ] Certificação RC12 externa e publicação: bloqueada por ambiente gerido novo/isolado, mailbox Graph e identidades sandbox, execução do CI alojado e aprovação de publicação; restauro de backups e fluxos reais continuam não certificados.
 
 ## Validação externa da release — 2 Nov 2026
 - [ ] Retomar verificações externas seguras, recolher evidências atuais e entregar relatório atualizado com acessos bloqueantes, sem alterar regras nem enviar convites externos não autorizados.
