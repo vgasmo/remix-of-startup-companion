@@ -11,7 +11,15 @@ export interface CopilotMessage {
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/copilot-chat`;
-const STREAM_TIMEOUT_MS = 25_000;
+const STREAM_IDLE_TIMEOUT_MS = 25_000; // sem dados durante este tempo = parado; recomeça a cada bloco recebido
+const MAX_HISTORY = 20;
+const MAX_MESSAGE_CHARS = 4000;
+const UNAVAILABLE_RETRY_MS = 15_000;
+
+/** Histórico enviado ao servidor: só as últimas mensagens e cada uma limitada (o servidor rejeita >4000 caracteres). */
+export function prepareCopilotHistory(msgs: Array<{ role: 'user' | 'assistant'; content: string }>) {
+  return msgs.slice(-MAX_HISTORY).map(m => ({ role: m.role, content: m.content.slice(0, MAX_MESSAGE_CHARS) }));
+}
 
 /**
  * Shared streaming chat hook that talks to the `copilot-chat` edge function.
@@ -46,7 +54,8 @@ export function useCopilotChat() {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
-    const timeout = setTimeout(() => controller.abort(), STREAM_TIMEOUT_MS);
+    let timeout = setTimeout(() => controller.abort(), STREAM_IDLE_TIMEOUT_MS);
+    const touch = () => { clearTimeout(timeout); timeout = setTimeout(() => controller.abort(), STREAM_IDLE_TIMEOUT_MS); };
     let assistantSoFar = '';
 
     try {
@@ -66,7 +75,7 @@ export function useCopilotChat() {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({
-          messages: next.map(m => ({ role: m.role, content: m.content })),
+          messages: prepareCopilotHistory(next),
         }),
         signal: controller.signal,
       });
@@ -103,6 +112,7 @@ export function useCopilotChat() {
       while (!streamDone) {
         const { done, value } = await reader.read();
         if (done) break;
+        touch();
         textBuffer += decoder.decode(value, { stream: true });
 
         let nl: number;
@@ -134,7 +144,10 @@ export function useCopilotChat() {
       }
     } catch (err: any) {
       if (err?.name === 'AbortError') {
-        if (!assistantSoFar) {
+        if (assistantSoFar) {
+          // Resposta cortada a meio: marcar como incompleta em vez de a deixar parecer completa.
+          setMessages(prev => prev.map((m, i) => (i === prev.length - 1 && m.role === 'assistant' ? { ...m, content: `${m.content}\n\n…` } : m)));
+        } else {
           setMessages(prev => [...prev, {
             id: crypto.randomUUID(),
             role: 'assistant',
@@ -144,7 +157,9 @@ export function useCopilotChat() {
         return;
       }
       logger.warn('copilot_stream_error', { message: err?.message });
+      // Falha de rede é transitória: voltar a permitir pedidos passado um pouco, sem exigir recarregar a página.
       setIsAvailable(false);
+      setTimeout(() => setIsAvailable(true), UNAVAILABLE_RETRY_MS);
       setMessages(prev => [...prev, {
         id: crypto.randomUUID(),
         role: 'assistant',

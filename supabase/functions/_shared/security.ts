@@ -64,10 +64,24 @@ export function createLogger(functionName: string, requestId: string) {
       console.warn(JSON.stringify({ ...base, level: 'warn', msg, ...data }));
     },
     error: (msg: string, error?: unknown, data?: Record<string, unknown>) => {
-      const errorInfo = error instanceof Error 
+      // Some callers pass a context object ({ status, errText }, a PostgREST error...)
+      // as the 2nd argument: log its fields instead of "[object Object]".
+      const isContext = error !== null && typeof error === 'object' && !(error instanceof Error) && !Array.isArray(error);
+      const errorInfo = error instanceof Error
         ? { errMsg: error.message, errName: error.name }
-        : { errMsg: String(error) };
-      console.error(JSON.stringify({ ...base, level: 'error', msg, ...errorInfo, ...data }));
+        : isContext
+          ? { errMsg: typeof (error as { message?: unknown }).message === 'string' ? (error as { message: string }).message : 'see fields' }
+          : error === undefined || error === null
+            ? {}
+            : { errMsg: String(error) };
+      console.error(JSON.stringify({
+        ...base,
+        ...errorInfo,
+        ...(isContext ? error as Record<string, unknown> : {}),
+        ...data,
+        level: 'error',
+        msg,
+      }));
     },
   };
 }
@@ -391,6 +405,21 @@ export async function isAccountActive(
   });
 
   return !error && isActive === true;
+}
+
+/**
+ * Returns a 403 Response when the (privileged) caller's account is not active
+ * (pending/suspended), or null when the caller may proceed.
+ * Use right after the role check in functions that run with the service role.
+ */
+export async function denyIfAccountInactive(
+  req: Request,
+  admin: SupabaseClient,
+  userId: string,
+): Promise<Response | null> {
+  return (await isAccountActive(admin, userId))
+    ? null
+    : errorResponse(req, 'Account access denied', ErrorCode.FORBIDDEN, 403);
 }
 
 /**

@@ -11,6 +11,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.1';
 import { getCorsHeaders, handleCorsOptions } from '../_shared/cors.ts';
+import { denyIfAccountInactive } from '../_shared/security.ts';
 
 interface Body { funnel_item_id: string }
 
@@ -40,7 +41,7 @@ function buildScaffold(input: {
 
   const missing: string[] = [];
   if (!bookingForm?.website) missing.push('Website não indicado [source: booking_form]');
-  if (!item.phone) missing.push('Telefone em falta [source: funnel_items]');
+  if (!item.contact_phone) missing.push('Telefone em falta [source: funnel_items]');
   if (!pitchAnalysis) missing.push('Sem pitch deck analisado [source: pitch_deck]');
 
   return {
@@ -126,13 +127,15 @@ Deno.serve(async (req) => {
     const { data: roles } = await sbSvc.from('user_roles').select('role').eq('user_id', uid);
     const isStaff = (roles ?? []).some((r: any) => r.role === 'admin' || r.role === 'consultor');
     if (!isStaff) return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: jsonHeaders });
+    const inactive = await denyIfAccountInactive(req, sbSvc, uid);
+    if (inactive) return inactive;
 
     const body = await req.json() as Body;
     if (!body?.funnel_item_id) return new Response(JSON.stringify({ error: 'invalid_input' }), { status: 400, headers: jsonHeaders });
 
     const { data: item, error: itemErr } = await sbSvc
       .from('funnel_items')
-      .select('id, organization_name, contact_name, contact_email, phone, stage, program_id, metadata_json')
+      .select('id, organization_name, contact_name, contact_email, contact_phone, stage, program_id, metadata_json')
       .eq('id', body.funnel_item_id)
       .maybeSingle();
     if (itemErr || !item) return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: jsonHeaders });
@@ -143,7 +146,7 @@ Deno.serve(async (req) => {
 
     const { data: comms } = await sbSvc
       .from('communication_log')
-      .select('kind, direction, subject, summary, occurred_at, original_timestamp')
+      .select('activity_type, direction, subject, preview, occurred_at, original_timestamp')
       .eq('funnel_item_id', item.id)
       .order('occurred_at', { ascending: false })
       .limit(30);
@@ -166,7 +169,7 @@ Deno.serve(async (req) => {
               organization_name: item.organization_name,
               contact_name: item.contact_name,
               contact_email: item.contact_email,
-              phone: item.phone,
+              phone: item.contact_phone,
               stage: item.stage,
             },
             booking_form: bookingForm,

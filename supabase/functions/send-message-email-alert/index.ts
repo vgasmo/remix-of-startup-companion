@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { escapeHtml } from '../_shared/html.ts';
-import { requireUser, generateRequestId, createLogger } from '../_shared/security.ts';
+import { requireUser, generateRequestId, createLogger, denyIfAccountInactive } from '../_shared/security.ts';
 
 const FUNCTION_NAME = 'send-message-email-alert';
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
@@ -34,6 +34,8 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
+    const inactive = await denyIfAccountInactive(req, supabase, sender.id);
+    if (inactive) return inactive;
 
     const { messageId } = (await req.json()) as MessageEmailRequest;
     if (!messageId) return corsJsonResponse({ error: 'messageId required' }, req, 400);
@@ -79,7 +81,8 @@ Deno.serve(async (req) => {
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, full_name, email')
-      .in('id', recipientIds);
+      .in('id', recipientIds)
+      .eq('account_status', 'approved');
 
     const { data: senderProfile } = await supabase
       .from('profiles')
@@ -171,7 +174,7 @@ Deno.serve(async (req) => {
 
     return corsJsonResponse({ sent, skipped }, req);
   } catch (err) {
-    log.error('send-message-email-alert failed', { err: String(err) });
+    log.error('send-message-email-alert failed', err);
     return corsJsonResponse({ error: 'Internal error' }, req, 500);
   }
 });
