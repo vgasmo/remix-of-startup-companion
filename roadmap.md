@@ -3,7 +3,7 @@
 - [x] Aplicar anexo i18n exato e validar os dois gates antes das correções: 9379 chaves em paridade, zero problemas.
 - [ ] Aplicar pacote essencial por ordem; Parte 1: três migrações e 18 diffs exatos aplicados, 204 políticas restritivas, sete CHECKs de URL e três índices completos confirmados. 279 testes e lint passam; /login sem erros JS; build automática OK. Partes 2–15 e referências cruzadas para outros domínios ainda não aplicadas. Teste comportamental de contas suspensas bloqueado pela permissão de execução da ferramenta de leitura, não pela migração.
 - [ ] Aplicar pacote opcional apenas depois do essencial verificado.
-- [ ] Continuação: aplicar Parte 2 (contas inativas e Copilot), publicar funções afetadas e executar regressões; preservar modelo e regras de negócio.
+- [x] Parte 2 aplicada: nove diffs, 71 funções afetadas publicadas, 282 Vitest e 56 Deno passam; lint/gates i18n e cinco verificações Deno limpos, build OK. Modelo preservado pelo SDK obrigatório. Copilot autenticado abriu e enviou pedido, mas resposta real excedeu inatividade; não certificado. Partes 3–15 e opcional pendentes.
 
 ## Validação externa da release — 2 Nov 2026
 - [ ] Retomar verificações externas seguras, recolher evidências atuais e entregar relatório atualizado com acessos bloqueantes, sem alterar regras nem enviar convites externos não autorizados.
