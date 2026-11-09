@@ -396,8 +396,12 @@ export async function validateWorkspaceAccess(
  * Check if user account is active (not pending/suspended)
  * Use this for functions that should reject blocked users
  */
+interface AccountStatusClient {
+  rpc(name: 'is_account_active', args: { _user_id: string }): PromiseLike<{ data: unknown; error: unknown }>;
+}
+
 export async function isAccountActive(
-  supabase: SupabaseClient,
+  supabase: AccountStatusClient,
   userId: string
 ): Promise<boolean> {
   const { data: isActive, error } = await supabase.rpc('is_account_active', {
@@ -414,7 +418,7 @@ export async function isAccountActive(
  */
 export async function denyIfAccountInactive(
   req: Request,
-  admin: SupabaseClient,
+  admin: AccountStatusClient,
   userId: string,
 ): Promise<Response | null> {
   return (await isAccountActive(admin, userId))
