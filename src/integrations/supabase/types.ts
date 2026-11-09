@@ -13063,6 +13063,7 @@ export type Database = {
         Args: { p_gates: Json; p_program_id: string; p_weeks: Json }
         Returns: Json
       }
+      purge_operational_logs: { Args: never; Returns: Json }
       reconcile_active_customer: {
         Args: {
           p_batch_id: string

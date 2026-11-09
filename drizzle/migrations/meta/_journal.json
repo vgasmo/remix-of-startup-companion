@@ -211,6 +211,13 @@
       "when": 1794221225251,
       "tag": "0029_rc12_integration_errors_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1794221253651,
+      "tag": "0030_rc12_log_retention",
+      "breakpoints": true
     }
   ]
 }
