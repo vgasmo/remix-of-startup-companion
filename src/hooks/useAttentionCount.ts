@@ -23,26 +23,12 @@ export function useAttentionCount() {
       // Determine which workspace IDs count for this user.
       let assignedWorkspaceIds: string[] | null = null;
       if (scopeToAssigned && userId) {
-        const [{ data: memberships, error: membershipsError }, { data: assignedWorkspaces, error: assignedError }] = await Promise.all([
-          supabase
-            .from('workspace_users')
-            .select('workspace_id')
-            .eq('user_id', userId)
-            .eq('role', 'consultor')
-            .eq('active', true),
-          supabase
+        const { data: assignedWorkspaces, error: assignedError } = await supabase
             .from('workspaces')
             .select('id')
-            .eq('assigned_consultor_id', userId),
-        ]);
-        if (membershipsError) throw membershipsError;
+            .eq('assigned_consultor_id', userId);
         if (assignedError) throw assignedError;
-        assignedWorkspaceIds = [
-          ...new Set([
-            ...(memberships?.map((m) => m.workspace_id) || []),
-            ...(assignedWorkspaces?.map((w) => w.id) || []),
-          ]),
-        ];
+        assignedWorkspaceIds = [...new Set(assignedWorkspaces?.map((w) => w.id) || [])];
 
         if (assignedWorkspaceIds.length === 0) {
           return { criticalCount: 0, atRiskCount: 0, overdueCount: 0, totalAttention: 0 };
@@ -76,12 +62,20 @@ export function useAttentionCount() {
         // Chunk the id list: 1000 UUIDs in one .in() is a ~38 KB URL. A failed count is an
         // error, never a fabricated 0 (AGENTS.md: failed statistics are errors).
         for (let i = 0; i < workspaceIds.length; i += 100) {
-          const overdueRes = await supabase
+          const ids = workspaceIds.slice(i, i + 100);
+          const { data: archived, error: archivedError } = await supabase
+            .from('milestones').select('id').in('workspace_id', ids).not('archived_at', 'is', null);
+          if (archivedError) throw archivedError;
+          let overdueQuery = supabase
             .from('action_items')
             .select('id', { count: 'exact', head: true })
-            .in('workspace_id', workspaceIds.slice(i, i + 100))
+            .in('workspace_id', ids)
             .in('status', ['pending', 'in_progress'])
             .lt('due_date', today);
+          if (archived?.length) {
+            overdueQuery = overdueQuery.or(`milestone_id.is.null,milestone_id.not.in.(${archived.map(m => m.id).join(',')})`);
+          }
+          const overdueRes = await overdueQuery;
           overdueCount += countOrThrow(overdueRes);
         }
       }

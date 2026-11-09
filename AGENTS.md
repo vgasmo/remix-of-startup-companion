@@ -39,3 +39,8 @@
 - Hot-table RLS uses set helpers with the same canonical access predicates and restrictive suspension guard; do not bypass account or NDA checks.
 - Session invitation outcomes are interpreted by the shared outcome helper; partial delivery never rolls back the saved session.
 - NDA acceptance and Data Room revocation preserve their original timestamps; missing verification or hashing credentials deny success.
+
+- Use the extracted ProtectedRoute as the single route guard; test that component with mocked server-loaded auth state so tests never duplicate access logic.
+- Optional storage conveniences remain viewer-scoped and never reset security inactivity after a failed refresh; chunk reloads require a durable retry marker to avoid loops.
+- Automation verification uses the parsed canonical manifest and read-only catalogue reconciliation; compare exact targets/schedules/health cadence and fail on drift without invoking jobs.
+- Fresh SQL release verification uses verify-rc12-fresh.sh with disposable PostgreSQL 17 and the explicit approved additive chain; managed storage/provider acceptance remains separate because the local shim cannot certify hosted services.

@@ -1,0 +1,30 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { parseManifest, reconcileManifest } from './automation-manifest.mjs';
+const manifest = parseManifest(readFileSync(new URL('../../docs/rc5/automation-manifest.md', import.meta.url), 'utf8'));
+const row = { name: 'purge-operational-logs-daily', trigger: 'cron', schedule: '47 3 * * *', target: 'RPC public.purge_operational_logs', health: 'no_health_expectation', cadence: 86400 };
+const cron = { jobname: row.name, active: true, schedule: row.schedule, command: "SELECT public.cron_invoke_rpc('purge_operational_logs', 'public.purge_operational_logs()')" };
+const health = { job_name: 'purge_operational_logs', expected_cadence_seconds: 86400, enabled: true };
+const checkedRow = { ...row, health: 'purge_operational_logs' };
+const check = (jobs = [cron], registry = [health]) => reconcileManifest([checkedRow], jobs, registry);
+test('RC12 log retention schedule matches the applied command and cadence', () => { assert.deepEqual(manifest.find(r => r.name === row.name), { ...row, owner: 'ops', flag: '' }); assert.deepEqual(check(), []); });
+test('missing job cannot be represented as healthy', () => assert.deepEqual(check([]), ['missing_schedule: purge-operational-logs-daily']));
+test('inactive cron fails verification', () => assert.ok(check([{ ...cron, active: false }]).includes('inactive_schedule: purge-operational-logs-daily')));
+test('same name with a different RPC is not a match', () => assert.ok(check([{ ...cron, command: "SELECT public.cron_invoke_rpc('purge_operational_logs', 'public.other()')" }]).includes('target_mismatch: purge-operational-logs-daily')));
+test('changed wall-clock schedule fails', () => assert.ok(check([{ ...cron, schedule: '0 4 * * *' }]).includes('schedule_mismatch: purge-operational-logs-daily')));
+test('missing health registry fails', () => assert.deepEqual(check([cron], []), ['missing_registry: purge-operational-logs-daily']));
+test('disabled registry fails', () => assert.ok(check([cron], [{ ...health, enabled: false }]).includes('disabled_registry: purge-operational-logs-daily')));
+test('wrong registry cadence fails', () => assert.ok(check([cron], [{ ...health, expected_cadence_seconds: 3600 }]).includes('cadence_mismatch: purge-operational-logs-daily')));
+test('unknown and duplicate jobs fail', () => { assert.ok(check([cron, cron]).includes('duplicate_schedule: purge-operational-logs-daily')); assert.ok(check([cron, { ...cron, jobname: 'unknown' }]).includes('unregistered_cron: unknown')); });
+test('manual and event targets must not be scheduled', () => { for (const trigger of ['manual', 'event']) assert.ok(reconcileManifest([{ ...row, trigger }], [cron], [health]).includes('dead_cron: purge-operational-logs-daily')); });
+test('invalid and duplicate manifests fail closed', () => { assert.throws(() => parseManifest('')); const line = '| x | cron | 0 2 * * * | f | ops | — | f | 86400 |'; assert.throws(() => parseManifest(`${line}\n${line}`), /duplicate/); assert.throws(() => parseManifest(line.replace('cron', 'invalid')), /invalid_trigger/); });
+
+test('activation recovery is allowed to disarm but checks dispatch when armed', () => {
+ const recovery = manifest.find(r => r.name === 'reconcile-contract-activation');
+ assert.ok(recovery);
+ assert.deepEqual(reconcileManifest([recovery], [], []), []);
+ const job = { jobname: recovery.name, schedule: '*/5 * * * *', active: true, command: 'SELECT public.dispatch_contract_activation_recovery()' };
+ assert.deepEqual(reconcileManifest([recovery], [job], []), []);
+ assert.ok(reconcileManifest([recovery], [{ ...job, command: 'SELECT public.other()' }], []).includes('target_mismatch: reconcile-contract-activation'));
+});

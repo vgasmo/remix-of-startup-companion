@@ -93,3 +93,54 @@ O RC12 completo e a release final não estão certificados por esta ronda.
 - E2E-05 teste de 18 asserções, FEX-21 testes citados sem conteúdo, HRD-10 createLogger.error, ED2-06/FEF-07 DataroomTab e OPS-14 documentos/runbooks: o anexo descreve ou remete para diffs que não inclui; não foram inventados. SCH-11 e i18n já corrigidos no essencial.
 - Transporte de generate-financial-prefill não foi alterado: apenas a seleção/contexto solicitados. O modelo desse fluxo não foi substituído pelo modelo Copilot.
 - Frontend não publicado. Entrega real de convites, assinatura, importações, recuperação de ativação e geração real Copilot mantêm os limites anteriores; suite SQL reutilizada não certifica reconstrução nova completa.
+
+## 9 November 2026 — completion authorised from descriptions
+
+The user authorised filling the absent material. No hosted data repair, real email/invitation/signature/import,
+provider dispatch, bucket mutation or frontend publication was performed in this completion round.
+
+### Delivered
+
+- FEX-21: lazyWithRetry storage (4), viewer-scoped checklist storage (2), SessionTimeoutWarning (4),
+  useAttentionCount (5), and actual ProtectedRoute (12): 27 new Vitest regressions.
+- Real reproduced fixes: blocked storage cannot cause repeated chunk reload; checklist dismissal cannot carry
+  across viewers; inactivity is the established eight hours, expiry signs out once, failed refresh does not reset
+  inactivity; assigned-only attention excludes historical membership and overdue actions under archived milestones.
+- Route guard extracted without duplicating its access logic; pending/suspended/NDA/auth errors, deep links,
+  onboarding/claim and staff/admin gates covered by mocked server-loaded state.
+- E2E-05/ED3-05/SCH-03/FEF-11/FEB-01/FES-08: complete 18-assertion transactional SQL suite for normalized NIF
+  reuse/idempotence/no unsigned activation, Data Room insert/update containment, permitted shared mentor note,
+  forbidden staff-private/suspended note, founder notification kill switch and dangerous URL schemes.
+- OPS-14: fourteen executable read-only queries, weekly backup/checksum/restore review, failure response,
+  current go-live/staging/release procedures and native seven-bucket bootstrap guidance. Existing private
+  logos/avatar policy retained rather than following the attachment's superseded public-bucket proposal.
+- Automation manifest matches 25 actual permanent schedules plus known dynamic activation recovery and three
+  event endpoints; reconciler is read-only and checks exact schedules/targets/active state/registry cadence.
+  Purge logs has no existing health expectation: explicitly declared, not silently invented. Twelve regressions pass.
+- PostgreSQL 17 CI local replay configured; removed a CI reference to nonexistent check-drizzle-mirrored.mjs.
+  Added verify-rc12-fresh.sh to explicitly replay the baseline, disposable legacy-table fixture and 37 approved
+  additive migrations. It rejects reused clusters, ignored failures and non-17 engines, and removes hosted PG env.
+
+### Verification results
+
+- Vitest: 50 files, 325 tests passed. Manifest: 12 node tests passed. Lint, i18n parity/lint and secret scan passed.
+- Clean PostgreSQL 17.11 initial baseline-only run failed, correctly identifying omitted additive migrations.
+  Final verify-rc12-fresh.sh run used a NEW empty directory, replayed baseline + all approved additive migrations,
+  and passed 38 SQL suites / 391 assertions, zero failures/errors. No production connections used.
+- Fourteen operational SQL queries executed without syntax/runtime errors against that disposable database.
+  Expected empty shim buckets/backup data are NOT a passing restore/backup certification.
+- Read-only reconciler passed on the complete disposable catalogue: 29 manifest entries / 25 schedules.
+  Initial local connection failed because inherited SSL was enabled; local socket retry with sslmode=disable passed.
+- Browser restored requester's authenticated session, opened /my-workspaces, displayed the real dashboard
+  (42 startups, portfolio health and onboarding pipeline), zero JavaScript errors; screenshot reviewed.
+  This verifies the extracted guard's actual authenticated rendering, not every privileged branch or live provider flow.
+- Automatic compilation latest signals: build OK. No edge function changes in this round, therefore no deployment needed.
+
+### Remaining release gates (not missing patches)
+
+Hosted CI execution and managed PostgreSQL configuration are not certified by editing CI. Native bootstrap/upload/access
+on a NEW isolated managed stack, real sandbox Graph/email/invitation/signature/activation/import/Copilot flows and backup
+restore require the isolated stack, test mailbox/provider identities and operational owner not supplied here.
+Frontend remains unpublished. The absent DADOS-AFETADOS.sql is not fabricated or required to execute repairs:
+read-only operational checks are supplied separately and no live records were changed.
+Earlier claims that logger and Data Room patches were absent are corrected: both were supplied/applied in the essential package.

@@ -20,6 +20,8 @@ export function lazyWithRetry<TModule extends { default: ComponentType<any> }>(
 
       if (typeof window !== 'undefined' && isDynamicImportFailure && !hasRetried) {
         safeSessionStorage.setItem(storageKey, 'true');
+        // Without a durable marker a reload could repeat forever in private mode.
+        if (safeSessionStorage.getItem(storageKey) !== 'true') throw error;
         safeSessionStorage.setItem('app_reload_reason', 'chunk_update');
         window.location.reload();
         return new Promise<TModule>(() => {

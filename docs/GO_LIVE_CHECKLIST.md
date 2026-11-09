@@ -77,3 +77,32 @@ The launch uses a **two-phase approach** via the `open_registration` feature fla
 | `check_signup_allowed(p_email)` RPC | Server-side allowlist check (SECURITY DEFINER) |
 | `startup_claim_requests` table | Claim queue for founder↔startup association |
 | `claim_startup()` RPC | Auto-claim by email match or queue for staff review |
+
+## RC12 release gate (supersedes earlier operational advice)
+
+- [ ] Current canonical public origin: `https://fb.startupleiria.com`; verify actual hosted auth redirect settings without changing them to obtain a read.
+- [ ] Do not enable open registration or change the allowlist as part of this patch. Email confirmation and staff approval remain required under their existing policies.
+- [ ] PostgreSQL 17 fresh replay and all SQL suites pass; shimmed local replay alone does not certify managed services.
+- [ ] All frontend, language, security and automation manifest tests pass; CI execution evidenced separately from local runs.
+- [ ] Execute the fourteen read-only checks in `docs/rc12/operations-checks.sql`, save redacted results and triage every returned exception.
+- [ ] Provision/verify all seven package buckets via native storage operations per `docs/runbooks/storage-buckets-bootstrap.md`; retain existing private visibility.
+- [ ] Isolated real email/invitation, signature/activation recovery, import and Copilot flows read back successfully; no provider-success claim from mocks.
+- [ ] Named release owner verifies fresh backup + checksum and rehearses restore in isolation, including bucket/object metadata and private access checks.
+- [ ] Publish frontend only after release approval; edge deployment is not frontend publication.
+
+### Weekly operations
+
+The release owner (to be named by the organisation) reviews the fourteen checks and automation health weekly,
+with daily follow-up for failures or overdue runs. Verify the latest ecosystem snapshot is completed, compare its
+manifest checksums with privately retrieved objects, and verify signed-contract SharePoint archive outcomes.
+A snapshot is an ecosystem export, not proof of a complete managed database/PITR backup.
+Record verified restore evidence and retention supplied by the organisation; no new retention period is invented here.
+
+### Failure response
+
+- Health lookup failure or stale/missing evidence: mark UNKNOWN/blocked, never green/zero. Check catalogue and logs read-only before rerunning anything.
+- Suspected exposure: restrict affected access through existing account/workspace controls; preserve audit trail and timestamps. Do not clear tables, remove allowlists or delete startups.
+- Failed email/calendar/signature dispatch: inspect persisted delivery/idempotency state; ambiguous provider outcome requires reconciliation, not a blind resend.
+- Pending activation: verify signature proof and unblocked workspace first; use established audited recovery commands, never direct status edits.
+- Broken frontend: roll back the frontend artifact; do not roll back legal snapshots or rewrite signed terms. Additive database changes require reviewed recovery.
+- Backup failure: pause the release and verify the last good restore; do not call an incomplete export a backup.

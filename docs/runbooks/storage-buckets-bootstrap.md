@@ -50,3 +50,30 @@ select policyname
 ```
 
 Both queries must return two rows for the bootstrap to be considered complete.
+
+## RC12 SCH-16 — all seven package buckets
+
+| id | Required privacy under the accepted signed-in access policy |
+|---|---|
+| workspace-documents | private |
+| bug-report-screenshots | private |
+| profile-avatars | private; signed-in access only |
+| startup-logos | private; signed-in access only |
+| template_assets | private |
+| phc-extracts | private, admin-only |
+| admin-exports | private, admin-only |
+
+The optional attachment's proposal to make logos/avatars public is superseded by the accepted privacy rule;
+never broaden access on restore. Preserve existing limits/MIME configuration rather than inventing new values.
+For a missing bucket call the native create-bucket operation with its exact id and `public=false`. Do not use SQL
+INSERT/UPDATE on `storage.buckets`, including during hosted migration replay. An existing bucket is not automatically
+correct: inspect its actual visibility, object policies and limit settings; duplicate creation is not proof of privacy.
+Do not blindly update existing visibility or limits. Restore/review object metadata with workspace/profile ownership.
+
+Run check 04 in `docs/rc12/operations-checks.sql`: seven rows, `present=true`, `public=false`. Inspect
+`pg_policies` for `storage.objects` and run actual authenticated upload/read plus unauthorised rejection for every
+bucket on the isolated restore. The existing admin-only policy checks above remain required for the last two.
+Signed URLs must not be recorded in operational evidence. A local SQL shim does not certify Storage API bootstrap.
+
+The current live buckets already exist; no live bucket mutations are required by this package. A new/restored
+managed stack was not provisioned during the RC12 completion turn: native bootstrap remains an external release gate.

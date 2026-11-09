@@ -60,3 +60,20 @@ Every box must be ticked with linked evidence (command output, screenshot, or fi
 6. Send one commercial proposal to a test address → confirm ledger row + `delivered` stamp.
 7. Accept one invitation as a founder → confirm workspace opens on the intended route.
 8. Verify no `system_alerts` row inserted during the smoke window.
+
+## RC12 gate corrections (supersede stale script names/counts above)
+
+- [ ] Empty PostgreSQL **17** reconstruction: `bash scripts/rc5/verify-rc12-fresh.sh`, no `RC5_REUSE`; includes the new 18-assertion `rc12_data_protections.test.sql`.
+- [ ] All current Vitest tests including the real extracted ProtectedRoute and storage/session/attention regressions; do not rely on old fixed suite counts.
+- [ ] `node --test scripts/rc5/automation-manifest.test.mjs` and read-only isolated catalogue reconciliation pass.
+- [ ] Fourteen operational checks in `docs/rc12/operations-checks.sql` executed and every exception reviewed.
+- [ ] Native seven-bucket bootstrap and positive/negative upload/read tests on an isolated new/restored stack.
+- [ ] Current CI jobs actually executed (editing the workflow is not a passing CI result).
+- [ ] Real invitation/email, signature/recovery, import and Copilot verification evidenced; sandbox Graph mailbox and test identities supplied.
+- [ ] Backup restore + checksum evidence and named weekly owner, as described in `docs/GO_LIVE_CHECKLIST.md`.
+- [ ] Publication approved; frontend not implicitly published by function deployment.
+
+Use `docs/rc5/staging-runbook.md` for current commands. References above to nonexistent `migrate-fresh.mjs`,
+`migrate-forward.mjs` or a comprehensive `rc5:verify` pipeline are not evidence those runners exist.
+Do not ask a Lovable Cloud user for a service key/password. Production smoke never sends proposals or invitations
+without explicit authorisation. Expected diagnostics/alert exceptions must be reviewed, not automatically erased.

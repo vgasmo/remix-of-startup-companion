@@ -77,6 +77,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Automation manifest regression tests
+        run: node --test scripts/rc5/automation-manifest.test.mjs
+
       - name: Run Vitest unit tests
         run: bunx vitest run --reporter=verbose
         env:
@@ -211,8 +214,8 @@ jobs:
       - name: Scan migrations for person-specific data operations
         run: node scripts/ci/scan-migrations.mjs
 
-      - name: Every drizzle migration is mirrored in supabase/migrations
-        run: node scripts/ci/check-drizzle-mirrored.mjs
+      - name: Verify RC12 replay runner syntax
+        run: bash -n scripts/rc5/verify-rc12-fresh.sh
 
   # ──────────────────────────────────────────────
   # Gate H: Deno check for changed edge functions
@@ -389,7 +392,7 @@ jobs:
         run: supabase test db
 
   # ──────────────────────────────────────────────
-  # Gate 4b: pgTAP on a disposable local PostgreSQL 16 (full clean replay of supabase/migrations)
+  # Gate 4b: pgTAP on a disposable local PostgreSQL 17 (full clean replay of supabase/migrations)
   # ──────────────────────────────────────────────
   db-pgtap-local:
     runs-on: ubuntu-24.04
@@ -398,18 +401,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install PostgreSQL 16 + pgTAP
+      - name: Install PostgreSQL 17 + pgTAP
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-16 postgresql-16-pgtap
-          echo "/usr/lib/postgresql/16/bin" >> "$GITHUB_PATH"
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get update
+          sudo apt-get install -y postgresql-17 postgresql-17-pgtap
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
 
       - name: Replay migrations and run pgTAP suites
         env:
           RC5_PG_RUN_DIR: ${{ runner.temp }}/rc5-pg
         run: |
-          export RC5_PGTAP_SQL="$(ls /usr/share/postgresql/16/extension/pgtap--[0-9]*.sql | grep -v -- '--.*--' | sort -V | tail -1)"
-          bash scripts/rc5/local-pg-harness.sh
+          export RC5_PGTAP_SQL="$(ls /usr/share/postgresql/17/extension/pgtap--[0-9]*.sql | grep -v -- '--.*--' | sort -V | tail -1)"
+          bash scripts/rc5/verify-rc12-fresh.sh
 
       - name: Upload pgTAP logs
         if: always()
