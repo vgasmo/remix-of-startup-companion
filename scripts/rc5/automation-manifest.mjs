@@ -21,7 +21,9 @@ export function commandTarget(command) {
   const edge = command.match(/^\s*SELECT\s+public\.cron_invoke_edge\(\s*'([a-z0-9-]+)'/i);
   if (edge) return edge[1];
   const rpc = command.match(/^\s*SELECT\s+public\.cron_invoke_rpc\(\s*'[a-z0-9_-]+'\s*,\s*'public\.([a-z0-9_]+)\(/i);
-  return rpc ? `RPC public.${rpc[1]}` : null;
+  if (rpc) return `RPC public.${rpc[1]}`;
+  const direct = command.match(/^\s*SELECT\s+public\.([a-z0-9_]+)\(\s*\)\s*;?\s*$/i);
+  return direct ? `RPC public.${direct[1]}` : null;
 }
 
 export function reconcileManifest(manifest, crons, health) {
@@ -35,7 +37,7 @@ export function reconcileManifest(manifest, crons, health) {
     if (jobs.length && ['event', 'manual'].includes(row.trigger)) drift.push(`dead_cron: ${row.name}`);
     for (const job of jobs) {
       if (!job.active) drift.push(`inactive_schedule: ${row.name}`);
-      if (row.trigger === 'cron' && job.schedule.trim().replace(/\s+/g, ' ') !== row.schedule) drift.push(`schedule_mismatch: ${row.name}`);
+      if (['cron', 'dynamic'].includes(row.trigger) && job.schedule.trim().replace(/\s+/g, ' ') !== row.schedule) drift.push(`schedule_mismatch: ${row.name}`);
       if (commandTarget(job.command) !== row.target) drift.push(`target_mismatch: ${row.name}`);
     }
     if (row.health !== 'no_health_expectation') {

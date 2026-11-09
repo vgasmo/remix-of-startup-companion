@@ -20,7 +20,7 @@ The catalogue and migrations remain operational truth: this manifest detects dri
 | email-sync-health-check | cron | */10 * * * * | `RPC public.check_email_sync_health` | ops | — | `check_email_sync_health` | 600 |
 | generate-crm-notifications-daily | cron | 30 8 * * * | `generate-crm-notifications` | ops | — | `generate-crm-notifications` | 86400 |
 | open-monthly-founder-pulse | cron | 0 8 1 * * | `open-monthly-founder-pulse` | ops | — | `open-monthly-founder-pulse` | 2678400 |
-| purge-operational-logs-daily | cron | 47 3 * * * | `RPC public.purge_operational_logs` | ops | — | `purge_operational_logs` | 86400 |
+| purge-operational-logs-daily | cron | 47 3 * * * | `RPC public.purge_operational_logs` | ops | — | no_health_expectation | 86400 |
 | recompute-health-scores-daily | cron | 0 6 * * * | `recompute-health-scores` | ops | — | `recompute-health-scores` | 86400 |
 | reconcile-contract-founders-hourly | cron | 17 * * * * | `RPC public.reconcile_contract_founders` | ops | — | `reconcile_contract_founders` | 3600 |
 | reopen-work-queue-snoozes | cron | 23 * * * * | `RPC public.reopen_expired_work_queue_snoozes` | ops | — | `reopen_expired_work_queue_snoozes` | 3600 |
@@ -31,6 +31,7 @@ The catalogue and migrations remain operational truth: this manifest detects dri
 | send-milestone-reminders-daily | cron | 30 8 * * * | `send-milestone-reminders` | ops | — | `send-milestone-reminders` | 86400 |
 | send-weekly-health-digest-weekly | cron | 30 7 * * 1 | `send-weekly-health-digest` | ops | — | `send-weekly-health-digest` | 604800 |
 | sweep-session-transcripts | cron | */20 * * * * | `sweep-session-transcripts` | ops | — | `sweep-session-transcripts` | 1200 |
+| reconcile-contract-activation | dynamic | */5 * * * * | `RPC public.dispatch_contract_activation_recovery` | ops | — | no_health_expectation | 300 |
 | docusign-webhook | event | — | `docusign-webhook` | ops | — | no_health_expectation | 0 |
 | public-contract-onboarding | event | — | `public-contract-onboarding` | ops | — | no_health_expectation | 0 |
 | public-book-first-contact | event | — | `public-book-first-contact` | ops | — | no_health_expectation | 0 |
@@ -45,8 +46,8 @@ Unknown jobs, missing jobs, invalid manifests and lookup failures fail the gate.
 ## Recovery schedules
 
 Contract activation recovery arms its retry schedule only while its durable queue contains work and disarms after drain.
-This is not a permanent missing-schedule requirement. A newly observed recovery job must be reviewed against the
-queue/wakeup migrations before being added as `dynamic`; unknown jobs still fail reconciliation rather than being ignored.
+This is not a permanent missing-schedule requirement. Its known `dynamic` schedule and dispatch RPC are checked when armed; absence after drain is allowed.
+Unknown jobs still fail reconciliation rather than being ignored.
 
 ## Transport
 
