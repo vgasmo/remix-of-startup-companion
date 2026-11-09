@@ -204,6 +204,13 @@
       "when": 1794221186520,
       "tag": "0028_rc12_funnel_promote_operational",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1794221225251,
+      "tag": "0029_rc12_integration_errors_alerts",
+      "breakpoints": true
     }
   ]
 }

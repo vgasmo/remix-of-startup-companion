@@ -4736,6 +4736,97 @@ export type Database = {
           },
         ]
       }
+      integration_errors: {
+        Row: {
+          created_at: string
+          error_code: string | null
+          error_details: Json | null
+          error_message: string
+          id: string
+          integration_type: string
+          metadata: Json | null
+          program_id: string | null
+          request_payload: Json | null
+          resolved_at: string | null
+          resolved_by: string | null
+          source: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_code?: string | null
+          error_details?: Json | null
+          error_message: string
+          id?: string
+          integration_type?: string
+          metadata?: Json | null
+          program_id?: string | null
+          request_payload?: Json | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          source?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_code?: string | null
+          error_details?: Json | null
+          error_message?: string
+          id?: string
+          integration_type?: string
+          metadata?: Json | null
+          program_id?: string | null
+          request_payload?: Json | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          source?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_errors_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_errors_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_errors_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_export"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_errors_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_peer_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_errors_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_errors_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investor_readiness_items: {
         Row: {
           category: string
