@@ -169,6 +169,13 @@
       "when": 1794220941711,
       "tag": "0023_rc12_invitations",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1794220972750,
+      "tag": "0024_rc12_contract_workspace",
+      "breakpoints": true
     }
   ]
 }
