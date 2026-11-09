@@ -5,7 +5,7 @@ import { parseManifest, reconcileManifest } from './automation-manifest.mjs';
 const manifest = parseManifest(readFileSync(new URL('../../docs/rc5/automation-manifest.md', import.meta.url), 'utf8'));
 const row = { name: 'purge-operational-logs-daily', trigger: 'cron', schedule: '47 3 * * *', target: 'RPC public.purge_operational_logs', health: 'no_health_expectation', cadence: 86400 };
 const cron = { jobname: row.name, active: true, schedule: row.schedule, command: "SELECT public.cron_invoke_rpc('purge_operational_logs', 'public.purge_operational_logs()')" };
-const health = { job_name: row.health, expected_cadence_seconds: 86400, enabled: true };
+const health = { job_name: 'purge_operational_logs', expected_cadence_seconds: 86400, enabled: true };
 const checkedRow = { ...row, health: 'purge_operational_logs' };
 const check = (jobs = [cron], registry = [health]) => reconcileManifest([checkedRow], jobs, registry);
 test('RC12 log retention schedule matches the applied command and cadence', () => { assert.deepEqual(manifest.find(r => r.name === row.name), { ...row, owner: 'ops', flag: '' }); assert.deepEqual(check(), []); });
