@@ -29,8 +29,8 @@ SELECT is((SELECT status::text FROM public.workspaces WHERE id='c1200000-0000-40
 
 INSERT INTO public.datarooms(id,workspace_id) VALUES ('c1200000-0000-4000-8000-000000000050','c1200000-0000-4000-8000-000000000031');
 INSERT INTO public.documents(id,workspace_id,name,document_type,external_url) VALUES
- ('c1200000-0000-4000-8000-000000000060','c1200000-0000-4000-8000-000000000031','RC12 own','other','https://example.invalid/own'),
- ('c1200000-0000-4000-8000-000000000061','c1200000-0000-4000-8000-000000000030','RC12 other','other','https://example.invalid/other');
+ ('c1200000-0000-4000-8000-000000000060','c1200000-0000-4000-8000-000000000031','RC12 own','link','https://example.invalid/own'),
+ ('c1200000-0000-4000-8000-000000000061','c1200000-0000-4000-8000-000000000030','RC12 other','link','https://example.invalid/other');
 INSERT INTO public.investor_updates(id,workspace_id,month) VALUES
  ('c1200000-0000-4000-8000-000000000070','c1200000-0000-4000-8000-000000000031','2026-11-01'),
  ('c1200000-0000-4000-8000-000000000071','c1200000-0000-4000-8000-000000000030','2026-11-01');
