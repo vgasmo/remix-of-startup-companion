@@ -90,18 +90,6 @@ export function useExportSessions(workspaceId: string) {
 
       if (error) throw error;
 
-      // O embed `profiles!action_items_owner_user_id_fkey` não existe (a FK aponta para auth.users): carregar os donos à parte.
-      const ownerIds = [...new Set((data || []).map(r => r.owner_user_id).filter((id): id is string => !!id))];
-      const owners = new Map<string, { full_name: string | null; email: string | null }>();
-      if (ownerIds.length > 0) {
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles_safe')
-          .select('id, full_name, email')
-          .in('id', ownerIds);
-        if (profilesError) throw profilesError;
-        (profiles || []).forEach(p => { if (p.id) owners.set(p.id, { full_name: p.full_name, email: p.email }); });
-      }
-
       return (data || []).map(row => ({
         title: row.title,
         scheduledAt: row.scheduled_at,
@@ -159,6 +147,18 @@ export function useExportActions(workspaceId: string) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      // O embed `profiles!action_items_owner_user_id_fkey` não existe (a FK aponta para auth.users): carregar os donos à parte.
+      const ownerIds = [...new Set((data || []).map(r => r.owner_user_id).filter((id): id is string => !!id))];
+      const owners = new Map<string, { full_name: string | null; email: string | null }>();
+      if (ownerIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles_safe')
+          .select('id, full_name, email')
+          .in('id', ownerIds);
+        if (profilesError) throw profilesError;
+        (profiles || []).forEach(p => { if (p.id) owners.set(p.id, { full_name: p.full_name, email: p.email }); });
+      }
 
       return (data || []).map(row => ({
         title: row.title,

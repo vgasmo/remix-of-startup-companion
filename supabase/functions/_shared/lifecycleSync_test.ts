@@ -20,7 +20,7 @@ function fakeClient({ signed = true, memberError = false, active = false, crmErr
       };
       const chain = {
         select: () => chain, eq: () => chain, order: () => chain, limit: () => chain,
-        in: () => chain, is: () => chain,
+        in: () => chain, is: () => chain, not: () => chain,
         update: (p: Record<string, unknown>) => { operation = 'write'; payload = p; return chain; },
         insert: (p: Record<string, unknown>) => { operation = 'write'; payload = p; return chain; },
         maybeSingle: () => Promise.resolve(result()),

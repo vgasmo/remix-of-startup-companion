@@ -72,7 +72,7 @@ function pickColumn(headers: string[], candidates: string[]): number {
   return -1;
 }
 
-async function assertStaff(sbUser: ReturnType<typeof createClient<unknown>>, sbSvc: ReturnType<typeof createClient<unknown>>) {
+async function assertStaff(sbUser: ReturnType<typeof createClient<any, "public">>, sbSvc: ReturnType<typeof createClient<any, "public">>) {
   const { data: userData } = await sbUser.auth.getUser();
   const uid = userData.user?.id;
   if (!uid) return { ok: false as const, status: 401, error: "unauthorized" };
