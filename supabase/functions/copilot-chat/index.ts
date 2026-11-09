@@ -1,8 +1,10 @@
+import type {} from '../_shared/aiGatewayModels.d.ts';
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from "../_shared/cors.ts";
 import { isAccountActive } from "../_shared/security.ts";
 import { parseCopilotMessages } from "../_shared/copilotInput.ts";
+import { streamChatCompletion, GatewayError } from "npm:@lovable.dev/ai-gateway@0.1.11";
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -34,7 +36,8 @@ serve(async (req: Request) => {
     }
 
     // ── Input validation ────────────────────────────────────────
-    const body = await req.json();
+    let body: { messages?: unknown } | null = null;
+    try { body = await req.json(); } catch { /* corpo inválido tratado abaixo */ }
     let messages;
     try {
       messages = parseCopilotMessages(body?.messages);
@@ -46,32 +49,19 @@ serve(async (req: Request) => {
     let rateLimitOk = false;
     let rateLimitErrored = false;
     try {
-      const { data: wsRow, error: wsError } = await supabase
-        .from("workspace_users")
-        .select("workspace_id")
-        .eq("user_id", userId)
-        .eq("active", true)
-        .limit(1)
-        .maybeSingle();
-
-      if (wsError) throw wsError;
-
-      if (wsRow?.workspace_id) {
-        const { data: withinLimit, error: rlErr } = await supabase.rpc("check_ai_rate_limit", {
-          _user_id: userId,
-          _workspace_id: wsRow.workspace_id,
-          _function_name: "copilot-chat",
-          _max_requests: 30,
-        });
-        if (rlErr) {
-          rateLimitErrored = true;
-          console.warn("Rate limit RPC error:", rlErr.message);
-        } else {
-          rateLimitOk = withinLimit !== false;
-        }
+      // Limite por utilizador (não por workspace): staff e founders pré-claim não têm workspace_users e ficavam
+      // sem limite. _workspace_id NULL é suportado (ai_rate_limits UNIQUE ... NULLS NOT DISTINCT).
+      const { data: withinLimit, error: rlErr } = await supabase.rpc("check_ai_rate_limit", {
+        _user_id: userId,
+        _workspace_id: null,
+        _function_name: "copilot-chat",
+        _max_requests: 30,
+      });
+      if (rlErr) {
+        rateLimitErrored = true;
+        console.warn("Rate limit RPC error:", rlErr.message);
       } else {
-        // No workspace yet (e.g. brand-new founder pre-claim) → allow, low risk.
-        rateLimitOk = true;
+        rateLimitOk = withinLimit === true;
       }
     } catch (e) {
       rateLimitErrored = true;
@@ -95,6 +85,9 @@ serve(async (req: Request) => {
 
     // ── Fetch user context for richer answers ───────────────────
     let contextBlock = "";
+    let userRolesList: string[] = [];
+    // Valores controlados por utilizadores entram no prompt numa só linha e com tamanho limitado.
+    const oneLine = (v: unknown) => String(v ?? "").replace(/[\r\n]+/g, " ").slice(0, 120);
     try {
       // Get profile
       const { data: profile } = await supabase
@@ -141,20 +134,21 @@ serve(async (req: Request) => {
         .eq("period_month", currentMonth)
         .limit(10);
 
-      const userRoles = (roles || []).map((r: any) => r.role).join(", ");
+      userRolesList = (roles || []).map((r: any) => String(r.role));
+      const userRoles = userRolesList.join(", ");
       const wsInfo = (workspaces || []).map((w: any) => {
         const ws = w.workspaces;
-        return `- ${ws?.startups?.name || "Unknown"} (${ws?.programs?.name || "N/A"}, stage: ${ws?.stage || "N/A"}, status: ${ws?.status || "N/A"})`;
+        return `- ${oneLine(ws?.startups?.name) || "Unknown"} (${oneLine(ws?.programs?.name) || "N/A"}, stage: ${ws?.stage || "N/A"}, status: ${ws?.status || "N/A"})`;
       }).join("\n");
 
       const kpiInfo = (recentKpis || []).map((k: any) => {
         const def = k.kpi_definitions;
-        return `- ${def?.name}: ${k.value ?? "not reported"}${def?.unit ? ` ${def.unit}` : ""}${k.target_value ? ` (target: ${k.target_value})` : ""}`;
+        return `- ${oneLine(def?.name)}: ${k.value ?? "not reported"}${def?.unit ? ` ${def.unit}` : ""}${k.target_value ? ` (target: ${k.target_value})` : ""}`;
       }).join("\n");
 
       contextBlock = `
 --- USER CONTEXT ---
-Name: ${profile?.full_name || "Unknown"}
+Name: ${oneLine(profile?.full_name) || "Unknown"}
 Roles: ${userRoles || "none"}
 Workspaces:
 ${wsInfo || "No workspaces"}
@@ -168,13 +162,6 @@ ${kpiInfo || "No KPIs reported yet this month"}
     }
 
     // ── Call Lovable AI Gateway ──────────────────────────────────
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY is not configured");
-      return corsJsonResponse({ error: "AI service not configured" }, req, 500);
-    }
-
-    const userRolesList = (contextBlock.match(/Roles: (.+)/)?.[1] || "").split(", ").map(r => r.trim());
     const isFounder = userRolesList.includes("founder");
     const isConsultor = userRolesList.includes("consultor");
     const isMentor = userRolesList.includes("mentor_externo");
@@ -402,51 +389,14 @@ ${startupLeiriaKnowledge}
 ${playbookLibrary}
 ${contextBlock}`;
 
-    const aiResponse = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [
-            { role: "system", content: systemPrompt },
-            ...messages,
-          ],
-          stream: true,
-        }),
-      }
-    );
-
-    if (!aiResponse.ok) {
-      const status = aiResponse.status;
-      const errorText = await aiResponse.text();
-      console.error("AI gateway error:", status, errorText);
-
-      if (status === 429) {
-        return corsJsonResponse(
-          { error: "AI rate limit exceeded. Please try again later." },
-          req,
-          429
-        );
-      }
-      if (status === 402) {
-        return corsJsonResponse(
-          { error: "AI credits exhausted. Please add credits in Settings." },
-          req,
-          402
-        );
-      }
-
-      return corsJsonResponse({ error: "AI service unavailable" }, req, 502);
-    }
+    const aiResponse = await streamChatCompletion({
+      model: "google/gemini-3-flash-preview",
+      messages: [{ role: "system", content: systemPrompt }, ...messages],
+    }, { signal: req.signal, maxRetries: 0 });
 
     // Stream the response back to the client
     const corsHeaders = getCorsHeaders(req);
-    return new Response(aiResponse.body, {
+    return aiResponse.toResponse({
       headers: {
         ...corsHeaders,
         "Content-Type": "text/event-stream",
@@ -455,6 +405,13 @@ ${contextBlock}`;
       },
     });
   } catch (err) {
+    if (err instanceof GatewayError) {
+      console.error('copilot_gateway_error', { code: err.code, ids: err.ids });
+      const status = err.httpStatus;
+      if (status === 429) return corsJsonResponse({ error: 'AI rate limit exceeded. Please try again later.' }, req, 429);
+      if (status === 402) return corsJsonResponse({ error: 'AI credits exhausted. Please add credits in Settings.' }, req, 402);
+      return corsJsonResponse({ error: 'AI service unavailable' }, req, 502);
+    }
     console.error("copilot-chat error:", err);
     return corsJsonResponse(
       { error: "An unexpected error occurred. Please try again." },

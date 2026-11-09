@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { notify } from "@/lib/notify";
 import { supabaseClient } from '@/lib/supabaseClient';
 import { CopilotPlaybookActions } from './CopilotPlaybookActions';
+import { prepareCopilotHistory } from '@/hooks/useCopilotChat';
 
 interface Message {
   id: string;
@@ -21,7 +22,8 @@ interface Message {
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/copilot-chat`;
-const STREAM_TIMEOUT_MS = 20_000;
+const STREAM_IDLE_TIMEOUT_MS = 20_000; // sem dados durante este tempo = parado; recomeça a cada bloco recebido
+const UNAVAILABLE_RETRY_MS = 15_000;
 
 export function GlobalEcosystemCopilot() {
   const { t } = useTranslation();
@@ -92,8 +94,9 @@ export function GlobalEcosystemCopilot() {
     const controller = new AbortController();
     abortRef.current = controller;
 
-    // Timeout race
-    const timeout = setTimeout(() => controller.abort(), STREAM_TIMEOUT_MS);
+    // Timeout por inatividade (renovado a cada bloco), não prazo total da resposta
+    let timeout = setTimeout(() => controller.abort(), STREAM_IDLE_TIMEOUT_MS);
+    const touch = () => { clearTimeout(timeout); timeout = setTimeout(() => controller.abort(), STREAM_IDLE_TIMEOUT_MS); };
     let assistantSoFar = '';
 
     try {
@@ -113,7 +116,7 @@ export function GlobalEcosystemCopilot() {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({
-          messages: updatedMessages.map(m => ({ role: m.role, content: m.content })),
+          messages: prepareCopilotHistory(updatedMessages),
         }),
         signal: controller.signal,
       });
@@ -157,6 +160,7 @@ export function GlobalEcosystemCopilot() {
       while (!streamDone) {
         const { done, value } = await reader.read();
         if (done) break;
+        touch();
         textBuffer += decoder.decode(value, { stream: true });
 
         let newlineIndex: number;
@@ -215,7 +219,10 @@ export function GlobalEcosystemCopilot() {
     } catch (err: any) {
       if (err?.name === 'AbortError') {
         // Timeout or user abort
-        if (!assistantSoFar) {
+        if (assistantSoFar) {
+          // Resposta cortada a meio: marcar como incompleta em vez de a deixar parecer completa.
+          setMessages(prev => prev.map((m, i) => (i === prev.length - 1 && m.role === 'assistant' ? { ...m, content: `${m.content}\n\n…` } : m)));
+        } else {
           setMessages(prev => [
             ...prev,
             {
@@ -238,7 +245,9 @@ export function GlobalEcosystemCopilot() {
           }),
         },
       ]);
+      // Falha de rede é transitória: voltar a permitir pedidos passado um pouco, sem exigir recarregar a página.
       setIsAvailable(false);
+      setTimeout(() => setIsAvailable(true), UNAVAILABLE_RETRY_MS);
     } finally {
       clearTimeout(timeout);
       setIsThinking(false);
@@ -260,7 +269,7 @@ export function GlobalEcosystemCopilot() {
           // Hide on mobile — MobileQuickActions/QuickActionsFab own the bottom-right slot there
           'hidden lg:flex',
         )}
-        aria-label="Open AI Copilot"
+        aria-label={t('copilot.open', { defaultValue: 'Abrir Copilot' })}
       >
         <Sparkles className="h-5 w-5" />
       </button>
@@ -417,6 +426,7 @@ export function GlobalEcosystemCopilot() {
                 size="sm"
                 disabled={!input.trim() || isThinking || !isAvailable}
                 className="h-9 w-9 p-0 rounded-xl shrink-0"
+                aria-label={t('common.send', { defaultValue: 'Enviar' })}
               >
                 <Send className="h-4 w-4" />
               </Button>

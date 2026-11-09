@@ -11,6 +11,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.1';
 import { getCorsHeaders, handleCorsOptions } from '../_shared/cors.ts';
+import { denyIfAccountInactive } from '../_shared/security.ts';
 
 type Phase = 'stage' | 'commit';
 
@@ -70,6 +71,8 @@ Deno.serve(async (req) => {
     const { data: roles } = await sbSvc.from('user_roles').select('role').eq('user_id', uid);
     const isAdmin = (roles ?? []).some((r: { role: string }) => r.role === 'admin');
     if (!isAdmin) return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: jsonHeaders });
+    const inactive = await denyIfAccountInactive(req, sbSvc, uid);
+    if (inactive) return inactive;
 
     const body = (await req.json()) as RunBody;
     const phase: Phase = body.phase ?? (body.dry_run === false ? 'commit' : 'stage');
