@@ -17,12 +17,12 @@ async function loadHandler(name: string, client: unknown, providerFetch: typeof 
     foundersGloballyDisabled: () => false,
     fetch: providerFetch,
     Deno: { env: { get: (key: string) => key === 'SUPABASE_URL' ? 'https://local.test' : 'test-only-value' } },
+    streamChatCompletion: async (payload: unknown, options: { signal?: AbortSignal }) => {
+      const response = await providerFetch('https://local.test/gateway', { body: JSON.stringify(payload), signal: options.signal });
+      return { toResponse: (init: ResponseInit) => new Response(response.body, init) };
+    },
+    GatewayError: class extends Error {},
   };
-  globals[key].streamChatCompletion = async (payload: unknown, options: { signal?: AbortSignal }) => {
-    const response = await providerFetch('https://local.test/gateway', { body: JSON.stringify(payload), signal: options.signal });
-    return { toResponse: (init: ResponseInit) => new Response(response.body, init) };
-  };
-  globals[key].GatewayError = class extends Error {};
   const names = 'createClient, Resend, foundersGloballyDisabled, parseCopilotMessages, getCommunicationContacts, selectCommunicationEmails, selectCommunicationPhone, getCorsHeaders, handleCorsOptions, corsJsonResponse, generateRequestId, createLogger, isAccountActive, denyIfAccountInactive, requireUser, safeErrorMessage, fetch, Deno, streamChatCompletion, GatewayError';
   const code = `const { ${names} } = globalThis.${key};\n` + source
     .replace(/^import\s+[\s\S]*?;\s*$/gm, '')
