@@ -48,6 +48,7 @@ import { lisbonWallClockToUtcIso } from '@/lib/dateUtils';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
 import { useLocalFormDraft } from '@/hooks/useLocalFormDraft';
 import { DraftRestoredNotice } from '@/components/shared/DraftRestoredNotice';
+import { getSessionInviteOutcome } from './sessionInviteOutcome';
 
 interface CreateSessionDialogProps {
   workspaceId: string;
@@ -451,6 +452,8 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
         primary_mentor_id: meetingWith === 'mentor_externo' ? (participantId || null) : null,
       });
 
+      // HRD-13: o convite por email não pode falhar em silêncio (a sessão já foi criada).
+      let inviteWarning: string | null = null;
       if (!logPast && sendInvites) {
 
         try {
@@ -477,7 +480,7 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
           );
 
           if (recipientEmails.length > 0) {
-            const { error } = await invokeWithAuth('send-session-invite', {
+            const inviteResult = await invokeWithAuth('send-session-invite', {
               body: {
                 sessionId: session.id,
                 workspaceId,
@@ -493,17 +496,25 @@ export function CreateSessionDialog({ workspaceId, open, onOpenChange }: CreateS
               },
             });
 
-            if (error) {
-              logger.error('Failed to send invites', {}, error);
+            if (inviteResult.error) {
+              logger.error('Failed to send invites', {}, inviteResult.error);
+            }
+            const inviteOutcome = getSessionInviteOutcome(inviteResult);
+            if (inviteOutcome.kind === 'failed') {
+              inviteWarning = t('sessions.createdInviteFailed', 'Sessão criada, mas não foi possível enviar os convites por email. Avise os participantes manualmente.');
+            } else if (inviteOutcome.kind === 'partial') {
+              inviteWarning = t('sessions.createdInvitePartial', 'Sessão criada, mas {{count}} destinatário(s) não receberam o convite por email (sem conta ativa ou envio falhado). Avise-os manualmente.', { count: inviteOutcome.notDelivered });
             }
           }
         } catch (emailError) {
           logger.error('Email sending error', {}, emailError);
+          inviteWarning = t('sessions.createdInviteFailed', 'Sessão criada, mas não foi possível enviar os convites por email. Avise os participantes manualmente.');
         }
       }
 
 
       notify.success(t('sessions.sessionCreated'));
+      if (inviteWarning) notify.warn(inviteWarning, { duration: 8000 });
       onOpenChange(false);
       resetForm();
     } catch (error) {

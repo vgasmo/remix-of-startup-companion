@@ -326,10 +326,11 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // Upsert into communication_log
+          // Insert into communication_log (the unique indexes on external_source/external_id are
+          // partial, so ON CONFLICT cannot be inferred: duplicates come back as 23505 -> skipped)
           const { error } = await supabase
             .from('communication_log')
-            .upsert({
+            .insert({
               workspace_id: workspace_id || null,
               funnel_item_id: funnel_item_id || null,
               activity_type: 'email',
@@ -346,9 +347,6 @@ Deno.serve(async (req) => {
                 to: msg.toRecipients?.map((r: any) => r.emailAddress?.address),
                 cc: msg.ccRecipients?.map((r: any) => r.emailAddress?.address),
               },
-            }, {
-              onConflict: 'external_source,external_id',
-              ignoreDuplicates: true,
             });
 
           if (error) {

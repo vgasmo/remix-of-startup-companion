@@ -140,7 +140,8 @@ Deno.serve(async (req) => {
     }
 
     if (type === 'intake_request') {
-      subject = `${safeOrg ? safeOrg + ' — ' : ''}Pedido de Contratação — Startup Leiria`
+      // O assunto é texto simples: sem escape HTML (senão 'Silva & Filhos' chega como 'Silva &amp; Filhos')
+      subject = `${organizationName ? String(organizationName).replace(/[\r\n]+/g, ' ') + ' — ' : ''}Pedido de Contratação — Startup Leiria`
       html = `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
           <h2 style="color:#1a1a2e">Pedido de Contratação</h2>
@@ -264,7 +265,7 @@ Deno.serve(async (req) => {
         await supabase.from('email_log').insert({
           email_type: `intake_${type}`,
           subject,
-          recipients: JSON.stringify([recipientEmail]),
+          recipients: [recipientEmail],
           status: 'sent',
           sent_at: new Date().toISOString(),
           created_by: null,

@@ -146,8 +146,16 @@ Deno.serve(async (req) => {
     const isAdmin = (roles ?? []).some((r: any) => r.role === 'admin');
     if (!isAdmin) return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: jsonHeaders });
 
-    const body = await req.json() as CommitBody;
-    if (!body?.job_id) return new Response(JSON.stringify({ error: 'invalid_input' }), { status: 400, headers: jsonHeaders });
+    const body = await req.json().catch(() => null) as CommitBody | null;
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    // row_ids, quando enviado, tem de ser uma lista não vazia de UUIDs (uma lista vazia comitava todas as linhas aprovadas).
+    const rowIdsInvalid = body?.row_ids != null && (
+      !Array.isArray(body.row_ids) || body.row_ids.length === 0 || body.row_ids.length > 5000 ||
+      !body.row_ids.every((v: unknown) => typeof v === 'string' && UUID_RE.test(v))
+    );
+    if (!body || typeof body.job_id !== 'string' || !UUID_RE.test(body.job_id) || rowIdsInvalid) {
+      return new Response(JSON.stringify({ error: 'invalid_input' }), { status: 400, headers: jsonHeaders });
+    }
 
     const { data: job, error: jobErr } = await sbSvc.from('data_import_jobs').select('*').eq('id', body.job_id).single();
     if (jobErr || !job) return new Response(JSON.stringify({ error: 'job_not_found' }), { status: 404, headers: jsonHeaders });
@@ -166,7 +174,17 @@ Deno.serve(async (req) => {
       }
     }
 
-    await sbSvc.from('data_import_jobs').update({ status: 'committing', approved_by: uid }).eq('id', job.id);
+    // Reclamação atómica do job: um segundo pedido em simultâneo recebe 409 (um job preso em 'committing' há mais de 15 min pode ser retomado).
+    const staleBefore = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const { data: claimedJob, error: claimErr } = await sbSvc.from('data_import_jobs')
+      .update({ status: 'committing', approved_by: uid })
+      .eq('id', job.id)
+      .or(`status.neq.committing,updated_at.lt.${staleBefore}`)
+      .select('id');
+    if (claimErr) throw claimErr;
+    if (!claimedJob?.length) {
+      return new Response(JSON.stringify({ error: 'job_already_committing' }), { status: 409, headers: jsonHeaders });
+    }
 
     let q = sbSvc.from('data_import_rows').select('*').eq('job_id', job.id).eq('approval_state', 'approved');
     if (body.row_ids?.length) q = q.in('id', body.row_ids);
@@ -245,16 +263,17 @@ Deno.serve(async (req) => {
       }));
     }
 
-    await sbSvc.from('data_import_jobs').update({
-      status: 'committed',
+    const { error: jobDoneErr } = await sbSvc.from('data_import_jobs').update({
+      status: summary.failed > 0 || summary.stale > 0 ? 'committed_with_errors' : 'committed',
       committed_at: new Date().toISOString(),
       counts_json: { ...(job.counts_json ?? {}), commit: summary },
     }).eq('id', job.id);
+    if (jobDoneErr) console.error('commit-crm-import: failed to finalize job', jobDoneErr.message);
 
     return new Response(JSON.stringify({ success: true, source, summary, sample: results.slice(0, 20) }), { headers: jsonHeaders });
   } catch (e: any) {
     console.error('commit-crm-import error', e?.message ?? e);
-    return new Response(JSON.stringify({ error: 'internal_error', message: e?.message ?? String(e) }), {
+    return new Response(JSON.stringify({ error: 'internal_error' }), {
       status: 500, headers: jsonHeaders,
     });
   }

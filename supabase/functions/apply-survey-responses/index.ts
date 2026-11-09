@@ -1,7 +1,7 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions } from '../_shared/cors.ts';
 import { validateUUID, parseAndValidateBody } from '../_shared/validation.ts';
-import { isServiceRoleBearer } from '../_shared/security.ts';
+import { isServiceRoleBearer, timingSafeEqual } from '../_shared/security.ts';
 
 /**
  * apply-survey-responses
@@ -302,12 +302,14 @@ async function applyMilestone(
 ): Promise<WriteBackResult> {
   const title = answer.trim().slice(0, 200);
 
-  const { data: existing } = await supabase
+  // ilike trata % e _ (e * no PostgREST) como wildcards e maybeSingle() falha com 2+ linhas (-> duplicava o marco).
+  const { data: existingRows } = await supabase
     .from('milestones')
     .select('id')
     .eq('workspace_id', workspaceId)
-    .ilike('title', title)
-    .maybeSingle();
+    .ilike('title', title.replace(/[\\%_]/g, '\\$&').replace(/\*/g, '_'))
+    .limit(1);
+  const existing = existingRows?.[0] ?? null;
 
   if (existing) {
     return {
@@ -384,10 +386,28 @@ Deno.serve(async (req) => {
     if (!instanceIdResult.valid) return json({ error: instanceIdResult.error }, 400);
     const instanceId = instanceIdResult.value!;
 
+    // Auth: the founder's own JWT, or an internal call carrying the cron secret.
+    // Autenticar ANTES de ler survey_instances (service role): sem sessão não há oráculo 404/403.
+    const providedCron = req.headers.get('x-cron-secret');
+    const isInternal = isServiceRoleBearer(req)
+      || (typeof cronSecret === 'string' && cronSecret.length > 0 && providedCron !== null && timingSafeEqual(providedCron, cronSecret));
+    let authedUserId: string | null = null;
+
+    if (!isInternal) {
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader) return json({ error: 'Unauthorized' }, 401);
+
+      const { data: { user }, error: authError } = await supabase.auth.getUser(
+        authHeader.replace('Bearer ', ''),
+      );
+      if (authError || !user) return json({ error: 'Unauthorized' }, 401);
+      authedUserId = user.id;
+    }
+
     const { data: instance, error: instanceError } = await supabase
       .from('survey_instances')
       .select(`
-        id, workspace_id, status, submitted_by,
+        id, workspace_id, status, submitted_by, submitted_at,
         campaign:survey_campaigns(
           id, name,
           survey_definition:survey_definitions(id, write_back_mappings)
@@ -399,37 +419,27 @@ Deno.serve(async (req) => {
     if (instanceError) throw instanceError;
     if (!instance) return json({ error: 'Survey instance not found' }, 404);
 
-    // Auth: the founder's own JWT, or an internal call carrying the cron secret.
-    const isInternal = isServiceRoleBearer(req) || (Boolean(cronSecret) && req.headers.get('x-cron-secret') === cronSecret);
     let userId: string | null = null;
 
-    if (!isInternal) {
-      const authHeader = req.headers.get('Authorization');
-      if (!authHeader) return json({ error: 'Unauthorized' }, 401);
-
-      const { data: { user }, error: authError } = await supabase.auth.getUser(
-        authHeader.replace('Bearer ', ''),
-      );
-      if (authError || !user) return json({ error: 'Unauthorized' }, 401);
-
+    if (authedUserId) {
       const { data: hasAccess } = await supabase.rpc('has_workspace_access', {
-        _user_id: user.id,
+        _user_id: authedUserId,
         _workspace_id: instance.workspace_id,
       });
       if (!hasAccess) return json({ error: 'Access denied' }, 403);
       // Só o founder do workspace ou staff (admin/consultor) disparam o write-back com JWT.
       const [{ data: staffRoles }, { data: founderRows }] = await Promise.all([
         supabase.from('user_roles').select('role')
-          .eq('user_id', user.id).in('role', ['admin', 'consultor']),
+          .eq('user_id', authedUserId).in('role', ['admin', 'consultor']),
         supabase.from('workspace_users').select('id')
-          .eq('workspace_id', instance.workspace_id).eq('user_id', user.id)
+          .eq('workspace_id', instance.workspace_id).eq('user_id', authedUserId)
           .eq('active', true).eq('role', 'founder').limit(1),
       ]);
       if ((staffRoles ?? []).length === 0 && (founderRows ?? []).length === 0) {
         return json({ error: 'Access denied' }, 403);
       }
 
-      userId = user.id;
+      userId = authedUserId;
     } else {
       userId = instance.submitted_by ?? null;
     }
@@ -473,7 +483,8 @@ Deno.serve(async (req) => {
       .eq('id', instance.workspace_id)
       .single();
 
-    const periodMonth = startOfMonth(new Date());
+    // O período é o mês da submissão, não o de agora: um reenvio/retry tardio não pode gravar noutro mês.
+    const periodMonth = startOfMonth(instance.submitted_at ? new Date(instance.submitted_at) : new Date());
     const results: WriteBackResult[] = [];
 
     for (const [questionId, mapping] of Object.entries(mappings)) {
@@ -532,16 +543,26 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Re-running the survey replaces the previous audit rows for the instance.
-    await supabase.from('survey_writebacks').delete().eq('instance_id', instanceId);
-    await supabase.from('survey_writebacks').insert(
-      results.map((result) => ({
+    // Re-running the survey updates the audit rows, but never downgrades a row that
+    // already recorded an applied write ("anterior: ..." is the only undo information).
+    const { data: previousRows, error: previousError } = await supabase
+      .from('survey_writebacks').select('question_id, status').eq('instance_id', instanceId);
+    if (previousError) throw previousError;
+    const alreadyApplied = new Set((previousRows ?? []).filter((r) => r.status === 'applied').map((r) => r.question_id));
+    const auditRows = results
+      .filter((result) => !(result.status === 'skipped' && alreadyApplied.has(result.question_id)))
+      .map((result) => ({
         ...result,
         instance_id: instanceId,
         workspace_id: instance.workspace_id,
         applied_by: userId,
-      })),
-    );
+      }));
+    if (auditRows.length > 0) {
+      const { error: auditError } = await supabase
+        .from('survey_writebacks')
+        .upsert(auditRows, { onConflict: 'instance_id,question_id' });
+      if (auditError) throw auditError;
+    }
 
     const applied = results.filter((r) => r.status === 'applied').length;
     const skipped = results.filter((r) => r.status === 'skipped').length;

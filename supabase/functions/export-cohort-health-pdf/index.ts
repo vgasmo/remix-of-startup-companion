@@ -3,6 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { normalizeLocale, pickLang, type Locale } from '../_shared/i18n.ts';
 import { escapeHtml, REPORT_CSP_META } from '../_shared/html.ts';
+import { isAccountActive } from '../_shared/security.ts';
+import { validateUUID } from '../_shared/validation.ts';
 
 const T = {
   title: { pt: '📊 Relatório de Saúde da Coorte', en: '📊 Cohort Health Report' },
@@ -69,17 +71,26 @@ serve(async (req) => {
       .select("role")
       .eq("user_id", user.id);
 
-    const isStaff = roles?.some(r => r.role === "admin" || r.role === "consultor");
+    const isStaff = roles?.some(r => r.role === "admin" || r.role === "consultor" || r.role === "backoffice");
     if (!isStaff) {
       return corsJsonResponse({ error: "Forbidden" }, req, 403);
     }
+    if (!(await isAccountActive(supabase, user.id))) {
+      return corsJsonResponse({ error: "Forbidden" }, req, 403);
+    }
 
-    const body: ExportRequest = await req.json();
-    const { program_id, start_date, end_date } = body;
+    const body: ExportRequest = await req.json().catch(() => ({} as ExportRequest));
+    const programCheck = validateUUID(body?.program_id, 'program_id');
+    if (!programCheck.valid || !programCheck.value) return corsJsonResponse({ error: programCheck.error }, req, 400);
+    const program_id = programCheck.value;
+    const { start_date, end_date } = body;
 
     const now = new Date();
     const startDate = start_date ? new Date(start_date) : new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const endDate = end_date ? new Date(end_date) : now;
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || startDate > endDate) {
+      return corsJsonResponse({ error: "Invalid date range" }, req, 400);
+    }
 
     console.log(`Exporting cohort health for program: ${program_id}`);
 
@@ -95,7 +106,7 @@ serve(async (req) => {
     }
 
     // Get workspaces for this program
-    const { data: workspacesRaw } = await supabase
+    const { data: workspacesRaw, error: workspacesError } = await supabase
       .from("workspaces")
       .select(`
         id,
@@ -107,6 +118,8 @@ serve(async (req) => {
       .eq("program_id", program_id)
       .eq("status", "active")
       .order("health_score_numeric", { ascending: true });
+
+    if (workspacesError) throw workspacesError;
 
     // Helper to get startup name (supabase returns joined data as array)
     const getStartupName = (ws: any): string => {
@@ -120,13 +133,26 @@ serve(async (req) => {
     const workspaceIds = workspaces?.map(w => w.id) || [];
 
     // Get health history for the period
-    const { data: historyData } = await supabase
-      .from("workspace_health_history")
-      .select("workspace_id, score_numeric, label, computed_at")
-      .in("workspace_id", workspaceIds)
-      .gte("computed_at", startDate.toISOString())
-      .lte("computed_at", endDate.toISOString())
-      .order("computed_at", { ascending: true });
+    // PostgREST devolve no máximo 1000 linhas por pedido (1 snapshot por workspace por dia):
+    // paginar, senão os últimos dias do período desaparecem e a variação sai errada.
+    const historyData: Array<{ workspace_id: string; score_numeric: number; label: string; computed_at: string }> = [];
+    if (workspaceIds.length > 0) {
+      const PAGE = 1000;
+      for (let from = 0; ; from += PAGE) {
+        const { data: page, error: historyError } = await supabase
+          .from("workspace_health_history")
+          .select("workspace_id, score_numeric, label, computed_at")
+          .in("workspace_id", workspaceIds)
+          .gte("computed_at", startDate.toISOString())
+          .lte("computed_at", endDate.toISOString())
+          .order("computed_at", { ascending: true })
+          .order("id", { ascending: true })
+          .range(from, from + PAGE - 1);
+        if (historyError) throw historyError;
+        historyData.push(...(page ?? []));
+        if (!page || page.length < PAGE) break;
+      }
+    }
 
     // Calculate distribution
     const distribution = {
@@ -331,7 +357,6 @@ serve(async (req) => {
     }, req);
   } catch (error: unknown) {
     console.error("Error in export-cohort-health-pdf:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return corsJsonResponse({ error: message }, req, 500);
+    return corsJsonResponse({ error: "Internal server error" }, req, 500);
   }
 });

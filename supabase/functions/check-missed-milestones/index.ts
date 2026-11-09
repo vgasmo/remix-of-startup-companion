@@ -29,6 +29,7 @@ async function sendTeamsNotification(
         event_type: eventType,
         payload,
       }),
+      signal: AbortSignal.timeout(10_000), // um teams-notify pendurado não pode bloquear o cron inteiro
     });
     if (!response.ok) {
       const body = await response.text().catch(() => '');
@@ -132,10 +133,11 @@ Deno.serve(withCronRunLogging('check-missed-milestones', async (req) => {
       createdActions.push(actionData.id);
 
       // Mark milestone as delayed
-      await supabase
+      const { error: delayErr } = await supabase
         .from('milestones')
         .update({ status: 'delayed' })
         .eq('id', milestone.id);
+      if (delayErr) log.error('Error marking milestone delayed', delayErr, { milestoneId: milestone.id });
 
       // Create workspace alert
       const { data: alertData, error: alertError } = await supabase
@@ -148,16 +150,43 @@ Deno.serve(withCronRunLogging('check-missed-milestones', async (req) => {
           priority: 'high',
           status: 'open',
           related_milestone_id: milestone.id,
+          evidence_json: { milestone_ids: [milestone.id] },
         })
         .select()
         .single();
 
       if (!alertError && alertData) {
         createdAlerts.push(alertData.id);
+      } else if (alertError?.code === '23505') {
+        // idx_work_queue_unique_active: só 1 item aberto 'milestone_missed' por workspace.
+        // Em vez de perder o 2.º milestone em atraso, acrescenta-o à evidência do item aberto.
+        const { data: openItem } = await supabase
+          .from('staff_work_queue_items')
+          .select('id, evidence_json')
+          .eq('workspace_id', milestone.workspace_id)
+          .eq('type', 'milestone_missed')
+          .in('status', ['open', 'in_progress'])
+          .limit(1)
+          .maybeSingle();
+        if (openItem) {
+          const evidence = (openItem.evidence_json ?? {}) as { milestone_ids?: string[] };
+          const ids = Array.from(new Set([...(evidence.milestone_ids ?? []), milestone.id]));
+          const { error: mergeErr } = await supabase
+            .from('staff_work_queue_items')
+            .update({
+              title: `Milestones em atraso (${Math.max(ids.length, 2)})`,
+              description: `Há ${Math.max(ids.length, 2)} milestones com a data-alvo ultrapassada neste workspace.`,
+              evidence_json: { ...evidence, milestone_ids: ids },
+            })
+            .eq('id', openItem.id);
+          if (mergeErr) log.warn('work_queue_merge_failed', { milestoneId: milestone.id, error: mergeErr.message });
+        }
+      } else if (alertError) {
+        log.warn('work_queue_insert_failed', { milestoneId: milestone.id, error: alertError.message });
       }
 
       // Send Teams notification for action overdue
-      const appUrl = Deno.env.get('APP_URL') || 'https://startupleiria.app';
+      const appUrl = Deno.env.get('PUBLIC_APP_URL') || Deno.env.get('APP_URL') || 'https://fb.startupleiria.com';
       const teamsSent = await sendTeamsNotification(
         supabaseUrl,
         supabaseKey,

@@ -18,7 +18,7 @@ async function sendTeamsHealthAlert(
   newScore: number
 ) {
   try {
-    const appUrl = Deno.env.get('APP_URL') || 'https://startupleiria.app';
+    const appUrl = Deno.env.get('PUBLIC_APP_URL') || Deno.env.get('APP_URL') || 'https://fb.startupleiria.com';
     const response = await fetch(`${supabaseUrl}/functions/v1/teams-notify`, {
       method: 'POST',
       headers: {

@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { isAccountActive } from '../_shared/security.ts';
-import { getSessionRecipientEmails, selectSessionRecipients } from '../_shared/sessionRecipients.ts';
+import { getSessionRecipientEmails, intersectSessionRecipients } from '../_shared/sessionRecipients.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -248,9 +248,13 @@ serve(async (req) => {
       );
     }
     
+    let skippedRecipients = 0;
     try {
-      payload.recipientEmails = selectSessionRecipients(payload.recipientEmails,
+      const selected = intersectSessionRecipients(payload.recipientEmails,
         await getSessionRecipientEmails(supabaseService, payload.sessionId, payload.workspaceId));
+      if (selected.recipients.length === 0 && selected.skipped > 0) throw new Error('recipient_not_authorized');
+      payload.recipientEmails = selected.recipients;
+      skippedRecipients = selected.skipped;
     } catch (error) {
       const lookupFailed = error instanceof Error && error.message === 'recipient_lookup_failed';
       return new Response(JSON.stringify({ error: lookupFailed ? 'recipient_lookup_failed' : 'recipient_not_authorized' }), {
@@ -446,6 +450,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         message: `Sent ${successCount} invites`,
+        skipped: skippedRecipients,
         results 
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

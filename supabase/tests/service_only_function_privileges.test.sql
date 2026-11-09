@@ -44,7 +44,8 @@ SELECT is_empty($q$
     'public.consume_cron_token(text,text)',
     'public.cron_invoke_edge(text,jsonb)',
     'public.cron_invoke_rpc(text,text)',
-    'public.touch_public_booking_rate_limit(text,text)'
+    'public.touch_public_booking_rate_limit(text,text)',
+    'public.purge_operational_logs()'
     ]::text[]) AS s
    WHERE has_function_privilege('anon', s::regprocedure, 'EXECUTE')
       OR has_function_privilege('authenticated', s::regprocedure, 'EXECUTE')

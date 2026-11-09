@@ -5,7 +5,7 @@ import { resolveLocalesByEmails, type Locale } from '../_shared/i18n.ts';
 
 const FUNCTION_NAME = 'send-announcement-email';
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const SITE_URL = Deno.env.get("SITE_URL") || "https://startupleiria.com";
+const SITE_URL = Deno.env.get("PUBLIC_APP_URL") || Deno.env.get("SITE_URL") || "https://fb.startupleiria.com";
 
 interface AnnouncementRequest { announcement_ids: string[]; }
 

@@ -20,6 +20,7 @@ interface Workspace {
   program_id: string | null;
   health_status: string | null;
   status: string;
+  assigned_consultor_id: string | null;
 }
 
 Deno.serve(async (req: Request) => {
@@ -57,7 +58,7 @@ Deno.serve(async (req: Request) => {
     // Get all active workspaces
     const { data: workspaces, error: wsError } = await supabase
       .from('workspaces')
-      .select('id, program_id, health_status, status')
+      .select('id, program_id, health_status, status, assigned_consultor_id')
       .eq('status', 'active');
 
     if (wsError) {
@@ -182,10 +183,16 @@ Deno.serve(async (req: Request) => {
 
           switch (actionType) {
             case 'create_staff_task': {
+              // staff_tasks.assignee_id is NOT NULL: the task goes to the workspace's assigned consultant.
+              if (!workspace.assigned_consultor_id) {
+                actionResult = { executed: false, error: 'workspace_has_no_assigned_consultor' };
+                break;
+              }
               const { data: task, error: taskError } = await supabase
                 .from('staff_tasks')
                 .insert({
                   workspace_id: workspace.id,
+                  assignee_id: workspace.assigned_consultor_id,
                   title: `[Auto] ${rule.actions_json.task_template || 'Follow-up required'}`,
                   description: `Triggered by workflow rule: ${rule.trigger_type}. Context: ${JSON.stringify(actionContext)}`,
                   priority: 'high',

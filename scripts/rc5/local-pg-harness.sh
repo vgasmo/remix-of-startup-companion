@@ -78,14 +78,15 @@ log "base + shim + pgTAP ready"
 STRIP=$(mktemp -d)
 for f in "$ROOT"/supabase/migrations/*.sql; do
   # Managed extensions are provisioned by the platform, not by the harness.
-  perl -0pe 's/create\s+extension[^;]*;/-- [rc5 harness] extension stripped;/gis' "$f" > "$STRIP/$(basename "$f")"
+  # SET transaction_timeout only exists on PostgreSQL 17 (the baseline dump is 17.6); drop it so the replay also works on 16.
+  perl -0pe 's/create\s+extension[^;]*;/-- [rc5 harness] extension stripped;/gis; s/^SET transaction_timeout = 0;/-- [rc5 harness] PG17-only GUC stripped/gm' "$f" > "$STRIP/$(basename "$f")"
 done
 failed=0
 for f in "$STRIP"/*.sql; do
   if out=$(psql -h "$SOCK" -p "$PORT" -U postgres -d "$DB" -v ON_ERROR_STOP=0 -q -f "$f" 2>&1); grep -q "^psql:.*ERROR:" <<<"$out"; then
     failed=$((failed+1))
     echo "[rc5:local-pg] replay FAIL $(basename "$f")"
-    echo "$out" | grep 'ERROR:' | head -2
+    { echo "$out" | grep 'ERROR:' | head -2; } || true
   fi
 done
 log "forward replay finished ($failed failing migration file(s))"
@@ -96,9 +97,9 @@ fi
 # Production grants anon/authenticated/service_role on every public table (Supabase
 # platform default privileges); RLS is the only boundary. Mirror that here or
 # privilege errors masquerade as policy passes.
-"${PSQL[@]}" -c 'GRANT USAGE ON SCHEMA public, extensions TO anon, authenticated, service_role;' \
-  -c 'GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;' \
-  -c 'GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;' >/dev/null
+# No blanket "GRANT ALL ON ALL TABLES" here: it would undo the REVOKE ... FROM anon of the migrations
+# (audit_five_blocking_reads); the ALTER DEFAULT PRIVILEGES above already cover every table the replay creates.
+"${PSQL[@]}" -c 'GRANT USAGE ON SCHEMA public, extensions TO anon, authenticated, service_role;' >/dev/null
 fi
 
 if [ -n "${RC5_EXTRA_MIGRATIONS:-}" ]; then
@@ -123,7 +124,7 @@ for t in "${files[@]}"; do
   echo "[rc5:local-pg] $(basename "$t"): ok=$ok fail=$nok errors=$err"
   if [ "$psql_rc" != "0" ] || [ "$ok" = "0" ] || [ "$nok" != "0" ] || [ "$err" != "0" ]; then
     rc=1
-    printf '%s\n' "$out" | grep -E '^ not ok|# Failed test|caught:|wanted:|ERROR:' | head -12
+    { printf '%s\n' "$out" | grep -E '^ not ok|# Failed test|caught:|wanted:|ERROR:' | head -12; } || true
   fi
 done
 exit $rc

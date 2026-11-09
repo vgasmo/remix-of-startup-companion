@@ -39,8 +39,8 @@ serve(async (req) => {
       return corsJsonResponse({ error: "Unauthorized: Invalid session" }, req, 401);
     }
 
-    const payload: AcceptInviteRequest = await req.json();
-    if (!payload.token || typeof payload.token !== 'string' || payload.token.length !== 64) {
+    const payload = await req.json().catch(() => null) as AcceptInviteRequest | null;
+    if (!payload || typeof payload.token !== 'string' || !/^[0-9a-f]{64}$/i.test(payload.token)) {
       return corsJsonResponse({ error: "Invalid invitation token" }, req, 400);
     }
 
