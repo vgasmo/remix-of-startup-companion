@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from "../_shared/cors.ts";
 import { isAccountActive } from "../_shared/security.ts";
 import { parseCopilotMessages } from "../_shared/copilotInput.ts";
+import { streamChatCompletion, GatewayError } from "npm:@lovable.dev/ai-gateway@0.1.11";
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -160,12 +161,6 @@ ${kpiInfo || "No KPIs reported yet this month"}
     }
 
     // ── Call Lovable AI Gateway ──────────────────────────────────
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY is not configured");
-      return corsJsonResponse({ error: "AI service not configured" }, req, 500);
-    }
-
     const isFounder = userRolesList.includes("founder");
     const isConsultor = userRolesList.includes("consultor");
     const isMentor = userRolesList.includes("mentor_externo");
@@ -393,52 +388,14 @@ ${startupLeiriaKnowledge}
 ${playbookLibrary}
 ${contextBlock}`;
 
-    const aiResponse = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [
-            { role: "system", content: systemPrompt },
-            ...messages,
-          ],
-          stream: true,
-        }),
-        signal: req.signal, // cancela o pedido ao gateway se o cliente desligar
-      }
-    );
-
-    if (!aiResponse.ok) {
-      const status = aiResponse.status;
-      const errorText = await aiResponse.text();
-      console.error("AI gateway error:", status, errorText);
-
-      if (status === 429) {
-        return corsJsonResponse(
-          { error: "AI rate limit exceeded. Please try again later." },
-          req,
-          429
-        );
-      }
-      if (status === 402) {
-        return corsJsonResponse(
-          { error: "AI credits exhausted. Please add credits in Settings." },
-          req,
-          402
-        );
-      }
-
-      return corsJsonResponse({ error: "AI service unavailable" }, req, 502);
-    }
+    const aiResponse = await streamChatCompletion({
+      model: "google/gemini-3-flash-preview",
+      messages: [{ role: "system", content: systemPrompt }, ...messages],
+    }, { signal: req.signal, maxRetries: 0 });
 
     // Stream the response back to the client
     const corsHeaders = getCorsHeaders(req);
-    return new Response(aiResponse.body, {
+    return aiResponse.toResponse({
       headers: {
         ...corsHeaders,
         "Content-Type": "text/event-stream",
@@ -447,6 +404,13 @@ ${contextBlock}`;
       },
     });
   } catch (err) {
+    if (err instanceof GatewayError) {
+      console.error('copilot_gateway_error', { code: err.code, ids: err.ids });
+      const status = err.httpStatus;
+      if (status === 429) return corsJsonResponse({ error: 'AI rate limit exceeded. Please try again later.' }, req, 429);
+      if (status === 402) return corsJsonResponse({ error: 'AI credits exhausted. Please add credits in Settings.' }, req, 402);
+      return corsJsonResponse({ error: 'AI service unavailable' }, req, 502);
+    }
     console.error("copilot-chat error:", err);
     return corsJsonResponse(
       { error: "An unexpected error occurred. Please try again." },
