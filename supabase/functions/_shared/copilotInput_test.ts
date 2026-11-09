@@ -32,3 +32,14 @@ Deno.test('invalid content and empty histories are rejected', () => {
     assertThrows(() => parseCopilotMessages(value), Error, 'invalid_messages');
   }
 });
+Deno.test('RC12 long assistant replies are truncated without blocking the next question', () => {
+  const messages = parseCopilotMessages([{ role: 'assistant', content: 'x'.repeat(5000) }, { role: 'user', content: 'Continue' }]);
+  assertEquals(messages[0].content.endsWith(JSON.stringify('x'.repeat(4000))), true);
+  assertEquals(messages[1].content, 'Continue');
+});
+Deno.test('RC12 history keeps only the last 20 messages', () => {
+  const messages = parseCopilotMessages(Array.from({ length: 25 }, (_, i) => ({ role: 'user', content: String(i) })));
+  assertEquals(messages.length, 20);
+  assertEquals(messages[0].content, '5');
+  assertEquals(messages[19].content, '24');
+});
