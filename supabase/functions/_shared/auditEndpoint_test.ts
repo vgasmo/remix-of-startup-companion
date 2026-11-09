@@ -111,3 +111,23 @@ Deno.test('Graph tests: role verification error denies even if stale result says
   assertEquals(response.status, 403);
   assertEquals(calls, 0);
 });
+Deno.test('RC12 copilot limits approved pre-workspace users to 30 requests per hour', async () => {
+  const f = fixture(true, false, { rateAllowed: false });
+  let params: unknown;
+  const original = f.client.rpc;
+  f.client.rpc = (name: string, input?: unknown) => { if (name === 'check_ai_rate_limit') params = input; return original(name); };
+  let calls = 0;
+  const handler = await loadHandler('copilot-chat', f.client, () => { calls++; throw new Error('unexpected provider call'); });
+  const response = await handler(new Request('https://local.test', { method: 'POST', headers: { Authorization: 'Bearer test' }, body: JSON.stringify({ messages: [{ role: 'user', content: 'hello' }] }) }));
+  assertEquals(response.status, 429);
+  assertEquals(params, { _user_id: 'caller-1', _workspace_id: null, _function_name: 'copilot-chat', _max_requests: 30 });
+  assertEquals(calls, 0);
+});
+Deno.test('RC12 copilot malformed JSON returns 400 before provider calls', async () => {
+  const f = fixture(true, false);
+  let calls = 0;
+  const handler = await loadHandler('copilot-chat', f.client, () => { calls++; throw new Error('unexpected provider call'); });
+  const response = await handler(new Request('https://local.test', { method: 'POST', headers: { Authorization: 'Bearer test' }, body: '{' }));
+  assertEquals(response.status, 400);
+  assertEquals(calls, 0);
+});
