@@ -72,7 +72,7 @@ function pickColumn(headers: string[], candidates: string[]): number {
   return -1;
 }
 
-async function assertStaff(sbUser: ReturnType<typeof createClient>, sbSvc: ReturnType<typeof createClient>) {
+async function assertStaff(sbUser: ReturnType<typeof createClient<unknown>>, sbSvc: ReturnType<typeof createClient<unknown>>) {
   const { data: userData } = await sbUser.auth.getUser();
   const uid = userData.user?.id;
   if (!uid) return { ok: false as const, status: 401, error: "unauthorized" };
@@ -96,7 +96,7 @@ serve(async (req) => {
     const sbUser = createClient(url, anon, { global: { headers: { Authorization: auth } } });
     const sbSvc = createClient(url, svcKey);
 
-    const staff = await assertStaff(sbUser as any, sbSvc as any);
+    const staff = await assertStaff(sbUser, sbSvc);
     if (!staff.ok) return corsJsonResponse({ error: staff.error }, req, staff.status);
 
     const body = await req.json().catch(() => ({}));
