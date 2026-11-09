@@ -33,3 +33,6 @@
 - Copilot rate limits apply per user even without membership; role guidance comes from role rows, history is bounded, and streaming uses idle cancellation without automatic inference replay.
 - Use the server-only Gateway SDK for modified inference transports while preserving existing models and response formats; typed streams keep credentials outside browser code.
 - Communication endpoints resolve recipient eligibility from persisted parent/contact relationships through the shared communication recipient helper, fail closed on lookup errors, and validate before provider calls; signature dispatch remains a separately authorized workflow.
+- Admin tab permissions are shared by the page and directory; backoffice subtab state follows URL parameters so navigation cannot leave stale content.
+- Safe browser storage wrappers are used for optional viewer conveniences; request deadlines distinguish ordinary reads, functions, and object uploads while preserving caller cancellation.
+- Integration errors retain normalized writer fields and admin-only resolution with the restrictive suspension guard; operational-log retention excludes the activity audit trail.
