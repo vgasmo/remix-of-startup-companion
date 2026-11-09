@@ -5349,7 +5349,15 @@ export type Database = {
           updated_at?: string
           workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "mentor_connections_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mentor_nda_acceptances: {
         Row: {
@@ -7915,6 +7923,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "sessions_session_template_id_fkey"
+            columns: ["session_template_id"]
+            isOneToOne: false
+            referencedRelation: "session_templates"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "sessions_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
@@ -9463,6 +9478,34 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "survey_writebacks_applied_by_fkey"
+            columns: ["applied_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_writebacks_applied_by_fkey"
+            columns: ["applied_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_export"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_writebacks_applied_by_fkey"
+            columns: ["applied_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_peer_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_writebacks_applied_by_fkey"
+            columns: ["applied_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "survey_writebacks_instance_id_fkey"
             columns: ["instance_id"]
@@ -12624,6 +12667,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      founder_workspace_ids: { Args: never; Returns: string[] }
       fuzzy_search_leads: {
         Args: { p_limit?: number; p_query: string }
         Returns: {
@@ -12780,6 +12824,8 @@ export type Database = {
       }
       has_active_workspace_access: { Args: { ws_id: string }; Returns: boolean }
       has_any_role: { Args: { _user_id: string }; Returns: boolean }
+      has_global_workspace_access: { Args: never; Returns: boolean }
+      has_global_write_access: { Args: never; Returns: boolean }
       has_program_access: { Args: { _program_id: string }; Returns: boolean }
       has_recording_consent: {
         Args: { _workspace_id: string }
@@ -13011,6 +13057,7 @@ export type Database = {
         Args: { p_program_id: string; p_workspace_id: string }
         Returns: Json
       }
+      member_workspace_ids: { Args: never; Returns: string[] }
       mentor_transition_booking: {
         Args: { p_booking_id: string; p_target_state: string }
         Returns: Json
@@ -13019,6 +13066,7 @@ export type Database = {
         Args: { _contract_id: string; _doc_key: string; _metadata: Json }
         Returns: undefined
       }
+      my_conversation_ids: { Args: never; Returns: string[] }
       normalize_ident: { Args: { _v: string }; Returns: string }
       notify_contract_event: {
         Args: {
@@ -13412,6 +13460,7 @@ export type Database = {
       }
       unblock_workspace: { Args: { _workspace_id: string }; Returns: undefined }
       validate_portuguese_nif: { Args: { nif: string }; Returns: boolean }
+      writer_workspace_ids: { Args: never; Returns: string[] }
     }
     Enums: {
       account_status: "pending" | "approved" | "suspended"

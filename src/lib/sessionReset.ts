@@ -18,6 +18,8 @@ const USER_KEY_PREFIXES = [
   'founder_',
   'shown_quickguide_',
   'sl-',
+  // Legacy key (no user id) of the investor template drafts; current ones use `sl-investor-draft:<uid>:<tpl>`
+  'investor_template_draft_',
 ];
 
 /** Keys that are always safe to keep (not user-specific) */

@@ -71,3 +71,25 @@ O RC12 completo e a release final não estão certificados por esta ronda.
 - Não foram enviados convites/emails nem executadas assinaturas/importações reais. Entregas externas, Copilot real, todos os ramos de permissões e workflow num runner GitHub continuam sem certificação.
 - A suite pgTAP completa não foi executada: foram executadas as cinco suites afetadas pela Parte 15, com replay completo e guardas aplicados.
 - Pacote opcional permanece fora desta ronda, conforme o pedido exclusivo das Partes 3–15.
+
+## Continuação 10:58 UTC — pacote opcional
+- Aplicados os 29 diffs compatíveis das Partes opcionais 1–3 e criado sessionInviteOutcome.ts antes do seu import. Todos os contextos foram comparados; não houve secções com contexto divergente.
+- Parte 1: FEF-11 notificações por pertença founder; DBP-04 seis helpers de conjunto e reescrita das políticas de oito tabelas; CRM-08 reset de lembretes; DBP-10/11/12 triggers updated_at, FKs e remoção do trigger Auth redundante; OPS-13 URL cron configurável; FEX-02 limpeza de draft antigo; FEX-20 tema inicial; E2E-13/SIGN-12 guarda repetida removida; CRM-09 notas nos lembretes; ED1-10 reclamação de job e validação de row_ids; ED2-13 primeiro aceite NDA preservado; ED2-14 reclamação de linhas HubSpot; ED2-15 token de convite validado.
+- Parte 2: ED2-10/11/12 auth de survey antes da leitura, auditoria preservada e pesquisa de marco; ED1-08/SCH-17 agregação de marcos em atraso e prazo Teams; HRD-13 interseção de destinatários e aviso de falha parcial no diálogo; CRM-06 assuntos de intake/recipients JSON; SCH-10 nome do documento com workspace; SCH-13 insert Graph com dedupe; SCH-14 consultor atribuído nas tarefas; OPS-11 ordem de snapshots; SCH-17 URLs canónicos; ED1-09 permissões e repetição de playbook; ED2-09 exportação paginada; SCH-09 contexto financeiro por startup; ED3-15 revogação idempotente.
+- Parte 3: teste de privilégios inclui purge_operational_logs; .env.example só documenta nomes; harness remove GUC PG17-only, preserva REVOKE e tolera SIGPIPE de diagnóstico.
+- Cinco migrações aplicadas em drizzle/migrations/0032–0036. Hashes alojados FEF-11 e OPS-13 correspondem exatamente aos hashes pós-patch fornecidos. Restrição de suspensão permanece em todas as oito tabelas quentes. Os sete buckets já existem com as flags descritas: nenhum alterado, nenhuma escrita direta em storage.buckets.
+- Adaptações obrigatórias: FK survey_writebacks.applied_by aponta public.profiles com SET NULL e NOT VALID, em vez de nova FK para auth.users; falta de segredo HMAC ou leitura da prova NDA recusa sucesso, sem segredo previsível nem timestamp inventado; valores validados estreitados sem novas asserções não nulas; configuração gerida não editada.
+
+### Evidências opcionais
+- 298 Vitest, 45 ficheiros; 202 Deno aprovados, cinco ignorados. 22 funções alteradas passam deno check com a configuração do projeto; 23 funções diretas/transitivas publicadas.
+- 37 suites SQL na base descartável reutilizada, 373 asserções, zero falhas. Inclui 12 novas asserções concretas de lembretes, pertença, suspensão, notificações e privilégios; oito testes de resultado de convites, dois de isolamento de drafts e quatro de interseção de destinatários.
+- Lint, i18n (702 ficheiros/zero problemas) e secret scan (1709 ficheiros) passaram. Compilação automática sem erros.
+- Playwright autenticado abriu /my-workspaces na conta do requerente com portefólio real. Pedidos de teste inválidos às funções não chegaram por falha de rede: respostas HTTP 400 alojadas não certificadas. Não enviados emails, convites, assinaturas nem importações reais.
+- Primeira execução Deno sem --config falhou com sete erros de import JSZip/Buffer; repetida com supabase/functions/deno.json, 202 testes e todas as verificações direcionadas passaram. Não foi alterada a biblioteca para contornar uma configuração ausente.
+
+### Secções bloqueadas ou sem patch fornecido
+- supabase/config.toml [db] major_version: não aplicado porque é configuração gerida. A versão usada pelo CLI externo continua por verificar.
+- SCH-16 criação de buckets no replay: SQL direto em storage.buckets é proibido; buckets alojados verificados, restauro novo não certificado pelo pacote.
+- E2E-05 teste de 18 asserções, FEX-21 testes citados sem conteúdo, HRD-10 createLogger.error, ED2-06/FEF-07 DataroomTab e OPS-14 documentos/runbooks: o anexo descreve ou remete para diffs que não inclui; não foram inventados. SCH-11 e i18n já corrigidos no essencial.
+- Transporte de generate-financial-prefill não foi alterado: apenas a seleção/contexto solicitados. O modelo desse fluxo não foi substituído pelo modelo Copilot.
+- Frontend não publicado. Entrega real de convites, assinatura, importações, recuperação de ativação e geração real Copilot mantêm os limites anteriores; suite SQL reutilizada não certifica reconstrução nova completa.

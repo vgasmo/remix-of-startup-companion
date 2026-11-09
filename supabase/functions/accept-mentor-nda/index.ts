@@ -36,13 +36,20 @@ Deno.serve(async (req: Request) => {
                      req.headers.get('CF-Connecting-IP') ||
                      'unknown';
 
-    const encoder = new TextEncoder();
-    const data = encoder.encode(clientIp + 'salt-for-privacy');
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const ipHash = hashArray.slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('');
+    const ipHashSecret = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!ipHashSecret) return corsJsonResponse({ error: 'Internal server error' }, req, 500);
 
-    // Upsert NDA acceptance — RLS ensures only mentor_externo users can insert/update their own row
+    // HMAC com segredo do servidor (o sal fixo no código tornava o hash reversível por força bruta).
+    const hmacKey = await crypto.subtle.importKey(
+      'raw', new TextEncoder().encode(ipHashSecret),
+      { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+    );
+    const sig = await crypto.subtle.sign('HMAC', hmacKey, new TextEncoder().encode(clientIp));
+    const ipHash = Array.from(new Uint8Array(sig)).slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('');
+
+    // Regista o aceite — RLS garante que só mentor_externo insere a sua própria linha.
+    // O 1.º aceite é a prova: ignoreDuplicates (ON CONFLICT DO NOTHING) não reescreve data nem IP,
+    // e accepted_at fica com o DEFAULT now() da tabela.
     const { error: upsertError } = await supabase
       .from('mentor_nda_acceptances')
       .upsert({
@@ -50,9 +57,9 @@ Deno.serve(async (req: Request) => {
         nda_version: CURRENT_NDA_VERSION,
         ip_hash: ipHash,
         user_agent: userAgent?.substring(0, 500),
-        accepted_at: new Date().toISOString(),
       }, {
-        onConflict: 'user_id,nda_version'
+        onConflict: 'user_id,nda_version',
+        ignoreDuplicates: true,
       });
 
     if (upsertError) {
@@ -64,11 +71,23 @@ Deno.serve(async (req: Request) => {
       return corsJsonResponse({ error: 'Failed to record NDA acceptance' }, req, 500);
     }
 
+    // Devolve a data realmente gravada (a do 1.º aceite, se já existia)
+    const { data: stored, error: storedError } = await supabase
+      .from('mentor_nda_acceptances')
+      .select('accepted_at')
+      .eq('user_id', userId)
+      .eq('nda_version', CURRENT_NDA_VERSION)
+      .maybeSingle();
+
+    if (storedError || !stored?.accepted_at) {
+      return corsJsonResponse({ error: 'Failed to verify NDA acceptance' }, req, 500);
+    }
+
     return corsJsonResponse({
       success: true,
       message: 'NDA accepted successfully',
       nda_version: CURRENT_NDA_VERSION,
-      accepted_at: new Date().toISOString(),
+      accepted_at: stored.accepted_at,
     }, req);
 
   } catch (error: any) {

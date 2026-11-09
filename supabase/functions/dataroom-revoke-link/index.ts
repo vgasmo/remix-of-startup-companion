@@ -62,7 +62,8 @@ Deno.serve(async (req: Request) => {
     const { error: updateError } = await supabaseAdmin
       .from('dataroom_share_links')
       .update({ revoked_at: new Date().toISOString() })
-      .eq('id', link_id);
+      .eq('id', link_id)
+      .is('revoked_at', null); // revogar de novo não reescreve a data da revogação original
 
     if (updateError) {
       console.error('Error revoking link:', updateError);

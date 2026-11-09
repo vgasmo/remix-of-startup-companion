@@ -121,6 +121,7 @@ Deno.serve(withCronRunLogging('run-ecosystem-snapshot', async (req) => {
         const { data, error } = await supabaseAdmin
           .from(domain.table)
           .select('*')
+          .order('id', { ascending: true })
           .range(from, to);
 
         if (error) {

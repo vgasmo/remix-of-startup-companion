@@ -225,6 +225,41 @@
       "when": 1794221386044,
       "tag": "0031_rc12_indexes_cleanup",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1794221983219,
+      "tag": "0032_rc12_founder_notifications_trigger",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1794222057685,
+      "tag": "0033_rc12_rls_set_helpers",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1794222131021,
+      "tag": "0034_rc12_integrity_hygiene",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1794222148777,
+      "tag": "0035_rc12_cron_edge_base_url",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1794222160150,
+      "tag": "0036_rc12_intake_reminders_reset",
+      "breakpoints": true
     }
   ]
 }

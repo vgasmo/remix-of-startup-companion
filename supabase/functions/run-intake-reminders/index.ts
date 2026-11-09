@@ -99,7 +99,7 @@ Deno.serve(withCronRunLogging('run-intake-reminders', async (req) => {
     // ── 1. INTAKE REMINDERS ──
     const { data: pendingIntakes, error: intakesErr } = await supabase
       .from('contract_intakes')
-      .select('id, organization_name, legal_representative_email, legal_representative_name, created_at, last_reminder_sent_at, reminder_count, status, updated_at')
+      .select('id, organization_name, legal_representative_email, legal_representative_name, created_at, last_reminder_sent_at, reminder_count, status, updated_at, changes_requested_notes')
       .in('status', ['intake_requested', 'intake_in_progress', 'changes_requested'])
       .not('legal_representative_email', 'is', null)
 
@@ -148,6 +148,8 @@ Deno.serve(withCronRunLogging('run-intake-reminders', async (req) => {
           recipientName: intake.legal_representative_name,
           organizationName: intake.organization_name,
           intakeToken: freshToken,
+          // o lembrete de correções tem de repetir o que há a corrigir
+          ...(intake.status === 'changes_requested' ? { changesNotes: intake.changes_requested_notes ?? undefined } : {}),
         }, serviceKey)
 
         if (!send.ok) {

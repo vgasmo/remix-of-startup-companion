@@ -36,3 +36,6 @@
 - Admin tab permissions are shared by the page and directory; backoffice subtab state follows URL parameters so navigation cannot leave stale content.
 - Safe browser storage wrappers are used for optional viewer conveniences; request deadlines distinguish ordinary reads, functions, and object uploads while preserving caller cancellation.
 - Integration errors retain normalized writer fields and admin-only resolution with the restrictive suspension guard; operational-log retention excludes the activity audit trail.
+- Hot-table RLS uses set helpers with the same canonical access predicates and restrictive suspension guard; do not bypass account or NDA checks.
+- Session invitation outcomes are interpreted by the shared outcome helper; partial delivery never rolls back the saved session.
+- NDA acceptance and Data Room revocation preserve their original timestamps; missing verification or hashing credentials deny success.

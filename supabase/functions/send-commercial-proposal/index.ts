@@ -514,7 +514,7 @@ Deno.serve(async (req) => {
       await admin.from('email_log').insert({
         email_type: 'commercial_proposal',
         subject: body.subject,
-        recipients: JSON.stringify([item.contact_email]),
+        recipients: [item.contact_email],
         status: 'sent',
         sent_at: nowIso,
         created_by: senderUserId,

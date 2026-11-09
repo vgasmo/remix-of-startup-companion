@@ -14,6 +14,23 @@ export function selectSessionRecipients(requested: unknown, allowed: string[]): 
   return recipients;
 }
 
+/**
+ * Like selectSessionRecipients, but addresses outside the server-recorded set are
+ * dropped (and counted) instead of rejecting the whole batch. A malformed list still throws.
+ */
+export function intersectSessionRecipients(requested: unknown, allowed: string[]): { recipients: string[]; skipped: number } {
+  const normalize = (value: string) => value.trim().toLowerCase();
+  const known = new Set(allowed.map(normalize).filter(Boolean));
+  if (requested == null) return { recipients: [...known], skipped: 0 };
+  if (!Array.isArray(requested) || requested.length > 50 || requested.some(value =>
+    typeof value !== 'string' || value.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()))) {
+    throw new Error('invalid_recipients');
+  }
+  const unique = [...new Set(requested.map(normalize))];
+  const recipients = unique.filter(email => known.has(email));
+  return { recipients, skipped: unique.length - recipients.length };
+}
+
 export async function getSessionRecipientEmails(admin: SupabaseClient, sessionId: string, workspaceId: string): Promise<string[]> {
   const [members, participants, session, workspace] = await Promise.all([
     admin.from('workspace_users').select('user_id').eq('workspace_id', workspaceId).eq('active', true),

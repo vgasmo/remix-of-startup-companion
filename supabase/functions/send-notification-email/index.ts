@@ -360,9 +360,9 @@ async function handle(supabase: any, log: any, body: NotificationRequest): Promi
 
   if (type === 'document_review_requested' || type === 'document_review_approved') {
     let docName = 'documento';
-    if (body.document_id) {
-      const { data } = await supabase.from('documents').select('title, name').eq('id', body.document_id).single();
-      docName = (data as any)?.title ?? (data as any)?.name ?? docName;
+    if (body.document_id && workspaceId) {
+      const { data } = await supabase.from('documents').select('name').eq('id', body.document_id).eq('workspace_id', workspaceId).maybeSingle();
+      docName = (data as any)?.name ?? docName;
     }
     if (type === 'document_review_requested') {
       // Recipients: assigned consultant of workspace + admins? Keep it lean: assigned consultant.

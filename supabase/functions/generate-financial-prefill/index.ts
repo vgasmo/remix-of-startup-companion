@@ -95,7 +95,7 @@ serve(async (req) => {
       { data: kpiRow },
     ] = await Promise.all([
       supabase.from("workspaces")
-        .select("id, name, stage, sector, program_type")
+        .select("id, stage, startup:startups(name)")
         .eq("id", workspaceId).maybeSingle(),
       supabase.from("financial_plan_sessions")
         .select("diagnostic_json, completed_packs")
@@ -185,7 +185,7 @@ serve(async (req) => {
         warnings.push("LOVABLE_API_KEY not configured — AI prefill skipped");
       } else {
         const context = {
-          workspace: { name: workspace?.name, stage, sector: workspace?.sector ?? diagnostic.sector },
+          workspace: { name: (workspace?.startup as { name?: string } | null)?.name, stage, sector: diagnostic.sector },
           diagnostic,
           missing_keys: stillMissing,
         };

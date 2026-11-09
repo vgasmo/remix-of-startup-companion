@@ -40,13 +40,18 @@ Deno.serve(async (req) => {
     const isAdmin = (roles ?? []).some((r: any) => r.role === 'admin');
     if (!isAdmin) return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: jsonHeaders });
 
-    const body = await req.json() as CommitBody;
+    const body = await req.json().catch(() => null) as CommitBody | null;
     if (!body?.job_id) return new Response(JSON.stringify({ error: 'invalid_input' }), { status: 400, headers: jsonHeaders });
 
     const { data: job, error: jobErr } = await sbSvc.from('data_import_jobs').select('*').eq('id', body.job_id).single();
     if (jobErr || !job) return new Response(JSON.stringify({ error: 'job_not_found' }), { status: 404, headers: jsonHeaders });
 
-    await sbSvc.from('data_import_jobs').update({ status: 'committing', approved_by: uid }).eq('id', job.id);
+    if (job.source !== 'hubspot') {
+      return new Response(JSON.stringify({ error: 'unsupported_source' }), { status: 400, headers: jsonHeaders });
+    }
+
+    const { error: claimJobErr } = await sbSvc.from('data_import_jobs').update({ status: 'committing', approved_by: uid }).eq('id', job.id);
+    if (claimJobErr) throw claimJobErr;
 
     let q = sbSvc.from('data_import_rows').select('*').eq('job_id', job.id).eq('approval_state', 'approved');
     if (body.row_ids?.length) q = q.in('id', body.row_ids);
@@ -64,6 +69,13 @@ Deno.serve(async (req) => {
       const slice = (rows ?? []).slice(i, i + batch);
       await Promise.all(slice.map(async (row: any) => {
         try {
+          // Reclamação atómica da linha: duas invocações em simultâneo não inserem a mesma linha duas vezes.
+          const { data: claimed, error: claimErr } = await sbSvc.from('data_import_rows')
+            .update({ approval_state: 'committing' })
+            .eq('id', row.id).eq('approval_state', 'approved').select('id');
+          if (claimErr) throw claimErr;
+          if (!claimed || claimed.length === 0) { summary.skipped++; return; }
+
           const n = row.normalized_json ?? {};
           const toggles = row.approve_toggles_json ?? {};
           if (!toggles.crm) {
@@ -145,16 +157,17 @@ Deno.serve(async (req) => {
       }));
     }
 
-    await sbSvc.from('data_import_jobs').update({
+    const { error: jobDoneErr } = await sbSvc.from('data_import_jobs').update({
       status: summary.failed > 0 ? 'committed' : 'committed', // keep single status; failures visible per row
       committed_at: new Date().toISOString(),
       counts_json: { ...(job.counts_json ?? {}), commit: summary },
     }).eq('id', job.id);
+    if (jobDoneErr) throw jobDoneErr;
 
     return new Response(JSON.stringify({ success: true, summary, sample: results.slice(0, 20) }), { headers: jsonHeaders });
   } catch (e: any) {
     console.error('commit-hubspot-import error', e?.message ?? e);
-    return new Response(JSON.stringify({ error: 'internal_error', message: e?.message ?? String(e) }), {
+    return new Response(JSON.stringify({ error: 'internal_error' }), {
       status: 500, headers: jsonHeaders,
     });
   }
