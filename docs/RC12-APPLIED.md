@@ -61,7 +61,7 @@ O RC12 completo e a release final não estão certificados por esta ronda.
 - Adicionadas 17 regressões concretas: três prazos, três permissões, cinco CSV e seis regras de slots.
 - Replay isolado: migrações legadas sem falhas; Drizzle completo aplicado com a fixture local existente para playbook_template_assignments, ausente no replay legado. Sem acesso a dados alojados pelo harness.
 - Cinco suites pgTAP: rc10_part3 17, pulse_notifications_kill_switch 8, log_completed_session_atomic 22, crm_contracted_conversion 9, portfolio_archived_actions 5; total 61 asserções, zero falhas/erros.
-- 32 funções diretamente alteradas passaram deno check; 45 funções diretas/transitivas publicadas com sucesso.
+- 31 funções diretamente alteradas passaram deno check; 45 funções diretas/transitivas publicadas com sucesso.
 - ESLint e gates i18n passam: 699 ficheiros, zero problemas, 9379 chaves em paridade. Build automática OK às 10:50:44 UTC.
 - Playwright autenticado abriu Espaços, mudou para Contratos e confirmou novamente Espaços; zero pageerrors. Não certifica Back do browser: o ensaio inicial ficou em Contratos devido à alteração de query de um painel interno.
 - Catálogo alojado confirmou integration_errors, guarda Data Room, política de suspensão, purga agendada e remoção do índice de texto livre. Hashes de onboarding/convites/filtros confirmam alterações aplicadas.

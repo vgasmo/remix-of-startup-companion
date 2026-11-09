@@ -4,7 +4,7 @@
 - [x] Aplicar anexo i18n exato e validar os dois gates antes das correções: 9379 chaves em paridade, zero problemas.
 - [x] Aplicar pacote essencial: Partes 1–15 aplicadas; evidências e limites de certificação registados em docs/RC12-APPLIED.md.
 - [ ] Aplicar pacote opcional apenas depois do essencial verificado.
-- [x] Parte 2 aplicada: nove diffs, 71 funções afetadas publicadas, 282 Vitest e 56 Deno passam; lint/gates i18n e cinco verificações Deno limpos, build OK. Modelo preservado pelo SDK obrigatório. Copilot autenticado abriu e enviou pedido, mas resposta real excedeu inatividade; não certificado. Partes 3–15 e opcional pendentes.
+- [x] Parte 2 aplicada: nove diffs, 71 funções afetadas publicadas, 282 Vitest e 56 Deno passam; lint/gates i18n e cinco verificações Deno limpos, build OK. Modelo preservado pelo SDK obrigatório. Copilot autenticado abriu e enviou pedido, mas resposta real excedeu inatividade; não certificado. Partes 3–15 concluídas abaixo; opcional pendente.
 
 ## Validação externa da release — 2 Nov 2026
 - [ ] Retomar verificações externas seguras, recolher evidências atuais e entregar relatório atualizado com acessos bloqueantes, sem alterar regras nem enviar convites externos não autorizados.
