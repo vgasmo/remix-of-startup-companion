@@ -359,6 +359,7 @@ export function useConvertToStartup() {
       // Storage operations cannot live inside the DB transaction, so this stays client-side
       // and never rolls back a successful conversion.
       const pitchDeckPath = typeof meta.pitch_deck_path === 'string' ? meta.pitch_deck_path : null;
+      let pitchDeckFailed = false;
       if (pitchDeckPath && !result.was_existing) {
         try {
           const { data: deckBlob, error: dlErr } = await supabase.storage
@@ -390,6 +391,8 @@ export function useConvertToStartup() {
           });
           if (docErr) throw docErr;
         } catch (err) {
+          // O backoffice não lê 'booking-uploads' nem escreve em 'workspace-documents': avisar em vez de perder o deck em silêncio
+          pitchDeckFailed = true;
           logger.warn('pitch_deck_import_failed', {
             error: String(err),
             workspaceId: result.workspace_id,
@@ -430,7 +433,7 @@ export function useConvertToStartup() {
           : Promise.resolve({ data: null }),
       ]);
 
-      return { startup, workspace, contract, wasExisting: result.was_existing, inviteSent, inviteEmail: item.contact_email ?? null };
+      return { startup, workspace, contract, wasExisting: result.was_existing, inviteSent, inviteEmail: item.contact_email ?? null, pitchDeckFailed };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
@@ -441,6 +444,11 @@ export function useConvertToStartup() {
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
       notify.success(t('crm.convertedToStartup'));
+      if (data?.pitchDeckFailed) {
+        notify.warn(t('crm.convertPitchDeckFailed', {
+          defaultValue: 'O pitch deck do formulário público não foi copiado para o workspace. Peça a um consultor para o anexar (o ficheiro continua guardado na lead).',
+        }));
+      }
       if (data?.inviteSent && data.inviteEmail) {
         notify.success(
           t('crm.convertInviteSent', {

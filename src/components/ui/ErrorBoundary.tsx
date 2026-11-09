@@ -3,6 +3,7 @@ import { AlertTriangle, RefreshCcw, Home, Copy, CheckCircle2 } from 'lucide-reac
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { logError, getBreadcrumbs } from '@/lib/logError';
+import i18n from '@/i18n';
 
 interface Props {
   children: ReactNode;
@@ -42,11 +43,11 @@ function getSafeErrorMessage(error: Error | null, isDev: boolean): string | null
   
   // If it matches a safe pattern, show a sanitized version
   if (safePatterns.some(p => p.test(message))) {
-    if (/network/i.test(message)) return 'Erro de rede. Verifique a sua ligação.';
-    if (/timeout/i.test(message)) return 'Tempo limite excedido. Tente novamente.';
-    if (/not found/i.test(message)) return 'O recurso solicitado não foi encontrado.';
-    if (/unauthorized/i.test(message)) return 'Não tem autorização para esta ação.';
-    if (/forbidden/i.test(message)) return 'Acesso negado.';
+    if (/network/i.test(message)) return i18n.t('errorBoundary.network');
+    if (/timeout/i.test(message)) return i18n.t('errorBoundary.timeout');
+    if (/not found/i.test(message)) return i18n.t('errorBoundary.notFound');
+    if (/unauthorized/i.test(message)) return i18n.t('errorBoundary.unauthorized');
+    if (/forbidden/i.test(message)) return i18n.t('errorBoundary.forbidden');
   }
   
   // For all other errors, return null (show generic message only)
@@ -138,19 +139,19 @@ export class ErrorBoundary extends Component<Props, State> {
                 <AlertTriangle className="h-8 w-8 text-destructive" />
               </div>
               <CardTitle className="text-xl font-heading">
-                Ocorreu um erro
+                {i18n.t('errorBoundary.title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-4">
               <p className="text-muted-foreground">
-                Pedimos desculpa pelo incómodo. Por favor, tente atualizar a página ou voltar ao início.
+                {i18n.t('errorBoundary.description')}
               </p>
               
               {/* Error ID for support reference (always safe to show) */}
               {this.state.errorId && (
                 <div className="flex items-center justify-center gap-2 p-3 bg-muted/50 rounded-lg">
                   <span className="text-xs text-muted-foreground">
-                    Código de erro:
+                    {i18n.t('errorBoundary.errorCode')}
                   </span>
                   <code className="bg-background px-2 py-1 rounded text-xs font-mono">
                     {this.state.errorId}
@@ -160,7 +161,7 @@ export class ErrorBoundary extends Component<Props, State> {
                     size="icon"
                     className="h-6 w-6"
                     onClick={this.handleCopyErrorId}
-                   aria-label="Confirm">
+                   aria-label={i18n.t('accessibility.copyErrorCode')}>
                     {this.state.copied ? (
                       <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
                     ) : (
@@ -174,7 +175,7 @@ export class ErrorBoundary extends Component<Props, State> {
               {safeMessage && (
                 <details className="text-left bg-muted/30 rounded-lg p-3 text-xs border">
                   <summary className="cursor-pointer font-medium text-muted-foreground hover:text-foreground transition-colors">
-                    {isDev ? 'Detalhes do erro (dev)' : 'Mais informações'}
+                    {isDev ? i18n.t('errorBoundary.devDetails') : i18n.t('errorBoundary.moreInfo')}
                   </summary>
                   <pre className="mt-2 whitespace-pre-wrap break-words text-destructive/80 font-mono text-[10px]">
                     {safeMessage}
@@ -185,11 +186,11 @@ export class ErrorBoundary extends Component<Props, State> {
             <CardFooter className="flex gap-3 justify-center pt-2">
               <Button variant="outline" onClick={this.handleGoHome} className="gap-2">
                 <Home className="h-4 w-4" />
-                Início
+                {i18n.t('errorBoundary.home')}
               </Button>
               <Button onClick={this.handleReload} className="gap-2">
                 <RefreshCcw className="h-4 w-4" />
-                Atualizar
+                {i18n.t('errorBoundary.reload')}
               </Button>
             </CardFooter>
           </Card>

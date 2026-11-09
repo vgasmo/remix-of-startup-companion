@@ -1,5 +1,9 @@
 # Security architecture
 
+- RC12 suspension restrictions apply to every public RLS table except account-display tables; new RLS tables must carry the same restrictive guard to prevent staff-role bypasses.
+- Load locale bundles before switching languages, and redact bearer path/query material before saving support URLs, so lazy loading and diagnostics do not expose raw keys or credentials.
+- Use queryCount helpers for counted statistics so failed or missing counts cannot be represented as verified zero values.
+
 - Conversation deep links use the authenticated messaging panel and retain their target through login; legacy email URLs redirect there.
 - Assigned-only portfolios filter by primary consultant assignment, not historical membership; overdue links show open overdue actions separately from validation requests.
 - Operational action queries and statistics exclude actions attached to archived milestones without deleting or rewriting historical records.

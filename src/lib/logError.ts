@@ -59,6 +59,33 @@ export function addBreadcrumb(crumb: Omit<Breadcrumb, 'timestamp'>): void {
 }
 
 /**
+ * Strip bearer material from a URL before it is stored (client_error_logs / bug_reports):
+ * path tokens of the public routes, token-like query params and the whole hash.
+ */
+export function redactPathForLogs(pathname: string): string {
+  return pathname.replace(
+    /^(\/(?:share|book|survey|contract-signing|contract-intake|dataroom\/shared))\/[^/]+/,
+    '$1/[redacted]',
+  );
+}
+
+export function redactUrlForLogs(href: string): string {
+  try {
+    const u = new URL(href);
+    u.pathname = redactPathForLogs(u.pathname);
+    for (const key of [...u.searchParams.keys()]) {
+      if (/token|code|secret|key|authorization|password|returnto|email/i.test(key)) {
+        u.searchParams.set(key, '[redacted]');
+      }
+    }
+    u.hash = '';
+    return u.toString();
+  } catch {
+    return 'unknown';
+  }
+}
+
+/**
  * Generate a unique error ID for support reference
  */
 function generateErrorId(): string {
@@ -125,7 +152,7 @@ export function logError(error: Error, context: ErrorContext = {}): LoggedError 
     stack: isDev ? error.stack : undefined, // Only include stack in dev
     context: { ...context, severity },
     timestamp: new Date().toISOString(),
-    url: typeof window !== 'undefined' ? window.location.href : 'unknown',
+    url: typeof window !== 'undefined' ? redactUrlForLogs(window.location.href) : 'unknown',
     userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
     sessionDuration: Math.round((Date.now() - sessionStart) / 1000),
     breadcrumbs: [...breadcrumbs],

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
+import { countOrThrow } from '@/lib/queryCount';
 
 interface AttentionStats {
   criticalCount: number;
@@ -22,7 +23,7 @@ export function useAttentionCount() {
       // Determine which workspace IDs count for this user.
       let assignedWorkspaceIds: string[] | null = null;
       if (scopeToAssigned && userId) {
-        const [{ data: memberships }, { data: assignedWorkspaces }] = await Promise.all([
+        const [{ data: memberships, error: membershipsError }, { data: assignedWorkspaces, error: assignedError }] = await Promise.all([
           supabase
             .from('workspace_users')
             .select('workspace_id')
@@ -34,6 +35,8 @@ export function useAttentionCount() {
             .select('id')
             .eq('assigned_consultor_id', userId),
         ]);
+        if (membershipsError) throw membershipsError;
+        if (assignedError) throw assignedError;
         assignedWorkspaceIds = [
           ...new Set([
             ...(memberships?.map((m) => m.workspace_id) || []),
@@ -70,14 +73,17 @@ export function useAttentionCount() {
       let overdueCount = 0;
       if (workspaceIds.length > 0) {
         const today = new Date().toISOString().split('T')[0];
-        const { count } = await supabase
-          .from('action_items')
-          .select('id', { count: 'exact', head: true })
-          .in('workspace_id', workspaceIds)
-          .in('status', ['pending', 'in_progress'])
-          .lt('due_date', today);
-
-        overdueCount = count || 0;
+        // Chunk the id list: 1000 UUIDs in one .in() is a ~38 KB URL. A failed count is an
+        // error, never a fabricated 0 (AGENTS.md: failed statistics are errors).
+        for (let i = 0; i < workspaceIds.length; i += 100) {
+          const overdueRes = await supabase
+            .from('action_items')
+            .select('id', { count: 'exact', head: true })
+            .in('workspace_id', workspaceIds.slice(i, i + 100))
+            .in('status', ['pending', 'in_progress'])
+            .lt('due_date', today);
+          overdueCount += countOrThrow(overdueRes);
+        }
       }
 
       return {

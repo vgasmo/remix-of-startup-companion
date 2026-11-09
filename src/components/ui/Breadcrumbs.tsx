@@ -24,7 +24,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
 
   return (
     <nav 
-      aria-label="Breadcrumb" 
+      aria-label={t('accessibility.breadcrumb')} 
       className={cn("flex items-center space-x-1 text-sm text-muted-foreground", className)}
     >
       <Link 

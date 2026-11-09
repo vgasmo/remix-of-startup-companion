@@ -37,9 +37,11 @@ export function TopBar() {
       ? t('roles.consultor')
       : roles.includes('mentor_externo') 
         ? t('roles.mentor_externo')
-        : roles.includes('founder') 
-          ? t('roles.founder')
-          : t('roles.team_member');
+        : roles.includes('backoffice')
+          ? t('roles.backoffice')
+          : roles.includes('founder') 
+            ? t('roles.founder')
+            : t('roles.team_member');
 
   return (
     <div className="flex items-center gap-1 sm:gap-1.5">

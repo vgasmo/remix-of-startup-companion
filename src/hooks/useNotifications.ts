@@ -123,6 +123,9 @@ export function useNotifications() {
     // realtime-triggered refetches) so no consumer of this hook can ever
     // observe duplicate pending mentor-connection notifications.
     select: dedupePendingMentorConnections,
+    // `notifications` is not in the supabase_realtime publication, so the channel above never fires:
+    // poll as a safety net so the bell updates while the window stays open.
+    refetchInterval: 60_000,
   });
 }
 
@@ -149,6 +152,7 @@ export function useUnreadNotificationCount() {
       if (error) throw error;
       return count ?? 0;
     },
+    refetchInterval: 60_000,
   });
   return data ?? 0;
 }

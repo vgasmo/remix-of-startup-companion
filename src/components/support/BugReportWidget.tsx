@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { getConsoleBuffer } from '@/lib/consoleBuffer';
 import { notify } from '@/lib/notify';
+import { redactPathForLogs, redactUrlForLogs } from '@/lib/logError';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -144,8 +145,8 @@ export function BugReportWidget() {
         id: reportId,
         user_id: user.id,
         workspace_id: workspaceId,
-        url: window.location.href.slice(0, 2000),
-        route: location.pathname,
+        url: redactUrlForLogs(window.location.href).slice(0, 2000),
+        route: redactPathForLogs(location.pathname),
         description: trimmed,
         severity,
         user_agent: navigator.userAgent.slice(0, 500),
