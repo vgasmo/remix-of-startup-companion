@@ -5349,7 +5349,15 @@ export type Database = {
           updated_at?: string
           workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "mentor_connections_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mentor_nda_acceptances: {
         Row: {
@@ -7915,6 +7923,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "sessions_session_template_id_fkey"
+            columns: ["session_template_id"]
+            isOneToOne: false
+            referencedRelation: "session_templates"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "sessions_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
@@ -9463,6 +9478,34 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "survey_writebacks_applied_by_fkey"
+            columns: ["applied_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_writebacks_applied_by_fkey"
+            columns: ["applied_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_export"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_writebacks_applied_by_fkey"
+            columns: ["applied_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_peer_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_writebacks_applied_by_fkey"
+            columns: ["applied_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "survey_writebacks_instance_id_fkey"
             columns: ["instance_id"]

@@ -239,6 +239,13 @@
       "when": 1794222057685,
       "tag": "0033_rc12_rls_set_helpers",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1794222131021,
+      "tag": "0034_rc12_integrity_hygiene",
+      "breakpoints": true
     }
   ]
 }
