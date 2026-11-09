@@ -1,93 +1,28 @@
 #!/usr/bin/env node
-/**
- * RC5 · Batch G1 — Automation manifest reconciler.
- *
- * READ-ONLY. Refuses to touch production. Cross-checks:
- *   - docs/rc5/automation-manifest.md
- *   - public.automation_health_expectations
- *   - cron.job (pg_cron catalogue)
- *
- * Exits non-zero on any drift so CI blocks releases that add a cron
- * without also registering it in the manifest + health registry.
- */
-import { readFileSync } from "node:fs";
-import { Client } from "pg";
-
-const PROD_REF = "apxzuslwhjujgrcsfzqw";
-
-function fail(msg) {
-  console.error(`reconcile-automations: ${msg}`);
-  process.exit(2);
-}
-
-function parseManifest(md) {
-  const rows = [];
-  for (const line of md.split("\n")) {
-    if (!line.startsWith("| ") || line.startsWith("| name") || line.startsWith("|---")) continue;
-    const cols = line.split("|").slice(1, -1).map((c) => c.trim());
-    if (cols.length < 7) continue;
-    rows.push({
-      name: cols[0],
-      trigger: cols[1],
-      cadence: Number(cols[2]),
-      target: cols[3].replaceAll("`", ""),
-      owner: cols[4],
-      flag: cols[5] === "—" ? "" : cols[5],
-      health: cols[6] === "—" ? "" : cols[6],
-    });
-  }
-  return rows;
-}
+// Read-only catalogue reconciliation. Never schedules, invokes or repairs jobs.
+import { readFileSync } from 'node:fs';
+import { Client } from 'pg';
+import { parseManifest, reconcileManifest } from './automation-manifest.mjs';
 
 async function main() {
-  const dbUrl = process.env.STAGING_DATABASE_URL;
-  if (!dbUrl) fail("STAGING_DATABASE_URL is required (non-prod).");
-  if (dbUrl.includes(PROD_REF)) fail("refusing to run against production ref.");
-
-  const manifest = parseManifest(readFileSync("docs/rc5/automation-manifest.md", "utf8"));
-  if (manifest.length === 0) fail("manifest is empty or unparseable.");
-
-  const client = new Client({ connectionString: dbUrl });
-  await client.connect();
-
-  const { rows: crons } = await client.query(
-    `SELECT jobname, schedule, command FROM cron.job`
-  );
-  const { rows: health } = await client.query(
-    `SELECT job_name FROM public.automation_health_expectations`
-  );
-  await client.end();
-
-  const cronNames = new Set(crons.map((r) => r.jobname));
-  const healthNames = new Set(health.map((r) => r.job_name));
-
-  const drift = [];
-
-  for (const row of manifest) {
-    if (row.trigger === "cron" && !cronNames.has(row.name)) {
-      drift.push(`missing_schedule: ${row.name}`);
-    }
-    if (row.trigger !== "cron" && cronNames.has(row.name)) {
-      drift.push(`dead_cron: ${row.name} declared ${row.trigger} but pg_cron row exists`);
-    }
-    if (row.health && row.health !== "no_health_expectation" && !healthNames.has(row.health)) {
-      drift.push(`missing_registry: ${row.name} → health=${row.health}`);
-    }
-  }
-
-  const manifestNames = new Set(manifest.map((r) => r.name));
-  for (const cron of crons) {
-    if (!manifestNames.has(cron.jobname)) {
-      drift.push(`unregistered_cron: ${cron.jobname}`);
-    }
-  }
-
-  if (drift.length > 0) {
-    for (const d of drift) console.error(`  ✗ ${d}`);
-    fail(`${drift.length} manifest drift(s).`);
-  }
-
-  console.log(`reconcile-automations: OK · ${manifest.length} manifest rows · ${crons.length} pg_cron rows.`);
+  const value = process.env.STAGING_DATABASE_URL;
+  if (!value) throw new Error('STAGING_DATABASE_URL is required (isolated environment).');
+  const url = new URL(value);
+  if (!['postgres:', 'postgresql:'].includes(url.protocol)) throw new Error('invalid_database_protocol');
+  if (value.includes('apxzuslwhjujgrcsfzqw')) throw new Error('production_connection_refused');
+  if (!['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) && process.env.RC5_ALLOW_STAGING_TESTS !== 'true') throw new Error('explicit_staging_opt_in_required');
+  const manifest = parseManifest(readFileSync(new URL('../../docs/rc5/automation-manifest.md', import.meta.url), 'utf8'));
+  const client = new Client({ connectionString: value, connectionTimeoutMillis: 10000, query_timeout: 15000 });
+  try {
+    await client.connect();
+    await client.query('BEGIN READ ONLY');
+    await client.query("SET LOCAL statement_timeout = '15s'");
+    const { rows: crons } = await client.query('SELECT jobname, schedule, command, active FROM cron.job');
+    const { rows: health } = await client.query('SELECT job_name, expected_cadence_seconds, enabled FROM public.automation_health_expectations');
+    const drift = reconcileManifest(manifest, crons, health);
+    await client.query('ROLLBACK');
+    if (drift.length) { for (const d of drift) console.error(d); throw new Error(`${drift.length} manifest drift(s)`); }
+    console.log(`reconcile-automations: OK · ${manifest.length} entries · ${crons.length} schedules`);
+  } finally { await client.end(); }
 }
-
-main().catch((err) => fail(err.message ?? String(err)));
+main().catch(() => { console.error('reconcile-automations: verification failed; connection details and raw database errors are not logged.'); process.exitCode = 2; });
