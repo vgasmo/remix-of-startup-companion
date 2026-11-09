@@ -1,7 +1,7 @@
 
 ## RC12 — 9 Nov 2026
-- [ ] Aplicar anexo i18n exato e validar os dois gates antes das correções.
-- [ ] Aplicar pacote essencial por ordem; parar em diffs ou guardas divergentes e reportar evidências.
+- [x] Aplicar anexo i18n exato e validar os dois gates antes das correções: 9379 chaves em paridade, zero problemas.
+- [ ] Aplicar pacote essencial por ordem; Parte 1: três migrações e 18 diffs exatos aplicados, 204 políticas restritivas, sete CHECKs de URL e três índices completos confirmados. 279 testes e lint passam; /login sem erros JS; build automática OK. Partes 2–15 e referências cruzadas para outros domínios ainda não aplicadas. Teste comportamental de contas suspensas bloqueado pela permissão de execução da ferramenta de leitura, não pela migração.
 - [ ] Aplicar pacote opcional apenas depois do essencial verificado.
 
 ## Validação externa da release — 2 Nov 2026
