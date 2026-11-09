@@ -26,8 +26,7 @@ export function useAttentionCount() {
         const { data: assignedWorkspaces, error: assignedError } = await supabase
             .from('workspaces')
             .select('id')
-            .eq('assigned_consultor_id', userId),
-        unused = undefined;
+            .eq('assigned_consultor_id', userId);
         if (assignedError) throw assignedError;
         assignedWorkspaceIds = [...new Set(assignedWorkspaces?.map((w) => w.id) || [])];
 
