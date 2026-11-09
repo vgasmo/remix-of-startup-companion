@@ -42,6 +42,12 @@ export async function loadLanguage(lng: string): Promise<void> {
   loaded.add(key);
 }
 
+/** Load the bundle first, then switch: avoids a flash of raw keys while the JSON chunk downloads. */
+export async function changeLanguage(lng: string): Promise<void> {
+  await loadLanguage(lng);
+  await i18n.changeLanguage(lng);
+}
+
 export async function initI18n(): Promise<void> {
   await loadLanguage(initialLanguage);
 }

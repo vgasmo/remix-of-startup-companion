@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { changeLanguage as switchLanguage } from '@/i18n';
 
 const languages = [
   { code: 'en', name: 'English', flag: '🇬🇧' },
@@ -25,7 +26,7 @@ export function LanguageSelector({ className, variant = 'icon' }: LanguageSelect
   const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
 
   const changeLanguage = (code: string) => {
-    i18n.changeLanguage(code);
+    void switchLanguage(code);
     localStorage.setItem('language', code);
   };
 

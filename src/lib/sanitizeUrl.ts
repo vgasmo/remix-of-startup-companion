@@ -11,8 +11,9 @@ export function sanitizeUrl(url: string | null | undefined): string | undefined 
     if (['http:', 'https:', 'mailto:'].includes(parsed.protocol)) return trimmed;
     return undefined;
   } catch {
-    // Allow relative paths
-    if (trimmed.startsWith('/')) return trimmed;
+    // Allow in-app relative paths. `//host` and `/\host` are protocol-relative (external) and
+    // browsers strip tab/newline from URLs (`/\t/host`), so refuse those and any control character.
+    if (/^\/(?![\/\\])/.test(trimmed) && !/[\u0000-\u001f\u007f]/.test(trimmed)) return trimmed;
     return undefined;
   }
 }

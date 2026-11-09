@@ -1,4 +1,5 @@
 import { LayoutGrid, List } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -11,6 +12,7 @@ interface ViewToggleProps {
 }
 
 export function ViewToggle({ view, onChange, className }: ViewToggleProps) {
+  const { t } = useTranslation();
   return (
     <div className={cn('inline-flex rounded-lg border bg-muted p-1', className)} data-tour="view-toggle">
       <Button
@@ -23,7 +25,7 @@ export function ViewToggle({ view, onChange, className }: ViewToggleProps) {
         onClick={() => onChange('table')}
       >
         <List className="h-4 w-4" />
-        <span className="sr-only">Table view</span>
+        <span className="sr-only">{t('accessibility.tableView')}</span>
       </Button>
       <Button
         variant="ghost"
@@ -35,7 +37,7 @@ export function ViewToggle({ view, onChange, className }: ViewToggleProps) {
         onClick={() => onChange('card')}
       >
         <LayoutGrid className="h-4 w-4" />
-        <span className="sr-only">Card view</span>
+        <span className="sr-only">{t('accessibility.cardView')}</span>
       </Button>
     </div>
   );

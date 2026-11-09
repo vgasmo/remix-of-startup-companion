@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import {
   DndContext,
@@ -94,6 +95,7 @@ interface SortableItemWrapperProps {
 }
 
 function SortableItemWrapper({ id, children }: SortableItemWrapperProps) {
+  const { t } = useTranslation();
   const {
     attributes,
     listeners,
@@ -115,7 +117,7 @@ function SortableItemWrapper({ id, children }: SortableItemWrapperProps) {
       {...attributes}
       {...listeners}
       className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded touch-none"
-      aria-label="Drag to reorder"
+      aria-label={t('accessibility.dragReorder')}
     >
       <GripVertical className="h-4 w-4 text-muted-foreground" />
     </button>

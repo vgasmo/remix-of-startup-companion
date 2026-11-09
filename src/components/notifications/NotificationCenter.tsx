@@ -14,6 +14,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import {
   useNotifications,
+  useUnreadNotificationCount,
   useMarkNotificationRead,
   useMarkAllNotificationsRead,
   useDeleteNotification,
@@ -134,12 +135,14 @@ export function NotificationCenter() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
-  const { data: notifications, isLoading } = useNotifications();
+  const { data: notifications, isLoading, isError, refetch } = useNotifications();
+  const serverUnread = useUnreadNotificationCount();
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const deleteNotification = useDeleteNotification();
 
-  const unreadCount = notifications?.filter((n) => !n.read).length || 0;
+  // The list is capped at 50 rows; the head/count query keeps the badge exact beyond that.
+  const unreadCount = Math.max(serverUnread, notifications?.filter((n) => !n.read).length || 0);
 
   const visible = useMemo(() => {
     const list = notifications || [];
@@ -225,7 +228,7 @@ export function NotificationCenter() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 flex-shrink-0 opacity-0 group-hover:opacity-100 hover:opacity-100"
+                    className="h-6 w-6 flex-shrink-0 opacity-0 group-hover:opacity-100 hover:opacity-100 focus-visible:opacity-100"
                     onClick={(e) => handleDelete(e, notification.id)}
                     aria-label={t('common.delete')}
                   >
@@ -274,7 +277,7 @@ export function NotificationCenter() {
           {unreadCount > 0 && (
             <span
               className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center"
-              aria-label={`${unreadCount} unread`}
+              aria-label={t('notifications.unreadCount', { count: unreadCount, defaultValue: '{{count}} não lidas' })}
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
@@ -330,6 +333,11 @@ export function NotificationCenter() {
           {isLoading ? (
             <div className="p-4 text-center text-muted-foreground text-sm" aria-live="polite">
               {t('common.loading')}
+            </div>
+          ) : isError ? (
+            <div className="p-6 text-center space-y-2" role="alert">
+              <p className="text-sm text-muted-foreground">{t('common.errorLoading')}</p>
+              <Button variant="outline" size="sm" onClick={() => void refetch()}>{t('common.retry')}</Button>
             </div>
           ) : totalVisible === 0 ? (
             <div className="p-8 text-center">
