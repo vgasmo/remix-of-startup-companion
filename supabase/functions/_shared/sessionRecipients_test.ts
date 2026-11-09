@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from 'https://deno.land/std@0.224.0/assert/mod.ts';
-import { selectSessionRecipients, getSessionRecipientEmails } from './sessionRecipients.ts';
+import { selectSessionRecipients, intersectSessionRecipients, getSessionRecipientEmails } from './sessionRecipients.ts';
 
 Deno.test('unrelated recipient cannot receive session information', () => {
   assertThrows(() => selectSessionRecipients(['outsider@test.local'], ['member@test.local']), Error, 'recipient_not_authorized');
@@ -22,4 +22,18 @@ Deno.test('recipient lookup failure denies delivery', async () => {
   let failed = false;
   try { await getSessionRecipientEmails({ from: () => query } as never, 'session', 'workspace'); } catch { failed = true; }
   assertEquals(failed, true);
+});
+
+Deno.test('partial invitation keeps eligible contacts and counts outsiders', () => {
+  assertEquals(intersectSessionRecipients([' MEMBER@test.local ', 'outsider@test.local', 'member@test.local'], ['member@test.local']), { recipients: ['member@test.local'], skipped: 1 });
+});
+Deno.test('invitation intersection never returns unrelated contacts', () => {
+  assertEquals(intersectSessionRecipients(['outsider@test.local'], ['member@test.local']), { recipients: [], skipped: 1 });
+});
+Deno.test('invitation intersection rejects malformed and over-limit recipients', () => {
+  assertThrows(() => intersectSessionRecipients(['not-email'], []), Error, 'invalid_recipients');
+  assertThrows(() => intersectSessionRecipients(Array(51).fill('member@test.local'), []), Error, 'invalid_recipients');
+});
+Deno.test('default intersection uses server contacts only', () => {
+  assertEquals(intersectSessionRecipients(undefined, [' MEMBER@test.local ', 'member@test.local']), { recipients: ['member@test.local'], skipped: 0 });
 });
