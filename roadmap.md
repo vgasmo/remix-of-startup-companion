@@ -1,4 +1,9 @@
 
+## RC12 — 9 Nov 2026
+- [ ] Aplicar anexo i18n exato e validar os dois gates antes das correções.
+- [ ] Aplicar pacote essencial por ordem; parar em diffs ou guardas divergentes e reportar evidências.
+- [ ] Aplicar pacote opcional apenas depois do essencial verificado.
+
 ## Validação externa da release — 2 Nov 2026
 - [ ] Retomar verificações externas seguras, recolher evidências atuais e entregar relatório atualizado com acessos bloqueantes, sem alterar regras nem enviar convites externos não autorizados.
 
