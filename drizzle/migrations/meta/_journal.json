@@ -134,6 +134,13 @@
       "when": 1793372252021,
       "tag": "0018_exclude_archived_milestone_actions_from_stats",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794218184764,
+      "tag": "0019_rc12_suspended_staff",
+      "breakpoints": true
     }
   ]
 }
