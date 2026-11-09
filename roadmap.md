@@ -1,5 +1,6 @@
 
 ## RC12 — 9 Nov 2026
+- [ ] Pedido 10:58 UTC: continuar pelo pacote opcional; verificar compatibilidade e guardas antes de aplicar, sem improvisar secções divergentes.
 - [x] Pedido 10:37 UTC: Partes 3–15 aplicadas; 288 Vitest, 198 Deno (5 ignorados) e 61 asserções pgTAP passam; 45 funções publicadas, 10 migrações e reparações de dados aplicadas. Navegação autenticada Espaços/Contratos confirmada; lint/i18n/build OK. Limites e adaptações em docs/RC12-APPLIED.md.
 - [x] Aplicar anexo i18n exato e validar os dois gates antes das correções: 9379 chaves em paridade, zero problemas.
 - [x] Aplicar pacote essencial: Partes 1–15 aplicadas; evidências e limites de certificação registados em docs/RC12-APPLIED.md.
