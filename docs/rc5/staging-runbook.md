@@ -1,108 +1,72 @@
-# RC5 Staging Runbook
+# RC12 staging verification runbook
 
-**Audience:** release lead executing verification on a staging clone.
-**Prerequisites:** a staging Supabase project that is **not** the production project ID (`apxzuslwhjujgrcsfzqw`). Scripts refuse to run against production.
+Use an isolated local/disposable stack or an authorised staging clone. Preview and published app share live data;
+preview is not staging. Do not seed, clean up, invoke providers or run destructive suites against the shared app.
 
-## 0. Required secrets
+## Credentials and isolation
 
-Configure these via the platform secret manager (Lovable Cloud → Secrets or your CI vault). **Never paste values in chat, source files, or `.env` committed to git.**
+Local CI may obtain credentials from its disposable stack. Hosted Lovable Cloud service keys/passwords are not
+available to the operator and must not be requested. Use authorised platform tools for hosted read-only checks.
+For external staging, inject credentials only through the CI/secret manager; never paste them in chat or log them.
+Provider tests require sandbox email/signature services and a dedicated test Graph mailbox/calendar (not yet supplied).
+`RC5_ALLOW_STAGING_TESTS=true` is required for remote read-only automation reconciliation; existing seed/cleanup
+preflights additionally enforce their own staging guard. Passing a guard is not authorisation to touch real data.
 
-| Env var | Purpose |
-|---|---|
-| `STAGING_SUPABASE_URL` | Staging project URL. |
-| `STAGING_SUPABASE_ANON_KEY` | Anon key for public/founder personas. |
-| `STAGING_SUPABASE_SERVICE_ROLE_KEY` | Service-role key for seed/cleanup only. Never logged. |
-| `STAGING_APP_URL` | Base URL used by Playwright (`/book`, `/admin`, etc.). |
-| `RC5_TEST_FOUNDER_EMAIL` / `_PASSWORD` | Seeded founder persona. |
-| `RC5_TEST_CONSULTANT_EMAIL` / `_PASSWORD` | Seeded consultant persona. |
-| `RC5_TEST_MENTOR_EMAIL` / `_PASSWORD` | Seeded mentor persona. |
-| `RC5_TEST_ADMIN_EMAIL` / `_PASSWORD` | Seeded admin persona. |
-| `RC5_TEST_BACKOFFICE_EMAIL` / `_PASSWORD` | Seeded backoffice persona. |
-| `STAGING_GRAPH_TENANT_ID` / `_CLIENT_ID` / `_CLIENT_SECRET` | MS Graph app registration for staging tenant. |
-| `STAGING_GRAPH_TEST_CALENDAR_UPN` | Dedicated calendar UPN — must not be a real user. |
-| `STAGING_EMAIL_SANDBOX_API_KEY` | Sandbox email provider key (Mailtrap / Resend test). |
-| `STAGING_CRON_SECRET` | `x-cron-secret` for scheduled edge functions. |
-| `RC5_ALLOW_STAGING_TESTS` | Must be literally `true`; explicit opt-in guard. |
+## Empty database reconstruction
 
-## 1. Preflight guards
+Use PostgreSQL 17 and installed pgTAP. Run from project root with a new directory and **without** `RC5_REUSE=1`:
 
 ```bash
-export RC5_ALLOW_STAGING_TESTS=true
-node scripts/rc5/preflight.mjs
+export RC5_PG_RUN_DIR=/tmp/rc12-fresh-verified
+export RC5_PGTAP_SQL=/path/to/installed/pgtap--version.sql
+bash scripts/rc5/local-pg-harness.sh
 ```
 
-Preflight refuses to continue if:
+The harness creates a disposable Unix-socket-only database, replays `supabase/migrations`, and executes all
+`supabase/tests/*.test.sql`. Nonzero exits, SQL errors, empty/missing suites and failed assertions block release.
+The shim models auth/storage/cron/network interfaces; it does not deliver emails, validate hosted auth settings,
+certify native bucket bootstrap or prove provider behaviour. Legacy dump default-grant emulation is not evidence
+that a newly introduced table has proper explicit grants; review every new public table separately.
+`RC5_EXTRA_MIGRATIONS` is additive and accepts explicit colon-separated paths; only use it for a not-yet-mirrored
+candidate. Do not replay both a mirrored migration and its source. Never pass hosted database environment variables.
 
-- `STAGING_SUPABASE_URL` resolves to the production project ref;
-- `RC5_ALLOW_STAGING_TESTS` is not exactly `true`;
-- any required env var is missing;
-- the DB already contains rows outside the `rc5-e2e-` namespace touched by the seed.
-
-## 2. Migration verification
-
-**Path A — fresh replay** (disposable Postgres):
+## Application and automation gates
 
 ```bash
-node scripts/rc5/migrate-fresh.mjs
+bunx vitest run
+node --test scripts/rc5/automation-manifest.test.mjs
+bun run lint
+node scripts/i18n-check.cjs
+node scripts/i18n-lint.mjs
+node scripts/secret-scan.cjs
 ```
 
-Boots an ephemeral Postgres via `docker run --rm postgres:15`, applies every file under `supabase/migrations/` in timestamp order, then runs `supabase/tests/rls_policies.test.sql` via `pg_prove`. Prints a summary and exits non-zero on the first failure.
+The platform runs compilation automatically. CI separately runs the actual release build.
+Run `node scripts/rc5/reconcile-automations.mjs` with injected isolated `STAGING_DATABASE_URL`.
+It is read-only, fails closed, and compares exact schedules/targets/active state/health cadence.
+Run the fourteen read-only SQL checks in `docs/rc12/operations-checks.sql` as an authorised operator.
+Provision buckets through native tools before uploads; follow `docs/runbooks/storage-buckets-bootstrap.md`.
 
-**Path B — forward apply** (staging clone):
+## Real flow acceptance
 
-```bash
-node scripts/rc5/migrate-forward.mjs
-```
+On isolated test accounts, preserve positive AND forbidden evidence for pending, suspended, founder, primary
+consultant, assigned mentor with/without NDA, and admin. Drive each actual screen and confirm saved data reads back:
 
-Captures preflight counts (see `docs/rc5/queries/preflight-counts.sql`), applies only the new migrations, captures postflight counts, and diffs. Non-zero on unexpected row-count deltas outside the `rc5-e2e-` namespace.
+1. Invitation → verified email → correct login return target → intended workspace, exactly one membership.
+2. Sandbox email failure/partial delivery → saved session remains; only verified recipients receive mail.
+3. Signature → immutable terms → verified activation → pending recovery drains and retry cron disarms; duplicates do not repeat activation.
+4. Import supported configuration → persisted startup/workspace link without duplication; denied configuration cannot inject job metadata.
+5. Copilot real authenticated input → bounded response stream → second turn works without replay on timeout.
+6. Archived milestone action is absent from operational overdue count; primary-assigned-only portfolio excludes historical membership.
+7. Private Data Room and mentor notes enforce access and workspace containment, including suspended staff accounts.
 
-## 3. Deterministic seed
+Network mocks prove failure handling, not delivery. Record run identifiers and redacted screenshots; no tokens,
+signer links, calendar attendee data or raw request URLs in evidence. If accounts/providers/isolated stack are absent,
+leave these gates unverified; do not mark them passed by testing login or empty pages only.
 
-```bash
-node scripts/rc5/seed.mjs
-```
+## Cleanup and restore
 
-Idempotent. All rows carry the `rc5-e2e-` prefix in their business identifiers (workspace names, emails, contract numbers, funnel-item titles). Re-running is a no-op.
-
-## 4. Role-matrix pgTAP
-
-```bash
-psql "$STAGING_DB_URL" -f supabase/tests/rls_policies.test.sql
-```
-
-Covers anonymous / founder-in-workspace / founder-out-of-workspace / consultant / mentor / admin / service-role for: transcripts, workspace membership, invitations, booking links, contracts, cohort data, mentor assignments, CRM funnel, notification ledger, transcript containment audit.
-
-Both permitted and forbidden access is asserted. Zero-row selects on RLS-forbidden queries are treated as evidence **only** when the same query returns rows under `set_config('request.jwt.claims', …)` for a permitted role.
-
-## 5. Seeded Playwright E2E
-
-```bash
-bun run test:e2e -- --project=staging
-```
-
-Runs the persona specs against `STAGING_APP_URL` at four viewports: 320×568, 390×844, tablet (768×1024), desktop (1280×800). Failure-injection specs (Graph 401 / 429 / 500 / timeout, email rejection, DB failure after provider ack) live in `e2e/failure-injection/`.
-
-## 6. External service failure tests
-
-`e2e/failure-injection/` uses Playwright's `route.fulfill` to inject provider errors at the network boundary and asserts:
-
-- UI banner is truthful (`disponibilidade não pode ser confirmada`);
-- retry after ambiguous Graph result creates **exactly one** DB booking and **exactly one** calendar event (idempotency key + ledger);
-- duplicate commercial-proposal submission returns `skipped_duplicate`;
-- concurrent invitation acceptance produces one membership row.
-
-## 7. Cleanup
-
-```bash
-node scripts/rc5/cleanup.mjs
-```
-
-Deletes only rows whose business identifier starts with `rc5-e2e-`. Refuses to run if any deletion would touch a row outside that namespace (verified with `SELECT count(*) … WHERE key NOT LIKE 'rc5-e2e-%' FOR UPDATE`).
-
-## 8. Canonical verification command
-
-```bash
-RC5_ALLOW_STAGING_TESTS=true bun run rc5:verify
-```
-
-Runs, in order and short-circuiting on the first failure: preflight → migrate-forward → seed → pgTAP → vitest ×3 → e2e → failure-injection → cleanup. Writes machine-readable results to `docs/rc5/results.json` and a human report to `docs/rc5/results.md`. Non-zero exit on any failure.
+Rollback transactional SQL fixtures automatically. Archive created test startups/workspaces using existing commands,
+never delete real/imported data. Review cleanup scripts before execution; no production cleanup is permitted.
+Restore backup manifests, checksums, private object metadata and access in isolation. Preserve audit history and
+original legal timestamps. Use the release checklist and go-live weekly/failure procedures for handover.
