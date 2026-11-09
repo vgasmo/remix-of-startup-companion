@@ -19,10 +19,11 @@ Use PostgreSQL 17 and installed pgTAP. Run from project root with a new director
 ```bash
 export RC5_PG_RUN_DIR=/tmp/rc12-fresh-verified
 export RC5_PGTAP_SQL=/path/to/installed/pgtap--version.sql
-bash scripts/rc5/local-pg-harness.sh
+bash scripts/rc5/verify-rc12-fresh.sh
 ```
 
-The harness creates a disposable Unix-socket-only database, replays `supabase/migrations`, and executes all
+The harness creates a disposable Unix-socket-only database, replays `supabase/migrations`, loads the disposable-only legacy table fixture, then explicitly applies the ordered
+`drizzle/migrations` additive chain and executes all
 `supabase/tests/*.test.sql`. Nonzero exits, SQL errors, empty/missing suites and failed assertions block release.
 The shim models auth/storage/cron/network interfaces; it does not deliver emails, validate hosted auth settings,
 certify native bucket bootstrap or prove provider behaviour. Legacy dump default-grant emulation is not evidence

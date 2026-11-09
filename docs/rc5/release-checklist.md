@@ -63,7 +63,7 @@ Every box must be ticked with linked evidence (command output, screenshot, or fi
 
 ## RC12 gate corrections (supersede stale script names/counts above)
 
-- [ ] Empty PostgreSQL **17** reconstruction: `bash scripts/rc5/local-pg-harness.sh`, no `RC5_REUSE`; includes the new 18-assertion `rc12_data_protections.test.sql`.
+- [ ] Empty PostgreSQL **17** reconstruction: `bash scripts/rc5/verify-rc12-fresh.sh`, no `RC5_REUSE`; includes the new 18-assertion `rc12_data_protections.test.sql`.
 - [ ] All current Vitest tests including the real extracted ProtectedRoute and storage/session/attention regressions; do not rely on old fixed suite counts.
 - [ ] `node --test scripts/rc5/automation-manifest.test.mjs` and read-only isolated catalogue reconciliation pass.
 - [ ] Fourteen operational checks in `docs/rc12/operations-checks.sql` executed and every exception reviewed.

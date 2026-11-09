@@ -214,8 +214,8 @@ jobs:
       - name: Scan migrations for person-specific data operations
         run: node scripts/ci/scan-migrations.mjs
 
-      - name: Every drizzle migration is mirrored in supabase/migrations
-        run: node scripts/ci/check-drizzle-mirrored.mjs
+      - name: Verify RC12 replay runner syntax
+        run: bash -n scripts/rc5/verify-rc12-fresh.sh
 
   # ──────────────────────────────────────────────
   # Gate H: Deno check for changed edge functions
@@ -415,7 +415,7 @@ jobs:
           RC5_PG_RUN_DIR: ${{ runner.temp }}/rc5-pg
         run: |
           export RC5_PGTAP_SQL="$(ls /usr/share/postgresql/17/extension/pgtap--[0-9]*.sql | grep -v -- '--.*--' | sort -V | tail -1)"
-          bash scripts/rc5/local-pg-harness.sh
+          bash scripts/rc5/verify-rc12-fresh.sh
 
       - name: Upload pgTAP logs
         if: always()
