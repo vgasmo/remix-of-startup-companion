@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { countOrThrow } from '@/lib/queryCount';
 
 /**
  * Sidebar count badges for backoffice/admin nav items.
@@ -19,7 +20,7 @@ export function useBackofficeSidebarBadges(enabled: boolean) {
       const todayIso = today.toISOString().slice(0, 10);
       const in60Iso = in60.toISOString().slice(0, 10);
 
-      const [{ count: expiring }, { count: pendingProfiles }, { count: pendingClaims }] =
+      const [expiringRes, profilesRes, claimsRes] =
         await Promise.all([
           supabase
             .from('startup_contracts')
@@ -38,9 +39,10 @@ export function useBackofficeSidebarBadges(enabled: boolean) {
             .eq('status', 'pending'),
         ]);
 
+      // Failed statistics are errors, never fabricated zeros.
       return {
-        expiringContracts: expiring ?? 0,
-        pendingApprovals: (pendingProfiles ?? 0) + (pendingClaims ?? 0),
+        expiringContracts: countOrThrow(expiringRes),
+        pendingApprovals: countOrThrow(profilesRes) + countOrThrow(claimsRes),
       };
     },
   });

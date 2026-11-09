@@ -5,6 +5,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { isAccountActive } from '../_shared/security.ts';
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -67,7 +69,7 @@ Deno.serve(async (req) => {
     const overwriteExisting = body?.overwrite_existing === true; // admin opt-in
     const dryRun = body?.dry_run === true;
     const rowIdsAllowlist: string[] | null = Array.isArray(body?.row_ids) && body.row_ids.length > 0
-      ? body.row_ids.map((v: unknown) => String(v))
+      ? body.row_ids.map((v: unknown) => String(v)).filter((v: string) => UUID_RE.test(v))
       : null;
     const requireAuthorization = body?.require_authorization !== false; // default ON
     if (!batchId) return jsonResponse({ error: "batch_id required" }, 400);
@@ -94,9 +96,33 @@ Deno.serve(async (req) => {
       .eq("selected", true)
       .in("status", ["will_create", "will_update"]);
     if (rowIdsAllowlist) rowsQuery = rowsQuery.in("id", rowIdsAllowlist);
-    const { data: rows, error: rowsErr } = await rowsQuery;
+    const { data: fetchedRows, error: rowsErr } = await rowsQuery;
 
-    if (rowsErr) return jsonResponse({ error: rowsErr.message }, 500);
+    if (rowsErr) return jsonResponse({ error: "Failed to load rows" }, 500);
+
+    // Linhas sem commit_authorized ficam como estão (will_create/will_update) e são só reportadas:
+    // marcá-las 'error' tirava-as da fila e impedia qualquer nova tentativa.
+    const unauthorizedRowIds: string[] = [];
+    let rows = (fetchedRows || []).filter((r) => {
+      if (!dryRun && requireAuthorization && r.commit_authorized !== true) {
+        unauthorizedRowIds.push(r.id);
+        return false;
+      }
+      return true;
+    });
+
+    // Reclamação atómica: dois pedidos em simultâneo não processam a mesma linha.
+    if (!dryRun && rows.length > 0) {
+      const { data: claimed, error: claimErr } = await admin
+        .from("bulk_import_rows")
+        .update({ status: "applying" })
+        .in("id", rows.map((r) => r.id))
+        .in("status", ["will_create", "will_update"])
+        .select("id");
+      if (claimErr) return jsonResponse({ error: "Failed to claim rows" }, 500);
+      const claimedIds = new Set((claimed || []).map((c) => c.id));
+      rows = rows.filter((r) => claimedIds.has(r.id));
+    }
 
     // Fetch typologies for matching
     const { data: typologies } = await admin
@@ -117,7 +143,8 @@ Deno.serve(async (req) => {
       contract_number: string | null;
     }> = [];
 
-    for (const row of rows || []) {
+    for (const row of rows) {
+      let wroteData = false; // true a partir de onde pode haver escritas
       try {
         const data = (row.edited_json || row.extracted_json) as ExtractedData & {
           programme_mapping?: {
@@ -129,12 +156,23 @@ Deno.serve(async (req) => {
           throw new Error("startup_name is required");
         }
 
-        // Authorization gate — refuse rows that have not been explicitly
-        // marked commit_authorized by an operator (dry-run bypasses this,
-        // so reviewers can preview writes before flipping the flag).
-        if (!dryRun && requireAuthorization && row.commit_authorized !== true) {
-          throw new Error("commit_authorized=false — row not approved for commit");
+        // Validar ANTES de criar startup/workspace: qualquer falha no passo 5 deixava órfãos.
+        const isRealDate = (d: string | null): boolean => {
+          if (!d) return false;
+          try { return new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === d; } catch { return false; }
+        };
+        if (!isRealDate(parseDate(data.start_date))) {
+          throw new Error("start_date is required and must be a valid date (YYYY-MM-DD)");
         }
+        for (const f of ["end_date", "signed_at"] as const) {
+          const v = parseDate(data[f]);
+          if (v && !isRealDate(v)) throw new Error(`${f} is not a valid date`);
+        }
+        if ((normalizeStatus(data.status) || "active") === "active" && !parseDate(data.signed_at)) {
+          throw new Error("signed_at is required for an active imported contract");
+        }
+
+        // Authorization gate: linhas sem commit_authorized já foram separadas acima (dry-run ignora o gate).
 
         // Per-row programme override from edited_json.programme_mapping wins
         // over the batch-level program_id. Every row must resolve to SOME
@@ -149,6 +187,8 @@ Deno.serve(async (req) => {
         }
         const rowIncubationOverride =
           (data.programme_mapping?.incubation_type_id as string | null | undefined) ?? null;
+
+        wroteData = true; // a partir daqui já pode haver escritas
 
         // 1) Resolve or create startup
         let startupId = row.matched_startup_id as string | null;
@@ -174,7 +214,8 @@ Deno.serve(async (req) => {
           fillIfEmpty("main_contact_email", data.main_contact_email);
           fillIfEmpty("main_contact_phone", data.main_contact_phone);
           if (!dryRun && Object.keys(updates).length > 0) {
-            await admin.from("startups").update(updates).eq("id", startupId);
+            const { error: suErr } = await admin.from("startups").update(updates).eq("id", startupId);
+            if (suErr) throw new Error(`Startup update failed: ${suErr.message}`);
           }
         } else if (!dryRun) {
           const { data: newStartup, error: createErr } = await admin
@@ -191,6 +232,7 @@ Deno.serve(async (req) => {
             .single();
           if (createErr || !newStartup) throw new Error(`Startup create failed: ${createErr?.message}`);
           startupId = newStartup.id;
+          await admin.from("bulk_import_rows").update({ matched_startup_id: startupId }).eq("id", row.id);
         }
 
         // 2) Resolve or create workspace — programme is REQUIRED (row-level override wins).
@@ -212,6 +254,7 @@ Deno.serve(async (req) => {
               .single();
             if (wsErr || !newWs) throw new Error(`Workspace create failed: ${wsErr?.message}`);
             workspaceId = newWs.id;
+            await admin.from("bulk_import_rows").update({ matched_workspace_id: workspaceId }).eq("id", row.id);
           }
         } else {
           // If matched workspace has no programme, attach the row programme
@@ -222,7 +265,8 @@ Deno.serve(async (req) => {
             .eq("id", workspaceId)
             .maybeSingle();
           if (!dryRun && ws && !ws.program_id) {
-            await admin.from("workspaces").update({ program_id: rowProgramId }).eq("id", workspaceId);
+            const { error: wuErr } = await admin.from("workspaces").update({ program_id: rowProgramId }).eq("id", workspaceId);
+            if (wuErr) throw new Error(`Workspace update failed: ${wuErr.message}`);
           }
         }
 
@@ -232,7 +276,7 @@ Deno.serve(async (req) => {
           const key = data.typology_name.toLowerCase().trim();
           incubationTypeId = typologyByName.get(key) || null;
           // Fuzzy fallback: contains
-          if (!incubationTypeId) {
+          if (!incubationTypeId && key.length >= 3) {
             for (const [k, v] of typologyByName) {
               if (k.includes(key) || key.includes(k)) { incubationTypeId = v; break; }
             }
@@ -277,6 +321,9 @@ Deno.serve(async (req) => {
           start_date: startDate,
           end_date: endDate,
           signed_at: signedAt,
+          // guard_contract_integrity exige signed_at + signature_status signed/completed para status 'active'.
+          // Só definir quando active, para não rebaixar a assinatura de contratos já assinados no caminho overwriteExisting.
+          ...(contractStatus === "active" ? { signature_status: "completed" } : {}),
           monthly_fee: data.monthly_fee ?? null,
           currency: "EUR",
           discount_percentage: data.discount_percentage ?? null,
@@ -345,7 +392,7 @@ Deno.serve(async (req) => {
         });
 
         if (!dryRun) {
-          await admin.from("bulk_import_rows").update({
+          const { error: rowDoneErr } = await admin.from("bulk_import_rows").update({
             status: "committed",
             created_contract_id: contractId,
             matched_startup_id: startupId,
@@ -354,6 +401,7 @@ Deno.serve(async (req) => {
             committed_at: new Date().toISOString(),
             committed_by: userData.user.id,
           }).eq("id", row.id);
+          if (rowDoneErr) throw new Error(`Row finalize failed: ${rowDoneErr.message}`);
         }
 
         committedCount++;
@@ -363,7 +411,7 @@ Deno.serve(async (req) => {
         errors.push({ row_id: row.id, error: msg });
         if (!dryRun) {
           await admin.from("bulk_import_rows").update({
-            status: "error",
+            status: wroteData ? "error" : row.status,
             error_message: msg,
           }).eq("id", row.id);
         }
@@ -385,7 +433,8 @@ Deno.serve(async (req) => {
       committed: dryRun ? 0 : committedCount,
       planned: dryRun ? committedCount : undefined,
       failed: failedCount,
-      row_count: (rows || []).length,
+      row_count: fetchedRows?.length ?? 0,
+      skipped_unauthorized: unauthorizedRowIds,
       planned_writes: plannedWrites,
       errors,
     });

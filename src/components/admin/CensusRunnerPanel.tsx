@@ -16,6 +16,7 @@ import { PlayCircle, Loader2, Download, AlertTriangle, Database } from 'lucide-r
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { notify } from '@/lib/notify';
 import { useLogActivity } from '@/hooks/useActivityLog';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface ExceptionEntry {
   row_count: number;
@@ -147,7 +148,7 @@ export function CensusRunnerPanel() {
             </AlertTitle>
             <AlertDescription className="space-y-3">
               <div className="text-xs text-muted-foreground">
-                {new Date(result.generated_at).toLocaleString()}
+                {new Date(result.generated_at).toLocaleString(getIntlLocale())}
               </div>
 
               <div>

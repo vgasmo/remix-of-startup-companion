@@ -101,12 +101,16 @@ export function MonthlyCheckinBanner({ workspaceId }: MonthlyCheckinBannerProps)
       }
     });
 
-    await submitCheckin.mutateAsync({
-      instanceId: pendingCheckin.id,
-      responses: payload,
-      // Pass workspaceId so activity_log + consultant Teams notification fire.
-      workspaceId,
-    });
+    try {
+      await submitCheckin.mutateAsync({
+        instanceId: pendingCheckin.id,
+        responses: payload,
+        // Pass workspaceId so activity_log + consultant Teams notification fire.
+        workspaceId,
+      });
+    } catch {
+      return; // o onError do hook já avisou; manter o diálogo aberto com as respostas
+    }
     showQuickWin('monthly_wins_submitted');
     setShowForm(false);
     setResponses({});
@@ -115,7 +119,11 @@ export function MonthlyCheckinBanner({ workspaceId }: MonthlyCheckinBannerProps)
   };
 
   const handleSkip = async () => {
-    await skipCheckin.mutateAsync(pendingCheckin.id);
+    try {
+      await skipCheckin.mutateAsync(pendingCheckin.id);
+    } catch {
+      /* o onError do hook já avisou */
+    }
   };
 
   const kpiDefsMap = new Map(kpiDefinitions?.map(k => [k.id, k]) || []);

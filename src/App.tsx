@@ -189,6 +189,12 @@ function IntegrationsSetupRedirect() {
   return <Navigate to="/settings?tab=integrations" replace />;
 }
 
+/** Notifications written by the DB/edge functions link to /dashboard?pulse=... and /dashboard. */
+function LegacyDashboardRedirect() {
+  const location = useLocation();
+  return <Navigate to={`/my-workspaces${location.search}`} replace />;
+}
+
 function LegacyMessagesRedirect() {
   const location = useLocation();
   return <Navigate to={legacyConversationLink(location.search)} replace />;
@@ -217,6 +223,7 @@ function AppRoutes() {
         <Route path="/" element={<Navigate to="/my-workspaces" replace />} />
         <Route path="/my-workspaces" element={<ProtectedRoute><MyWorkspaces /></ProtectedRoute>} />
         <Route path="/messages" element={<LegacyMessagesRedirect />} />
+        <Route path="/dashboard" element={<LegacyDashboardRedirect />} />
         <Route path="/workspace/:id" element={<ProtectedRoute><WorkspaceDetail /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="/mentors" element={<ProtectedRoute><Mentors /></ProtectedRoute>} />

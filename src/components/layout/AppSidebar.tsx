@@ -170,7 +170,7 @@ export function AppSidebar() {
   const { data: bofBadges } = useBackofficeSidebarBadges(backofficeBadgesEnabled);
   const backofficeNavigation: NavItem[] = [
     { name: t('nav.backoffice.cockpit', { defaultValue: 'Painel' }), href: '/staff-cockpit', icon: Home, exact: true },
-    { name: t('nav.backoffice.spaces', { defaultValue: 'Espaços' }), href: '/admin?tab=backoffice', icon: Building2 },
+    { name: t('nav.backoffice.spaces', { defaultValue: 'Espaços' }), href: '/admin?tab=backoffice&subtab=spaces', icon: Building2 },
     { name: t('nav.backoffice.contracts', { defaultValue: 'Contratos' }), href: '/admin?tab=backoffice&subtab=contracts', icon: FileText, badge: bofBadges?.expiringContracts },
     // Billing/Invoices removed from nav per user request
     { name: t('nav.backoffice.approvals', { defaultValue: 'Aprovações' }), href: '/admin?tab=approvals', icon: Clock, badge: bofBadges?.pendingApprovals },
@@ -407,7 +407,7 @@ export function AppSidebar() {
           size="icon"
           onClick={() => setCollapsed(!collapsed)}
           className="absolute -right-3 top-20 h-6 w-6 rounded-full border border-sidebar-border bg-sidebar-background text-sidebar-foreground hover:bg-sidebar-accent shadow-md z-50"
-         aria-label={t('common.next')}>
+         aria-label={collapsed ? t('accessibility.expandSidebar') : t('accessibility.collapseSidebar')}>
           {collapsed ? (
             <ChevronRight className="h-3 w-3" />
           ) : (

@@ -29,6 +29,7 @@ import { ChevronsUpDown } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { WorkspaceAssignmentDialog } from './WorkspaceAssignmentDialog';
+import { QueryErrorAlert } from './QueryErrorAlert';
 
 import { StartupStage } from '@/types/database';
 
@@ -74,6 +75,12 @@ interface PendingClaim {
   created_at: string;
   user_name: string | null;
   user_avatar: string | null;
+}
+
+// Approving/rejecting changes the numbers shown elsewhere (sidebar badge, pulse card, admin dashboard).
+const COUNTER_KEYS = [['backoffice', 'sidebar-badges'], ['admin-ecosystem-pulse'], ['admin-dashboard-stats']] as const;
+function invalidateCounters(queryClient: ReturnType<typeof useQueryClient>) {
+  COUNTER_KEYS.forEach((queryKey) => queryClient.invalidateQueries({ queryKey: [...queryKey] }));
 }
 
 function usePendingWorkspaces() {
@@ -226,6 +233,7 @@ function useApproveWorkspace() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      invalidateCounters(queryClient);
     },
     onError: (e) => notify.error(t('admin.failedToApprove', { message: e.message })),
   });
@@ -245,6 +253,7 @@ function useRejectWorkspace() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-workspaces'] });
+      invalidateCounters(queryClient);
     },
     onError: (e) => notify.error(t('admin.failedToReject', { message: e.message })),
   });
@@ -255,9 +264,9 @@ export function PendingApprovalsManager() {
   const dateLocale = useDateLocale();
   const queryClient = useQueryClient();
   const { isAdmin, isConsultor } = useAuth();
-  const { data: pendingWorkspaces, isLoading: loadingWs } = usePendingWorkspaces();
-  const { data: pendingUsers, isLoading: loadingUsers } = usePendingUsers();
-  const { data: pendingClaims, isLoading: loadingClaims } = usePendingClaims();
+  const { data: pendingWorkspaces, isLoading: loadingWs, isError: errorWs, refetch: refetchWs } = usePendingWorkspaces();
+  const { data: pendingUsers, isLoading: loadingUsers, isError: errorUsers, refetch: refetchUsers } = usePendingUsers();
+  const { data: pendingClaims, isLoading: loadingClaims, isError: errorClaims, refetch: refetchClaims } = usePendingClaims();
   const { data: availableWorkspaces } = useAvailableWorkspaces();
   const approveWorkspace = useApproveWorkspace();
   const rejectWorkspace = useRejectWorkspace();
@@ -300,6 +309,7 @@ export function PendingApprovalsManager() {
     }
     notify.success(t('admin.contaAprovadaComSucesso'));
     queryClient.invalidateQueries({ queryKey: ['pending-user-accounts'] });
+    invalidateCounters(queryClient);
   };
 
   const handleSuspendUser = async (userId: string) => {
@@ -316,6 +326,7 @@ export function PendingApprovalsManager() {
     }
     notify.success(t('admin.contaSuspensa'));
     queryClient.invalidateQueries({ queryKey: ['pending-user-accounts'] });
+    invalidateCounters(queryClient);
   };
 
 
@@ -336,6 +347,7 @@ export function PendingApprovalsManager() {
       queryClient.invalidateQueries({ queryKey: ['pending-claim-requests'] });
       queryClient.invalidateQueries({ queryKey: ['pending-user-accounts'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      invalidateCounters(queryClient);
       resetClaimDialog();
     } catch (e: any) {
       notify.error(t('admin.erroAoAprovarClaim', { message: e.message }));
@@ -361,6 +373,7 @@ export function PendingApprovalsManager() {
       queryClient.invalidateQueries({ queryKey: ['pending-claim-requests'] });
       queryClient.invalidateQueries({ queryKey: ['pending-user-accounts'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      invalidateCounters(queryClient);
       resetClaimDialog();
     } catch (e: any) {
       notify.error(t('admin.erroAoCriarWorkspace', { message: e.message }));
@@ -388,12 +401,16 @@ export function PendingApprovalsManager() {
       if (error) throw error;
       notify.success(t('admin.claimRejeitado'));
       queryClient.invalidateQueries({ queryKey: ['pending-claim-requests'] });
+      invalidateCounters(queryClient);
     } catch (e: any) {
       notify.error(t('admin.erro', { message: e.message }));
     }
   };
 
   const isLoading = loadingWs || loadingUsers || loadingClaims;
+  // A failed read must never look like "no pending applications" (accounts would be left unapproved).
+  const loadFailed = errorWs || errorUsers || errorClaims;
+  const retryAll = () => { void refetchWs(); void refetchUsers(); void refetchClaims(); };
   const hasWorkspaces = !!pendingWorkspaces?.length;
   const hasUsers = !!pendingUsers?.length;
   const hasClaims = !!pendingClaims?.length;
@@ -406,6 +423,10 @@ export function PendingApprovalsManager() {
         <Skeleton className="h-32 w-full" />
       </div>
     );
+  }
+
+  if (loadFailed && totalPending === 0) {
+    return <QueryErrorAlert onRetry={retryAll} />;
   }
 
   if (!hasWorkspaces && !hasUsers && !hasClaims) {
@@ -424,11 +445,12 @@ export function PendingApprovalsManager() {
 
   return (
     <div className="space-y-6">
+      {loadFailed && <QueryErrorAlert onRetry={retryAll} />}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">{t('admin.pendingApprovals', { defaultValue: 'Aprovações Pendentes' })}</h2>
           <p className="text-sm text-muted-foreground">
-            {totalPending} {totalPending === 1 ? 'item pendente' : 'itens pendentes'}
+            {t('admin.pendingItems', { count: totalPending, defaultValue: '{{count}} itens pendentes' })}
           </p>
         </div>
         <Badge variant="secondary" className="text-sm">
@@ -462,7 +484,7 @@ export function PendingApprovalsManager() {
                         <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium text-sm">{user.full_name || 'Sem nome'}</p>
+                        <p className="font-medium text-sm">{user.full_name || t('common.noName', 'Sem nome')}</p>
                         {user.signup_startup_name && (
                           <p className="text-xs font-medium text-primary flex items-center gap-1">
                             <Building2 className="h-3 w-3" />
@@ -547,14 +569,14 @@ export function PendingApprovalsManager() {
                         <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium text-sm">{claim.user_name || 'Sem nome'}</p>
+                        <p className="font-medium text-sm">{claim.user_name || t('common.noName', 'Sem nome')}</p>
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
                           <Mail className="h-3 w-3" />
                           {claim.user_email}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant="outline" className="text-xs">
-                            {claim.match_method === 'manual_request' ? 'Pedido manual' : claim.match_method}
+                            {claim.match_method === 'manual_request' ? t('admin.pendingClaimManual', 'Pedido manual') : claim.match_method}
                           </Badge>
                           <span className="text-xs text-muted-foreground">
                             {timeAgo(new Date(claim.created_at))}
@@ -710,7 +732,7 @@ export function PendingApprovalsManager() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="text-sm">
-              <span className="font-medium">{assignClaimTarget?.user_name || 'Sem nome'}</span>
+              <span className="font-medium">{assignClaimTarget?.user_name || t('common.noName', 'Sem nome')}</span>
               <span className="text-muted-foreground ml-1">({assignClaimTarget?.user_email})</span>
             </div>
 
@@ -754,7 +776,11 @@ export function PendingApprovalsManager() {
                                 ? t('admin.wsStatusActive', 'Ativo')
                                 : ws.status === 'imported_unclaimed'
                                   ? t('admin.wsStatusUnclaimed', 'Sem founder')
-                                  : ws.status;
+                                  : ws.status === 'pending'
+                                    ? t('admin.wsStatusPending', 'Pendente')
+                                    : ws.status === 'claimed'
+                                      ? t('admin.wsStatusClaimed', 'Reivindicado')
+                                      : ws.status;
                               return (
                                 <CommandItem
                                   key={ws.id}
@@ -789,7 +815,7 @@ export function PendingApprovalsManager() {
                     id="new-startup-name"
                     value={newStartupName}
                     onChange={(e) => setNewStartupName(e.target.value)}
-                    placeholder="Nome da startup..."
+                    placeholder={t('admin.newStartupNamePlaceholder', 'Nome da startup...')}
                   />
                 </div>
                 <div className="space-y-2">
@@ -798,7 +824,7 @@ export function PendingApprovalsManager() {
                     id="new-startup-desc"
                     value={newStartupDesc}
                     onChange={(e) => setNewStartupDesc(e.target.value)}
-                    placeholder="Breve descrição..."
+                    placeholder={t('admin.newStartupDescPlaceholder', 'Breve descrição...')}
                     rows={2}
                   />
                 </div>
@@ -807,7 +833,7 @@ export function PendingApprovalsManager() {
                     <Label>{t('common.program', 'Programa *')}</Label>
                     <Select value={newProgramId} onValueChange={setNewProgramId}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Programa..." />
+                        <SelectValue placeholder={t('admin.programPlaceholder', 'Programa...')} />
                       </SelectTrigger>
                       <SelectContent>
                         {programs?.map((p) => (

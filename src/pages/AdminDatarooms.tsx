@@ -89,6 +89,9 @@ export default function AdminDatarooms() {
         .select('user_id, accepted_at, nda_version')
         .in('user_id', userIds)
         .eq('nda_version', CURRENT_NDA_VERSION);
+
+      // A failed NDA read must not turn every mentor into "NDA pending".
+      if (ndaError) throw ndaError;
       
       // Combine data
       return (profiles || []).map(p => ({
@@ -149,7 +152,8 @@ export default function AdminDatarooms() {
         .eq('user_id', userId)
         .eq('role', 'mentor_externo');
       
-      // Ignore workspace_users error (may not exist)
+      // The role delete above is idempotent, so a retry after a failure here is safe.
+      if (wsError) throw wsError;
     },
     onSuccess: () => {
       notify.success(t('admin.mentorRemoved'));

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -18,8 +18,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspaces } from '@/hooks/useWorkspaces';
 import { useCopilotChat } from '@/hooks/useCopilotChat';
 import { cn } from '@/lib/utils';
-import ReactMarkdown from 'react-markdown';
-import { sanitizeUrl } from '@/lib/sanitizeUrl';
+
+// react-markdown (+ unified/micromark) is only needed in Copilot mode: load it on demand.
+const CopilotMarkdown = lazy(() => import('./CopilotMarkdown'));
 
 const typeIcons: Record<string, React.ReactNode> = {
   session: <Calendar className="h-4 w-4 text-muted-foreground" />,
@@ -128,11 +129,12 @@ export function CommandPalette() {
       { id: 'crm', label: t('nav.crm'), icon: <Briefcase className="h-4 w-4" />, path: '/crm' },
       { id: 'admin', label: t('nav.adminPanel'), icon: <Building2 className="h-4 w-4" />, path: '/admin' },
       { id: 'contracts', label: t('nav.backoffice.contracts', { defaultValue: 'Contratos' }), icon: <FileText className="h-4 w-4" />, path: '/admin?tab=backoffice&subtab=contracts' },
-      { id: 'spaces', label: t('nav.backoffice.spaces', { defaultValue: 'Espaços' }), icon: <Building2 className="h-4 w-4" />, path: '/admin?tab=backoffice' },
+      { id: 'spaces', label: t('nav.backoffice.spaces', { defaultValue: 'Espaços' }), icon: <Building2 className="h-4 w-4" />, path: '/admin?tab=backoffice&subtab=spaces' },
       { id: 'leads', label: t('nav.admin.crmPipeline', { defaultValue: 'CRM & Leads' }), icon: <Users className="h-4 w-4" />, path: '/crm' },
     );
   }
-  if (isStaff || isMentor) {
+  // /mentors only renders for admin/consultor (and mentors); backoffice (isStaff) would hit "Acesso restrito".
+  if (isAdmin || isConsultor || isMentor) {
     navItems.push(
       { id: 'mentors', label: t('nav.mentors'), icon: <Users className="h-4 w-4" />, path: '/mentors' },
     );
@@ -157,6 +159,11 @@ export function CommandPalette() {
     document: t('search.types.documents'),
     message: t('search.types.messages'),
     milestone: t('search.types.milestones'),
+    startup: t('search.types.startups'),
+    workspace: t('search.types.workspaces'),
+    contract: t('search.types.contracts'),
+    lead: t('search.types.leads'),
+    person: t('search.types.people'),
   };
 
   const buildSearchContextPrompt = useCallback((rawQuery: string) => {
@@ -187,7 +194,9 @@ export function CommandPalette() {
 
   const hasSearchResults = searchResults && searchResults.length > 0;
   const showQuickActions = !query && quickActions.length > 0 && !copilotMode;
-  const showNav = (!query || query.length < 2) && !copilotMode;
+  // shouldFilter={false}: cmdk no longer filters, so the (client-side only) navigation list is filtered here.
+  const visibleNavItems = navItems.filter(item => !query.trim() || item.label.toLowerCase().includes(query.trim().toLowerCase()));
+  const showNav = (!query || query.length < 2) && !copilotMode && visibleNavItems.length > 0;
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
@@ -212,7 +221,7 @@ export function CommandPalette() {
   const showRecents = !query && !copilotMode && recentItems.length > 0;
 
   return (
-    <CommandDialog open={open} onOpenChange={handleOpenChange}>
+    <CommandDialog open={open} onOpenChange={handleOpenChange} shouldFilter={false}>
       <CommandInput
         placeholder={copilotMode
           ? t('commandPalette.copilotPlaceholder', { defaultValue: 'Ask the Ecosystem Copilot…' })
@@ -260,37 +269,18 @@ export function CommandPalette() {
               >
                 {m.role === 'assistant' ? (
                   <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 prose-headings:my-2 prose-pre:my-2 prose-a:text-primary">
-                    <ReactMarkdown
-                      components={{
-                        a: ({ href, children, ...props }) => {
-                          const safe = sanitizeUrl(href);
-                          if (!safe) return <span>{children}</span>;
-                          const isExternal = safe.startsWith('http');
-                          return (
-                            <a
-                              {...props}
-                              href={safe}
-                              target={isExternal ? '_blank' : undefined}
-                              rel={isExternal ? 'noopener noreferrer' : undefined}
-                              onClick={(e) => {
-                                if (!isExternal && safe.startsWith('/')) {
-                                  e.preventDefault();
-                                  navigate(safe);
-                                  setOpen(false);
-                                  setQuery('');
-                                  setCopilotMode(false);
-                                  copilot.reset();
-                                }
-                              }}
-                            >
-                              {children}
-                            </a>
-                          );
-                        },
-                      }}
-                    >
-                      {m.content}
-                    </ReactMarkdown>
+                    <Suspense fallback={<p className="whitespace-pre-wrap">{m.content}</p>}>
+                      <CopilotMarkdown
+                        content={m.content}
+                        onNavigate={(path) => {
+                          navigate(path);
+                          setOpen(false);
+                          setQuery('');
+                          setCopilotMode(false);
+                          copilot.reset();
+                        }}
+                      />
+                    </Suspense>
                   </div>
                 ) : (
                   m.content
@@ -397,6 +387,7 @@ export function CommandPalette() {
                 {items.slice(0, 5).map(result => (
                   <CommandItem
                     key={result.id}
+                    value={`${result.type}:${result.id}`}
                     onSelect={() => runAction(result.url, result.title, result.type)}
                     className="flex items-center gap-3"
                   >
@@ -436,7 +427,7 @@ export function CommandPalette() {
               <>
                 <CommandSeparator />
                 <CommandGroup heading={t('commandPalette.navigation')}>
-                  {navItems.map(item => (
+                  {visibleNavItems.map(item => (
                     <CommandItem key={item.id} onSelect={() => runAction(item.path, item.label, 'nav')} className="gap-3">
                       {item.icon}
                       <span>{item.label}</span>

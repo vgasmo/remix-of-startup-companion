@@ -141,23 +141,19 @@ export function useDeleteStage() {
   });
 }
 
-// Profiles (Users) - paginated
-export function useProfiles(page: number = 0, pageSize: number = 50) {
+// Profiles (Users) - all rows (PostgREST caps a single response at 1000)
+export function useAllProfiles() {
   return useQuery({
-    queryKey: ['admin-profiles', page, pageSize],
-    queryFn: async () => {
-      const from = page * pageSize;
-      const to = from + pageSize - 1;
-      
-      const { data, error, count } = await supabase
-        .from('profiles')
-        .select('id, email, full_name, avatar_url, created_at, account_status', { count: 'exact' })
-        .order('full_name', { ascending: true })
-        .range(from, to);
-      
-      if (error) throw error;
-      return { data: data || [], count: count || 0, page, pageSize };
-    },
+    queryKey: ['admin-profiles', 'all'],
+    queryFn: () =>
+      fetchAllRows((from, to) =>
+        supabase
+          .from('profiles')
+          .select('id, email, full_name, avatar_url, created_at, account_status')
+          .order('full_name', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to),
+      ),
   });
 }
 
@@ -165,13 +161,14 @@ export function useProfiles(page: number = 0, pageSize: number = 50) {
 export function useUserRoles() {
   return useQuery({
     queryKey: ['admin-user-roles'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('id, user_id, role');
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () =>
+      fetchAllRows((from, to) =>
+        supabase
+          .from('user_roles')
+          .select('id, user_id, role')
+          .order('id', { ascending: true })
+          .range(from, to),
+      ),
   });
 }
 

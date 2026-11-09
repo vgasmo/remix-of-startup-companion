@@ -96,6 +96,7 @@ type Insert = { table: string; row: Record<string, unknown> };
 function updateChain(result: { data: { id: string } | null; error: { message: string } | null }) {
   const chain = {
     eq: (_key: string, _value: unknown) => chain,
+    lt: (_key: string, _value: unknown) => chain,
     select: (_fields: string) => chain,
     maybeSingle: async () => result,
     then: (resolve: (value: typeof result) => unknown) => Promise.resolve(result).then(resolve),

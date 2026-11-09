@@ -121,7 +121,8 @@ Deno.serve(async (req) => {
       const body = JSON.parse(rawBody)
       rawPayload = body
       envelopeId = body.data?.envelopeId || body.envelopeId
-      status = body.data?.envelopeSummary?.status || body.event
+      // RC12: um evento nao mapeado nunca grava o texto cru; o estado do envelopeSummary so serve quando nao ha evento
+      status = body.event ? null : (body.data?.envelopeSummary?.status || null)
       // Provider-issued id ONLY. No Date.now fallback — dedupe falls back to
       // the payload hash inside the webhook inbox.
       eventId = body.data?.eventId || null
@@ -170,6 +171,11 @@ Deno.serve(async (req) => {
       })
     }
 
+    // RC12: estados crus do DocuSign (sent/delivered) passam para os canonicos; o resto e ignorado mais abaixo
+    const RAW_STATUS: Record<string, string> = { sent: 'sent_for_signature', delivered: 'viewed' }
+    const KNOWN_ENVELOPE_STATUSES = new Set(['sent_for_signature', 'viewed', 'completed', 'declined', 'voided'])
+    if (typeof status === 'string') status = RAW_STATUS[status.toLowerCase()] ?? status.toLowerCase()
+
     // Compute stable payload hash for inbox fallback dedupe.
     const payloadHash = await sha256Hex(rawBody)
 
@@ -197,6 +203,16 @@ Deno.serve(async (req) => {
       })
     }
 
+    // RC12: eventos sem mapeamento (envelope-resent, envelope-corrected, envelope-deleted, recipient-* nao mapeados...)
+    // nao tocam no contrato: nunca gravam texto cru em signature_status
+    if (!(typeof status === 'string' && (status.startsWith('recipient:') || KNOWN_ENVELOPE_STATUSES.has(status)))) {
+      await markInboxProcessed(supabase, claim.inboxId, {
+        status: 'processed', httpStatus: 200, errorMessage: `ignored_event_${String(status).slice(0, 60)}`,
+      })
+      return new Response(JSON.stringify({ ok: true, ignored: String(status) }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     // Find the contract — use PostgREST alias syntax (SQL "as" is invalid here).
     const { data: contract, error: findError } = await supabase
@@ -382,6 +398,7 @@ Deno.serve(async (req) => {
 
     // === CANONICAL LIFECYCLE SYNC (shared helper) ===
     let resolvedWorkspaceId = contract.workspace_id
+    let founderEnsured = false
     if (status === 'sent_for_signature') {
       const r = await syncIntakeOnSent(supabase, contract.id, null, `docusign_webhook`)
       await handleLifecycleSyncResult(supabase, r, {
@@ -391,22 +408,27 @@ Deno.serve(async (req) => {
     } else if (status === 'completed') {
       const r = await syncIntakeOnCompleted(supabase, contract.id, contract.workspace_id, null, `docusign_webhook`)
       resolvedWorkspaceId = r.workspaceId ?? contract.workspace_id
+      founderEnsured = r.founderEnsured === true
       await handleLifecycleSyncResult(supabase, r, {
         contractId: contract.id, workspaceId: contract.workspace_id,
         source: 'docusign_webhook_completed', operation: 'completed',
       })
-      if (contract.workspace_id) {
+      // RC12: usa o workspace resolvido pela sincronizacao (criado na assinatura), nao o lido antes dela
+      if (resolvedWorkspaceId) {
         try {
           const cronSecret = Deno.env.get('CRON_SECRET') ?? ''
           const invokeOpts = { headers: { 'x-cron-secret': cronSecret } }
           await supabase.functions.invoke('send-notification-email', {
-            body: { type: 'contract_signed', workspace_id: contract.workspace_id, contract_id: contract.id },
+            body: { type: 'contract_signed', workspace_id: resolvedWorkspaceId, contract_id: contract.id },
             ...invokeOpts,
           })
-          await supabase.functions.invoke('send-notification-email', {
-            body: { type: 'contract_activated', workspace_id: contract.workspace_id, contract_id: contract.id },
-            ...invokeOpts,
-          })
+          // 'ativado' so se a ativacao nao ficou adiada a espera do founder
+          if (!r.awaitingFounder) {
+            await supabase.functions.invoke('send-notification-email', {
+              body: { type: 'contract_activated', workspace_id: resolvedWorkspaceId, contract_id: contract.id },
+              ...invokeOpts,
+            })
+          }
         } catch (e) {
           console.warn('docusign-webhook: contract_signed/activated notification failed', String(e))
         }
@@ -441,7 +463,7 @@ Deno.serve(async (req) => {
     }
 
     // === AUTO-REGISTRATION on completion ===
-    if (status === 'completed' && contract.legal_representative_email) {
+    if (status === 'completed' && contract.legal_representative_email && !founderEnsured) {
       const acctRes = await sharedCreateFounder(supabase, {
         id: contract.id,
         workspace_id: resolvedWorkspaceId,
@@ -479,7 +501,7 @@ Deno.serve(async (req) => {
             message: `O contrato ${contract.id.slice(0, 8)} foi assinado por ${contract.legal_representative_name || 'founder'} via DocuSign.`,
             entity_type: 'contract',
             entity_id: contract.id,
-            link: '/admin?tab=contracts',
+            link: '/admin?tab=backoffice&subtab=contracts',
           }))
         )
       }
@@ -490,7 +512,7 @@ Deno.serve(async (req) => {
         entity_type: 'contract',
         entity_id: contract.id,
         action: 'digitally_signed',
-        workspace_id: contract.workspace_id,
+        workspace_id: resolvedWorkspaceId,
         metadata: { envelope_id: envelopeId, provider: 'docusign', event_id: eventId },
       })
     }

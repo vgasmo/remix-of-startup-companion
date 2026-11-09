@@ -124,16 +124,32 @@ export function CrmBulkActions({
           
           const { data: currentItems, error: fetchErr } = await supabase
             .from('funnel_items')
-            .select('id, stage')
+            .select('id, stage, linked_workspace_id')
             .in('id', ids);
           if (fetchErr) throw fetchErr;
 
-          const stageMap = new Map<string, unknown>(currentItems?.map(i => [i.id, i.stage]) || []);
+          // 'Contratado' (e as fases operacionais) só por conversão atómica (ficha da lead ou arrastar):
+          // exige programa e cria startup + workspace. Em massa só avançam leads que já têm workspace.
+          const needsConversion = newStage === 'contracted' || newStage === 'incubating' || newStage === 'accelerating';
+          const movable = needsConversion
+            ? (currentItems ?? []).filter(i => i.linked_workspace_id)
+            : (currentItems ?? []);
+          const skipped = (currentItems?.length ?? 0) - movable.length;
+          if (skipped > 0) {
+            notify.warn(t('crm.bulk.contractedNeedsConversion', {
+              count: skipped,
+              defaultValue: '{{count}} lead(s) sem workspace não foram movidas: converta-as individualmente (ficha da lead ou arrastar para Contratado).',
+            }));
+          }
+          if (movable.length === 0) return;
+          const moveIds = movable.map(i => i.id);
+
+          const stageMap = new Map<string, unknown>(movable.map(i => [i.id, i.stage]));
 
           const { error } = await supabase
             .from('funnel_items')
             .update({ stage: newStage, updated_at: new Date().toISOString() })
-            .in('id', ids);
+            .in('id', moveIds);
 
           if (error) throw error;
 
@@ -141,7 +157,7 @@ export function CrmBulkActions({
           const { data: authData } = await supabase.auth.getUser();
           const performedBy = authData.user?.id ?? null;
           let eventFailures = 0;
-          for (const id of ids) {
+          for (const id of moveIds) {
             const oldStage = stageMap.get(id) as string | undefined;
 
             const { error: evErr } = await supabase.from('funnel_events').insert({
@@ -167,12 +183,12 @@ export function CrmBulkActions({
           if (eventFailures > 0) {
             notify.warn(t('crm.bulk.partialEventFailures', {
               count: eventFailures,
-              total: ids.length,
-              defaultValue: `${eventFailures}/${ids.length} eventos não registados. O histórico pode estar incompleto.`,
+              total: moveIds.length,
+              defaultValue: `${eventFailures}/${moveIds.length} eventos não registados. O histórico pode estar incompleto.`,
             }));
           }
 
-          notify.success(t('crm.bulk.moveSuccess', { count: selectedCount, stage: stageLabel }), {
+          notify.success(t('crm.bulk.moveSuccess', { count: moveIds.length, stage: stageLabel }), {
             duration: 8000,
             action: {
               label: t('common.undo'),

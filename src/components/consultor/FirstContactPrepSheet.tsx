@@ -40,7 +40,7 @@ function usePrepData(workspaceId: string) {
         supabase.from('workspaces').select('id, status, stage, health_score, created_at, program_id, startup_id, programs(name), startups_safe(name, description, main_contact_email, website, nif)').eq('id', workspaceId).maybeSingle(),
         supabase.from('documents').select('id, name, category, document_type').eq('workspace_id', workspaceId),
         supabase.from('kpi_values').select('id, kpi_definition_id, value, period_month, kpi_definitions(name, unit)').eq('workspace_id', workspaceId).order('period_month', { ascending: false }).limit(10),
-        supabase.from('workspace_users').select('user_id, role, profiles_safe(full_name, email)').eq('workspace_id', workspaceId).eq('active', true),
+        supabase.from('workspace_users').select('user_id, role').eq('workspace_id', workspaceId).eq('active', true),
         supabase.from('action_items').select('id, title, status, due_date').eq('workspace_id', workspaceId).limit(20),
         supabase.from('milestones').select('id, title, status, target_date').eq('workspace_id', workspaceId).is('archived_at', null).limit(10),
         supabase.from('sessions').select('id, title, scheduled_at').eq('workspace_id', workspaceId).order('scheduled_at', { ascending: false }).limit(3),
@@ -56,13 +56,28 @@ function usePrepData(workspaceId: string) {
 
       const wsData = pick<any>(0, null);
 
+      // workspace_users -> profiles_safe has no FK (an embed fails with PGRST200): resolve names separately.
+      const memberRows = pick<any[]>(3, []);
+      let memberProfiles: any[] = [];
+      if (memberRows.length > 0) {
+        const { data: profs } = await supabase
+          .from('profiles_safe')
+          .select('id, full_name, email')
+          .in('id', memberRows.map((m: any) => m.user_id));
+        memberProfiles = profs || [];
+      }
+      const members = memberRows.map((m: any) => ({
+        ...m,
+        profiles_safe: memberProfiles.find((p: any) => p.id === m.user_id) ?? null,
+      }));
+
       return {
         workspace: wsData,
         startup: (wsData as any)?.startups_safe ?? (wsData as any)?.startups,
         program: (wsData as any)?.programs,
         documents: pick<any[]>(1, []),
         kpis: pick<any[]>(2, []),
-        members: pick<any[]>(3, []),
+        members,
         actions: pick<any[]>(4, []),
         milestones: pick<any[]>(5, []),
         sessions: pick<any[]>(6, []),
@@ -115,8 +130,6 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
     if (!data) return [];
     const items: string[] = [];
     const s = data.startup;
-    if (!s?.sector) items.push('Setor/Indústria');
-    if (!s?.business_model) items.push('Modelo de Negócio');
     if (!s?.website) items.push('Website');
     if (data.documents.length === 0) items.push('Documentos (pitch deck, modelo financeiro)');
     if (data.kpis.length === 0) items.push('KPIs/Métricas');
@@ -133,7 +146,7 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
     qs.push('Qual o problema principal que estão a resolver?');
     qs.push('Quem é o vosso cliente ideal (ICP)?');
     
-    if (!data.startup?.business_model) qs.push('Qual é o modelo de receita?');
+    qs.push('Qual é o modelo de receita?');
     if (data.kpis.length === 0) qs.push('Que métricas estão a acompanhar atualmente?');
     
     if (stage === 'ideation') {
@@ -175,7 +188,6 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
     const founders = members.filter((m: any) => m.role === 'founder');
     
     if (founders.length === 1) items.push('Fundador único — risco de person dependency');
-    if (data.startup?.sector && !data.startup?.business_model) items.push('Setor definido mas sem modelo de negócio claro');
     if (data.kpis.length === 0) items.push('Sem métricas registadas — dificuldade em medir progresso');
     if (data.documents.length === 0) items.push('Sem documentação — preparação pode ser insuficiente');
     if (data.workspace?.stage === 'ideation') items.push('Fase de ideação — alto risco de pivotação');
@@ -193,8 +205,6 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
       `Contacto: ${s?.main_contact_email || '—'}`,
       '',
       '## O que sabemos',
-      `Setor: ${s?.sector || '?'}`,
-      `Modelo: ${s?.business_model || '?'}`,
       `Website: ${s?.website || '?'}`,
       `Membros: ${data.members.length}`,
       `Documentos: ${data.documents.length}`,
@@ -258,8 +268,6 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
                       <InfoRow label="Nome" value={data.startup?.name} />
                       <InfoRow label="Programa" value={data.program?.name} missing="Sem programa" />
                       <InfoRow label="Fase" value={STAGE_LABELS[data.workspace?.stage || ''] || data.workspace?.stage} />
-                      <InfoRow label="Setor" value={data.startup?.sector} missing="Perguntar" />
-                      <InfoRow label="Modelo" value={data.startup?.business_model} missing="Perguntar" />
                       <InfoRow label="Website" value={data.startup?.website} missing="Não fornecido" />
                       <InfoRow label="NIF" value={data.startup?.nif} missing="Não fornecido" />
                     </CardContent>

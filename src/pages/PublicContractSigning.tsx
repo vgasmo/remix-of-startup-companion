@@ -263,6 +263,8 @@ export default function PublicContractSigning() {
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+      // O servidor responde 207 quando o ficheiro foi guardado mas os metadados não: não mostrar como carregado
+      if (data?.warning === 'metadata_persist_failed') throw new Error(t('publicContract.errors.uploadFailed'));
 
       setUploadedDocs(prev => ({
         ...prev,
@@ -483,10 +485,12 @@ export default function PublicContractSigning() {
       await autosave.flush();
       await persistFormDataServer(formData as unknown as Record<string, unknown>);
       const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
-        body: { action: 'submit_signing', token, formData },
+        body: { action: 'submit_signing', token, formData, regulationAccepted },
       });
       if (error) throw new Error((await serverErrorMessage(error)) || error.message);
       if (data?.error) throw new Error(data.error);
+      // O fornecedor de assinatura não aceitou o envio (o servidor devolve 200 com status 'failed')
+      if (data?.status === 'failed') throw new Error(t('publicContract.errors.sendSigningFailed'));
       return data;
     },
     onSuccess: () => {

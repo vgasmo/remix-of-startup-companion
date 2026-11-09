@@ -23,6 +23,7 @@ import { useGetDocumentUrl } from '@/hooks/useDocuments';
 import { useTemplates } from '@/hooks/useTemplates';
 import { getLocalizedTemplateMeta } from '@/lib/templateCatalogI18n';
 import { notify } from "@/lib/notify";
+import { safeExternalHref } from '@/lib/sanitizeUrl';
 
 const DOCUMENT_CATEGORY_KEYS = [
   'all', 'pitch_deck', 'financial_model', 'legal', 'marketing', 'product', 'team', 'other',
@@ -97,7 +98,12 @@ export default function Documents() {
 
   const handleOpen = async (doc: AggregatedDocument) => {
     if (doc.external_url) {
-      window.open(doc.external_url, '_blank', 'noopener,noreferrer');
+      const safe = safeExternalHref(doc.external_url);
+      if (!safe) {
+        notify.error(t('documents.invalidLink', { defaultValue: 'Ligação inválida ou não permitida.' }));
+        return;
+      }
+      window.open(safe, '_blank', 'noopener,noreferrer');
       return;
     }
     if (doc.file_path) {

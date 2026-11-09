@@ -5,6 +5,7 @@
  * Signer 2: Startup Leiria Representative (counter-signer)
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { isAccountActive } from '../_shared/security.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -52,6 +53,12 @@ Deno.serve(async (req) => {
       )
       if (!isStaff) {
         return new Response(JSON.stringify({ error: 'Staff access required' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      // RC12: staff suspenso ou pendente mantem user_roles e JWT valido; esta funcao usa service role
+      if (!(await isAccountActive(supabase, user.id))) {
+        return new Response(JSON.stringify({ error: 'Account access denied' }), {
           status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }

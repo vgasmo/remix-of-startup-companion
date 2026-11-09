@@ -77,6 +77,45 @@ function validateIntakeForm(fd: any): { ok: true } | { ok: false; error: string 
 }
 
 
+// RC12: falha (ou resposta ambígua) do fornecedor de assinatura: marca o contrato 'failed', reabre o intake/lead
+// que o envio já tinha avançado e avisa o staff. 409 de duplo clique/envio já feito não conta como falha.
+async function handleDispatchFailure(
+  supabase: any,
+  c: { id: string; label: string },
+  provider: 'docusign' | 'pandadoc',
+  httpStatus: number,
+  detail: string,
+): Promise<{ status: string; provider: string; message: string }> {
+  if (httpStatus === 409 && /already (sent|dispatched)|"leaseState":"(claimed|in_flight)"/i.test(detail)) {
+    return { status: 'already_sent', provider, message: 'O contrato já foi enviado ao fornecedor.' }
+  }
+  const name = provider === 'docusign' ? 'DocuSign' : 'PandaDoc'
+  await supabase.from('startup_contracts').update({
+    signature_status: 'failed',
+    provider_last_error: `${provider}_send: ${detail}`.slice(0, 500),
+    provider_last_sync_at: new Date().toISOString(),
+  }).eq('id', c.id)
+  const { data: reopened } = await supabase.from('contract_intakes')
+    .update({ status: 'approved_for_signature' })
+    .eq('contract_id', c.id).eq('status', 'signature_sent').select('id, funnel_item_id')
+  for (const row of reopened ?? []) {
+    await supabase.from('intake_events').insert({
+      intake_id: row.id, event_type: 'lifecycle_sync_dispatch_failed', from_status: 'signature_sent',
+      to_status: 'approved_for_signature', metadata: { provider, contract_id: c.id, detail: detail.slice(0, 200) },
+    })
+    if (row.funnel_item_id) {
+      await supabase.from('funnel_items').update({ stage: 'approved_for_signature' })
+        .eq('id', row.funnel_item_id).eq('stage', 'sent_for_signature')
+    }
+  }
+  await notifyStaff(supabase, {
+    title: `Falha no envio para assinatura (${name})`,
+    message: `O contrato ${c.label} não foi enviado ao ${name}: ${detail.slice(0, 200)}. Reenvie ou use a assinatura manual.`,
+    entityId: c.id,
+  })
+  return { status: 'failed', provider, message: `${name} indisponível: o staff foi notificado e o envio pode ser repetido.` }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -223,15 +262,16 @@ Deno.serve(async (req) => {
               headers: { 'Authorization': `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
               body: JSON.stringify({ contractId, signerEmail, signerName, companyNif: (contract as any).company_nif, documentBase64 }),
             })
-            if (dsRes.ok) { signingResult = await dsRes.json(); signingResult.provider = 'docusign' }
-            else {
+            const failCtx = { id: contractId, label: String((contract as any).contract_number || contractId.slice(0, 8)) }
+            if (dsRes.ok) {
+              signingResult = await dsRes.json(); signingResult.provider = 'docusign'
+              if (signingResult.status === 'unknown') {
+                signingResult = await handleDispatchFailure(supabase, failCtx, 'docusign', 202,
+                  `${signingResult.message ?? 'resposta ambígua'} Confirme no DocuSign antes de reenviar.`)
+              }
+            } else {
               const errText = await dsRes.text(); console.warn('DocuSign failed:', errText)
-              await supabase.from('startup_contracts').update({
-                signature_status: 'failed',
-                provider_last_error: `docusign_send: ${errText.slice(0, 500)}`,
-                provider_last_sync_at: new Date().toISOString(),
-              }).eq('id', contractId)
-              signingResult = { status: 'failed', provider: 'docusign', message: 'DocuSign indisponível — staff notificado.' }
+              signingResult = await handleDispatchFailure(supabase, failCtx, 'docusign', dsRes.status, errText)
             }
 
           } else if (provider === 'pandadoc') {
@@ -240,15 +280,11 @@ Deno.serve(async (req) => {
               headers: { 'Authorization': `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
               body: JSON.stringify({ contractId, signerEmail, signerName, companyNif: (contract as any).company_nif, documentBase64 }),
             })
+            const failCtx = { id: contractId, label: String((contract as any).contract_number || contractId.slice(0, 8)) }
             if (pdRes.ok) { signingResult = await pdRes.json(); signingResult.provider = 'pandadoc' }
             else {
               const errText = await pdRes.text(); console.warn('PandaDoc failed:', errText)
-              await supabase.from('startup_contracts').update({
-                signature_status: 'failed',
-                provider_last_error: `pandadoc_send: ${errText.slice(0, 500)}`,
-                provider_last_sync_at: new Date().toISOString(),
-              }).eq('id', contractId)
-              signingResult = { status: 'failed', provider: 'pandadoc', message: 'PandaDoc indisponível — staff notificado.' }
+              signingResult = await handleDispatchFailure(supabase, failCtx, 'pandadoc', pdRes.status, errText)
             }
 
           } else if (provider === 'manual') {
@@ -1131,6 +1167,14 @@ Deno.serve(async (req) => {
         })
       }
 
+      // RC12 (RC10 A3): a aceitação do Regulamento tem de vir do founder; antes gravava-se para qualquer chamada com o token
+      if (body.regulationAccepted !== true) {
+        return new Response(JSON.stringify({
+          error: 'regulation_not_accepted',
+          message: 'É necessário aceitar o Regulamento antes de submeter para assinatura.',
+        }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
       // Persist any latest visible-only fields the client sent BEFORE we flip
       // signature_status. We restrict to the same ALLOWED_KEYS set used by
       // save_data so hidden DB fields are never clobbered, and we check the
@@ -1148,7 +1192,7 @@ Deno.serve(async (req) => {
       const finalPatch: Record<string, unknown> = {
         status: 'pending_signature',
         regulation_accepted_at: new Date().toISOString(),
-        regulation_version: 'V11_2026',
+        regulation_version: 'V11-REG-2026',
         signature_status: 'sent_for_signature',
         signature_requested_at: new Date().toISOString(),
       }
@@ -1228,19 +1272,18 @@ Deno.serve(async (req) => {
             }),
           })
 
+          const failCtx = { id: contract.id, label: String(contract.contract_number || contract.id.slice(0, 8)) }
           if (dsRes.ok) {
             signingResult = await dsRes.json()
             signingResult.provider = 'docusign'
+            if (signingResult.status === 'unknown') {
+              signingResult = await handleDispatchFailure(supabase, failCtx, 'docusign', 202,
+                `${signingResult.message ?? 'resposta ambígua'} Confirme no DocuSign antes de reenviar.`)
+            }
           } else {
             const errText = await dsRes.text()
             console.warn('DocuSign send failed:', errText)
-            await notifyStaff(supabase, { title: 'Falha no envio para assinatura (DocuSign)', message: `O contrato ${contract.contract_number || contract.id.slice(0, 8)} não foi enviado ao DocuSign: ${errText.slice(0, 200)}`, entityId: contract.id })
-            await supabase.from('startup_contracts').update({
-              signature_status: 'failed',
-              provider_last_error: `docusign_send: ${errText.slice(0, 500)}`,
-              provider_last_sync_at: new Date().toISOString(),
-            }).eq('id', contract.id)
-            signingResult = { status: 'failed', provider: 'docusign', message: 'DocuSign dispatch failed — staff notified.' }
+            signingResult = await handleDispatchFailure(supabase, failCtx, 'docusign', dsRes.status, errText)
           }
 
         } else if (provider === 'pandadoc') {
@@ -1259,19 +1302,14 @@ Deno.serve(async (req) => {
             }),
           })
 
+          const failCtxPd = { id: contract.id, label: String(contract.contract_number || contract.id.slice(0, 8)) }
           if (pdRes.ok) {
             signingResult = await pdRes.json()
             signingResult.provider = 'pandadoc'
           } else {
             const errText = await pdRes.text()
             console.warn('PandaDoc send failed:', errText)
-            await notifyStaff(supabase, { title: 'Falha no envio para assinatura (PandaDoc)', message: `O contrato ${contract.contract_number || contract.id.slice(0, 8)} não foi enviado ao PandaDoc: ${errText.slice(0, 200)}`, entityId: contract.id })
-            await supabase.from('startup_contracts').update({
-              signature_status: 'failed',
-              provider_last_error: `pandadoc_send: ${errText.slice(0, 500)}`,
-              provider_last_sync_at: new Date().toISOString(),
-            }).eq('id', contract.id)
-            signingResult = { status: 'failed', provider: 'pandadoc', message: 'PandaDoc dispatch failed — staff notified.' }
+            signingResult = await handleDispatchFailure(supabase, failCtxPd, 'pandadoc', pdRes.status, errText)
           }
 
         } else if (provider === 'assinatura_digital') {
@@ -1559,7 +1597,7 @@ Deno.serve(async (req) => {
       // Auto-create founder account (parity with docusign path)
       const effectiveWsId = completedSync.workspaceId ?? wsId
       try {
-        const acctRes = await autoCreateFounderAccount(supabase, {
+        const acctRes = completedSync.founderEnsured ? { ok: true as const } : await autoCreateFounderAccount(supabase, {
           id: contract.id,
           workspace_id: effectiveWsId,
           legal_representative_email: (contract as any).legal_representative_email ?? signatureData.signer_email ?? null,
@@ -1575,6 +1613,19 @@ Deno.serve(async (req) => {
         }
       } catch (acctErr) {
         console.warn('digital_sign founder account creation failed (non-fatal):', acctErr)
+      }
+
+      // RC12: emails 'contrato assinado/ativado' ao founder e ao consultor (paridade com os webhooks DocuSign/PandaDoc)
+      try {
+        const cronSecret = Deno.env.get('CRON_SECRET') ?? ''
+        for (const type of ['contract_signed', 'contract_activated']) {
+          await supabase.functions.invoke('send-notification-email', {
+            body: { type, workspace_id: effectiveWsId, contract_id: contract.id },
+            headers: { 'x-cron-secret': cronSecret },
+          })
+        }
+      } catch (e) {
+        console.warn('digital_sign: contract_signed/activated notification failed', String(e))
       }
 
       // Notify staff

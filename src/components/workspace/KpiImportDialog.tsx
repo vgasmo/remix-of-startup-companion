@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { useWorkspaceKpiDefinitions } from '@/hooks/useKpis';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface KpiImportDialogProps {
   open: boolean;
@@ -183,7 +184,7 @@ export function KpiImportDialog({ open, onOpenChange, workspaceId }: KpiImportDi
               <div className="flex items-center justify-between">
                 <Label>{t('kpis.mapToKpis', 'Map to KPIs')}</Label>
                 <Badge variant="secondary">
-                  {validMappingsCount}/{previewData.length} mapped
+                  {t('kpis.mappedCount', { valid: validMappingsCount, total: previewData.length, defaultValue: '{{valid}}/{{total}} mapeados' })}
                 </Badge>
               </div>
 
@@ -199,7 +200,7 @@ export function KpiImportDialog({ open, onOpenChange, workspaceId }: KpiImportDi
                           </p>
                           <p className="text-lg font-bold text-primary">
                             {typeof item.value === 'number' 
-                              ? item.value.toLocaleString() 
+                              ? item.value.toLocaleString(getIntlLocale()) 
                               : item.value}
                           </p>
                         </div>

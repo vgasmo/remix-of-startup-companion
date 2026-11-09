@@ -22,6 +22,7 @@ import { LayoutDashboard, Inbox, ListTodo, Zap, Building2, UserCheck, FileText, 
 import { FirstStepsCard, type FirstStepItem } from '@/components/dashboard/FirstStepsCard';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { countOrThrow } from '@/lib/queryCount';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -66,9 +67,9 @@ export default function StaffCockpit() {
         supabase.from('workspaces').select('id', { count: 'exact', head: true }).eq('status', 'active').is('assigned_consultor_id', null),
       ]);
       return {
-        contractsAwaitingSignatureCount: contractsRes.count ?? 0,
-        intakesBlockedCount: intakesRes.count ?? 0,
-        unassignedActiveWorkspacesCount: unassignedRes.count ?? 0,
+        contractsAwaitingSignatureCount: countOrThrow(contractsRes),
+        intakesBlockedCount: countOrThrow(intakesRes),
+        unassignedActiveWorkspacesCount: countOrThrow(unassignedRes),
       };
     },
     staleTime: 60_000,
@@ -139,7 +140,7 @@ export default function StaffCockpit() {
             subtitle={t('firstSteps.consultor.subtitle')}
             items={[
               { id: 'wq', label: t('firstSteps.consultor.workQueue'), href: '/staff-cockpit', icon: ListTodo },
-              { id: 'avail', label: t('firstSteps.consultor.availability'), href: '/consultor-tools', icon: CalendarIcon },
+              { id: 'avail', label: t('firstSteps.consultor.availability'), href: '/consultor-tools?tab=availability', icon: CalendarIcon },
               { id: 'portfolio', label: t('firstSteps.consultor.portfolio'), href: '/my-workspaces', icon: Briefcase },
             ] satisfies FirstStepItem[]}
           />
@@ -151,7 +152,7 @@ export default function StaffCockpit() {
             subtitle={t('firstSteps.backoffice.subtitle')}
             items={[
               { id: 'contracts', label: t('firstSteps.backoffice.contracts'), href: '/admin?tab=backoffice&subtab=contracts', icon: FileText },
-              { id: 'spaces', label: t('firstSteps.backoffice.spaces'), href: '/admin?tab=backoffice', icon: Building2 },
+              { id: 'spaces', label: t('firstSteps.backoffice.spaces'), href: '/admin?tab=backoffice&subtab=spaces', icon: Building2 },
               { id: 'approvals', label: t('firstSteps.backoffice.approvals'), href: '/admin?tab=approvals', icon: ClockIcon },
             ] satisfies FirstStepItem[]}
           />
@@ -193,12 +194,12 @@ export default function StaffCockpit() {
         )}
 
         {/* Backoffice-specific: Next best action + Contracts expiring + Startup Portugal status */}
-        {(isBackoffice || isAdmin) && (
+        {(isBackoffice || isAdmin) && backofficeCounts && (
           <WidgetErrorBoundary name="NextBestActionStaff">
             <NextBestActionStaff
-              contractsAwaitingSignatureCount={backofficeCounts?.contractsAwaitingSignatureCount ?? 0}
-              intakesBlockedCount={backofficeCounts?.intakesBlockedCount ?? 0}
-              unassignedActiveWorkspacesCount={isAdmin ? (backofficeCounts?.unassignedActiveWorkspacesCount ?? 0) : 0}
+              contractsAwaitingSignatureCount={backofficeCounts.contractsAwaitingSignatureCount}
+              intakesBlockedCount={backofficeCounts.intakesBlockedCount}
+              unassignedActiveWorkspacesCount={isAdmin ? backofficeCounts.unassignedActiveWorkspacesCount : 0}
             />
           </WidgetErrorBoundary>
         )}
@@ -318,7 +319,7 @@ export default function StaffCockpit() {
 function BackofficeContractsExpiringCard() {
   const { t } = useTranslation();
 
-  const { data: contracts = [] } = useQuery({
+  const { data: contracts = [], isError } = useQuery({
     queryKey: ['backoffice-contracts-expiring'],
     queryFn: async () => {
       const thirtyDaysFromNow = new Date();
@@ -348,7 +349,11 @@ function BackofficeContractsExpiringCard() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {contracts.length === 0 ? (
+        {isError ? (
+          <p className="text-sm text-destructive" role="alert">
+            {t('staffCockpit.loadError', { defaultValue: 'Não foi possível carregar este painel.' })}
+          </p>
+        ) : contracts.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             {t('staffCockpit.noExpiringContracts', { defaultValue: 'Nenhum contrato a expirar nos próximos 30 dias.' })}
           </p>
@@ -378,10 +383,10 @@ function BackofficeContractsExpiringCard() {
 function StartupPortugalCertifiedCard() {
   const { t } = useTranslation();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['startup-portugal-certified-stats'],
     queryFn: async () => {
-      const [{ count: total }, { count: certified }, { data: recent }] = await Promise.all([
+      const [totalRes, certifiedRes, recentRes] = await Promise.all([
         supabase.from('startups').select('id', { count: 'exact', head: true }),
         supabase
           .from('startups')
@@ -394,10 +399,11 @@ function StartupPortugalCertifiedCard() {
           .order('updated_at', { ascending: false })
           .limit(5),
       ]);
+      if (recentRes.error) throw recentRes.error;
       return {
-        total: total ?? 0,
-        certified: certified ?? 0,
-        recent: recent || [],
+        total: countOrThrow(totalRes),
+        certified: countOrThrow(certifiedRes),
+        recent: recentRes.data || [],
       };
     },
     staleTime: 5 * 60_000,
@@ -411,7 +417,7 @@ function StartupPortugalCertifiedCard() {
           {t('staffCockpit.startupPortugalTitle', { defaultValue: 'Estatuto Startup Portugal' })}
           {!isLoading && (
             <Badge variant="secondary" className="ml-auto">
-              {data?.certified ?? 0} / {data?.total ?? 0}
+              {data?.certified ?? '—'} / {data?.total ?? '—'}
             </Badge>
           )}
         </CardTitle>
@@ -419,6 +425,10 @@ function StartupPortugalCertifiedCard() {
       <CardContent>
         {isLoading ? (
           <Skeleton className="h-16 w-full" />
+        ) : isError ? (
+          <p className="text-sm text-destructive" role="alert">
+            {t('staffCockpit.loadError', { defaultValue: 'Não foi possível carregar este painel.' })}
+          </p>
         ) : (data?.certified ?? 0) === 0 ? (
           <p className="text-sm text-muted-foreground">
             {t('staffCockpit.noStartupPortugalCertified', { defaultValue: 'Ainda nenhuma startup com estatuto Startup Portugal certificado.' })}

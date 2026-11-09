@@ -487,7 +487,8 @@ export function MilestonesActionsTab({ workspaceId, canWrite, isStaff, programId
   };
 
   const handleExport = async () => {
-    const { data } = await fetchExportData();
+    const { data, error } = await fetchExportData();
+    if (error) { notify.error(t('common.errorGeneric')); return; }
     if (data?.length) { exportActionsToCsv(data, `actions-${workspaceId}`); notify.success(t('sessions.exportedSuccess')); }
     else { notify.error(t('sessions.noDataToExport')); }
   };

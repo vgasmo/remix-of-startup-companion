@@ -9,6 +9,8 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { canSeeAdminTab } from './adminTabAccess';
 
 interface DirectoryItem {
   tab: string;
@@ -22,10 +24,11 @@ export function AdminMissionControlDirectory() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { isAdmin, isBackoffice, isConsultor } = useAuth();
   const activeTab = searchParams.get('tab');
   const [isExpanded, setIsExpanded] = useState(!activeTab || activeTab === 'approvals');
 
-  const items: (DirectoryItem & { route?: string })[] = [
+  const allItems: (DirectoryItem & { route?: string })[] = [
     { tab: 'ecosystem', label: t('admin.directory.ecosystemLabel', { defaultValue: 'Startups & Workspaces' }), icon: Globe2, description: t('admin.directory.ecosystemDesc', { defaultValue: 'Gestão do ecossistema' }), group: 'operations', route: '/ecosystem' },
     { tab: 'approvals', label: t('admin.approvals'), icon: Clock, description: t('admin.directory.approvalsDesc', { defaultValue: 'Pedidos pendentes de aprovação' }), group: 'operations' },
     { tab: 'enrollment', label: t('admin.directory.enrollmentLabel', { defaultValue: 'Enrollment & Claims' }), icon: UserPlus, description: t('admin.directory.enrollmentDesc', { defaultValue: 'Controlo de inscrições e claims' }), group: 'operations' },
@@ -45,6 +48,9 @@ export function AdminMissionControlDirectory() {
     { tab: 'health', label: t('admin.healthModels'), icon: Heart, description: t('admin.directory.healthDesc', { defaultValue: 'Modelos de saúde do ecossistema' }), group: 'reports' },
     { tab: 'system-health', label: t('admin.systemHealth.tab', { defaultValue: 'Saúde do Sistema' }), icon: Activity, description: t('admin.directory.systemHealthDesc', { defaultValue: 'Automações agendadas, cron e alertas' }), group: 'reports' },
   ];
+
+  // Only offer what the Admin page will actually open for this role (same rule as its tab groups).
+  const items = allItems.filter(i => i.route || canSeeAdminTab(i.tab, { isAdmin, isBackoffice, isConsultor }));
 
   const handleNavigate = (tab: string, route?: string) => {
     if (route) {

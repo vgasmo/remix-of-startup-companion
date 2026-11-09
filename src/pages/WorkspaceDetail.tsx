@@ -123,10 +123,13 @@ export default function WorkspaceDetail() {
   const program = workspace ? (workspace.program as { name: string; program_type?: string } | null) : null;
 
   // Compute visible tabs
-  const { primaryTabs, overflowTabs } = useMemo(
-    () => getVisibleTabs({ isAdmin, isConsultor, isMentor, isFounder, isBackoffice }, !!startup, workspace?.stage),
-    [isAdmin, isConsultor, isMentor, isFounder, isBackoffice, !!startup, workspace?.stage]
-  );
+  const { primaryTabs, overflowTabs } = useMemo(() => {
+    const visible = getVisibleTabs({ isAdmin, isConsultor, isMentor, isFounder, isBackoffice }, !!startup, workspace?.stage);
+    // Um team_member (papel no workspace) é só de leitura: Equipa e Financiamento só têm controlos de escrita e a RLS recusa-os.
+    if (myWorkspaceRole !== 'team_member') return visible;
+    const hide = (tabs: WorkspaceTab[]) => tabs.filter(tab => tab.id !== 'team' && tab.id !== 'funding');
+    return { primaryTabs: hide(visible.primaryTabs), overflowTabs: hide(visible.overflowTabs) };
+  }, [isAdmin, isConsultor, isMentor, isFounder, isBackoffice, !!startup, workspace?.stage, myWorkspaceRole]);
   const allVisibleIds = useMemo(
     () => new Set([...primaryTabs, ...overflowTabs].map(t => t.id)),
     [primaryTabs, overflowTabs]

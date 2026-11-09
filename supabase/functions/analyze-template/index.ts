@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
       .from('workspaces')
       .select(`
         stage,
-        startup:startups(name, industry, description)
+        startup:startups(name, description)
       `)
       .eq('id', instance.workspace_id)
       .single();
@@ -138,7 +138,7 @@ Provide your analysis in JSON format with the following structure:
 
     const userPrompt = `Analyze this startup template submission:
 
-**Startup**: ${startupInfo?.name || 'Unknown'} (${startupInfo?.industry || 'Unknown industry'})
+**Startup**: ${startupInfo?.name || 'Unknown'}
 **Stage**: ${workspace?.stage || 'Unknown'}
 **Description**: ${startupInfo?.description || 'No description'}
 

@@ -16,6 +16,8 @@ import {
 import { notify } from "@/lib/notify";
 import { syncOutlookCalendar } from '@/hooks/useIntegrationTriggers';
 import { cn } from '@/lib/utils';
+import { safeExternalHref } from '@/lib/sanitizeUrl';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface SessionSyncStatusProps {
   sessionId: string;
@@ -133,7 +135,7 @@ export function SessionSyncStatus({
             )}
             {syncedAt && (
               <p className="text-xs text-muted-foreground">
-                Last synced: {new Date(syncedAt).toLocaleString()}
+                Last synced: {new Date(syncedAt).toLocaleString(getIntlLocale())}
               </p>
             )}
             {!syncStatus && (
@@ -155,7 +157,7 @@ export function SessionSyncStatus({
               className="h-7 w-7"
               onClick={(e) => {
                 e.stopPropagation();
-                window.open(teamsMeetingUrl, '_blank');
+                { const u = safeExternalHref(teamsMeetingUrl); if (u) window.open(u, '_blank', 'noopener,noreferrer'); }
               }}
              aria-label={t('common._iconOpenVideo')}>
               <Video className="h-4 w-4 text-[hsl(var(--info))]" />

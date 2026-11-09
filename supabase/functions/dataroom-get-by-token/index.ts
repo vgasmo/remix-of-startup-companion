@@ -100,8 +100,10 @@ Deno.serve(async (req: Request) => {
         allow_download,
         expires_at,
         revoked_at,
+        access_count,
         dataroom:datarooms(
           id,
+          workspace_id,
           workspace:workspaces(
             id,
             startup:startups(name, logo_url)
@@ -143,8 +145,8 @@ Deno.serve(async (req: Request) => {
         url,
         document_id,
         investor_update_id,
-        document:documents(id, name, file_path, mime_type),
-        investor_update:investor_updates(id, month, content_json)
+        document:documents(id, name, file_path, mime_type, workspace_id),
+        investor_update:investor_updates(id, month, content_json, workspace_id)
       `)
       .eq('dataroom_id', shareLink.dataroom_id)
       .eq('visibility', 'investors')
@@ -155,8 +157,16 @@ Deno.serve(async (req: Request) => {
       return corsJsonResponse({ error: 'Failed to fetch dataroom items' }, req, 500);
     }
 
+    // Só publicamos itens que pertencem ao workspace do dataroom: a RLS de dataroom_items não valida
+    // document_id/investor_update_id contra o workspace, e aqui o acesso é com service role.
+    const dataroomWorkspaceId = (shareLink.dataroom as any)?.workspace_id;
+    const sameWorkspaceItems = (items || []).filter((item: any) =>
+      (!item.document || item.document.workspace_id === dataroomWorkspaceId) &&
+      (!item.investor_update || item.investor_update.workspace_id === dataroomWorkspaceId)
+    );
+
     // Generate signed URLs for documents if download is allowed
-    const processedItems = await Promise.all((items || []).map(async (item: any) => {
+    const processedItems = await Promise.all(sameWorkspaceItems.map(async (item: any) => {
       const result: any = {
         id: item.id,
         type: item.type,
@@ -199,15 +209,17 @@ Deno.serve(async (req: Request) => {
       return result;
     }));
 
-    // Update access stats (non-blocking)
+    // Update access stats (non-blocking, mas com o erro registado)
     supabase
       .from('dataroom_share_links')
       .update({
         last_access_at: new Date().toISOString(),
-        access_count: (shareLink as any).access_count + 1,
+        access_count: ((shareLink as any).access_count ?? 0) + 1,
       })
       .eq('id', shareLink.id)
-      .then(() => {});
+      .then(({ error }: { error: unknown }) => {
+        if (error) console.error('dataroom access stats update failed', error);
+      });
 
     // Extract workspace/startup info
     const dataroom = shareLink.dataroom as any;

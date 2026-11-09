@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BellOff } from 'lucide-react';
 import { notify } from '@/lib/notify';
+import { QueryErrorAlert } from './QueryErrorAlert';
 
 const SETTING_KEY = 'notifications.founders_disabled';
 
@@ -19,7 +20,7 @@ export function FounderNotificationsKillSwitch() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
-  const { data: disabled, isLoading } = useQuery({
+  const { data: disabled, isLoading, isError, refetch } = useQuery({
     queryKey: ['system-setting', SETTING_KEY],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -74,6 +75,9 @@ export function FounderNotificationsKillSwitch() {
       <CardContent>
         {isLoading ? (
           <Skeleton className="h-10 w-full" />
+        ) : isError ? (
+          // Never show the switch as "off" when the real state could not be read.
+          <QueryErrorAlert onRetry={() => void refetch()} />
         ) : (
           <div className="flex items-center justify-between gap-4">
             <Label htmlFor="founder-notifications-kill-switch" className="text-sm">

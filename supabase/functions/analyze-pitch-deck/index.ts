@@ -1,5 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { isAccountActive, checkAIRateLimit } from "../_shared/security.ts";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const MAX_PDF_BYTES = 15 * 1024 * 1024;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,8 +39,18 @@ serve(async (req) => {
       });
     }
 
-    const { document_id, workspace_id } = await req.json();
-    if (!document_id || !workspace_id) {
+    if (!(await isAccountActive(supabase, user.id))) {
+      return new Response(JSON.stringify({ error: "Account access denied" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    let payload: { document_id?: unknown; workspace_id?: unknown } = {};
+    try { payload = await req.json(); } catch { /* corpo inválido tratado abaixo */ }
+    const { document_id, workspace_id } = payload;
+    if (typeof document_id !== "string" || typeof workspace_id !== "string" ||
+        !UUID_RE.test(document_id) || !UUID_RE.test(workspace_id)) {
       return new Response(JSON.stringify({ error: "document_id and workspace_id required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -46,7 +60,7 @@ serve(async (req) => {
     // Get document info
     const { data: doc, error: docError } = await supabase
       .from("documents")
-      .select("name, file_path, external_url, category, description")
+      .select("name, file_path, external_url, category, description, mime_type")
       .eq("id", document_id)
       .eq("workspace_id", workspace_id)
       .single();
@@ -66,6 +80,44 @@ serve(async (req) => {
       .single();
 
     const startup = workspace?.startup as any;
+
+    // Só analisamos conteúdo real: sem ficheiro PDF legível não há análise (evita notas inventadas a partir do nome).
+    const isPdf = (doc.mime_type ?? "").toLowerCase().includes("pdf") || String(doc.file_path ?? "").toLowerCase().endsWith(".pdf");
+    if (!doc.file_path || !isPdf) {
+      return new Response(JSON.stringify({ error: "Só é possível analisar ficheiros PDF. Converta o deck para PDF e volte a carregá-lo.", code: "UNSUPPORTED_DOCUMENT" }), {
+        status: 422,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Limite de pedidos de IA (mesmo helper das restantes funções de IA)
+    if (!(await checkAIRateLimit(supabase, user.id, workspace_id, "analyze-pitch-deck", 20))) {
+      return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Download com o cliente do utilizador (a RLS do storage continua a aplicar-se)
+    const { data: fileData, error: dlError } = await supabase.storage.from("workspace-documents").download(doc.file_path);
+    if (dlError || !fileData) {
+      return new Response(JSON.stringify({ error: "Document file not available" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (fileData.size > MAX_PDF_BYTES) {
+      return new Response(JSON.stringify({ error: "PDF demasiado grande (máx. 15 MB).", code: "FILE_TOO_LARGE" }), {
+        status: 413,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const bytes = new Uint8Array(await fileData.arrayBuffer());
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += 32768) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + 32768));
+    }
+    const pdfBase64 = btoa(binary);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -110,7 +162,13 @@ Also provide an overall summary and top 3 improvement priorities.`;
           { role: "system", content: systemPrompt },
           {
             role: "user",
-            content: `Analisa este pitch deck: "${doc.name}". ${doc.description ? `Descrição: ${doc.description}` : ""} A startup está na fase "${workspace?.stage || 'unknown'}". Fornece uma avaliação detalhada com scores e recomendações práticas em português.`,
+            content: [
+              {
+                type: "text",
+                text: `Analisa o pitch deck em anexo ("${doc.name}"). ${doc.description ? `Descrição: ${doc.description}` : ""} A startup está na fase "${workspace?.stage || 'unknown'}". Baseia-te SÓ no conteúdo do documento; se uma dimensão não estiver coberta, diz-o e atribui 1. Fornece uma avaliação detalhada com scores e recomendações práticas em português.`,
+              },
+              { type: "image_url", image_url: { url: `data:application/pdf;base64,${pdfBase64}` } },
+            ],
           },
         ],
         tools: [
@@ -211,7 +269,7 @@ Also provide an overall summary and top 3 improvement priorities.`;
   } catch (e) {
     console.error("analyze-pitch-deck error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      JSON.stringify({ error: "Internal error" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

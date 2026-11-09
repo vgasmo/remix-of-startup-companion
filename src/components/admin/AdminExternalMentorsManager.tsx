@@ -15,6 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
+import { safeExternalHref } from '@/lib/sanitizeUrl';
 
 interface ExternalMentor {
   id: string;
@@ -385,14 +386,15 @@ export function AdminExternalMentorsManager() {
                             {mentor.full_name || mentor.email}
                           </Link>
                         </h3>
-                        {mentor.linkedin_url && (
+                        {safeExternalHref(mentor.linkedin_url) && (
                           <a
-                            href={mentor.linkedin_url}
+                            href={safeExternalHref(mentor.linkedin_url)}
                             target="_blank"
                             rel="noopener noreferrer"
+                            aria-label={`LinkedIn: ${mentor.full_name || mentor.email}`}
                             className="text-muted-foreground hover:text-primary"
                           >
-                            <Linkedin className="h-4 w-4" />
+                            <Linkedin className="h-4 w-4" aria-hidden="true" />
                           </a>
                         )}
                         {mentor.ndaAccepted ? (
@@ -446,10 +448,12 @@ export function AdminExternalMentorsManager() {
                                 <Building2 className="h-3 w-3" />
                                 {ws.startup_name}
                                 <button
+                                  type="button"
+                                  aria-label={`${t('common.remove', 'Remover')}: ${ws.startup_name}`}
                                   onClick={() => handleUnassignWorkspace(mentor.id, ws.id)}
-                                  className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
+                                  className="ml-1 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:text-destructive rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 >
-                                  <X className="h-3 w-3" />
+                                  <X className="h-3 w-3" aria-hidden="true" />
                                 </button>
                               </Badge>
                             ))

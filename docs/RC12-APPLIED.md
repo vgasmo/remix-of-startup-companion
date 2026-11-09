@@ -19,7 +19,7 @@
 - Leitura do catálogo: has_role md5 ef25422c4c8524dba6f9cfeb797b5b51, valor pós-migração esperado; 204 políticas; sete constraints NOT VALID conforme o pacote; três índices indisunique/indisvalid sem predicado.
 
 ## Ainda não aplicado ou certificado
-- Partes essenciais 3–15 e pacote opcional 1–3 ainda não foram aplicados.
+- Pacote opcional 1–3 não aplicado; Partes essenciais 3–15 aplicadas nesta continuação, com evidências abaixo.
 - Referências cruzadas da Parte 1 aos restantes domínios (widgets de contagem, páginas públicas de idioma e atributos de links) dependem das partes seguintes.
 - A consulta de prova comportamental de has_role foi recusada pela identidade da ferramenta de leitura: `ERROR: 42501: permission denied for function has_role`. Não se alargaram grants para contornar essa proteção. A definição e políticas foram confirmadas, mas não se certificou o fluxo com uma conta suspensa.
 - Parte 1 não alterou funções de servidor; Parte 2 publicou as funções afetadas, como detalhado abaixo. Não houve publicação de frontend.
@@ -42,3 +42,32 @@ O RC12 completo e a release final não estão certificados por esta ronda.
 - Vários pedidos de dados também foram interrompidos durante a verificação. Estes sinais não provam falha do modelo nem certificam os restantes fluxos administrativos.
 - Não foram enviados emails reais, alterados contratos, desbloqueadas contas nem executadas importações.
 - Sem migrações nesta parte. Erros temporários de tipos e lint foram corrigidos; verificações finais sem erros.
+
+## Continuação — Partes 3–15
+- Aplicados todos os diffs das Partes 3–15, os sete novos módulos, a substituição integral fornecida para AdminBackoffice, a substituição da regressão de portefólio por pgTAP e o skip do XLSM quando falta a fixture canónica.
+- Partes 3–4: navegação, alertas de leitura falhada, contagens, sanitização de links, locale, isolamento de rascunhos, exportação de ações e leitura completa de utilizadores.
+- Partes 5–6: importação, onboarding, convites, reutilização por NIF, isolamento Data Room, notas de mentor, monitorização partial, promoção CRM, integration_errors, retenção, índices, links antigos, prazos e atividade entre separadores.
+- Partes 7–11: armazenamento seguro, palavra-passe/login/convites, fragmentos, recuperação de webhooks, assinatura e ativação, marcação/agenda, importação CSV, guardas de conta, cron, relatórios e filtros defensivos.
+- Partes 12–15: filtros de saúde, pesquisa/paleta, mentor/check-in, alertas de sistema, permissões de administração, separadores e filtros, relatórios, rotas antigas, testes e jobs CI.
+- Dez migrações novas em drizzle/migrations/0022–0031, sem editar migrações anteriores nem types.ts manualmente. As reparações DML e a expectativa da purga correram separadamente pela ferramenta de dados.
+- integration_errors usa public.profiles para resolved_by, não auth.users, e grants imediatamente após CREATE TABLE: adaptações obrigatórias às regras Cloud. A política restritiva de suspensão foi confirmada no catálogo.
+- SQL foi submetido com formatação compactada, preservando condições e guardas. Os hashes finais de claim_startup, ensure_contract_workspace e check_automation_health diferem dos hashes pós-patch previstos devido a comentários/formatação; a reexecução literal dos blocos fornecidos para essas funções poderá abortar. Não foram desativados guardas. Os hashes reais estão no catálogo e os SQL aplicados permanecem no histórico.
+- O parser inicial marcou dois diffs como divergentes por não interpretar `No newline at end of file`; corrigida essa interpretação, ambos aplicaram sem adaptação funcional.
+- O diff de useExportData inseriu o carregamento de donos no primeiro `if (error)` correspondente, na exportação de sessões. O build identificou owner_user_id ausente e owners fora de âmbito; o bloco foi movido para useExportActions, sem alterar a finalidade pedida.
+- assertStaff de bulk-import-leads usa o tipo concretizado do cliente para resolver incompatibilidade genérica; mocks lifecycleSync/webhookInbox ganharam not/lt para acompanhar os filtros novos, sem enfraquecer asserções.
+
+### Evidências atuais
+- Vitest: 288 testes em 43 ficheiros; Deno: 198 passam, zero falhas, cinco ignorados (três XLSM sem fixture e dois testes de performance já condicionais).
+- Adicionadas 17 regressões concretas: três prazos, três permissões, cinco CSV e seis regras de slots.
+- Replay isolado: migrações legadas sem falhas; Drizzle completo aplicado com a fixture local existente para playbook_template_assignments, ausente no replay legado. Sem acesso a dados alojados pelo harness.
+- Cinco suites pgTAP: rc10_part3 17, pulse_notifications_kill_switch 8, log_completed_session_atomic 22, crm_contracted_conversion 9, portfolio_archived_actions 5; total 61 asserções, zero falhas/erros.
+- 31 funções diretamente alteradas passaram deno check; 45 funções diretas/transitivas publicadas com sucesso.
+- ESLint e gates i18n passam: 699 ficheiros, zero problemas, 9379 chaves em paridade. Build automática OK às 10:50:44 UTC.
+- Playwright autenticado abriu Espaços, mudou para Contratos e confirmou novamente Espaços; zero pageerrors. Não certifica Back do browser: o ensaio inicial ficou em Contratos devido à alteração de query de um painel interno.
+- Catálogo alojado confirmou integration_errors, guarda Data Room, política de suspensão, purga agendada e remoção do índice de texto livre. Hashes de onboarding/convites/filtros confirmam alterações aplicadas.
+
+### Limites
+- Frontend não publicado; funções e alterações de dados já aplicadas no serviço partilhado.
+- Não foram enviados convites/emails nem executadas assinaturas/importações reais. Entregas externas, Copilot real, todos os ramos de permissões e workflow num runner GitHub continuam sem certificação.
+- A suite pgTAP completa não foi executada: foram executadas as cinco suites afetadas pela Parte 15, com replay completo e guardas aplicados.
+- Pacote opcional permanece fora desta ronda, conforme o pedido exclusivo das Partes 3–15.

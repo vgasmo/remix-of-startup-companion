@@ -23,6 +23,18 @@ function percentile(sorted: number[], p: number): number | null {
   return sorted[lo] + (sorted[hi] - sorted[lo]) * (rank - lo);
 }
 
+/** O PostgREST limita a 1000 linhas por pedido: ler tudo por páginas estáveis (ordenadas por id). */
+async function fetchAll<T>(build: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }>): Promise<T[]> {
+  const out: T[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await build(from, from + 999);
+    if (error) throw error;
+    out.push(...(data ?? []));
+    if ((data ?? []).length < 1000) break;
+  }
+  return out;
+}
+
 serve(withCronRunLogging('compute-cohort-benchmarks', async (req) => {
   if (req.method === 'OPTIONS') return handleCorsOptions(req);
 
@@ -45,21 +57,24 @@ serve(withCronRunLogging('compute-cohort-benchmarks', async (req) => {
     }
 
     console.log('[compute-cohort-benchmarks] starting aggregation');
+    const runStartedAt = new Date().toISOString();
 
     // Pull all active workspaces with program + stage
-    const { data: workspaces, error: wsErr } = await supabase
+    const workspaces = await fetchAll<any>((from, to) => supabase
       .from('workspaces')
       .select('id, program_id, stage, status')
-      .not('program_id', 'is', null);
-    if (wsErr) throw wsErr;
+      .not('program_id', 'is', null)
+      .order('id', { ascending: true })
+      .range(from, to));
 
     const active = (workspaces ?? []).filter((w: any) => w.status !== 'archived' && w.stage);
 
     // Pull all kpi values (latest per workspace+kpi_definition)
-    const { data: kpiValues, error: kvErr } = await supabase
+    const kpiValues = await fetchAll<any>((from, to) => supabase
       .from('kpi_values')
-      .select('workspace_id, kpi_definition_id, value, period_month');
-    if (kvErr) throw kvErr;
+      .select('workspace_id, kpi_definition_id, value, period_month')
+      .order('id', { ascending: true })
+      .range(from, to));
 
     const { data: kpiDefs, error: kdErr } = await supabase
       .from('kpi_definitions')
@@ -103,19 +118,17 @@ serve(withCronRunLogging('compute-cohort-benchmarks', async (req) => {
       c.values.push(v.value);
     }
 
-    // Also: health_score per program+stage
-    for (const w of active as Array<Record<string, unknown>>) {
-      if ((w as { health_score_numeric?: number | null }).health_score_numeric == null) continue;
-    }
-
-    // (health requires the column — fetch explicitly)
-    const { data: healthRows } = await supabase
+    // Also: health_score per program+stage (mesmo universo "ativo" dos KPIs: sem arquivados)
+    const healthRows = await fetchAll<any>((from, to) => supabase
       .from('workspaces')
-      .select('program_id, stage, health_score_numeric')
+      .select('program_id, stage, status, health_score_numeric')
       .not('program_id', 'is', null)
       .not('stage', 'is', null)
-      .not('health_score_numeric', 'is', null);
-    for (const w of healthRows ?? []) {
+      .not('health_score_numeric', 'is', null)
+      .neq('status', 'archived')
+      .order('id', { ascending: true })
+      .range(from, to));
+    for (const w of healthRows) {
       const key = `${w.program_id}|${w.stage}|health_score`;
       let c = cohorts.get(key);
       if (!c) {
@@ -146,18 +159,22 @@ serve(withCronRunLogging('compute-cohort-benchmarks', async (req) => {
       });
     }
 
-    // Replace strategy: delete then insert (small dataset)
+    // Substituição sem janela vazia: upsert pela chave única (program_id, stage, metric_key) e só depois
+    // apagar o que não foi recalculado neste run (coortes que desceram abaixo de k deixam de ser publicadas).
     if (rows.length > 0) {
-      await supabase.from('cohort_benchmarks').delete().not('id', 'is', null);
-      const { error: insErr } = await supabase.from('cohort_benchmarks').insert(rows);
-      if (insErr) throw insErr;
+      const { error: upErr } = await supabase
+        .from('cohort_benchmarks')
+        .upsert(rows, { onConflict: 'program_id,stage,metric_key' });
+      if (upErr) throw upErr;
     }
+    const { error: delErr } = await supabase.from('cohort_benchmarks').delete().lt('computed_at', runStartedAt);
+    if (delErr) throw delErr;
 
     console.log(`[compute-cohort-benchmarks] wrote ${rows.length} cohort rows`);
 
     return corsJsonResponse({ ok: true, rows_written: rows.length, cohorts_skipped: cohorts.size - rows.length }, req);
   } catch (err: any) {
     console.error('[compute-cohort-benchmarks] error', err);
-    return corsJsonResponse({ error: err?.message || 'Failed' }, req, 500);
+    return corsJsonResponse({ error: 'Failed' }, req, 500);
   }
 }));

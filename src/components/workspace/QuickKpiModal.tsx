@@ -14,6 +14,7 @@ import { useWorkspaceKpiDefinitions, useKpiValues, useUpsertKpiValue } from '@/h
 import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface QuickKpiModalProps {
   open: boolean;
@@ -237,7 +238,7 @@ export function QuickKpiModal({ open, onOpenChange, workspaceId, programId }: Qu
                       {t('quickKpi.previousMonth', { defaultValue: 'Mês anterior:' })}
                     </span>
                     <span className="text-xs font-semibold text-foreground ml-auto">
-                      {currentKpi.previousValue.toLocaleString()}
+                      {currentKpi.previousValue.toLocaleString(getIntlLocale())}
                       {currentKpi.definition.unit ? ` ${currentKpi.definition.unit}` : ''}
                     </span>
                   </div>

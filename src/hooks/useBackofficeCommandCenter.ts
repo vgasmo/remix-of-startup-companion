@@ -58,7 +58,7 @@ export function useBackofficeCommandCenter() {
       const today = new Date();
       
       // Fetch active contracts with all details
-      const { data: contracts } = await supabase
+      const { data: contracts, error: contractsErr } = await supabase
         .from('startup_contracts')
         .select(`
           id, workspace_id, start_date, end_date, status, monthly_fee, contract_number,
@@ -66,10 +66,11 @@ export function useBackofficeCommandCenter() {
           building:buildings(name, city),
           workspace:workspaces(id, startup:startups(name))
         `)
-        .eq('status', 'active') as { data: ContractWithDetails[] | null };
+        .eq('status', 'active') as { data: ContractWithDetails[] | null; error: Error | null };
+      if (contractsErr) throw contractsErr;
       
       // Fetch ALL contracts for "requiring attention"
-      const { data: attentionContracts } = await supabase
+      const { data: attentionContracts, error: attentionErr } = await supabase
         .from('startup_contracts')
         .select(`
           id, workspace_id, start_date, end_date, status, monthly_fee, contract_number,
@@ -77,20 +78,23 @@ export function useBackofficeCommandCenter() {
           building:buildings(name, city),
           workspace:workspaces(id, startup:startups(name))
         `)
-        .in('status', ['draft', 'pending_signature', 'suspended']) as { data: ContractWithDetails[] | null };
+        .in('status', ['draft', 'pending_signature', 'suspended']) as { data: ContractWithDetails[] | null; error: Error | null };
+      if (attentionErr) throw attentionErr;
 
       // Fetch room allocations for occupancy stats
-      const { data: rooms } = await supabase
+      const { data: rooms, error: roomsErr } = await supabase
         .from('rooms')
         .select('id, status');
+      if (roomsErr) throw roomsErr;
       
       // Invoice queries removed — invoicing is not part of this product
 
       // Fetch waiting list
-      const { data: waitingList } = await supabase
+      const { data: waitingList, error: waitingErr } = await supabase
         .from('space_waiting_list')
         .select('id, status, priority')
         .eq('status', 'waiting');
+      if (waitingErr) throw waitingErr;
 
       // Calculate anniversaries and alerts
       const alerts: AnniversaryAlert[] = [];

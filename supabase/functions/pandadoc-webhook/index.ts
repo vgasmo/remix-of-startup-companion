@@ -323,6 +323,7 @@ Deno.serve(async (req) => {
       // Webhook always returns 200 to avoid PandaDoc retry storms, but failures
       // are persisted to contract_lifecycle_events + staff are notified.
       let resolvedWorkspaceId = contract.workspace_id
+      let founderEnsured = false
       if (canonicalStatus === 'sent_for_signature') {
         const r = await syncIntakeOnSent(supabase, contract.id, null, `pandadoc_webhook_${eventName}`)
         await handleLifecycleSyncResult(supabase, r, {
@@ -332,23 +333,28 @@ Deno.serve(async (req) => {
       } else if (canonicalStatus === 'completed') {
         const r = await syncIntakeOnCompleted(supabase, contract.id, contract.workspace_id, null, `pandadoc_webhook_${eventName}`)
         resolvedWorkspaceId = r.workspaceId ?? contract.workspace_id
+        founderEnsured = r.founderEnsured === true
         await handleLifecycleSyncResult(supabase, r, {
           contractId: contract.id, workspaceId: contract.workspace_id,
           source: `pandadoc_webhook_${eventName}_completed`, operation: 'completed',
         })
         // Notify founders + assigned consultant that the contract is signed & activated.
-        if (contract.workspace_id) {
+        // RC12: usa o workspace resolvido pela sincronizacao (criado na assinatura), nao o lido antes dela
+        if (resolvedWorkspaceId) {
           try {
             const cronSecret = Deno.env.get('CRON_SECRET') ?? ''
             const invokeOpts = { headers: { 'x-cron-secret': cronSecret } }
             await supabase.functions.invoke('send-notification-email', {
-              body: { type: 'contract_signed', workspace_id: contract.workspace_id, contract_id: contract.id },
+              body: { type: 'contract_signed', workspace_id: resolvedWorkspaceId, contract_id: contract.id },
               ...invokeOpts,
             })
-            await supabase.functions.invoke('send-notification-email', {
-              body: { type: 'contract_activated', workspace_id: contract.workspace_id, contract_id: contract.id },
-              ...invokeOpts,
-            })
+            // 'ativado' so se a ativacao nao ficou adiada a espera do founder
+            if (!r.awaitingFounder) {
+              await supabase.functions.invoke('send-notification-email', {
+                body: { type: 'contract_activated', workspace_id: resolvedWorkspaceId, contract_id: contract.id },
+                ...invokeOpts,
+              })
+            }
           } catch (e) {
             console.warn('pandadoc-webhook: contract_signed/activated notification failed', String(e))
           }
@@ -405,12 +411,12 @@ Deno.serve(async (req) => {
           entity_type: 'contract',
           entity_id: contract.id,
           action: 'digitally_signed_pandadoc',
-          workspace_id: contract.workspace_id,
+          workspace_id: resolvedWorkspaceId,
           metadata: { pandadoc_document_id: pandadocDocId, event: eventName, event_id: eventId },
         })
 
         // Auto-create founder account (parity with docusign)
-        if (contract.legal_representative_email) {
+        if (contract.legal_representative_email && !founderEnsured) {
           const acctRes = await sharedCreateFounder(supabase, {
             id: contract.id,
             workspace_id: resolvedWorkspaceId,

@@ -90,22 +90,20 @@ const buildTests = (t: (k: string, d?: any) => string): { name: string; icon: Re
   }));
 
   const rlsTests: TestDef[] = [
+    // Read-only probes: an UPDATE "probe" wrote to real rows (fires triggers, pollutes contract_field_conflicts)
+    // and passed even when RLS silently filtered it to 0 rows. Writes per role are covered by supabase/tests/rls_policies.test.sql.
     {
-      name: 'Staff can update workspaces',
+      name: 'Staff can read workspaces',
       test: async () => {
-        const { data: ws } = await supabase.from('workspaces').select('id, priority_level').limit(1);
-        if (!ws?.length) return { pass: true, message: 'No workspaces to test' };
-        const { error } = await supabase.from('workspaces').update({ priority_level: ws[0].priority_level } as any).eq('id', ws[0].id);
-        return { pass: !error, message: error?.message || 'UPDATE allowed' };
+        const { data, error } = await supabase.from('workspaces').select('id').limit(1);
+        return { pass: !error && (data?.length ?? 0) > 0, message: error?.message || `${data?.length ?? 0} rows` };
       },
     },
     {
-      name: 'Staff can update funnel_items',
+      name: 'Staff can read funnel_items',
       test: async () => {
-        const { data } = await supabase.from('funnel_items').select('id, notes').limit(1);
-        if (!data?.length) return { pass: true, message: 'No funnel items' };
-        const { error } = await supabase.from('funnel_items').update({ notes: data[0].notes }).eq('id', data[0].id);
-        return { pass: !error, message: error?.message || 'UPDATE allowed' };
+        const { error } = await supabase.from('funnel_items').select('id').limit(1);
+        return { pass: !error, message: error?.message || 'SELECT OK' };
       },
     },
     {
@@ -116,12 +114,24 @@ const buildTests = (t: (k: string, d?: any) => string): { name: string; icon: Re
       },
     },
     {
-      name: 'Staff can manage contracts',
+      name: 'Staff can read contracts',
       test: async () => {
-        const { data } = await supabase.from('startup_contracts').select('id, status').limit(1);
-        if (!data?.length) return { pass: true, message: 'No contracts' };
-        const { error } = await supabase.from('startup_contracts').update({ status: data[0].status } as any).eq('id', data[0].id);
-        return { pass: !error, message: error?.message || 'UPDATE allowed' };
+        const { error } = await supabase.from('startup_contracts').select('id, status').limit(1);
+        return { pass: !error, message: error?.message || 'SELECT OK' };
+      },
+    },
+    {
+      name: 'Role helper is_staff() is true for this session',
+      test: async () => {
+        const { data, error } = await supabase.rpc('is_staff');
+        return { pass: !error && data === true, message: error?.message || `is_staff = ${String(data)}` };
+      },
+    },
+    {
+      name: 'Role helper can_access_backoffice() is true for this session',
+      test: async () => {
+        const { data, error } = await supabase.rpc('can_access_backoffice');
+        return { pass: !error && data === true, message: error?.message || `can_access_backoffice = ${String(data)}` };
       },
     },
     {

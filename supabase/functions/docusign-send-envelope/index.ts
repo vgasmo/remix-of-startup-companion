@@ -5,6 +5,10 @@
  * Signer 2 (routing order 2): Startup Leiria Representative (counter-signer)
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { isAccountActive, isServiceRoleBearer } from '../_shared/security.ts'
+
+/** Definite provider rejection (4xx): DocuSign confirmed that nothing was created. */
+class DefiniteDispatchError extends Error {}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -107,7 +111,7 @@ Deno.serve(async (req) => {
     // Internal service-role calls (from public-contract-onboarding, staff dispatch,
     // etc.) skip the user resolution because the service key has no `sub`. Staff
     // gate is enforced upstream in those callers.
-    const isInternalServiceCall = token === supabaseKey
+    const isInternalServiceCall = isServiceRoleBearer(req)
     // B1: hoist actor identity to top scope so activity logging and profile
     // lookups can reference it regardless of the auth branch taken.
     let actorUserId: string | null = null
@@ -128,6 +132,13 @@ Deno.serve(async (req) => {
       )
       if (!isStaff) {
         return new Response(JSON.stringify({ error: 'Staff access required' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      // RC12: um staff suspenso ou pendente mantem user_roles e JWT valido; esta funcao usa service role
+      if (!(await isAccountActive(supabase, user.id))) {
+        return new Response(JSON.stringify({ error: 'Account access denied' }), {
           status: 403,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
@@ -165,7 +176,22 @@ Deno.serve(async (req) => {
     // RPC below; only one can leave with `claimed=true`, so at most one envelope
     // is ever dispatched per (contract, template_version).
     const templateVersion = String(contract.contract_template_version ?? 'v0')
-    const commandSource = `${contractId}::${templateVersion}::send`
+    // Geração de envio: cada envelope já concluído antes deste (leases sent/completed, ou failed_terminal com envelope
+    // por anulação/recusa) obriga a um comando novo; sem isto a lease antiga devolve already_sent com o envelope velho.
+    const { count: finishedLeases, error: leaseCountError } = await supabase
+      .from('docusign_dispatch_leases')
+      .select('id', { count: 'exact', head: true })
+      .eq('contract_id', contractId)
+      .or('state.in.(sent,completed),and(state.eq.failed_terminal,envelope_id.not.is.null)')
+    if (leaseCountError) {
+      console.error('docusign lease generation lookup failed', leaseCountError)
+      return new Response(JSON.stringify({ error: 'lease_lookup_failed' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const generation = Math.max(0, (finishedLeases ?? 0) - (contract.docusign_envelope_id ? 1 : 0))
+    const commandSource = `${contractId}::${templateVersion}::send${generation > 0 ? `::${generation}` : ''}`
     const commandDigest = await crypto.subtle.digest(
       'SHA-256',
       new TextEncoder().encode(commandSource),
@@ -290,7 +316,7 @@ Deno.serve(async (req) => {
           message: `O representante ${signerName} (${signerEmail}) completou o onboarding contratual. DocuSign não configurado — assinatura manual necessária.`,
           entity_type: 'contract',
           entity_id: contractId,
-          link: `/admin?tab=contracts`,
+          link: `/admin?tab=backoffice&subtab=contracts`,
         }))
         await supabase.from('notifications').insert(notifications)
       }
@@ -339,7 +365,19 @@ Deno.serve(async (req) => {
     }
 
     // Send via DocuSign with bilateral signing
-    const { accessToken, accountId } = await getDocuSignAccessToken()
+    let accessToken: string
+    let accountId: string
+    try {
+      ;({ accessToken, accountId } = await getDocuSignAccessToken())
+    } catch (authErr) {
+      // RC12: sem consentimento JWT / chave inválida o claim ficava em 'dispatching'; liberta-o para o staff poder repetir
+      await supabase.rpc('release_docusign_envelope_command', {
+        p_contract_id: contractId,
+        p_command_id: envelopeCommandId,
+        p_error: `docusign_auth_failed: ${(authErr as Error).message ?? 'unknown'}`.slice(0, 500),
+      })
+      throw authErr
+    }
     const baseUrl = (Deno.env.get('DOCUSIGN_BASE_URL') || 'https://demo.docusign.net') + '/restapi'
 
     // Batch C: provider idempotency key is bound to the *payload*, not only
@@ -538,31 +576,36 @@ Deno.serve(async (req) => {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           })
         }
-        throw new Error(`DocuSign API error: ${errText.slice(0, 500)}`)
+        throw new DefiniteDispatchError(`DocuSign API error: ${errText.slice(0, 500)}`)
       }
       envelope = await envRes.json()
       if (!envelope?.envelopeId) {
         throw new Error('DocuSign response missing envelopeId')
       }
     } catch (dispatchErr) {
-      const isTimeout = (dispatchErr as { name?: string })?.name === 'AbortError'
-      if (isTimeout) {
-        // Ambiguous: envelope may or may not have been created upstream.
+      // Only a 4xx (DefiniteDispatchError) is a confirmed rejection. A timeout, a
+      // dropped connection after the body was sent (TypeError) or a 2xx whose body
+      // is unusable are all ambiguous: the envelope may already exist upstream.
+      if (!(dispatchErr instanceof DefiniteDispatchError)) {
+        const isTimeout = (dispatchErr as { name?: string })?.name === 'AbortError'
+        const ambiguousReason = isTimeout
+          ? 'docusign_timeout_unknown'
+          : `docusign_ambiguous_client: ${((dispatchErr as Error)?.message ?? 'unknown').slice(0, 200)}`
         await supabase.rpc('mark_docusign_dispatch_unknown', {
           p_command_id: envelopeCommandId,
           p_owner_id: leaseOwnerId,
-          p_error: 'docusign_timeout_unknown',
+          p_error: ambiguousReason,
         })
         await supabase
           .from('startup_contracts')
           .update({
-            provider_last_error: 'docusign_timeout_unknown',
+            provider_last_error: ambiguousReason,
             provider_last_sync_at: new Date().toISOString(),
           })
           .eq('id', contractId)
         return new Response(JSON.stringify({
           status: 'unknown',
-          message: 'DocuSign timed out; reconciliation required before resend.',
+          message: 'DocuSign did not confirm the envelope; reconciliation required before resend.',
           envelopeCommandId,
         }), {
           status: 202,
@@ -663,7 +706,7 @@ Deno.serve(async (req) => {
 
   } catch (err) {
     console.error('DocuSign error:', err)
-    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }), {
+    return new Response(JSON.stringify({ error: 'DocuSign dispatch failed' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

@@ -185,6 +185,7 @@ async function logIntegrationError(
     await supabase
       .from('integration_errors')
       .insert({
+        integration_type: 'teams',
         source: errorSource,
         error_message: errorMessage,
         workspace_id: workspaceId || null,

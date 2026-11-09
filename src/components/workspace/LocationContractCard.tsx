@@ -12,7 +12,7 @@ interface LocationContractCardProps {
 }
 
 export function LocationContractCard({ workspaceId }: LocationContractCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dateLocale = useDateLocale();
   const { data: contracts, isLoading } = useContracts({ workspaceId });
   
@@ -117,7 +117,9 @@ export function LocationContractCard({ workspaceId }: LocationContractCardProps)
         <div className="flex items-center gap-3">
           <Euro className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium">
-            €{contract.monthly_fee?.toFixed(2)}/mo
+            {contract.monthly_fee != null
+              ? `${new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'pt-PT', { style: 'currency', currency: contract.currency || 'EUR' }).format(contract.monthly_fee)}${t('common.perMonth')}`
+              : '—'}
           </span>
         </div>
 

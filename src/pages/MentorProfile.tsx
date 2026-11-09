@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
+import { safeExternalHref } from '@/lib/sanitizeUrl';
 
 export default function MentorProfile() {
   const { t } = useTranslation();
@@ -94,8 +95,8 @@ export default function MentorProfile() {
                         <Mail className="h-3.5 w-3.5" /> {profile.email}
                       </a>
                     )}
-                    {profile.linkedin_url && (
-                      <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary">
+                    {safeExternalHref(profile.linkedin_url) && (
+                      <a href={safeExternalHref(profile.linkedin_url)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary">
                         <Linkedin className="h-3.5 w-3.5" /> LinkedIn
                       </a>
                     )}

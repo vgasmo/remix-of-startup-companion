@@ -1,9 +1,10 @@
 
 ## RC12 — 9 Nov 2026
+- [x] Pedido 10:37 UTC: Partes 3–15 aplicadas; 288 Vitest, 198 Deno (5 ignorados) e 61 asserções pgTAP passam; 45 funções publicadas, 10 migrações e reparações de dados aplicadas. Navegação autenticada Espaços/Contratos confirmada; lint/i18n/build OK. Limites e adaptações em docs/RC12-APPLIED.md.
 - [x] Aplicar anexo i18n exato e validar os dois gates antes das correções: 9379 chaves em paridade, zero problemas.
-- [ ] Aplicar pacote essencial por ordem; Parte 1: três migrações e 18 diffs exatos aplicados, 204 políticas restritivas, sete CHECKs de URL e três índices completos confirmados. 279 testes e lint passam; /login sem erros JS; build automática OK. Partes 2–15 e referências cruzadas para outros domínios ainda não aplicadas. Teste comportamental de contas suspensas bloqueado pela permissão de execução da ferramenta de leitura, não pela migração.
+- [x] Aplicar pacote essencial: Partes 1–15 aplicadas; evidências e limites de certificação registados em docs/RC12-APPLIED.md.
 - [ ] Aplicar pacote opcional apenas depois do essencial verificado.
-- [x] Parte 2 aplicada: nove diffs, 71 funções afetadas publicadas, 282 Vitest e 56 Deno passam; lint/gates i18n e cinco verificações Deno limpos, build OK. Modelo preservado pelo SDK obrigatório. Copilot autenticado abriu e enviou pedido, mas resposta real excedeu inatividade; não certificado. Partes 3–15 e opcional pendentes.
+- [x] Parte 2 aplicada: nove diffs, 71 funções afetadas publicadas, 282 Vitest e 56 Deno passam; lint/gates i18n e cinco verificações Deno limpos, build OK. Modelo preservado pelo SDK obrigatório. Copilot autenticado abriu e enviou pedido, mas resposta real excedeu inatividade; não certificado. Partes 3–15 concluídas abaixo; opcional pendente.
 
 ## Validação externa da release — 2 Nov 2026
 - [ ] Retomar verificações externas seguras, recolher evidências atuais e entregar relatório atualizado com acessos bloqueantes, sem alterar regras nem enviar convites externos não autorizados.

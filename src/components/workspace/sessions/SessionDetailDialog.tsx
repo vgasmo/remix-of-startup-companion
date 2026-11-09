@@ -72,10 +72,11 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
   const canUseFacilitator = isStaff;
   // join_url may be missing when the meeting came from Teams ingest;
   // teams_meeting_url is the fallback set by MS Graph webhook.
-  const meetingUrl =
-    (session as { join_url?: string | null; teams_meeting_url?: string | null }).join_url ??
-    (session as { teams_meeting_url?: string | null }).teams_meeting_url ??
-    null;
+  // join_url é escrito por founders (política "Mentors and founders can manage sessions") e a BD não valida o esquema:
+  // só aceitar http(s) (evita javascript:/data: no href e no botão "copiar"); se join_url for inválido, cai para teams_meeting_url.
+  const sessionUrls = session as { join_url?: string | null; teams_meeting_url?: string | null };
+  const isHttpUrl = (u?: string | null): u is string => !!u && /^https?:\/\//i.test(u.trim());
+  const meetingUrl = [sessionUrls.join_url, sessionUrls.teams_meeting_url].find(isHttpUrl)?.trim() ?? null;
 
   const [notes, setNotes] = useState(session.notes || '');
   const [decisions, setDecisions] = useState(session.decisions || '');
@@ -96,7 +97,7 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
   const cancelMutation = useCancelSession();
   const noShowMutation = useMarkSessionNoShow();
   const createActionItem = useCreateActionItem(workspaceId);
-  const { data: actionItems, isLoading: actionsLoading, refetch: refetchActions } = useSessionActionItems(session.id);
+  const { data: actionItems, isLoading: actionsLoading, isError: actionsError, refetch: refetchActions } = useSessionActionItems(session.id);
   const { data: members } = useWorkspaceMembers(workspaceId);
   const addTranscript = useAddTranscript();
 
@@ -530,6 +531,8 @@ export function SessionDetailDialog({ workspaceId, session, canWrite, open, onOp
                 </div>
                 {actionsLoading ? (
                   <Skeleton className="h-20" />
+                ) : actionsError ? (
+                  <p className="text-sm text-destructive" role="alert">{t('sessions.actionItemsLoadError', 'Não foi possível carregar as ações desta sessão.')}</p>
                 ) : actionItems?.length === 0 ? (
                   <div className="text-center py-6 text-muted-foreground bg-muted/50 rounded-lg">
                     <CheckCircle2 className="h-6 w-6 mx-auto mb-2 opacity-50" />

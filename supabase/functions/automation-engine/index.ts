@@ -7,6 +7,7 @@
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { requireCronOrStaff } from '../_shared/security.ts'
+import { escapeHtml } from '../_shared/html.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,9 +24,12 @@ interface AutomationResult {
   errors: string[]
 }
 
+// Failed sends (no API key, Resend down/rejecting) are counted so the cron run is not logged as a clean 'ok'.
+let emailFailures = 0
+
 // Simple email sender via Resend
 async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
-  if (!RESEND_API_KEY) return false
+  if (!RESEND_API_KEY) { emailFailures++; return false }
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -36,9 +40,13 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
         subject,
         html,
       }),
+      signal: AbortSignal.timeout(10_000),
     })
+    if (!res.ok) { emailFailures++; console.warn('[automation-engine] resend rejected', res.status) }
     return res.ok
-  } catch {
+  } catch (e) {
+    emailFailures++
+    console.warn('[automation-engine] resend failed', e instanceof Error ? e.message : String(e))
     return false
   }
 }
@@ -58,9 +66,11 @@ async function wasAlreadyRun(
 
 // Record that automation was run. Throws on DB error so callers do not
 // increment success counters for a write that never landed (F1).
+// Returns false when another run (cron + manual at the same time) already
+// claimed this entity/user/day (23505): the caller then skips the email.
 async function recordRun(
   supabase: any, type: string, entityId: string | null, entityType: string, userId: string, today: string, channel: string
-) {
+): Promise<boolean> {
   const { error } = await supabase.from('automation_runs').insert({
     automation_type: type,
     entity_id: entityId,
@@ -69,7 +79,11 @@ async function recordRun(
     run_date: today,
     channel,
   })
-  if (error) throw new Error(`recordRun(${type}): ${error.message}`)
+  if (error) {
+    if ((error as { code?: string }).code === '23505') return false
+    throw new Error(`recordRun(${type}): ${error.message}`)
+  }
+  return true
 }
 
 // Create in-app notification. Throws on DB error so callers do not increment
@@ -134,6 +148,8 @@ Deno.serve(async (req) => {
 
   const runStartedAt = Date.now()
   let supabase: any = null
+  let triggeredBy: 'cron' | 'manual' = 'cron'
+  emailFailures = 0
   const logRun = async (status: string, extra: Record<string, unknown> = {}, errorSummary?: string) => {
     if (!supabase) return
     try {
@@ -144,7 +160,7 @@ Deno.serve(async (req) => {
         p_error_code: null,
         p_error_summary: errorSummary ?? null,
         p_details: extra,
-        p_triggered_by: 'cron',
+        p_triggered_by: triggeredBy,
       })
     } catch (e) {
       console.warn('[automation-engine] log_cron_job_run failed', e)
@@ -168,6 +184,8 @@ Deno.serve(async (req) => {
       console.error('[automation-engine] Unauthorized invocation')
       return authCheck.error
     }
+    // A manual run by staff must not count as the cron heartbeat (check_automation_health filters triggered_by='cron').
+    if (authCheck.userId) triggeredBy = 'manual'
 
 
     const today = new Date()
@@ -201,14 +219,14 @@ Deno.serve(async (req) => {
               `O desconto da ${startupName} expira a ${d.end_date}.`,
               `/workspace/${(d as any).contract?.workspace_id}?tab=contract`,
               'contract_discount', d.id)
-            await recordRun(supabase, 'discount_expiring', d.id, 'contract_discount', staffId, todayStr, 'both')
+            const claimed = await recordRun(supabase, 'discount_expiring', d.id, 'contract_discount', staffId, todayStr, 'both')
             result.notifications++
 
-            const email = await getUserEmail(supabase, staffId)
+            const email = !claimed ? null : await getUserEmail(supabase, staffId)
             if (email) {
               if (await sendEmail(email,
                 `[Startup Leiria] Desconto ${startupName} expira em ${daysLeft} dias`,
-                `<p>O desconto de ${d.discount_percentage}% da <strong>${startupName}</strong> expira em <strong>${daysLeft} dias</strong> (${d.end_date}).</p><p><a href="${SITE_URL}/workspace/${(d as any).contract?.workspace_id}?tab=contract">Ver contrato</a></p>`)) {
+                `<p>O desconto de ${d.discount_percentage}% da <strong>${escapeHtml(startupName)}</strong> expira em <strong>${daysLeft} dias</strong> (${d.end_date}).</p><p><a href="${SITE_URL}/workspace/${(d as any).contract?.workspace_id}?tab=contract">Ver contrato</a></p>`)) {
                 result.emails++
               }
             }
@@ -247,14 +265,14 @@ Deno.serve(async (req) => {
               `Hoje faz ${years} ano(s) desde o início do contrato.`,
               `/workspace/${c.workspace_id}?tab=contract`,
               'startup_contract', c.id)
-            await recordRun(supabase, 'contract_anniversary', c.id, 'startup_contract', staffId, todayStr, 'both')
+            const claimed = await recordRun(supabase, 'contract_anniversary', c.id, 'startup_contract', staffId, todayStr, 'both')
             result.notifications++
 
-            const email = await getUserEmail(supabase, staffId)
+            const email = !claimed ? null : await getUserEmail(supabase, staffId)
             if (email) {
               if (await sendEmail(email,
                 `[Startup Leiria] ${startupName} — ${years}º aniversário de contrato`,
-                `<p>Hoje a <strong>${startupName}</strong> celebra <strong>${years} ano(s)</strong> de contrato no ecossistema.</p><p><a href="${SITE_URL}/workspace/${c.workspace_id}?tab=contract">Ver contrato</a></p>`)) {
+                `<p>Hoje a <strong>${escapeHtml(startupName)}</strong> celebra <strong>${years} ano(s)</strong> de contrato no ecossistema.</p><p><a href="${SITE_URL}/workspace/${c.workspace_id}?tab=contract">Ver contrato</a></p>`)) {
                 result.emails++
               }
             }
@@ -299,14 +317,14 @@ Deno.serve(async (req) => {
                 `Há mais de 30 dias sem atividade`,
                 `Não registámos atividade na ${startupName} há mais de 30 dias. Precisas de ajuda?`,
                 `/workspace/${ws.id}`, 'workspace', ws.id)
-              await recordRun(supabase, 'founder_inactive', ws.id, 'workspace', wu.user_id, todayStr, 'both')
+              const claimed = await recordRun(supabase, 'founder_inactive', ws.id, 'workspace', wu.user_id, todayStr, 'both')
               result.notifications++
 
-              const email = await getUserEmail(supabase, wu.user_id)
+              const email = !claimed ? null : await getUserEmail(supabase, wu.user_id)
               if (email) {
                 if (await sendEmail(email,
                   `[Startup Leiria] Sentimos a tua falta!`,
-                  `<p>Olá! Não registámos atividade na <strong>${startupName}</strong> há mais de 30 dias.</p><p>Precisas de ajuda ou tens alguma questão? A equipa de consultores está disponível.</p><p><a href="${SITE_URL}/workspace/${ws.id}">Aceder ao workspace</a></p>`)) {
+                  `<p>Olá! Não registámos atividade na <strong>${escapeHtml(startupName)}</strong> há mais de 30 dias.</p><p>Precisas de ajuda ou tens alguma questão? A equipa de consultores está disponível.</p><p><a href="${SITE_URL}/workspace/${ws.id}">Aceder ao workspace</a></p>`)) {
                   result.emails++
                 }
               }
@@ -326,14 +344,14 @@ Deno.serve(async (req) => {
                 `${startupName} — Founder inativo há 30+ dias`,
                 `O founder não tem atividade registada há mais de 30 dias.`,
                 `/workspace/${ws.id}`, 'workspace', ws.id)
-              await recordRun(supabase, 'founder_inactive_staff', ws.id, 'workspace', c.user_id, todayStr, 'both')
+              const claimed = await recordRun(supabase, 'founder_inactive_staff', ws.id, 'workspace', c.user_id, todayStr, 'both')
               result.notifications++
 
-              const email = delayEmailOptOuts.has(c.user_id) ? null : await getUserEmail(supabase, c.user_id)
+              const email = !claimed ? null : delayEmailOptOuts.has(c.user_id) ? null : await getUserEmail(supabase, c.user_id)
               if (email) {
                 if (await sendEmail(email,
                   `[Startup Leiria] Founder inativo — ${startupName}`,
-                  `<p>O founder da <strong>${startupName}</strong> não tem atividade registada há mais de 30 dias.</p><p><a href="${SITE_URL}/workspace/${ws.id}">Ver workspace</a></p>`)) {
+                  `<p>O founder da <strong>${escapeHtml(startupName)}</strong> não tem atividade registada há mais de 30 dias.</p><p><a href="${SITE_URL}/workspace/${ws.id}">Ver workspace</a></p>`)) {
                   result.emails++
                 }
               }
@@ -352,7 +370,7 @@ Deno.serve(async (req) => {
       try {
         const { data: contracts } = await supabase
           .from('startup_contracts')
-          .select('id, workspace_id, end_date, workspace:workspaces(startup:startups(name), workspace_users(user_id, role))')
+          .select('id, workspace_id, end_date, workspace:workspaces(startup:startups(name), workspace_users(user_id, role, active))')
           .in('status', ['active'])
           .not('end_date', 'is', null)
           .gte('end_date', todayStr)
@@ -363,7 +381,7 @@ Deno.serve(async (req) => {
           if (![90, 60, 30].includes(daysLeft)) continue
 
           const startupName = (c as any).workspace?.startup?.name || 'Startup'
-          const members = (c as any).workspace?.workspace_users || []
+          const members = ((c as any).workspace?.workspace_users || []).filter((u: any) => u.active && ['founder', 'consultor'].includes(u.role))
 
           for (const m of members) {
             if (await wasAlreadyRun(supabase, 'contract_expiring', c.id, m.user_id, todayStr)) continue
@@ -372,14 +390,14 @@ Deno.serve(async (req) => {
               `O contrato termina a ${c.end_date}.`,
               `/workspace/${c.workspace_id}?tab=contract`,
               'startup_contract', c.id)
-            await recordRun(supabase, 'contract_expiring', c.id, 'startup_contract', m.user_id, todayStr, 'both')
+            const claimed = await recordRun(supabase, 'contract_expiring', c.id, 'startup_contract', m.user_id, todayStr, 'both')
             result.notifications++
 
-            const email = await getUserEmail(supabase, m.user_id)
+            const email = !claimed ? null : await getUserEmail(supabase, m.user_id)
             if (email) {
               if (await sendEmail(email,
                 `[Startup Leiria] Contrato ${startupName} expira em ${daysLeft} dias`,
-                `<p>O contrato da <strong>${startupName}</strong> expira em <strong>${daysLeft} dias</strong> (${c.end_date}).</p><p><a href="${SITE_URL}/workspace/${c.workspace_id}?tab=contract">Ver contrato</a></p>`)) {
+                `<p>O contrato da <strong>${escapeHtml(startupName)}</strong> expira em <strong>${daysLeft} dias</strong> (${c.end_date}).</p><p><a href="${SITE_URL}/workspace/${c.workspace_id}?tab=contract">Ver contrato</a></p>`)) {
                 result.emails++
               }
             }
@@ -397,12 +415,12 @@ Deno.serve(async (req) => {
       try {
         const { data: overdue } = await supabase
           .from('checkin_instances')
-          .select('id, workspace_id, due_date, workspace:workspaces(startup:startups(name), workspace_users(user_id, role))')
+          .select('id, workspace_id, due_date, workspace:workspaces(startup:startups(name), workspace_users(user_id, role, active))')
           .eq('status', 'pending')
           .lt('due_date', todayStr)
 
         for (const ci of overdue || []) {
-          const consultors = ((ci as any).workspace?.workspace_users || []).filter((u: any) => u.role === 'consultor')
+          const consultors = ((ci as any).workspace?.workspace_users || []).filter((u: any) => u.role === 'consultor' && u.active)
           const startupName = (ci as any).workspace?.startup?.name || 'Startup'
 
           for (const c of consultors) {
@@ -430,8 +448,9 @@ Deno.serve(async (req) => {
         
         const { data: workspaces } = await supabase
           .from('workspaces')
-          .select('id, startup:startups(name), workspace_users(user_id, role)')
+          .select('id, startup:startups(name), workspace_users(user_id, role, active)')
           .eq('status', 'active')
+          .lt('created_at', twoMonthsAgo)
 
         for (const ws of workspaces || []) {
           const { count } = await supabase
@@ -443,7 +462,7 @@ Deno.serve(async (req) => {
           if ((count ?? 0) > 0) continue
 
           const startupName = (ws as any).startup?.name || 'Startup'
-          const members = ((ws as any).workspace_users || []).filter((u: any) => ['founder', 'consultor'].includes(u.role))
+          const members = ((ws as any).workspace_users || []).filter((u: any) => u.active && ['founder', 'consultor'].includes(u.role))
 
           for (const m of members) {
             if (await wasAlreadyRun(supabase, 'kpi_stale', ws.id, m.user_id, todayStr)) continue
@@ -452,14 +471,14 @@ Deno.serve(async (req) => {
               `Não há dados de KPIs registados nos últimos 2 meses.`,
               `/workspace/${ws.id}?tab=kpis`,
               'workspace', ws.id)
-            await recordRun(supabase, 'kpi_stale', ws.id, 'workspace', m.user_id, todayStr, 'both')
+            const claimed = await recordRun(supabase, 'kpi_stale', ws.id, 'workspace', m.user_id, todayStr, 'both')
             result.notifications++
 
-            const email = delayEmailOptOuts.has(m.user_id) ? null : await getUserEmail(supabase, m.user_id)
+            const email = !claimed ? null : delayEmailOptOuts.has(m.user_id) ? null : await getUserEmail(supabase, m.user_id)
             if (email) {
               if (await sendEmail(email,
                 `[Startup Leiria] KPIs desatualizados — ${startupName}`,
-                `<p>A <strong>${startupName}</strong> não tem dados de KPIs registados nos últimos 2 meses.</p><p><a href="${SITE_URL}/workspace/${ws.id}?tab=kpis">Atualizar KPIs</a></p>`)) {
+                `<p>A <strong>${escapeHtml(startupName)}</strong> não tem dados de KPIs registados nos últimos 2 meses.</p><p><a href="${SITE_URL}/workspace/${ws.id}?tab=kpis">Atualizar KPIs</a></p>`)) {
                 result.emails++
               }
             }
@@ -479,7 +498,7 @@ Deno.serve(async (req) => {
         const { data: leads, error: leadsError } = await supabase
           .from('funnel_items')
           .select('id, organization_name, contact_name, owner_consultant_id, last_activity_at, updated_at')
-          .not('stage', 'in', '("contratado","rejeitado","arquivado")')
+          .not('stage', 'in', '("contracted","rejected","archived","incubating","accelerating")')
           .not('owner_consultant_id', 'is', null)
         if (leadsError) throw leadsError
 
@@ -508,14 +527,14 @@ Deno.serve(async (req) => {
       try {
         const { data: milestones, error: milestonesError } = await supabase
           .from('milestones')
-          .select('id, title, target_date, workspace_id, workspace:workspaces(startup:startups(name), workspace_users(user_id))')
+          .select('id, title, target_date, workspace_id, workspace:workspaces(startup:startups(name), workspace_users(user_id, active))')
           .not('status', 'eq', 'completed')
           .not('target_date', 'is', null)
           .lt('target_date', todayStr)
         if (milestonesError) throw milestonesError
 
         for (const m of milestones || []) {
-          const members = (m as any).workspace?.workspace_users || []
+          const members = ((m as any).workspace?.workspace_users || []).filter((u: any) => u.active)
           const startupName = (m as any).workspace?.startup?.name || 'Startup'
 
           for (const member of members) {
@@ -555,14 +574,14 @@ Deno.serve(async (req) => {
               `O utilizador ${p.full_name || p.email} aguarda aprovação há mais de 48 horas.`,
               `/admin?tab=users`,
               'profile', p.id)
-            await recordRun(supabase, 'pending_approval', p.id, 'profile', adminId, todayStr, 'both')
+            const claimed = await recordRun(supabase, 'pending_approval', p.id, 'profile', adminId, todayStr, 'both')
             result.notifications++
 
-            const email = await getUserEmail(supabase, adminId)
+            const email = !claimed ? null : await getUserEmail(supabase, adminId)
             if (email) {
               if (await sendEmail(email,
                 `[Startup Leiria] Conta por aprovar — ${p.full_name || p.email}`,
-                `<p>O utilizador <strong>${p.full_name || p.email}</strong> aguarda aprovação da conta há mais de 48 horas.</p><p><a href="${SITE_URL}/admin?tab=users">Gerir utilizadores</a></p>`)) {
+                `<p>O utilizador <strong>${escapeHtml(p.full_name || p.email)}</strong> aguarda aprovação da conta há mais de 48 horas.</p><p><a href="${SITE_URL}/admin?tab=users">Gerir utilizadores</a></p>`)) {
                 result.emails++
               }
             }
@@ -579,11 +598,12 @@ Deno.serve(async (req) => {
       const result: AutomationResult = { type: 'intake_stale', notifications: 0, emails: 0, errors: [] }
       try {
         const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
-        const { data: intakes } = await supabase
+        const { data: intakes, error: intakesErr } = await supabase
           .from('contract_intakes')
           .select('id, organization_name, status, created_at, assigned_to, legal_representative_email')
-          .in('status', ['pending_documents', 'draft'])
+          .in('status', ['draft_internal', 'intake_requested', 'intake_in_progress', 'changes_requested'])
           .lt('created_at', sevenDaysAgo)
+        if (intakesErr) throw new Error(`intake_stale: ${intakesErr.message}`)
 
         for (const intake of intakes || []) {
           // Notify assigned staff
@@ -594,14 +614,14 @@ Deno.serve(async (req) => {
                 `O processo de intake está pendente há mais de 7 dias.`,
                 `/admin?tab=contracts`,
                 'contract_intake', intake.id)
-              await recordRun(supabase, 'intake_stale', intake.id, 'contract_intake', intake.assigned_to, todayStr, 'both')
+              const claimed = await recordRun(supabase, 'intake_stale', intake.id, 'contract_intake', intake.assigned_to, todayStr, 'both')
               result.notifications++
 
-              const email = await getUserEmail(supabase, intake.assigned_to)
+              const email = !claimed ? null : await getUserEmail(supabase, intake.assigned_to)
               if (email) {
                 if (await sendEmail(email,
                   `[Startup Leiria] Intake incompleto — ${intake.organization_name || 'Processo'}`,
-                  `<p>O intake de <strong>${intake.organization_name || 'um processo'}</strong> está pendente há mais de 7 dias.</p><p><a href="${SITE_URL}/admin?tab=contracts">Ver intakes</a></p>`)) {
+                  `<p>O intake de <strong>${escapeHtml(intake.organization_name || 'um processo')}</strong> está pendente há mais de 7 dias.</p><p><a href="${SITE_URL}/admin?tab=contracts">Ver intakes</a></p>`)) {
                   result.emails++
                 }
               }
@@ -652,12 +672,12 @@ Deno.serve(async (req) => {
       try {
         const { data: activeWorkspaces } = await supabase
           .from('workspaces')
-          .select('id, startup:startups(name), workspace_users(user_id, role)')
+          .select('id, startup:startups(name), workspace_users(user_id, role, active)')
           .eq('status', 'active')
 
         const adminIds = await getAdminIds(supabase)
         for (const ws of activeWorkspaces || []) {
-          const hasConsultor = ((ws as any).workspace_users || []).some((u: any) => u.role === 'consultor')
+          const hasConsultor = ((ws as any).workspace_users || []).some((u: any) => u.role === 'consultor' && u.active)
           if (hasConsultor) continue
 
           const startupName = (ws as any).startup?.name || 'Startup'
@@ -729,7 +749,7 @@ Deno.serve(async (req) => {
               // 2. Email semanal
               const emailHtml = `
                 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #1a1a1a;">
-                  <h2 style="color: #d97706; margin-bottom: 16px;">Olá ${name},</h2>
+                  <h2 style="color: #d97706; margin-bottom: 16px;">Olá ${escapeHtml(name)},</h2>
                   <p style="font-size: 15px; line-height: 1.6;">
                     Reparámos que ainda não tens <strong>disponibilidade configurada</strong> na plataforma da Startup Leiria.
                   </p>
@@ -781,12 +801,15 @@ Deno.serve(async (req) => {
 
     console.log(`[automation-engine] Completed: ${totalNotifications} notifications, ${totalEmails} emails, ${totalErrors} errors`)
 
-    await logRun(totalErrors > 0 ? 'partial' : 'ok', {
+    // 'partial' when a check failed or when every attempted e-mail failed (Resend down / no API key)
+    const degraded = totalErrors > 0 || (emailFailures > 0 && totalEmails === 0)
+    await logRun(degraded ? 'partial' : 'ok', {
       notifications: totalNotifications,
       emails: totalEmails,
       errors: totalErrors,
+      email_failures: emailFailures,
       checks: results.length,
-    }, totalErrors > 0 ? `${totalErrors} check errors` : undefined)
+    }, degraded ? `${totalErrors} check errors, ${emailFailures} email failures` : undefined)
 
     return new Response(JSON.stringify({
       success: true,

@@ -48,7 +48,7 @@ export function StaffTasksPanel({ compact = false }: StaffTasksPanelProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const dateLocale = useDateLocale();
-  const { data: tasks, isLoading } = useMyStaffTasks();
+  const { data: tasks, isLoading, isError, refetch } = useMyStaffTasks();
 
   if (isLoading) {
     return (
@@ -83,7 +83,12 @@ export function StaffTasksPanel({ compact = false }: StaffTasksPanelProps) {
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        {pendingTasks.length === 0 ? (
+        {isError ? (
+          <div role="alert" className="flex flex-col items-center justify-center gap-2 py-3">
+            <p className="text-sm text-destructive">{t('staffTasks.loadError', 'Não foi possível carregar as tarefas.')}</p>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>{t('common.retry', 'Tentar novamente')}</Button>
+          </div>
+        ) : pendingTasks.length === 0 ? (
           <div className="flex items-center justify-center gap-2 py-3 text-muted-foreground">
             <CheckCircle2 className="h-5 w-5 opacity-50" />
             <div>
@@ -123,6 +128,7 @@ function TaskItem({
   task: StaffTask;
   onClick: () => void;
 }) {
+  const { t } = useTranslation();
   const dateLocale = useDateLocale();
   const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date));
   const isDueToday = task.due_date && isToday(new Date(task.due_date));
@@ -151,7 +157,7 @@ function TaskItem({
                   : 'text-muted-foreground'
               }`}
             >
-              {isOverdue ? 'Overdue: ' : isDueToday ? 'Today' : ''}
+              {isOverdue ? `${t('workQueue.overdueLabel')}: ` : isDueToday ? t('common.today') : ''}
               {!isDueToday && format(new Date(task.due_date), 'MMM d', { locale: dateLocale })}
             </span>
           )}

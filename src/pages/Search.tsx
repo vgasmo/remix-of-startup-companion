@@ -18,6 +18,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Switch } from '@/components/ui/switch';
 import { notify } from "@/lib/notify";
 import { ContentSkeleton } from '@/components/ui/ContentSkeleton';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 const RESULT_TYPES = [
   { key: 'session', labelKey: 'search.filters.sessions', icon: Calendar },
@@ -27,6 +28,15 @@ const RESULT_TYPES = [
   { key: 'message', labelKey: 'search.filters.messages', icon: MessageSquare },
   { key: 'milestone', labelKey: 'search.filters.milestones', icon: Target },
 ] as const;
+
+// Result types that have no entry in RESULT_TYPES: map to their `search.types.*` label key.
+const TYPE_LABEL_KEY: Record<string, string> = {
+  startup: 'startups',
+  workspace: 'workspaces',
+  contract: 'contracts',
+  lead: 'leads',
+  person: 'people',
+};
 
 const DATE_RANGES = [
   { value: 'all', labelKey: 'search.filters.dateAll' },
@@ -65,9 +75,9 @@ export default function SearchPage() {
     const handler = setTimeout(() => {
       setDebouncedQuery(query);
       if (query) {
-        setSearchParams({ q: query });
+        setSearchParams({ q: query }, { replace: true });
       } else {
-        setSearchParams({});
+        setSearchParams({}, { replace: true });
       }
     }, 300);
     return () => clearTimeout(handler);
@@ -78,7 +88,7 @@ export default function SearchPage() {
     ...filters,
   };
 
-  const { data: results, isLoading } = useGlobalSearch(searchFilters);
+  const { data: results, isLoading, isError, refetch } = useGlobalSearch(searchFilters);
 
   const toggleType = (type: string) => {
     setFilters(prev => ({
@@ -147,7 +157,7 @@ export default function SearchPage() {
             <DialogTrigger asChild>
               <Button variant="outline" disabled={!query}>
                 <Save className="h-4 w-4 mr-2" />
-                Save Search
+                {t('search.saveSearch', 'Guardar pesquisa')}
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -303,6 +313,11 @@ export default function SearchPage() {
         {/* Results */}
         {isLoading ? (
           <ContentSkeleton type="list" count={6} />
+        ) : isError ? (
+          <div className="text-center py-12 space-y-3" role="alert">
+            <p className="text-sm text-destructive">{t('search.loadError', 'Não foi possível pesquisar. Tente novamente.')}</p>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>{t('common.retry', 'Tentar novamente')}</Button>
+          </div>
         ) : !debouncedQuery ? (
           <div className="text-center py-12 text-muted-foreground">
             {t('search.startTyping', 'Comece a digitar para pesquisar sessões, ações, notas, documentos e mensagens.')}
@@ -321,7 +336,7 @@ export default function SearchPage() {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2">
                       <Icon className="h-5 w-5" />
-                      {typeConfig ? t(typeConfig.labelKey) : type}
+                      {typeConfig ? t(typeConfig.labelKey) : t(`search.types.${TYPE_LABEL_KEY[type] ?? type}`, { defaultValue: type })}
                       <Badge variant="secondary">{items.length}</Badge>
                     </CardTitle>
                   </CardHeader>
@@ -340,7 +355,7 @@ export default function SearchPage() {
                             </div>
                           )}
                           <div className="text-xs text-muted-foreground mt-2">
-                            {new Date(result.updated_at).toLocaleDateString()}
+                            {new Date(result.updated_at).toLocaleDateString(getIntlLocale())}
                           </div>
                         </Link>
                       ))}

@@ -211,6 +211,9 @@ jobs:
       - name: Scan migrations for person-specific data operations
         run: node scripts/ci/scan-migrations.mjs
 
+      - name: Every drizzle migration is mirrored in supabase/migrations
+        run: node scripts/ci/check-drizzle-mirrored.mjs
+
   # ──────────────────────────────────────────────
   # Gate H: Deno check for changed edge functions
   # ──────────────────────────────────────────────
@@ -384,3 +387,58 @@ jobs:
 
       - name: Run pgTAP tests
         run: supabase test db
+
+  # ──────────────────────────────────────────────
+  # Gate 4b: pgTAP on a disposable local PostgreSQL 16 (full clean replay of supabase/migrations)
+  # ──────────────────────────────────────────────
+  db-pgtap-local:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL 16 + pgTAP
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 postgresql-16-pgtap
+          echo "/usr/lib/postgresql/16/bin" >> "$GITHUB_PATH"
+
+      - name: Replay migrations and run pgTAP suites
+        env:
+          RC5_PG_RUN_DIR: ${{ runner.temp }}/rc5-pg
+        run: |
+          export RC5_PGTAP_SQL="$(ls /usr/share/postgresql/16/extension/pgtap--[0-9]*.sql | grep -v -- '--.*--' | sort -V | tail -1)"
+          bash scripts/rc5/local-pg-harness.sh
+
+      - name: Upload pgTAP logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pgtap-logs
+          path: ${{ runner.temp }}/rc5-pg/logs/
+          retention-days: 14
+
+  # ──────────────────────────────────────────────
+  # Gate 4c: Deno unit tests of the edge functions (_shared guards, communications, lifecycle)
+  # ──────────────────────────────────────────────
+  deno-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Install edge function dependencies (deterministic)
+        run: deno install
+        working-directory: supabase/functions
+
+      - name: Deno tests (edge functions)
+        run: |
+          FILES=$(find supabase/functions -path '*/node_modules' -prune -o \( -name '*_test.ts' -o -name '*.test.ts' \) -print | grep -v xlsmCanonical_e2e | sort)
+          deno test --no-lock --config supabase/functions/deno.json -A $FILES

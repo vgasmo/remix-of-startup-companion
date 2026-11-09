@@ -25,6 +25,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { notify } from "@/lib/notify";
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface UnifiedRecord {
   room_id: string;
@@ -638,7 +639,7 @@ export function SpaceOperationsConsole() {
                   {selectedRecord.contract_id ? (
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div><span className="text-muted-foreground">{t('spaces.statusLabel', 'Estado')}:</span> <StatusBadge status={selectedRecord.contract_status} type="contract" /></div>
-                      <div><span className="text-muted-foreground">{t('spaces.monthlyFee', 'Mensalidade')}:</span> <span className="font-medium">€{selectedRecord.contract_monthly_fee?.toLocaleString() || '—'}</span></div>
+                      <div><span className="text-muted-foreground">{t('spaces.monthlyFee', 'Mensalidade')}:</span> <span className="font-medium">€{selectedRecord.contract_monthly_fee?.toLocaleString(getIntlLocale()) || '—'}</span></div>
                       {selectedRecord.contract_start && (
                         <div><span className="text-muted-foreground">{t('common.startDate', 'Início')}:</span> {format(new Date(selectedRecord.contract_start), 'dd/MM/yyyy')}</div>
                       )}

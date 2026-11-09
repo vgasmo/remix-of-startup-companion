@@ -18,6 +18,7 @@ import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
 import { EnrollmentModeIndicator } from '@/components/auth/EnrollmentModeIndicator';
 import startupLeiriaLogo from '@/assets/startup-leiria.svg';
 import { logger } from '@/lib/logger';
+import { notify } from '@/lib/notify';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -59,6 +60,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const [canResendConfirmation, setCanResendConfirmation] = useState(false);
   
   // Check if email is from startupleiria.com domain
   const isConsultorEmail = useMemo(() => {
@@ -91,6 +93,7 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setCanResendConfirmation(false);
     
     try {
       loginSchema.parse({ email, password });
@@ -108,10 +111,31 @@ export default function Login() {
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
         setError(t('login.invalidCredentials'));
+      } else if (/email not confirmed/i.test(error.message)) {
+        setError(t('login.emailNotConfirmed'));
+        setCanResendConfirmation(true);
       } else {
         setError(error.message);
       }
     }
+  };
+
+  const handleResendConfirmation = async () => {
+    setIsSubmitting(true);
+    const redirectTo = `${window.location.origin}${safeReturnTo ?? '/'}`;
+    const { error: resendError } = await supabase.auth.resend({
+      type: 'signup',
+      email: email.trim(),
+      options: { emailRedirectTo: redirectTo },
+    });
+    setIsSubmitting(false);
+    if (resendError) {
+      setError(resendError.message);
+      return;
+    }
+    setCanResendConfirmation(false);
+    setError(null);
+    notify.success(t('login.confirmationResent'));
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -352,6 +376,12 @@ export default function Login() {
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
+                )}
+
+                {canResendConfirmation && activeTab === 'login' && (
+                  <Button type="button" variant="outline" className="mb-4 w-full" onClick={handleResendConfirmation} disabled={isSubmitting}>
+                    {t('login.resendConfirmation')}
+                  </Button>
                 )}
 
                 <TabsContent value="login" className="animate-fade-in">

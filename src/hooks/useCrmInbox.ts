@@ -225,6 +225,8 @@ export function useCrmTasksDue(filters?: UseCrmInboxFilters) {
       }
 
       const { data, error } = await query;
+      // Antes o erro era ignorado e o separador Tarefas mostrava "sem tarefas" quando a consulta falhava
+      if (error) throw error;
 
       const now = new Date();
       const todayStart = startOfDay(now);

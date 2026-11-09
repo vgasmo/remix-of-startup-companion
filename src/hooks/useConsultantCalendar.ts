@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { logger } from '@/lib/logger';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
+import { lisbonWallClockToUtcIso, utcIsoToLisbonWallClock } from "@/lib/dateUtils";
 
 interface TimeSlot {
   start: string;
@@ -68,26 +69,29 @@ export function useValidateBookingSlot() {
       endTime: string;
     }): Promise<{ available: boolean; checked: boolean; conflict?: string; reason?: string }> => {
       try {
-        const date = startTime.slice(0, 10);
+        const requestedStart = new Date(startTime).getTime();
+        const requestedEnd = new Date(endTime).getTime();
+        // RC12: a data e os slots são "relógio de Lisboa"; a duração tem de seguir para o servidor
+        // (antes ia sempre 60 min e a validação de sessões de 90/120 min falhava sempre).
+        const date = utcIsoToLisbonWallClock(startTime).slice(0, 10);
+        const durationMinutes = Math.round((requestedEnd - requestedStart) / 60000);
         const { data, error } = await invokeWithAuth('check-consultant-availability', {
-          body: { workspaceId, date },
+          body: { workspaceId, date, durationMinutes },
         });
 
         if (error || !data?.success) {
           return { available: true, checked: false, reason: data?.reason || 'not_checked' };
         }
 
-        const slots = data.slots as TimeSlot[];
-        const requestedStart = new Date(startTime).getTime();
-        const requestedEnd = new Date(endTime).getTime();
-
-        const hasConflict = slots.length > 0 && !slots.some((slot) => {
-          const slotStart = new Date(slot.start).getTime();
-          const slotEnd = new Date(slot.end).getTime();
+        // O servidor só devolve slots livres: dia todo ocupado => lista vazia => NÃO está disponível.
+        const slots = (data.slots ?? []) as TimeSlot[];
+        const isFree = slots.some((slot) => {
+          const slotStart = new Date(lisbonWallClockToUtcIso(slot.start)).getTime();
+          const slotEnd = new Date(lisbonWallClockToUtcIso(slot.end)).getTime();
           return slotStart <= requestedStart && slotEnd >= requestedEnd && slot.available;
         });
 
-        return { available: !hasConflict, checked: true };
+        return { available: isFree, checked: true };
       } catch (err) {
         logger.error('Slot validation error', {}, err);
         return { available: true, checked: false, reason: 'validation_error' };

@@ -5,7 +5,7 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions } from '../_shared/cors.ts';
-import { createLogger, generateRequestId, ErrorCode } from '../_shared/security.ts';
+import { createLogger, generateRequestId, ErrorCode, isAccountActive } from '../_shared/security.ts';
 
 const FUNCTION_NAME = 'calendar-feed';
 
@@ -18,7 +18,32 @@ function escapeICSText(text: string): string {
     .replace(/\\/g, '\\\\')
     .replace(/;/g, '\\;')
     .replace(/,/g, '\\,')
-    .replace(/\n/g, '\\n');
+    .replace(/\r\n|\r|\n/g, '\\n');
+}
+
+// RFC 5545 §3.1: linhas com no máximo 75 octetos; continuação começa por um espaço.
+function foldICSLine(line: string): string {
+  const enc = new TextEncoder();
+  if (enc.encode(line).length <= 75) return line;
+  const out: string[] = [];
+  let cur = '';
+  let bytes = 0;
+  for (const ch of line) {
+    const b = enc.encode(ch).length;
+    if (bytes + b > 75) {
+      out.push(cur);
+      cur = ' ';
+      bytes = 1;
+    }
+    cur += ch;
+    bytes += b;
+  }
+  out.push(cur);
+  return out.join('\r\n');
+}
+
+function safeICSUrl(value: string | null): string | null {
+  return value && /^https?:\/\/[^\s]+$/i.test(value) ? value : null;
 }
 
 interface Session {
@@ -118,6 +143,14 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    // AGENTS.md: conta suspensa/pendente não usa operações com service role (token de calendário incluído)
+    if (!(await isAccountActive(supabase, authenticatedUserId))) {
+      return new Response('Forbidden - account not active', {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
+      });
+    }
+
     // Build query based on scope
     let sessions: Session[] = [];
     
@@ -132,14 +165,14 @@ Deno.serve(async (req: Request) => {
         .maybeSingle();
 
       // Also allow staff (admin/consultor) to access any workspace
-      const { data: staffRole } = await supabase
+      const { data: staffRoles } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', authenticatedUserId)
         .in('role', ['admin', 'consultor'])
-        .maybeSingle();
+        .limit(1);
 
-      if (!membership && !staffRole) {
+      if (!membership && !(staffRoles && staffRoles.length > 0)) {
         return new Response('Forbidden - no access to this workspace', {
           status: 403,
           headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
@@ -154,6 +187,7 @@ Deno.serve(async (req: Request) => {
           workspaces!inner(startups(name))
         `)
         .eq('workspace_id', workspaceId)
+        .neq('status', 'cancelled')
         .gte('scheduled_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Last 30 days
         .lte('scheduled_at', new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()) // Next 90 days
         .order('scheduled_at', { ascending: true })
@@ -182,6 +216,7 @@ Deno.serve(async (req: Request) => {
             workspaces!inner(startups(name))
           `)
           .in('workspace_id', workspaceIds)
+          .neq('status', 'cancelled')
           .gte('scheduled_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
           .lte('scheduled_at', new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString())
           .order('scheduled_at', { ascending: true })
@@ -198,42 +233,51 @@ Deno.serve(async (req: Request) => {
     log.info('Found sessions', { count: sessions.length });
 
     // Generate ICS content
-    const appUrl = Deno.env.get('APP_URL') || 'https://startupleiria.app';
+    const appUrl = Deno.env.get('PUBLIC_APP_URL') || Deno.env.get('APP_URL') || 'https://fb.startupleiria.com';
     
-    const icsEvents = sessions.map(session => {
+    const dtstamp = formatICSDate(new Date());
+    const icsEvents = sessions.flatMap(session => {
       const startDate = new Date(session.scheduled_at);
       const endDate = new Date(startDate.getTime() + (session.duration || 60) * 60 * 1000);
       const startupName = session.workspaces?.startups?.name || 'Session';
-      
+      const joinUrl = safeICSUrl(session.join_url);
+      const teamsUrl = safeICSUrl(session.teams_meeting_url);
+
       const description = [
         session.notes,
-        session.join_url ? `Join: ${session.join_url}` : null,
-        session.teams_meeting_url ? `Teams: ${session.teams_meeting_url}` : null,
-      ].filter(Boolean).join('\\n');
+        joinUrl ? `Join: ${joinUrl}` : null,
+        teamsUrl ? `Teams: ${teamsUrl}` : null,
+      ].filter(Boolean).join('\n');
 
-      return `BEGIN:VEVENT
-UID:session-${session.id}@startupleiria.app
-DTSTAMP:${formatICSDate(new Date())}
-DTSTART:${formatICSDate(startDate)}
-DTEND:${formatICSDate(endDate)}
-SUMMARY:${escapeICSText(`${session.title} - ${startupName}`)}
-${description ? `DESCRIPTION:${escapeICSText(description)}` : ''}
-${session.location ? `LOCATION:${escapeICSText(session.location)}` : ''}
-${session.teams_meeting_url || session.join_url ? `URL:${session.teams_meeting_url || session.join_url}` : ''}
-END:VEVENT`;
-    }).join('\n');
+      const lines = [
+        'BEGIN:VEVENT',
+        `UID:session-${session.id}@startupleiria.app`,
+        `DTSTAMP:${dtstamp}`,
+        `DTSTART:${formatICSDate(startDate)}`,
+        `DTEND:${formatICSDate(endDate)}`,
+        `SUMMARY:${escapeICSText(`${session.title} - ${startupName}`)}`,
+      ];
+      if (description) lines.push(`DESCRIPTION:${escapeICSText(description)}`);
+      if (session.location) lines.push(`LOCATION:${escapeICSText(session.location)}`);
+      if (teamsUrl || joinUrl) lines.push(`URL:${teamsUrl || joinUrl}`);
+      lines.push('END:VEVENT');
+      return lines.map(foldICSLine);
+    });
 
-    const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Startup Leiria//Session Calendar//EN
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-X-WR-CALNAME:Startup Leiria Sessions
-X-WR-TIMEZONE:Europe/Lisbon
-X-PUBLISHED-TTL:PT15M
-REFRESH-INTERVAL;VALUE=DURATION:PT15M
-${icsEvents}
-END:VCALENDAR`;
+    // RFC 5545: separador CRLF, sem linhas em branco
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Startup Leiria//Session Calendar//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'X-WR-CALNAME:Startup Leiria Sessions',
+      'X-WR-TIMEZONE:Europe/Lisbon',
+      'X-PUBLISHED-TTL:PT15M',
+      'REFRESH-INTERVAL;VALUE=DURATION:PT15M',
+      ...icsEvents,
+      'END:VCALENDAR',
+    ].join('\r\n') + '\r\n';
 
     log.info('Generated ICS feed successfully');
 

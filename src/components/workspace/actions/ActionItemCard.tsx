@@ -36,6 +36,7 @@ const PRIORITY_CONFIG: Record<string, { labelKey: string; color: string }> = {
 };
 
 import type { PlatformDocumentOption as PlatformDocument } from '@/lib/platformDocuments';
+import { safeExternalHref } from '@/lib/sanitizeUrl';
 export type { PlatformDocument };
 
 export interface ActionItemCardProps {
@@ -267,8 +268,8 @@ export const ActionItemCard = memo(function ActionItemCard({
                 <span className={`flex-1 truncate ${d.completed_at ? 'line-through text-muted-foreground' : ''}`}>
                   {d.title}
                 </span>
-                {d.external_url && (
-                  <a href={d.external_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline shrink-0" onClick={e => e.stopPropagation()}>
+                {safeExternalHref(d.external_url) && (
+                  <a href={safeExternalHref(d.external_url)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline shrink-0" onClick={e => e.stopPropagation()}>
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 )}

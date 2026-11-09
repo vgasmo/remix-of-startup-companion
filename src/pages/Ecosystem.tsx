@@ -38,7 +38,7 @@ export default function Ecosystem() {
   const tab = searchParams.get('tab') || 'startups';
 
   const [filters, setFilters] = useState<EcosystemFiltersState>({
-    search: '',
+    search: searchParams.get('q') || '',
     programId: 'all',
     stage: searchParams.get('stage') || 'all',
     tier: 'all',
@@ -93,7 +93,7 @@ export default function Ecosystem() {
           icon={<Globe2 className="h-6 w-6" />}
         />
 
-        <Tabs value={tab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
+        <Tabs value={tab} onValueChange={(v) => setSearchParams((prev) => { const n = new URLSearchParams(prev); n.set('tab', v); return n; }, { replace: true })} className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="startups" className="gap-2">
               <Building2 className="h-4 w-4" />

@@ -28,6 +28,7 @@ import { useContractIntakes } from '@/hooks/useContractIntakes';
 import { differenceInDays, addDays, format, differenceInMonths, addYears } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { notify } from "@/lib/notify";
+import { QueryErrorAlert } from './QueryErrorAlert';
 
 type AlertSeverity = 'critical' | 'warning' | 'info';
 type AlertType = 'pending_contract' | 'renewal_due' | 'anniversary' | 'missing_contract' | 'expired' | 'integrity_drift';
@@ -53,8 +54,8 @@ export function ContractLifecycleHub() {
   const [renewContract, setRenewContract] = useState<any>(null);
 
   
-  const { data: contracts } = useContracts();
-  const { data: funnelItems } = useFunnelItems();
+  const { data: contracts, isError: contractsError, refetch: refetchContracts } = useContracts();
+  const { data: funnelItems, isError: funnelError, refetch: refetchFunnel } = useFunnelItems();
   const { data: programs } = usePrograms();
   const { data: incubationTypes } = useIncubationTypes();
   const { data: buildings } = useBuildings();
@@ -332,6 +333,11 @@ export function ContractLifecycleHub() {
     }
   };
   
+  // A failed read must not leave an endless spinner.
+  if (!lifecycleData && (contractsError || funnelError)) {
+    return <QueryErrorAlert onRetry={() => { void refetchContracts(); void refetchFunnel(); }} />;
+  }
+
   if (!lifecycleData) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -379,7 +385,7 @@ export function ContractLifecycleHub() {
           <ClickableCard
             className="border-l-4 border-l-green-500"
             ariaLabel={t('lifecycle.activeContracts')}
-            onActivate={() => navigate('/admin?tab=backoffice&contractStatus=active')}
+            onActivate={() => navigate('/admin?tab=backoffice&subtab=contracts&contractStatus=active')}
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -397,7 +403,7 @@ export function ContractLifecycleHub() {
           <ClickableCard
             className="border-l-4 border-l-amber-500"
             ariaLabel={t('lifecycle.expiringContracts')}
-            onActivate={() => navigate('/admin?tab=backoffice&contractStatus=expiring')}
+            onActivate={() => navigate('/admin?tab=backoffice&subtab=contracts&contractStatus=expiring')}
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -433,7 +439,7 @@ export function ContractLifecycleHub() {
           <ClickableCard
             className="border-l-4 border-l-slate-500"
             ariaLabel={t('lifecycle.drafts')}
-            onActivate={() => navigate('/admin?tab=backoffice&contractStatus=draft')}
+            onActivate={() => navigate('/admin?tab=backoffice&subtab=contracts&contractStatus=draft')}
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -636,7 +642,7 @@ export function ContractLifecycleHub() {
                             {contractNumber && (
                               <button
                                 type="button"
-                                onClick={() => navigate(`/admin?tab=backoffice&contract=${contract.id}`)}
+                                onClick={() => navigate(`/admin?tab=backoffice&subtab=contracts&contract=${contract.id}`)}
                                 className="text-xs text-primary hover:underline focus:outline-none focus-visible:underline truncate text-left"
                                 title={t('admin.contracts.openDrawer', { defaultValue: 'Abrir contrato' })}
                               >

@@ -24,7 +24,7 @@ SELECT plan(22);
 
 -- Fixtures (all under a discardable schema so ROLLBACK is total).
 CREATE SCHEMA IF NOT EXISTS rc5_tap;
-SET LOCAL search_path = rc5_tap, public;
+SET LOCAL search_path = rc5_tap, public, extensions;
 
 -- Seed identities
 INSERT INTO auth.users(id, email) VALUES

@@ -50,6 +50,8 @@ interface SharedData {
   expires_at: string;
 }
 
+const MILESTONE_STATUS_KEY: Record<string, string> = { not_started: 'notStarted', in_progress: 'inProgress', completed: 'completed', delayed: 'delayed' };
+
 export default function SharedWorkspace() {
   const { token } = useParams<{ token: string }>();
   const { t } = useTranslation();
@@ -93,7 +95,7 @@ export default function SharedWorkspace() {
             <Lock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h1 className="text-xl font-semibold mb-2">{t('shared.accessDenied', 'Acesso Negado')}</h1>
             <p className="text-muted-foreground">
-              {error instanceof Error ? error.message : 'This link is invalid or has expired.'}
+              {t('shared.invalidLink', 'Este link é inválido ou expirou.')}
             </p>
           </CardContent>
         </Card>
@@ -131,7 +133,7 @@ export default function SharedWorkspace() {
           <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
             <Lock className="h-3 w-3" />
             <span>{t('shared.readOnly', 'Vista apenas de leitura')} • {t('shared.expires', 'Expira')} {format(new Date(expires_at), 'd MMM yyyy', { locale: dateLocale })}</span>
-            <Badge variant="outline" className="text-xs">{scope.replace('_', ' ')}</Badge>
+            <Badge variant="outline" className="text-xs">{t(`shared.scope.${scope}`, { defaultValue: scope })}</Badge>
           </div>
         </div>
       </div>
@@ -167,7 +169,7 @@ export default function SharedWorkspace() {
                     </div>
                     {kpi.target_value && (
                       <p className="text-xs text-muted-foreground mt-1">
-                        Target: {kpi.target_value}{kpi.unit || ''}
+                        {t('shared.target', 'Meta')}: {kpi.target_value}{kpi.unit || ''}
                       </p>
                     )}
                   </div>
@@ -201,7 +203,7 @@ export default function SharedWorkspace() {
                       <span className="font-medium">{milestone.title}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="capitalize">{milestone.status.replace('_', ' ')}</Badge>
+                      <Badge variant="outline">{t(`milestones.${MILESTONE_STATUS_KEY[milestone.status] ?? 'notStarted'}`)}</Badge>
                       {milestone.target_date && (
                         <span className="text-sm text-muted-foreground">
                           {format(new Date(milestone.target_date), 'd MMM', { locale: dateLocale })}

@@ -43,7 +43,7 @@ export function QuickNoteDialog({ open, onOpenChange, workspaceId, startupName }
         author_id: user.id,
         content: content.trim(),
         is_private: false,
-        visibility: 'team',
+        visibility: 'shared_with_mentor',
       });
       if (error) throw error;
 

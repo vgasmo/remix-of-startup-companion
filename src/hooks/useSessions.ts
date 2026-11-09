@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 import { track } from '@/lib/analytics';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
 import { sessionEventKey } from "@/lib/notificationEventKey";
+import { getIntlLocale } from '@/lib/dateUtils';
 
 // P1.2: Helper to log activity
 async function logActivity(action: string, entityType: string, entityId: string, workspaceId: string, metadata?: Record<string, unknown>) {
@@ -105,9 +106,10 @@ async function notifySessionEvent(
       }));
 
     if (inboxRows.length > 0) {
-      await supabase
+      const { error: inboxErr } = await supabase
         .from('notifications')
         .upsert(inboxRows, { onConflict: 'user_id,event_key', ignoreDuplicates: true });
+      if (inboxErr) logger.warn('session_inbox_notification_failed', { kind, sessionId: session.id, error: inboxErr.message });
     }
 
     // Email invites — always for rescheduled/cancelled, opt-in for created
@@ -361,7 +363,7 @@ export function useCreateSession(workspaceId: string) {
               startup_name: startupName,
               fields: [
                 ...(ownerName ? [{ name: 'Owner', value: ownerName }] : []),
-                { name: 'Date', value: new Date(data.scheduled_at).toLocaleDateString() },
+                { name: 'Date', value: new Date(data.scheduled_at).toLocaleDateString(getIntlLocale()) },
                 { name: 'Duration', value: `${data.duration || 60} min` },
               ],
               link: `${getAppUrl()}/workspace/${workspaceId}?tab=agenda`,
@@ -641,7 +643,7 @@ export function useUpdateSession(workspaceId: string) {
               startup_name: startupName,
               fields: [
                 ...(ownerName ? [{ name: 'Owner', value: ownerName }] : []),
-                { name: 'New Date', value: new Date(result.session.scheduled_at).toLocaleDateString() },
+                { name: 'New Date', value: new Date(result.session.scheduled_at).toLocaleDateString(getIntlLocale()) },
               ],
               link: `${getAppUrl()}/workspace/${workspaceId}?tab=agenda`,
               linkText: 'View Session',
@@ -707,17 +709,27 @@ export function useSessionActionItems(sessionId: string | undefined) {
     queryFn: async () => {
       if (!sessionId) return [];
       
+      // action_items.owner_user_id referencia auth.users (action_items_assigned_to_fkey), não public.profiles:
+      // o embed `profiles!action_items_owner_user_id_fkey` devolve PGRST200. Carregar os donos à parte.
       const { data, error } = await supabase
         .from('action_items')
-        .select(`
-          *,
-          owner:profiles!action_items_owner_user_id_fkey(id, full_name, avatar_url)
-        `)
+        .select('*')
         .eq('session_id', sessionId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      const rows = data || [];
+      const ownerIds = [...new Set(rows.map(r => r.owner_user_id).filter((id): id is string => !!id))];
+      const owners = new Map<string, { id: string; full_name: string | null; avatar_url: string | null }>();
+      if (ownerIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles_safe')
+          .select('id, full_name, avatar_url')
+          .in('id', ownerIds);
+        if (profilesError) throw profilesError;
+        (profiles || []).forEach(p => { if (p.id) owners.set(p.id, p as { id: string; full_name: string | null; avatar_url: string | null }); });
+      }
+      return rows.map(r => ({ ...r, owner: r.owner_user_id ? owners.get(r.owner_user_id) ?? null : null }));
     },
     enabled: !!sessionId,
   });

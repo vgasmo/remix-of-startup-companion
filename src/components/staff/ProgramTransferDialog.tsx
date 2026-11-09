@@ -66,7 +66,7 @@ export function ProgramTransferDialog({ workspaceId, currentProgramId, trigger }
       qc.invalidateQueries({ queryKey: ['workspace', workspaceId] });
       qc.invalidateQueries({ queryKey: ['workspaces'] });
       qc.invalidateQueries({ queryKey: ['workspaces-paged'] });
-      qc.invalidateQueries({ queryKey: ['ecosystem-items'] });
+      qc.invalidateQueries({ queryKey: ['ecosystem-items-v2'] });
       setOpen(false);
       setPreview(null);
       setTargetId('');

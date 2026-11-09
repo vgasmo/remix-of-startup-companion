@@ -15,6 +15,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.48.1";
 import { handleCorsOptions, corsJsonResponse } from "../_shared/cors.ts";
 import { isAccountActive } from '../_shared/security.ts';
+import { detectDelimiter, parseMoney } from '../_shared/importConfigCsv.ts';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_ROWS = 5000;
@@ -31,7 +32,7 @@ interface ParsedRow {
 }
 
 /** RFC 4180-style CSV line splitter with quoted-field support. */
-function parseCsv(text: string): string[][] {
+function parseCsv(text: string, delimiter = ","): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
   let field = "";
@@ -48,7 +49,7 @@ function parseCsv(text: string): string[][] {
       field += c; i++; continue;
     }
     if (c === '"') { inQuotes = true; i++; continue; }
-    if (c === ',') { row.push(field); field = ""; i++; continue; }
+    if (c === delimiter) { row.push(field); field = ""; i++; continue; }
     if (c === '\n') { row.push(field); rows.push(row); row = []; field = ""; i++; continue; }
     field += c; i++;
   }
@@ -71,7 +72,7 @@ function pickColumn(headers: string[], candidates: string[]): number {
   return -1;
 }
 
-async function assertStaff(sbUser: ReturnType<typeof createClient>, sbSvc: ReturnType<typeof createClient>) {
+async function assertStaff(sbUser: ReturnType<typeof createClient<any, "public">>, sbSvc: ReturnType<typeof createClient<any, "public">>) {
   const { data: userData } = await sbUser.auth.getUser();
   const uid = userData.user?.id;
   if (!uid) return { ok: false as const, status: 401, error: "unauthorized" };
@@ -95,7 +96,7 @@ serve(async (req) => {
     const sbUser = createClient(url, anon, { global: { headers: { Authorization: auth } } });
     const sbSvc = createClient(url, svcKey);
 
-    const staff = await assertStaff(sbUser as any, sbSvc as any);
+    const staff = await assertStaff(sbUser, sbSvc);
     if (!staff.ok) return corsJsonResponse({ error: staff.error }, req, staff.status);
 
     const body = await req.json().catch(() => ({}));
@@ -107,7 +108,7 @@ serve(async (req) => {
       if (!csvText || csvText.length > 5_000_000) {
         return corsJsonResponse({ error: "csv_text required (max 5MB)" }, req, 400);
       }
-      const table = parseCsv(csvText);
+      const table = parseCsv(csvText, detectDelimiter(csvText));
       if (table.length < 2) return corsJsonResponse({ error: "CSV empty or missing header" }, req, 400);
       const headers = table[0];
       const nameIdx = pickColumn(headers, ["name", "nome", "contact_name", "nome completo"]);
@@ -122,7 +123,10 @@ serve(async (req) => {
         return corsJsonResponse({ error: "CSV requires a 'name' or 'email' column" }, req, 400);
       }
 
-      const dataRows = table.slice(1, 1 + MAX_ROWS);
+      if (table.length - 1 > MAX_ROWS) {
+        return corsJsonResponse({ error: `CSV has ${table.length - 1} rows; max ${MAX_ROWS} per import. Split the file.` }, req, 413);
+      }
+      const dataRows = table.slice(1);
       const seenEmails = new Set<string>();
       const seenHashes = new Set<string>();
       const parsed: Array<ParsedRow & { valid: boolean; error: string | null; row_hash: string }> = [];
@@ -150,8 +154,7 @@ serve(async (req) => {
         const organization = get(orgIdx);
         const source = get(sourceIdx);
         const notes = get(notesIdx);
-        const rawValue = get(valueIdx).replace(/[€$\s]/g, "").replace(",", ".");
-        const value = rawValue ? Number(rawValue) : null;
+        const value = parseMoney(get(valueIdx));
 
         const hasIdentity = !!(name || email);
         const emailValid = !email || EMAIL_REGEX.test(email);
@@ -178,7 +181,7 @@ serve(async (req) => {
           organization_name: organization,
           source,
           notes,
-          deal_value: value !== null && !Number.isNaN(value) ? value : null,
+          deal_value: value,
           valid,
           error,
           row_hash,
@@ -245,7 +248,9 @@ serve(async (req) => {
 
     // ===== COMMIT (C4: atomic via RPC) =====
     const batchId: string = String(body?.batch_id ?? "");
-    if (!batchId) return corsJsonResponse({ error: "batch_id required" }, req, 400);
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(batchId)) {
+      return corsJsonResponse({ error: "batch_id (uuid) required" }, req, 400);
+    }
     const authorizedIds: string[] | null = Array.isArray(body?.authorized_row_ids) && body.authorized_row_ids.length > 0
       ? body.authorized_row_ids.map((v: unknown) => String(v))
       : null;

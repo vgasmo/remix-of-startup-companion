@@ -20,6 +20,9 @@ import { withCronRunLogging } from '../_shared/cronRun.ts';
 const FUNCTION_NAME = 'archive-contracts-to-sharepoint';
 const MAX_ATTEMPTS = 5;
 const ELIGIBILITY_DAYS = 7;
+// RC12: 'uploading' parado ha mais do que isto = execucao morta; volta a ficar elegivel
+const STALE_UPLOADING_MS = 30 * 60 * 1000;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface ArchiveResult {
   contractId: string;
@@ -57,9 +60,13 @@ Deno.serve(withCronRunLogging('archive-contracts-to-sharepoint', async (req) => 
   try {
     if (req.method === 'POST') {
       const body = await req.json().catch(() => ({}));
-      singleContractId = body.contract_id || null;
+      singleContractId = typeof body.contract_id === 'string' ? body.contract_id : null;
     }
   } catch { /* ignore */ }
+
+  if (singleContractId && !UUID_RE.test(singleContractId)) {
+    return corsJsonResponse({ error: 'contract_id must be a UUID', archived: 0, failed: 0 }, req, 400);
+  }
 
   try {
     // Check Graph API configuration
@@ -100,9 +107,10 @@ Deno.serve(withCronRunLogging('archive-contracts-to-sharepoint', async (req) => 
     } else {
       // Scheduled run: only contracts past eligibility window
       const eligibilityDate = new Date(Date.now() - ELIGIBILITY_DAYS * 24 * 60 * 60 * 1000).toISOString();
+      const staleUploading = new Date(Date.now() - STALE_UPLOADING_MS).toISOString();
       query = query
         .lte('signed_at', eligibilityDate)
-        .or('archive_status.is.null,archive_status.eq.failed,archive_status.eq.pending');
+        .or(`archive_status.is.null,archive_status.eq.failed,archive_status.eq.pending,and(archive_status.eq.uploading,updated_at.lt.${staleUploading})`);
     }
 
     const { data: contracts, error: queryError } = await query.limit(20); // Process in batches of 20
@@ -152,14 +160,23 @@ async function archiveContract(
   const contractId = contract.id;
 
   try {
-    // Mark as uploading
-    await supabase
+    // Mark as uploading. RC12: reclamacao atomica com bloqueio otimista no contador de tentativas,
+    // para o cron e o botao 'Executar agora' nao arquivarem o mesmo contrato em paralelo.
+    let claim = supabase
       .from('startup_contracts')
       .update({
         archive_status: 'uploading',
         archive_attempt_count: (contract.archive_attempt_count || 0) + 1,
       })
       .eq('id', contractId);
+    claim = contract.archive_attempt_count == null
+      ? claim.is('archive_attempt_count', null)
+      : claim.eq('archive_attempt_count', contract.archive_attempt_count);
+    const { data: claimed, error: claimError } = await claim.select('id');
+    if (claimError || !claimed?.length) {
+      log.warn(`Contract ${contractId} not claimed (concurrent run or DB error)`, { error: claimError?.message });
+      return { contractId, success: false, error: 'not_claimed' };
+    }
 
     // Get the canonical document. Bulk-imported contracts also fill
     // `contract_pdf_path`; fall back to it if `document_url` is missing.
@@ -180,7 +197,12 @@ async function archiveContract(
     let documentUrl = canonicalPath;
     let pdfBytes: Uint8Array;
     if (documentUrl.startsWith('http')) {
-      const pdfResponse = await fetch(documentUrl);
+      // RC12: document_url e texto livre do backoffice: so https, sem hosts locais/privados, com timeout
+      const parsedUrl = new URL(documentUrl);
+      if (parsedUrl.protocol !== 'https:' || isPrivateHost(parsedUrl.hostname)) {
+        throw new Error('document_url must be a public https URL');
+      }
+      const pdfResponse = await fetch(documentUrl, { signal: AbortSignal.timeout(30_000), redirect: 'error' });
       if (!pdfResponse.ok) {
         throw new Error(`Failed to download contract PDF: ${pdfResponse.status}`);
       }
@@ -198,6 +220,11 @@ async function archiveContract(
       pdfBytes = new Uint8Array(await fileData.arrayBuffer());
     }
 
+    // RC12: so arquivar PDFs de facto (o cabecalho %PDF- aparece nos primeiros bytes)
+    if (!new TextDecoder('latin1').decode(pdfBytes.slice(0, 1024)).includes('%PDF-')) {
+      throw new Error('Downloaded file is not a PDF');
+    }
+
     // Compute SHA-256 checksum
     const hashBuffer = await crypto.subtle.digest('SHA-256', pdfBytes.buffer as ArrayBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -206,6 +233,8 @@ async function archiveContract(
     // Skip if already archived with same checksum (idempotency)
     if (contract.archive_status === 'completed' && contract.archive_checksum === checksum) {
       log.info(`Contract ${contractId} already archived with same checksum, skipping`);
+      // RC12: a reclamacao acima pos 'uploading'; repor o estado final
+      await supabase.from('startup_contracts').update({ archive_status: 'completed' }).eq('id', contractId);
       return { contractId, success: true, archiveUrl: '' };
     }
 
@@ -213,13 +242,15 @@ async function archiveContract(
     const signedDate = new Date(contract.signed_at);
     const year = signedDate.getFullYear();
     const orgName = sanitizeFolderName(contract.organization_name || 'Sem_Nome');
-    const contractNum = contract.contract_number || contractId.slice(0, 8);
+    const contractNum = sanitizeFolderName(contract.contract_number || contractId.slice(0, 8));
     const dateStr = signedDate.toISOString().split('T')[0];
     const filename = `${contractNum}_signed_${dateStr}.pdf`;
     const archivePath = `/Contratos/${year}/${orgName}/${filename}`;
 
     // Upload to SharePoint via Graph API
-    const uploadUrl = `https://graph.microsoft.com/v1.0/drives/${driveId}/root:${archivePath}:/content`;
+    // RC12: '#', '%' e afins no nome da organizacao partiam o URL; codificar cada segmento
+    const encodedPath = archivePath.split('/').map((seg) => encodeURIComponent(seg)).join('/');
+    const uploadUrl = `https://graph.microsoft.com/v1.0/drives/${driveId}/root:${encodedPath}:/content`;
 
     const uploadResponse = await callGraphWithRetry(accessToken, uploadUrl, {
       method: 'PUT',
@@ -288,4 +319,15 @@ function sanitizeFolderName(name: string): string {
     .replace(/\s+/g, '_')
     .replace(/_+/g, '_')
     .slice(0, 100);
+}
+
+/** Recusa hosts locais/privados por nome ou IP literal (sem resolução DNS: não cobre DNS rebinding). */
+function isPrivateHost(hostname: string): boolean {
+  const h = hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  if (h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.local') || h.endsWith('.internal')) return true;
+  if (h.includes(':')) return h === '::1' || h === '::' || /^f[cd][0-9a-f]{2}:/.test(h) || h.startsWith('fe80:');
+  const m = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (!m) return false;
+  const [a, b] = [Number(m[1]), Number(m[2])];
+  return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
 }

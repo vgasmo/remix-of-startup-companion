@@ -28,6 +28,7 @@ import { useProgramSetupDrafts, useCreateProgramDraft } from '@/hooks/useProgram
 import { supabase } from '@/lib/supabaseClient';
 import { format } from 'date-fns';
 import { useDateLocale } from '@/lib/dateLocale';
+import { safeExternalHref } from '@/lib/sanitizeUrl';
 
 interface Program {
   id: string;
@@ -304,7 +305,7 @@ function GatesWeeksManager({ programId }: { programId: string }) {
                       </span>
                     )}
                     {hasUrl && !isEditing && (
-                      <a href={(week as any).meeting_url} target="_blank" rel="noopener noreferrer"
+                      <a href={safeExternalHref((week as any).meeting_url)} target="_blank" rel="noopener noreferrer"
                         className="text-xs text-primary flex items-center gap-0.5 hover:underline"
                         onClick={e => e.stopPropagation()}>
                         <Video className="h-3 w-3" />

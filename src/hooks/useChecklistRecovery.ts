@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { safeLocalStorage } from '@/lib/safeStorage';
 
 const CHECKLIST_DISMISSED_KEY = 'founder_checklist_dismissed';
 const WELCOME_DISMISSED_KEY = 'founder_welcome_dismissed';
@@ -16,23 +17,23 @@ export function useChecklistRecovery(userId?: string) {
   const welcomeKey = scopedKey(WELCOME_DISMISSED_KEY, userId);
 
   const [dismissed, setDismissed] = useState(() => ({
-    checklist: localStorage.getItem(checklistKey) === 'true',
-    welcome: localStorage.getItem(welcomeKey) === 'true',
+    checklist: safeLocalStorage.getItem(checklistKey) === 'true',
+    welcome: safeLocalStorage.getItem(welcomeKey) === 'true',
   }));
 
   const restoreChecklist = useCallback(() => {
-    localStorage.removeItem(checklistKey);
-    localStorage.removeItem(welcomeKey);
+    safeLocalStorage.removeItem(checklistKey);
+    safeLocalStorage.removeItem(welcomeKey);
     setDismissed({ checklist: false, welcome: false });
   }, [checklistKey, welcomeKey]);
 
   const dismissChecklist = useCallback(() => {
-    localStorage.setItem(checklistKey, 'true');
+    safeLocalStorage.setItem(checklistKey, 'true');
     setDismissed(prev => ({ ...prev, checklist: true }));
   }, [checklistKey]);
 
   const dismissWelcome = useCallback(() => {
-    localStorage.setItem(welcomeKey, 'true');
+    safeLocalStorage.setItem(welcomeKey, 'true');
     setDismissed(prev => ({ ...prev, welcome: true }));
   }, [welcomeKey]);
 

@@ -27,9 +27,11 @@ import type { Room, FloorMap } from '@/hooks/useBackoffice';
 import { FocusModeProvider, FocusModeToggle } from '@/components/ui/FocusModeToggle';
 import { FullViewOnly } from '@/components/dashboard/FocusGate';
 import { BrandSurface } from '@/components/ui/BrandSurface';
+import { QueryErrorAlert } from '@/components/admin/QueryErrorAlert';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBackofficeCommandCenter, useBackofficeFloorMaps } from '@/hooks/useBackofficeCommandCenter';
 import type { ContractWithDetails, AnniversaryAlert } from '@/hooks/useBackofficeCommandCenter';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 
 export function BackofficeDashboard() {
@@ -57,7 +59,7 @@ function BackofficeDashboardInner() {
   const { data: allRooms } = useRoomsWithAllocations();
 
   const { data: floorMaps } = useBackofficeFloorMaps();
-  const { data: dashboardData, isLoading } = useBackofficeCommandCenter();
+  const { data: dashboardData, isLoading, isError, refetch } = useBackofficeCommandCenter();
 
   const handleOpenMap = (fm: FloorMap) => {
     setSelectedFloorMap(fm);
@@ -91,7 +93,11 @@ function BackofficeDashboardInner() {
     );
   }
 
-  const data = dashboardData!;
+  // A failed read must not render as "0% occupancy / 0 expiring contracts / no alerts".
+  if (isError || !dashboardData) {
+    return <QueryErrorAlert onRetry={() => void refetch()} />;
+  }
+  const data = dashboardData;
 
   return (
     <div className="space-y-6">
@@ -184,7 +190,7 @@ function BackofficeDashboardInner() {
                   {data.waitingListCount > 0 && (
                     <button
                       type="button"
-                      onClick={() => navigate('/admin?tab=backoffice&subtab=waitlist')}
+                      onClick={() => navigate('/admin?tab=backoffice&subtab=spaces&view=waitlist')}
                       className="text-xs text-warning hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
                     >
                       {data.waitingListCount} {t('admin.backoffice.opsHub.inWaitlist', { defaultValue: 'in waitlist' })}
@@ -381,7 +387,7 @@ function BackofficeDashboardInner() {
                               {contract.incubation_type && (
                                 <span>{contract.incubation_type.name}</span>
                               )}
-                              <span className="ml-auto">€{contract.monthly_fee?.toLocaleString()}/mo</span>
+                              <span className="ml-auto">€{contract.monthly_fee?.toLocaleString(getIntlLocale())}/mo</span>
                             </div>
                           </div>
                         );

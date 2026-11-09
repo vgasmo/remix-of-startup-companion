@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
+import { serializeCsv } from '@/lib/csv';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePrograms } from '@/hooks/useAdminData';
 import {
@@ -288,7 +289,18 @@ export default function BulkContractImport() {
       onConfirm: async () => {
         setCommitting(true);
         try {
-          const { data, error } = await invokeWithAuth<{ committed: number; failed: number; errors: Array<{ row_id: string; error: string }> }>(
+          // A confirmação do administrador é a autorização de commit: marca as linhas selecionadas
+          // (a edge function recusa linhas com commit_authorized=false).
+          const { data: authorized, error: authErr } = await supabase
+            .from('bulk_import_rows')
+            .update({ commit_authorized: true })
+            .in('id', selectedReady.map(r => r.id))
+            .select('id');
+          if (authErr) throw authErr;
+          if ((authorized?.length ?? 0) !== selectedReady.length) {
+            throw new Error(t('bulkImport.errors.authorizeFailed', 'Não foi possível autorizar todas as linhas.'));
+          }
+          const { data, error } = await invokeWithAuth<{ committed: number; failed: number; skipped_unauthorized?: string[]; errors: Array<{ row_id: string; error: string }> }>(
             'bulk-import-commit',
             { body: { batch_id: batchId } }
           );
@@ -319,17 +331,14 @@ export default function BulkContractImport() {
       notify.info(t('bulkImport.noErrors', 'No errors to export'));
       return;
     }
-    const header = 'filename,error,extracted_startup_name,extracted_nif\n';
-    const body = failed.map(r => {
-      const data = r.edited_json || r.extracted_json || {};
-      return [
-        JSON.stringify(r.pdf_filename),
-        JSON.stringify(r.error_message || ''),
-        JSON.stringify(data.startup_name || ''),
-        JSON.stringify(data.nif || ''),
-      ].join(',');
-    }).join('\n');
-    const blob = new Blob([header + body], { type: 'text/csv' });
+    const csv = serializeCsv([
+      ['filename', 'error', 'extracted_startup_name', 'extracted_nif'],
+      ...failed.map(r => {
+        const data = r.edited_json || r.extracted_json || {};
+        return [r.pdf_filename, r.error_message || '', data.startup_name || '', data.nif || ''];
+      }),
+    ]);
+    const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -483,7 +492,7 @@ export default function BulkContractImport() {
                   disabled={files.length === 0 || uploading || !programId} loading={uploading}
                 >
                   {uploading ? (
-                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t('bulkImport.upload.uploading', 'Uploading...')}</>
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t('common.uploading', 'Uploading...')}</>
                   ) : (
                     <><Sparkles className="h-4 w-4 mr-2" />{t('bulkImport.upload.start', 'Upload & extract with AI')}</>
                   )}

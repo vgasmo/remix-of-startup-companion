@@ -116,10 +116,11 @@ export async function syncIntakeOnCompleted(
   workspaceId: string | null,
   performedBy: string | null,
   source: string,
-): Promise<SyncResult & { workspaceId?: string | null; awaitingFounder?: boolean }> {
+): Promise<SyncResult & { workspaceId?: string | null; awaitingFounder?: boolean; founderEnsured?: boolean }> {
   const errors: string[] = []
   let effectiveWorkspaceId = workspaceId
   let awaitingFounder = false
+  let founderEnsured = false
   let workspaceActivated = false
 
   // No completion side effects without a persisted complete signature.
@@ -187,7 +188,13 @@ export async function syncIntakeOnCompleted(
       .select('status')
       .eq('id', effectiveWorkspaceId)
       .maybeSingle()
-    if (wsNow && ['pending', 'claimed', 'imported_unclaimed', 'draft'].includes(wsNow.status)) {
+    const { count: activeFounders } = await supabase
+      .from('workspace_users')
+      .select('user_id', { count: 'exact', head: true })
+      .eq('workspace_id', effectiveWorkspaceId)
+      .eq('active', true)
+      .eq('role', 'founder')
+    if (wsNow && (['pending', 'claimed', 'imported_unclaimed', 'draft'].includes(wsNow.status) || (activeFounders ?? 0) === 0)) {
       const { data: signer } = await supabase
         .from('startup_contracts')
         .select('legal_representative_email, legal_representative_name')
@@ -201,6 +208,7 @@ export async function syncIntakeOnCompleted(
       }
       const acct = await autoCreateFounderAccount(supabase, founderInput)
       if (!acct.ok) await enqueueFounderInviteTask(supabase, founderInput, acct.reason || 'unknown')
+      else founderEnsured = true
     }
   }
 
@@ -231,6 +239,7 @@ export async function syncIntakeOnCompleted(
       const { error: crmErr } = await supabase.from('funnel_items')
         .update({ stage: 'contracted' })
         .eq('id', intake.funnel_item_id)
+        .not('stage', 'in', '(contracted,incubating,accelerating,archived,rejected)')
       if (crmErr) {
         console.warn('[lifecycleSync] funnel_items contracted update failed', {
           funnelItemId: intake.funnel_item_id, error: crmErr.message,
@@ -243,6 +252,7 @@ export async function syncIntakeOnCompleted(
     const { error: crmErr } = await supabase.from('funnel_items')
       .update({ stage: 'contracted' })
       .eq('id', fallbackFunnelItemId)
+      .not('stage', 'in', '(contracted,incubating,accelerating,archived,rejected)')
     if (crmErr) errors.push(`funnel_stage_fallback: ${crmErr.message}`)
   }
 
@@ -261,10 +271,10 @@ export async function syncIntakeOnCompleted(
       awaitingFounder = true
     } else {
       const { error: wsErr } = await supabase.from('workspaces')
-        .update({ status: 'active', updated_at: new Date().toISOString() })
+        .update({ status: 'active', archived_at: null, updated_at: new Date().toISOString() })
         .eq('id', effectiveWorkspaceId)
         .is('blocked_at', null)
-        .in('status', ['pending', 'claimed', 'imported_unclaimed'])
+        .in('status', ['pending', 'claimed', 'imported_unclaimed', 'archived'])
       if (wsErr) {
         console.error('[lifecycleSync] workspace activation failed', { workspaceId: effectiveWorkspaceId, error: wsErr.message })
         errors.push(`workspace_activate: ${wsErr.message}`)
@@ -300,6 +310,7 @@ export async function syncIntakeOnCompleted(
     intakeId: intake?.id,
     workspaceId: effectiveWorkspaceId,
     awaitingFounder,
+    founderEnsured,
     errors: errors.length ? errors : undefined,
   }
 }

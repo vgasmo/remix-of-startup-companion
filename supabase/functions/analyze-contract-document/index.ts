@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { requireUser, generateRequestId, createLogger } from '../_shared/security.ts';
+import { requireUser, generateRequestId, createLogger, isAccountActive } from '../_shared/security.ts';
+import { validateOptionalUUID } from '../_shared/validation.ts';
 
 const FUNCTION_NAME = 'analyze-contract-document';
 
@@ -25,14 +26,23 @@ Deno.serve(async (req: Request) => {
 
     log.info('Contract document analysis requested', { userId });
 
-    const { filePath, workspaceId } = await req.json();
-    if (!filePath || typeof filePath !== 'string') {
+    const body = await req.json().catch(() => null);
+    const filePath = body?.filePath;
+    if (!filePath || typeof filePath !== 'string' || filePath.length > 512 || filePath.split('/').includes('..')) {
       return corsJsonResponse({ error: 'filePath is required' }, req, 400);
     }
+    const wsCheck = validateOptionalUUID(body?.workspaceId, 'workspaceId');
+    if (!wsCheck.valid) return corsJsonResponse({ error: wsCheck.error }, req, 400);
+    const workspaceId = wsCheck.value ?? null;
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // RC12: conta suspensa/pendente não usa o service role (regra AGENTS "account status via shared helper")
+    if (!(await isAccountActive(supabase, userId))) {
+      return corsJsonResponse({ error: 'Forbidden' }, req, 403);
+    }
 
     // Verify user is staff
     const { data: roles } = await supabase
@@ -55,6 +65,12 @@ Deno.serve(async (req: Request) => {
       return corsJsonResponse({ error: 'Could not download file' }, req, 404);
     }
 
+    if (fileData.size > 10 * 1024 * 1024) {
+      return corsJsonResponse({ error: 'File too large (max 10MB)' }, req, 413);
+    }
+    if (fileData.type && !/pdf|octet-stream/i.test(fileData.type)) {
+      return corsJsonResponse({ error: 'Only PDF files are supported' }, req, 415);
+    }
     // Convert PDF to base64 for AI analysis
     const arrayBuffer = await fileData.arrayBuffer();
     // RC11: conversao por blocos; o spread de um PDF de varios MB excedia o limite de argumentos
@@ -165,6 +181,7 @@ Return ONLY valid JSON matching the schema.`;
         ],
         tool_choice: { type: 'function', function: { name: 'contract_extraction' } },
       }),
+      signal: AbortSignal.timeout(90_000),
     });
 
     if (!aiResponse.ok) {
@@ -194,15 +211,16 @@ Return ONLY valid JSON matching the schema.`;
       }
     }
 
-    // Log activity
-    await supabase.from('activity_log').insert({
+    // Log activity (RC12: activity_log.entity_id é uuid; o caminho do ficheiro vai em metadata)
+    const { error: logError } = await supabase.from('activity_log').insert({
       user_id: userId,
       action: 'contract_document_analyzed',
       entity_type: 'contract_document',
-      entity_id: filePath,
-      workspace_id: workspaceId || null,
-      metadata: { risk_level: extraction?.risk_level, has_extraction: !!extraction },
+      entity_id: null,
+      workspace_id: workspaceId,
+      metadata: { file_path: filePath, risk_level: extraction?.risk_level, has_extraction: !!extraction },
     });
+    if (logError) log.warn('activity_log insert failed', { error: logError.message });
 
     return corsJsonResponse({ extraction }, req);
   } catch (error) {

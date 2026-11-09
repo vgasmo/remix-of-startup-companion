@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(16);
+SELECT plan(17);
 
 -- Setup: users with roles (RC11: fixtures alinhadas com o esquema real; o teste original nunca correu)
 INSERT INTO auth.users (id, email, email_confirmed_at)
@@ -30,22 +30,22 @@ INSERT INTO public.programs (id, name) VALUES ('e0000000-0000-0000-0000-00000000
 -- 1. backoffice_archive_workspace assertions
 INSERT INTO public.startups (id, name, main_contact_email) VALUES ('10000000-0000-0000-0000-000000000001', 'Startup 1', 'founder@test.com');
 INSERT INTO public.workspaces (id, startup_id, program_id, status) VALUES ('20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-0000000000e1', 'active');
-INSERT INTO public.startup_contracts (workspace_id, status, contract_number, start_date) VALUES ('20000000-0000-0000-0000-000000000001', 'active', 'C-001', CURRENT_DATE);
+INSERT INTO public.startup_contracts (workspace_id, status, contract_number, start_date, signed_at, signature_status) VALUES ('20000000-0000-0000-0000-000000000001', 'active', 'C-001', CURRENT_DATE, now(), 'signed');
 
 -- Admin can't archive if active contract exists
 SELECT set_config('role', 'authenticated', true);
-SELECT set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-000000000001"}', true);
+SELECT set_config('request.jwt.claims', '{"role": "authenticated", "sub": "00000000-0000-0000-0000-000000000001"}', true);
 SELECT is(public.backoffice_archive_workspace('20000000-0000-0000-0000-000000000001'), false, 'Admin cannot archive workspace with active contract');
 
 -- Backoffice can't archive if active contract exists
-SELECT set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-000000000002"}', true);
+SELECT set_config('request.jwt.claims', '{"role": "authenticated", "sub": "00000000-0000-0000-0000-000000000002"}', true);
 SELECT is(public.backoffice_archive_workspace('20000000-0000-0000-0000-000000000001'), false, 'Backoffice cannot archive workspace with active contract');
 
 -- Terminate contract and check backoffice can archive
 SELECT set_config('role', 'postgres', true);
 UPDATE public.startup_contracts SET status = 'terminated' WHERE workspace_id = '20000000-0000-0000-0000-000000000001';
 SELECT set_config('role', 'authenticated', true);
-SELECT set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-000000000002"}', true);
+SELECT set_config('request.jwt.claims', '{"role": "authenticated", "sub": "00000000-0000-0000-0000-000000000002"}', true);
 SELECT is(public.backoffice_archive_workspace('20000000-0000-0000-0000-000000000001'), true, 'Backoffice can archive workspace with only terminated contracts');
 
 -- 2. workspace_invitations assertions
@@ -62,7 +62,12 @@ SELECT results_eq('SELECT role::text FROM workspace_invitations WHERE id = ''300
 -- non-staff cannot change role
 SELECT set_config('role', 'authenticated', true);
 SELECT set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-000000000003", "role": "authenticated"}', true);
-SELECT throws_ok($$UPDATE public.workspace_invitations SET role = 'founder' WHERE id = '30000000-0000-0000-0000-000000000001'$$, '42501', NULL, 'Non-staff cannot update invitation role');
+-- RC12: sem a política que lia auth.users, o UPDATE de um não-staff afeta 0 linhas (já não rebenta com 42501 por "permission denied for table users")
+SELECT lives_ok($$UPDATE public.workspace_invitations SET role = 'founder' WHERE id = '30000000-0000-0000-0000-000000000001'$$, 'Non-staff update on invitation is a no-op');
+SELECT set_config('role', 'postgres', true);
+SELECT is((SELECT role FROM public.workspace_invitations WHERE id = '30000000-0000-0000-0000-000000000001'), 'team_member', 'Non-staff cannot update invitation role');
+SELECT set_config('role', 'authenticated', true);
+SELECT set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-000000000003", "role": "authenticated"}', true);
 
 -- 3. claim_startup and suspended
 SELECT set_config('role', 'postgres', true);

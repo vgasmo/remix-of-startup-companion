@@ -29,6 +29,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { AccessDenied } from '@/components/ui/AccessDenied';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
+import { getIntlLocale } from '@/lib/dateUtils';
 
 type TestStatus = 'idle' | 'running' | 'pass' | 'fail' | 'warn';
 
@@ -57,7 +58,7 @@ export default function CrmDiagnostics() {
   const [metricsTest, setMetricsTest] = useState<TestResult>({ status: 'idle', message: 'Not run' });
 
   const addLog = (msg: string) => {
-    setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
+    setLogs(prev => [...prev, `[${new Date().toLocaleTimeString(getIntlLocale())}] ${msg}`]);
   };
 
   if (!isStaff) {

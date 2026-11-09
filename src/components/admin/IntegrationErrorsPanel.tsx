@@ -20,6 +20,7 @@ import {
 const integrationTypeLabels: Record<string, string> = {
   outlook: 'Outlook Calendar',
   teams: 'Microsoft Teams',
+  teams_transcript: 'Teams (transcrição)',
   webhook: 'Webhook',
   email: 'Email',
 };
@@ -38,7 +39,7 @@ interface IntegrationErrorsPanelProps {
 
 export function IntegrationErrorsPanel({ compact = false, maxHeight = '300px' }: IntegrationErrorsPanelProps) {
   const { t } = useTranslation();
-  const { data: errors, isLoading, refetch } = useUnresolvedIntegrationErrors();
+  const { data: errors, isLoading, isError, refetch } = useUnresolvedIntegrationErrors();
   const resolveMutation = useResolveIntegrationError();
 
   const handleResolve = async (errorId: string) => {
@@ -84,7 +85,13 @@ export function IntegrationErrorsPanel({ compact = false, maxHeight = '300px' }:
         </div>
       </CardHeader>
       <CardContent className="pt-0 pb-3">
-        {errorCount === 0 ? (
+        {isError ? (
+          // A failed read must never show the green "all smooth" state.
+          <div className="flex items-center gap-2 text-sm text-destructive py-2">
+            <AlertCircle className="h-4 w-4" />
+            {t('integrationErrors.loadFailed', 'Não foi possível ler os erros de integração. A tabela ou as permissões podem estar em falta.')}
+          </div>
+        ) : errorCount === 0 ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
             <CheckCircle className="h-4 w-4 text-[hsl(var(--success))]" />
             {t('integrationErrors.allSmooth')}
@@ -103,7 +110,7 @@ export function IntegrationErrorsPanel({ compact = false, maxHeight = '300px' }:
                         variant="secondary"
                         className={integrationTypeColors[error.integration_type] || ''}
                       >
-                        {integrationTypeLabels[error.integration_type] || error.integration_type}
+                        {integrationTypeLabels[error.integration_type] || error.integration_type || error.source}
                       </Badge>
                       {error.error_code && (
                         <Badge variant="outline" className="text-xs">

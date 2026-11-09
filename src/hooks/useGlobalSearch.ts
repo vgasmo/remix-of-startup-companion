@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { logger } from '@/lib/logger';
 import { notify } from "@/lib/notify";
+import { useAuth } from '@/contexts/AuthContext';
 
 import i18n from '@/i18n';
 const t = i18n.t.bind(i18n);
@@ -33,6 +34,15 @@ export interface Tag {
   created_at: string;
 }
 
+// Helper: build a PostgREST `or=` filter of ILIKE conditions for a user-typed term.
+// The pattern is double-quoted (so commas/parentheses in the term no longer break the logic tree)
+// and `%`, `_` and `\` typed by the user are escaped so they match literally.
+export function orIlike(columns: string[], term: string): string {
+  const like = term.replace(/[\\%_]/g, (c) => `\\${c}`);
+  const quoted = `"%${like.replace(/[\\"]/g, (c) => `\\${c}`)}%"`;
+  return columns.map((c) => `${c}.ilike.${quoted}`).join(',');
+}
+
 // Helper: Build FTS query from search term
 function buildTsQuery(searchTerm: string): string {
   return searchTerm.split(' ').filter(Boolean).map(w => `${w}:*`).join(' & ');
@@ -40,14 +50,15 @@ function buildTsQuery(searchTerm: string): string {
 
 // Global search across multiple tables using FTS
 export function useGlobalSearch(filters: SearchFilters) {
+  const { isStaff } = useAuth();
   return useQuery({
-    queryKey: ['global-search', filters],
+    queryKey: ['global-search', filters, isStaff],
     queryFn: async () => {
       if (!filters.query || filters.query.length < 2) return [];
 
       const searchTerm = filters.query.trim();
       const tsQuery = buildTsQuery(searchTerm);
-      const ilikeTerm = `%${searchTerm}%`;
+      const ilikeTerm = `%${searchTerm.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
       
       const typesToSearch = filters.types?.length 
         ? filters.types 
@@ -81,7 +92,7 @@ export function useGlobalSearch(filters: SearchFilters) {
           let query = supabase
             .from('sessions')
             .select('id, workspace_id, title, notes, updated_at, workspaces!inner(startup:startups(name))')
-            .or(`title.ilike.${ilikeTerm},notes.ilike.${ilikeTerm},agenda.ilike.${ilikeTerm}`)
+            .or(orIlike(['title', 'notes', 'agenda'], searchTerm))
             .limit(20);
 
           if (filters.workspaceIds?.length) {
@@ -91,7 +102,8 @@ export function useGlobalSearch(filters: SearchFilters) {
             query = query.gte('updated_at', dateFilter);
           }
 
-          const { data } = await query;
+          const { data, error } = await query;
+          if (error) throw error;
           let results = (data || []).map(s => ({
             type: 'session' as const,
             id: s.id,
@@ -134,7 +146,7 @@ export function useGlobalSearch(filters: SearchFilters) {
           let query = supabase
             .from('action_items')
             .select('id, workspace_id, title, description, updated_at, workspaces!inner(startup:startups(name))')
-            .or(`title.ilike.${ilikeTerm},description.ilike.${ilikeTerm}`)
+            .or(orIlike(['title', 'description'], searchTerm))
             .limit(20);
 
           if (filters.workspaceIds?.length) {
@@ -144,7 +156,8 @@ export function useGlobalSearch(filters: SearchFilters) {
             query = query.gte('updated_at', dateFilter);
           }
 
-          const { data } = await query;
+          const { data, error } = await query;
+          if (error) throw error;
           let results = (data || []).map(a => ({
             type: 'action' as const,
             id: a.id,
@@ -197,7 +210,8 @@ export function useGlobalSearch(filters: SearchFilters) {
             query = query.gte('updated_at', dateFilter);
           }
 
-          const { data } = await query;
+          const { data, error } = await query;
+          if (error) throw error;
           return (data || []).map(n => ({
             type: 'note' as const,
             id: n.id,
@@ -217,7 +231,7 @@ export function useGlobalSearch(filters: SearchFilters) {
           let query = supabase
             .from('documents')
             .select('id, workspace_id, name, description, updated_at, workspaces!inner(startup:startups(name))')
-            .or(`name.ilike.${ilikeTerm},description.ilike.${ilikeTerm}`)
+            .or(orIlike(['name', 'description'], searchTerm))
             .limit(20);
 
           if (filters.workspaceIds?.length) {
@@ -227,7 +241,8 @@ export function useGlobalSearch(filters: SearchFilters) {
             query = query.gte('updated_at', dateFilter);
           }
 
-          const { data } = await query;
+          const { data, error } = await query;
+          if (error) throw error;
           return (data || []).map(d => ({
             type: 'document' as const,
             id: d.id,
@@ -248,7 +263,7 @@ export function useGlobalSearch(filters: SearchFilters) {
             .from('milestones')
             .select('id, workspace_id, title, description, updated_at, workspaces!inner(startup:startups(name))')
             .is('archived_at', null)
-            .or(`title.ilike.${ilikeTerm},description.ilike.${ilikeTerm}`)
+            .or(orIlike(['title', 'description'], searchTerm))
             .limit(20);
 
           if (filters.workspaceIds?.length) {
@@ -258,7 +273,8 @@ export function useGlobalSearch(filters: SearchFilters) {
             query = query.gte('updated_at', dateFilter);
           }
 
-          const { data } = await query;
+          const { data, error } = await query;
+          if (error) throw error;
           return (data || []).map(m => ({
             type: 'milestone' as const,
             id: m.id,
@@ -292,7 +308,8 @@ export function useGlobalSearch(filters: SearchFilters) {
             query = query.gte('updated_at', dateFilter);
           }
 
-          const { data } = await query;
+          const { data, error } = await query;
+          if (error) throw error;
           
           let results = (data || [])
             .filter(m => {
@@ -325,12 +342,13 @@ export function useGlobalSearch(filters: SearchFilters) {
       // Search startups (RLS will filter to what the user can see)
       if (typesToSearch.includes('startup')) {
         searchPromises.push((async () => {
-          const { data: exactData } = await supabase
+          const { data: exactData, error: exactError } = await supabase
             .from('startups')
             .select('id, name, description, updated_at')
-            .or(`name.ilike.${ilikeTerm},description.ilike.${ilikeTerm}`)
+            .or(orIlike(['name', 'description'], searchTerm))
             .is('archived_at', null)
             .limit(20);
+          if (exactError) throw exactError;
 
           let data = exactData || [];
 
@@ -362,7 +380,7 @@ export function useGlobalSearch(filters: SearchFilters) {
             title: s.name,
             snippet: s.description?.slice(0, 150) || '',
             updated_at: s.updated_at,
-            url: wsByStartup[s.id] ? `/workspace/${wsByStartup[s.id]}` : `/ecosystem?startup=${s.id}`,
+            url: wsByStartup[s.id] ? `/workspace/${wsByStartup[s.id]}` : `/ecosystem?q=${encodeURIComponent(s.name)}`,
             workspace_name: s.name,
           }));
         })());
@@ -402,7 +420,7 @@ export function useGlobalSearch(filters: SearchFilters) {
           const { data, error } = await supabase
             .from('startup_contracts')
             .select('id, contract_number, status, updated_at, workspace_id, organization_name, workspace:workspaces(startup:startups(name))')
-            .or(`contract_number.ilike.${ilikeTerm}`)
+            .or(orIlike(['contract_number'], searchTerm))
             .limit(20);
           if (error) logger.warn('[useGlobalSearch] contract search failed', { error: String(error) });
           return (data || []).map((c: any) => ({
@@ -421,11 +439,12 @@ export function useGlobalSearch(filters: SearchFilters) {
       // Search CRM leads (staff via RLS)
       if (typesToSearch.includes('lead')) {
         searchPromises.push((async () => {
-          const { data: exactData } = await supabase
+          const { data: exactData, error: exactError } = await supabase
             .from('funnel_items')
             .select('id, organization_name, contact_name, contact_email, stage, updated_at')
-            .or(`organization_name.ilike.${ilikeTerm},contact_name.ilike.${ilikeTerm},contact_email.ilike.${ilikeTerm}`)
+            .or(orIlike(['organization_name', 'contact_name', 'contact_email'], searchTerm))
             .limit(20);
+          if (exactError) throw exactError;
 
           let data: any[] = exactData || [];
 
@@ -445,7 +464,7 @@ export function useGlobalSearch(filters: SearchFilters) {
             title: l.organization_name || l.contact_name || 'Lead',
             snippet: `${l.contact_name || ''} ${l.contact_email ? `• ${l.contact_email}` : ''} • ${l.stage || ''}`.trim(),
             updated_at: l.updated_at,
-            url: `/crm?lead=${l.id}`,
+            url: `/crm?open=${l.id}`,
           }));
         })());
       }
@@ -456,7 +475,7 @@ export function useGlobalSearch(filters: SearchFilters) {
           const { data, error } = await supabase
             .from('profiles_safe')
             .select('id, full_name, email')
-            .or(`full_name.ilike.${ilikeTerm},email.ilike.${ilikeTerm}`)
+            .or(orIlike(['full_name', 'email'], searchTerm))
             .limit(15);
           if (error) logger.warn('[useGlobalSearch] people search failed', { error: String(error) });
           return (data || []).map((p: any) => ({
@@ -466,7 +485,7 @@ export function useGlobalSearch(filters: SearchFilters) {
             title: p.full_name || p.email || 'Person',
             snippet: p.email || '',
             updated_at: new Date().toISOString(),
-            url: `/mentors?user=${p.id}`,
+            url: isStaff ? `/profile/${p.id}` : `/mentors?mentor=${p.id}`,
           }));
         })());
       }
@@ -483,6 +502,11 @@ export function useGlobalSearch(filters: SearchFilters) {
           console.warn('[global-search] partial source failure', { sourceIndex: idx, reason: String(r.reason) });
         }
       });
+
+      // If every source failed, surface the error instead of an empty (misleading) result list.
+      if (settled.length > 0 && settled.every((r) => r.status === 'rejected')) {
+        throw (settled[0] as PromiseRejectedResult).reason;
+      }
 
       // Sort by updated_at descending
       results.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { CheckCircle2, XCircle, Clock, User, Mail, AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface ClaimRequest {
   id: string;
@@ -147,7 +148,7 @@ export function ClaimRequestsQueue() {
                 {claim.match_method === 'email_match' ? 'Email Match' : t('claimStartup.manualRequest', { defaultValue: 'Pedido Manual' })}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                {new Date(claim.requested_at).toLocaleDateString()}
+                {new Date(claim.requested_at).toLocaleDateString(getIntlLocale())}
               </span>
             </div>
           </div>

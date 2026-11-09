@@ -6,7 +6,7 @@
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getCorsHeaders, handleCorsOptions } from '../_shared/cors.ts'
-import { isServiceRoleBearer } from '../_shared/security.ts'
+import { isServiceRoleBearer, isAccountActive } from '../_shared/security.ts'
 
 interface ContractData {
   contractNumber: string | null;
@@ -624,7 +624,8 @@ Deno.serve(async (req) => {
         .from('user_roles').select('role').eq('user_id', authUser.id)
       const isStaffOrBackoffice = (callerRoles ?? []).some((r: { role: string }) =>
         r.role === 'admin' || r.role === 'consultor' || r.role === 'backoffice')
-      if (!isStaffOrBackoffice) {
+      // RC12: staff suspenso ou pendente mantem user_roles e JWT valido; a funcao grava com service role
+      if (!isStaffOrBackoffice || !(await isAccountActive(supabase, authUser.id))) {
         return new Response(JSON.stringify({ error: 'Forbidden' }), {
           status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
@@ -719,7 +720,9 @@ Deno.serve(async (req) => {
     const pdfBytes = generateContractPdf(contractData)
 
     // Contrato fechado (assinado/ativo/terminado/expirado): devolve só a pré-visualização, nunca regrava o PDF canónico
+    // RC12: partially_signed (assinatura digital em duas partes) tambem esta congelado pelo trigger guard_contract_integrity
     const isLocked = !!contract.signed_at || !['draft', 'pending_signature'].includes(String(contract.status))
+      || ['partially_signed', 'signed', 'completed'].includes(String(contract.signature_status))
     const fileName = `contract_${contract.contract_number || contractId.slice(0, 8)}_${Date.now()}.pdf`
     const documentPath = `generated/${fileName}`
 

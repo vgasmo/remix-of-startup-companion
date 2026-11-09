@@ -150,6 +150,16 @@ export function BackofficeContractsTab() {
     }
   }, []);
 
+  useEffect(() => {
+    const cs = searchParams.get('contractStatus');
+    if (!cs) return;
+    const mapped = cs === 'expiring' ? 'active' : cs;
+    if ((STATUS_KEYS as readonly string[]).includes(mapped)) setStatusFilter(mapped);
+    const next = new URLSearchParams(searchParams);
+    next.delete('contractStatus');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
   // Bulk contract creation state
   const [selectedWorkspaces, setSelectedWorkspaces] = useState<Set<string>>(new Set());
   const [bulkIncubationType, setBulkIncubationType] = useState<string>('');
@@ -339,34 +349,40 @@ export function BackofficeContractsTab() {
     // in the drawer and any downstream consumer show a single unified view.
     const discountPct = Number(values.discount_percentage || 0);
     if (newContract?.id && discountPct > 0 && discount_start_date) {
-      try {
-        await supabase.from('contract_discounts').insert({
-          contract_id: newContract.id,
-          discount_percentage: discountPct,
-          start_date: discount_start_date,
-          end_date: discount_end_date || null,
-          reason: discount_reason || null,
-          approved_by: user?.id || null,
-        } as any);
-      } catch (err) {
-        console.warn('[contracts] Failed to mirror discount into contract_discounts', err);
+      // supabase-js does not throw: read the returned error instead of a try/catch.
+      const { error: discountErr } = await supabase.from('contract_discounts').insert({
+        contract_id: newContract.id,
+        discount_percentage: discountPct,
+        start_date: discount_start_date,
+        end_date: discount_end_date || null,
+        reason: discount_reason || null,
+        approved_by: user?.id || null,
+      } as any);
+      if (discountErr) {
+        console.warn('[contracts] Failed to mirror discount into contract_discounts', discountErr);
+        notify.warn(t('admin.backoffice.discountMirrorFailed', 'Contrato criado, mas o desconto não ficou registado no separador Descontos. Registe-o no detalhe do contrato.'));
       }
     }
 
     // Link the funnel item back to this contract
     if (crmFunnelId && newContract?.id) {
-      await supabase
+      const { error: funnelLinkErr } = await supabase
         .from('funnel_items')
         .update({ linked_contract_id: newContract.id } as any)
         .eq('id', crmFunnelId);
 
       // Also link any intake tied to this funnel item so the IntakeReviewPanel
       // stops showing "Sem contrato associado" and approval is unblocked.
-      await supabase
+      const { error: intakeLinkErr } = await supabase
         .from('contract_intakes')
         .update({ contract_id: newContract.id } as any)
         .eq('funnel_item_id', crmFunnelId)
         .is('contract_id', null);
+
+      if (funnelLinkErr || intakeLinkErr) {
+        console.warn('[contracts] Failed to link contract to CRM lead/intake', funnelLinkErr ?? intakeLinkErr);
+        notify.warn(t('admin.backoffice.crmLinkFailed', 'Contrato criado, mas a ligação à lead ou ao intake do CRM falhou. Abra o contrato e volte a associá-lo.'));
+      }
     }
 
 
@@ -376,7 +392,7 @@ export function BackofficeContractsTab() {
     setCrmFunnelId(null);
     setCrmOrgName(null);
     setCrmWorkspaceId(null);
-  }, [createContract, createRoomAllocation, user?.id, crmFunnelId]);
+  }, [createContract, createRoomAllocation, user?.id, crmFunnelId, t]);
 
   const handleCancelReview = useCallback(() => {
     setFlowState('idle');

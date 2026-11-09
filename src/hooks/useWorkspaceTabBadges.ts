@@ -22,11 +22,21 @@ export function useWorkspaceTabBadges(workspaceId: string | undefined) {
     queryFn: async () => {
       if (!workspaceId) return { pendingActions: 0, unreadChat: 0 };
 
-      const { count } = await supabase
+      // Ações de marcos arquivados são históricas, não operacionais (mesmo critério de useActionItems).
+      const { data: openActions, error: actionsError } = await supabase
         .from('action_items')
-        .select('id', { count: 'exact', head: true })
+        .select('id, milestone_id')
         .eq('workspace_id', workspaceId)
         .in('status', ['pending', 'in_progress', 'awaiting_validation']);
+      if (actionsError) throw actionsError;
+      const { data: archivedMilestones, error: archivedError } = await supabase
+        .from('milestones')
+        .select('id')
+        .eq('workspace_id', workspaceId)
+        .not('archived_at', 'is', null);
+      if (archivedError) throw archivedError;
+      const archivedIds = new Set((archivedMilestones || []).map(m => m.id));
+      const count = (openActions || []).filter(a => !a.milestone_id || !archivedIds.has(a.milestone_id)).length;
 
       let unreadChat = 0;
       if (userId) {
@@ -59,7 +69,7 @@ export function useWorkspaceTabBadges(workspaceId: string | undefined) {
         } catch { /* ignore */ }
       }
 
-      return { pendingActions: count ?? 0, unreadChat };
+      return { pendingActions: count, unreadChat };
     },
   });
 

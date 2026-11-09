@@ -3,6 +3,11 @@
 // matches against existing startups by NIF then name, and updates the row.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { isAccountActive } from "../_shared/security.ts";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// Escapa os curingas de LIKE/ILIKE (\, % e _) para a comparação por nome ser exata.
+const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -74,6 +79,7 @@ Deno.serve(async (req) => {
     if (!userData?.user) return jsonResponse({ error: "Not authenticated" }, 401);
 
     const admin = createClient(supabaseUrl, serviceKey);
+    if (!(await isAccountActive(admin, userData.user.id))) return jsonResponse({ error: "Forbidden" }, 403);
     const { data: isAdminData } = await admin.rpc("is_admin", { _user_id: userData.user.id }) as { data: boolean | null };
     // Fallback: also try has_role since is_admin RPC may not be exposed
     let isAdmin = !!isAdminData;
@@ -93,14 +99,15 @@ Deno.serve(async (req) => {
     if (((v2Setting?.value ?? {}) as { enabled?: boolean }).enabled !== true) {
       return jsonResponse({ error: "data_import_v2_disabled", message: "Data Import V2 is disabled by server-side control." }, 423);
     }
-    const { data: stopSetting } = await admin.from("system_settings").select("value").eq("key", "reconciler.emergency_stop").maybeSingle();
+    const { data: stopSetting, error: stopErr } = await admin.from("system_settings").select("value").eq("key", "reconciler.emergency_stop").maybeSingle();
+    if (stopErr) return jsonResponse({ error: "emergency_stop_unavailable" }, 503);
     if (((stopSetting?.value ?? {}) as { enabled?: boolean }).enabled === true) {
       return jsonResponse({ error: "emergency_stop", message: "Import pipeline emergency stop engaged." }, 423);
     }
 
     const body = await req.json();
     const rowId = body?.row_id as string | undefined;
-    if (!rowId) return jsonResponse({ error: "row_id required" }, 400);
+    if (!rowId || !UUID_RE.test(rowId)) return jsonResponse({ error: "row_id required" }, 400);
 
     // Fetch row
     const { data: row, error: rowErr } = await admin
@@ -109,6 +116,9 @@ Deno.serve(async (req) => {
       .eq("id", rowId)
       .single();
     if (rowErr || !row) return jsonResponse({ error: "Row not found" }, 404);
+    if (["committed", "applying", "partially_failed", "rolled_back"].includes(row.status) || row.committed_at) {
+      return jsonResponse({ error: "row_already_processed", status: row.status }, 409);
+    }
 
     await admin.from("bulk_import_rows").update({ status: "extracting" }).eq("id", rowId);
 
@@ -185,6 +195,7 @@ Deno.serve(async (req) => {
         ],
         tool_choice: { type: "function", function: { name: "save_contract_data" } },
       }),
+      signal: AbortSignal.timeout(120_000),
     });
 
     if (!aiResponse.ok) {
@@ -244,7 +255,7 @@ Deno.serve(async (req) => {
       const { data: byName } = await admin
         .from("startups")
         .select("id")
-        .ilike("name", name)
+        .ilike("name", escapeLike(name))
         .limit(1)
         .maybeSingle();
       if (byName) {
