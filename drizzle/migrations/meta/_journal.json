@@ -246,6 +246,13 @@
       "when": 1794222131021,
       "tag": "0034_rc12_integrity_hygiene",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1794222148777,
+      "tag": "0035_rc12_cron_edge_base_url",
+      "breakpoints": true
     }
   ]
 }
