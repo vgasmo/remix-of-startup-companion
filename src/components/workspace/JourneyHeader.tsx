@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useDateLocale } from '@/lib/dateLocale';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Info,
   Calendar,
@@ -90,6 +91,7 @@ export function JourneyHeader({
 }: JourneyHeaderProps) {
   const { t, i18n } = useTranslation();
   const dateLocale = useDateLocale();
+  const { isStaff } = useAuth();
   const [, setSearchParams] = useSearchParams();
   const [healthSheetOpen, setHealthSheetOpen] = useState(false);
 
@@ -147,7 +149,8 @@ export function JourneyHeader({
               </SheetHeader>
               <div className="mt-6 space-y-4">
                 <HealthScoreCard workspaceId={workspace.id} programId={workspace.program_id} />
-                {workspace.health_notes && (
+                {/* health_notes é texto interno do staff (p.ex. notas da conversão de lead): não mostrar a founders/team_members */}
+                {isStaff && workspace.health_notes && (
                   <div className="p-3 rounded-lg bg-muted/50 text-sm">
                     <p className="font-medium mb-1">{t('journey.aiInsight')}</p>
                     <p className="text-muted-foreground">{workspace.health_notes}</p>

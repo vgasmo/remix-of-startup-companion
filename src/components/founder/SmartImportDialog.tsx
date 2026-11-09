@@ -33,6 +33,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { notify } from "@/lib/notify";
 import { logger } from "@/lib/logger";
 import i18n from "@/i18n";
+import { getIntlLocale } from '@/lib/dateUtils';
 
 type Stage = "ideation" | "validation" | "mvp" | "growth" | "scale";
 
@@ -594,10 +595,10 @@ export function SmartImportDialog({
                         <div className="flex-1 text-sm">
                           <div className="flex items-center gap-2">
                             <Badge variant="outline">{f.round_type}</Badge>
-                            {f.raised_amount != null && <span>€{f.raised_amount.toLocaleString()}</span>}
-                            {f.target_amount != null && <span className="text-muted-foreground">/ target €{f.target_amount.toLocaleString()}</span>}
+                            {f.raised_amount != null && <span>€{f.raised_amount.toLocaleString(getIntlLocale())}</span>}
+                            {f.target_amount != null && <span className="text-muted-foreground">/ target €{f.target_amount.toLocaleString(getIntlLocale())}</span>}
                           </div>
-                          {f.valuation != null && <p className="text-xs text-muted-foreground">Valuation: €{f.valuation.toLocaleString()}</p>}
+                          {f.valuation != null && <p className="text-xs text-muted-foreground">Valuation: €{f.valuation.toLocaleString(getIntlLocale())}</p>}
                           {f.notes && <p className="text-xs text-muted-foreground mt-0.5">{f.notes}</p>}
                         </div>
                       </label>
@@ -624,7 +625,7 @@ export function SmartImportDialog({
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{k.name}</span>
                             <Badge variant="secondary">
-                              {k.value.toLocaleString()}{k.unit ? ` ${k.unit}` : ""}
+                              {k.value.toLocaleString(getIntlLocale())}{k.unit ? ` ${k.unit}` : ""}
                             </Badge>
                             {k.period_month && <span className="text-xs text-muted-foreground">{k.period_month}</span>}
                           </div>

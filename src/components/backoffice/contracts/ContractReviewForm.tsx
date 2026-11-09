@@ -329,7 +329,8 @@ export function ContractReviewForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {STATUS_OPTIONS.map(s => (
+                        {/* 'active' só se obtém registando a assinatura: o trigger guard_contract_integrity recusa criar contratos ativos */}
+                        {STATUS_OPTIONS.filter((s) => s !== 'active').map(s => (
                           <SelectItem key={s} value={s}>
                             {t(`admin.backoffice.contractStatus.${s}`, { defaultValue: s })}
                           </SelectItem>

@@ -59,6 +59,7 @@ import { WidgetErrorBoundary } from '@/components/ui/WidgetErrorBoundary';
 import { DataroomTab } from './DataroomTab';
 import { useSearchParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { safeExternalHref } from '@/lib/sanitizeUrl';
 
 interface DocumentsTabProps {
   workspaceId: string;
@@ -304,7 +305,13 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
     });
 
     if (doc.external_url) {
-      setPendingExternalUrl(doc.external_url);
+      // external_url é escrito por founders e a BD não valida o esquema: recusar javascript:/data: antes de abrir o diálogo.
+      const safeUrl = safeExternalHref(doc.external_url);
+      if (!safeUrl) {
+        notify.error(t('documents.downloadFailed'));
+        return;
+      }
+      setPendingExternalUrl(safeUrl);
       setExternalLinkConfirmOpen(true);
       return;
     }
@@ -320,8 +327,11 @@ export function DocumentsTab({ workspaceId, canWrite, isFounder = false, isStaff
   };
   
   const confirmOpenExternalLink = () => {
-    if (pendingExternalUrl) {
-      window.open(pendingExternalUrl, '_blank', 'noopener,noreferrer');
+    const safeUrl = safeExternalHref(pendingExternalUrl);
+    if (safeUrl) {
+      window.open(safeUrl, '_blank', 'noopener,noreferrer');
+    } else if (pendingExternalUrl) {
+      notify.error(t('documents.downloadFailed'));
     }
     setExternalLinkConfirmOpen(false);
     setPendingExternalUrl(null);

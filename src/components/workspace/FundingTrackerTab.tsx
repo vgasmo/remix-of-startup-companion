@@ -17,6 +17,7 @@ import { DollarSign, Users, PieChartIcon, Plus, Trash2, HelpCircle } from 'lucid
 import { notify } from "@/lib/notify";
 import { useTranslation } from 'react-i18next';
 import { QuickHelp } from '@/components/ui/GlossaryTooltip';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 const ROUND_TYPES = ['pre-seed', 'seed', 'series-a', 'series-b', 'series-c', 'bridge', 'convertible-note'];
 const INVESTOR_TYPES = ['angel', 'vc', 'corporate', 'accelerator', 'family-office'];
@@ -131,7 +132,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
       <div className="flex items-center gap-3 text-xs text-muted-foreground p-2 rounded-lg bg-muted/30">
         <span className="font-medium">{t('funding.concepts', 'Conceitos:')}</span>
         <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-1"><QuickHelp term="capTable" /> Cap Table</span>
+          <span className="inline-flex items-center gap-1"><QuickHelp term="capTable" /> {t('funding.capTable')}</span>
           <span className="inline-flex items-center gap-1"><QuickHelp term="dilution" /> {t('funding.dilution', { defaultValue: 'Diluição' })}</span>
           <span className="inline-flex items-center gap-1"><QuickHelp term="vesting" /> Vesting</span>
           <span className="inline-flex items-center gap-1"><QuickHelp term="preemption" /> Pre-emption</span>
@@ -178,7 +179,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{capTable?.length || 0}</div>
-            <p className="text-xs text-muted-foreground">{totalShares.toLocaleString()} {t('funding.shares')}</p>
+            <p className="text-xs text-muted-foreground">{totalShares.toLocaleString(getIntlLocale())} {t('funding.shares')}</p>
           </CardContent>
         </Card>
       </div>
@@ -329,7 +330,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
                     <TableRow key={entry.id}>
                       <TableCell className="font-medium">{entry.holder_name}</TableCell>
                       <TableCell className="capitalize">{entry.holder_type}</TableCell>
-                      <TableCell>{entry.shares.toLocaleString()}</TableCell>
+                      <TableCell>{entry.shares.toLocaleString(getIntlLocale())}</TableCell>
                       <TableCell>{totalShares > 0 ? ((entry.shares / totalShares) * 100).toFixed(1) : 0}%</TableCell>
                       <TableCell>
                         <Button variant="ghost" size="icon" onClick={() => deleteCapEntry.mutate(entry.id)} aria-label={t('common.delete')}>
@@ -358,7 +359,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => value.toLocaleString()} />
+                    <Tooltip formatter={(value: number) => value.toLocaleString(getIntlLocale())} />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
@@ -425,7 +426,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
           <form onSubmit={handleCreateInvestor} className="space-y-4">
             <div className="space-y-2">
               <Label>{t('funding.name')} *</Label>
-              <Input name="name" required placeholder="Investor or firm name" />
+              <Input name="name" required placeholder={t('funding.investorNamePlaceholder', 'Nome do investidor ou fundo')} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -473,7 +474,7 @@ export function FundingTrackerTab({ startupId }: FundingTrackerTabProps) {
           <form onSubmit={handleCreateCapEntry} className="space-y-4">
             <div className="space-y-2">
               <Label>{t('funding.holderName')} *</Label>
-              <Input name="holder_name" required placeholder="Name of shareholder" />
+              <Input name="holder_name" required placeholder={t('funding.holderNamePlaceholder', 'Nome do acionista')} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

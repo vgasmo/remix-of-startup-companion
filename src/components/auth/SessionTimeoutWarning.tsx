@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,6 +15,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { logger } from '@/lib/logger';
 
+const ACTIVITY_KEY = 'sl-last-activity';
+
 interface SessionTimeoutWarningProps {
   warningTimeMs?: number; // Time before timeout to show warning (default: 10 minutes)
   timeoutMs?: number; // Total inactivity timeout (default: 24 hours for founders)
@@ -28,12 +30,27 @@ export function SessionTimeoutWarning({
   const { signOut, session } = useAuth();
   const [showWarning, setShowWarning] = useState(false);
   const [countdown, setCountdown] = useState(0);
-  const [lastActivity, setLastActivity] = useState(Date.now());
+  // Activity is shared across tabs through localStorage (prefix `sl-` is wiped on
+  // logout). Without it, an idle background tab signs the user out GLOBALLY
+  // (supabase.auth.signOut() default scope) while they work in another tab.
+  const lastActivityRef = useRef(Date.now());
+  const showWarningRef = useRef(false);
+  showWarningRef.current = showWarning;
+
+  const readSharedActivity = () => {
+    try { return Number(localStorage.getItem(ACTIVITY_KEY)) || 0; } catch { return 0; }
+  };
+
+  const touch = useCallback(() => {
+    const now = Date.now();
+    lastActivityRef.current = now;
+    try { localStorage.setItem(ACTIVITY_KEY, String(now)); } catch { /* storage unavailable */ }
+  }, []);
 
   const resetActivity = useCallback(() => {
-    setLastActivity(Date.now());
+    touch();
     setShowWarning(false);
-  }, []);
+  }, [touch]);
 
   // Attempt to refresh the session gracefully
   const refreshSession = useCallback(async () => {
@@ -50,50 +67,40 @@ export function SessionTimeoutWarning({
     }
   }, []);
 
-  // Track user activity
+  // Track user activity (ref + throttled storage write: no re-render per mousemove)
   useEffect(() => {
     const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-    
     const handleActivity = () => {
-      if (!showWarning) {
-        setLastActivity(Date.now());
-      }
+      if (showWarningRef.current) return;
+      if (Date.now() - lastActivityRef.current > 5000) touch();
     };
-
-    events.forEach(event => {
-      document.addEventListener(event, handleActivity, { passive: true });
-    });
-
+    events.forEach(event => document.addEventListener(event, handleActivity, { passive: true }));
+    touch();
     return () => {
-      events.forEach(event => {
-        document.removeEventListener(event, handleActivity);
-      });
+      events.forEach(event => document.removeEventListener(event, handleActivity));
     };
-  }, [showWarning]);
+  }, [touch]);
 
   // Check for timeout
   useEffect(() => {
     const checkTimeout = setInterval(() => {
-      const now = Date.now();
-      const timeSinceActivity = now - lastActivity;
-      const timeUntilTimeout = timeoutMs - timeSinceActivity;
+      const last = Math.max(lastActivityRef.current, readSharedActivity());
+      const timeUntilTimeout = timeoutMs - (Date.now() - last);
 
       if (timeUntilTimeout <= 0) {
         // Session timed out - sign out gracefully
         signOut();
-      } else if (timeUntilTimeout <= warningTimeMs && !showWarning) {
-        // Show warning
+      } else if (timeUntilTimeout <= warningTimeMs) {
         setShowWarning(true);
-        setCountdown(Math.ceil(timeUntilTimeout / 1000));
-      }
-
-      if (showWarning) {
         setCountdown(Math.max(0, Math.ceil(timeUntilTimeout / 1000)));
+      } else if (showWarningRef.current) {
+        // Another tab renewed the session: dismiss the stale warning here.
+        setShowWarning(false);
       }
     }, 1000);
 
     return () => clearInterval(checkTimeout);
-  }, [lastActivity, timeoutMs, warningTimeMs, showWarning, signOut]);
+  }, [timeoutMs, warningTimeMs, signOut]);
 
   // Proactively refresh session periodically to prevent 401s
   useEffect(() => {

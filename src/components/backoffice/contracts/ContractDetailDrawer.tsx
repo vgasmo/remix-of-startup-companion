@@ -1071,6 +1071,8 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
                       status: 'draft',
                       provider_document_id: null,
                       docusign_envelope_id: null,
+                      // o próximo envio usa um comando novo; o claim exige command_id limpo
+                      envelope_command_id: null,
                       provider_last_error: null,
                       provider_last_event: null,
                       founder_signer_status: 'pending',
@@ -1081,6 +1083,9 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
                       // o link público anterior deixa de servir
                       onboarding_token_hash: null,
                       onboarding_token_expires_at: null,
+                      // a nova ronda exige nova aceitação do Regulamento (senão o link salta direto para a assinatura)
+                      regulation_accepted_at: null,
+                      regulation_version: null,
                     })
                     .eq('id', contract.id)
                     .select('id, funnel_item_id');

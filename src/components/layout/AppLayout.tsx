@@ -161,7 +161,7 @@ function MobileBottomNav() {
     if (isBackoffice && !isConsultor) {
       return [
         { href: '/staff-cockpit', icon: Home, label: t('nav.mobile.cockpit', { defaultValue: 'Cockpit' }) },
-        { href: '/admin?tab=backoffice', icon: Building2, label: t('nav.mobile.spaces', { defaultValue: 'Espaços' }) },
+        { href: '/admin?tab=backoffice&subtab=spaces', icon: Building2, label: t('nav.mobile.spaces', { defaultValue: 'Espaços' }) },
         { href: '/admin?tab=backoffice&subtab=contracts', icon: FileText, label: t('nav.mobile.contracts', { defaultValue: 'Contratos' }) },
         messagingItem,
         { href: '/settings', icon: Settings, label: t('nav.settings') },
@@ -209,7 +209,7 @@ function MobileBottomNav() {
   }, [isAdmin, isConsultor, isBackoffice, isStaff, isExternalMentor, isFounder, firstWorkspaceId, t, unread]);
   
   return (
-    <div className="flex items-center justify-around h-16 px-2" role="navigation" aria-label="Mobile navigation">
+    <div className="flex items-center justify-around h-16 px-2" role="navigation" aria-label={t('accessibility.mobileNavigation')}>
       {navItems.map((item, idx) => {
         const isActive = item.href
           ? (item.href.includes('?')

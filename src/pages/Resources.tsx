@@ -345,9 +345,11 @@ export default function Resources() {
                     <Link to={`/workspace/${firstWsId}?tab=templates`}>{t('resources.actions.openTemplates', { defaultValue: 'Ver templates' })} <ArrowRight className="h-3.5 w-3.5 ml-1" /></Link>
                   </Button>
                 )}
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/documents">{t('resources.actions.openRepository', { defaultValue: 'Abrir repositório' })} <ArrowRight className="h-3.5 w-3.5 ml-1" /></Link>
-                </Button>
+                {userRole === 'staff' && (
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/documents">{t('resources.actions.openRepository', { defaultValue: 'Abrir repositório' })} <ArrowRight className="h-3.5 w-3.5 ml-1" /></Link>
+                  </Button>
+                )}
               </div>
             </SectionCard>
 

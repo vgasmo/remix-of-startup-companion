@@ -74,6 +74,7 @@ import { ProgramSwitcher } from '@/components/workspace/ProgramSwitcher';
 import { ProgramTransferDialog } from '@/components/staff/ProgramTransferDialog';
 import { PrivateDocumentsPanel } from '@/components/workspace/PrivateDocumentsPanel';
 import { PlanAssistantsCard } from '@/components/workspace/PlanAssistantsCard';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface WorkspaceOverviewProps {
   workspace: {
@@ -349,7 +350,8 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
       {/* Monthly Check-in Banner for Founders — always visible (self-hides when nothing pending).
           Was gated behind advanced disclosure, which caused the "Submeter check-in" CTA
           from OneThingToday/EnhancedNextSteps/NextBestAction to dead-end. */}
-      {isFounder && <MonthlyCheckinBanner workspaceId={workspace.id} />}
+      {/* Só o founder do workspace pode submeter/saltar: submit_checkin e o UPDATE em checkin_instances exigem is_founder(workspace) (papel 'founder' em workspace_users). */}
+      {isFounder && isCurrentUserFounder && <MonthlyCheckinBanner workspaceId={workspace.id} />}
 
       {/* Pending Surveys Banner for Founders — self-hides when empty. */}
       {isFounder && (
@@ -745,7 +747,7 @@ function KpiCard({ kpi, previousValue }: { kpi: any; previousValue?: number | nu
       if (val >= 1000) return `${definition.unit}${(val/1000).toFixed(0)}k`;
       return `${definition.unit}${val.toFixed(0)}`;
     }
-    return val.toLocaleString();
+    return val.toLocaleString(getIntlLocale());
   };
 
   return (

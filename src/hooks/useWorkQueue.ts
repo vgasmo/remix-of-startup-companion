@@ -47,14 +47,28 @@ export function useWorkQueue(filters?: { status?: string; statuses?: string[]; t
         query = query.or(`assigned_consultor_id.eq.${user!.id},assigned_consultor_id.is.null`, { referencedTable: 'workspace' });
       }
 
-      if (filters?.status) {
-        query = query.eq('status', filters.status);
-      } else if (filters?.statuses && filters.statuses.length > 0) {
-        query = query.in('status', filters.statuses);
-      } else if (filters?.includeDone) {
-        query = query.in('status', ['open', 'in_progress', 'done']);
+      // Completed items are never purged, so 'done' is always bounded by a window:
+      // today only for the "done today" ring (includeDone), the last 7 days otherwise.
+      // Without it the full history was downloaded and, past PostgREST's row cap, the newest rows were cut.
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const doneSince = filters?.includeDone && !filters?.status && !filters?.statuses
+        ? startOfDay.toISOString()
+        : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const wanted: string[] = filters?.status
+        ? [filters.status]
+        : filters?.statuses && filters.statuses.length > 0
+          ? filters.statuses
+          : filters?.includeDone
+            ? ['open', 'in_progress', 'done']
+            : ['open', 'in_progress'];
+      const others = wanted.filter((st) => st !== 'done');
+      if (wanted.includes('done')) {
+        const parts = [`and(status.eq.done,updated_at.gte.${doneSince})`];
+        if (others.length > 0) parts.unshift(`status.in.(${others.join(',')})`);
+        query = query.or(parts.join(','));
       } else {
-        query = query.in('status', ['open', 'in_progress']);
+        query = query.in('status', others);
       }
       if (filters?.type) {
         query = query.eq('type', filters.type);

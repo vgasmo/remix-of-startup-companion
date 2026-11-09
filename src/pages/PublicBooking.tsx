@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
-import i18n from '@/i18n';
+import i18n, { changeLanguage } from '@/i18n';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -85,7 +85,8 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
   const toggleLang = () => {
     const next = lang === 'pt' ? 'en' : 'pt';
     setLang(next);
-    i18n.changeLanguage(next);
+    // Carrega o bundle antes de mudar de língua (evita mostrar chaves cruas durante o descarregamento)
+    void changeLanguage(next);
     if (typeof document !== 'undefined') document.documentElement.lang = next;
   };
 
@@ -182,11 +183,14 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
         const ctx = (error as { context?: unknown }).context;
         let msg = error.message;
         if (ctx instanceof Response) {
-          try { const body = await ctx.clone().json(); if (typeof body?.error === "string") msg = body.error; } catch { /* corpo não-JSON */ }
+          try { const body = await ctx.clone().json(); if (typeof body?.error === "string") msg = body.error === "slot_taken" && typeof body?.message === "string" ? body.message : body.error; } catch { /* corpo não-JSON */ }
         }
         throw new Error(msg);
       }
-      if (!data?.success) throw new Error(data?.error || 'Booking failed');
+      // Falha parcial: a marcação ficou registada (funnelItemId) mas o convite do calendário falhou.
+      // Não é um erro para o visitante: mostra o ecrã de sucesso sem convite (a equipa envia os detalhes).
+      const partialCalendarFailure = !data?.success && !data?.error && !!data?.funnelItemId && data?.calendar_status === 'failed';
+      if (!data?.success && !partialCalendarFailure) throw new Error(data?.error || 'Booking failed');
       
       return data;
     },

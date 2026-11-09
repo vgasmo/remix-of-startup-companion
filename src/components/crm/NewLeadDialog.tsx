@@ -85,7 +85,8 @@ export function NewLeadDialog() {
     await createLead.mutateAsync({
       contact_name: form.contact_name || null,
       organization_name: form.organization_name || null,
-      contact_email: form.contact_email || null,
+      // minúsculas e sem espaços: a marcação pública e a importação comparam emails exatos (evita leads duplicadas)
+      contact_email: form.contact_email.trim().toLowerCase() || null,
       contact_phone: form.contact_phone || null,
       source: form.source || null,
       notes: form.notes || null,

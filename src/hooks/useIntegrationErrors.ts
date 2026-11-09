@@ -7,6 +7,7 @@ export interface IntegrationError {
   workspace_id: string | null;
   program_id: string | null;
   integration_type: string;
+  source?: string | null;
   error_code: string | null;
   error_message: string;
   request_payload: Record<string, unknown> | null;

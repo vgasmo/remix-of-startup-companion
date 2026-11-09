@@ -171,7 +171,7 @@ export default function CRM() {
     myItemsOnly: focusMode ? true : myItemsOnly, // Focus mode implies my items
     currentUserId: user?.id,
   });
-  const { data: tasksDue, isLoading: loadingTasks } = useCrmTasksDue({
+  const { data: tasksDue, isLoading: loadingTasks, isError: tasksDueError } = useCrmTasksDue({
     assigneeId: assigneeFilter !== 'all' ? assigneeFilter : undefined,
     myItemsOnly: focusMode ? true : myItemsOnly,
     currentUserId: user?.id,
@@ -700,6 +700,10 @@ export default function CRM() {
           <TabsContent value="tasks" className="space-y-4">
             {loadingTasks ? (
               <ContentSkeleton type="list" count={6} />
+            ) : tasksDueError ? (
+              <p className="text-sm text-destructive">
+                {t('crm.tasksLoadError', { defaultValue: 'Não foi possível carregar as tarefas. Atualize a página ou tente mais tarde.' })}
+              </p>
             ) : (
               <div className="grid md:grid-cols-3 gap-4">
                 <TaskGroup 

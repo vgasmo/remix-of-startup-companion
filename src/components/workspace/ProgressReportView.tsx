@@ -16,6 +16,7 @@ import { HealthScore, StartupStage } from '@/types/database';
 import { logger } from '@/lib/logger';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
 import { printHtmlSandboxed } from "@/lib/printHtml";
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface ProgressReportViewProps {
   workspaceId: string;
@@ -189,14 +190,14 @@ export function ProgressReportView({ workspaceId, workspace }: ProgressReportVie
                     <div key={kpi.id} className="p-3 rounded-lg bg-muted/50">
                       <p className="text-xs text-muted-foreground truncate">{kpi.kpi_definition?.name}</p>
                       <p className="text-lg font-semibold">
-                        {kpi.value?.toLocaleString() ?? '—'}
+                        {kpi.value?.toLocaleString(getIntlLocale()) ?? '—'}
                         {kpi.kpi_definition?.unit && (
                           <span className="text-xs text-muted-foreground ml-1">{kpi.kpi_definition.unit}</span>
                         )}
                       </p>
                       {kpi.target_value && (
                         <p className="text-xs text-muted-foreground">
-                          Target: {kpi.target_value.toLocaleString()}
+                          {t('shared.target', 'Meta')}: {kpi.target_value.toLocaleString(getIntlLocale())}
                         </p>
                       )}
                     </div>

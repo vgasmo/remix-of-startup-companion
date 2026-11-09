@@ -1,8 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { requireUser, generateRequestId, createLogger } from '../_shared/security.ts';
+import { requireUser, isAccountActive, checkAIRateLimit, generateRequestId, createLogger } from '../_shared/security.ts';
 
 const FUNCTION_NAME = 'analyze-contract';
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return handleCorsOptions(req);
@@ -25,14 +26,20 @@ Deno.serve(async (req: Request) => {
 
     log.info('Contract analysis requested', { userId });
 
-    const { contractId } = await req.json();
-    if (!contractId) {
-      return corsJsonResponse({ error: 'contractId is required' }, req, 400);
+    const body = await req.json().catch(() => null);
+    const contractId = body?.contractId;
+    if (typeof contractId !== 'string' || !UUID_RE.test(contractId)) {
+      return corsJsonResponse({ error: 'contractId (uuid) is required' }, req, 400);
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // AGENTS.md: estado da conta verificado pelo helper partilhado antes de operações com service role
+    if (!(await isAccountActive(supabase, userId))) {
+      return corsJsonResponse({ error: 'Forbidden' }, req, 403);
+    }
 
     // Verify user is staff
     const { data: roles } = await supabase
@@ -43,6 +50,11 @@ Deno.serve(async (req: Request) => {
     const isStaff = roles?.some(r => ['admin', 'consultor', 'backoffice'].includes(r.role));
     if (!isStaff) {
       return corsJsonResponse({ error: 'Forbidden' }, req, 403);
+    }
+
+    // Cada chamada gasta créditos do gateway de IA: mesmo limite das outras funções de IA
+    if (!(await checkAIRateLimit(supabase, userId, null, FUNCTION_NAME, 20))) {
+      return corsJsonResponse({ error: 'Rate limit exceeded. You can make up to 20 AI requests per hour.', code: 'RATE_LIMITED' }, req, 429);
     }
 
     // Fetch contract details
@@ -94,6 +106,7 @@ Respond in JSON format with keys: key_dates, missing_info, recommended_actions, 
 
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
+      signal: AbortSignal.timeout(60_000),
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
@@ -173,7 +186,7 @@ Respond in JSON format with keys: key_dates, missing_info, recommended_actions, 
         return corsJsonResponse({ error: 'AI credits exhausted. Please add credits.' }, req, 402);
       }
       const errText = await aiResponse.text();
-      log.error('AI gateway error', { status, errText });
+      log.error('AI gateway error', new Error(`status ${status}`), { errText: errText.slice(0, 500) });
       return corsJsonResponse({ error: 'AI analysis failed' }, req, 500);
     }
 
@@ -182,12 +195,17 @@ Respond in JSON format with keys: key_dates, missing_info, recommended_actions, 
     
     let analysis;
     if (toolCall?.function?.arguments) {
-      analysis = JSON.parse(toolCall.function.arguments);
+      try {
+        analysis = JSON.parse(toolCall.function.arguments);
+      } catch {
+        return corsJsonResponse({ error: 'AI analysis failed' }, req, 502);
+      }
     } else {
       // Fallback: try parsing content directly
       const content = aiData.choices?.[0]?.message?.content;
       try {
         analysis = JSON.parse(content);
+        if (!analysis || typeof analysis !== 'object') throw new Error('not an object');
       } catch {
         analysis = {
           key_dates: [],
@@ -200,13 +218,15 @@ Respond in JSON format with keys: key_dates, missing_info, recommended_actions, 
     }
 
     // Log analysis to activity log
-    await supabase.from('activity_log').insert({
+    const { error: logErr } = await supabase.from('activity_log').insert({
       user_id: userId,
+      workspace_id: contract.workspace_id ?? null,
       action: 'contract_ai_analysis',
       entity_type: 'startup_contract',
       entity_id: contractId,
       metadata: { risk_level: analysis.risk_level },
     });
+    if (logErr) log.warn('activity_log insert failed', { error: logErr.message });
 
     return corsJsonResponse({
       analysis,
@@ -219,7 +239,7 @@ Respond in JSON format with keys: key_dates, missing_info, recommended_actions, 
       },
     }, req);
   } catch (error) {
-    log.error('Failed to analyze contract', { error: error instanceof Error ? error.message : String(error) });
+    log.error('Failed to analyze contract', error);
     return corsJsonResponse({ error: 'Internal server error' }, req, 500);
   }
 });

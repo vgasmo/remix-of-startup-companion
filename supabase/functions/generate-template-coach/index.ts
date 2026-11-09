@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
       .from('workspaces')
       .select(`
         id, stage, program_id,
-        startup:startups(name, industry, description)
+        startup:startups(name, description)
       `)
       .eq('id', instance.workspace_id)
       .single();
@@ -248,7 +248,6 @@ Guidelines:
 
 **Startup Context**
 - Name: ${startupInfo?.name || 'Unknown'}
-- Industry: ${startupInfo?.industry || 'Unknown'}
 - Stage: ${workspace?.stage || 'Unknown'}
 - Description: ${startupInfo?.description || 'No description'}
 

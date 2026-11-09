@@ -11,6 +11,8 @@ import { AlertTriangle, Activity, TrendingUp, Bug, Zap, Download, HelpCircle } f
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { DownloadHtmlReportButton } from '@/components/shared/DownloadHtmlReportButton';
+import { SystemAlertsCard } from '@/components/admin/SystemAlertsCard';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface CronRunRow {
   id: string;
@@ -292,6 +294,8 @@ export function SystemHealthDashboard() {
         />
       </div>
 
+      <SystemAlertsCard />
+
       <div className="grid gap-4 md:grid-cols-4">
         <StatCard
           icon={<Bug className="h-4 w-4" />}
@@ -370,7 +374,7 @@ export function SystemHealthDashboard() {
                       )}
                       {row.status === 'stale' && row.lastAt && (
                         <p className="text-xs text-warning truncate mt-0.5">
-                          Última execução: {new Date(row.lastAt).toLocaleString()}
+                          Última execução: {new Date(row.lastAt).toLocaleString(getIntlLocale())}
                         </p>
                       )}
                     </div>
@@ -440,7 +444,7 @@ export function SystemHealthDashboard() {
                         <Badge variant="outline" className={SEVERITY_TONE[e.severity] ?? SEVERITY_TONE.low}>
                           {e.severity}
                         </Badge>
-                        <span className="text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
+                        <span className="text-muted-foreground">{new Date(e.created_at).toLocaleString(getIntlLocale())}</span>
                       </div>
                       <p className="font-mono break-words">{e.message}</p>
                       {e.url && <p className="text-muted-foreground truncate">{e.url}</p>}

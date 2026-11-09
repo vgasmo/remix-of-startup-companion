@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { notify } from "@/lib/notify";
+import { safeExternalHref } from '@/lib/sanitizeUrl';
 
 // ─── Contract Archive Section ──────────────────────────────
 
@@ -176,7 +177,7 @@ function ContractArchiveStatus() {
                   <div className="flex items-center gap-1">
                     {contract.archive_location_url && (
                       <Button variant="ghost" size="icon" asChild aria-label={t('common.open')}>
-                        <a href={contract.archive_location_url} target="_blank" rel="noopener noreferrer">
+                        <a href={safeExternalHref(contract.archive_location_url)} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-4 w-4" />
                         </a>
                       </Button>

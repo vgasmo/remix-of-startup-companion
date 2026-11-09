@@ -94,7 +94,11 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
   const [statusFilter, setStatusFilter] = useState<string>('open');
   const [typeFilter, setTypeFilter] = useState<string>('all');
 
-  const { data: workQueueItems, isLoading } = useWorkQueue({ status: statusFilter !== 'all' ? statusFilter : undefined });
+  const { data: workQueueItems, isLoading, isError, refetch } = useWorkQueue(
+    statusFilter === 'all'
+      ? { statuses: ['open', 'in_progress', 'snoozed', 'done'] }
+      : { status: statusFilter },
+  );
   const markAsDone = useMarkWorkQueueItemDone();
   const snoozeItem = useSnoozeWorkQueueItem();
   const recomputeWorkQueue = useRecomputeWorkQueue();
@@ -335,7 +339,7 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
               className="h-8 w-8"
               onClick={handleRecompute}
               disabled={isRecomputing}
-             aria-label={t('common.loading')}>
+             aria-label={t('workQueue.recompute', 'Atualizar fila de trabalho')}>
               {isRecomputing ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
@@ -367,7 +371,12 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
       </CardHeader>
 
       <CardContent className="pt-0">
-        {displayItems.length === 0 ? (
+        {isError ? (
+          <div role="alert" className="flex flex-col items-center justify-center gap-2 py-4">
+            <p className="text-sm text-destructive">{t('workQueue.loadError', 'Não foi possível carregar a fila de trabalho.')}</p>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>{t('common.retry', 'Tentar novamente')}</Button>
+          </div>
+        ) : displayItems.length === 0 ? (
           <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
             <CheckCircle2 className="h-5 w-5 opacity-50" />
             <p className="text-sm">{t('workQueue.noItems')}</p>

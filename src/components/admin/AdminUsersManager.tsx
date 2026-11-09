@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { WorkspaceAssignmentDialog } from './WorkspaceAssignmentDialog';
@@ -20,7 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  useProfiles, 
+  useAllProfiles, 
   useUserRoles, 
   useAddUserRole, 
   useRemoveUserRole,
@@ -40,8 +40,8 @@ export function AdminUsersManager() {
   const { t } = useTranslation();
   const { user: currentUser } = useAuth();
   // B8: default page size was 50 → search/pagination silently limited to the
-  // first 50 users. Load a large window so admins can find and manage anyone.
-  const { data: profiles, isLoading: loadingProfiles } = useProfiles(0, 5000);
+  // first 50 users. Load every row (paged past the 1000-row response cap) so admins can find and manage anyone.
+  const { data: profiles, isLoading: loadingProfiles } = useAllProfiles();
   const { data: userRoles, isLoading: loadingRoles } = useUserRoles();
   const { data: workspaceUsers, isLoading: loadingWsUsers } = useWorkspaceUsers();
   const { data: workspaces } = useAllWorkspaces();
@@ -70,7 +70,7 @@ export function AdminUsersManager() {
   const isLoading = loadingProfiles || loadingRoles || loadingWsUsers;
 
   const filteredProfiles = useMemo(() => {
-    const profileList = profiles?.data || [];
+    const profileList = profiles || [];
     if (!profileList.length) return [];
     const term = searchTerm.trim().toLowerCase();
     return profileList.filter(p => {
@@ -99,7 +99,7 @@ export function AdminUsersManager() {
   const [page, setPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / PAGE_SIZE));
   // Reset to first page whenever the filtered set changes (e.g. new search term).
-  useMemo(() => { setPage(1); }, [searchTerm, filteredProfiles.length]);
+  useEffect(() => { setPage(1); }, [searchTerm, roleFilter, statusFilter]);
   const pagedProfiles = useMemo(
     () => filteredProfiles.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
     [filteredProfiles, page]
@@ -350,14 +350,20 @@ export function AdminUsersManager() {
                             <span className="text-xs text-muted-foreground">{t('admin.userManagement.noRoles')}</span>
                           ) : (
                             roles.map(r => (
-                              <Badge 
-                                key={r.id} 
-                                variant="secondary" 
-                                className="cursor-pointer hover:bg-destructive/20"
-                                onClick={() => setDeleteRoleTarget({ id: r.id, role: r.role })}
+                              <Badge
+                                key={r.id}
+                                variant="secondary"
+                                className="p-0"
                               >
-                                {getRoleLabel(r.role)}
-                                <Trash2 className="h-3 w-3 ml-1" />
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center rounded-full px-2.5 py-0.5 hover:bg-destructive/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  aria-label={`${t('admin.userManagement.removeRole')}: ${getRoleLabel(r.role)}`}
+                                  onClick={() => setDeleteRoleTarget({ id: r.id, role: r.role })}
+                                >
+                                  {getRoleLabel(r.role)}
+                                  <Trash2 className="h-3 w-3 ml-1" aria-hidden="true" />
+                                </button>
                               </Badge>
                             ))
                           )}
@@ -390,9 +396,10 @@ export function AdminUsersManager() {
                                   {getRoleLabel(wu.role)}
                                 </Badge>
                                 <div className="flex items-center gap-1">
-                                  <Switch 
-                                    checked={wu.active} 
+                                  <Switch
+                                    checked={wu.active}
                                     onCheckedChange={() => handleToggleWsActive(wu.id, wu.active)}
+                                    aria-label={`${getWorkspaceName(wu.workspace_id)}: ${wu.active ? t('admin.userManagement.active') : t('admin.userManagement.inactive')}`}
                                   />
                                   <span className="text-muted-foreground">{wu.active ? t('admin.userManagement.active') : t('admin.userManagement.inactive')}</span>
                                 </div>

@@ -33,6 +33,7 @@ import {
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface SessionAIPanelProps {
   workspaceId: string;
@@ -230,7 +231,7 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
               {aiError
                 ? t('sessions.aiTemporarilyUnavailable', 'AI assistance is temporarily resting. Please try again in a few moments.')
                 : hasAIOutputs 
-                  ? t('sessions.lastGenerated', { date: new Date(session.ai_generated_at!).toLocaleString(), defaultValue: `Última geração: ${new Date(session.ai_generated_at!).toLocaleString()}` })
+                  ? t('sessions.lastGenerated', { date: new Date(session.ai_generated_at!).toLocaleString(getIntlLocale()), defaultValue: `Última geração: ${new Date(session.ai_generated_at!).toLocaleString(getIntlLocale())}` })
                   : t('sessions.aiDescription', 'Gerar resumo AI, ações e insights a partir das notas ou transcrição da reunião')
               }
             </CardDescription>

@@ -121,12 +121,19 @@ export async function claimWebhookDelivery(
     // Postgres unique_violation
     if ((error as any).code === '23505') {
       // RC11 D.10: uma entrega anterior que falhou pode ser reprocessada
-      let q = supabase.from('webhook_inbox').update({ status: 'received', error_message: null })
-        .eq('provider', input.provider).eq('status', 'failed')
-      q = input.eventId ? q.eq('event_id', input.eventId) : q.eq('payload_hash', input.payloadHash)
-      const { data: reclaimed, error: reclaimError } = await q.select('id').maybeSingle()
-      if (reclaimError) return { ok: false, inboxId: null, duplicate: false, error: reclaimError.message }
-      if (reclaimed?.id) return { ok: true, inboxId: reclaimed.id, duplicate: false }
+      // RC12: tambem reclama uma entrega 'received' ha mais de 10 minutos (handler caiu ou deu timeout sem marcar o inbox).
+      // Duas atualizacoes simples: o PostgREST 12.2.3 rejeita .or() em UPDATE com .select().
+      const staleBefore = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+      for (const stale of [false, true]) {
+        let q = supabase.from('webhook_inbox')
+          .update({ status: 'received', error_message: null, received_at: new Date().toISOString() })
+          .eq('provider', input.provider)
+        q = stale ? q.eq('status', 'received').lt('received_at', staleBefore) : q.eq('status', 'failed')
+        q = input.eventId ? q.eq('event_id', input.eventId) : q.eq('payload_hash', input.payloadHash)
+        const { data: reclaimed, error: reclaimError } = await q.select('id').maybeSingle()
+        if (reclaimError) return { ok: false, inboxId: null, duplicate: false, error: reclaimError.message }
+        if (reclaimed?.id) return { ok: true, inboxId: reclaimed.id, duplicate: false }
+      }
       return { ok: true, inboxId: null, duplicate: true }
     }
     return { ok: false, inboxId: null, duplicate: false, error: error.message }

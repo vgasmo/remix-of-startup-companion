@@ -46,7 +46,7 @@ export function useCohortAnalytics(programId?: string) {
 
       // Get action stats
       const wsIds = workspaces?.map(w => w.id) || [];
-      const { data: actions } = await supabase
+      const { data: actions, error: actionsErr } = await supabase
         .from('action_items')
         .select('workspace_id, status, due_date')
         .in('workspace_id', wsIds)
@@ -54,11 +54,15 @@ export function useCohortAnalytics(programId?: string) {
 
       // Get KPI completion
       const currentMonth = new Date().toISOString().slice(0, 7) + '-01';
-      const { data: kpis } = await supabase
+      const { data: kpis, error: kpisErr } = await supabase
         .from('kpi_values')
         .select('workspace_id')
         .in('workspace_id', wsIds)
         .eq('period_month', currentMonth);
+
+      // A failed read must not become "0 pending actions / 0% KPIs".
+      if (actionsErr) throw actionsErr;
+      if (kpisErr) throw kpisErr;
 
       const today = new Date().toISOString().split('T')[0];
 

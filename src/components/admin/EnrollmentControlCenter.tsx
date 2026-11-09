@@ -22,6 +22,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
+import { countOrThrow } from '@/lib/queryCount';
 
 export function EnrollmentControlCenter() {
   const { t } = useTranslation();
@@ -41,9 +42,9 @@ export function EnrollmentControlCenter() {
         supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('account_status', 'pending'),
       ]);
       return {
-        pendingClaims: claimsRes.count ?? 0,
-        unclaimedWorkspaces: unclaimedRes.count ?? 0,
-        pendingProfiles: pendingProfilesRes.count ?? 0,
+        pendingClaims: countOrThrow(claimsRes),
+        unclaimedWorkspaces: countOrThrow(unclaimedRes),
+        pendingProfiles: countOrThrow(pendingProfilesRes),
       };
     },
     staleTime: 30_000,

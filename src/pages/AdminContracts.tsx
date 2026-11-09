@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { FileText, Download, Eye, ExternalLink, Loader2, Search, Folder } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
+import { fetchAllRows } from '@/lib/fetchAllRows';
+import { QueryErrorAlert } from '@/components/admin/QueryErrorAlert';
 
 type ContractRow = {
   id: string;
@@ -78,29 +80,30 @@ export default function AdminContracts() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selected, setSelected] = useState<ContractRow | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-contracts-list'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('startup_contracts')
-        .select(`
-          id, contract_number, status, signature_status, organization_name,
-          legal_representative_name, legal_representative_email, legal_representative_phone,
-          company_nif, company_address, company_city, company_postal_code,
-          start_date, signed_at, created_at, document_url, contract_pdf_path, workspace_id,
-          workspaces:workspace_id (
-            id, startup_id,
-            startups:startup_id (
-              name, description, website, phone, address,
-              main_contact_name, main_contact_email, main_contact_phone
+    // PostgREST caps one response at 1000 rows: page through the whole table (stable order) instead of .limit(500).
+    queryFn: () =>
+      fetchAllRows<ContractRow>((from, to) =>
+        supabase
+          .from('startup_contracts')
+          .select(`
+            id, contract_number, status, signature_status, organization_name,
+            legal_representative_name, legal_representative_email, legal_representative_phone,
+            company_nif, company_address, company_city, company_postal_code,
+            start_date, signed_at, created_at, document_url, contract_pdf_path, workspace_id,
+            workspaces:workspace_id (
+              id, startup_id,
+              startups:startup_id (
+                name, description, website, phone, address,
+                main_contact_name, main_contact_email, main_contact_phone
+              )
             )
-          )
-        `)
-        .order('created_at', { ascending: false })
-        .limit(500);
-      if (error) throw error;
-      return (data ?? []) as unknown as ContractRow[];
-    },
+          `)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: true })
+          .range(from, to) as unknown as PromiseLike<{ data: ContractRow[] | null; error: unknown }>,
+      ),
   });
 
   // Release-hardening P1: consume `?open=<contract_id>` deep link from the
@@ -179,7 +182,7 @@ export default function AdminContracts() {
                 <SelectContent>
                   <SelectItem value="all">{t('adminContracts.allStatuses')}</SelectItem>
                   {statuses.map((s) => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                    <SelectItem key={s} value={s}>{t(`admin.backoffice.contractStatus.${s}`, { defaultValue: s })}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -189,6 +192,10 @@ export default function AdminContracts() {
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : isError ? (
+              <div className="p-4">
+                <QueryErrorAlert onRetry={() => void refetch()} />
               </div>
             ) : filtered.length === 0 ? (
               <div className="py-12 text-center text-sm text-muted-foreground">
@@ -219,7 +226,7 @@ export default function AdminContracts() {
                         <td className="px-4 py-3 text-muted-foreground">{c.company_nif || '—'}</td>
                         <td className="px-4 py-3">
                           <Badge variant="outline" className={STATUS_COLORS[c.status] || ''}>
-                            {c.status}
+                            {t(`admin.backoffice.contractStatus.${c.status}`, { defaultValue: c.status })}
                           </Badge>
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">
@@ -233,8 +240,11 @@ export default function AdminContracts() {
                             </Button>
                             {c.workspace_id && (
                               <Button size="sm" variant="ghost" asChild>
-                                <Link to={`/workspace/${c.workspace_id}`}>
-                                  <ExternalLink className="h-3.5 w-3.5" />
+                                <Link
+                                  to={`/workspace/${c.workspace_id}`}
+                                  aria-label={`${t('adminContracts.openWorkspace', 'Abrir workspace')}: ${c.workspaces?.startups?.name || c.organization_name || c.contract_number || ''}`}
+                                >
+                                  <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                                 </Link>
                               </Button>
                             )}

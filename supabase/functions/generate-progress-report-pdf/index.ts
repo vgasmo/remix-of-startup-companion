@@ -57,7 +57,13 @@ serve(async (req) => {
       return corsJsonResponse({ error: 'Unauthorized' }, req, 401);
     }
 
-    const { workspaceId, month }: ReportRequest = await req.json();
+    const { workspaceId, month }: ReportRequest = await req.json().catch(() => ({} as ReportRequest));
+    if (typeof workspaceId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(workspaceId)) {
+      return corsJsonResponse({ error: 'workspaceId must be a UUID' }, req, 400);
+    }
+    if (month !== undefined && month !== null && !/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) {
+      return corsJsonResponse({ error: 'month must be YYYY-MM' }, req, 400);
+    }
     console.log(`Generating progress report for workspace ${workspaceId}, month: ${month || 'current'}`);
 
     // Check user has access to workspace
@@ -74,7 +80,9 @@ serve(async (req) => {
     const targetMonth = month ? new Date(month + '-01') : new Date();
     const currentMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1).toISOString().slice(0, 10);
     const previousMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() - 1, 1).toISOString().slice(0, 10);
-    const monthEnd = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).toISOString();
+    // Fim EXCLUSIVO (dia 1 do mês seguinte): com "dia 0" 00:00 as sessões do último dia ficavam de fora.
+    const monthEnd = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 1).toISOString();
+    const todayStr = new Date().toISOString().slice(0, 10);
     const monthStart = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1).toISOString();
 
     // Fetch all data in parallel
@@ -83,8 +91,12 @@ serve(async (req) => {
       sessionsResult,
       kpisResult,
       previousKpisResult,
-      actionsResult,
+      actionsTotalResult,
+      actionsCompletedResult,
+      actionsOverdueResult,
       milestonesResult,
+      milestonesTotalResult,
+      milestonesCompletedResult,
     ] = await Promise.all([
       supabase
         .from('workspaces')
@@ -97,7 +109,7 @@ serve(async (req) => {
         .select('id, title, scheduled_at, notes, decisions, ai_summary')
         .eq('workspace_id', workspaceId)
         .gte('scheduled_at', monthStart)
-        .lte('scheduled_at', monthEnd)
+        .lt('scheduled_at', monthEnd)
         .order('scheduled_at', { ascending: false })
         .limit(10),
       
@@ -113,17 +125,19 @@ serve(async (req) => {
         .eq('workspace_id', workspaceId)
         .eq('period_month', previousMonth),
       
-      supabase
-        .from('action_items')
-        .select('id, title, status, due_date, completed_at')
-        .eq('workspace_id', workspaceId)
-        .limit(50),
-      
+      // Totais reais por contagem (o antigo .limit(50)/.limit(20) sem ordem cortava os números).
+      supabase.from('action_items').select('id', { count: 'exact', head: true }).eq('workspace_id', workspaceId),
+      supabase.from('action_items').select('id', { count: 'exact', head: true }).eq('workspace_id', workspaceId).eq('status', 'completed'),
+      supabase.from('action_items').select('id', { count: 'exact', head: true }).eq('workspace_id', workspaceId).neq('status', 'completed').lt('due_date', todayStr),
+
       supabase
         .from('milestones')
         .select('id, title, status, target_date, completed_at')
         .eq('workspace_id', workspaceId)
-        .limit(20),
+        .order('target_date', { ascending: true, nullsFirst: false })
+        .limit(8),
+      supabase.from('milestones').select('id', { count: 'exact', head: true }).eq('workspace_id', workspaceId),
+      supabase.from('milestones').select('id', { count: 'exact', head: true }).eq('workspace_id', workspaceId).eq('status', 'completed'),
     ]);
 
     if (workspaceResult.error || !workspaceResult.data) {
@@ -163,15 +177,16 @@ serve(async (req) => {
       };
     });
 
-    // Process actions
-    const actions = actionsResult.data || [];
-    const completedActions = actions.filter((a: any) => a.status === 'completed');
-    const pendingActions = actions.filter((a: any) => a.status !== 'completed');
-    const overdueActions = pendingActions.filter((a: any) => a.due_date && new Date(a.due_date) < new Date());
+    // Process actions (totais vindos de count exact)
+    const actionsTotal = actionsTotalResult.count ?? 0;
+    const actionsCompleted = actionsCompletedResult.count ?? 0;
+    const actionsOverdue = actionsOverdueResult.count ?? 0;
+    const actionsPending = actionsTotal - actionsCompleted;
 
     // Process milestones
     const milestones = milestonesResult.data || [];
-    const completedMilestones = milestones.filter((m: any) => m.status === 'completed');
+    const milestonesTotal = milestonesTotalResult.count ?? milestones.length;
+    const milestonesCompleted = milestonesCompletedResult.count ?? 0;
 
     // Get AI summary from most recent session if available
     const sessions = sessionsResult.data || [];
@@ -204,7 +219,7 @@ serve(async (req) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${s(locale, 'title')} - ${startup?.name || 'Startup'}</title>
+  <title>${s(locale, 'title')} - ${escapeHtml(startup?.name || 'Startup')}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; background: #fff; padding: 40px; max-width: 800px; margin: 0 auto; }
@@ -257,19 +272,19 @@ serve(async (req) => {
   <div class="grid">
     <div class="stat-card">
       <div class="stat-label">${s(locale, 'stage')}</div>
-      <div class="stat-value" style="font-size: 16px; text-transform: capitalize;">${workspace.stage}</div>
+      <div class="stat-value" style="font-size: 16px; text-transform: capitalize;">${escapeHtml(workspace.stage)}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">${s(locale, 'health')}</div>
-      <div class="stat-value" style="font-size: 16px; text-transform: capitalize;">${effectiveHealth || 'N/A'}</div>
+      <div class="stat-value" style="font-size: 16px; text-transform: capitalize;">${escapeHtml(effectiveHealth || 'N/A')}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">${s(locale, 'milestones')}</div>
-      <div class="stat-value">${completedMilestones.length}/${milestones.length}</div>
+      <div class="stat-value">${milestonesCompleted}/${milestonesTotal}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">${s(locale, 'actions')}</div>
-      <div class="stat-value">${completedActions.length}/${actions.length}</div>
+      <div class="stat-value">${actionsCompleted}/${actionsTotal}</div>
     </div>
   </div>
 
@@ -307,7 +322,7 @@ serve(async (req) => {
         ${escapeHtml(m.title)}
       </span>
       <span class="badge ${m.status === 'completed' ? 'badge-green' : m.status === 'in_progress' ? 'badge-blue' : m.status === 'delayed' ? 'badge-red' : 'badge-yellow'}" style="text-transform: capitalize;">
-        ${m.status.replace('_', ' ')}
+        ${escapeHtml(String(m.status ?? '').replace('_', ' '))}
       </span>
     </div>
     `).join('')}
@@ -317,15 +332,15 @@ serve(async (req) => {
   <h2>✅ ${s(locale, 'actionsSummary')}</h2>
   <div class="grid" style="grid-template-columns: repeat(3, 1fr);">
     <div class="stat-card">
-      <div class="stat-value" style="color: #22c55e;">${completedActions.length}</div>
+      <div class="stat-value" style="color: #22c55e;">${actionsCompleted}</div>
       <div class="stat-label">${s(locale, 'completed')}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-value" style="color: #3b82f6;">${pendingActions.length - overdueActions.length}</div>
+      <div class="stat-value" style="color: #3b82f6;">${actionsPending - actionsOverdue}</div>
       <div class="stat-label">${s(locale, 'inProgress')}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-value" style="color: #ef4444;">${overdueActions.length}</div>
+      <div class="stat-value" style="color: #ef4444;">${actionsOverdue}</div>
       <div class="stat-label">${s(locale, 'overdue')}</div>
     </div>
   </div>

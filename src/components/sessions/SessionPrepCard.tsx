@@ -22,6 +22,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useSessionPrep, SessionPrepData } from '@/hooks/useSessionPrep';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface SessionPrepCardProps {
   sessionId: string;
@@ -136,12 +137,12 @@ export function SessionPrepCard({ sessionId, workspaceId }: SessionPrepCardProps
                       )}
                     </div>
                     <div className="font-semibold">
-                      {kpi.currentValue?.toLocaleString() ?? '—'}
+                      {kpi.currentValue?.toLocaleString(getIntlLocale()) ?? '—'}
                       {kpi.unit && <span className="text-muted-foreground ml-1">{kpi.unit}</span>}
                     </div>
                     {kpi.previousValue !== null && (
                       <div className="text-muted-foreground">
-                        {t('sessionPrep.prev')}: {kpi.previousValue.toLocaleString()}
+                        {t('sessionPrep.prev')}: {kpi.previousValue.toLocaleString(getIntlLocale())}
                       </div>
                     )}
                   </div>

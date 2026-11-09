@@ -47,6 +47,8 @@ import { useQuickWinToast } from '@/hooks/useQuickWinToast';
 import { cn } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { KpiCard } from './kpis/KpiCard';
+import { safeLocalStorage } from '@/lib/safeStorage';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface KpisTabProps {
   workspaceId: string;
@@ -320,8 +322,8 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
       // G1: was firing on every manual save. Celebrate only the first save of
       // the current month (per KPI+month), so it marks a real milestone.
       const celebrateKey = `sl-kpi-celebrated-${workspaceId}-${kpiId}-${selectedMonthStr}`;
-      if (!localStorage.getItem(celebrateKey)) {
-        localStorage.setItem(celebrateKey, '1');
+      if (!safeLocalStorage.getItem(celebrateKey)) {
+        safeLocalStorage.setItem(celebrateKey, '1');
         triggerKpiCelebration();
       }
     } catch {
@@ -697,12 +699,12 @@ export function KpisTab({ workspaceId }: KpisTabProps) {
                       <div className="flex items-center gap-3 mt-0.5 ml-7">
                         {lastMonthVal?.value != null && (
                           <span className="text-[11px] text-muted-foreground">
-                            {t('kpis.lastMonth', 'Mês anterior')}: <strong>{lastMonthVal.value.toLocaleString()}</strong>
+                            {t('kpis.lastMonth', 'Mês anterior')}: <strong>{lastMonthVal.value.toLocaleString(getIntlLocale())}</strong>
                           </span>
                         )}
                         {wk.target_value != null && (
                           <span className="text-[11px] text-muted-foreground">
-                            {t('kpis.target')}: <strong>{wk.target_value.toLocaleString()}</strong>
+                            {t('kpis.target')}: <strong>{wk.target_value.toLocaleString(getIntlLocale())}</strong>
                           </span>
                         )}
                         {/* Inline sparkline */}

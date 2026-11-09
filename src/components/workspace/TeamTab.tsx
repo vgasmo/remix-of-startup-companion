@@ -16,6 +16,7 @@ import { Users, Plus, Pencil, Trash2, Crown, Linkedin, Mail, Phone } from 'lucid
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/ui/EmptyState';
 
+import { safeExternalHref } from '@/lib/sanitizeUrl';
 interface TeamTabProps {
   startupId: string;
   canEdit?: boolean;
@@ -199,8 +200,8 @@ export function TeamTab({ startupId, canEdit = false }: TeamTabProps) {
                           <Phone className="h-4 w-4" />
                         </a>
                       )}
-                      {member.linkedin_url && (
-                        <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
+                      {safeExternalHref(member.linkedin_url) && (
+                        <a href={safeExternalHref(member.linkedin_url)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
                           <Linkedin className="h-4 w-4" />
                         </a>
                       )}

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
+import { getIntlLocale } from '@/lib/dateUtils';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -37,12 +38,18 @@ type ToolAdoptionRow = {
   last_used_at: string | null;
 };
 
+// Local calendar dates (toISOString() would shift them by the UTC offset: in Lisbon summer
+// time the first of the month became the last day of the previous month).
+function localISO(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
 function firstOfMonthISO(): string {
   const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
+  return localISO(new Date(d.getFullYear(), d.getMonth(), 1));
 }
 function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
+  return localISO(new Date());
 }
 
 function MetricCard({
@@ -344,7 +351,7 @@ export default function StaffImpact() {
                           <div className="font-semibold">{row.event_count}</div>
                           {row.last_used_at ? (
                             <div className="text-xs text-muted-foreground">
-                              {new Date(row.last_used_at).toLocaleDateString()}
+                              {new Date(row.last_used_at).toLocaleDateString(getIntlLocale())}
                             </div>
                           ) : null}
                         </div>

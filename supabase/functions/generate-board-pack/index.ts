@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { handleCorsOptions, corsJsonResponse } from "../_shared/cors.ts";
 import { normalizeLocale, pickLang, type Locale } from "../_shared/i18n.ts";
 import { escapeHtml, REPORT_CSP_META } from "../_shared/html.ts";
+import { isAccountActive } from "../_shared/security.ts";
 
 const B = {
   title: { pt: 'Board Pack', en: 'Board Pack' },
@@ -42,25 +43,52 @@ serve(async (req) => {
     if (authError || !user) return corsJsonResponse({ error: 'Unauthorized' }, req, 401);
     const { data: isAdmin } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
     if (!isAdmin) return corsJsonResponse({ error: 'Forbidden' }, req, 403);
+    // Operação com service role: conta suspensa/pendente é recusada (AGENTS.md); erro na verificação = negar.
+    if (!(await isAccountActive(supabase as any, user.id))) {
+      return corsJsonResponse({ error: 'Account access denied' }, req, 403);
+    }
 
+    const nowIso = new Date().toISOString();
     const since30 = new Date(Date.now() - 30 * 86400_000).toISOString();
 
-    const [wsRes, sessionsRes, milestonesRes, kpiRes] = await Promise.all([
-      supabase.from('workspaces').select('id, stage, status, health_score_numeric, health_status, startups(name)'),
-      supabase.from('sessions').select('id, scheduled_at, status').gte('scheduled_at', since30),
-      supabase.from('milestones').select('id, status, completed_at, workspace_id').gte('completed_at', since30).eq('status', 'completed'),
-      supabase.from('kpi_values').select('id').gte('created_at', since30),
+    // O PostgREST devolve no máximo 1000 linhas por pedido: paginar os workspaces e contar o resto com count/head.
+    const workspaceRows: any[] = [];
+    let wsError: unknown = null;
+    for (let from = 0; ; from += 1000) {
+      const page = await supabase
+        .from('workspaces')
+        .select('id, stage, status, health_score_numeric, health_status, startups(name)')
+        .order('id', { ascending: true })
+        .range(from, from + 999);
+      if (page.error) { wsError = page.error; break; }
+      workspaceRows.push(...(page.data ?? []));
+      if ((page.data ?? []).length < 1000) break;
+    }
+
+    const [sessionsRes, milestonesRes, kpiRes] = await Promise.all([
+      supabase.from('sessions').select('id', { count: 'exact', head: true })
+        .gte('scheduled_at', since30).lte('scheduled_at', nowIso).in('status', ['scheduled', 'completed']),
+      supabase.from('milestones').select('id', { count: 'exact', head: true })
+        .gte('completed_at', since30).eq('status', 'completed'),
+      supabase.from('kpi_values').select('id', { count: 'exact', head: true }).gte('created_at', since30),
     ]);
 
-    const workspaces = (wsRes.data ?? []).filter((w: any) => w.status !== 'archived');
+    // Nunca apresentar zeros inventados quando a leitura falha.
+    if (wsError || sessionsRes.error || milestonesRes.error || kpiRes.error) {
+      console.error('[generate-board-pack] query failed', wsError ?? sessionsRes.error ?? milestonesRes.error ?? kpiRes.error);
+      return corsJsonResponse({ error: 'Failed to load board pack data' }, req, 500);
+    }
+
+    const workspaces = workspaceRows.filter((w: any) => w.status !== 'archived' && w.status !== 'rejected');
     const active = workspaces.length;
     const byStage = workspaces.reduce((acc: Record<string, number>, w: any) => { acc[w.stage || 'unknown'] = (acc[w.stage || 'unknown'] || 0) + 1; return acc; }, {});
-    const sessions30 = (sessionsRes.data ?? []).length;
-    const milestones30 = (milestonesRes.data ?? []).length;
-    const kpis30 = (kpiRes.data ?? []).length;
+    const sessions30 = sessionsRes.count ?? 0;
+    const milestones30 = milestonesRes.count ?? 0;
+    const kpis30 = kpiRes.count ?? 0;
 
     const atRisk = workspaces
       .filter((w: any) => w.health_status === 'red' || (w.health_score_numeric != null && w.health_score_numeric < 40))
+      .sort((a: any, b: any) => (a.health_score_numeric ?? 0) - (b.health_score_numeric ?? 0))
       .slice(0, 10);
 
     const healthyTop = workspaces
@@ -79,7 +107,7 @@ serve(async (req) => {
 
     const reportDate = new Date().toLocaleDateString(dateLocale, { day: '2-digit', month: 'long', year: 'numeric' });
 
-    const html = `<!DOCTYPE html><html lang="${locale}"><head><meta charset="utf-8"><title>${tb(locale, 'title')} — Startup Leiria</title>
+    const html = `<!DOCTYPE html><html lang="${locale}"><head><meta charset="utf-8">${REPORT_CSP_META}<title>${tb(locale, 'title')} — Startup Leiria</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a1a; max-width: 900px; margin: 32px auto; padding: 20px; line-height: 1.55; }
   .header { text-align: center; padding: 24px 0; border-bottom: 3px solid #0f172a; margin-bottom: 24px; }
@@ -136,6 +164,6 @@ serve(async (req) => {
     return corsJsonResponse({ html, metadata: { active, sessions30, milestones30, kpis30 } }, req);
   } catch (err: any) {
     console.error('[generate-board-pack]', err);
-    return corsJsonResponse({ error: err?.message || 'Failed' }, req, 500);
+    return corsJsonResponse({ error: 'Failed to generate board pack' }, req, 500);
   }
 });

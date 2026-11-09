@@ -19,6 +19,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { cn } from '@/lib/utils';
 import { triggerSuccessConfetti } from '@/lib/confetti';
 import { useHasSeenWelcomeWizard } from '@/hooks/useHasSeenWelcomeWizard';
+import { safeLocalStorage } from '@/lib/safeStorage';
 
 
 interface FounderWelcomePanelProps {
@@ -66,19 +67,19 @@ export function FounderWelcomePanel({
   const checklistKey = scopedKey(CHECKLIST_DISMISSED_KEY, userId);
   const welcomeKey = scopedKey(WELCOME_DISMISSED_KEY, userId);
   const [welcomeDismissed, setWelcomeDismissed] = useState(() =>
-    localStorage.getItem(welcomeKey) === 'true'
+    safeLocalStorage.getItem(welcomeKey) === 'true'
   );
   const [checklistDismissed, setChecklistDismissed] = useState(() =>
-    localStorage.getItem(checklistKey) === 'true'
+    safeLocalStorage.getItem(checklistKey) === 'true'
   );
 
   const dismissWelcome = () => {
-    localStorage.setItem(welcomeKey, 'true');
+    safeLocalStorage.setItem(welcomeKey, 'true');
     setWelcomeDismissed(true);
   };
 
   const dismissChecklist = () => {
-    localStorage.setItem(checklistKey, 'true');
+    safeLocalStorage.setItem(checklistKey, 'true');
     setChecklistDismissed(true);
   };
 

@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { notify } from "@/lib/notify";
+import { useAuth } from '@/contexts/AuthContext';
 
 interface InvestorTemplate {
   id: string;
@@ -108,6 +109,7 @@ interface InvestorTemplateLibraryProps {
 
 export function InvestorTemplateLibrary({ onSelectTemplate }: InvestorTemplateLibraryProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<InvestorTemplate | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -116,7 +118,9 @@ export function InvestorTemplateLibrary({ onSelectTemplate }: InvestorTemplateLi
   const [draftRestored, setDraftRestored] = useState(false);
 
   // B4 Fix: Draft persistence key
-  const getDraftKey = useCallback((templateId: string) => `investor_template_draft_${templateId}`, []);
+  // Chave por utilizador; o prefixo `sl-` faz o resetSession() apagá-la no logout/troca de utilizador.
+  const draftOwnerId = user?.id ?? 'anon';
+  const getDraftKey = useCallback((templateId: string) => `sl-investor-draft:${draftOwnerId}:${templateId}`, [draftOwnerId]);
 
   // B4 Fix: Save draft to localStorage whenever editingSections changes
   useEffect(() => {

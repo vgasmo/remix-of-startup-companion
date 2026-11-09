@@ -75,15 +75,26 @@ export function useAddTask() {
 
       if (error) throw error;
 
-      // Update funnel_items.next_action_at if task has due_at
+      // A próxima ação da lead só avança para esta tarefa se não houver outra mais próxima ainda por fazer
+      // (antes, uma tarefa para daqui a um mês apagava a ação marcada para amanhã).
       if (params.funnel_item_id && params.due_at) {
-        await supabase
+        const { data: lead } = await supabase
           .from('funnel_items')
-          .update({ 
-            next_action_at: params.due_at,
-            next_action_description: params.subject 
-          })
-          .eq('id', params.funnel_item_id);
+          .select('next_action_at')
+          .eq('id', params.funnel_item_id)
+          .maybeSingle();
+        const current = lead?.next_action_at ? new Date(lead.next_action_at).getTime() : null;
+        const incoming = new Date(params.due_at).getTime();
+        if (current === null || current < Date.now() || incoming < current) {
+          const { error: nextActionErr } = await supabase
+            .from('funnel_items')
+            .update({
+              next_action_at: params.due_at,
+              next_action_description: params.subject,
+            })
+            .eq('id', params.funnel_item_id);
+          if (nextActionErr) console.warn('[useAddTask] next_action update failed', nextActionErr.message);
+        }
       }
 
       return data;

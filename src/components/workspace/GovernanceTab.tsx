@@ -311,11 +311,11 @@ export function GovernanceTab({ workspaceId, programId, currentStage, canWrite }
                       {getStatusBadge(review.status)}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Reviewed {review.reviewed_at ? format(new Date(review.reviewed_at), 'MMM d, yyyy', { locale: dateLocale }) : 'N/A'}
+                      {t('governance.reviewedOn', { date: review.reviewed_at ? format(new Date(review.reviewed_at), 'd MMM yyyy', { locale: dateLocale }) : '—', defaultValue: 'Revisto em {{date}}' })}
                     </p>
                     {review.conditions && (
                       <p className="text-sm mt-2 p-2 rounded bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]">
-                        Conditions: {review.conditions}
+                        {t('governance.conditions')}: {review.conditions}
                       </p>
                     )}
                   </div>

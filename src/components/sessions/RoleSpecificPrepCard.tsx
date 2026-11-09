@@ -19,6 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useDateLocale } from '@/lib/dateLocale';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface RoleSpecificPrepCardProps {
   sessionId: string;
@@ -133,7 +134,7 @@ export function RoleSpecificPrepCard({ sessionId, workspaceId }: RoleSpecificPre
                       )}
                     </div>
                     <div className="font-semibold mt-1">
-                      {kpi.currentValue?.toLocaleString() ?? '—'}
+                      {kpi.currentValue?.toLocaleString(getIntlLocale()) ?? '—'}
                       {kpi.unit && <span className="text-muted-foreground ml-1">{kpi.unit}</span>}
                     </div>
                   </div>

@@ -122,6 +122,17 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
 
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
+      // O fornecedor (DocuSign/PandaDoc) não aceitou o envio: o servidor já reabriu o intake e avisou o staff.
+      if ((data as any)?.status === 'failed') {
+        queryClient.invalidateQueries({ queryKey: ['contract-intakes'] });
+        queryClient.invalidateQueries({ queryKey: ['contract-intake'] });
+        queryClient.invalidateQueries({ queryKey: ['contract-intake-by-funnel'] });
+        queryClient.invalidateQueries({ queryKey: ['intake-events', intake.id] });
+        queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
+        queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
+        queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
+        throw new Error((data as any).message || t('crm.intakeSignatureProviderFailed', 'O fornecedor de assinatura não aceitou o envio.'));
+      }
 
       // NOTE: Do NOT transition intake here — the edge function already
       // performed syncIntakeOnSent server-side. A duplicate client-side

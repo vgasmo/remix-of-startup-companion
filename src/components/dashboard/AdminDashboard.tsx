@@ -99,7 +99,7 @@ const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLo
       label: t('admin.contractRenewals'),
       value: statsError ? '—' : (stats?.contractRenewals30d ?? 0),
       icon: FileText,
-      href: '/admin?tab=backoffice',
+      href: '/admin?tab=backoffice&subtab=contracts',
       variant: 'info' as const,
     },
     {
@@ -107,7 +107,7 @@ const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLo
       label: t('admin.occupancy'),
       value: stats ? `${stats.occupiedSpaces}/${stats.totalSpaces}` : '—',
       icon: Building2,
-      href: '/admin?tab=backoffice',
+      href: '/admin?tab=backoffice&subtab=spaces',
       variant: 'default' as const,
     },
   ];
@@ -323,7 +323,7 @@ const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLo
           {[
             { label: t('staffCockpit.navLabel', { defaultValue: 'Painel' }), href: '/staff-cockpit', icon: TrendingUp, desc: t('admin.commandCenterDesc', { defaultValue: 'Triage diária e visão operacional' }) },
             { label: t('admin.crmPipeline'), href: '/crm', icon: Users, desc: t('admin.crmDesc', { defaultValue: 'Pipeline comercial' }) },
-            { label: t('admin.spaceOps', { defaultValue: 'Operações de Espaço' }), href: '/admin?tab=backoffice', icon: Building2, desc: t('admin.spaceOpsDesc', { defaultValue: 'Contratos, faturas e infra' }) },
+            { label: t('admin.spaceOps', { defaultValue: 'Operações de Espaço' }), href: '/admin?tab=backoffice&subtab=spaces', icon: Building2, desc: t('admin.spaceOpsDesc', { defaultValue: 'Contratos, faturas e infra' }) },
             { label: t('admin.programs'), href: '/admin?tab=programs-setup', icon: FileText, desc: t('admin.programsDesc', { defaultValue: 'Configuração de programas' }) },
             { label: t('admin.reports'), href: '/admin?tab=analytics', icon: AlertTriangle, desc: t('admin.reportsDesc', { defaultValue: 'Relatórios e métricas' }) },
           ].map((link) => {

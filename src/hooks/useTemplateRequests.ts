@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { logger } from '@/lib/logger';
 import {
   templateRequestCreatedKey,
   templateRequestResolvedKey,
@@ -110,9 +111,10 @@ async function notifyStaffOfNewRequest(req: TemplateRequest) {
       // via the `notifications_event_key_user_unique` partial unique index.
       event_key: templateRequestCreatedKey(req.id, uid),
     }));
-    await supabase
+    const { error: notifyError } = await supabase
       .from('notifications')
       .upsert(rows, { onConflict: 'user_id,event_key', ignoreDuplicates: true });
+    if (notifyError) logger.warn('template_request_notification_failed', { code: notifyError.code, message: notifyError.message });
   } catch {
     // best-effort
   }
@@ -125,7 +127,7 @@ async function notifyRequesterOfResolution(req: TemplateRequest) {
       req.status === 'fulfilled' ? 'Pedido de template resolvido'
       : req.status === 'rejected' ? 'Pedido de template rejeitado'
       : 'Pedido de template em curso';
-    await supabase.from('notifications').upsert(
+    const { error: notifyError } = await supabase.from('notifications').upsert(
       {
         user_id: req.requested_by,
         type: 'template_request',
@@ -142,6 +144,7 @@ async function notifyRequesterOfResolution(req: TemplateRequest) {
       },
       { onConflict: 'user_id,event_key', ignoreDuplicates: true },
     );
+    if (notifyError) logger.warn('template_request_resolution_notification_failed', { code: notifyError.code, message: notifyError.message });
   } catch {
     // best-effort
   }

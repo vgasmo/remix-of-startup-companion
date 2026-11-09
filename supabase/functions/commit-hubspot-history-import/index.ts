@@ -29,37 +29,42 @@ interface Body {
   batch_label?: string;
 }
 
+// Escapa os curingas de LIKE/ILIKE (\, % e _) para que a comparação "exata" seja mesmo exata.
+const escapeLike = (v: string) => v.replace(/[\\%_]/g, (c) => `\\${c}`);
+
 async function matchFunnelItem(sb: any, e: HistoryEntry): Promise<string | null> {
   // 1. External refs
   if (e.external_id) {
     const { data } = await sb
       .from('external_entity_refs')
-      .select('entity_id, entity_type')
-      .eq('external_source', 'hubspot')
+      .select('internal_entity_id, internal_entity_type')
+      .eq('provider', 'hubspot')
+      .eq('internal_entity_type', 'funnel_item')
       .eq('external_id', e.external_id)
-      .maybeSingle();
-    if (data?.entity_type === 'funnel_item' && data.entity_id) return data.entity_id as string;
+      .limit(1);
+    const ref = Array.isArray(data) ? data[0] : null;
+    if (ref?.internal_entity_id) return ref.internal_entity_id as string;
   }
-  // 2. Email exact
+  // 2. Email exact (metacaracteres LIKE escapados; ambíguo => sem correspondência)
   if (e.contact_email) {
     const { data } = await sb
       .from('funnel_items')
       .select('id')
-      .ilike('contact_email', e.contact_email)
-      .limit(1);
+      .ilike('contact_email', escapeLike(e.contact_email.trim()))
+      .limit(2);
     if (data && data.length === 1) return data[0].id as string;
   }
-  // 3. Domain + org name exact
+  // 3. Domain + org name exact (ambíguo => sem correspondência)
   if (e.contact_domain && e.organization_name) {
     const { data } = await sb
       .from('funnel_items')
       .select('id, contact_email, organization_name')
-      .ilike('organization_name', e.organization_name)
-      .limit(5);
-    const hit = (data ?? []).find((r: any) =>
+      .ilike('organization_name', escapeLike(e.organization_name.trim()))
+      .limit(50);
+    const hits = (data ?? []).filter((r: any) =>
       typeof r.contact_email === 'string' && r.contact_email.toLowerCase().endsWith('@' + e.contact_domain!.toLowerCase()),
     );
-    if (hit) return hit.id as string;
+    if (hits.length === 1) return hits[0].id as string;
   }
   return null;
 }
@@ -118,6 +123,8 @@ Deno.serve(async (req) => {
 
     for (const e of body.entries) {
       try {
+        if (typeof e?.external_id !== 'string' || e.external_id.trim() === '') throw new Error('missing_external_id');
+        if (Number.isNaN(Date.parse(String(e.original_timestamp)))) throw new Error('invalid_original_timestamp');
         const funnelId = await matchFunnelItem(sbSvc, e);
         if (!funnelId) { summary.unmatched++; sample.push({ external_id: e.external_id, status: 'unmatched' }); continue; }
         summary.matched++;
@@ -153,7 +160,7 @@ Deno.serve(async (req) => {
         summary.inserted++;
       } catch (err: any) {
         summary.failed++;
-        sample.push({ external_id: e.external_id, error: err?.message ?? String(err) });
+        sample.push({ external_id: e?.external_id, error: err?.message ?? String(err) });
       }
     }
 

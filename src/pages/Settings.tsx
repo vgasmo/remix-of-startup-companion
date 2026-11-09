@@ -225,6 +225,11 @@ export default function Settings() {
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!currentPassword) {
+      notify.error(t('settingsPage.currentPassword'));
+      return;
+    }
+
     if (newPassword.length < 6) {
       notify.error(t('login.passwordMinLength'));
       return;
@@ -237,6 +242,16 @@ export default function Settings() {
 
     setIsUpdatingPassword(true);
     try {
+      // Re-authenticate: an open/hijacked session must not be enough to change the password.
+      const { error: reauthError } = await supabase.auth.signInWithPassword({
+        email: user?.email ?? '',
+        password: currentPassword,
+      });
+      if (reauthError) {
+        notify.error(t('settingsPage.currentPasswordWrong'));
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -571,6 +586,18 @@ export default function Settings() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleUpdatePassword} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="current_password">{t('settingsPage.currentPassword')}</Label>
+                    <Input
+                      id="current_password"
+                      type="password"
+                      autoComplete="current-password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="new_password">{t('settingsPage.newPassword', 'Nova Palavra-passe')}</Label>
                     <Input

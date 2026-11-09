@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { EcosystemPulseCard } from '@/components/admin/EcosystemPulseCard';
 import { AdminMissionControlDirectory } from '@/components/admin/AdminMissionControlDirectory';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
+import { canSeeAdminTab } from '@/components/admin/adminTabAccess';
 
 // Heavy tab managers — lazy so Admin route chunk stays lean.
 const AdminTemplatesManager       = lazy(lazyWithRetry(() => import('@/components/admin/AdminTemplatesManager').then(m => ({ default: m.AdminTemplatesManager })), 'lazy:admin-templates'));
@@ -45,34 +46,6 @@ const TabFallback = () => (
   <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">…</div>
 );
 
-// P0 fix: `enrollment` (EnrollmentControlCenter) exposes the global open_registration
-// toggle and other admin-only controls. Consultores must not see this tab.
-// P4: broaden to match RLS — backoffice/announcements/compliance/health/mentors/template-requests
-// require is_admin() at the data layer, so hide their tabs from non-admin staff to avoid
-// dead-end UI that renders empty or throws on mutations.
-const ADMIN_ONLY_TABS = new Set([
-  'users',
-  'data-quality',
-  'system-health',
-  'enrollment',
-  'announcements',
-  'compliance',
-  'health',
-  'mentors',
-  'template-requests',
-  // P2.9: every write on survey_* is is_admin() at the data layer.
-  'surveys',
-]);
-
-// Tabs that require any staff role (admin, consultor, backoffice) but not
-// admin-only. `backoffice` (contracts / pricing / spaces) is one of those:
-// backoffice operators need it, admins too. Consultants stay locked out.
-const STAFF_ONLY_TABS = new Set(['backoffice']);
-
-// P2.2: Programs/KPIs/Templates/Support materials are owned by admin and
-// consultor; backoffice is operational (contracts/spaces) and must not see these.
-const CONSULTOR_TABS = new Set(['programs-setup', 'kpis', 'templates', 'support-materials']);
-
 const TAB_GROUPS_BASE: Record<string, string[]> = {
   operations: ['approvals', 'enrollment', 'backoffice', 'announcements'],
   programs: ['programs-setup', 'kpis', 'templates', 'template-requests', 'support-materials', 'surveys'],
@@ -88,12 +61,7 @@ export default function Admin() {
   const TAB_GROUPS = useMemo(() => {
     const filtered: Record<string, string[]> = {};
     for (const [group, tabs] of Object.entries(TAB_GROUPS_BASE)) {
-      const visibleTabs = tabs.filter(tab => {
-        if (ADMIN_ONLY_TABS.has(tab)) return isAdmin;
-        if (STAFF_ONLY_TABS.has(tab)) return isAdmin || isBackoffice;
-        if (CONSULTOR_TABS.has(tab)) return isAdmin || isConsultor;
-        return true;
-      });
+      const visibleTabs = tabs.filter(tab => canSeeAdminTab(tab, { isAdmin, isBackoffice, isConsultor }));
       if (visibleTabs.length > 0) filtered[group] = visibleTabs;
     }
     return filtered;

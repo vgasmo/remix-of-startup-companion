@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useWorkspaces } from '@/hooks/useWorkspaces';
 import { useWorkspaceMomentum, type MomentumBand } from '@/hooks/useWorkspaceMomentum';
 import { clickableProps } from '@/lib/clickable';
+import { countOrNull } from '@/lib/queryCount';
 
 interface Metric {
   key: string;
@@ -47,8 +48,8 @@ function EcosystemPulseCardInner() {
           .select('id', { count: 'exact', head: true })
           .eq('is_active', true),
       ]);
-      const getCount = (r: PromiseSettledResult<any>) =>
-        r.status === 'fulfilled' ? (r.value?.count ?? 0) : 0;
+      // A failed count is null (shown as "—"), never a fabricated 0.
+      const getCount = countOrNull;
       return {
         contracts: getCount(contracts),
         atRisk: getCount(atRisk),
@@ -63,15 +64,15 @@ function EcosystemPulseCardInner() {
     {
       key: 'contracts',
       label: t('admin.pulse.activeContracts', { defaultValue: 'Contratos ativos' }),
-      value: data?.contracts ?? 0,
+      value: data?.contracts ?? '—',
       icon: FileText,
       tone: 'text-primary bg-primary/10',
-      href: '/admin?tab=backoffice&section=contracts',
+      href: '/admin?tab=backoffice&subtab=contracts',
     },
     {
       key: 'atRisk',
       label: t('admin.pulse.atRisk', { defaultValue: 'Startups em risco' }),
-      value: data?.atRisk ?? 0,
+      value: data?.atRisk ?? '—',
       icon: AlertTriangle,
       tone: 'text-destructive bg-destructive/10',
       href: '/my-workspaces?filter=attention',
@@ -79,7 +80,7 @@ function EcosystemPulseCardInner() {
     {
       key: 'pending',
       label: t('admin.pulse.pendingApprovals', { defaultValue: 'Aprovações pendentes' }),
-      value: data?.pending ?? 0,
+      value: data?.pending ?? '—',
       icon: Clock,
       tone: 'text-warning bg-warning/10',
       href: '/admin?tab=approvals',
@@ -87,7 +88,7 @@ function EcosystemPulseCardInner() {
     {
       key: 'programs',
       label: t('admin.pulse.activePrograms', { defaultValue: 'Programas ativos' }),
-      value: data?.programs ?? 0,
+      value: data?.programs ?? '—',
       icon: Activity,
       tone: 'text-info bg-info/10',
       href: '/admin?tab=programs-setup',

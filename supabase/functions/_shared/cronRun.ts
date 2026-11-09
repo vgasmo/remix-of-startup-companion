@@ -110,7 +110,8 @@ export async function recordCronRun(
  * Wrap a Deno.serve/serve handler to automatically log a cron_job_runs row on
  * every non-OPTIONS invocation. Status is inferred from the HTTP response:
  *   - 2xx  → 'ok'  (unless response JSON contains {status:'partial'|'failed'})
- *   - 4xx  → 'skipped' (client/auth failure — not the job's fault)
+ *   - 401/403 → not logged (unauthenticated/unauthorised calls are not job runs)
+ *   - other 4xx → 'skipped' (client failure — not the job's fault)
  *   - 5xx  → 'failed'
  * Thrown errors are re-thrown after being logged as 'failed'.
  *
@@ -132,6 +133,13 @@ export function withCronRunLogging(
 
     try {
       const resp = await handler(req);
+      // Requests without a valid credential (401/403) are not job executions: these
+      // functions have verify_jwt=false, so anyone on the internet could otherwise
+      // write rows into cron_job_runs (and fake triggered_by='cron' with any header).
+      if (resp.status === 401 || resp.status === 403) {
+        console.warn(`[${jobName}] invocation rejected (${resp.status})`);
+        return resp;
+      }
       let status: CronRunStatus = 'ok';
       let errorSummary: string | undefined;
       let details: Record<string, unknown> = { http_status: resp.status };

@@ -88,9 +88,9 @@ export function EcosystemTable({ items, onOpenItem, totalCount, hasNextPage, isF
           case 'name': return it.name || '';
           case 'stage': return (it.stage || '') as string;
           case 'health': {
-            const raw = it.health_score as unknown;
-            const n = raw == null || raw === '' ? NaN : Number(raw);
-            return Number.isFinite(n) ? n : -Infinity;
+            // health_score is a text enum (critical < at_risk < stable < healthy < thriving), not a number.
+            const rank: Record<string, number> = { critical: 0, at_risk: 1, stable: 2, healthy: 3, thriving: 4 };
+            return it.health_score != null && it.health_score in rank ? rank[it.health_score] : -1;
           }
           case 'consultant': return it.owner_name || '';
           case 'updated': return it.last_activity_at ? new Date(it.last_activity_at).getTime() : 0;

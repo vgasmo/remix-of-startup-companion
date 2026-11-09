@@ -1,6 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
+import { canMutateWorkspace } from '../_shared/workspaceWrite.ts';
+import { validateUUID } from '../_shared/validation.ts';
+
+/** Campos que o utilizador preenche à mão: uma regeneração nunca os apaga. */
+const MANUAL_FIELDS = ['highlights', 'lowlights', 'asks', 'next_month_priorities'] as const;
 
 interface GenerateRequest {
   workspace_id: string;
@@ -37,14 +42,20 @@ serve(async (req) => {
     // Use service role client for data operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const body: GenerateRequest = await req.json();
-    const { workspace_id, month } = body;
+    const body: GenerateRequest = await req.json().catch(() => ({} as GenerateRequest));
+    const wsCheck = validateUUID(body?.workspace_id, 'workspace_id');
+    if (!wsCheck.valid) return corsJsonResponse({ error: wsCheck.error }, req, 400);
+    const workspace_id = wsCheck.value!;
+    if (typeof body.month !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])-\d{2}$/.test(body.month)) {
+      return corsJsonResponse({ error: 'month must be YYYY-MM-DD' }, req, 400);
+    }
+    // O investor_updates é por mês: normalizar sempre para o dia 1.
+    const month = `${body.month.slice(0, 7)}-01`;
 
-    // SECURITY: Validate user has access to this workspace
-    const { data: hasAccess } = await supabase.rpc('has_workspace_access', {
-      _user_id: user.id,
-      _workspace_id: workspace_id,
-    });
+    // SECURITY: gerar/regenerar ESCREVE em investor_updates. Tem de coincidir com a RLS
+    // (can_write_workspace: admin, consultor, founder) + conta ativa. Mentores e
+    // team_members têm só leitura (has_workspace_access não chega).
+    const hasAccess = await canMutateWorkspace(authClient, supabase, user.id, workspace_id);
 
     if (!hasAccess) {
       console.error('[generate-investor-update] Access denied for user:', user.id, 'workspace:', workspace_id);
@@ -91,7 +102,7 @@ serve(async (req) => {
     const { data: currentKpis } = await supabase
       .from("kpi_values")
       .select(`
-        value, target_value,
+        value, target_value, kpi_definition_id,
         kpi_definition:kpi_definitions(name, unit)
       `)
       .eq("workspace_id", workspace_id)
@@ -166,6 +177,21 @@ serve(async (req) => {
       health_score: workspace.health_score_numeric,
       stage: workspace.stage,
     };
+
+    // Regenerar não pode apagar o que o utilizador já escreveu à mão.
+    const { data: existingUpdate, error: existingError } = await supabase
+      .from("investor_updates")
+      .select("content_json")
+      .eq("workspace_id", workspace_id)
+      .eq("month", month)
+      .maybeSingle();
+    if (existingError) throw existingError;
+    const previous = (existingUpdate?.content_json ?? {}) as Record<string, unknown>;
+    for (const field of MANUAL_FIELDS) {
+      if (Array.isArray(previous[field]) && (previous[field] as unknown[]).length > 0) {
+        (content as Record<string, unknown>)[field] = previous[field];
+      }
+    }
 
     // Upsert the investor update
     const { data: update, error: upsertError } = await supabase

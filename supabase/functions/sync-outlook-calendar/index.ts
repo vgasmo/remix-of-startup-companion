@@ -464,7 +464,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const startupName = typedSession.workspaces?.startups?.name || 'Session';
-    const appUrl = Deno.env.get('APP_URL') || 'https://startupleiria.app';
+    const appUrl = Deno.env.get('PUBLIC_APP_URL') || Deno.env.get('APP_URL') || 'https://fb.startupleiria.com';
     const sessionLink = `${appUrl}/workspace/${typedSession.workspace_id}?tab=agenda`;
 
     // ========== WEBHOOK MODE ==========
@@ -719,6 +719,7 @@ Deno.serve(async (req: Request) => {
         await supabaseAdmin
           .from('integration_errors')
           .insert({
+            integration_type: 'outlook',
             source: 'outlook_graph',
             error_message: errorMessage,
             workspace_id: typedSession.workspace_id,

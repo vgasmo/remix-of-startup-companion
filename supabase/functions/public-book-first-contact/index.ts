@@ -10,6 +10,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { resolveFirstContactRoute, NoRouteError, deriveBookingIdempotencyKey } from '../_shared/first-contact-routing.ts';
 import { lisbonWallClockToDate } from '../_shared/lisbonTime.ts';
+import { isOfferedSlot } from '../_shared/publicBookingSlot.ts';
 
 // Input validation constants
 const MAX_NAME_LENGTH = 200;
@@ -206,6 +207,38 @@ async function getGraphAccessToken(credentials: {
 const escHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
+// Volta a confirmar no calendário do consultor que vai receber a reunião (true = livre, false = ocupado, null = não foi possível saber)
+async function consultantSlotIsFree(
+  supabase: any,
+  consultantEmail: string,
+  slot: { date: string; time: string },
+): Promise<boolean | null> {
+  try {
+    const credentials = await getGraphCredentials(supabase);
+    if (!credentials) return null;
+    const accessToken = await getGraphAccessToken(credentials);
+    const [h, m] = slot.time.split(':').map(Number);
+    const endTime = `${String(h + 1).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    const res = await fetch(`https://graph.microsoft.com/v1.0/users/${encodeURIComponent(consultantEmail)}/calendar/getSchedule`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        schedules: [consultantEmail],
+        startTime: { dateTime: `${slot.date}T${slot.time}:00`, timeZone: 'Europe/Lisbon' },
+        endTime: { dateTime: `${slot.date}T${endTime}:00`, timeZone: 'Europe/Lisbon' },
+        availabilityViewInterval: 30,
+      }),
+    });
+    if (!res.ok) return null;
+    const view: string | undefined = (await res.json()).value?.[0]?.availabilityView;
+    if (!view) return null;
+    return /^0+$/.test(view);
+  } catch (e) {
+    console.warn('consultantSlotIsFree failed:', e instanceof Error ? e.message : e);
+    return null;
+  }
+}
+
 // Create calendar event with Teams meeting
 async function createCalendarEvent(
   accessToken: string,
@@ -220,7 +253,7 @@ async function createCalendarEvent(
   const endDateTime = `${slot.date}T${endTime}:00`;
   
   const eventPayload = {
-    subject: `Reunião de Primeiro Contacto (Teams) - Startup Leiria - ${escHtml(contact.name)}${contact.organization ? ` (${escHtml(contact.organization)})` : ''}`,
+    subject: `Reunião de Primeiro Contacto (Teams) - Startup Leiria - ${contact.name}${contact.organization ? ` (${contact.organization})` : ''}`,
     body: {
       contentType: "HTML",
       content: `
@@ -306,6 +339,11 @@ serve(async (req) => {
     }
 
     const { token, slot, contact, recording_consent } = validation.data;
+
+    // O servidor não confia no cliente: só aceita os horários que a página oferece (dias úteis, futuros, até 14 dias)
+    if (!isOfferedSlot(slot.date, slot.time)) {
+      return corsJsonResponse({ success: false, error: 'Esse horário não está disponível. Escolha outro horário.', reason: 'invalid_slot' }, req, 400);
+    }
 
     // Selected program comes from the routing step in PublicBooking.
     // Values: null (single-option link), 'global' (Geral option), or a UUID.
@@ -451,6 +489,24 @@ serve(async (req) => {
     // retries) resolve to the same funnel item instead of creating duplicates.
     const idempotencyKey = await deriveBookingIdempotencyKey(contact.email, slot.date, slot.time, token);
 
+    // Voltar a confirmar o calendário do consultor que vai mesmo receber a reunião (com round-robin pode não ser o
+    // que o visitante viu). Um reenvio da mesma marcação (idempotente) salta esta verificação: o evento já é dele.
+    const { data: sameBooking } = await supabase
+      .from('funnel_items')
+      .select('id')
+      .eq('metadata_json->>idempotency_key', idempotencyKey)
+      .limit(1)
+      .maybeSingle();
+    if (!sameBooking && consultantEmail) {
+      const free = await consultantSlotIsFree(supabase, consultantEmail, slot);
+      if (free === false) {
+        return corsJsonResponse({ success: false, error: 'slot_taken', message: 'Este horário acabou de ser reservado. Escolha outro.' }, req, 409);
+      }
+      if (free === null && strictCalendarValidation) {
+        return corsJsonResponse({ success: false, error: 'Não foi possível confirmar a disponibilidade. Tente novamente.', reason: 'availability_check_failed' }, req, 503);
+      }
+    }
+
     // Base booking metadata (structured — do NOT append to `notes` free text).
     const bookingMetadata: Record<string, unknown> = {
       idempotency_key: idempotencyKey,
@@ -479,14 +535,20 @@ serve(async (req) => {
     if (contact.personal_intro) bookingMetadata.personal_intro = contact.personal_intro;
 
     // RC11 D.5: capture the previous owner/event of an early-stage lead so a rebook can clean up.
-    const { data: priorItem } = await supabase
+    // O email da lead manual pode ter maiúsculas: comparar sem distinguir maiúsculas/minúsculas (ilike).
+    // '*' é curinga no PostgREST (e '%' e '_' no LIKE): '%' e '_' são escapados, '*' passa a '_' e o resultado é confirmado a seguir.
+    const bookingEmail = String(contact.email).trim().toLowerCase();
+    const { data: priorCandidate } = await supabase
       .from('funnel_items')
-      .select('id, owner_consultant_id, metadata_json')
-      .eq('contact_email', String(contact.email).toLowerCase())
+      .select('id, owner_consultant_id, metadata_json, contact_email')
+      .ilike('contact_email', bookingEmail.replace(/[\\%_]/g, '\\$&').replace(/\*/g, '_'))
       .in('stage', ['new', 'first_contact_booked'])
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
+    const priorItem = priorCandidate && String(priorCandidate.contact_email ?? '').trim().toLowerCase() === bookingEmail
+      ? priorCandidate
+      : null;
     const previousOwnerId: string | null = priorItem?.owner_consultant_id ?? null;
     const previousEventId: string | null =
       ((priorItem?.metadata_json as Record<string, unknown> | null)?.calendar_event_id as string | null) ?? null;
@@ -592,7 +654,7 @@ serve(async (req) => {
       await supabase.from('notifications').insert({
         user_id: previousOwnerId,
         type: 'first_contact_reassigned',
-        title: `Primeiro Contacto remarcado — ${escHtml(contact.name)}`,
+        title: `Primeiro Contacto remarcado — ${contact.name}`,
         message: previousEventId
           ? 'Foi feita uma nova marcação para esta lead. A reunião anterior NÃO foi cancelada — confirma com a lead e cancela a que já não serve.'
           : 'Foi feita uma nova marcação para esta lead.',
@@ -694,12 +756,12 @@ serve(async (req) => {
     try {
       if (consultantId) {
         const dt = `${slot.date} ${slot.time}`;
-        const orgLabel = contact.organization ? ` (${escHtml(contact.organization)})` : '';
+        const orgLabel = contact.organization ? ` (${contact.organization})` : '';
         await supabase.from('notifications').insert({
           user_id: consultantId,
           type: 'first_contact_booked',
-          title: `Nova marcação de Primeiro Contacto — ${escHtml(contact.name)}${orgLabel}`,
-          message: `Agendado para ${dt} (Europe/Lisbon). Lead já visível no pipeline do CRM.`,
+          title: `Nova marcação de Primeiro Contacto — ${contact.name}${orgLabel}`,
+          message: `Agendado para ${dt} (Europe/Lisbon). Lead já visível no pipeline do CRM.${calendarStatus === 'failed' ? ' O convite do calendário falhou: envie o convite manualmente.' : ''}`,
           link: `/crm?open=${funnelItemId}`,
           entity_type: 'funnel_item',
           entity_id: funnelItemId,
@@ -738,7 +800,7 @@ serve(async (req) => {
           type: 'first_contact_booked',
           title: 'Marcação de Primeiro Contacto confirmada',
           message: `A tua reunião está agendada para ${dt} (Europe/Lisbon).${teamsLink ? ' Convite do Teams enviado por email.' : ''}`,
-          link: `/dashboard`,
+          link: `/my-workspaces`,
 
           entity_type: 'funnel_item',
           entity_id: funnelItemId,
@@ -805,7 +867,7 @@ serve(async (req) => {
             from: 'Startup Leiria <noreply@startupleiria.com>',
             to: [consultantEmail],
             reply_to: contact.email,
-            subject: `Nova marcação: ${escHtml(contact.name)} — ${slot.date} ${slot.time}`,
+            subject: `Nova marcação: ${contact.name.replace(/[\r\n]+/g, ' ')} — ${slot.date} ${slot.time}`,
             html,
           }),
         });
@@ -824,7 +886,7 @@ serve(async (req) => {
             await supabase.from('email_log').insert({
               email_type: 'first_contact_booking_alert',
               recipients: [{ email: consultantEmail, user_id: consultantId }],
-              subject: `Nova marcação: ${escHtml(contact.name)} — ${slot.date} ${slot.time}`,
+              subject: `Nova marcação: ${contact.name.replace(/[\r\n]+/g, ' ')} — ${slot.date} ${slot.time}`,
               status: 'sent',
               sent_at: new Date().toISOString(),
             });

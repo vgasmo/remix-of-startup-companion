@@ -27,6 +27,35 @@ import {
   Shield, Loader2, AlertTriangle, Upload, Globe, Info, RotateCcw, X
 } from 'lucide-react';
 import { useContractDraftAutosave } from '@/hooks/useContractDraftAutosave';
+import { changeLanguage } from '@/i18n';
+
+/**
+ * Numa resposta não-2xx o supabase-js devolve um FunctionsHttpError genérico ("Edge Function returned a non-2xx status code")
+ * e o corpo fica em error.context. Ler a razão do servidor e traduzi-la para o founder.
+ */
+async function intakeServerError(error: unknown, t: (key: string, opts?: Record<string, unknown>) => string): Promise<Error> {
+  let msg = (error as Error | null)?.message ?? '';
+  const ctx = (error as { context?: unknown } | null)?.context;
+  if (ctx instanceof Response) {
+    try {
+      const body = await ctx.clone().json();
+      if (typeof body?.error === 'string') msg = body.error;
+    } catch { /* corpo não-JSON */ }
+  }
+  const known: Record<string, string> = {
+    'NIF must be 9 digits': t('publicContractIntake.errors.nif', { defaultValue: 'O NIF tem de ter 9 dígitos.' }),
+    'IBAN format invalid': t('publicContractIntake.errors.iban', { defaultValue: 'O IBAN não é válido.' }),
+    'postal_code must be NNNN-NNN': t('publicContractIntake.errors.postal', { defaultValue: 'O código postal tem de ter o formato 0000-000.' }),
+    'legal_representative_email invalid': t('publicContractIntake.errors.email', { defaultValue: 'O email do representante legal não é válido.' }),
+    'billing_email invalid': t('publicContractIntake.errors.billingEmail', { defaultValue: 'O email de faturação não é válido.' }),
+    'phone invalid': t('publicContractIntake.errors.phone', { defaultValue: 'O telefone não é válido.' }),
+    'Form already submitted': t('publicContractIntake.errors.alreadySubmitted', { defaultValue: 'Estes dados já foram submetidos.' }),
+    'This link has expired': t('publicContractIntake.errors.expired', { defaultValue: 'Este link expirou.' }),
+  };
+  const err = new Error(known[msg] ?? msg ?? 'Erro');
+  (err as Error & { serverCode?: string }).serverCode = msg;
+  return err;
+}
 
 interface RepresentativeEntry {
   name: string;
@@ -155,7 +184,7 @@ export default function PublicContractIntake() {
           mimeType: file.type,
         },
       });
-      if (error) throw error;
+      if (error) throw await intakeServerError(error, t);
       if (data?.error) throw new Error(data.error);
       notify.success(t('publicContractIntake.documentUploaded'));
       await queryClient.invalidateQueries({ queryKey: ['public-intake', token] });
@@ -174,7 +203,7 @@ export default function PublicContractIntake() {
       const { data, error } = await supabase.functions.invoke('public-contract-onboarding', {
         body: { action: 'intake_load_by_token', token },
       });
-      if (error) throw error;
+      if (error) throw await intakeServerError(error, t);
       if (data?.error) throw new Error(data.error);
       return data.intake;
     },
@@ -246,7 +275,7 @@ export default function PublicContractIntake() {
           formData: { ...formData, missing_documents: missingDocs },
         },
       });
-      if (error) throw error;
+      if (error) throw await intakeServerError(error, t);
       if (data?.error) throw new Error(data.error);
     },
     onSuccess: () => {
@@ -264,7 +293,8 @@ export default function PublicContractIntake() {
   const toggleLang = () => {
     const next = lang === 'pt' ? 'en' : 'pt';
     setLang(next);
-    i18n.changeLanguage(next);
+    // Carrega o bundle antes de mudar de língua (evita mostrar chaves cruas durante o descarregamento)
+    void changeLanguage(next);
     if (typeof document !== 'undefined') document.documentElement.lang = next;
   };
 
@@ -278,7 +308,7 @@ export default function PublicContractIntake() {
 
   if (fetchError || !intake) {
     // Never expose technical error messages to public users
-    const isExpired = (fetchError as any)?.message?.includes('expired');
+    const isExpired = (fetchError as { serverCode?: string } | null)?.serverCode === 'This link has expired';
     return (
       <div className="min-h-dvh flex items-center justify-center bg-background p-4">
         <Card className="max-w-md w-full">

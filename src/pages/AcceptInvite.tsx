@@ -46,7 +46,7 @@ export default function AcceptInvite() {
     
     // User is logged in, process the invitation
     processInvitation(token);
-  }, [token, user, isAuthReady]);
+  }, [token, user?.id, isAuthReady]);
   
   const processInvitation = async (inviteToken: string) => {
     setStatus('processing');
@@ -97,10 +97,9 @@ export default function AcceptInvite() {
 
       // Redirect to workspace after a brief delay
       setTimeout(() => {
-        const redirectUrl = data.showOnboarding
-          ? `/workspace/${data.workspaceId}?onboarding=true`
-          : `/workspace/${data.workspaceId}`;
-        navigate(redirectUrl);
+        // O WorkspaceDetail abre sozinho o assistente quando needs_onboarding=true; com ?onboarding=true
+        // um cofundador convidado para um workspace em curso repetia o assistente.
+        navigate(`/workspace/${data.workspaceId}`);
       }, 2000);
       
     } catch (err) {

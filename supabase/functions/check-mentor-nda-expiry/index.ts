@@ -6,6 +6,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { requireCronSecret, generateRequestId, createLogger } from '../_shared/security.ts';
+import { escapeHtml } from '../_shared/html.ts';
 import { resolveLocalesByUserIds, type Locale } from '../_shared/i18n.ts';
 import { withCronRunLogging } from '../_shared/cronRun.ts';
 import { claimLedgerKey, releaseLedgerKey, stampLedgerDelivery } from '../_shared/notificationLedger.ts';
@@ -51,10 +52,10 @@ function render(locale: Locale, name: string, days: number): string {
     <p style="color:rgba(255,255,255,0.9);margin:5px 0 0 0;">Startup Leiria</p>
   </div>
   <div style="background:#f9f9f9;padding:30px;border-radius:0 0 12px 12px;">
-    <p>${s.greeting(name)}</p>
+    <p>${s.greeting(escapeHtml(name))}</p>
     <p>${s.body(days)}</p>
     <div style="text-align:center;margin-top:30px;">
-      <a href="${APP_URL}/mentors/nda" style="display:inline-block;background:#c03c3c;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500;">${s.cta}</a>
+      <a href="${APP_URL}/mentor-nda" style="display:inline-block;background:#c03c3c;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500;">${s.cta}</a>
     </div>
     <hr style="border:none;border-top:1px solid #eee;margin:30px 0;">
     <p style="color:#666;font-size:12px;text-align:center;margin-bottom:0;">
@@ -72,6 +73,14 @@ Deno.serve(withCronRunLogging('check-mentor-nda-expiry', async (req) => {
 
   const auth = await requireCronSecret(req);
   if ('error' in auth) return auth.error;
+
+  // RC12: o NDA NÃO expira em lado nenhum (has_accepted_nda() = EXISTS por versão; o cliente só compara a versão;
+  // /mentor-nda redireciona quem já aceitou). Avisar "expira em X dias" é falso e "Renovar" não existe.
+  // Só reativar depois de haver política de validade aplicada no servidor e um fluxo de renovação.
+  if (Deno.env.get('NDA_EXPIRY_WARNINGS_ENABLED') !== 'true') {
+    log.info('nda_expiry_warnings_disabled');
+    return corsJsonResponse({ success: true, warned: 0, skipped: 'nda_has_no_expiry_policy' }, req);
+  }
 
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
@@ -157,16 +166,25 @@ Deno.serve(withCronRunLogging('check-mentor-nda-expiry', async (req) => {
         else log.warn('ledger_claim_failed', { error: claim.error });
         continue;
       }
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          from: FROM,
-          to: [p.email],
-          subject: s.subject,
-          html: render(locale, p.full_name || (locale === 'pt' ? 'Mentor' : 'Mentor'), daysLeft),
-        }),
-      });
+      let res: Response;
+      try {
+        res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: FROM,
+            to: [p.email],
+            subject: s.subject,
+            html: render(locale, p.full_name || (locale === 'pt' ? 'Mentor' : 'Mentor'), daysLeft),
+          }),
+          signal: AbortSignal.timeout(10_000),
+        });
+      } catch (err) {
+        // RC12: erro de rede deixava a reclamação no ledger (e-mail nunca mais tentado) e abortava os restantes mentores
+        log.warn('resend_network_error', { error: err instanceof Error ? err.message : String(err) });
+        await releaseLedgerKey(supabase, businessKey);
+        continue;
+      }
       if (res.ok) {
         warned++;
         try {

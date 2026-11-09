@@ -30,7 +30,7 @@ export default function ValuePropWizardPage() {
       actions={
         <Button variant="ghost" onClick={() => navigate(`/workspace/${workspaceId}`)}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Workspace
+          {t('valueProp.backToWorkspace', 'Voltar ao workspace')}
         </Button>
       }
     >
@@ -39,11 +39,11 @@ export default function ValuePropWizardPage() {
           <TabsList className="mb-6">
             <TabsTrigger value="wizard" className="gap-2">
               <Sparkles className="h-4 w-4" />
-              Create New
+              {t('valueProp.createNew', 'Criar nova')}
             </TabsTrigger>
             <TabsTrigger value="history" className="gap-2">
               <History className="h-4 w-4" />
-              History
+              {t('valueProp.history', 'Histórico')}
               {artifacts && artifacts.length > 0 && (
                 <Badge variant="secondary" className="ml-1">{artifacts.length}</Badge>
               )}
@@ -91,7 +91,7 @@ function ArtifactCard({ artifact }: { artifact: ValuePropArtifact }) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium">
-            Value Proposition v{artifact.version}
+            {t('valueProp.version', { version: artifact.version, defaultValue: 'Proposta de valor v{{version}}' })}
           </CardTitle>
           <span className="text-xs text-muted-foreground">
             {format(new Date(artifact.created_at), 'd MMM yyyy', { locale: dateLocale })}

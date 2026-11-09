@@ -131,13 +131,14 @@ export function AdminAnnouncementsManager() {
       
       if (error) throw error;
 
-      // Send emails if option is enabled (a função responde 200 com errors[] quando alguns envios falham)
+      // Send emails if option is enabled (a função responde 200 com errors[] quando alguns envios falham,
+      // e com emailsSent: 0 quando não há destinatários: nenhum dos dois é "entregue a todos")
       if (data.sendEmail && insertedAnnouncements?.length) {
         const { data: emailData, error: emailError } = await invokeWithAuth<{ emailsSent: number; errors?: string[] }>(
           'send-announcement-email',
           { body: { announcement_ids: insertedAnnouncements.map((a) => a.id) } },
         );
-        if (emailError || (emailData?.errors?.length ?? 0) > 0) {
+        if (emailError || (emailData?.errors?.length ?? 0) > 0 || (emailData?.emailsSent ?? 0) === 0) {
           logger.error('Email send error', { errors: emailData?.errors }, emailError ?? undefined);
           return { emailOk: false };
         }

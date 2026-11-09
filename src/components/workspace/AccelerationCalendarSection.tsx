@@ -17,6 +17,7 @@ import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabaseClient';
 import { notify } from "@/lib/notify";
+import { safeExternalHref } from '@/lib/sanitizeUrl';
 
 interface AccelerationCalendarSectionProps {
   programId: string;
@@ -289,7 +290,7 @@ export function AccelerationCalendarSection({ programId, isStaff, currentWeek }:
                             variant="ghost"
                             size="sm"
                             className="h-7 text-xs gap-1 text-primary"
-                            onClick={() => window.open(pw.meeting_url!, '_blank')}
+                            onClick={() => { const u = safeExternalHref(pw.meeting_url); if (u) window.open(u, '_blank', 'noopener,noreferrer'); }}
                           >
                             <Video className="h-3.5 w-3.5" />
                             {t('accelerationCalendar.joinSession', { defaultValue: 'Entrar' })}

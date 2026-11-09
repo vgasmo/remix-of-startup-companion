@@ -62,6 +62,7 @@ import { WelcomeSplash } from '@/components/founder/WelcomeSplash';
 import { useIsFirstWeek } from '@/hooks/useIsFirstWeek';
 import { useKpiAnomalyNudge } from '@/hooks/useKpiAnomalyNudge';
 import { AlertTriangle } from 'lucide-react';
+import { safeLocalStorage, safeSessionStorage } from '@/lib/safeStorage';
 // NextBestActionFounder removed from beginner view — kept available for power users via OneThingToday.
 
 interface FounderDashboardProps {
@@ -164,12 +165,12 @@ export const FounderDashboard = memo(function FounderDashboard({
     if (day >= 1 && day <= 5) {
       const dismissKey = `quickkpi-dismissed-${workspace.id}-${new Date().getFullYear()}-${new Date().getMonth()}`;
       const firstVisitKey = `founder-first-visit-${workspace.id}`;
-      const isFirstVisit = !localStorage.getItem(firstVisitKey);
+      const isFirstVisit = !safeLocalStorage.getItem(firstVisitKey);
       if (isFirstVisit) {
-        localStorage.setItem(firstVisitKey, new Date().toISOString());
+        safeLocalStorage.setItem(firstVisitKey, new Date().toISOString());
         return; // never on first visit
       }
-      if (!sessionStorage.getItem(dismissKey)) {
+      if (!safeSessionStorage.getItem(dismissKey)) {
         const timer = setTimeout(() => setShowQuickKpi(true), 1500);
         return () => clearTimeout(timer);
       }
@@ -577,7 +578,7 @@ export const FounderDashboard = memo(function FounderDashboard({
             setShowQuickKpi(open);
             if (!open) {
               const dismissKey = `quickkpi-dismissed-${workspace.id}-${new Date().getFullYear()}-${new Date().getMonth()}`;
-              sessionStorage.setItem(dismissKey, 'true');
+              safeSessionStorage.setItem(dismissKey, 'true');
             }
           }}
           workspaceId={workspace.id}
@@ -601,13 +602,13 @@ function QuickGuideBanner() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [dismissed, setDismissed] = useState(() => {
-    return localStorage.getItem('shown_quickguide_founder') === 'true';
+    return safeLocalStorage.getItem('shown_quickguide_founder') === 'true';
   });
 
   if (dismissed) return null;
 
   const handleDismiss = () => {
-    localStorage.setItem('shown_quickguide_founder', 'true');
+    safeLocalStorage.setItem('shown_quickguide_founder', 'true');
     setDismissed(true);
   };
 
@@ -722,12 +723,12 @@ function KpiAnomalyNudge({
 }) {
   const { t } = useTranslation();
   const monthKey = `kpi-anomaly-dismissed-${workspaceId}-${new Date().getFullYear()}-${new Date().getMonth()}`;
-  const [dismissed, setDismissed] = useState(() => localStorage.getItem(monthKey) === 'true');
+  const [dismissed, setDismissed] = useState(() => safeLocalStorage.getItem(monthKey) === 'true');
 
   if (!anomaly || dismissed) return null;
 
   const handleDismiss = () => {
-    localStorage.setItem(monthKey, 'true');
+    safeLocalStorage.setItem(monthKey, 'true');
     setDismissed(true);
   };
 

@@ -15,6 +15,7 @@ import { notify } from "@/lib/notify";
 import { supabase } from '@/lib/supabaseClient';
 import { useIntakeRouting, useUpsertIntakeRoute, useConsultants, type IntakeRoute } from '@/hooks/useIntakeRouting';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface BookingLink {
   id: string;
@@ -445,7 +446,7 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
                         #{link.token_hash.slice(0, 8)}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {new Date(link.created_at).toLocaleDateString()}
+                        {new Date(link.created_at).toLocaleDateString(getIntlLocale())}
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">

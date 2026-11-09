@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 // Microsoft Teams icon component
 const TeamsIcon = ({ className }: { className?: string }) => (
@@ -107,7 +108,7 @@ export function AdminTeamsTestPanel() {
             fields: [
               { name: 'Test Type', value: workspaceId ? 'Workspace-specific' : 'Global' },
               { name: 'Workspace', value: workspaceName },
-              { name: 'Timestamp', value: new Date().toLocaleString() },
+              { name: 'Timestamp', value: new Date().toLocaleString(getIntlLocale()) },
             ],
             link: window.location.origin + '/admin',
             link_text: 'Open Admin Panel',

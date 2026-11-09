@@ -34,10 +34,10 @@ export function CockpitPortfolioOverview({ workspaces }: CockpitPortfolioOvervie
   );
 
   const sorted = useMemo(() => {
-    const order: Record<string, number> = { critical: 0, at_risk: 1, healthy: 2 };
+    const order: Record<string, number> = { critical: 0, at_risk: 1, stable: 2, healthy: 3, thriving: 4 };
     return [...filtered].sort((a, b) => {
-      const aScore = order[a.health_score || 'healthy'] ?? 2;
-      const bScore = order[b.health_score || 'healthy'] ?? 2;
+      const aScore = order[a.health_score || 'healthy'] ?? 3;
+      const bScore = order[b.health_score || 'healthy'] ?? 3;
       return aScore - bScore;
     });
   }, [filtered]);
@@ -49,13 +49,17 @@ export function CockpitPortfolioOverview({ workspaces }: CockpitPortfolioOvervie
   const healthColorMap: Record<string, string> = {
     critical: 'bg-destructive text-destructive-foreground',
     at_risk: 'bg-warning/15 text-warning',
+    stable: 'bg-info/15 text-info',
     healthy: 'bg-success/15 text-success',
+    thriving: 'bg-success/15 text-success',
   };
 
   const healthLabelMap: Record<string, string> = {
     critical: t('health.critical', { defaultValue: 'Crítico' }),
     at_risk: t('health.atRisk', { defaultValue: 'Em Risco' }),
+    stable: t('health.levels.stable', { defaultValue: 'Estável' }),
     healthy: t('health.healthy', { defaultValue: 'Saudável' }),
+    thriving: t('health.levels.thriving', { defaultValue: 'Excelente' }),
   };
 
 

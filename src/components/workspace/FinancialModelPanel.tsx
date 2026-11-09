@@ -610,7 +610,7 @@ export function FinancialModelPanel({ workspaceId, canWrite, isMentor = false }:
                         <p className="text-sm">{aiReview.summary}</p>
                         {activeVersion.ai_review_generated_at && (
                           <p className="text-xs text-muted-foreground mt-2">
-                            Generated {timeAgo(new Date(activeVersion.ai_review_generated_at))}
+                            {t('financialModel.generatedAgo', { when: timeAgo(new Date(activeVersion.ai_review_generated_at)), defaultValue: 'Gerado {{when}}' })}
                           </p>
                         )}
                       </div>

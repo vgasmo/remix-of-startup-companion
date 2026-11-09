@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
+import { isAccountActive } from '../_shared/security.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -119,6 +120,10 @@ serve(async (req) => {
     const isAdminOrConsultor = roles.includes('admin') || roles.includes('consultor');
     if (!isAdminOrConsultor && !roles.includes('backoffice')) {
       return corsJsonResponse({ error: "Forbidden: Only staff can send invitations" }, req, 403);
+    }
+    // Conta suspensa (ou pendente) nunca convida: os papéis em user_roles sobrevivem à suspensão.
+    if (!(await isAccountActive(supabaseService, user.id))) {
+      return corsJsonResponse({ error: "Account access denied" }, req, 403);
     }
     
     // Get workspace and startup info

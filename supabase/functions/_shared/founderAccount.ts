@@ -192,14 +192,15 @@ export async function autoCreateFounderAccount(
     }
 
     // Fechar a triagem 'Convidar founder' que o reconcile_contract_founders abriu (trigger ao ativar/ligar
-    // o contrato) antes de a conta existir. Só a 'missing_auth_user': a de 'access_email_failed' fica aberta.
+    // o contrato) antes de a conta existir. Qualquer motivo exceto 'access_email_failed' (criada mais abaixo, fica aberta).
     await supabase
       .from('staff_work_queue_items')
       .update({ status: 'done', updated_at: new Date().toISOString() })
       .eq('workspace_id', contract.workspace_id)
       .eq('type', 'triage')
       .in('status', ['open', 'in_progress'])
-      .contains('evidence_json', { purpose: 'invite_founder', contract_id: contract.id, reason: 'missing_auth_user' })
+      .contains('evidence_json', { purpose: 'invite_founder', contract_id: contract.id })
+      .neq('evidence_json->>reason', 'access_email_failed')
 
     // Conta criada agora: o founder ainda não tem password, enviar-lhe o acesso.
     // Se o email falhar, o staff recebe a triagem para enviar o acesso à mão.

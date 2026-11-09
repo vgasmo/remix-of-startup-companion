@@ -15,6 +15,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.1';
 import { getCorsHeaders, handleCorsOptions } from '../_shared/cors.ts';
+import { isAccountActive } from '../_shared/security.ts';
 
 interface Body {
   phc_extract_object_path?: string;
@@ -187,6 +188,8 @@ Deno.serve(async (req) => {
 
     const { data: adminCheck } = await sbSvc.rpc('has_role', { _user_id: uid, _role: 'admin' });
     if (!adminCheck) return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: jsonHeaders });
+    // RC12: conta suspensa/pendente não usa o service role
+    if (!(await isAccountActive(sbSvc, uid))) return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: jsonHeaders });
 
     const body = (await req.json().catch(() => ({}))) as Body;
 
@@ -221,6 +224,20 @@ Deno.serve(async (req) => {
     }
 
 
+    // RC12: o PostgREST corta cada resposta em 1000 linhas (max_rows); sem paginar, duplicados e totais por tabela ficavam truncados em silêncio.
+    // deno-lint-ignore no-explicit-any
+    async function fetchAll(make: () => any, pageSize = 1000): Promise<{ data: any[] | null; error: { message: string } | null }> {
+      // deno-lint-ignore no-explicit-any
+      const out: any[] = [];
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await make().range(from, from + pageSize - 1);
+        if (error) return { data: null, error };
+        out.push(...(data ?? []));
+        if (!data || data.length < pageSize) break;
+      }
+      return { data: out, error: null };
+    }
+
     const funnelTotal = await safeCount('funnel_items.total',
       sbSvc.from('funnel_items').select('*', { count: 'exact', head: true }));
     const funnelWithPhc = await safeCount('funnel_items.with_phc',
@@ -233,8 +250,8 @@ Deno.serve(async (req) => {
     // Duplicates inside funnel_items
     let phcDupeRows: Array<{ phc_customer_id: string; n: number }> = [];
     {
-      const { data, error } = await sbSvc
-        .from('funnel_items').select('id, phc_customer_id, organization_name').not('phc_customer_id', 'is', null);
+      const { data, error } = await fetchAll(() => sbSvc
+        .from('funnel_items').select('id, phc_customer_id, organization_name').not('phc_customer_id', 'is', null).order('id'));
       if (error) errors.push({ source: 'funnel_items.phc_dupes', message: error.message });
       else {
         const counts = new Map<string, number>();
@@ -244,7 +261,7 @@ Deno.serve(async (req) => {
     }
     let nifDupeRows: Array<{ nif_normalized: string; n: number }> = [];
     {
-      const { data, error } = await sbSvc.from('funnel_items').select('nif_normalized').not('nif_normalized', 'is', null);
+      const { data, error } = await fetchAll(() => sbSvc.from('funnel_items').select('id, nif_normalized').not('nif_normalized', 'is', null).order('id'));
       if (error) errors.push({ source: 'funnel_items.nif_dupes', message: error.message });
       else {
         const nifCounts = new Map<string, number>();
@@ -254,7 +271,7 @@ Deno.serve(async (req) => {
     }
     let hsDupeRows: Array<{ hubspot_company_id: string; n: number }> = [];
     {
-      const { data, error } = await sbSvc.from('funnel_items').select('hubspot_company_id').not('hubspot_company_id', 'is', null);
+      const { data, error } = await fetchAll(() => sbSvc.from('funnel_items').select('id, hubspot_company_id').not('hubspot_company_id', 'is', null).order('id'));
       if (error) errors.push({ source: 'funnel_items.hs_dupes', message: error.message });
       else {
         const hsCounts = new Map<string, number>();
@@ -266,7 +283,7 @@ Deno.serve(async (req) => {
     // Service breakdown from funnel_items.metadata_json
     const svcCounts = new Map<string, number>();
     {
-      const { data, error } = await sbSvc.from('funnel_items').select('metadata_json').not('phc_customer_id', 'is', null);
+      const { data, error } = await fetchAll(() => sbSvc.from('funnel_items').select('id, metadata_json').not('phc_customer_id', 'is', null).order('id'));
       if (error) errors.push({ source: 'funnel_items.service_breakdown', message: error.message });
       else {
         for (const r of ((data ?? []) as Array<{ metadata_json: Record<string, unknown> | null }>)) {
@@ -298,7 +315,7 @@ Deno.serve(async (req) => {
     let wsArchived = 0;
     let wsCount = 0;
     {
-      const { data, error } = await sbSvc.from('workspaces').select('id, name, status, program_id, engagement_state, archived_at');
+      const { data, error } = await fetchAll(() => sbSvc.from('workspaces').select('id, status, program_id, engagement_state, archived_at').order('id'));
       if (error) errors.push({ source: 'workspaces', message: error.message });
       else {
         wsCount = (data ?? []).length;
@@ -335,12 +352,14 @@ Deno.serve(async (req) => {
     function toCsv(rows: Array<Record<string, unknown>>): string {
       if (rows.length === 0) return '';
       const cols = Array.from(new Set(rows.flatMap(r => Object.keys(r))));
+      // RC12: mesmo serializador neutralizador de fórmulas do cliente (src/lib/csv.ts): células que um Excel leria como fórmula levam apóstrofo
+      const NUMERIC_ONLY = /^-?(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?$/;
       const esc = (v: unknown) => {
-        if (v === null || v === undefined) return '';
-        const s = String(v);
-        return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        let s = v === null || v === undefined ? '' : String(v);
+        if (!NUMERIC_ONLY.test(s) && /^[\s\u0000-\u001f\u007f\ufeff]*[=+@-]/u.test(s)) s = `'${s}`;
+        return '"' + s.replace(/"/g, '""') + '"';
       };
-      return [cols.join(','), ...rows.map(r => cols.map(c => esc(r[c])).join(','))].join('\n');
+      return [cols.map(esc).join(','), ...rows.map(r => cols.map(c => esc(r[c])).join(','))].join('\r\n');
     }
     async function persistException(name: string, rows: Array<Record<string, unknown>>) {
       const path = `census/${runStamp}/${name}.csv`;
@@ -354,18 +373,18 @@ Deno.serve(async (req) => {
 
     // Exception 1: orphan contracts
     {
-      const { data, error } = await sbSvc.from('startup_contracts')
+      const { data, error } = await fetchAll(() => sbSvc.from('startup_contracts')
         .select('id, contract_number, status, workspace_id, funnel_item_id, created_at')
-        .is('workspace_id', null);
+        .is('workspace_id', null).order('id'));
       if (error) exceptions['orphan_contracts'] = { row_count: 0, object_path: null, signed_url: null, error: error.message };
       else await persistException('orphan_contracts', (data ?? []) as Array<Record<string, unknown>>);
     }
     // Exception 2: unlinked contracted funnel — canonical `contracted` stage, missing workspace link.
     {
-      const { data, error } = await sbSvc.from('funnel_items')
+      const { data, error } = await fetchAll(() => sbSvc.from('funnel_items')
         .select('id, phc_customer_id, organization_name, stage, linked_startup_id, linked_workspace_id')
         .eq('stage', 'contracted')
-        .is('linked_workspace_id', null);
+        .is('linked_workspace_id', null).order('id'));
       if (error) exceptions['unlinked_contracted_funnel'] = { row_count: 0, object_path: null, signed_url: null, error: error.message };
       else await persistException('unlinked_contracted_funnel', (data ?? []) as Array<Record<string, unknown>>);
     }
@@ -374,17 +393,17 @@ Deno.serve(async (req) => {
     await persistException('duplicate_nifs', nifDupeRows as unknown as Array<Record<string, unknown>>);
     // Exception 5: workspaces without program
     {
-      const { data, error } = await sbSvc.from('workspaces')
-        .select('id, name, status, engagement_state, archived_at')
-        .is('program_id', null);
+      const { data, error } = await fetchAll(() => sbSvc.from('workspaces')
+        .select('id, startup_id, status, engagement_state, archived_at')
+        .is('program_id', null).order('id'));
       if (error) exceptions['workspaces_without_program'] = { row_count: 0, object_path: null, signed_url: null, error: error.message };
       else await persistException('workspaces_without_program', (data ?? []) as Array<Record<string, unknown>>);
     }
     // Exception 6: multiple active contracts
     {
-      const { data, error } = await sbSvc.from('startup_contracts')
+      const { data, error } = await fetchAll(() => sbSvc.from('startup_contracts')
         .select('id, workspace_id, status')
-        .in('status', ['active', 'sent', 'signed']);
+        .in('status', ['active', 'pending_signature']).order('id'));
       if (error) exceptions['multiple_active_contracts'] = { row_count: 0, object_path: null, signed_url: null, error: error.message };
       else {
         const byWs = new Map<string, Array<Record<string, unknown>>>();

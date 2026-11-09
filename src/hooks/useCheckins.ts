@@ -358,17 +358,25 @@ export function useSkipCheckin() {
 
   return useMutation({
     mutationFn: async (instanceId: string) => {
-      const { error } = await supabase
+      // Um UPDATE bloqueado pela RLS devolve 0 linhas sem erro: confirmar com .select().
+      const { data, error } = await supabase
         .from('checkin_instances')
         .update({ status: 'skipped' })
-        .eq('id', instanceId);
+        .eq('id', instanceId)
+        .select('id');
 
       if (error) throw error;
+      if (!data?.length) throw new Error('checkin_skip_not_permitted');
     },
     onSuccess: () => {
       notify.info(t('checkins.skipped'));
       queryClient.invalidateQueries({ queryKey: ['pending-checkin'] });
       queryClient.invalidateQueries({ queryKey: ['all-pending-checkins'] });
+    },
+    onError: (error: any) => {
+      notify.error(t('checkins.submitError'), {
+        description: error?.message === 'checkin_skip_not_permitted' ? undefined : error?.message,
+      });
     },
   });
 }

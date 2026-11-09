@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -19,6 +20,7 @@ export const WorkspacePagination = memo(function WorkspacePagination({
   onPageChange,
   variant = 'full',
 }: WorkspacePaginationProps) {
+  const { t } = useTranslation();
   if (totalPages <= 1) return null;
 
   if (variant === 'compact') {
@@ -31,10 +33,10 @@ export const WorkspacePagination = memo(function WorkspacePagination({
           disabled={currentPage === 1}
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
-          Previous
+          {t('common.previous')}
         </Button>
         <span className="text-sm text-muted-foreground px-4">
-          Page {currentPage} of {totalPages}
+          {t('workspacePagination.pageOf', { current: currentPage, total: totalPages, defaultValue: 'Página {{current}} de {{total}}' })}
         </span>
         <Button
           variant="outline"
@@ -42,7 +44,7 @@ export const WorkspacePagination = memo(function WorkspacePagination({
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
         >
-          Next
+          {t('common.next')}
           <ChevronRight className="h-4 w-4 ml-1" />
         </Button>
       </div>
@@ -52,8 +54,7 @@ export const WorkspacePagination = memo(function WorkspacePagination({
   return (
     <div className="flex items-center justify-between px-6 py-4 border-t border-border">
       <p className="text-sm text-muted-foreground">
-        Showing {(currentPage - 1) * pageSize + 1} to{' '}
-        {Math.min(currentPage * pageSize, totalItems)} of {totalItems} workspaces
+        {t('workspacePagination.showing', { from: (currentPage - 1) * pageSize + 1, to: Math.min(currentPage * pageSize, totalItems), total: totalItems, defaultValue: 'A mostrar {{from}} a {{to}} de {{total}} workspaces' })}
       </p>
       <div className="flex items-center gap-1">
         <Button
@@ -62,7 +63,7 @@ export const WorkspacePagination = memo(function WorkspacePagination({
           className="h-8 w-8"
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
-         aria-label="First">
+         aria-label={t('common.first')}>
           <ChevronsLeft className="h-4 w-4" />
         </Button>
         <Button
@@ -71,7 +72,7 @@ export const WorkspacePagination = memo(function WorkspacePagination({
           className="h-8 w-8"
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-         aria-label="Previous">
+         aria-label={t('common.previous')}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <div className="flex items-center gap-1 mx-2">
@@ -93,7 +94,8 @@ export const WorkspacePagination = memo(function WorkspacePagination({
                 size="icon"
                 className="h-8 w-8"
                 onClick={() => onPageChange(pageNum)}
-               aria-label="Action">
+               aria-label={t('workspacePagination.goToPage', { page: pageNum, defaultValue: 'Ir para a página {{page}}' })}
+                aria-current={currentPage === pageNum ? 'page' : undefined}>
                 {pageNum}
               </Button>
             );
@@ -105,7 +107,7 @@ export const WorkspacePagination = memo(function WorkspacePagination({
           className="h-8 w-8"
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
-         aria-label="Next">
+         aria-label={t('common.next')}>
           <ChevronRight className="h-4 w-4" />
         </Button>
         <Button
@@ -114,7 +116,7 @@ export const WorkspacePagination = memo(function WorkspacePagination({
           className="h-8 w-8"
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
-         aria-label="Last">
+         aria-label={t('common.last')}>
           <ChevronsRight className="h-4 w-4" />
         </Button>
       </div>

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { cn } from '@/lib/utils';
 import type { WorkspaceKpi, KpiValue } from '@/hooks/useKpis';
+import { getIntlLocale } from '@/lib/dateUtils';
 
 interface KpiCardProps {
   workspaceKpi: WorkspaceKpi;
@@ -122,7 +123,7 @@ export function KpiCard({
             ) : (
               <div>
                 <span className="text-2xl font-bold">
-                  {currentValue?.value !== null && currentValue?.value !== undefined ? currentValue.value.toLocaleString() : '—'}
+                  {currentValue?.value !== null && currentValue?.value !== undefined ? currentValue.value.toLocaleString(getIntlLocale()) : '—'}
                 </span>
                 {def.unit && <span className="text-sm text-muted-foreground ml-1">{def.unit}</span>}
               </div>
@@ -132,7 +133,7 @@ export function KpiCard({
             <div className="text-right">
               <div className="text-xs text-muted-foreground">{t('kpis.target')}</div>
               <div className="text-sm font-medium">
-                {workspaceKpi.target_value.toLocaleString()}
+                {workspaceKpi.target_value.toLocaleString(getIntlLocale())}
                 {def.unit && <span className="text-muted-foreground ml-0.5">{def.unit}</span>}
               </div>
             </div>
@@ -169,7 +170,7 @@ export function KpiCard({
               <Tooltip 
                 contentStyle={{ fontSize: 12, backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 6 }}
                 formatter={(value: number) => [
-                  value !== null ? `${value.toLocaleString()}${def.unit ? ` ${def.unit}` : ''}` : t('common.noData', 'Sem dados'),
+                  value !== null ? `${value.toLocaleString(getIntlLocale())}${def.unit ? ` ${def.unit}` : ''}` : t('common.noData', 'Sem dados'),
                   def.name
                 ]}
               />

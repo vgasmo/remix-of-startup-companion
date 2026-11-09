@@ -240,7 +240,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
             {t('investorUpdates.templateLibraryTitle', { defaultValue: 'Documentos adicionais para investidores' })}
           </TabsTrigger>
         </TabsList>
-        {canWrite && (
+        {canWrite && !isMentor && (
           <div className="flex gap-2">
             <Button onClick={() => setGenerateUpdateOpen(true)} className="gap-2">
               <Sparkles className="h-4 w-4" />
@@ -384,7 +384,7 @@ export function DataroomTab({ workspaceId, canWrite = false, isStaff = false, is
                             </Badge>
                             {link.allow_download && (
                               <Badge variant="secondary" className="text-xs">
-                                <Download className="h-3 w-3 mr-1" /> Download
+                                <Download className="h-3 w-3 mr-1" /> {t('common.download')}
                               </Badge>
                             )}
                             <span className="text-muted-foreground">

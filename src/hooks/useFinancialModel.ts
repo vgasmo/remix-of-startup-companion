@@ -4,6 +4,7 @@ import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { notify } from "@/lib/notify";
 
 import i18n from '@/i18n';
+import { getIntlLocale } from '@/lib/dateUtils';
 const t = i18n.t.bind(i18n);
 
 export interface KeyMetrics {
@@ -247,7 +248,7 @@ export function generateInsights(metrics: KeyMetrics): FinancialInsight[] {
   if (metrics.burn_rate_monthly !== null && metrics.burn_rate_monthly > 0) {
     insights.push({
       title: 'Monthly Burn Rate',
-      description: `Current burn rate: €${metrics.burn_rate_monthly.toLocaleString()}/month`,
+      description: `Current burn rate: €${metrics.burn_rate_monthly.toLocaleString(getIntlLocale())}/month`,
       severity: 'info',
       category: 'cash_management',
     });

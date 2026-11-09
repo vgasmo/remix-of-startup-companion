@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { useStageHistory, useMilestoneHistory } from '@/hooks/useProgressHistory';
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
+import { safeExternalHref } from '@/lib/sanitizeUrl';
 
 interface ProgressTimelineProps {
   workspaceId: string;
@@ -196,7 +197,7 @@ export function ProgressTimeline({ workspaceId, className, programId, programTyp
                             variant="ghost"
                             size="sm"
                             className="h-6 text-[10px] gap-1 text-primary px-1.5 shrink-0"
-                            onClick={() => window.open(pw.meeting_url!, '_blank')}
+                            onClick={() => { const u = safeExternalHref(pw.meeting_url); if (u) window.open(u, '_blank', 'noopener,noreferrer'); }}
                           >
                             <Video className="h-3 w-3" />
                           </Button>

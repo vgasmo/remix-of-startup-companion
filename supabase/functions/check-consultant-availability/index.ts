@@ -6,6 +6,7 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { createLogger, generateRequestId, ErrorCode, safeErrorMessage } from '../_shared/security.ts';
+import { validateUUID } from '../_shared/validation.ts';
 
 const FUNCTION_NAME = 'check-consultant-availability';
 
@@ -25,6 +26,7 @@ interface GraphFreeBusyResponse {
   value: Array<{
     scheduleId: string;
     availabilityView: string;
+    error?: { message?: string; responseCode?: string };
     scheduleItems: Array<{
       status: string;
       start: { dateTime: string; timeZone: string };
@@ -216,12 +218,18 @@ Deno.serve(async (req: Request) => {
       return corsJsonResponse({ error: 'Unauthorized', code: ErrorCode.UNAUTHORIZED }, req, 401);
     }
 
-    const body = await req.json() as AvailabilityRequest;
-    const { workspaceId, date, durationMinutes = 60 } = body;
-
-    if (!workspaceId || !date) {
-      return corsJsonResponse({ error: 'workspaceId and date are required', code: ErrorCode.BAD_REQUEST }, req, 400);
+    // RC12: validar a entrada (antes: JSON inválido -> 500; durationMinutes=0 marcava todos os slots livres; data livre ia direta ao Graph)
+    const body = await req.json().catch(() => null) as Partial<AvailabilityRequest> | null;
+    const wsCheck = validateUUID(body?.workspaceId, 'workspaceId');
+    const date = body?.date;
+    const durationMinutes = body?.durationMinutes ?? 60;
+    const parsedDate = typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(`${date}T00:00:00Z`) : null;
+    const dateOk = !!parsedDate && !Number.isNaN(parsedDate.getTime()) && parsedDate.toISOString().slice(0, 10) === date;
+    const durationOk = Number.isInteger(durationMinutes) && durationMinutes >= 15 && durationMinutes <= 240;
+    if (!wsCheck.valid || !dateOk || !durationOk) {
+      return corsJsonResponse({ error: 'workspaceId (uuid), date (YYYY-MM-DD) and durationMinutes (15-240) must be valid', code: ErrorCode.BAD_REQUEST }, req, 400);
     }
+    const workspaceId = wsCheck.value!;
 
     // Check user has access to workspace
     const { data: hasAccess } = await supabaseAdmin.rpc('has_workspace_access', {
@@ -329,7 +337,11 @@ Deno.serve(async (req: Request) => {
 
       const schedule = await getFreeBusySchedule(accessToken, consultantEmail, startTime, endTime, log);
 
-      if (!schedule.value || schedule.value.length === 0) {
+      // RC12: o Graph responde 200 com `error` e availabilityView vazia quando a caixa de correio não existe/não é legível;
+      // antes isto devolvia TODOS os slots como livres (generateDaySlots trata posições em falta como livres).
+      // 09:00-18:00 em blocos de 30 min = 18 caracteres.
+      const first = schedule.value?.[0];
+      if (!first || first.error || (first.availabilityView ?? '').length < 18) {
         // If Graph didn't return any schedule, treat as unverifiable (don't guess).
         return corsJsonResponse(
           {
@@ -344,8 +356,7 @@ Deno.serve(async (req: Request) => {
         );
       }
 
-      const consultantSchedule = schedule.value[0];
-      const slots = generateDaySlots(date, consultantSchedule.availabilityView || '', durationMinutes);
+      const slots = generateDaySlots(date, first.availabilityView, durationMinutes);
 
       log.info('Availability check complete', {
         date,
