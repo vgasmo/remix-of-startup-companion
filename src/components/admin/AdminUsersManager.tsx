@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { WorkspaceAssignmentDialog } from './WorkspaceAssignmentDialog';
+import { buildUserWorkspaceIndex, matchesUserWorkspaceFilter, type UserWorkspaceFilter } from '@/lib/userWorkspaceFilter';
 import { Plus, Trash2, UserCheck, Building2, Ban, UserX, RotateCcw, CheckCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
@@ -43,8 +44,8 @@ export function AdminUsersManager() {
   // first 50 users. Load every row (paged past the 1000-row response cap) so admins can find and manage anyone.
   const { data: profiles, isLoading: loadingProfiles } = useAllProfiles();
   const { data: userRoles, isLoading: loadingRoles } = useUserRoles();
-  const { data: workspaceUsers, isLoading: loadingWsUsers } = useWorkspaceUsers();
-  const { data: workspaces } = useAllWorkspaces();
+  const { data: workspaceUsers, isLoading: loadingWsUsers, isError: wsUsersError } = useWorkspaceUsers();
+  const { data: workspaces, isLoading: loadingWorkspaces, isError: workspacesError } = useAllWorkspaces();
 
   const addUserRole = useAddUserRole();
   const removeUserRole = useRemoveUserRole();
@@ -53,6 +54,7 @@ export function AdminUsersManager() {
   const removeWorkspaceUser = useRemoveWorkspaceUser();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [workspaceFilter, setWorkspaceFilter] = useState<UserWorkspaceFilter>('all');
   const [roleFilter, setRoleFilter] = useState<'all' | Role | 'none'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'suspended'>('all');
   const [addRoleDialog, setAddRoleDialog] = useState<{ userId: string; userName: string } | null>(null);
@@ -67,13 +69,15 @@ export function AdminUsersManager() {
   const [deleteUserTarget, setDeleteUserTarget] = useState<{ userId: string; userName: string } | null>(null);
   const queryClient = useQueryClient();
 
-  const isLoading = loadingProfiles || loadingRoles || loadingWsUsers;
+  const isLoading = loadingProfiles || loadingRoles || loadingWsUsers || loadingWorkspaces;
+  const workspaceIndex = useMemo(() => buildUserWorkspaceIndex(workspaceUsers || [], workspaces || []), [workspaceUsers, workspaces]);
 
   const filteredProfiles = useMemo(() => {
     const profileList = profiles || [];
     if (!profileList.length) return [];
     const term = searchTerm.trim().toLowerCase();
     return profileList.filter(p => {
+      if (!matchesUserWorkspaceFilter(p.id, workspaceFilter, workspaceIndex)) return false;
       if (term && !(p.full_name?.toLowerCase().includes(term) || p.email.toLowerCase().includes(term))) {
         return false;
       }
@@ -91,7 +95,7 @@ export function AdminUsersManager() {
       }
       return true;
     });
-  }, [profiles, searchTerm, roleFilter, statusFilter, userRoles]);
+  }, [profiles, searchTerm, roleFilter, statusFilter, userRoles, workspaceFilter, workspaceIndex]);
 
   // P4: paginate the user list — the admin org has hundreds of profiles and
   // rendering them all at once tanks React reconciliation on this route.
@@ -99,7 +103,7 @@ export function AdminUsersManager() {
   const [page, setPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / PAGE_SIZE));
   // Reset to first page whenever the filtered set changes (e.g. new search term).
-  useEffect(() => { setPage(1); }, [searchTerm, roleFilter, statusFilter]);
+  useEffect(() => { setPage(1); }, [searchTerm, roleFilter, statusFilter, workspaceFilter]);
   const pagedProfiles = useMemo(
     () => filteredProfiles.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
     [filteredProfiles, page]
@@ -221,7 +225,7 @@ export function AdminUsersManager() {
         <p className="text-sm text-muted-foreground">{t('admin.userManagement.description')}</p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
         <Input
           placeholder={t('admin.userManagement.searchPlaceholder')}
           value={searchTerm}
@@ -251,11 +255,26 @@ export function AdminUsersManager() {
             <SelectItem value="suspended">{t('admin.userManagement.statusSuspended', { defaultValue: 'Suspenso' })}</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={workspaceFilter} onValueChange={(v) => setWorkspaceFilter(v as UserWorkspaceFilter)} disabled={wsUsersError || workspacesError}>
+          <SelectTrigger className="w-full sm:w-64" aria-label={t('admin.userManagement.filterByWorkspace')}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('admin.userManagement.allWorkspaceAssignments')}</SelectItem>
+            <SelectItem value="none">{t('admin.userManagement.withoutWorkspace')}</SelectItem>
+            <SelectItem value="no_active">{t('admin.userManagement.withoutActiveWorkspace')}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
+      {wsUsersError || workspacesError ? (
+        <p role="alert" className="text-sm text-destructive">{t('admin.userManagement.workspaceFilterError')}</p>
+      ) : (
+        <p className="text-sm text-muted-foreground" aria-live="polite">{t('admin.userManagement.resultCount', { count: filteredProfiles.length })}</p>
+      )}
 
       <div className="space-y-3">
 
-        {filteredProfiles.length === 0 ? (
+        {workspaceFilter !== 'all' && (wsUsersError || workspacesError) ? null : filteredProfiles.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               {t('admin.userManagement.noUsers')}

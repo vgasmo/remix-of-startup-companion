@@ -1560,6 +1560,13 @@
     "userApproved": "Utilizador aprovado com sucesso",
     "userAssigned": "Utilizador associado ao workspace",
     "userManagement": {
+      "filterByWorkspace": "Filtrar por associação a workspace",
+      "allWorkspaceAssignments": "Todas as associações",
+      "withoutWorkspace": "Sem workspace",
+      "withoutActiveWorkspace": "Sem associação ativa a workspace",
+      "workspaceFilterError": "Não foi possível verificar as associações a workspaces. Tente novamente.",
+      "resultCount_one": "{{count}} utilizador encontrado",
+      "resultCount_other": "{{count}} utilizadores encontrados",
       "active": "Ativo",
       "addRole": "Adicionar",
       "addRoleTitle": "Adicionar Função a {{name}}",
