@@ -92,6 +92,33 @@ Deno.serve(async (req) => {
       return corsJsonResponse({ error: 'funnel_item_id or workspace_id required' }, req, 400);
     }
 
+    // Security: consultors may only sync CRM records/workspaces they are responsible for.
+    if (!callerIsAdmin) {
+      const consultantOwnsWorkspace = async (wsId: string): Promise<boolean> => {
+        const { data: ws, error: wsErr } = await supabase
+          .from('workspaces').select('assigned_consultor_id').eq('id', wsId).maybeSingle();
+        if (wsErr || !ws) return false;
+        if (ws.assigned_consultor_id === user.id) return true;
+        const { data: member, error: memErr } = await supabase
+          .from('workspace_users').select('user_id')
+          .eq('workspace_id', wsId).eq('user_id', user.id).eq('active', true).maybeSingle();
+        return !memErr && !!member;
+      };
+      if (funnel_item_id) {
+        const { data: fi, error: fiErr } = await supabase
+          .from('funnel_items').select('owner_consultant_id, linked_workspace_id')
+          .eq('id', funnel_item_id).maybeSingle();
+        const allowed = !fiErr && !!fi && (
+          fi.owner_consultant_id === user.id ||
+          (!!fi.linked_workspace_id && await consultantOwnsWorkspace(fi.linked_workspace_id))
+        );
+        if (!allowed) return corsJsonResponse({ error: 'Forbidden: record not assigned to caller' }, req, 403);
+      }
+      if (workspace_id && !(await consultantOwnsWorkspace(workspace_id))) {
+        return corsJsonResponse({ error: 'Forbidden: workspace not assigned to caller' }, req, 403);
+      }
+    }
+
     // Resolve consultant if not provided - use intake routing
     if (!consultant_user_id) {
       // Check workspace first for assigned consultant
