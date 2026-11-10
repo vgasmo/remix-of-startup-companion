@@ -235,7 +235,7 @@ serve(async (req) => {
     // Verify session exists and belongs to the workspace
     const { data: session, error: sessionError } = await supabaseService
       .from('sessions')
-      .select('id, workspace_id')
+      .select('id, workspace_id, title, agenda, scheduled_at, duration, workspace:workspaces(startup:startups(name))')
       .eq('id', payload.sessionId)
       .eq('workspace_id', payload.workspaceId)
       .single();
@@ -247,6 +247,22 @@ serve(async (req) => {
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Security: email content comes from server-recorded data, never the request body.
+    const { data: organizerProfile, error: organizerError } = await supabaseService
+      .from('profiles').select('full_name, email').eq('id', user.id).maybeSingle();
+    if (organizerError) {
+      return new Response(JSON.stringify({ error: 'organizer_lookup_failed' }), {
+        status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const persisted = session as any;
+    payload.title = String(persisted.title ?? '').slice(0, 200) || 'Session';
+    payload.agenda = persisted.agenda ? String(persisted.agenda).slice(0, 2000) : undefined;
+    if (persisted.scheduled_at) payload.scheduledAt = persisted.scheduled_at;
+    if (typeof persisted.duration === 'number' && persisted.duration > 0) payload.duration = persisted.duration;
+    payload.startupName = String(persisted.workspace?.startup?.name ?? '').slice(0, 100) || 'Startup Leiria';
+    payload.organizerName = String(organizerProfile?.full_name || organizerProfile?.email || 'Startup Leiria').slice(0, 100);
     
     let skippedRecipients = 0;
     try {
