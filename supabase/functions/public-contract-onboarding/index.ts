@@ -252,7 +252,7 @@ Deno.serve(async (req) => {
             entity_type: 'startup_contract',
             entity_id: contractId,
             workspace_id: (contract as any).workspace?.id ?? null,
-            details: { previous_email: storedEmail || null, new_email: signerEmail },
+            metadata: { previous_email: storedEmail || null, new_email: signerEmail },
           } as any)
           if (auditErr) console.warn('[public-contract-onboarding] signer change audit failed', auditErr)
         }
