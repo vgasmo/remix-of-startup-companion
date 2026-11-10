@@ -294,6 +294,7 @@ export function useAllWorkspaces() {
           .from('workspaces')
           .select(`
             id,
+            status, archived_at, blocked_at,
             startup:startups(id, name),
             program:programs(id, name)
           `)

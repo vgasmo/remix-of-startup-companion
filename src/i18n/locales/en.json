@@ -1560,6 +1560,13 @@
     "userApproved": "User approved successfully",
     "userAssigned": "User assigned to workspace",
     "userManagement": {
+      "filterByWorkspace": "Filter by workspace assignment",
+      "allWorkspaceAssignments": "All assignments",
+      "withoutWorkspace": "No workspace",
+      "withoutActiveWorkspace": "No active workspace assignment",
+      "workspaceFilterError": "Workspace assignments could not be verified. Please try again.",
+      "resultCount_one": "{{count}} user found",
+      "resultCount_other": "{{count}} users found",
       "active": "Active",
       "addRole": "Add",
       "addRoleTitle": "Add Role to {{name}}",

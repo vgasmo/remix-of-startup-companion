@@ -44,3 +44,4 @@
 - Optional storage conveniences remain viewer-scoped and never reset security inactivity after a failed refresh; chunk reloads require a durable retry marker to avoid loops.
 - Automation verification uses the parsed canonical manifest and read-only catalogue reconciliation; compare exact targets/schedules/health cadence and fail on drift without invoking jobs.
 - Fresh SQL release verification uses verify-rc12-fresh.sh with disposable PostgreSQL 17 and the explicit approved additive chain; managed storage/provider acceptance remains separate because the local shim cannot certify hosted services.
+- User-directory workspace filters use the shared association index over fully paged memberships and workspace lifecycle fields; failed reads never establish absence of membership.
