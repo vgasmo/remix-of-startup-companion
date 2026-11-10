@@ -210,13 +210,51 @@ Deno.serve(async (req) => {
           })
         }
 
-        const signerEmail = body.signerEmail || (contract as any).legal_representative_email
-        const signerName = body.signerName || (contract as any).legal_representative_name
+        const storedEmail = String((contract as any).legal_representative_email ?? '').trim()
+        const requestedEmail = typeof body.signerEmail === 'string' ? body.signerEmail.trim() : ''
+        const signerEmail = requestedEmail || storedEmail
+        const signerName = (typeof body.signerName === 'string' && body.signerName.trim()) || (contract as any).legal_representative_name
 
         if (!signerEmail || !signerName) {
           return new Response(JSON.stringify({ error: 'Dados do signatário em falta (nome e email)' }), {
             status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           })
+        }
+
+        // Alternative signer: only admins/consultors may change the recipient, and the
+        // change is persisted on the contract and audited before any dispatch, so the
+        // provider recipient is always the contract's recorded signer.
+        if (signerEmail.toLowerCase() !== storedEmail.toLowerCase() || signerName !== (contract as any).legal_representative_name) {
+          const canOverride = (roles ?? []).some((r: { role: string }) => r.role === 'admin' || r.role === 'consultor')
+          if (!canOverride) {
+            return new Response(JSON.stringify({ error: 'signer_override_forbidden' }), {
+              status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            })
+          }
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(signerEmail) || signerEmail.length > 255 || String(signerName).length > 200) {
+            return new Response(JSON.stringify({ error: 'invalid_signer_email' }), {
+              status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            })
+          }
+          const { error: signerErr } = await supabase
+            .from('startup_contracts')
+            .update({ legal_representative_email: signerEmail, legal_representative_name: signerName })
+            .eq('id', contractId)
+          if (signerErr) {
+            console.error('[public-contract-onboarding] signer override persist failed', signerErr)
+            return new Response(JSON.stringify({ error: 'signer_update_failed' }), {
+              status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            })
+          }
+          const { error: auditErr } = await supabase.from('activity_log').insert({
+            user_id: claims.user.id,
+            action: 'contract_signer_changed',
+            entity_type: 'startup_contract',
+            entity_id: contractId,
+            workspace_id: (contract as any).workspace?.id ?? null,
+            details: { previous_email: storedEmail || null, new_email: signerEmail },
+          } as any)
+          if (auditErr) console.warn('[public-contract-onboarding] signer change audit failed', auditErr)
         }
 
         // Update contract with provider and sent status (canonical: status + signature_status)
@@ -1124,6 +1162,8 @@ Deno.serve(async (req) => {
           patch[k] = (formData as any)[k]
         }
       }
+      // Security: a recorded signer email cannot be replaced through the public link.
+      if (String(contract.legal_representative_email ?? '').trim()) delete patch.legal_representative_email
       if (Object.keys(patch).length === 0) {
         return new Response(JSON.stringify({ success: true, skipped: 'no_fields' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -1145,8 +1185,13 @@ Deno.serve(async (req) => {
     // === Submit for signing — provider-agnostic dispatch ===
     if (action === 'submit_signing') {
       const { formData } = body
-      const signerEmail = formData?.legal_representative_email || contract.legal_representative_email
-      const signerName = formData?.legal_representative_name || contract.legal_representative_name
+      // Security: once a signer is recorded on the contract (staff-reviewed intake),
+      // link holders cannot redirect the signature to another address.
+      const lockedSigner = !!String(contract.legal_representative_email ?? '').trim()
+      const signerEmail = lockedSigner ? contract.legal_representative_email : formData?.legal_representative_email
+      const signerName = lockedSigner
+        ? (contract.legal_representative_name || formData?.legal_representative_name)
+        : formData?.legal_representative_name
 
       if (!signerEmail || !signerName) {
         return new Response(JSON.stringify({ error: 'Signer data required' }), {
@@ -1202,6 +1247,10 @@ Deno.serve(async (req) => {
             finalPatch[k] = (formData as any)[k]
           }
         }
+      }
+      if (lockedSigner) {
+        finalPatch.legal_representative_email = contract.legal_representative_email
+        if (contract.legal_representative_name) finalPatch.legal_representative_name = contract.legal_representative_name
       }
       // Always ensure signer identity is locked in (fallbacks to existing record).
       finalPatch.legal_representative_name = finalPatch.legal_representative_name ?? signerName

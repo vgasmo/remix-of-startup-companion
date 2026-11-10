@@ -171,6 +171,16 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Security: the recipient is bound to the signer persisted on the contract.
+    // Request-supplied emails (including internal service calls) never choose it.
+    const storedSigner = String(contract.legal_representative_email ?? '').trim().toLowerCase()
+    if (!storedSigner || String(signerEmail).trim().toLowerCase() !== storedSigner) {
+      return new Response(JSON.stringify({ error: 'signer_not_authorized' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // B1/C: Deterministic envelope command id — sha256(contractId || template_version || 'send').
     // Two concurrent workers with the same digest will race on the atomic claim
     // RPC below; only one can leave with `claimed=true`, so at most one envelope
