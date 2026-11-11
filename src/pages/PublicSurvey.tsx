@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { QuestionField, STAGE_LABELS } from "@/components/surveys/SurveyForm";
 import type { SurveyQuestion } from "@/hooks/useSurveys";
+import { changeLanguage } from "@/i18n";
 
 const FUNCTIONS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-survey`;
 
@@ -221,7 +222,7 @@ export default function PublicSurvey() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => i18n.changeLanguage(i18n.language === "pt" ? "en" : "pt")}
+            onClick={() => void changeLanguage(i18n.language === "pt" ? "en" : "pt")}
           >
             {i18n.language === "pt" ? "EN" : "PT"}
           </Button>

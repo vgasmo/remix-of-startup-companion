@@ -433,14 +433,16 @@ export function StartupSettingsTab({ workspaceId, startupId, startup, canEdit }:
                     <CheckCircle className="h-3 w-3 mr-1" />
                     {t('admin.startupsManager.documentAttached')}
                   </Badge>
-                  <a 
-                    href={formData.startup_portugal_document_path} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline"
-                  >
-                    {t('admin.startupsManager.viewDocument')}
-                  </a>
+                  {safeExternalHref(formData.startup_portugal_document_path) && (
+                    <a
+                      href={safeExternalHref(formData.startup_portugal_document_path)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:underline"
+                    >
+                      {t('admin.startupsManager.viewDocument')}
+                    </a>
+                  )}
                   <Button 
                     type="button" 
                     variant="ghost" 

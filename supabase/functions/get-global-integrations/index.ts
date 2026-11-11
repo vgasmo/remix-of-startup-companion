@@ -5,7 +5,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { requireUser, createLogger, generateRequestId } from '../_shared/security.ts';
+import { requireUser, createLogger, generateRequestId, denyIfAccountInactive } from '../_shared/security.ts';
 
 const FUNCTION_NAME = 'get-global-integrations';
 
@@ -47,6 +47,8 @@ Deno.serve(async (req) => {
       log.warn('Non-staff access attempt', { userId: user.id });
       return corsJsonResponse({ error: 'Access denied' }, req, 403);
     }
+    const inactive = await denyIfAccountInactive(req, supabase, user.id);
+    if (inactive) return inactive;
 
     // Parse request body
     let body: { integration_type?: string } = {};

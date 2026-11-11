@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { isAccountActive } from '../_shared/security.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -152,7 +153,8 @@ Deno.serve(async (req) => {
       .eq('user_id', user.id);
 
     const isAdminOrConsultor = roles?.some(r => r.role === 'admin' || r.role === 'consultor');
-    if (!isAdminOrConsultor) {
+    // Conta suspensa ou pendente não publica programas, mesmo com sessão ainda válida.
+    if (!isAdminOrConsultor || !(await isAccountActive(supabase, user.id))) {
       return new Response(JSON.stringify({ error: 'Insufficient permissions' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
