@@ -1,5 +1,8 @@
 import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { startOfWeek, format as formatDate } from 'date-fns';
+import { supabase } from '@/lib/supabaseClient';
 import { FocusModeProvider, FocusModeToggle, useFocusMode } from '@/components/ui/FocusModeToggle';
 import { UnifiedSmartInbox } from '@/components/dashboard/UnifiedSmartInbox';
 import { PortfolioPerformanceTable } from '@/components/dashboard/PortfolioPerformanceTable';
@@ -43,6 +46,22 @@ function ConsultorDashboardInner({ workspaces, isLoading, programsCount }: Consu
   const { user } = useAuth();
   const { isFocused } = useFocusMode();
   const [prepSheetWorkspaceId, setPrepSheetWorkspaceId] = useState<string | null>(null);
+
+  // RC13 L1-8: completed sessions this week come from the canonical impact aggregates (as on /staff/impact).
+  const weekFrom = formatDate(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+  const weekTo = formatDate(new Date(), 'yyyy-MM-dd');
+  const weekImpact = useQuery({
+    queryKey: ['impact-aggregates', weekFrom, weekTo, 'consultor-week'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_impact_aggregates', { p_date_from: weekFrom, p_date_to: weekTo });
+      if (error) throw error;
+      const completed = (data as any)?.meetings?.completed;
+      if (typeof completed !== 'number') throw new Error('impact aggregates unavailable');
+      return completed as number;
+    },
+  });
+  const weekCompleted: number | null = weekImpact.isSuccess ? weekImpact.data : null;
+  const weekCompletedLabel: string = weekCompleted === null ? '—' : String(weekCompleted);
 
   const { data: pipeline } = useCrmPipeline({ 
     myItemsOnly: true, 
