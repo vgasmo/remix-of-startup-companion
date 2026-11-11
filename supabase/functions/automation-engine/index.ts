@@ -510,7 +510,7 @@ Deno.serve(async (req) => {
           await notify(supabase, lead.owner_consultant_id, 'crm_lead_stale',
             `Lead parada há 14+ dias — ${lead.organization_name || lead.contact_name || 'Lead'}`,
             `Sem atividade na lead desde ${new Date(lastActivity).toLocaleDateString('pt-PT')}.`,
-            `/admin?tab=crm`,
+            `/crm?open=${lead.id}`,
             'funnel_item', lead.id)
           await recordRun(supabase, 'crm_lead_stale', lead.id, 'funnel_item', lead.owner_consultant_id, todayStr, 'app')
           result.notifications++
@@ -600,7 +600,7 @@ Deno.serve(async (req) => {
         const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
         const { data: intakes, error: intakesErr } = await supabase
           .from('contract_intakes')
-          .select('id, organization_name, status, created_at, assigned_to, legal_representative_email')
+          .select('id, organization_name, status, created_at, assigned_to, legal_representative_email, funnel_item_id')
           .in('status', ['draft_internal', 'intake_requested', 'intake_in_progress', 'changes_requested'])
           .lt('created_at', sevenDaysAgo)
         if (intakesErr) throw new Error(`intake_stale: ${intakesErr.message}`)
@@ -609,10 +609,14 @@ Deno.serve(async (req) => {
           // Notify assigned staff
           if (intake.assigned_to) {
             if (!(await wasAlreadyRun(supabase, 'intake_stale', intake.id, intake.assigned_to, todayStr))) {
+              // Mesmo destino dos outros avisos de intake: a lead no CRM, ou os contratos do backoffice se não houver lead.
+              const intakeLink = intake.funnel_item_id
+                ? `/crm?open=${intake.funnel_item_id}`
+                : '/admin?tab=backoffice&subtab=contracts'
               await notify(supabase, intake.assigned_to, 'intake_stale',
                 `Intake incompleto há 7+ dias — ${intake.organization_name || 'Sem nome'}`,
                 `O processo de intake está pendente há mais de 7 dias.`,
-                `/admin?tab=contracts`,
+                intakeLink,
                 'contract_intake', intake.id)
               const claimed = await recordRun(supabase, 'intake_stale', intake.id, 'contract_intake', intake.assigned_to, todayStr, 'both')
               result.notifications++
@@ -621,7 +625,7 @@ Deno.serve(async (req) => {
               if (email) {
                 if (await sendEmail(email,
                   `[Startup Leiria] Intake incompleto — ${intake.organization_name || 'Processo'}`,
-                  `<p>O intake de <strong>${escapeHtml(intake.organization_name || 'um processo')}</strong> está pendente há mais de 7 dias.</p><p><a href="${SITE_URL}/admin?tab=contracts">Ver intakes</a></p>`)) {
+                  `<p>O intake de <strong>${escapeHtml(intake.organization_name || 'um processo')}</strong> está pendente há mais de 7 dias.</p><p><a href="${SITE_URL}${intakeLink}">Ver intakes</a></p>`)) {
                   result.emails++
                 }
               }

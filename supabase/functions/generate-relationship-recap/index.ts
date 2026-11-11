@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
+import { denyIfAccountInactive } from '../_shared/security.ts';
 
 interface RecapRequest {
   funnel_item_id?: string;
@@ -57,6 +58,9 @@ Deno.serve(async (req) => {
       .select('role')
       .eq('user_id', user.id);
     const callerIsStaff = callerRoles?.some((r) => r.role === 'admin' || r.role === 'consultor') ?? false;
+    // Conta suspensa ou pendente não gera resumos, mesmo com sessão ainda válida.
+    const inactive = await denyIfAccountInactive(req, supabase, user.id);
+    if (inactive) return inactive;
 
     // Check feature flag
     const { data: flag } = await supabase

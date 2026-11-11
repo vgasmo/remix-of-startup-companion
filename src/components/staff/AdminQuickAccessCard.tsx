@@ -73,7 +73,7 @@ export function AdminQuickAccessCard() {
             const Icon = link.icon;
             return (
               <button
-                key={link.href}
+                key={`${link.href}:${link.label}`}
                 onClick={() => navigate(link.href)}
                 className={cn(
                   'flex items-start gap-3 p-3 rounded-xl text-left',

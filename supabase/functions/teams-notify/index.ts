@@ -11,7 +11,7 @@
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { createLogger, generateRequestId, ErrorCode, timingSafeEqual, isServiceRoleBearer } from '../_shared/security.ts';
+import { createLogger, generateRequestId, ErrorCode, timingSafeEqual, isServiceRoleBearer, isAccountActive } from '../_shared/security.ts';
 
 const FUNCTION_NAME = 'teams-notify';
 
@@ -277,7 +277,7 @@ Deno.serve(async (req: Request) => {
           .in('role', ['admin', 'consultor', 'backoffice'])
           .limit(1)
           .maybeSingle();
-        if (staffErr || !staffRow) {
+        if (staffErr || !staffRow || !(await isAccountActive(supabase, callerUserId))) {
           log.warn('Forbidden: staff role required for non-workspace channel', { callerUserId });
           return corsJsonResponse({ error: 'Forbidden', code: ErrorCode.FORBIDDEN }, req, 403);
         }

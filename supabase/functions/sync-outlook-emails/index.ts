@@ -20,7 +20,7 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { verifyCronToken } from '../_shared/security.ts';
 import { getCorsHeaders, handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { createLogger, generateRequestId, safeErrorMessage } from '../_shared/security.ts';
+import { createLogger, generateRequestId, safeErrorMessage, isAccountActive } from '../_shared/security.ts';
 import { withCronRunLogging } from '../_shared/cronRun.ts';
 
 const FUNCTION_NAME = 'sync-outlook-emails';
@@ -630,7 +630,7 @@ Deno.serve(withCronRunLogging('sync-outlook-emails', async (req) => {
               .eq('user_id', user.id)
               .eq('role', 'admin')
               .maybeSingle();
-            if (adminRole) authorized = true;
+            if (adminRole && await isAccountActive(supabaseAdmin, user.id)) authorized = true;
           }
         }
       }
@@ -802,7 +802,7 @@ Deno.serve(withCronRunLogging('sync-outlook-emails', async (req) => {
       .limit(1)
       .maybeSingle();
 
-    if (!roleCheck) {
+    if (!roleCheck || !(await isAccountActive(supabaseAdmin, user.id))) {
       return corsJsonResponse({ error: 'Only staff can sync emails' }, req, 403);
     }
 

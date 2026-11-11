@@ -23,6 +23,7 @@ import {
   Shield, Loader2, AlertTriangle, Upload, X, Globe, FileUp, Mail, RotateCcw, Download, Eye
 } from 'lucide-react';
 import { useContractDraftAutosave } from '@/hooks/useContractDraftAutosave';
+import { changeLanguage } from '@/i18n';
 
 type WizardStep = 'company_data' | 'review_contract' | 'signing';
 
@@ -181,7 +182,7 @@ export default function PublicContractSigning() {
   const toggleLang = () => {
     const next = lang === 'pt' ? 'en' : 'pt';
     setLang(next);
-    i18n.changeLanguage(next);
+    void changeLanguage(next);
     if (typeof document !== 'undefined') document.documentElement.lang = next;
   };
 

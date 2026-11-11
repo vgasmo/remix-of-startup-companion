@@ -104,6 +104,8 @@ export function AdminUsersManager() {
   const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / PAGE_SIZE));
   // Reset to first page whenever the filtered set changes (e.g. new search term).
   useEffect(() => { setPage(1); }, [searchTerm, roleFilter, statusFilter, workspaceFilter]);
+  // Se a lista encolher (aprovar, suspender ou apagar na última página), recua para a última página que existe.
+  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages]);
   const pagedProfiles = useMemo(
     () => filteredProfiles.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
     [filteredProfiles, page]
