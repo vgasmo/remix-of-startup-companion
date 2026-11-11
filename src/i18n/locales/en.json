@@ -6648,6 +6648,7 @@
       "programsCohorts": "Programs & Cohorts",
       "quickGuide": "Quick Guide",
       "reports": "Reports",
+      "impact": "Sessions & Impact",
       "systemConfig": "System Configuration",
       "usersPermissions": "Users & Permissions"
     },
@@ -6670,6 +6671,7 @@
       "programs": "Programs",
       "quickGuide": "Quick Guide",
       "reports": "Reports",
+      "impact": "Sessions & Impact",
       "sessions": "Sessions",
       "sessionsActions": "Sessions & actions",
       "startups": "Startups"

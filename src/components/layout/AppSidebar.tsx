@@ -17,6 +17,7 @@ import {
   Network,
   Headphones,
   BarChart3,
+  TrendingUp,
   Briefcase,
   ClipboardList,
   Contact,
@@ -151,6 +152,7 @@ export function AppSidebar() {
     { name: t('nav.consultor.ecosystem', { defaultValue: 'Ecossistema' }), href: '/ecosystem', icon: Globe2 },
     { name: t('nav.consultor.programs', { defaultValue: 'Programas' }), href: '/admin?tab=programs-setup', icon: GraduationCap },
     { name: t('nav.consultor.reports', { defaultValue: 'Relatórios' }), href: '/admin?tab=analytics', icon: BarChart3 },
+    { name: t('nav.consultor.impact', { defaultValue: 'Sessões e Impacto' }), href: '/staff/impact', icon: TrendingUp },
     { name: t('nav.consultor.quickGuide', { defaultValue: 'Guia Rápido' }), href: '/guide', icon: BookOpenCheck },
     { name: t('nav.founder.glossaryFaq', { defaultValue: 'Glossário & FAQ' }), href: '/help', icon: HelpCircle },
   ];
@@ -186,6 +188,7 @@ export function AppSidebar() {
     { name: t('nav.admin.ecosystem', { defaultValue: 'Diretório Ecossistema' }), href: '/ecosystem', icon: Globe2 },
     { name: t('nav.admin.programsCohorts', { defaultValue: 'Programas e Coortes' }), href: '/admin?tab=programs-setup', icon: GraduationCap },
     { name: t('nav.admin.reports', { defaultValue: 'Relatórios' }), href: '/admin?tab=analytics', icon: BarChart3 },
+    { name: t('nav.admin.impact', { defaultValue: 'Sessões e Impacto' }), href: '/staff/impact', icon: TrendingUp },
     { name: t('nav.admin.usersPermissions', { defaultValue: 'Utilizadores & Permissões' }), href: '/admin?tab=users', icon: Shield },
     { name: t('consultorTools.title', { defaultValue: 'Ferramentas de Consultor' }), href: '/consultor-tools', icon: Briefcase },
     { name: t('nav.admin.quickGuide', { defaultValue: 'Guia Rápido' }), href: '/guide', icon: BookOpenCheck },

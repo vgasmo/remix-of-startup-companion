@@ -292,6 +292,16 @@ jobs:
       - name: Start local Supabase
         run: supabase start
 
+      - name: Apply the additive chain (drizzle/migrations) on top of supabase/migrations
+        run: |
+          set -euo pipefail
+          DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f scripts/rc5/audit-local-fixtures.sql
+          for f in drizzle/migrations/*.sql; do
+            echo "applying $f"
+            psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+
       - name: Get Supabase status
         id: supabase
         run: |
@@ -381,6 +391,16 @@ jobs:
 
       - name: Start local Supabase (applies all migrations)
         run: supabase start
+
+      - name: Apply the additive chain (drizzle/migrations) on top of supabase/migrations
+        run: |
+          set -euo pipefail
+          DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f scripts/rc5/audit-local-fixtures.sql
+          for f in drizzle/migrations/*.sql; do
+            echo "applying $f"
+            psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f "$f"
+          done
 
       - name: Verify migrations applied
         run: supabase migration list --local

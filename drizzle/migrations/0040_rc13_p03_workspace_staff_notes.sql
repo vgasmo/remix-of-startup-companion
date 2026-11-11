@@ -1,6 +1,7 @@
 -- RC13 P03 · FEF-04 · as notas internas do staff (saúde e prioridade) saem de workspaces, que o founder lê,
 -- para uma tabela que só o staff lê. Idempotente. Não redefine nenhuma função existente (sem guardas md5).
 
+-- ═══ 1. Tabela só de staff ═══
 CREATE TABLE IF NOT EXISTS public.workspace_staff_notes (
   workspace_id   uuid PRIMARY KEY REFERENCES public.workspaces(id) ON DELETE CASCADE,
   health_notes   text,
@@ -36,6 +37,10 @@ CREATE POLICY rc12_suspended_block ON public.workspace_staff_notes
   USING ((SELECT public.account_not_suspended((SELECT auth.uid()))))
   WITH CHECK ((SELECT public.account_not_suspended((SELECT auth.uid()))));
 
+-- ═══ 2. Qualquer escrita das notas em workspaces é desviada para a tabela nova ═══
+-- Cobre o cliente antigo enquanto não for publicado, as RPCs de conversão de leads e a função bulk-create-workspaces,
+-- sem redefinir nenhuma delas. O trigger corre DEPOIS da escrita (a linha do workspace já existe), copia as notas
+-- e limpa as colunas na mesma transação: quando a transação fecha, as colunas de workspaces estão sempre a NULL.
 CREATE OR REPLACE FUNCTION public.redirect_workspace_staff_notes()
  RETURNS trigger
  LANGUAGE plpgsql
@@ -64,10 +69,12 @@ CREATE TRIGGER trg_redirect_workspace_staff_notes
   AFTER INSERT OR UPDATE OF health_notes, priority_notes ON public.workspaces
   FOR EACH ROW EXECUTE FUNCTION public.redirect_workspace_staff_notes();
 
+-- ═══ 3. Notas já existentes: o próprio trigger as move e deixa as colunas a NULL ═══
 UPDATE public.workspaces
    SET health_notes = health_notes, priority_notes = priority_notes
  WHERE health_notes IS NOT NULL OR priority_notes IS NOT NULL;
 
+-- ═══ 4. O registo de atividade, que o founder lê, guardava o texto da nota de prioridade ═══
 UPDATE public.activity_log
    SET metadata = metadata - 'notes'
  WHERE action = 'priority_changed' AND metadata ? 'notes';

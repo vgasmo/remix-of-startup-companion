@@ -1,4 +1,11 @@
--- RC13 P01 (see attached decisions doc)
+-- RC13 P01 · papel de staff só vale com a conta aprovada (fecha o "staff bypass" das contas pendentes).
+-- Idempotente. Redefine 3 funções; cada uma tem guarda md5 e a migração aborta se a definição real divergir.
+-- Os md5 de partida foram lidos na base real a 11 nov 2026 e são iguais aos da réplica.
+
+-- ═══ 1. account_not_suspended: passa a devolver false também para conta PENDENTE com papel de staff ═══
+-- É o ponto único por onde passam is_staff(), is_admin(), is_backoffice(), can_access_backoffice(),
+-- has_global_workspace_access(), has_workspace_access() e a política restritiva rc12_suspended_block
+-- das 204 tabelas e do Storage. Um founder pendente (sem papel de staff) fica exatamente como estava.
 DO $guard$
 DECLARE v_md5 text;
 BEGIN
@@ -17,6 +24,7 @@ CREATE OR REPLACE FUNCTION public.account_not_suspended(_user_id uuid)
  SET search_path TO 'public'
 AS $function$ SELECT CASE WHEN auth.role() = 'anon' OR (auth.uid() IS NULL AND auth.role() IS DISTINCT FROM 'service_role') THEN false ELSE _user_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = _user_id AND (p.account_status = 'suspended' OR (p.account_status = 'pending' AND EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = p.id AND ur.role IN ('admin'::public.app_role, 'consultor'::public.app_role, 'backoffice'::public.app_role))))) END; $function$;
 
+-- ═══ 2. has_role: os papéis de staff deixam de valer numa conta suspensa OU pendente ═══
 DO $guard$
 DECLARE v_md5 text;
 BEGIN
@@ -47,6 +55,7 @@ AS $function$
   END
 $function$;
 
+-- ═══ 3. is_account_active(): sai o "staff bypass"; ativa é só a conta aprovada ═══
 DO $guard$
 DECLARE v_md5 text;
 BEGIN
