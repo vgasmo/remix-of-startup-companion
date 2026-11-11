@@ -2853,12 +2853,13 @@
     },
     "titleIsRequired": "O título é obrigatório",
     "valuePropositionSaved": "Proposta de valor guardada",
-    "weekSummary": "Esta semana: {{sessions}} sessões · {{actions}} ações fechadas · {{health}} startups melhoraram",
+    "weekSummary": "Esta semana: {{sessions}} sessões concluídas · {{actions}} ações em atraso · {{health}} startups melhoraram",
     "weeklyImpact": {
       "actionsCreated": "Ações criadas",
       "leadsConverted": "Leads convertidas",
       "sessionsCompleted": "Sessões Concluído",
-      "title": "Título"
+      "title": "Título",
+      "overdueActions": "Ações em atraso"
     }
   },
   "consultorTools": {
@@ -3112,7 +3113,11 @@
     "viewWorkspace": "Ver Workspace",
     "voidedNotice": "Este contrato foi anulado.",
     "statusEditHint": "Só é possível alternar entre ativo e suspenso aqui. Para ativar, o contrato tem de ser assinado; para terminar, usa o botão próprio.",
-    "signedTermsLocked": "Os termos assinados estão protegidos. A renovação continua disponível na ação própria."
+    "signedTermsLocked": "Os termos assinados estão protegidos. A renovação continua disponível na ação própria.",
+    "founderAccessSent": "Email de acesso enviado ao founder.",
+    "founderAccessFailed": "Não foi possível enviar o email de acesso. Tente novamente ou contacte o founder diretamente.",
+    "sendFounderAccess": "Enviar acesso ao founder",
+    "intakeNotApproved": "O pedido de dados ainda não foi aprovado. Aprove-o antes de enviar para assinatura."
   },
   "contractOnboarding": {
     "acceptContract": "Li e aceito os termos do Contrato de Incubação, incluindo as condições de prestação de serviços, obrigações e direitos das partes.",
@@ -6447,7 +6452,13 @@
     "slotAlreadyTaken": "Esse horário acabou de ser reservado por outra pessoa — escolha outro.",
     "startTime": "Hora de início",
     "whatToDiscuss": "O que gostaria de discutir?",
-    "yourBookings": "As Suas Marcações"
+    "yourBookings": "As Suas Marcações",
+    "bookingCompleted": "Mentoria marcada como concluída",
+    "bookingNotHeld": "Mentoria marcada como não realizada",
+    "completeBooking": "Concluir",
+    "bookingDidNotHappen": "Não se realizou",
+    "bookingDidNotHappenTitle": "A mentoria não se realizou?",
+    "bookingDidNotHappenDescription": "A reserva e a sessão associada ficam canceladas. Esta ação não pode ser desfeita."
   },
   "mentorsPage": {
     "accept": "Aceitar",
