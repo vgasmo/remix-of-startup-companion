@@ -1565,6 +1565,7 @@
       "withoutWorkspace": "Sem workspace",
       "withoutActiveWorkspace": "Sem associação ativa a workspace",
       "workspaceFilterError": "Não foi possível verificar as associações a workspaces. Tente novamente.",
+      "rolePendingHint": "A conta continua pendente. A função só tem efeito depois de a conta ser aprovada.",
       "resultCount": "{{count}} utilizadores encontrados",
       "resultCount_one": "{{count}} utilizador encontrado",
       "resultCount_other": "{{count}} utilizadores encontrados",

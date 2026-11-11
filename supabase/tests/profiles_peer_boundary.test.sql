@@ -36,6 +36,8 @@ BEGIN
         linkedin_url = EXCLUDED.linkedin_url;
 
   INSERT INTO public.user_roles (user_id, role) VALUES (v_staff, 'admin');
+  -- RC13: o papel de staff só vale com a conta aprovada.
+  UPDATE public.profiles SET account_status = 'approved' WHERE id = v_staff;
 
   INSERT INTO public.startups (id, name) VALUES (v_wsp, 'RC5 Batch E Startup');
   INSERT INTO public.programs (id, name) VALUES (v_wsp, 'RC5 Batch E Program');

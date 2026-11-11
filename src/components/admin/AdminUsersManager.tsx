@@ -124,6 +124,10 @@ export function AdminUsersManager() {
   const handleAddRole = async () => {
     if (!addRoleDialog) return;
     await addUserRole.mutateAsync({ user_id: addRoleDialog.userId, role: selectedRole });
+    const target = profiles?.find(p => p.id === addRoleDialog.userId);
+    if (['admin', 'consultor', 'backoffice'].includes(selectedRole) && target?.account_status === 'pending') {
+      notify.warn(t('admin.userManagement.rolePendingHint'));
+    }
     setAddRoleDialog(null);
   };
 

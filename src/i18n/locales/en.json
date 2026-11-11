@@ -1565,6 +1565,7 @@
       "withoutWorkspace": "No workspace",
       "withoutActiveWorkspace": "No active workspace assignment",
       "workspaceFilterError": "Workspace assignments could not be verified. Please try again.",
+      "rolePendingHint": "The account is still pending. The role only takes effect once the account is approved.",
       "resultCount": "{{count}} users found",
       "resultCount_one": "{{count}} user found",
       "resultCount_other": "{{count}} users found",
