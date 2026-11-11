@@ -137,14 +137,23 @@ serve(async (req) => {
 
       // Check for no recent sessions
       const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-      const { data: recentSessions } = await supabase
+      // RC13 L1-9: only completed sessions count as recent follow-up; scheduled ones count only if still upcoming.
+      const { data: recentSessions, error: recentErr } = await supabase
         .from("sessions")
         .select("id")
         .eq("workspace_id", workspace.id)
+        .eq("status", "completed")
         .gte("scheduled_at", thirtyDaysAgo.toISOString())
         .limit(1);
+      const { data: upcomingSessions, error: upcomingErr } = await supabase
+        .from("sessions")
+        .select("id")
+        .eq("workspace_id", workspace.id)
+        .eq("status", "scheduled")
+        .gte("scheduled_at", today.toISOString())
+        .limit(1);
 
-      if (!recentSessions || recentSessions.length === 0) {
+      if (!recentErr && !upcomingErr && !recentSessions?.length && !upcomingSessions?.length) {
         const ok = await upsertWorkQueueItem({
           workspace_id: workspace.id,
           type: "schedule_session",
@@ -155,6 +164,32 @@ serve(async (req) => {
           status: "open",
           assigned_to: leadConsultant,
           evidence_json: { last_session_check: thirtyDaysAgo.toISOString() },
+        });
+        if (ok) createdCount++;
+      }
+
+      // RC13 L1-1: sessions still 'scheduled' more than 2h after their start need follow-up.
+      const twoHoursAgo = new Date(today.getTime() - 2 * 60 * 60 * 1000);
+      const { data: staleScheduled, error: staleErr } = await supabase
+        .from("sessions")
+        .select("id, scheduled_at")
+        .eq("workspace_id", workspace.id)
+        .eq("status", "scheduled")
+        .lt("scheduled_at", twoHoursAgo.toISOString())
+        .order("scheduled_at", { ascending: true });
+
+      if (!staleErr && staleScheduled && staleScheduled.length > 0) {
+        const ok = await upsertWorkQueueItem({
+          workspace_id: workspace.id,
+          type: "post_session_followup",
+          title: `${startupName}: ${staleScheduled.length} ${staleScheduled.length === 1 ? "sessão por fechar" : "sessões por fechar"}`,
+          description: "Sessão já passou e continua agendada. Marque como concluída ou cancelada.",
+          priority: "high",
+          due_at: today.toISOString(),
+          status: "open",
+          assigned_to: leadConsultant,
+          related_session_id: staleScheduled[0].id,
+          evidence_json: { count: staleScheduled.length, session_ids: staleScheduled.map((s) => s.id) },
         });
         if (ok) createdCount++;
       }

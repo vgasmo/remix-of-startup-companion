@@ -669,6 +669,41 @@ Deno.serve(async (req) => {
     }
 
     // ═══════════════════════════════════════════════════════════
+    // 11b. SESSÃO PASSADA AINDA AGENDADA (RC13 L1-1)
+    // ═══════════════════════════════════════════════════════════
+    {
+      const result: AutomationResult = { type: 'session_still_scheduled', notifications: 0, emails: 0, errors: [] }
+      try {
+        const dayAgo = new Date(today.getTime() - 24 * 60 * 60 * 1000).toISOString()
+        const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        const { data: sessions, error } = await supabase
+          .from('sessions')
+          .select('id, title, workspace_id, scheduled_at, workspace:workspaces(startup:startups(name), workspace_assignments(assigned_user_id, role))')
+          .eq('status', 'scheduled')
+          .lt('scheduled_at', dayAgo)
+          .gte('scheduled_at', thirtyDaysAgo)
+        if (error) throw error
+
+        for (const s of sessions || []) {
+          const consultorId = ((s as any).workspace?.workspace_assignments || [])
+            .find((a: any) => a.role === 'lead_consultant')?.assigned_user_id
+          if (!consultorId) continue
+          if (await wasAlreadyRun(supabase, 'session_still_scheduled', s.id, consultorId, todayStr)) continue
+
+          const startupName = (s as any).workspace?.startup?.name || 'Startup'
+          await notify(supabase, consultorId, 'session_still_scheduled',
+            `Sessão por fechar — ${startupName}`,
+            `A sessão "${s.title}" já passou e continua agendada. Marque-a como concluída ou cancelada.`,
+            `/workspace/${s.workspace_id}?tab=agenda`,
+            'session', s.id)
+          await recordRun(supabase, 'session_still_scheduled', s.id, 'session', consultorId, todayStr, 'app')
+          result.notifications++
+        }
+      } catch (e: any) { result.errors.push(e.message) }
+      results.push(result)
+    }
+
+    // ═══════════════════════════════════════════════════════════
     // 12. WORKSPACE SEM CONSULTOR
     // ═══════════════════════════════════════════════════════════
     {
