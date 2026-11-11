@@ -2,8 +2,9 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireCronOrStaff } from "../_shared/security.ts";
 import { getCorsHeaders, handleCorsOptions } from "../_shared/cors.ts";
+import { withCronRunLogging } from "../_shared/cronRun.ts";
 
-serve(async (req) => {
+serve(withCronRunLogging("recompute-work-queue", async (req) => {
   if (req.method === "OPTIONS") {
     return handleCorsOptions(req);
   }
@@ -308,4 +309,4 @@ serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}));
