@@ -58,6 +58,23 @@ interface ContractDetailDrawerProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// RC13 L1-10: intake states that still need staff approval before the contract can go to signature.
+const INTAKE_NOT_APPROVED_STATES = ['draft_internal', 'intake_requested', 'intake_in_progress', 'intake_submitted', 'review_pending', 'changes_requested'];
+export function isIntakeBlockingSignature(status: string | null | undefined): boolean {
+  return !!status && INTAKE_NOT_APPROVED_STATES.includes(status);
+}
+async function fetchLatestContractIntake(contractId: string) {
+  const { data, error } = await supabase
+    .from('contract_intakes')
+    .select('*')
+    .eq('contract_id', contractId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data || null;
+}
+
 export function ContractDetailDrawer({ contract, incubationTypes, buildings, open, onOpenChange }: ContractDetailDrawerProps) {
   const { t } = useTranslation();
   const dateLocale = useDateLocale();
@@ -93,16 +110,14 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
     queryKey: ['contract-linked-intake', contract?.id],
     queryFn: async () => {
       if (!contract?.id) return null;
-      const { data, error } = await supabase
-        .from('contract_intakes')
-        .select('*')
-        .eq('contract_id', contract.id)
-        .maybeSingle();
-      if (error) throw error;
-      return data || null;
+      return fetchLatestContractIntake(contract.id);
     },
     enabled: !!contract?.id,
   });
+  // RC13 L1-10: no signing link while the latest intake is not approved.
+  const intakeBlocksSigning = isIntakeBlockingSignature(linkedIntake?.status);
+  const { isStaff } = useAuth();
+  const [resendingAccess, setResendingAccess] = useState(false);
 
   // Fetch linked funnel item
   const { data: linkedFunnelItem } = useQuery({
@@ -418,12 +433,44 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
               </Button>
             )}
 
+            {/* RC13 L1-7: resend the founder access email (staff only, no false success) */}
+            {isStaff && contract.status === 'active' && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1"
+                disabled={resendingAccess}
+                loading={resendingAccess}
+                onClick={async () => {
+                  setResendingAccess(true);
+                  try {
+                    const { data, error } = await invokeWithAuth('public-contract-onboarding', {
+                      body: { action: 'staff_resend_founder_access', contractId: contract.id },
+                    });
+                    if (error) throw error;
+                    if (!data?.success) throw new Error(data?.error || 'access_email_failed');
+                    notify.success(t('contractDetail.founderAccessSent'));
+                    queryClient.invalidateQueries({ queryKey: ['work-queue'] });
+                  } catch {
+                    notify.error(t('contractDetail.founderAccessFailed'));
+                  } finally {
+                    setResendingAccess(false);
+                  }
+                }}
+              >
+                <Send className="h-3 w-3" />
+                {t('contractDetail.sendFounderAccess')}
+              </Button>
+            )}
+
             {/* Generate public signing link for founder */}
             {['draft', 'pending_signature'].includes(contract.status) && (
               <Button
                 variant="default"
                 size="sm"
                 className="h-7 text-xs gap-1"
+                disabled={intakeBlocksSigning}
+                title={intakeBlocksSigning ? t('contractDetail.intakeNotApproved') : undefined}
                 onClick={async () => {
                   try {
                     const { data, error } = await invokeWithAuth('public-contract-onboarding', {
@@ -786,6 +833,12 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
 
 /** Signature Provider Panel — shows provider status, allows selection for unsent drafts, retry */
 function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
+  const { data: latestIntake } = useQuery({
+    queryKey: ['contract-linked-intake', contract.id],
+    queryFn: () => fetchLatestContractIntake(contract.id),
+    enabled: !!contract.id,
+  });
+  const intakeBlocksSigning = isIntakeBlockingSignature(latestIntake?.status);
   const { t } = useTranslation();
   const dateLocale = useDateLocale();
   const [sending, setSending] = useState(false);
@@ -1161,11 +1214,14 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
                   setSending(false);
                 }
               }}
-              disabled={sending}
+              disabled={sending || intakeBlocksSigning}
             >
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               {t('contractDetail.generateAndSendLink')}
             </Button>
+            {intakeBlocksSigning && (
+              <p className="text-xs text-warning">{t('contractDetail.intakeNotApproved')}</p>
+            )}
           </div>
         )}
 
