@@ -47,6 +47,7 @@ import {
 import { notify } from "@/lib/notify";
 import { supabase } from '@/lib/supabaseClient';
 import { WorkspaceWithDetails } from '@/hooks/useWorkspaces';
+import { CreateSessionDialog } from '@/components/workspace/sessions/CreateSessionDialog';
 
 interface CockpitQuickActionsProps {
   workspaces: WorkspaceWithDetails[];
@@ -64,51 +65,23 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
 
   // Quick session form state
   const [sessionWorkspaceId, setSessionWorkspaceId] = useState('');
-  const [sessionTitle, setSessionTitle] = useState('');
-  const [sessionDate, setSessionDate] = useState('');
-  const [sessionType, setSessionType] = useState('general');
+  // RC13 L1-5: the quick dialog only picks the startup; the full session dialog does the rest
+  // (notification, Outlook, Teams, invitation and conflict checks).
+  const [createSessionWorkspaceId, setCreateSessionWorkspaceId] = useState<string | null>(null);
 
   // Quick action form state
   const [actionWorkspaceId, setActionWorkspaceId] = useState('');
   const [actionTitle, setActionTitle] = useState('');
   const [actionDueDate, setActionDueDate] = useState('');
 
-  const handleCreateQuickSession = async () => {
-    if (!sessionWorkspaceId || !sessionTitle || !sessionDate) {
+  const handleCreateQuickSession = () => {
+    if (!sessionWorkspaceId) {
       notify.error(t('staff.pleaseFillAllFields'));
       return;
     }
-
-    setIsLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const { error } = await supabase
-        .from('sessions')
-        .insert({
-          workspace_id: sessionWorkspaceId,
-          title: sessionTitle,
-          scheduled_at: new Date(sessionDate).toISOString(),
-          duration: 60,
-          created_by: user?.id,
-          session_type: sessionType,
-          outlook_sync_status: 'pending',
-        });
-
-      if (error) throw error;
-      notify.success(t('staff.sessionScheduledSuccessfully'));
-      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      queryClient.invalidateQueries({ queryKey: ['work-queue'] });
-      queryClient.invalidateQueries({ queryKey: ['upcoming-sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['sessions', sessionWorkspaceId] });
-      queryClient.invalidateQueries({ queryKey: ['calendar-sessions', sessionWorkspaceId] });
-      queryClient.invalidateQueries({ queryKey: ['workspace-sessions', sessionWorkspaceId] });
-      setShowQuickSession(false);
-      resetSessionForm();
-    } catch (error) {
-      notify.error(t('staff.failedToCreateSession'));
-    } finally {
-      setIsLoading(false);
-    }
+    setCreateSessionWorkspaceId(sessionWorkspaceId);
+    setShowQuickSession(false);
+    resetSessionForm();
   };
 
   const handleCreateQuickAction = async () => {
@@ -147,9 +120,6 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
 
   const resetSessionForm = () => {
     setSessionWorkspaceId('');
-    setSessionTitle('');
-    setSessionDate('');
-    setSessionType('general');
   };
 
   const resetActionForm = () => {
@@ -191,15 +161,15 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
           workspaces={workspaces}
           sessionWorkspaceId={sessionWorkspaceId}
           setSessionWorkspaceId={setSessionWorkspaceId}
-          sessionTitle={sessionTitle}
-          setSessionTitle={setSessionTitle}
-          sessionDate={sessionDate}
-          setSessionDate={setSessionDate}
-          sessionType={sessionType}
-          setSessionType={setSessionType}
-          isLoading={isLoading}
           onSubmit={handleCreateQuickSession}
         />
+        {createSessionWorkspaceId && (
+          <CreateSessionDialog
+            workspaceId={createSessionWorkspaceId}
+            open={!!createSessionWorkspaceId}
+            onOpenChange={(open) => { if (!open) setCreateSessionWorkspaceId(null); }}
+          />
+        )}
         <QuickActionDialog
           open={showQuickAction}
           onOpenChange={setShowQuickAction}
@@ -268,15 +238,15 @@ export function CockpitQuickActions({ workspaces, compact = false }: CockpitQuic
         workspaces={workspaces}
         sessionWorkspaceId={sessionWorkspaceId}
         setSessionWorkspaceId={setSessionWorkspaceId}
-        sessionTitle={sessionTitle}
-        setSessionTitle={setSessionTitle}
-        sessionDate={sessionDate}
-        setSessionDate={setSessionDate}
-        sessionType={sessionType}
-        setSessionType={setSessionType}
-        isLoading={isLoading}
         onSubmit={handleCreateQuickSession}
       />
+      {createSessionWorkspaceId && (
+        <CreateSessionDialog
+          workspaceId={createSessionWorkspaceId}
+          open={!!createSessionWorkspaceId}
+          onOpenChange={(open) => { if (!open) setCreateSessionWorkspaceId(null); }}
+        />
+      )}
       <QuickActionDialog
         open={showQuickAction}
         onOpenChange={setShowQuickAction}
@@ -301,13 +271,6 @@ function QuickSessionDialog({
   workspaces,
   sessionWorkspaceId,
   setSessionWorkspaceId,
-  sessionTitle,
-  setSessionTitle,
-  sessionDate,
-  setSessionDate,
-  sessionType,
-  setSessionType,
-  isLoading,
   onSubmit,
 }: {
   open: boolean;
@@ -315,27 +278,9 @@ function QuickSessionDialog({
   workspaces: WorkspaceWithDetails[];
   sessionWorkspaceId: string;
   setSessionWorkspaceId: (v: string) => void;
-  sessionTitle: string;
-  setSessionTitle: (v: string) => void;
-  sessionDate: string;
-  setSessionDate: (v: string) => void;
-  sessionType: string;
-  setSessionType: (v: string) => void;
-  isLoading: boolean;
   onSubmit: () => void;
 }) {
   const { t } = useTranslation();
-
-  const SESSION_TYPES = [
-    { value: 'general', label: t('sessions.types.general', { defaultValue: 'Geral' }) },
-    { value: 'discovery', label: t('sessions.types.discovery', { defaultValue: 'Discovery' }) },
-    { value: 'problem_solving', label: t('sessions.types.problemSolving', { defaultValue: 'Problem-Solving' }) },
-    { value: 'mentoring', label: t('sessions.types.mentoring', { defaultValue: 'Mentoria' }) },
-    { value: 'check_in', label: t('sessions.types.checkIn', { defaultValue: 'Check-in' }) },
-    { value: 'pitch_practice', label: t('sessions.types.pitchPractice', { defaultValue: 'Pitch Practice' }) },
-    { value: 'workshop', label: t('sessions.types.workshop', { defaultValue: 'Workshop' }) },
-    { value: 'follow_up', label: t('sessions.types.followUp', { defaultValue: 'Follow-up' }) },
-  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -362,42 +307,11 @@ function QuickSessionDialog({
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label>{t('cockpit.sessionType', { defaultValue: 'Tipo de Sessão' })}</Label>
-            <Select value={sessionType} onValueChange={setSessionType}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SESSION_TYPES.map(type => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>{t('cockpit.sessionTitle', { defaultValue: 'Título da Sessão' })}</Label>
-            <Input
-              placeholder={t('cockpit.sessionTitlePlaceholder', { defaultValue: 'ex., Check-in mensal' })}
-              value={sessionTitle}
-              onChange={(e) => setSessionTitle(e.target.value)}
-            />
-          </div>
-          <div>
-            <Label>{t('cockpit.dateTime', { defaultValue: 'Data e Hora' })}</Label>
-            <Input
-              type="datetime-local"
-              value={sessionDate}
-              onChange={(e) => setSessionDate(e.target.value)}
-            />
-          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel', { defaultValue: 'Cancelar' })}</Button>
-          <Button onClick={onSubmit} disabled={isLoading} loading={isLoading}>
-            {isLoading ? t('common.creating', { defaultValue: 'A criar...' }) : t('cockpit.schedule', { defaultValue: 'Agendar' })}
+          <Button onClick={onSubmit} disabled={!sessionWorkspaceId}>
+            {t('common.continue', { defaultValue: 'Continuar' })}
           </Button>
         </DialogFooter>
       </DialogContent>
