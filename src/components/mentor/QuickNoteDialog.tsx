@@ -18,6 +18,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
 import { track } from '@/lib/analytics';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface QuickNoteDialogProps {
   open: boolean;
@@ -27,6 +28,7 @@ interface QuickNoteDialogProps {
 }
 
 export function QuickNoteDialog({ open, onOpenChange, workspaceId, startupName }: QuickNoteDialogProps) {
+  const queryClient = useQueryClient();
   const { t } = useTranslation();
   const { user } = useAuth();
   const [content, setContent] = useState('');
@@ -68,6 +70,8 @@ export function QuickNoteDialog({ open, onOpenChange, workspaceId, startupName }
         }
       }
 
+      // RC13 L1-3: refresh the dashboard's "log session notes" reminder.
+      void queryClient.invalidateQueries({ queryKey: ['mentor-recent-notes', user.id] });
       void track('mentor_session_logged', { workspaceId });
       notify.success(t('mentor.noteAdded', { defaultValue: 'Nota adicionada com sucesso' }));
       setContent('');
