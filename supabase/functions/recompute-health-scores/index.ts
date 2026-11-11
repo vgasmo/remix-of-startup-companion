@@ -261,10 +261,11 @@ serve(withCronRunLogging('recompute-health-scores', async (req) => {
           .gte("created_at", new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()),
         supabase
           .from("sessions")
-          .select("id, scheduled_at")
+          .select("id, scheduled_at, status")
           .eq("workspace_id", workspace.id)
+          .in("status", ["completed", "scheduled"])
           .order("scheduled_at", { ascending: false })
-          .limit(5),
+          .limit(20),
         supabase
           .from("kpi_values")
           .select("id, kpi_definition_id, value")
@@ -318,8 +319,9 @@ serve(withCronRunLogging('recompute-health-scores', async (req) => {
 
       // Calculate Sessions Score (0-100)
       const sessions = sessionsResult.data || [];
-      const pastSessions = sessions.filter(s => new Date(s.scheduled_at) < today);
-      const futureSessions = sessions.filter(s => new Date(s.scheduled_at) >= today);
+      // RC13 L1-9: last session = completed only; next session = scheduled only (cancelled/no-show never count).
+      const pastSessions = sessions.filter(s => s.status === "completed" && new Date(s.scheduled_at) < today);
+      const futureSessions = sessions.filter(s => s.status === "scheduled" && new Date(s.scheduled_at) >= today);
 
       let sessionsScore = 50;
       if (pastSessions.length > 0) {
