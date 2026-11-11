@@ -53,7 +53,7 @@ export function ProtectedRoute({ children, adminOnly = false, staffOnly = false 
     return <Navigate to="/suspended" replace />;
   }
 
-  if (isAccountPending && !isStaff) {
+  if (isAccountPending) {
     return <Navigate to="/pending-approval" replace />;
   }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
@@ -15,6 +15,7 @@ import { PriorityBadge, type WorkspacePriority } from '@/components/ui/PriorityB
 import { notify } from "@/lib/notify";
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { saveWorkspaceStaffNotes, workspaceStaffNotesKey } from '@/hooks/useWorkspaceStaffNotes';
 
 interface PrioritySelectorProps {
   workspaceId: string;
@@ -61,23 +62,33 @@ export function PrioritySelector({
   const [notes, setNotes] = useState(currentNotes || '');
   const [isSaving, setIsSaving] = useState(false);
 
+  // As notas chegam de uma consulta à parte (só staff): repõe o texto sempre que o painel abre.
+  useEffect(() => {
+    if (isOpen) setNotes(currentNotes || '');
+  }, [isOpen, currentNotes]);
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { error } = await supabase
+      const { data: updated, error } = await supabase
         .from('workspaces')
         .update({
           priority_level: selectedPriority,
-          priority_notes: notes || null,
           priority_set_at: new Date().toISOString(),
           priority_set_by: user.id,
         })
-        .eq('id', workspaceId);
+        .eq('id', workspaceId)
+        .select('id');
 
       if (error) throw error;
+      // A RLS bloqueia sem erro: 0 linhas quer dizer que nada foi gravado.
+      if (!updated?.length) throw new Error('priority: 0 rows updated');
+
+      // A nota é interna do staff e vive numa tabela que o founder não lê.
+      await saveWorkspaceStaffNotes(workspaceId, { priority_notes: notes || null }, user.id);
 
       // Log activity
       await supabase.from('activity_log').insert({
@@ -89,12 +100,13 @@ export function PrioritySelector({
         metadata: {
           from: currentPriority || 'standard',
           to: selectedPriority,
-          notes: notes || null,
+          has_notes: Boolean(notes),
         },
       });
 
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: workspaceStaffNotesKey(workspaceId) });
       
       notify.success(t('priority.updated'));
       setIsOpen(false);

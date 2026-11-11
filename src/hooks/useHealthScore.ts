@@ -6,6 +6,7 @@ import type { Database } from '@/integrations/supabase/types';
 
 import i18n from '@/i18n';
 import { invokeWithAuth } from "@/lib/invokeWithAuth";
+import { saveWorkspaceStaffNotes, workspaceStaffNotesKey } from '@/hooks/useWorkspaceStaffNotes';
 const t = i18n.t.bind(i18n);
 
 type HealthScore = Database['public']['Enums']['health_score'];
@@ -194,10 +195,9 @@ export function useUpdateHealthNotes(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (healthNotes: string | null) => {
-      const { data, error } = await supabase.from('workspaces').update({ health_notes: healthNotes }).eq('id', workspaceId).select().single();
-      if (error) throw error;
-      return data;
+      const { data: { user } } = await supabase.auth.getUser();
+      await saveWorkspaceStaffNotes(workspaceId, { health_notes: healthNotes }, user?.id ?? null);
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] }); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: workspaceStaffNotesKey(workspaceId) }); },
   });
 }

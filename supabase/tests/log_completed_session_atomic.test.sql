@@ -41,6 +41,9 @@ INSERT INTO auth.users(id, email) VALUES
 INSERT INTO public.user_roles(user_id, role) VALUES
   ('00000000-0000-0000-0000-0000000ba010','admin'),
   ('00000000-0000-0000-0000-0000000ba011','backoffice');
+-- RC13: o papel de staff só vale com a conta aprovada.
+UPDATE public.profiles SET account_status = 'approved'
+ WHERE id IN ('00000000-0000-0000-0000-0000000ba010','00000000-0000-0000-0000-0000000ba011');
 
 INSERT INTO public.startups(id,name) VALUES ('00000000-0000-0000-0000-0000000ba001','TAP Startup');
 INSERT INTO public.programs(id,name,program_type,is_active)

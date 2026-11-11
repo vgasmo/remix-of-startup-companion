@@ -75,6 +75,7 @@ import { ProgramTransferDialog } from '@/components/staff/ProgramTransferDialog'
 import { PrivateDocumentsPanel } from '@/components/workspace/PrivateDocumentsPanel';
 import { PlanAssistantsCard } from '@/components/workspace/PlanAssistantsCard';
 import { getIntlLocale } from '@/lib/dateUtils';
+import { useWorkspaceStaffNotes } from '@/hooks/useWorkspaceStaffNotes';
 
 interface WorkspaceOverviewProps {
   workspace: {
@@ -105,6 +106,8 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
   const isStaff = isConsultor || isAdmin || isBackoffice;
   const isFounder = roles.includes('founder');
   const canSetPriority = isConsultor || isAdmin;
+  // Notas internas do staff: vêm de uma tabela que o founder não lê.
+  const { data: staffNotes } = useWorkspaceStaffNotes(workspace.id, isStaff);
   const { data: actions, isLoading: actionsLoading } = useWorkspaceActions(workspace.id);
   const { data: kpiData, isLoading: kpisLoading } = useWorkspaceKpis(workspace.id);
   const { data: milestones, isLoading: milestonesLoading } = useWorkspaceMilestones(workspace.id);
@@ -270,7 +273,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
                 <PrioritySelector
                   workspaceId={workspace.id}
                   currentPriority={workspace.priority_level || 'standard'}
-                  currentNotes={workspace.priority_notes}
+                  currentNotes={staffNotes?.priority_notes ?? null}
                 />
               )}
             </div>
@@ -286,7 +289,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
           stage: workspace.stage,
           health_score: workspace.health_score,
           health_score_override: workspace.health_score_override,
-          health_notes: workspace.health_notes,
+          health_notes: staffNotes?.health_notes ?? null,
         }}
         nextSession={nextSession}
         actionsCompleted={actionsCompleted}

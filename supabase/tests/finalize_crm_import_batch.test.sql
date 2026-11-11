@@ -42,6 +42,8 @@ VALUES ('44444444-0000-0000-0000-000000000001', 1, 'h1', 'Valid Co', true, NULL,
 
 INSERT INTO public.user_roles (user_id, role)
 VALUES ('44444444-0000-0000-0000-00000000000a', 'admin');
+-- RC13: o papel de staff só vale com a conta aprovada.
+UPDATE public.profiles SET account_status = 'approved' WHERE id = '44444444-0000-0000-0000-00000000000a';
 SET LOCAL role authenticated;
 SET LOCAL request.jwt.claims = '{"sub":"44444444-0000-0000-0000-00000000000a","role":"authenticated"}';
 
