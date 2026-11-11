@@ -302,6 +302,13 @@
       "when": 1794414800766,
       "tag": "0042_rc13_l1_workspace_stats_completed_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1794416574206,
+      "tag": "0043_rc13_contract_high_risk_guards",
+      "breakpoints": true
     }
   ]
 }

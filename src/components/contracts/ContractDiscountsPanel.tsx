@@ -62,6 +62,21 @@ export function ContractDiscountsPanel({ contractId, monthlyFee, currency = 'EUR
     },
   });
 
+  // RC13: descontos de contratos assinados (ou meio-assinados) ficam fixos; a base de dados também o impõe
+  const { data: termsLocked = false } = useQuery({
+    queryKey: ['contract-discount-lock', contractId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('startup_contracts')
+        .select('signed_at, signature_status')
+        .eq('id', contractId)
+        .maybeSingle();
+      if (error) throw error;
+      return !!data && (!!data.signed_at || ['partially_signed', 'signed', 'completed'].includes(data.signature_status ?? ''));
+    },
+  });
+  const canEditDiscounts = !termsLocked;
+
   const addMutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from('contract_discounts').insert({
@@ -168,13 +183,16 @@ export function ContractDiscountsPanel({ contractId, monthlyFee, currency = 'EUR
             <Percent className="h-4 w-4 text-[hsl(var(--warning))]" />
             {t('discounts.title')}
           </span>
-          {isAdmin && !showAddForm && (
+          {isAdmin && canEditDiscounts && !showAddForm && (
             <Button variant="ghost" size="sm" className="h-6 px-2 text-xs gap-1" onClick={() => setShowAddForm(true)}>
               <Plus className="h-3 w-3" />
               {t('discounts.add')}
             </Button>
           )}
-          {isStaff && !isAdmin && !showAddForm && (
+          {isStaff && !canEditDiscounts && (
+            <span className="text-[10px] text-muted-foreground">{t('discounts.lockedSigned')}</span>
+          )}
+          {isStaff && canEditDiscounts && !isAdmin && !showAddForm && (
             <span className="text-[10px] text-muted-foreground">{t('contracts.discountApprovalRequired', { defaultValue: 'Apenas admin pode adicionar descontos' })}</span>
           )}
         </CardTitle>
@@ -235,7 +253,7 @@ export function ContractDiscountsPanel({ contractId, monthlyFee, currency = 'EUR
                     <Badge variant={status === 'active' ? 'default' : 'secondary'} className="text-[10px] h-5">
                       {t(`discounts.${status}`)}
                     </Badge>
-                    {isStaff && status !== 'expired' && (
+                    {isStaff && canEditDiscounts && status !== 'expired' && (
                       <Button
                         variant="ghost"
                         size="sm"
