@@ -15,6 +15,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { notify } from "@/lib/notify";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { 
   useMentorAvailability, 
   useMyBookings, 
@@ -224,6 +228,24 @@ export function MentorBookingPanel({
           ? t('mentors.bookingAccepted', 'Booking accepted') 
           : t('mentors.bookingDeclined', 'Booking declined');
         notify.success(statusText);
+      },
+      onError: (error: any) => {
+        notify.error(error.message || t('mentors.failedToUpdateBooking', 'Failed to update booking'));
+      },
+    });
+  };
+
+  // RC13 L1-2: the mentor closes a past confirmed booking (completed / did not happen).
+  const [noShowBooking, setNoShowBooking] = useState<MentorBooking | null>(null);
+  const bookingHasEnded = (b: MentorBooking) =>
+    new Date(`${b.requested_date}T${(b.requested_end_time || b.requested_start_time).slice(0, 5)}:00`).getTime() <= Date.now();
+  const handleCloseBooking = (booking: MentorBooking, status: 'completed' | 'cancelled') => {
+    updateStatus.mutate({ id: booking.id, status }, {
+      onSuccess: () => {
+        notify.success(status === 'completed'
+          ? t('mentors.bookingCompleted')
+          : t('mentors.bookingNotHeld'));
+        setNoShowBooking(null);
       },
       onError: (error: any) => {
         notify.error(error.message || t('mentors.failedToUpdateBooking', 'Failed to update booking'));
@@ -529,13 +551,46 @@ export function MentorBookingPanel({
                       {format(new Date(booking.requested_date), 'MMM d', { locale: dateLocale })} {t('common.atTime', 'às')} {booking.requested_start_time.slice(0, 5)}
                     </p>
                   </div>
-                  <Badge variant="outline" className="text-primary">{t('mentors.confirmed')}</Badge>
+                  {mode === 'mentor' && bookingHasEnded(booking) ? (
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleCloseBooking(booking, 'completed')}
+                        disabled={updateStatus.isPending} loading={updateStatus.isPending}>
+                        <Check className="h-4 w-4 mr-1" />
+                        {t('mentors.completeBooking')}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setNoShowBooking(booking)}
+                        disabled={updateStatus.isPending}>
+                        <X className="h-4 w-4 mr-1" />
+                        {t('mentors.bookingDidNotHappen')}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Badge variant="outline" className="text-primary">{t('mentors.confirmed')}</Badge>
+                  )}
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
       )}
+
+      <AlertDialog open={!!noShowBooking} onOpenChange={(open) => { if (!open) setNoShowBooking(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('mentors.bookingDidNotHappenTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('mentors.bookingDidNotHappenDescription')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={updateStatus.isPending}
+              onClick={(e) => { e.preventDefault(); if (noShowBooking) handleCloseBooking(noShowBooking, 'cancelled'); }}
+            >
+              {t('mentors.bookingDidNotHappen')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

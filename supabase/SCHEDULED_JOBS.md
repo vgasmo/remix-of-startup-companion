@@ -19,6 +19,7 @@ All jobs authenticate through `public.cron_invoke_edge(fn, body)` (one-time toke
 | generate-crm-notifications-daily | `30 8 * * *` | edge generate-crm-notifications |
 | open-monthly-founder-pulse | `0 8 1 * *` | edge open-monthly-founder-pulse |
 | recompute-health-scores-daily | `0 6 * * *` | edge recompute-health-scores |
+| recompute-work-queue-daily | `15 6 * * *` | edge recompute-work-queue |
 | reconcile-contract-founders-hourly | `17 * * * *` | rpc reconcile_contract_founders(NULL) |
 | reopen-work-queue-snoozes | `23 * * * *` | rpc reopen_expired_work_queue_snoozes |
 | run-checkin-reminders-weekly | `0 9 * * 1` | edge run-checkin-reminders |

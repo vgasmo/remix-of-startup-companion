@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
     const { action, token, contractId } = body
 
     // === Staff-authenticated actions ===
-    if (action === 'generate_token' || action === 'staff_submit_signing') {
+    if (action === 'generate_token' || action === 'staff_submit_signing' || action === 'staff_resend_founder_access') {
       const authHeader = req.headers.get('Authorization')
       if (!authHeader) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -161,6 +161,56 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: 'Staff only' }), {
           status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
+      }
+
+      // === RC13 L1-7: Staff resends the founder access email ===
+      if (action === 'staff_resend_founder_access') {
+        if (!contractId) {
+          return new Response(JSON.stringify({ error: 'contractId required' }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+        const { data: c, error: cErr } = await supabase
+          .from('startup_contracts')
+          .select('id, workspace_id, legal_representative_email, legal_representative_name')
+          .eq('id', contractId)
+          .maybeSingle()
+        if (cErr || !c) {
+          return new Response(JSON.stringify({ error: 'Contract not found' }), {
+            status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+        const result = await autoCreateFounderAccount(supabase, c as any, { resendAccess: true })
+        if (!result.ok || result.accessEmailSent !== true) {
+          return new Response(JSON.stringify({ error: result.reason || 'access_email_failed' }), {
+            status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      // === RC13 L1-10: no signature (or signing link) while the latest intake is not approved ===
+      if (contractId) {
+        const { data: latestIntake, error: intakeErr } = await supabase
+          .from('contract_intakes')
+          .select('status')
+          .eq('contract_id', contractId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (intakeErr) {
+          return new Response(JSON.stringify({ error: 'intake_lookup_failed' }), {
+            status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+        const notApproved = ['draft_internal', 'intake_requested', 'intake_in_progress', 'intake_submitted', 'review_pending', 'changes_requested']
+        if (latestIntake && notApproved.includes(String(latestIntake.status))) {
+          return new Response(JSON.stringify({ error: 'intake_not_approved', message: 'O pedido de dados ainda não foi aprovado.' }), {
+            status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
       }
 
       // === Staff: Send to Signature (from approved_for_signature) ===

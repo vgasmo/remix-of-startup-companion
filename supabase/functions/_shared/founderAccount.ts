@@ -88,11 +88,19 @@ export type FounderAccountResult = {
   userId?: string
   reason?: string
   error?: string
+  /** RC13 L1-7: set when an access email was attempted (true = provider accepted it). */
+  accessEmailSent?: boolean
+}
+
+export type FounderAccountOptions = {
+  /** RC13 L1-7: for an existing account, send the access email again and close 'access_email_failed' triage on success. */
+  resendAccess?: boolean
 }
 
 export async function autoCreateFounderAccount(
   supabase: any,
   contract: FounderContractInput,
+  options: FounderAccountOptions = {},
 ): Promise<FounderAccountResult> {
   if (!contract.legal_representative_email) {
     return { ok: false, reason: 'missing_email' }
@@ -204,9 +212,30 @@ export async function autoCreateFounderAccount(
 
     // Conta criada agora: o founder ainda não tem password, enviar-lhe o acesso.
     // Se o email falhar, o staff recebe a triagem para enviar o acesso à mão.
-    if (createdNow) {
+    if (createdNow || options.resendAccess) {
       const sent = await sendFounderAccessEmail(supabase, email, fullName)
-      if (!sent) await enqueueFounderInviteTask(supabase, contract, 'access_email_failed')
+      if (!sent) {
+        // Avoid duplicate triage on repeated manual resends: only enqueue when none is open.
+        const { data: openTriage } = await supabase
+          .from('staff_work_queue_items')
+          .select('id')
+          .eq('workspace_id', contract.workspace_id)
+          .eq('type', 'triage')
+          .in('status', ['open', 'in_progress'])
+          .contains('evidence_json', { purpose: 'invite_founder', contract_id: contract.id, reason: 'access_email_failed' })
+          .limit(1)
+        if (!openTriage?.length) await enqueueFounderInviteTask(supabase, contract, 'access_email_failed')
+        if (options.resendAccess) return { ok: false, userId, reason: 'access_email_failed', accessEmailSent: false }
+      } else if (options.resendAccess) {
+        await supabase
+          .from('staff_work_queue_items')
+          .update({ status: 'done', updated_at: new Date().toISOString() })
+          .eq('workspace_id', contract.workspace_id)
+          .eq('type', 'triage')
+          .in('status', ['open', 'in_progress'])
+          .contains('evidence_json', { purpose: 'invite_founder', contract_id: contract.id, reason: 'access_email_failed' })
+      }
+      return { ok: true, userId, accessEmailSent: sent }
     } else {
       await sendFounderContractActiveEmail(email, fullName)
     }

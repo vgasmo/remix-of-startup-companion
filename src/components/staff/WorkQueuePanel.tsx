@@ -80,6 +80,12 @@ const TYPE_KEYS = [
   'milestone_missed',
 ];
 
+// RC13 L1-1: some item types open a specific workspace tab.
+function workspaceHref(item: { workspace_id?: string | null; type?: string | null }): string {
+  if (item.type === 'post_session_followup') return `/workspace/${item.workspace_id}?tab=agenda`;
+  return `/workspace/${item.workspace_id}`;
+}
+
 const PRIORITY_COLORS: Record<string, string> = {
   urgent: 'bg-destructive text-destructive-foreground',
   high: 'bg-warning text-white',
@@ -260,7 +266,7 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
     const item = filteredItems[focusIdx];
     if (item?.workspace_id) {
       e.preventDefault();
-      navigate(`/workspace/${item.workspace_id}`);
+      navigate(workspaceHref(item));
     }
   }, [filteredItems, focusIdx, navigate]);
 
@@ -397,7 +403,7 @@ export function WorkQueuePanel({ compact = false }: WorkQueuePanelProps) {
                   } ${isFocused ? 'ring-2 ring-primary/60' : ''} ${
                     isSelected ? 'bg-primary/5 border-primary/40' : ''
                   }`}
-                  {...clickableProps(() => item.workspace_id && navigate(`/workspace/${item.workspace_id}`))}
+                  {...clickableProps(() => item.workspace_id && navigate(workspaceHref(item)))}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 flex-1 min-w-0">

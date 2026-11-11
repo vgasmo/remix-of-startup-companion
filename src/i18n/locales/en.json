@@ -2853,12 +2853,13 @@
     },
     "titleIsRequired": "Title is required",
     "valuePropositionSaved": "Value proposition saved!",
-    "weekSummary": "This week: {{sessions}} sessions · {{actions}} actions closed · {{health}} startups improved",
+    "weekSummary": "This week: {{sessions}} sessions completed · {{actions}} overdue actions · {{health}} startups improved",
     "weeklyImpact": {
       "actionsCreated": "Actions Created",
       "leadsConverted": "Leads Converted",
       "sessionsCompleted": "Sessions Completed",
-      "title": "Title"
+      "title": "Title",
+      "overdueActions": "Overdue actions"
     }
   },
   "consultorTools": {
@@ -3112,7 +3113,11 @@
     "viewWorkspace": "View Workspace",
     "voidedNotice": "This contract has been voided.",
     "statusEditHint": "Only active and suspended can be switched here. To activate, the contract must be signed; to terminate, use the dedicated button.",
-    "signedTermsLocked": "Signed terms are protected. Renewal remains available through its dedicated action."
+    "signedTermsLocked": "Signed terms are protected. Renewal remains available through its dedicated action.",
+    "founderAccessSent": "Access email sent to the founder.",
+    "founderAccessFailed": "The access email could not be sent. Try again or contact the founder directly.",
+    "sendFounderAccess": "Send access to founder",
+    "intakeNotApproved": "The intake has not been approved yet. Approve it before sending for signature."
   },
   "contractOnboarding": {
     "acceptContract": "I have read and accept the terms of the Incubation Contract, including the conditions of service, obligations and rights of the parties.",
@@ -6447,7 +6452,13 @@
     "slotAlreadyTaken": "That slot was just booked by someone else — please pick another one.",
     "startTime": "Start time",
     "whatToDiscuss": "What would you like to discuss?",
-    "yourBookings": "Your Bookings"
+    "yourBookings": "Your Bookings",
+    "bookingCompleted": "Mentoring marked as completed",
+    "bookingNotHeld": "Mentoring marked as not held",
+    "completeBooking": "Complete",
+    "bookingDidNotHappen": "Did not happen",
+    "bookingDidNotHappenTitle": "Did the mentoring not happen?",
+    "bookingDidNotHappenDescription": "The booking and its linked session will be cancelled. This cannot be undone."
   },
   "mentorsPage": {
     "accept": "Accept",

@@ -1,6 +1,8 @@
 import { memo, useMemo, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
 import { useTranslation } from 'react-i18next';
 import { 
   Calendar, 
@@ -140,6 +142,22 @@ const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, is
     };
   }, [workspaces]);
 
+  // RC13 L1-3: notes this mentor wrote recently, so the reminder disappears once logged.
+  const { data: myRecentNotes } = useQuery({
+    queryKey: ['mentor-recent-notes', profile?.id],
+    enabled: !!profile?.id,
+    queryFn: async () => {
+      const since = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
+      const { data, error } = await supabase
+        .from('consultant_notes')
+        .select('workspace_id, created_at')
+        .eq('author_id', profile!.id)
+        .gte('created_at', since);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const recentUnloggedSessions = useMemo(() => {
     if (!workspaces) return [];
     const now = new Date();
@@ -147,9 +165,10 @@ const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, is
       if (!w.lastSession?.scheduled_at) return false;
       const sessionDate = new Date(w.lastSession.scheduled_at);
       const hoursSince = (now.getTime() - sessionDate.getTime()) / (1000 * 60 * 60);
-      return hoursSince >= 0 && hoursSince <= 48;
+      if (!(hoursSince >= 0 && hoursSince <= 48)) return false;
+      return !(myRecentNotes || []).some(n => n.workspace_id === w.id && new Date(n.created_at) >= sessionDate);
     }).slice(0, 3);
-  }, [workspaces]);
+  }, [workspaces, myRecentNotes]);
 
   if (isLoading) {
     return (
@@ -393,7 +412,7 @@ const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, is
                   variant="outline"
                   size="sm"
                   className="gap-1.5 text-xs hover:bg-warning/10"
-                  onClick={() => navigate(`/workspace/${w.id}?tab=agenda`)}
+                  onClick={() => setQuickNoteWorkspaceId(w.id)}
                 >
                   {w.startup?.name?.slice(0, 12)}
                   <ArrowRight className="h-3 w-3" />

@@ -22,6 +22,7 @@ The catalogue and migrations remain operational truth: this manifest detects dri
 | open-monthly-founder-pulse | cron | 0 8 1 * * | `open-monthly-founder-pulse` | ops | — | `open-monthly-founder-pulse` | 2678400 |
 | purge-operational-logs-daily | cron | 47 3 * * * | `RPC public.purge_operational_logs` | ops | — | no_health_expectation | 86400 |
 | recompute-health-scores-daily | cron | 0 6 * * * | `recompute-health-scores` | ops | — | `recompute-health-scores` | 86400 |
+| recompute-work-queue-daily | cron | 15 6 * * * | `recompute-work-queue` | ops | — | `recompute-work-queue` | 86400 |
 | reconcile-contract-founders-hourly | cron | 17 * * * * | `RPC public.reconcile_contract_founders` | ops | — | `reconcile_contract_founders` | 3600 |
 | reopen-work-queue-snoozes | cron | 23 * * * * | `RPC public.reopen_expired_work_queue_snoozes` | ops | — | `reopen_expired_work_queue_snoozes` | 3600 |
 | run-checkin-reminders-weekly | cron | 0 9 * * 1 | `run-checkin-reminders` | ops | — | `run-checkin-reminders` | 604800 |

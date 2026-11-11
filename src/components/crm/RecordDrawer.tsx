@@ -837,9 +837,10 @@ function IntakeActionsForDrawer({ item, user }: { item: FunnelItem; user: any })
   const { data: intake, isLoading } = useIntakeByFunnelItem(item.id);
   const createIntake = useCreateIntake();
 
-  const preIntakeStages = ['new', 'first_contact_booked', 'met', 'qualified', 'proposal_sent', 'negotiating'];
+  // RC13 L1-6: a lead dragged to "Contratação em Curso" without an intake must still be able to create one.
+  const closedStages = ['contracted', 'incubating', 'accelerating', 'rejected', 'archived'];
   // RC11 D.11: um pedido cancelado permite criar um novo
-  const showCreateCTA = (preIntakeStages.includes(item.stage) && !intake) || intake?.status === 'cancelled';
+  const showCreateCTA = (!intake && !closedStages.includes(item.stage)) || intake?.status === 'cancelled';
 
   if (isLoading) return null;
 
