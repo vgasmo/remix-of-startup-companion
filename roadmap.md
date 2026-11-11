@@ -70,5 +70,6 @@
 - [ ] Configuração alojada de confirmação de email — sem leitura disponível nas ferramentas; não alterar configuração para tentar verificá-la.
 - [ ] Marcação pública ponta a ponta — falta reserva real autorizada com link válido e confirmação no CRM; não certificada nesta ronda.
 
-- [ ] RC13 Lote 1 (dez correções) — aplicar ficheiro enviado
-- [ ] Auditoria CRM e pipeline de contratos — relatório e correções
+- [x] RC13 Lote 1 (dez correções) — aplicado
+- [x] Auditoria CRM e pipeline de contratos — relatório entregue
+- [ ] Correções da auditoria CRM/contratos — aguarda decisão do utilizador (prioridades, assinatura manual, dados INC-2026-004)
