@@ -350,7 +350,12 @@ Deno.serve(async (req) => {
       else if (isCounter) patch.counter_signer_status = recStatus
       // If unattributable (missing id + missing email), fall back to first-signer = founder heuristic
       else if (!recipientEmail && !recIdStr && !contract.founder_signer_status) patch.founder_signer_status = recStatus
-      const { error: recipUpdErr } = await supabase.from('startup_contracts').update(patch).eq('id', contract.id)
+      // RC13: conditional write — never downgrade a signer already 'signed', never touch a terminal contract
+      let recipQ = supabase.from('startup_contracts').update(patch).eq('id', contract.id)
+        .not('signature_status', 'in', '(completed,declined,voided)')
+      if ('founder_signer_status' in patch && recStatus !== 'signed') recipQ = recipQ.or('founder_signer_status.is.null,founder_signer_status.neq.signed')
+      if ('counter_signer_status' in patch && recStatus !== 'signed') recipQ = recipQ.or('counter_signer_status.is.null,counter_signer_status.neq.signed')
+      const { error: recipUpdErr } = await recipQ
       if (recipUpdErr) console.warn('docusign-webhook: recipient patch failed', recipUpdErr.message)
       await markInboxProcessed(supabase, claim.inboxId, {
         status: 'processed', httpStatus: 200, contractId: contract.id,
@@ -381,10 +386,22 @@ Deno.serve(async (req) => {
       if (contract.counter_signer_email) updatePayload.counter_signer_status = 'signed'
     }
 
-    const { error: contractUpdateErr } = await supabase
+    // RC13: atomic conditional transition — a terminal state (completed/declined/voided) is final,
+    // so a late or concurrent notice cannot overwrite it or re-run downstream sync.
+    const { data: transitioned, error: contractUpdateErr } = await supabase
       .from('startup_contracts')
       .update(updatePayload)
       .eq('id', contract.id)
+      .not('signature_status', 'in', '(completed,declined,voided)')
+      .select('id')
+    if (!contractUpdateErr && (!transitioned || transitioned.length === 0)) {
+      await markInboxProcessed(supabase, claim.inboxId, {
+        status: 'processed', httpStatus: 200, contractId: contract.id,
+      })
+      return new Response(JSON.stringify({ ok: true, ignored: 'contract_already_final' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
     if (contractUpdateErr) {
       console.error('docusign-webhook: contract update failed', contractUpdateErr.message)
       await markInboxProcessed(supabase, claim.inboxId, {
