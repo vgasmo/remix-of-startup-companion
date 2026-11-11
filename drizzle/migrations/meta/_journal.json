@@ -288,6 +288,13 @@
       "when": 1794413730647,
       "tag": "0040_rc13_p03_workspace_staff_notes",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1794414560248,
+      "tag": "0041_rc13_l1_recompute_work_queue_daily",
+      "breakpoints": true
     }
   ]
 }
