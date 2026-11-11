@@ -190,7 +190,7 @@ function ConsultorDashboardInner({ workspaces, isLoading, programsCount }: Consu
             <p className="text-sm text-muted-foreground">
               {t('consultor.weekSummary', {
                 defaultValue: 'Esta semana: {{sessions}} sessões · {{actions}} ações em atraso · {{health}} startups melhoraram',
-                sessions: upcomingSessions.length,
+                sessions: weekCompletedLabel,
                 actions: criticalActions.reduce((sum, w) => sum + w.overdueActionsCount, 0),
                 health: stats.healthCounts.healthy + stats.healthCounts.thriving,
               })}
@@ -268,7 +268,7 @@ function ConsultorDashboardInner({ workspaces, isLoading, programsCount }: Consu
       {!isFocused && (
         <WidgetErrorBoundary name="ConsultorWeeklyImpact">
           <ConsultorWeeklyImpact
-            sessionsCount={upcomingSessions.length}
+            sessionsCount={weekCompleted}
             overdueCount={criticalActions.reduce((sum, w) => sum + w.overdueActionsCount, 0)}
             contractedCount={pipelineSnapshot?.contracted || 0}
           />

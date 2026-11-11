@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 interface ConsultorWeeklyImpactProps {
-  sessionsCount: number;
+  /** RC13 L1-8: completed sessions this week; null when unavailable (shown as —, never 0). */
+  sessionsCount: number | null;
   overdueCount: number;
   contractedCount: number;
 }
@@ -24,7 +25,7 @@ export const ConsultorWeeklyImpact = memo(function ConsultorWeeklyImpact({ sessi
       <CardContent className="pt-0">
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center p-3 rounded-lg bg-muted/50">
-            <p className="text-2xl font-bold">{sessionsCount}</p>
+            <p className="text-2xl font-bold">{sessionsCount ?? '—'}</p>
             <p className="text-xs text-muted-foreground">
               {t('consultor.weeklyImpact.sessionsCompleted')}
             </p>
@@ -32,7 +33,7 @@ export const ConsultorWeeklyImpact = memo(function ConsultorWeeklyImpact({ sessi
           <div className="text-center p-3 rounded-lg bg-muted/50">
             <p className="text-2xl font-bold">{overdueCount}</p>
             <p className="text-xs text-muted-foreground">
-              {t('consultor.weeklyImpact.actionsCreated')}
+              {t('consultor.weeklyImpact.overdueActions')}
             </p>
           </div>
           <div className="text-center p-3 rounded-lg bg-health-healthy/10">
