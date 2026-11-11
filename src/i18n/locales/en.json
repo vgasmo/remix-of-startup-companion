@@ -4212,7 +4212,8 @@
     "removed": "Discount removed",
     "save": "Save",
     "startDate": "Start",
-    "title": "Discounts"
+    "title": "Discounts",
+    "lockedSigned": "Signed contract: discounts locked"
   },
   "documentFeedback": {
     "copyLink": "Copy Share Link",

@@ -4212,7 +4212,8 @@
     "removed": "Desconto removido",
     "save": "Guardar",
     "startDate": "Início",
-    "title": "Descontos"
+    "title": "Descontos",
+    "lockedSigned": "Contrato assinado: descontos fixos"
   },
   "documentFeedback": {
     "copyLink": "Copiar Link de Partilha",
