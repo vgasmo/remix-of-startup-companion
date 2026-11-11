@@ -36,6 +36,7 @@ import { nextAnniversary as computeNextAnniversary } from '@/lib/contractLifecyc
 import { supabase } from '@/lib/supabaseClient';
 import { canonicalMarkAsSent, canonicalMarkAsSigned } from '@/lib/contractLifecycleSync';
 import { invokeWithAuth } from '@/lib/invokeWithAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { notify } from "@/lib/notify";
 import { logger } from '@/lib/logger';
@@ -117,6 +118,7 @@ export function ContractDetailDrawer({ contract, incubationTypes, buildings, ope
   // RC13 L1-10: no signing link while the latest intake is not approved.
   const intakeBlocksSigning = isIntakeBlockingSignature(linkedIntake?.status);
   const { isStaff } = useAuth();
+  const queryClient = useQueryClient();
   const [resendingAccess, setResendingAccess] = useState(false);
 
   // Fetch linked funnel item
