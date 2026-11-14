@@ -150,6 +150,8 @@ describe('useUpdateActionItem – optimistic rollback', () => {
       error: null,
     });
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
+    // The write now returns affected IDs separately from the detail readback.
+    mockSelect.mockReturnValue({ data: [{ id: originalAction.id }], error: null });
     // Build a catch-all chain that handles any supabase query pattern
     const buildSelectChain = () => {
       const chain: Record<string, any> = {};
