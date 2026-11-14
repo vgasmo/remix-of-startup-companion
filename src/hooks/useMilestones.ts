@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import type { Database } from '@/integrations/supabase/types';
 import { triggerMilestoneCelebration } from '@/lib/confetti';
+import i18n from '@/i18n';
 
 type MilestoneStatus = Database['public']['Enums']['milestone_status'];
 
@@ -144,9 +145,10 @@ export function useUpdateMilestone(workspaceId: string) {
         .update(updateData as never)
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) throw new Error(i18n.t('common.noPermission'));
       return data;
     },
     // ── Optimistic Update ──
@@ -209,12 +211,14 @@ export function useDeleteMilestone(workspaceId: string) {
 
   return useMutation({
     mutationFn: async (milestoneId: string) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('milestones')
         .delete()
-        .eq('id', milestoneId);
+        .eq('id', milestoneId)
+        .select('id');
 
       if (error) throw error;
+      if (!data?.length) throw new Error(i18n.t('common.noPermission'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['milestones', workspaceId] });
@@ -230,11 +234,13 @@ export function useReorderMilestones(workspaceId: string) {
     mutationFn: async (milestones: { id: string; position: number }[]) => {
       // Update positions one by one (could be optimized with a batch update)
       for (const m of milestones) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('milestones')
           .update({ position: m.position })
-          .eq('id', m.id);
+          .eq('id', m.id)
+          .select('id');
         if (error) throw error;
+        if (!data?.length) throw new Error(i18n.t('common.noPermission'));
       }
     },
     onSuccess: () => {
