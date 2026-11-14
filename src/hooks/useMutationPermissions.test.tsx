@@ -29,9 +29,12 @@ describe('zero affected rows are denied', () => {
   ] as const;
   for (const [name, hook, input] of cases) {
     it(name, async () => {
-      const { result } = renderHook(hook, { wrapper });
+      const { result } = renderHook(() => {
+        const mutation = hook();
+        return { mutateAsync: mutation.mutateAsync as (value: unknown) => Promise<unknown>, isSuccess: mutation.isSuccess };
+      }, { wrapper });
       await act(async () => {
-        await expect((result.current.mutateAsync as (value: unknown) => Promise<unknown>)(input))
+        await expect(result.current.mutateAsync(input))
           .rejects.toThrow('Sem permissão para esta ação.');
       });
       expect(result.current.isSuccess).toBe(false);
