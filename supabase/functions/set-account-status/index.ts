@@ -41,13 +41,17 @@ Deno.serve(async (req) => {
       if (error || userId === auth.user.id || targetRoles?.length) {
         return reply(403, { error: 'Cannot suspend this account' });
       }
-      // Ban first: a later profile-write failure must not leave sign-in enabled.
-      const { error: banError } = await admin.auth.admin.updateUserById(userId, { ban_duration: '876000h' });
-      if (banError) return reply(502, { error: 'Authentication suspension failed' });
     }
     const { data: changed, error: updateError } = await admin.from('profiles')
       .update({ account_status: status }).eq('id', userId).select('id');
     if (updateError || !changed?.length) return reply(500, { error: 'Account status update failed' });
+    if (status === 'suspended') {
+      // Fail closed for existing JWTs before attempting the remote Auth operation.
+      // Banning blocks sign-in/refresh; it does NOT delete sessions or revoke JWTs.
+      // Do not use the caller's JWT with admin.signOut: that logs out the admin.
+      const { error: banError } = await admin.auth.admin.updateUserById(userId, { ban_duration: '876000h' });
+      if (banError) return reply(502, { error: 'Authentication suspension failed' });
+    }
     if (status === 'approved') {
       const { error: unbanError } = await admin.auth.admin.updateUserById(userId, { ban_duration: 'none' });
       if (unbanError) return reply(502, { error: 'Authentication reactivation failed' });

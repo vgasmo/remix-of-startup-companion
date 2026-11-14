@@ -1,4 +1,8 @@
 
+## Revogação ao suspender — 14 Nov 2026
+- [x] APIs oficiais confirmadas: banimento bloqueia login/refresh mas não elimina sessões; signOut global exige JWT do alvo. Estado restritivo gravado antes do banimento, função publicada; 8 Deno, 353 Vitest, i18n e oj typecheck passam. ProtectedRoute/localStorage intactos; P05 preservado por consulta de leitura. Não suspensa conta real.
+- [ ] Executar literalmente tsc — bloqueado pela instrução do ambiente que proíbe tsc/verificação manual convencional; alternativa oj typecheck executada explicitamente sem erros.
+
 ## RC13 Lote 2
 - [x] Pedido 00:55: botão de primeira reunião visível no login móvel; verificado a 390px.
 - [ ] P05: remover backup e regenerar tipos — bloqueado pela permissão de migrações destrutivas.
