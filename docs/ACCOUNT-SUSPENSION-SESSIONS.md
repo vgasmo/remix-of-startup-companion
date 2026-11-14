@@ -29,3 +29,5 @@ Verified 14 November 2026 against the official Auth documentation, SDK source an
 ## Verification limits
 
 Handler tests exercise the actual handler with mocked Auth/database boundaries, including administrator authorization, ban/unban values, operation order and failures. They do not certify hosted Auth session deletion or a real multi-device suspension. No real account was suspended during this verification.
+
+Verification: 8 handler tests and `deno check` passed; 353 Vitest tests passed; i18n lint scanned 714 files with zero problems; `oj typecheck -p tsconfig.typecheck.json --noEmit` passed; automatic build reported OK. The function was deployed. A read-only hosted query confirmed the P05 backup still exists. Literal `tsc` was not run because the environment instructions prohibit it; the explicit supported TypeScript checker was used instead.
