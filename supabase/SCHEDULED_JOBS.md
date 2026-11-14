@@ -11,6 +11,7 @@ All jobs authenticate through `public.cron_invoke_edge(fn, body)` (one-time toke
 | check-automation-health-15m | `*/15 * * * *` | rpc check_automation_health |
 | check-contract-anniversaries-daily | `0 6 * * *` | edge check-contract-anniversaries |
 | check-first-contact-outbox | `7 * * * *` | rpc check_first_contact_outbox |
+| check-cron-http-responses-hourly | `11 * * * *` | rpc check_cron_http_responses (last-hour status metadata, dedupe by request ID) |
 | check-mentor-nda-expiry-daily | `0 8 * * *` | edge check-mentor-nda-expiry |
 | check-missed-milestones-daily | `0 9 * * *` | edge check-missed-milestones |
 | compute-cohort-benchmarks-daily | `0 4 * * *` | edge compute-cohort-benchmarks |

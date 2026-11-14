@@ -13,6 +13,7 @@ The catalogue and migrations remain operational truth: this manifest detects dri
 | check-automation-health-15m | cron | */15 * * * * | `RPC public.check_automation_health` | ops | — | `check_automation_health` | 900 |
 | check-contract-anniversaries-daily | cron | 0 6 * * * | `check-contract-anniversaries` | ops | — | `check-contract-anniversaries` | 86400 |
 | check-first-contact-outbox | cron | 7 * * * * | `RPC public.check_first_contact_outbox` | ops | — | `check_first_contact_outbox` | 3600 |
+| check-cron-http-responses-hourly | cron | 11 * * * * | `RPC public.check_cron_http_responses` | ops | — | `check_cron_http_responses` | 3600 |
 | check-mentor-nda-expiry-daily | cron | 0 8 * * * | `check-mentor-nda-expiry` | ops | — | `check-mentor-nda-expiry` | 86400 |
 | check-missed-milestones-daily | cron | 0 9 * * * | `check-missed-milestones` | ops | — | `check-missed-milestones` | 86400 |
 | compute-cohort-benchmarks-daily | cron | 0 4 * * * | `compute-cohort-benchmarks` | ops | — | `compute-cohort-benchmarks` | 86400 |
