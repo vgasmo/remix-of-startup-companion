@@ -309,6 +309,13 @@
       "when": 1794416574206,
       "tag": "0043_rc13_contract_high_risk_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1794617855889,
+      "tag": "0044_rc13_l2_cron_http_failures",
+      "breakpoints": true
     }
   ]
 }
