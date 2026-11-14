@@ -459,6 +459,8 @@ export function useCompleteSession() {
       queryClient.invalidateQueries({ queryKey: ['upcoming-sessions'] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['impact-aggregates'] });
+      queryClient.invalidateQueries({ queryKey: ['work-queue'] });
+      queryClient.invalidateQueries({ queryKey: ['work-queue-stats'] });
     },
   });
 }
