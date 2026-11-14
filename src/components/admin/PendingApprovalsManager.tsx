@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePrograms } from '@/hooks/useWorkspaces';
 import { supabase } from '@/lib/supabaseClient';
+import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { notify } from "@/lib/notify";
 import { useState } from 'react';
 import { ChevronsUpDown } from 'lucide-react';
@@ -315,12 +316,10 @@ export function PendingApprovalsManager() {
   const handleSuspendUser = async (userId: string) => {
     // P0 fix: `.update` was silently no-op'd by RLS. Perform the update and
     // verify at least one row was affected before claiming success.
-    const { data: rows, error } = await supabase
-      .from('profiles')
-      .update({ account_status: 'suspended' })
-      .eq('id', userId)
-      .select('id');
-    if (error || !rows || rows.length === 0) {
+    const { data, error } = await invokeWithAuth<{ success: boolean }>('set-account-status', {
+      body: { userId, status: 'suspended' },
+    });
+    if (error || !data?.success) {
       notify.error(t('admin.erroAoSuspenderConta'));
       return;
     }

@@ -45,3 +45,5 @@
 - Automation verification uses the parsed canonical manifest and read-only catalogue reconciliation; compare exact targets/schedules/health cadence and fail on drift without invoking jobs.
 - Fresh SQL release verification uses verify-rc12-fresh.sh with disposable PostgreSQL 17 and the explicit approved additive chain; managed storage/provider acceptance remains separate because the local shim cannot certify hosted services.
 - User-directory workspace filters use the shared association index over fully paged memberships and workspace lifecycle fields; failed reads never establish absence of membership.
+- Account suspension/reactivation uses the approved-admin set-account-status endpoint to synchronize profile status with Auth bans; JWT/RLS restrictions remain necessary for already-issued access tokens.
+- HTTP cron monitoring deduplicates by response ID using system_alerts.dedupe_key and logs only status metadata, never response bodies or credential-bearing diagnostics.

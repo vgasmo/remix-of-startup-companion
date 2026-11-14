@@ -132,12 +132,14 @@ export function useUpdateActionItem(workspaceId: string) {
         .maybeSingle();
       const prevStatus = prevRow?.status as ActionStatus | undefined;
 
-      const { error } = await supabase
+      const { data: affectedRows, error } = await supabase
         .from('action_items')
         .update(updateData as never)
-        .eq('id', id);
+        .eq('id', id)
+        .select('id');
 
       if (error) throw error;
+      if (!affectedRows?.length) throw new Error(t('errors.noPermission'));
 
       const { data, error: readError } = await supabase
         .from('action_items')
@@ -288,12 +290,14 @@ export function useDeleteActionItem(workspaceId: string) {
 
   return useMutation({
     mutationFn: async (actionId: string) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('action_items')
         .delete()
-        .eq('id', actionId);
+        .eq('id', actionId)
+        .select('id');
 
       if (error) throw error;
+      if (!data?.length) throw new Error(t('errors.noPermission'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
@@ -399,7 +403,8 @@ export function useBulkUpdateActions(workspaceId: string) {
         .select('id');
 
       if (error) throw error;
-      return (data ?? []).map((r) => r.id);
+      if (!data?.length) throw new Error(t('errors.noPermission'));
+      return data.map((r) => r.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
@@ -421,7 +426,8 @@ export function useBulkDeleteActions(workspaceId: string) {
         .select('id');
 
       if (error) throw error;
-      return (data ?? []).map((r) => r.id);
+      if (!data?.length) throw new Error(t('errors.noPermission'));
+      return data.map((r) => r.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });

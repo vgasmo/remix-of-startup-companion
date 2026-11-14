@@ -12422,6 +12422,7 @@ export type Database = {
         Returns: boolean
       }
       check_automation_health: { Args: never; Returns: undefined }
+      check_cron_http_responses: { Args: never; Returns: number }
       check_ecosystem_invariants: { Args: never; Returns: Json }
       check_email_sync_health: { Args: never; Returns: undefined }
       check_first_contact_outbox: { Args: never; Returns: number }

@@ -1,4 +1,12 @@
 
+## RC13 Lote 2
+- [x] Pedido 00:55: botão de primeira reunião visível no login móvel; verificado a 390px.
+- [ ] P05: remover backup e regenerar tipos — bloqueado pela permissão de migrações destrutivas.
+- [x] Invalidar fila após conclusão de sessão.
+- [x] Recusar updates/deletes sem linhas afetadas em ações e marcos; sete regressões.
+- [x] Banir/desbanir contas no servidor por administrador aprovado; função publicada, quatro testes isolados. Não termina JWT já emitido; suspensão real não exercida.
+- [x] Registar falhas HTTP dos crons a cada hora; expectativa confirmada, limites 200–299 e deduplicação verificados em PG17 descartável.
+
 ## RC12 — 9 Nov 2026
 - [x] Pedido 23:32 UTC: completar testes FEX-21/ProtectedRoute e suite de 18 asserções; corrigir documentação OPS-14, manifesto/reconciliador e procedimento de restauro SCH-16 a partir das descrições; verificar localmente sem executar reparações ou envios reais. Concluído: 325 Vitest, 12 testes manifesto, reconstrução nova PG17 com 391 asserções/38 suites, lint/i18n/secret scan/build OK; aplicação autenticada abre sem erros.
 - [x] Pedido 10:58 UTC: 29 diffs opcionais compatíveis e cinco migrações aplicadas; 23 funções publicadas; 298 Vitest, 202 Deno e 373 asserções SQL passam. Limites e secções sem patch em docs/RC12-APPLIED.md; frontend não publicado.

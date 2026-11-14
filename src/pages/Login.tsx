@@ -339,6 +339,12 @@ export default function Login() {
             <h1 className="font-heading text-2xl font-bold text-foreground">
               {t('login.platformTitle')}
             </h1>
+            <Button asChild variant="outline" className="mt-4 w-full">
+              <Link to="/book">
+                <Calendar className="h-4 w-4 mr-2 shrink-0" aria-hidden="true" />
+                {t('publicBooking.bookFirstMeeting')}
+              </Link>
+            </Button>
           </div>
 
           <Card className="shadow-xl border-border/50 overflow-hidden">

@@ -5,6 +5,7 @@ import { WorkspaceAssignmentDialog } from './WorkspaceAssignmentDialog';
 import { buildUserWorkspaceIndex, matchesUserWorkspaceFilter, type UserWorkspaceFilter } from '@/lib/userWorkspaceFilter';
 import { Plus, Trash2, UserCheck, Building2, Ban, UserX, RotateCcw, CheckCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { notify } from "@/lib/notify";
@@ -183,12 +184,10 @@ export function AdminUsersManager() {
     }
 
     // P0 fix: verify the row actually changed (RLS may silently drop the update).
-    const { data: rows, error } = await supabase
-      .from('profiles')
-      .update({ account_status: newStatus })
-      .eq('id', suspendTarget.userId)
-      .select('id');
-    if (error || !rows || rows.length === 0) {
+    const { data, error } = await invokeWithAuth<{ success: boolean }>('set-account-status', {
+      body: { userId: suspendTarget.userId, status: newStatus },
+    });
+    if (error || !data?.success) {
       notify.error(t('admin.userManagement.suspendError', { defaultValue: 'Erro ao alterar estado da conta' }));
     } else {
       notify.success(newStatus === 'suspended' 
