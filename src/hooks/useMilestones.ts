@@ -148,7 +148,7 @@ export function useUpdateMilestone(workspaceId: string) {
         .maybeSingle();
 
       if (error) throw error;
-      if (!data) throw new Error(i18n.t('common.noPermission'));
+      if (!data) throw new Error(i18n.t('errors.noPermission'));
       return data;
     },
     // ── Optimistic Update ──
@@ -218,7 +218,7 @@ export function useDeleteMilestone(workspaceId: string) {
         .select('id');
 
       if (error) throw error;
-      if (!data?.length) throw new Error(i18n.t('common.noPermission'));
+      if (!data?.length) throw new Error(i18n.t('errors.noPermission'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['milestones', workspaceId] });
@@ -240,7 +240,7 @@ export function useReorderMilestones(workspaceId: string) {
           .eq('id', m.id)
           .select('id');
         if (error) throw error;
-        if (!data?.length) throw new Error(i18n.t('common.noPermission'));
+        if (!data?.length) throw new Error(i18n.t('errors.noPermission'));
       }
     },
     onSuccess: () => {

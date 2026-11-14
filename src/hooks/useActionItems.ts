@@ -139,7 +139,7 @@ export function useUpdateActionItem(workspaceId: string) {
         .select('id');
 
       if (error) throw error;
-      if (!affectedRows?.length) throw new Error(t('common.noPermission'));
+      if (!affectedRows?.length) throw new Error(t('errors.noPermission'));
 
       const { data, error: readError } = await supabase
         .from('action_items')
@@ -297,7 +297,7 @@ export function useDeleteActionItem(workspaceId: string) {
         .select('id');
 
       if (error) throw error;
-      if (!data?.length) throw new Error(t('common.noPermission'));
+      if (!data?.length) throw new Error(t('errors.noPermission'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['action-items', workspaceId] });
@@ -403,7 +403,7 @@ export function useBulkUpdateActions(workspaceId: string) {
         .select('id');
 
       if (error) throw error;
-      if (!data?.length) throw new Error(t('common.noPermission'));
+      if (!data?.length) throw new Error(t('errors.noPermission'));
       return data.map((r) => r.id);
     },
     onSuccess: () => {
@@ -426,7 +426,7 @@ export function useBulkDeleteActions(workspaceId: string) {
         .select('id');
 
       if (error) throw error;
-      if (!data?.length) throw new Error(t('common.noPermission'));
+      if (!data?.length) throw new Error(t('errors.noPermission'));
       return data.map((r) => r.id);
     },
     onSuccess: () => {
