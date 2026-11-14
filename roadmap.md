@@ -1,5 +1,6 @@
 
 ## RC13 Lote 2
+- [ ] Pedido 00:55: botão de primeira reunião também visível no login móvel (imagem confirmada).
 - [ ] P05: remover backup e regenerar tipos — bloqueado pela permissão de migrações destrutivas.
 - [ ] Invalidar fila após conclusão de sessão.
 - [ ] Recusar updates/deletes sem linhas afetadas em ações e marcos.
