@@ -1,4 +1,7 @@
 
+## Revogação ao suspender — 14 Nov 2026
+- [ ] Confirmar APIs suportadas, tornar falhas de banimento seguras, testar e documentar limites; manter P05, ProtectedRoute e localStorage intactos.
+
 ## RC13 Lote 2
 - [x] Pedido 00:55: botão de primeira reunião visível no login móvel; verificado a 390px.
 - [ ] P05: remover backup e regenerar tipos — bloqueado pela permissão de migrações destrutivas.
