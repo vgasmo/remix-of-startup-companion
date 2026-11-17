@@ -141,7 +141,7 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
         if (tokenResult.error) throw tokenResult.error;
         if ((tokenResult.data as any)?.error) throw new Error((tokenResult.data as any).message || (tokenResult.data as any).error);
         if ((tokenResult.data as any)?.emailSent === false) {
-          notify.warning(t('crm.nativeSigningEmailFailed'));
+          notify.warn(t('crm.nativeSigningEmailFailed'));
         }
       }
 
