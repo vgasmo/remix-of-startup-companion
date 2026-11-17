@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronRight, User, Building2, Briefcase } from 'lucide-react';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { cn } from '@/lib/utils';
 import type { EcosystemItem } from '@/hooks/useEcosystemItems';
 import { getStartupStageLabel, getFunnelStageLabel, STARTUP_STAGE_KEYS, FUNNEL_STAGE_KEYS } from '@/lib/stageLabels';
@@ -212,12 +213,11 @@ export function ConsultorPortfolioView({ items, ownerId = 'all' }: ConsultorPort
       })}
 
       {groups.length === 0 && (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <User className="h-8 w-8 mx-auto mb-2 opacity-30" />
-            <p>{t('ecosystem.noItems', 'Sem dados para mostrar')}</p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={User}
+          title={t('ecosystem.portfolioEmptyTitle')}
+          description={t('ecosystem.portfolioEmptyDescription')}
+        />
       )}
     </div>
   );

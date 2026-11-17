@@ -3553,7 +3553,8 @@
       "noData": "Add values to deals to see the forecast",
       "title": "Pipeline Forecast",
       "totalPipeline": "Total Pipeline",
-      "weighted": "Weighted"
+      "weighted": "Weighted",
+      "emptyTitle": "No forecast yet"
     },
     "founder": {
       "call": "Phone call",
@@ -4412,7 +4413,9 @@
     "workspaces": "workspaces",
     "allTiers": "All Tiers",
     "tierUnclassified": "No Tier",
-    "tierValue": "Tier {{tier}}"
+    "tierValue": "Tier {{tier}}",
+    "portfolioEmptyTitle": "No matching items",
+    "portfolioEmptyDescription": "Consultants and their assigned startups appear here when items match the current filters."
   },
   "ecosystemHub": {
     "navLabel": "Management Hub",

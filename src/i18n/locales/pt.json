@@ -3553,7 +3553,8 @@
       "noData": "Adicione valores aos deals para ver o forecast",
       "title": "Pipeline Forecast",
       "totalPipeline": "Pipeline total",
-      "weighted": "Ponderado"
+      "weighted": "Ponderado",
+      "emptyTitle": "Ainda sem previsão"
     },
     "founder": {
       "call": "Chamada telefónica",
@@ -4412,7 +4413,9 @@
     "workspaces": "workspaces",
     "allTiers": "Todos os Tiers",
     "tierUnclassified": "Sem Tier",
-    "tierValue": "Tier {{tier}}"
+    "tierValue": "Tier {{tier}}",
+    "portfolioEmptyTitle": "Sem leads com dados",
+    "portfolioEmptyDescription": "Os consultores e as startups atribuídas aparecem aqui quando houver itens que correspondam aos filtros."
   },
   "ecosystemHub": {
     "navLabel": "Hub de Gestão",

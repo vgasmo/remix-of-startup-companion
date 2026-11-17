@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PIPELINE_STAGES } from '@/hooks/useCrmPipeline';
 import type { CrmInboxItem } from '@/hooks/useCrmInbox';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { cn } from '@/lib/utils';
 import { getFunnelStageLabel } from '@/lib/stageLabels';
 
@@ -70,14 +71,11 @@ export function PipelineForecastCard({ pipeline }: PipelineForecastCardProps) {
 
   if (!forecast || forecast.dealsWithValue === 0) {
     return (
-      <Card>
-        <CardContent className="py-6 text-center">
-          <DollarSign className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">
-            {t('crm.forecast.noData')}
-          </p>
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={DollarSign}
+        title={t('crm.forecast.emptyTitle')}
+        description={t('crm.forecast.noData')}
+      />
     );
   }
 
