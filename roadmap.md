@@ -1,3 +1,7 @@
+## Reconciliação das 20 leads e INC-2026-005 — 17 Nov 2026
+- [x] Investigar em leitura e propor correção individual: docs/CRM-20-LEADS-INC-2026-005-REVIEW.md.
+- [ ] Aplicar reconciliação dos 21 casos — aguarda aprovação das propostas, confirmação de identidades/programas/etapas e prova ou confirmação de ausência de assinatura de Brisas do Lis; não inferir assinaturas nem preços históricos.
+
 ## Verificação integrada — 17 Nov 2026
 - [x] Repetir testes da aplicação, funções e SQL descartável: 355 Vitest, 67 Deno e 419 asserções SQL/40 suites passaram; CRM/backoffice autenticados e wizard nativo simulado verificados. Relatório em docs/CONTRACT-CRM-BACKOFFICE-RETEST-2026-11-17.md. Dados reais intactos: 20 leads contratadas sem workspace e INC-2026-005 ativo sem assinatura concluída/snapshot; não certificada uma transação alojada completa nem entrega real de emails.
 
