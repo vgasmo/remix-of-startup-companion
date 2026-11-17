@@ -138,7 +138,7 @@ export default function AcceptInvite() {
             {status === 'loading' || status === 'processing' ? (
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             ) : status === 'success' ? (
-              <CheckCircle className="h-6 w-6 text-green-500" />
+              <CheckCircle className="h-6 w-6 text-success" />
             ) : status === 'needs_login' ? (
               <Mail className="h-6 w-6 text-primary" />
             ) : (
@@ -194,8 +194,8 @@ export default function AcceptInvite() {
             </Button>
           )}
           {status === 'error' && expectedEmail && (
-            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-              <p className="text-sm text-amber-800 dark:text-amber-200">
+            <div className="p-3 rounded-lg bg-warning/10 border border-warning/30">
+              <p className="text-sm text-warning-strong">
                 {t('invite.wrongEmail', { email: expectedEmail })}
               </p>
             </div>

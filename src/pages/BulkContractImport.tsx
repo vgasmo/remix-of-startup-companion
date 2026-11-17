@@ -673,7 +673,7 @@ export default function BulkContractImport() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                <CheckCircle2 className="h-5 w-5 text-success" />
                 {t('bulkImport.done.title', 'Import complete')}
               </CardTitle>
               <CardDescription>
@@ -812,9 +812,9 @@ function SummaryStat({ label, value, tone = 'default' }: { label: string; value:
   const toneClass = {
     default: 'text-foreground',
     primary: 'text-primary',
-    info: 'text-blue-600 dark:text-blue-400',
+    info: 'text-primary',
     destructive: 'text-destructive',
-    success: 'text-green-600 dark:text-green-400',
+    success: 'text-success',
     muted: 'text-muted-foreground',
   }[tone];
   return (
@@ -831,7 +831,7 @@ function StatusBadge({ status, method }: { status: string; method: string | null
   const { t } = useTranslation();
   if (status === 'will_create') return <Badge variant="default">{t('bulkImport.rowStatus.will_create', 'New')}</Badge>;
   if (status === 'will_update') return <Badge variant="secondary">{t('bulkImport.rowStatus.will_update', 'Update')}{method ? ` (${method})` : ''}</Badge>;
-  if (status === 'committed') return <Badge variant="default" className="bg-green-600">✓ {t('bulkImport.rowStatus.committed', 'Done')}</Badge>;
+  if (status === 'committed') return <Badge variant="default" className="bg-success text-success-foreground">✓ {t('bulkImport.rowStatus.committed', 'Done')}</Badge>;
   if (status === 'error') return <Badge variant="destructive">{t('bulkImport.rowStatus.error', 'Error')}</Badge>;
   if (status === 'extracting') return <Badge variant="outline"><Loader2 className="h-3 w-3 mr-1 animate-spin" />…</Badge>;
   if (status === 'pending') return <Badge variant="outline">{t('bulkImport.rowStatus.pending', 'Queued')}</Badge>;

@@ -85,8 +85,8 @@ import { SurveyResponsesViewer } from "./SurveyResponsesViewer";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
-  active: "bg-green-500/20 text-green-700 dark:text-green-400",
-  closed: "bg-orange-500/20 text-orange-700 dark:text-orange-400",
+  active: "bg-success/20 text-success ",
+  closed: "bg-warning/20 text-warning-strong ",
   archived: "bg-gray-500/20 text-gray-700 dark:text-gray-400",
 };
 
@@ -362,8 +362,8 @@ function CampaignCard({
             </div>
             <Progress value={stats.completionRate} />
             <div className="flex gap-4 text-xs text-muted-foreground">
-              <span className="text-green-600">● {t('admin.surveys.legendSubmitted', { count: stats.submitted, defaultValue: '{{count}} submitted' })}</span>
-              <span className="text-yellow-600">● {t('admin.surveys.legendInProgress', { count: stats.inProgress, defaultValue: '{{count}} in progress' })}</span>
+              <span className="text-success">● {t('admin.surveys.legendSubmitted', { count: stats.submitted, defaultValue: '{{count}} submitted' })}</span>
+              <span className="text-warning-strong">● {t('admin.surveys.legendInProgress', { count: stats.inProgress, defaultValue: '{{count}} in progress' })}</span>
               <span className="text-gray-400">● {t('admin.surveys.legendPending', { count: stats.pending, defaultValue: '{{count}} pending' })}</span>
             </div>
           </div>

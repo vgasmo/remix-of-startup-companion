@@ -200,7 +200,7 @@ export function SurveyForm({ instanceId, onComplete }: SurveyFormProps) {
               </CardDescription>
             </div>
             {isSubmitted ? (
-              <Badge className="bg-green-500/20 text-green-700">
+              <Badge className="bg-success/20 text-success">
                 <Check className="h-3 w-3 mr-1" />
                 {t("surveys.submitted", "Submitted")}
               </Badge>

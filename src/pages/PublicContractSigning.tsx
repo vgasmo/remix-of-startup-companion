@@ -649,7 +649,7 @@ export default function PublicContractSigning() {
               return (
                 <div
                   key={step.key}
-                  className={`flex items-center gap-1.5 text-xs font-medium ${isActive ? 'text-primary' : isDone ? 'text-emerald-600' : 'text-muted-foreground'}`}
+                  className={`flex items-center gap-1.5 text-xs font-medium ${isActive ? 'text-primary' : isDone ? 'text-success' : 'text-muted-foreground'}`}
                 >
                   {isDone ? <CheckCircle2 className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
                   {stepLabels[step.key][lang]}
@@ -702,9 +702,9 @@ export default function PublicContractSigning() {
             )}
             {/* Server-newer-than-local conflict banner — never silently drop */}
             {autosave.serverNewerThanLocal && autosave.staleLocalPreview && (
-              <Card className="border-amber-500/40 bg-amber-50 dark:bg-amber-950/20">
+              <Card className="border-warning/40 bg-warning/10">
                 <CardContent className="p-3 flex items-start gap-3">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                  <AlertTriangle className="h-4 w-4 text-warning-strong mt-0.5 shrink-0" />
                   <div className="flex-1 text-xs">
                     <p className="font-semibold">
                       {t('publicContractSigning.newerVersionOnTheServer')}
@@ -924,7 +924,7 @@ export default function PublicContractSigning() {
                     <div
                       key={doc.key}
                       className={`border rounded-lg p-3 transition-colors ${
-                        uploaded ? 'border-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/20' : 'border-border'
+                        uploaded ? 'border-success/30 bg-success/10 ' : 'border-border'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -943,8 +943,8 @@ export default function PublicContractSigning() {
                           </p>
                           {uploaded && (
                             <div className="flex items-center gap-2 mt-1.5">
-                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                              <span className="text-xs text-emerald-700 dark:text-emerald-400 truncate">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                              <span className="text-xs text-success truncate">
                                 {uploaded.name}
                               </span>
                               <span className="text-[10px] text-muted-foreground">
@@ -1103,7 +1103,7 @@ export default function PublicContractSigning() {
               <div className="border rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-amber-600" />
+                    <Shield className="h-5 w-5 text-warning-strong" />
                     <div>
                       <p className="text-sm font-medium">
                         {t('publicContractSigning.startupLeiriaRegulation')}
@@ -1176,7 +1176,7 @@ export default function PublicContractSigning() {
                     return (
                       <div key={doc.key} className="flex items-center gap-2 text-xs">
                         {uploaded ? (
-                          <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                          <CheckCircle2 className="h-3 w-3 text-success" />
                         ) : (
                           <span className="h-3 w-3 rounded-full bg-muted-foreground/30 inline-block" />
                         )}

@@ -15,7 +15,7 @@ const stageConfig: Record<string, { labelKey: string; className: string }> = {
   mvp: { labelKey: 'stages.mvp', className: 'bg-stage-mvp/10 text-stage-mvp border-stage-mvp/30' },
   growth: { labelKey: 'stages.growth', className: 'bg-stage-growth/10 text-stage-growth border-stage-growth/30' },
   scale: { labelKey: 'stages.scale', className: 'bg-stage-scale/10 text-stage-scale border-stage-scale/30' },
-  awaiting_workspace: { labelKey: 'stages.awaiting_workspace', className: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/40' },
+  awaiting_workspace: { labelKey: 'stages.awaiting_workspace', className: 'bg-warning/10 text-warning-strong border-warning/40' },
 };
 
 const sizeStyles = {

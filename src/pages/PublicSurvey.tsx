@@ -260,7 +260,7 @@ export default function PublicSurvey() {
         {state.kind === "ready" && isSubmitted && (
           <Card>
             <CardContent className="py-12 text-center space-y-3">
-              <CheckCircle2 className="h-10 w-10 mx-auto text-green-600" />
+              <CheckCircle2 className="h-10 w-10 mx-auto text-success" />
               <p className="text-lg font-semibold">
                 {t("publicSurvey.thankYou", "Obrigado — a sua resposta foi submetida.")}
               </p>

@@ -102,9 +102,9 @@ export function FounderPulseCard({ workspaceId }: Props) {
 
   if (existing) {
     return (
-      <Card className="border-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/20">
+      <Card className="border-success/30 bg-success/10">
         <CardContent className="flex items-center gap-3 py-4">
-          <CheckCircle2 className="h-5 w-5 text-emerald-600" aria-hidden />
+          <CheckCircle2 className="h-5 w-5 text-success" aria-hidden />
           <div className="flex-1">
             <p className="text-sm font-medium">
               {t('founderPulse.submittedTitle', 'Monthly pulse submitted')}

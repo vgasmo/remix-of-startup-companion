@@ -346,7 +346,7 @@ export function SurveyTemplateEditor({ definitions }: SurveyTemplateEditorProps)
                                     {q.type}
                                   </Badge>
                                   {q.autoFillKey && (
-                                    <Badge className="text-xs bg-blue-500/20 text-blue-700 shrink-0">
+                                    <Badge className="text-xs bg-primary/20 text-primary shrink-0">
                                       Auto
                                     </Badge>
                                   )}

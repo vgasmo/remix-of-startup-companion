@@ -376,13 +376,13 @@ export default function PublicContractIntake() {
 
         {/* Changes requested banner */}
         {hasChangesRequested && intake.changes_requested_notes && (
-          <Card className="border-amber-300 bg-amber-50 dark:bg-amber-900/20">
+          <Card className="border-warning/30 bg-warning/10">
             <CardContent className="p-4 space-y-1">
-              <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 flex items-center gap-2">
+              <p className="text-sm font-semibold text-warning-strong flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
                 {t('publicContractIntake.changesRequested')}
               </p>
-              <p className="text-sm text-amber-700 dark:text-amber-300">{intake.changes_requested_notes}</p>
+              <p className="text-sm text-warning-strong">{intake.changes_requested_notes}</p>
             </CardContent>
           </Card>
         )}
@@ -776,7 +776,7 @@ export default function PublicContractIntake() {
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         {uploaded ? (
-                          <Badge variant="outline" className="text-[10px] bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-300">
+                          <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/30">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
                             {t('publicContractIntake.uploaded')}
                           </Badge>

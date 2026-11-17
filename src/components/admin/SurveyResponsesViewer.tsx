@@ -33,8 +33,8 @@ import { supabase } from "@/lib/supabaseClient";
 import { notify } from "@/lib/notify";
 
 const STATUS_ICONS = {
-  submitted: <CheckCircle className="h-4 w-4 text-green-500" />,
-  in_progress: <Clock className="h-4 w-4 text-yellow-500" />,
+  submitted: <CheckCircle className="h-4 w-4 text-success" />,
+  in_progress: <Clock className="h-4 w-4 text-warning-strong" />,
   pending: <AlertCircle className="h-4 w-4 text-muted-foreground" />,
 };
 
@@ -159,11 +159,11 @@ export function SurveyResponsesViewer({ campaignId }: SurveyResponsesViewerProps
       <div className="flex justify-between items-center">
         <div className="flex gap-4 text-sm">
           <span className="flex items-center gap-1">
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <CheckCircle className="h-4 w-4 text-success" />
             {instances.filter((i) => i.status === "submitted").length} {t("surveys.statusSubmitted", "Submetido")}
           </span>
           <span className="flex items-center gap-1">
-            <Clock className="h-4 w-4 text-yellow-500" />
+            <Clock className="h-4 w-4 text-warning-strong" />
             {instances.filter((i) => i.status === "in_progress").length} {t("surveys.statusInProgress", "Em progresso")}
           </span>
           <span className="flex items-center gap-1">

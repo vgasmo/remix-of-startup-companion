@@ -187,12 +187,12 @@ export function PrivateDocumentsPanel({ workspaceId }: PrivateDocumentsPanelProp
   };
 
   return (
-    <Card className="border-amber-500/30 bg-amber-500/5">
+    <Card className="border-warning/30 bg-warning/5">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Lock className="h-4 w-4 text-amber-600" />
+              <Lock className="h-4 w-4 text-warning-strong" />
               {t('privateDocs.title', { defaultValue: 'Documentos privados' })}
               <Badge variant="outline" className="ml-1 text-[10px] gap-1">
                 <ShieldCheck className="h-3 w-3" />

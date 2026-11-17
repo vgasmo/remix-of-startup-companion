@@ -212,8 +212,8 @@ export default function ClaimStartup() {
           {/* AUTO CLAIMED — success */}
           {displayState === 'auto_claimed' && (
             <div className="flex flex-col items-center gap-3 py-8 text-center">
-              <div className="h-16 w-16 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center ring-1 ring-emerald-200 dark:ring-emerald-800/30">
-                <CheckCircle2 className="h-9 w-9 text-emerald-600 dark:text-emerald-400" />
+              <div className="h-16 w-16 rounded-2xl bg-success/10 flex items-center justify-center ring-1 ring-success/30">
+                <CheckCircle2 className="h-9 w-9 text-success" />
               </div>
               <p className="text-lg font-semibold text-foreground">
                 {t('claimStartup.found', { defaultValue: 'Startup verificada com sucesso!' })}
@@ -231,7 +231,7 @@ export default function ClaimStartup() {
           {/* ALREADY CLAIMED — user already has a workspace */}
           {displayState === 'already_claimed' && (
             <div className="flex flex-col items-center gap-3 py-8 text-center">
-              <CheckCircle2 className="h-12 w-12 text-emerald-500" />
+              <CheckCircle2 className="h-12 w-12 text-success" />
               <p className="text-lg font-semibold text-foreground">
                 {t('claimStartup.alreadyLinked', { defaultValue: 'A sua startup já está associada' })}
               </p>
@@ -248,8 +248,8 @@ export default function ClaimStartup() {
           {/* PENDING REVIEW — claim request submitted, awaiting staff */}
           {(displayState === 'pending_review') && (
             <div className="flex flex-col items-center gap-4 py-8 text-center">
-              <div className="h-16 w-16 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center ring-1 ring-amber-200 dark:ring-amber-800/30">
-                <Clock className="h-9 w-9 text-amber-600 dark:text-amber-400" />
+              <div className="h-16 w-16 rounded-2xl bg-warning/10 flex items-center justify-center ring-1 ring-warning/30">
+                <Clock className="h-9 w-9 text-warning-strong" />
               </div>
               <p className="text-lg font-semibold text-foreground">
                 {t('claimStartup.pendingTitle', { defaultValue: 'Pedido em Análise' })}
@@ -283,8 +283,8 @@ export default function ClaimStartup() {
           {/* PENDING APPLICATION — founder submitted a new startup */}
           {displayState === 'pending_application' && (
             <div className="flex flex-col items-center gap-4 py-8 text-center">
-              <div className="h-16 w-16 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center ring-1 ring-amber-200 dark:ring-amber-800/30">
-                <Clock className="h-9 w-9 text-amber-600 dark:text-amber-400" />
+              <div className="h-16 w-16 rounded-2xl bg-warning/10 flex items-center justify-center ring-1 ring-warning/30">
+                <Clock className="h-9 w-9 text-warning-strong" />
               </div>
               <p className="text-lg font-semibold text-foreground">
                 {t('claimStartup.applicationPendingTitle', { defaultValue: 'Candidatura em Análise' })}

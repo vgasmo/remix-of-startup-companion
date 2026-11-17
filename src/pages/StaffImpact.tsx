@@ -151,11 +151,11 @@ export default function StaffImpact() {
   return (
     <AppLayout>
       <div className="space-y-6 max-w-7xl mx-auto">
-        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
+        <div className="rounded-2xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning-strong">
           <div className="font-medium">
             {t('impact.betaTitle', 'Beta — dados em reparação')}
           </div>
-          <div className="text-xs text-amber-900/80 dark:text-amber-100/80 mt-0.5">
+          <div className="text-xs text-warning-strong/80 mt-0.5">
             {t('impact.betaSubtitle', 'Sessões marcadas como completadas sem evidência foram colocadas em quarentena e revertidas para "agendada". Os números refletem apenas evidência real.')}
           </div>
         </div>

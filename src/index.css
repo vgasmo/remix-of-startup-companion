@@ -157,6 +157,7 @@
     --success-foreground: 60 5% 10%;
 
     --warning: 45 85% 55%;
+    --warning-strong: 42 90% 60%;
     --warning-foreground: 60 5% 10%;
 
     --info: 200 60% 55%;

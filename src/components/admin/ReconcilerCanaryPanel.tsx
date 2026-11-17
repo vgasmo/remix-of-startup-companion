@@ -169,10 +169,10 @@ export function ReconcilerCanaryPanel() {
 
   return (
     <>
-      <Card className="border-amber-500/40">
+      <Card className="border-warning/40">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <ShieldAlert className="h-4 w-4 text-amber-500" />
+            <ShieldAlert className="h-4 w-4 text-warning-strong" />
             Reconciler canary (max 5 IDs)
           </CardTitle>
           <CardDescription>

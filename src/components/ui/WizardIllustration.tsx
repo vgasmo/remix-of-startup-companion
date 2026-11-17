@@ -46,22 +46,22 @@ const illustrations: Record<
   kpis: {
     icon: TrendingUp,
     gradient: 'from-emerald-500/20 via-emerald-500/10 to-transparent',
-    accent: 'text-emerald-500',
+    accent: 'text-success',
   },
   milestones: {
     icon: Target,
     gradient: 'from-amber-500/20 via-amber-500/10 to-transparent',
-    accent: 'text-amber-500',
+    accent: 'text-warning-strong',
   },
   meeting: {
     icon: Calendar,
     gradient: 'from-blue-500/20 via-blue-500/10 to-transparent',
-    accent: 'text-blue-500',
+    accent: 'text-primary',
   },
   complete: {
     icon: PartyPopper,
     gradient: 'from-green-500/20 via-green-500/10 to-transparent',
-    accent: 'text-green-500',
+    accent: 'text-success',
   },
   basics: {
     icon: Building2,
@@ -71,7 +71,7 @@ const illustrations: Record<
   stages: {
     icon: Layers,
     gradient: 'from-orange-500/20 via-orange-500/10 to-transparent',
-    accent: 'text-orange-500',
+    accent: 'text-warning-strong',
   },
   playbooks: {
     icon: BookOpen,
