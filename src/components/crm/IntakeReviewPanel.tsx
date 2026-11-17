@@ -42,9 +42,8 @@ interface IntakeReviewPanelProps {
 }
 
 const SIGNATURE_PROVIDERS = [
-  { value: 'docusign', label: 'DocuSign' },
-  { value: 'pandadoc', label: 'PandaDoc' },
-  { value: 'manual', label: 'Manual' },
+  { value: 'assinatura_digital', labelKey: 'contractDetail.digitalSignature' },
+  { value: 'manual', labelKey: 'contractDetail.manualSignature' },
 ] as const;
 
 export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
@@ -53,7 +52,7 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
   const [actionNotes, setActionNotes] = useState('');
   const [showNotes, setShowNotes] = useState<'approve' | 'changes' | 'cancel' | null>(null);
   const [sendingSignature, setSendingSignature] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState<string>('');
+  const [selectedProvider, setSelectedProvider] = useState<string>('assinatura_digital');
   const transition = useTransitionIntakeStatus();
   const { data: events } = useIntakeEvents(intake.id);
 
@@ -122,7 +121,7 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
 
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
-      // O fornecedor (DocuSign/PandaDoc) não aceitou o envio: o servidor já reabriu o intake e avisou o staff.
+      // O servidor não aceitou o envio: o servidor já reabriu o intake e avisou o staff.
       if ((data as any)?.status === 'failed') {
         queryClient.invalidateQueries({ queryKey: ['contract-intakes'] });
         queryClient.invalidateQueries({ queryKey: ['contract-intake'] });
@@ -132,6 +131,18 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
         queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
         queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
         throw new Error((data as any).message || t('crm.intakeSignatureProviderFailed', 'O fornecedor de assinatura não aceitou o envio.'));
+      }
+
+      // Assinatura nativa: gera o link seguro e envia-o por email ao representante legal.
+      if (selectedProvider === 'assinatura_digital') {
+        const tokenResult = await invokeWithAuth('public-contract-onboarding', {
+          body: { action: 'generate_token', contractId: intake.contract_id },
+        });
+        if (tokenResult.error) throw tokenResult.error;
+        if ((tokenResult.data as any)?.error) throw new Error((tokenResult.data as any).message || (tokenResult.data as any).error);
+        if ((tokenResult.data as any)?.emailSent === false) {
+          notify.warning(t('crm.nativeSigningEmailFailed'));
+        }
       }
 
       // NOTE: Do NOT transition intake here — the edge function already
@@ -412,7 +423,7 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {SIGNATURE_PROVIDERS.map(p => (
-                    <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                    <SelectItem key={p.value} value={p.value}>{t(p.labelKey)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -431,7 +442,7 @@ export function IntakeReviewPanel({ intake, onClose }: IntakeReviewPanelProps) {
               Enviar para Assinatura
             </Button>
             <p className="text-[10px] text-muted-foreground text-center">
-              O contrato será enviado para assinatura digital via {selectedProvider ? SIGNATURE_PROVIDERS.find(p => p.value === selectedProvider)?.label : '—'}.
+              O contrato será enviado para assinatura digital via {selectedProvider ? t(SIGNATURE_PROVIDERS.find(p => p.value === selectedProvider)?.labelKey ?? '') : '—'}.
             </p>
           </div>
         )}

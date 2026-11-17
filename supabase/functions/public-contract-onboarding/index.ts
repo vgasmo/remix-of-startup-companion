@@ -251,7 +251,17 @@ Deno.serve(async (req) => {
         // Use provider from body or from contract record
         const provider: string | null = body.signatureProvider || (contract as any).signature_provider || null
 
-        if (!provider || !['docusign', 'pandadoc', 'manual', 'assinatura_digital', 'pandadoc_manual'].includes(provider)) {
+        // A assinatura nativa e canonica: DocuSign/PandaDoc por API estao desativados (sem acesso a API).
+        if (provider === 'docusign' || provider === 'pandadoc') {
+          return new Response(JSON.stringify({
+            error: 'signature_provider_disabled',
+            message: 'DocuSign e PandaDoc estão desativados. Use a assinatura digital da plataforma.',
+          }), {
+            status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+
+        if (!provider || !['manual', 'assinatura_digital', 'pandadoc_manual'].includes(provider)) {
           return new Response(JSON.stringify({
             error: 'signature_provider_not_configured',
             message: 'Selecione um provider de assinatura antes de enviar.',
@@ -375,6 +385,9 @@ Deno.serve(async (req) => {
               signingResult = await handleDispatchFailure(supabase, failCtx, 'pandadoc', pdRes.status, errText)
             }
 
+          } else if (provider === 'assinatura_digital') {
+            // O link de assinatura nativa e enviado ao founder pela acao generate_token.
+            signingResult = { status: 'awaiting_native_signature', provider: 'assinatura_digital' }
           } else if (provider === 'manual') {
             await supabase.from('startup_contracts').update({ signature_status: 'pending_manual' }).eq('id', contractId)
             signingResult = { status: 'pending_manual', provider: 'manual', message: 'Assinatura manual. O staff coordenará o processo.' }

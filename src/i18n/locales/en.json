@@ -3854,7 +3854,8 @@
     "emailArchiveForbidden": "You don't have permission to archive this email.",
     "tasksLoadError": "Could not load the tasks. Refresh the page or try again later.",
     "convertPitchDeckFailed": "The pitch deck from the public form was not copied to the workspace. Ask a consultant to attach it (the file is still stored on the lead).",
-    "intakeSignatureProviderFailed": "The signing provider did not accept the submission."
+    "intakeSignatureProviderFailed": "The signing provider did not accept the submission.",
+    "nativeSigningEmailFailed": "Signing link created, but the email was not sent. Send the link from the contract."
   },
   "dashboard": {
     "acrossPrograms": "Across {{count}} program",

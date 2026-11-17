@@ -3854,7 +3854,8 @@
     "emailArchiveForbidden": "Sem permissão para arquivar este email.",
     "tasksLoadError": "Não foi possível carregar as tarefas. Atualize a página ou tente mais tarde.",
     "convertPitchDeckFailed": "O pitch deck do formulário público não foi copiado para o workspace. Peça a um consultor para o anexar (o ficheiro continua guardado na lead).",
-    "intakeSignatureProviderFailed": "O fornecedor de assinatura não aceitou o envio."
+    "intakeSignatureProviderFailed": "O fornecedor de assinatura não aceitou o envio.",
+    "nativeSigningEmailFailed": "Link de assinatura criado, mas o email não foi enviado. Envie o link a partir do contrato."
   },
   "dashboard": {
     "acrossPrograms": "Em {{count}} programa",
