@@ -21,7 +21,7 @@ interface DataroomItem {
     id: string;
     name: string;
     mime_type?: string;
-    download_url?: string;
+    downloadable?: boolean;
   };
   investor_update?: {
     id: string;
@@ -77,6 +77,32 @@ export default function SharedDataroom() {
 
     fetchDataroom();
   }, [token]);
+
+  const handleDownload = async (documentId: string) => {
+    // Open the tab synchronously so pop-up blockers allow it, then point it at the short-lived link.
+    const win = window.open('', '_blank', 'noopener');
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dataroom-get-by-token`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, document_id: documentId }),
+        }
+      );
+      const data = await response.json();
+      const safe = response.ok && data.download_url ? sanitizeUrl(data.download_url) : null;
+      if (!safe) {
+        win?.close();
+        setError({ message: data.error || t('dataroom.downloadFailed'), code: data.code });
+        return;
+      }
+      if (win) win.location.href = safe; else window.location.href = safe;
+    } catch {
+      win?.close();
+      setError({ message: t('dataroom.downloadFailed') });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -163,12 +189,10 @@ export default function SharedDataroom() {
                           <Badge variant="secondary" className="mb-2">
                             {item.document.mime_type?.split('/')[1]?.toUpperCase() || 'FILE'}
                           </Badge>
-                          {dataroom?.allow_download && item.document.download_url && (
-                            <Button asChild variant="outline" size="sm" className="ml-2">
-                              <a href={sanitizeUrl(item.document.download_url)!} target="_blank" rel="noopener noreferrer">
-                                <Download className="h-4 w-4 mr-2" />
-                                {t('dataroom.download')}
-                              </a>
+                          {dataroom?.allow_download && item.document.downloadable && (
+                            <Button variant="outline" size="sm" className="ml-2" onClick={() => handleDownload(item.document!.id)}>
+                              <Download className="h-4 w-4 mr-2" />
+                              {t('dataroom.download')}
                             </Button>
                           )}
                         </div>

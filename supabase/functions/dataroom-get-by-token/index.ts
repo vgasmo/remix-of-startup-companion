@@ -74,7 +74,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Parse request body
-    const { token } = await req.json();
+    const { token, document_id: requestedDocumentId } = await req.json();
 
     if (!token || typeof token !== 'string') {
       return corsJsonResponse({ error: 'Token is required' }, req, 400);
@@ -165,7 +165,21 @@ Deno.serve(async (req: Request) => {
       (!item.investor_update || item.investor_update.workspace_id === dataroomWorkspaceId)
     );
 
-    // Generate signed URLs for documents if download is allowed
+    // Downloads are issued one document at a time, on click, with a 60s link.
+    // Every request re-checks revocation/expiry above, so revoking a link stops
+    // new downloads immediately and bounds already-issued links to 60 seconds.
+    if (typeof requestedDocumentId === 'string' && requestedDocumentId) {
+      const target: any = sameWorkspaceItems.find((it: any) => it.type === 'document' && it.document?.id === requestedDocumentId);
+      if (!shareLink.allow_download || !target?.document?.file_path) {
+        return corsJsonResponse({ error: 'Download not available' }, req, 403);
+      }
+      const { data: signed } = await supabase.storage
+        .from('workspace-documents')
+        .createSignedUrl(target.document.file_path, 60);
+      if (!signed?.signedUrl) return corsJsonResponse({ error: 'Download not available' }, req, 500);
+      return corsJsonResponse({ success: true, download_url: signed.signedUrl }, req);
+    }
+
     const processedItems = await Promise.all(sameWorkspaceItems.map(async (item: any) => {
       const result: any = {
         id: item.id,
@@ -186,16 +200,7 @@ Deno.serve(async (req: Request) => {
           mime_type: item.document.mime_type,
         };
         
-        // Generate signed URL if download allowed
-        if (shareLink.allow_download && item.document.file_path) {
-          const { data: signedUrl } = await supabase.storage
-            .from('workspace-documents')
-            .createSignedUrl(item.document.file_path, 600); // 10 minute expiry
-          
-          if (signedUrl?.signedUrl) {
-            result.document.download_url = signedUrl.signedUrl;
-          }
-        }
+        result.document.downloadable = Boolean(shareLink.allow_download && item.document.file_path);
       }
 
       if (item.type === 'investor_update' && item.investor_update) {

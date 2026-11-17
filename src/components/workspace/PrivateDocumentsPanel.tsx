@@ -131,7 +131,7 @@ export function PrivateDocumentsPanel({ workspaceId }: PrivateDocumentsPanelProp
   const openFile = async (file: PrivateFile, mode: 'preview' | 'download') => {
     const { data, error: sErr } = await supabase.storage
       .from('contract-documents')
-      .createSignedUrl(file.path, 60 * 5);
+      .createSignedUrl(file.path, 60);
     if (sErr || !data?.signedUrl) {
       notify.error(sErr?.message || t('privateDocs.signError', { defaultValue: 'Erro ao gerar link' }));
       return;

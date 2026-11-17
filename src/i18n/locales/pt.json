@@ -4133,7 +4133,8 @@
     "updateMonth": "Mês",
     "views": "visualizações",
     "visibilityUpdated": "Visibilidade atualizada",
-    "visibleToInvestors": "Visível para investidores"
+    "visibleToInvestors": "Visível para investidores",
+    "downloadFailed": "Não foi possível descarregar o ficheiro. Tente novamente."
   },
   "dataroomChecklist": {
     "description": "Checklist de documentos essenciais para o Data Room",

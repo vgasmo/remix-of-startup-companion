@@ -112,11 +112,18 @@ Deno.serve(async (req) => {
       })
     }
 
+    // The recipient always comes from the persisted contract; a request may only
+    // confirm that same address, never redirect the document elsewhere.
     const signerEmail =
-      requestedSignerEmail ||
       contract.legal_representative_email ||
       contract.workspace?.startup?.main_contact_email ||
       ''
+    if (requestedSignerEmail && requestedSignerEmail.toLowerCase() !== signerEmail.toLowerCase()) {
+      return new Response(JSON.stringify({ error: 'signerEmail must match the contract signer email' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     const signerName =
       requestedSignerName ||

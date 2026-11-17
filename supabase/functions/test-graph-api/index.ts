@@ -245,6 +245,36 @@ Deno.serve(async (req: Request) => {
       }, req, 400);
     }
 
+    // Test events may only target the calling admin's own mailbox.
+    // Test events may only target the calling admin's mailbox or the mailbox of
+    // another internal staff member (admin/consultor) whose calendar is synced.
+    const normalizedTestEmail = testEmail.trim().toLowerCase();
+    const { data: caller } = await supabaseAdmin.auth.admin.getUserById(userId);
+    let mailboxAllowed = (caller?.user?.email?.toLowerCase() ?? '') === normalizedTestEmail;
+    if (!mailboxAllowed) {
+      const { data: profilesByEmail, error: profErr } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .ilike('email', normalizedTestEmail)
+        .limit(5);
+      const ids = (profilesByEmail ?? []).map((p: { id: string }) => p.id);
+      if (!profErr && ids.length > 0) {
+        const { data: staffRoles, error: roleErr } = await supabaseAdmin
+          .from('user_roles')
+          .select('user_id')
+          .in('user_id', ids)
+          .in('role', ['admin', 'consultor'])
+          .limit(1);
+        mailboxAllowed = !roleErr && (staffRoles?.length ?? 0) > 0;
+      }
+    }
+    if (!mailboxAllowed) {
+      return corsJsonResponse({
+        success: false,
+        error: 'test_email must belong to an internal staff account',
+      }, req, 403);
+    }
+
     // Create test event
     const now = new Date();
     const startTime = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour from now

@@ -236,7 +236,7 @@ export function useGetDocumentUrl() {
   return async (filePath: string) => {
     const { data, error } = await supabase.storage
       .from('workspace-documents')
-      .createSignedUrl(filePath, 300); // short-lived: opened immediately on click
+      .createSignedUrl(filePath, 60); // short-lived: opened immediately on click, bounds access after membership removal
 
     if (error) throw error;
     return data.signedUrl;

@@ -4133,7 +4133,8 @@
     "updateMonth": "Month",
     "views": "views",
     "visibilityUpdated": "Visibility updated",
-    "visibleToInvestors": "Visible to investors"
+    "visibleToInvestors": "Visible to investors",
+    "downloadFailed": "Could not download the file. Please try again."
   },
   "dataroomChecklist": {
     "description": "Essential documents checklist for the Data Room",
