@@ -4,6 +4,7 @@
  * Reuses existing MentorImpactDashboard + MentorOpenLoops.
  */
 import { useTranslation } from 'react-i18next';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { useQuery } from '@tanstack/react-query';
 import { Navigate } from 'react-router-dom';
 import { TrendingUp } from 'lucide-react';
@@ -123,20 +124,15 @@ export default function MentorImpact() {
         <BackToHomeLink />
 
         <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              <h1 className="text-xl font-semibold">
-                {t('mentorImpact.pageTitle', 'O Seu Impacto')}
-              </h1>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-              {t(
-                'mentorImpact.pageDesc',
-                'Visão consolidada das suas sessões, startups ativas, follow-ups por fechar e feedback recebido.'
-              )}
-            </p>
-          </div>
+          <PageHeader
+            className="mb-0"
+            icon={<TrendingUp className="h-5 w-5 text-primary" />}
+            title={t('mentorImpact.pageTitle', 'O Seu Impacto')}
+            subtitle={t(
+              'mentorImpact.pageDesc',
+              'Visão consolidada das suas sessões, startups ativas, follow-ups por fechar e feedback recebido.'
+            )}
+          />
           {isMentor && (
             <DownloadHtmlReportButton
               functionName="generate-mentor-impact-report"

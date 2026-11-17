@@ -5557,7 +5557,9 @@
     "title": "Impacto do Ecossistema",
     "to": "Até",
     "toolAdoption": "Utilização de ferramentas",
-    "users": "utilizadores"
+    "users": "utilizadores",
+    "emptyTitle": "Ainda sem sessões neste período",
+    "emptyDesc": "Agende uma sessão com uma startup para começar a medir o impacto."
   },
   "inbox": {
     "empty": {

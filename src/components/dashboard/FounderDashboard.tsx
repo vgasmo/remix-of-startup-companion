@@ -242,7 +242,7 @@ export const FounderDashboard = memo(function FounderDashboard({
 
 
   return (
-    <div className="space-y-6 max-w-5xl animate-fade-in">
+    <div className="space-y-8 max-w-5xl animate-fade-in">
 
       <WelcomeSplash userId={profile?.id} />
       <FounderWelcomeWizard workspaceId={workspace?.id ?? null} />
@@ -311,6 +311,11 @@ export const FounderDashboard = memo(function FounderDashboard({
       <WidgetErrorBoundary name="PendingContract">
         <PendingContractBanner workspaceId={workspace.id} />
       </WidgetErrorBoundary>
+
+      {/* ★ NEXT ACTION — top of the page, highest visual weight ★ */}
+      <div className="animate-fade-in-up stagger-1 rounded-xl ring-2 ring-primary/30 shadow-md">
+        <OneThingToday workspace={workspace} isFirstWeek={isFirstWeek} />
+      </div>
 
       {/* ★ KPI ANOMALY NUDGE — Proactive intelligence, dismissible per workspace/month ★ */}
       <KpiAnomalyNudge anomaly={kpiAnomaly} workspaceId={workspace.id} onReview={() => navigate(`/workspace/${workspace.id}?tab=kpis`)} />
@@ -387,10 +392,6 @@ export const FounderDashboard = memo(function FounderDashboard({
 
 
 
-      {/* 2. Today's focus — THE single primary CTA */}
-      <div className="animate-fade-in-up stagger-2">
-        <OneThingToday workspace={workspace} isFirstWeek={isFirstWeek} />
-      </div>
 
       {/* 2.5 My Support Team — relationship awareness */}
       {(!isBeginner || hasConsultant || hasMentor) && (

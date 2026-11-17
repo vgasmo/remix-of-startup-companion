@@ -89,5 +89,5 @@
 ## RC13 Lote 4
 - [x] Fase 1 cores
 - [x] Fase 2 cantos/sombras
-- [ ] Fase 3 PageHeader + EmptyState
-- [ ] Fase 4 hierarquia FounderDashboard
+- [x] Fase 3 PageHeader + EmptyState (páginas principais)
+- [x] Fase 4 hierarquia FounderDashboard

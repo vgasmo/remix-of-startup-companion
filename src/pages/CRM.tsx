@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { useQuery } from '@tanstack/react-query';
 import { clickableProps } from '@/lib/clickable';
 
@@ -413,12 +414,7 @@ export default function CRM() {
   return (
     <AppLayout>
       <div className="container mx-auto py-6 space-y-6" data-testid="crm-page">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{t('crm.crmDashboard')}</h1>
-            <p className="text-muted-foreground">{t('crm.dashboardSubtitle')}</p>
-          </div>
-        </div>
+        <PageHeader className="mb-0" title={t('crm.crmDashboard')} subtitle={t('crm.dashboardSubtitle')} />
 
         {/* Filters */}
         <div className="flex flex-wrap gap-3 items-center">

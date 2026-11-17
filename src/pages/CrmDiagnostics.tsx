@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -393,16 +394,17 @@ export default function CrmDiagnostics() {
   return (
     <AppLayout>
       <div className="container mx-auto py-6 space-y-6 max-w-4xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{t('crm.diagnostics.title', 'CRM Diagnostics')}</h1>
-            <p className="text-muted-foreground">{t('crm.diagnostics.subtitle', 'Validate CRM features without affecting production data')}</p>
-          </div>
-          <Button onClick={runAllTests} variant="outline">
-            <Play className="h-4 w-4 mr-2" />
-            {t('crm.diagnostics.runAll', 'Run All Tests')}
-          </Button>
-        </div>
+        <PageHeader
+          className="mb-0"
+          title={t('crm.diagnostics.title', 'CRM Diagnostics')}
+          subtitle={t('crm.diagnostics.subtitle', 'Validate CRM features without affecting production data')}
+          actions={
+            <Button onClick={runAllTests} variant="outline">
+              <Play className="h-4 w-4 mr-2" />
+              {t('crm.diagnostics.runAll', 'Run All Tests')}
+            </Button>
+          }
+        />
 
         <Card>
           <CardHeader>

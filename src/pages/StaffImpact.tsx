@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { supabase } from '@/lib/supabaseClient';
 import { getIntlLocale } from '@/lib/dateUtils';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -96,6 +98,7 @@ function MetricCard({
 export default function StaffImpact() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const from = searchParams.get('from') || firstOfMonthISO();
   const to = searchParams.get('to') || todayISO();
@@ -160,15 +163,12 @@ export default function StaffImpact() {
           </div>
         </div>
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl font-semibold flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              {t('impact.title', 'Impacto do Ecossistema')}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {t('impact.subtitle', 'Métricas reais — sem estimativas ou proxies.')}
-            </p>
-          </div>
+          <PageHeader
+            className="mb-0"
+            icon={<TrendingUp className="h-5 w-5 text-primary" />}
+            title={t('impact.title', 'Impacto do Ecossistema')}
+            subtitle={t('impact.subtitle', 'Métricas reais — sem estimativas ou proxies.')}
+          />
 
           <div className="flex items-end gap-2">
             <div>
@@ -224,9 +224,12 @@ export default function StaffImpact() {
                 </CardContent>
               </Card>
             ) : !agg ? (
-              <Card><CardContent className="py-8 text-sm text-muted-foreground text-center">
-                {t('impact.noData', 'Sem dados no período selecionado.')}
-              </CardContent></Card>
+              <EmptyState
+                icon={Calendar}
+                title={t('impact.emptyTitle', 'Ainda sem sessões neste período')}
+                description={t('impact.emptyDesc', 'Agende uma sessão com uma startup para começar a medir o impacto.')}
+                action={{ label: t('sessions.scheduleSession', 'Agendar Sessão'), icon: Calendar, onClick: () => navigate('/my-workspaces#session-prep') }}
+              />
             ) : (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { notify } from '@/lib/notify';
@@ -154,14 +155,7 @@ export default function AdminContracts() {
   return (
     <AppLayout>
       <div className="container mx-auto max-w-7xl space-y-6 p-4 md:p-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {t('adminContracts.title')}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t('adminContracts.description')}
-          </p>
-        </div>
+        <PageHeader className="mb-0" title={t('adminContracts.title')} subtitle={t('adminContracts.description')} />
 
         <Card>
           <CardHeader className="pb-3">
