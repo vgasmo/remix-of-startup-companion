@@ -393,6 +393,13 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
                 </div>
               </div>
             )}
+            <Button asChild variant="outline" className="w-full whitespace-normal h-auto min-h-10">
+              <a href={`mailto:info@startupleiria.com?subject=${encodeURIComponent(t('publicBooking.rescheduleSubject'))}&body=${encodeURIComponent(t('publicBooking.rescheduleBody', { name: formData.name, email: formData.email, consultant: bookedConsultantName || '', date: selectedSlot?.date || '', time: selectedSlot?.time || '' }))}`}>
+                <Calendar className="h-4 w-4 shrink-0" />
+                {t('publicBooking.requestRescheduling')}
+              </a>
+            </Button>
+            <p className="text-sm text-muted-foreground">{t('publicBooking.reschedulePending')}</p>
             <Button asChild variant="outline" className="w-full">
               <a href={`mailto:info@startupleiria.com?subject=${encodeURIComponent(t('publicBooking.cancelSubject'))}&body=${encodeURIComponent(t('publicBooking.cancelBody', { name: formData.name, email: formData.email, consultant: bookedConsultantName || '', date: selectedSlot?.date || '', time: selectedSlot?.time || '' }))}`}>
                 {t('publicBooking.requestCancellation')}
