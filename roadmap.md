@@ -1,3 +1,6 @@
+## Verificação integrada — 17 Nov 2026
+- [x] Repetir testes da aplicação, funções e SQL descartável: 355 Vitest, 67 Deno e 419 asserções SQL/40 suites passaram; CRM/backoffice autenticados e wizard nativo simulado verificados. Relatório em docs/CONTRACT-CRM-BACKOFFICE-RETEST-2026-11-17.md. Dados reais intactos: 20 leads contratadas sem workspace e INC-2026-005 ativo sem assinatura concluída/snapshot; não certificada uma transação alojada completa nem entrega real de emails.
+
 ## Opções de assinatura — 17 Nov 2026
 - [x] Retirar PandaDoc manual e esconder configurações DocuSign/PandaDoc sem alterar contratos históricos.
 
