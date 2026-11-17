@@ -64,6 +64,9 @@ const INTAKE_NOT_APPROVED_STATES = ['draft_internal', 'intake_requested', 'intak
 export function isIntakeBlockingSignature(status: string | null | undefined): boolean {
   return !!status && INTAKE_NOT_APPROVED_STATES.includes(status);
 }
+export function isSelectableSignatureProvider(provider: string): boolean {
+  return provider === 'assinatura_digital' || provider === 'manual';
+}
 async function fetchLatestContractIntake(contractId: string) {
   const { data, error } = await supabase
     .from('contract_intakes')
@@ -899,6 +902,7 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
   };
 
   const handleSetProvider = async (newProvider: string) => {
+    if (!isSelectableSignatureProvider(newProvider)) return;
     try {
       const { error } = await supabase
         .from('startup_contracts')
@@ -912,32 +916,6 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
     }
   };
 
-  // PDF download for PandaDoc manual flow
-  const handleDownloadPdf = async () => {
-    setSending(true);
-    try {
-      const result = await invokeWithAuth<{ documentBase64?: string; fileName?: string }>('generate-contract-pdf', { body: { contractId: contract.id } });
-      if (result.error) throw result.error;
-      if (result.data?.documentBase64) {
-        const byteChars = atob(result.data.documentBase64);
-        const byteArr = new Uint8Array(byteChars.length);
-        for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
-        const blob = new Blob([byteArr], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = result.data.fileName || 'contrato.pdf';
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-      notify.success(t('contractDetail.pdfGenerated'));
-    } catch {
-      notify.error(t('contractDetail.pdfGenerationFailed'));
-    } finally {
-      setSending(false);
-    }
-  };
-
   return (
     <div className="space-y-4">
       {/* Provider Selection */}
@@ -948,14 +926,13 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
         {canChangeProvider ? (
           <Select value={provider || ''} onValueChange={handleSetProvider}>
             <SelectTrigger className="h-9">
-              <SelectValue placeholder={t('contractDetail.selectProvider', { defaultValue: 'Selecionar fornecedor...' })} />
+              <SelectValue placeholder={t('contractDetail.selectProvider', { defaultValue: 'Selecionar fornecedor...' })}>
+                {provider ? providerLabel : undefined}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="assinatura_digital">
                 {t('contractDetail.digitalSignature')}
-              </SelectItem>
-              <SelectItem value="pandadoc_manual">
-                {t('contractDetail.pandadocManual')}
               </SelectItem>
               <SelectItem value="manual">{t('contractDetail.manualSignature')}</SelectItem>
             </SelectContent>
@@ -1224,62 +1201,6 @@ function SignatureProviderPanel({ contract }: { contract: StartupContract }) {
             {intakeBlocksSigning && (
               <p className="text-xs text-warning">{t('contractDetail.intakeNotApproved')}</p>
             )}
-          </div>
-        )}
-
-        {/* ROTA 2: PandaDoc Manual (Estrangeiros) */}
-        {provider === 'pandadoc_manual' && (!isSent || canRetry) && (
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">
-              {t('contractDetail.pandadocManualDesc')}
-            </p>
-            
-            {/* Step 1: Generate & Download PDF */}
-            <Button 
-              size="sm" 
-              variant="outline"
-              className="w-full gap-2"
-              onClick={handleDownloadPdf}
-              disabled={sending} loading={sending}
-            >
-              {sending ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileDown className="h-3 w-3" />}
-              {t('contractDetail.step1DownloadPdf')}
-            </Button>
-            
-            {/* Step 2: Open PandaDoc */}
-            <Button 
-              size="sm" 
-              variant="outline"
-              className="w-full gap-2"
-              onClick={() => window.open('https://app.pandadoc.com/documents/', '_blank')}
-            >
-              <ExternalLink className="h-3 w-3" />
-              {t('contractDetail.step2OpenPandaDoc')}
-            </Button>
-            
-            {/* Step 3: Mark as sent */}
-            <Button 
-              size="sm" 
-              className="w-full gap-2"
-              onClick={async () => {
-                const result = await canonicalMarkAsSent(contract.id, 'pandadoc_manual');
-                if (!result.success) {
-                  notify.error(
-                    result.error
-                      || (result.syncError && `Sincronização parcial: ${result.syncError}`)
-                      || 'Erro ao marcar como enviado'
-                  );
-                  return;
-                }
-                queryClient.invalidateQueries({ queryKey: ['contracts'] });
-                queryClient.invalidateQueries({ queryKey: ['contract-intakes'] });
-                queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
-                notify.success(t('contractDetail.markedAsSent'));
-              }}
-            >
-              <CheckCircle2 className="h-3 w-3" />
-              {t('contractDetail.step3MarkSent')}
-            </Button>
           </div>
         )}
 

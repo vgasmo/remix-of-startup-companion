@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Flag, Plug, TestTube, Activity, Workflow, FileSignature } from 'lucide-react';
+import { AlertTriangle, Flag, Plug, TestTube, Activity, Workflow } from 'lucide-react';
 import { AdminFeatureFlagsManager } from '@/components/admin/AdminFeatureFlagsManager';
 import { EnrollmentControlCenter } from '@/components/admin/EnrollmentControlCenter';
 import { IntegrationErrorsPanel } from '@/components/admin/IntegrationErrorsPanel';
@@ -10,7 +10,6 @@ import { AdminTeamsTestPanel } from '@/components/admin/AdminTeamsTestPanel';
 import { IntegrationTestHarness } from '@/components/admin/IntegrationTestHarness';
 import { WorkflowIntegrations } from '@/components/settings/WorkflowIntegrations';
 import { ActivityLogViewerEnhanced } from '@/components/admin/ActivityLogViewerEnhanced';
-import { SignatureProvidersCard } from '@/components/admin/SignatureProvidersCard';
 import { FounderNotificationsKillSwitch } from '@/components/admin/FounderNotificationsKillSwitch';
 
 export default function SystemSettings() {
@@ -36,10 +35,6 @@ export default function SystemSettings() {
             <Plug className="h-3.5 w-3.5" />
             {t('systemSettings.tabs.integrations', { defaultValue: 'Integrations' })}
           </TabsTrigger>
-          <TabsTrigger value="signatures" className="gap-1.5 text-xs">
-            <FileSignature className="h-3.5 w-3.5" />
-            {t('systemSettings.tabs.signatures', { defaultValue: 'Assinaturas' })}
-          </TabsTrigger>
           <TabsTrigger value="flags" className="gap-1.5 text-xs">
             <Flag className="h-3.5 w-3.5" />
             {t('systemSettings.tabs.featureFlags', { defaultValue: 'Feature Flags' })}
@@ -60,10 +55,6 @@ export default function SystemSettings() {
             <AdminTeamsTestPanel />
             <IntegrationErrorsPanel maxHeight="500px" />
           </div>
-        </TabsContent>
-
-        <TabsContent value="signatures">
-          <SignatureProvidersCard />
         </TabsContent>
 
         <TabsContent value="flags">

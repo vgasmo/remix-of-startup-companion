@@ -1,3 +1,5 @@
+## Opções de assinatura — 17 Nov 2026
+- [x] Retirar PandaDoc manual e esconder configurações DocuSign/PandaDoc sem alterar contratos históricos.
 
 ## Revogação ao suspender — 14 Nov 2026
 - [x] APIs oficiais confirmadas: banimento bloqueia login/refresh mas não elimina sessões; signOut global exige JWT do alvo. Estado restritivo gravado antes do banimento, função publicada; 8 Deno, 353 Vitest, i18n e oj typecheck passam. ProtectedRoute/localStorage intactos; P05 preservado por consulta de leitura. Não suspensa conta real.
