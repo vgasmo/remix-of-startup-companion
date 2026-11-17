@@ -157,7 +157,7 @@ export function QuickKpiModal({ open, onOpenChange, workspaceId, programId }: Qu
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm p-0 overflow-hidden border-0 shadow-2xl rounded-2xl">
+      <DialogContent className="max-w-sm p-0 overflow-hidden border-0">
         <VisuallyHidden>
           <DialogTitle>{t('quickKpi.title', { defaultValue: 'Entrada Rápida de KPI' })}</DialogTitle>
           <DialogDescription>{t('quickKpi.description', { defaultValue: 'Atualize as suas métricas chave para {{month}}', month: monthLabel })}</DialogDescription>

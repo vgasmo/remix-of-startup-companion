@@ -54,7 +54,7 @@ export const ConsultorRiskPanel = memo(function ConsultorRiskPanel({ riskItems, 
       </div>
 
       {riskItems.length === 0 ? (
-        <Card className="border-health-healthy/30 bg-health-healthy/5 rounded-2xl">
+        <Card className="border-health-healthy/30 bg-health-healthy/5">
           <CardContent className="flex items-center gap-3 py-5">
             <div className="h-10 w-10 rounded-full bg-health-healthy/10 flex items-center justify-center">
               <CheckCircle2 className="h-5 w-5 text-health-healthy" />

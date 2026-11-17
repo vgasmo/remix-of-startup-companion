@@ -46,7 +46,7 @@ export function PlanAssistantsCard({ workspaceId, programId }: PlanAssistantsCar
   };
 
   return (
-    <Card className="rounded-2xl border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5">
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5">
       <CardHeader className="pb-3">
         <div className="flex items-start gap-3">
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">

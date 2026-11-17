@@ -327,7 +327,7 @@ export function WorkspaceOverview({ workspace, canWrite }: WorkspaceOverviewProp
 
       {/* AI Draft Monthly Update CTA - Founders only, advanced disclosure */}
       {isFounder && canWrite && founderAdvancedOpen && (
-        <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl">
+        <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
           <CardContent className="py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">

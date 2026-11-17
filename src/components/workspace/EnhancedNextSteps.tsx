@@ -182,7 +182,7 @@ export function EnhancedNextSteps({ workspaceId, programId, stage, canWrite }: E
 
   if (steps.length === 0) {
     return (
-      <Card className="border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 ">
+      <Card className="border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10">
         <CardContent className="py-6">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-[hsl(var(--success))]/10 flex items-center justify-center">

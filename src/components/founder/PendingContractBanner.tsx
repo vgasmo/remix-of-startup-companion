@@ -43,7 +43,7 @@ export function PendingContractBanner({ workspaceId }: PendingContractBannerProp
         const isSigned = sigStatus === 'signed';
 
         return (
-          <Card key={c.id} className="border-primary/30 bg-primary/5 rounded-2xl shadow-sm">
+          <Card key={c.id} className="border-primary/30 bg-primary/5">
             <CardContent className="py-4 px-5">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-xl bg-primary/10 shrink-0">

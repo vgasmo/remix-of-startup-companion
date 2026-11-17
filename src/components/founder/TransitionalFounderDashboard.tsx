@@ -130,7 +130,7 @@ export function TransitionalFounderDashboard({
       <PendingContractBanner workspaceId={workspace.id} />
 
       {/* What happens next — state-grounded */}
-      <Card className="rounded-2xl">
+      <Card className="">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
             <HelpCircle className="h-4 w-4 text-primary" />
@@ -166,7 +166,7 @@ export function TransitionalFounderDashboard({
       </Card>
 
       {/* Guidance Checklist */}
-      <Card className="rounded-2xl">
+      <Card className="">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
             <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -211,7 +211,7 @@ export function TransitionalFounderDashboard({
       <ResponsibleConsultantCard workspaceId={workspace.id} />
 
       {/* Quick Actions */}
-      <Card className="rounded-2xl">
+      <Card className="">
         <CardContent className="py-4">
           <div className="flex flex-wrap gap-2">
             <Button

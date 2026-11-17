@@ -117,7 +117,7 @@ export const PortfolioPerformanceTable = memo(function PortfolioPerformanceTable
   );
 
   return (
-    <Card className="rounded-2xl border-border/60">
+    <Card className="border-border/60">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">

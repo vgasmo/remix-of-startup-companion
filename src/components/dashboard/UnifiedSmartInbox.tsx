@@ -142,7 +142,7 @@ export function UnifiedSmartInbox({
     cat === 'all' ? visibleItems.length : visibleItems.filter(i => i.category === cat).length;
 
   return (
-    <Card className="rounded-2xl border-border/60 overflow-hidden">
+    <Card className="border-border/60 overflow-hidden">
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">

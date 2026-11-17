@@ -85,3 +85,9 @@
 - [x] RC13 Lote 1 (dez correções) — aplicado
 - [x] Auditoria CRM e pipeline de contratos — relatório entregue
 - [ ] Correções da auditoria CRM/contratos — aguarda decisão do utilizador (prioridades, assinatura manual, dados INC-2026-004)
+
+## RC13 Lote 4
+- [x] Fase 1 cores
+- [x] Fase 2 cantos/sombras
+- [ ] Fase 3 PageHeader + EmptyState
+- [ ] Fase 4 hierarquia FounderDashboard

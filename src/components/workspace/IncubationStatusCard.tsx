@@ -72,7 +72,7 @@ export const IncubationStatusCard = memo(function IncubationStatusCard({
   if (!startDate) return null;
 
   return (
-    <Card className="rounded-2xl overflow-hidden border-border/50 bg-gradient-to-r from-muted/20 via-background to-muted/20">
+    <Card className="overflow-hidden border-border/50 bg-gradient-to-r from-muted/20 via-background to-muted/20">
       <CardContent className="p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

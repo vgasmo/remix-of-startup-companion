@@ -113,7 +113,7 @@ export function ContractIntelligenceCard({ contractId, contractLabel }: Contract
   }
 
   return (
-    <Card className="rounded-2xl border-primary/20">
+    <Card className="border-primary/20">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium flex items-center gap-2">

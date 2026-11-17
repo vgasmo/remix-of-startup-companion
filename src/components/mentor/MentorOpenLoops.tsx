@@ -152,7 +152,7 @@ export function MentorOpenLoops({ workspaces }: MentorOpenLoopsProps) {
 
 
   return (
-    <Card className="border-warning/30 dark:border-warning/30 rounded-2xl">
+    <Card className="border-warning/30 dark:border-warning/30">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
           <Clock className="h-4 w-4 text-warning" />

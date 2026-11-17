@@ -319,7 +319,7 @@ const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, is
 
       {/* Post-NDA one-time onboarding checklist */}
       {showNdaChecklist && (
-        <Card className="rounded-2xl border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+        <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
           <CardHeader className="pb-2 flex flex-row items-start justify-between gap-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
@@ -394,7 +394,7 @@ const MentorDashboardInner = memo(function MentorDashboardInner({ workspaces, is
 
       {/* Post-session feedback CTA */}
       {recentUnloggedSessions.length > 0 && (
-        <Card className="border-warning/30 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent rounded-2xl">
+        <Card className="border-warning/30 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-2">
               <div className="h-9 w-9 rounded-xl bg-warning/15 flex items-center justify-center shrink-0">

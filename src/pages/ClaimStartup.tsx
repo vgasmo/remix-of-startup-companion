@@ -128,7 +128,7 @@ export default function ClaimStartup() {
       <div className="absolute top-4 left-4">
         <BackToHomeLink />
       </div>
-      <Card className="w-full max-w-md shadow-lg border-border/60">
+      <Card className="w-full max-w-md border-border/60">
         <CardHeader className="text-center pb-4">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20">
             <Rocket className="h-8 w-8 text-primary" />

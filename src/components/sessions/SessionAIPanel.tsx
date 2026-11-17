@@ -506,7 +506,7 @@ export function SessionAIPanel({ workspaceId, sessionId, session, canWrite, onRe
           {/* KPI Prompts */}
           {kpiPrompts.length > 0 && (
             <Collapsible open={expandedSections.kpis} onOpenChange={() => toggleSection('kpis')}>
-              <Card className="border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/50 ">
+              <Card className="border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/50">
                 <CollapsibleTrigger asChild>
                   <CardHeader className="cursor-pointer hover:bg-[hsl(var(--warning))]/50 transition-colors pb-3">
                     <div className="flex items-center justify-between">

@@ -66,7 +66,7 @@ function MetricCard({
   source: string;
 }) {
   return (
-    <Card className="rounded-2xl border-border/60">
+    <Card className="border-border/60">
       <CardContent className="pt-5">
         <div className="flex items-start justify-between">
           <div>
@@ -292,7 +292,7 @@ export default function StaffImpact() {
               </CardContent></Card>
             ) : (
               dqAlerts.map((a) => (
-                <Card key={a.label} className="rounded-2xl border-border/60">
+                <Card key={a.label} className="border-border/60">
                   <CardContent className="py-3 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm">
                       <AlertTriangle className="h-4 w-4 text-warning" />

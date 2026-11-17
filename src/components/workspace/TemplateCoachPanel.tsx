@@ -210,7 +210,7 @@ export function TemplateCoachPanel({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-primary/20 shadow-sm">
+      <Card className="border-primary/20">
         <CollapsibleTrigger asChild>
           <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors py-2 px-3">
             <CardTitle className="text-xs flex items-center justify-between">

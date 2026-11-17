@@ -19,7 +19,7 @@ export const ConsultorHealthMatrix = memo(function ConsultorHealthMatrix({ works
   const { t } = useTranslation();
 
   return (
-    <Card className="p-4 rounded-2xl border-border/60">
+    <Card className="p-4 border-border/60">
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('consultor.healthMatrix.title', { defaultValue: 'Matriz de Saúde do Portefólio' })}</p>
         <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate('/my-workspaces')}>

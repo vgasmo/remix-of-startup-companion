@@ -72,7 +72,7 @@ export const EcosystemHeatmap = memo(function EcosystemHeatmap({ workspaces, onE
   }, [grid]);
 
   return (
-    <Card className="rounded-2xl overflow-hidden">
+    <Card className="overflow-hidden">
       <CardHeader className="pb-3 flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">

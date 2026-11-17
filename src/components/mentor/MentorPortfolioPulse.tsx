@@ -92,7 +92,7 @@ function MentorPortfolioPulseInner({ workspaces }: Props) {
 
   if (alerts.length === 0) {
     return (
-      <Card className="border-success/40 bg-success/5 rounded-2xl">
+      <Card className="border-success/40 bg-success/5">
         <CardContent className="p-4 flex items-center gap-3">
           <div className="h-9 w-9 rounded-xl bg-success/15 flex items-center justify-center shrink-0">
             <CheckCircle2 className="h-4 w-4 text-success" />
@@ -118,7 +118,7 @@ function MentorPortfolioPulseInner({ workspaces }: Props) {
   };
 
   return (
-    <Card className="rounded-2xl border-border/60">
+    <Card className="border-border/60">
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold">

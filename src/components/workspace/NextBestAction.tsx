@@ -179,7 +179,7 @@ export function NextBestAction({ workspaceId, programId, stage, canWrite }: Next
 
   if (nextActions.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-[hsl(var(--success))]/30 bg-gradient-to-r from-[hsl(var(--success))]/80 via-[hsl(var(--success))]/50 to-transparent ">
+      <Card className="relative overflow-hidden border-[hsl(var(--success))]/30 bg-gradient-to-r from-[hsl(var(--success))]/80 via-[hsl(var(--success))]/50 to-transparent">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[hsl(var(--success))]/10 to-transparent rounded-bl-full" />
         <CardContent className="py-6 relative">
           <div className="flex items-center gap-3">

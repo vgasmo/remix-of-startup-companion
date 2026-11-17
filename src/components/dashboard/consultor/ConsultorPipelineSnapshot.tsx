@@ -22,7 +22,7 @@ export const ConsultorPipelineSnapshot = memo(function ConsultorPipelineSnapshot
   const { t } = useTranslation();
 
   return (
-    <Card className="rounded-2xl border-primary/20 bg-primary/5">
+    <Card className="border-primary/20 bg-primary/5">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium flex items-center gap-2">

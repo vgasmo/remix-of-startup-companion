@@ -347,7 +347,7 @@ export default function Login() {
             </Button>
           </div>
 
-          <Card className="shadow-xl border-border/50 overflow-hidden">
+          <Card className="border-border/50 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
             <CardHeader className="space-y-1 pb-4 relative">
               <div className="flex items-center gap-2">

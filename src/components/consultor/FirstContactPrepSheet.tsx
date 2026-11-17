@@ -263,7 +263,7 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
 
                 {/* Startup Snapshot */}
                 <Section icon={Rocket} title="Snapshot da Startup">
-                  <Card className="rounded-lg">
+                  <Card className="">
                     <CardContent className="pt-3 pb-2 space-y-1.5">
                       <InfoRow label="Nome" value={data.startup?.name} />
                       <InfoRow label="Programa" value={data.program?.name} missing="Sem programa" />
@@ -276,7 +276,7 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
 
                 {/* Founder Snapshot */}
                 <Section icon={User} title="Equipa / Contacto">
-                  <Card className="rounded-lg">
+                  <Card className="">
                     <CardContent className="pt-3 pb-2 space-y-1.5">
                       <InfoRow label="Email" value={data.startup?.main_contact_email} missing="Não disponível" />
                       <InfoRow label="Membros" value={`${data.members.length} registados`} />
@@ -293,7 +293,7 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
                 {/* What's Unknown */}
                 {unknowns.length > 0 && (
                   <Section icon={HelpCircle} title="O que falta saber">
-                    <Card className="rounded-lg border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/30">
+                    <Card className="border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/30">
                       <CardContent className="pt-3 pb-2">
                         <ul className="space-y-1">
                           {unknowns.map((u, i) => (
@@ -312,7 +312,7 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
 
                 {/* Discovery Questions — assistive, not authoritative */}
                 <Section icon={Lightbulb} title="Perguntas sugeridas (orientação)">
-                  <Card className="rounded-lg">
+                  <Card className="">
                     <CardContent className="pt-3 pb-2">
                       <ol className="space-y-1.5">
                         {discoveryQuestions.map((q, i) => (
@@ -329,7 +329,7 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
                 {/* Document Requests */}
                 {docRequests.length > 0 && (
                   <Section icon={FileText} title="Documentos a pedir">
-                    <Card className="rounded-lg">
+                    <Card className="">
                       <CardContent className="pt-3 pb-2">
                         <ul className="space-y-1">
                           {docRequests.map((d, i) => (
@@ -347,7 +347,7 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
                 {/* Risks — computed heuristic */}
                 {risks.length > 0 && (
                   <Section icon={AlertTriangle} title="Pontos de atenção (estimativa)">
-                    <Card className="rounded-lg border-destructive/30 bg-destructive/30">
+                    <Card className="border-destructive/30 bg-destructive/30">
                       <CardContent className="pt-3 pb-2">
                         <ul className="space-y-1.5">
                           {risks.map((r, i) => (
@@ -366,7 +366,7 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
 
                 {/* Suggested Agenda */}
                 <Section icon={ListChecks} title="Agenda sugerida (45 min)">
-                  <Card className="rounded-lg">
+                  <Card className="">
                     <CardContent className="pt-3 pb-2">
                       {[
                         { time: '5 min', item: 'Apresentações e contexto' },
@@ -387,7 +387,7 @@ export function FirstContactPrepSheet({ open, onOpenChange, workspaceId }: First
 
                 {/* Next Steps */}
                 <Section icon={ArrowRight} title="Sugestões de próximos passos">
-                  <Card className="rounded-lg bg-primary/5 border-primary/20">
+                  <Card className="bg-primary/5 border-primary/20">
                     <CardContent className="pt-3 pb-2">
                       <ul className="space-y-1.5">
                         {[

@@ -67,7 +67,7 @@ export function FounderReadinessStrip({ workspace }: FounderReadinessStripProps)
   const nextStep = items.find(i => !i.done);
 
   return (
-    <Card className="border-border/60 rounded-2xl overflow-hidden">
+    <Card className="border-border/60 overflow-hidden">
       <CardContent className="p-4">
         {/* Header row */}
         <div className="flex items-center justify-between mb-3">

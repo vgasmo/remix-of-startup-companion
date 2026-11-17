@@ -74,7 +74,7 @@ export function AdminMissionControlDirectory() {
   const activeItem = items.find(i => i.tab === activeTab);
 
   return (
-    <Card className="rounded-2xl border-border/60 mb-6">
+    <Card className="border-border/60 mb-6">
       <CardContent className="p-4">
         <button
           onClick={() => setIsExpanded(!isExpanded)}

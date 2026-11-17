@@ -32,7 +32,7 @@ export function BuildingOccupancyPanel() {
 
   if (loadingBuildings || loadingRooms) {
     return (
-      <Card className="rounded-2xl">
+      <Card className="">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
@@ -65,7 +65,7 @@ export function BuildingOccupancyPanel() {
   const overallStats = calculateStats(rooms || []);
 
   return (
-    <Card className="rounded-2xl">
+    <Card className="">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
           <Building2 className="h-5 w-5" />

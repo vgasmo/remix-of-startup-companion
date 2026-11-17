@@ -115,7 +115,7 @@ export function FounderHelpNudge({
       role="region"
       aria-label={t('founderHelpNudge.aria', { defaultValue: 'Sugestão de ajuda' })}
     >
-      <Card className="border-primary/20 bg-card/95 backdrop-blur shadow-xl rounded-2xl">
+      <Card className="border-primary/20 bg-card/95 backdrop-blur">
         <CardContent className="p-4 space-y-3">
           <div className="flex items-start gap-3">
             <div className="p-2 rounded-xl bg-primary/10 shrink-0">

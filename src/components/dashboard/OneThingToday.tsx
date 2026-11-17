@@ -55,7 +55,7 @@ export function OneThingToday({ workspace, className, isFirstWeek = false }: One
     if (overdueActions.length > 0) {
       const oldest = overdueActions[0];
       const daysOverdue = differenceInDays(new Date(), new Date(oldest.due_date!));
-      const variant = daysOverdue >= 7 ? 'destructive' : 'warning';
+      const variant = 'warning';
       candidates.push({
         type: 'overdue_action',
         title: oldest.title,
@@ -186,7 +186,7 @@ export function OneThingToday({ workspace, className, isFirstWeek = false }: One
           <div className={cn(
             'h-11 w-11 rounded-xl flex items-center justify-center shrink-0 ring-1 transition-transform duration-300',
             isDestructive && 'bg-destructive/10 text-destructive ring-destructive/20',
-            isWarning && 'bg-warning/10 text-warning ring-warning/20',
+            isWarning && 'bg-warning/10 text-warning-strong ring-warning/20',
             !isDestructive && !isWarning && 'bg-primary/10 text-primary ring-primary/20',
           )}>
             <Icon className="h-5 w-5" />
@@ -196,7 +196,7 @@ export function OneThingToday({ workspace, className, isFirstWeek = false }: One
               <Badge variant="outline" className={cn(
                 "text-xs flex items-center gap-1 font-medium",
                 isDestructive && 'border-destructive/40 text-destructive',
-                isWarning && 'border-warning/40 text-warning',
+                isWarning && 'border-warning/40 text-warning-strong',
               )}>
                 <Lightbulb className="h-3 w-3" />
                 {t('oneThingToday.focusToday')}

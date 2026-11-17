@@ -18,7 +18,7 @@ export const ConsultorCriticalActions = memo(function ConsultorCriticalActions({
   const { t } = useTranslation();
 
   return (
-    <Card className="rounded-2xl border-border/60">
+    <Card className="border-border/60">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium flex items-center gap-2">

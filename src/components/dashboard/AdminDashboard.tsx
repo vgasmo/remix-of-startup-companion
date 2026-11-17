@@ -173,7 +173,7 @@ const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLo
 
       {/* HERO: Exception-Based Alerts */}
       {exceptionAlerts.length > 0 && (
-        <Card className="rounded-2xl border-warning/40 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent">
+        <Card className="border-warning/40 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent">
           <CardContent className="p-4">
             <p className="label-eyebrow text-warning mb-3">
               {t('admin.exceptionsTitle', { defaultValue: 'Requires Your Attention' })}
@@ -221,7 +221,7 @@ const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLo
       </FullViewOnly>
 
       {/* Portfolio Health Summary */}
-      <Card className="rounded-2xl">
+      <Card className="">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-primary" />
@@ -278,7 +278,7 @@ const AdminDashboardInner = memo(function AdminDashboardInner({ workspaces, isLo
       </Card>
 
       {/* Onboarding Pipeline Summary */}
-      <Card className="rounded-2xl">
+      <Card className="">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary" />

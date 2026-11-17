@@ -77,7 +77,7 @@ function BackofficeDashboardInner() {
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
-            <Card key={i} className="rounded-2xl">
+            <Card key={i} className="">
               <CardContent className="pt-5">
                 <Skeleton className="h-8 w-20 mb-2" />
                 <Skeleton className="h-4 w-32" />
@@ -179,7 +179,7 @@ function BackofficeDashboardInner() {
 
         {/* Available Rooms — full view only */}
         <FullViewOnly>
-          <Card className="rounded-2xl">
+          <Card className="">
             <CardContent className="pt-5">
               <div className="flex items-center justify-between">
                 <div>
@@ -218,7 +218,7 @@ function BackofficeDashboardInner() {
         {/* Alerts & Quick Floor Map Access */}
         <div className="space-y-4">
           {/* Floor Map Quick Access */}
-          <Card className="rounded-2xl">
+          <Card className="">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <Map className="h-5 w-5" />
@@ -343,7 +343,7 @@ function BackofficeDashboardInner() {
 
           {/* Contracts Requiring Attention */}
           <WidgetErrorBoundary name={t('admin.backoffice.opsHub.contractsAttention', 'Contracts Requiring Attention')}>
-            <Card className="rounded-2xl">
+            <Card className="">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <FileText className="h-5 w-5" />
@@ -403,7 +403,7 @@ function BackofficeDashboardInner() {
 
       {/* ═══════════════════ TENURE BREAKDOWN — full view only ═══════════════════ */}
       <FullViewOnly>
-      <Card className="rounded-2xl">
+      <Card className="">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Timer className="h-5 w-5" />

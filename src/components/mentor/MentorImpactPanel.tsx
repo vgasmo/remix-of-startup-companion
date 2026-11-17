@@ -83,7 +83,7 @@ export function MentorImpactPanel({ workspaces }: MentorImpactPanelProps) {
   ];
 
   return (
-    <Card className="rounded-2xl border-border/60">
+    <Card className="border-border/60">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
