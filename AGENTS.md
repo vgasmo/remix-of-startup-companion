@@ -47,3 +47,4 @@
 - User-directory workspace filters use the shared association index over fully paged memberships and workspace lifecycle fields; failed reads never establish absence of membership.
 - Account suspension uses set-account-status to persist the restrictive profile status before Auth banning, so Auth failures cannot leave existing JWTs authorized; bans block login/refresh but do not delete sessions, and admin.signOut requires the target user's JWT, never the caller's.
 - HTTP cron monitoring deduplicates by response ID using system_alerts.dedupe_key and logs only status metadata, never response bodies or credential-bearing diagnostics.
+- Public booking submissions carry the displayed consultant ID as an expectation, never an override; routing changes refuse the booking before CRM/provider writes, and cancellation email requests never claim actual cancellation.

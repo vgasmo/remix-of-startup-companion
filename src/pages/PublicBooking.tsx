@@ -59,6 +59,7 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
   const [step, setStep] = useState<'loading' | 'program_select' | 'slots' | 'form' | 'success' | 'error'>('loading');
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
   const [bookingHasInvite, setBookingHasInvite] = useState<boolean>(false);
+  const [bookedConsultantName, setBookedConsultantName] = useState<string | null>(null);
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(null);
   const [selectedProgramName, setSelectedProgramName] = useState<string | null>(null);
   const [pitchFile, setPitchFile] = useState<File | null>(null);
@@ -119,10 +120,10 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
   const routingOptions = tokenResult?.routingOptions ?? [];
 
   // Fetch available slots - now depends on selectedProgramId
-  const { data: slotsData, isLoading: slotsLoading } = useQuery({
+  const { data: slotsData, isLoading: slotsLoading, refetch: refetchSlots } = useQuery({
     queryKey: ['public-slots', token, selectedProgramId],
     queryFn: async () => {
-      if (!token) return { slots: [], consultantName: null, programName: null, unavailable: false };
+      if (!token) return { slots: [], consultantId: null, consultantName: null, programName: null, unavailable: false };
 
       const { data, error } = await supabase.functions.invoke('public-get-availability', {
         body: { token, action: 'get_slots', program_id: selectedProgramId },
@@ -141,6 +142,7 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
         return {
           slots: [] as TimeSlot[],
           consultantName: null,
+          consultantId: null,
           programName: null,
           unavailable: true,
         };
@@ -149,6 +151,7 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
       return {
         slots: (data?.slots || []) as TimeSlot[],
         consultantName: data?.consultantName as string | null,
+        consultantId: data?.consultantId as string | null,
         programName: data?.programName as string | null,
         unavailable: false,
       };
@@ -170,6 +173,7 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
           token,
           slot: selectedSlot,
           program_id: selectedProgramId,
+          expected_consultant_id: slotsData?.consultantId ?? undefined,
           contact: {
             ...formData,
             ...(pitchDeckPath ? { pitch_deck_path: pitchDeckPath } : {}),
@@ -185,6 +189,12 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
         if (ctx instanceof Response) {
           try { const body = await ctx.clone().json(); if (typeof body?.error === "string") msg = body.error === "slot_taken" && typeof body?.message === "string" ? body.message : body.error; } catch { /* corpo não-JSON */ }
         }
+        if (msg === 'consultant_changed') {
+          setSelectedSlot(null);
+          setStep('slots');
+          await refetchSlots();
+          throw new Error(t('publicBooking.consultantChanged'));
+        }
         throw new Error(msg);
       }
       // Falha parcial: a marcação ficou registada (funnelItemId) mas o convite do calendário falhou.
@@ -195,6 +205,7 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
       return data;
     },
     onSuccess: (data) => {
+      setBookedConsultantName(data?.routing?.consultant_name || slotsData?.consultantName || tokenData?.consultant_name || null);
       setBookingHasInvite(Boolean(data?.teamsLink || data?.calendarEventId));
       setStep('success');
     },
@@ -364,6 +375,7 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
           <CardContent className="pt-6 text-center space-y-4">
             <CheckCircle className="h-12 w-12 text-primary mx-auto" />
             <h1 className="text-xl font-semibold text-foreground">{t('publicBooking.bookingConfirmed')}</h1>
+            {bookedConsultantName && <p className="font-medium">{t('publicBooking.meetingWith', { name: bookedConsultantName })}</p>}
             <p className="text-muted-foreground">
               {bookingHasInvite
                 ? t('publicBooking.bookingConfirmedDesc')
@@ -381,6 +393,12 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
                 </div>
               </div>
             )}
+            <Button asChild variant="outline" className="w-full">
+              <a href={`mailto:info@startupleiria.com?subject=${encodeURIComponent(t('publicBooking.cancelSubject'))}&body=${encodeURIComponent(t('publicBooking.cancelBody', { name: formData.name, email: formData.email, consultant: bookedConsultantName || '', date: selectedSlot?.date || '', time: selectedSlot?.time || '' }))}`}>
+                {t('publicBooking.requestCancellation')}
+              </a>
+            </Button>
+            <p className="text-sm text-muted-foreground">{t('publicBooking.cancelPending')}</p>
             <Button
               variant="outline"
               className="mt-4"
@@ -485,6 +503,12 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
         </div>
 
         {/* Program Selection Step */}
+        {(step === 'slots' || step === 'form') && slotsData?.consultantName && (
+          <div className="text-center space-y-2">
+            <p className="text-lg font-semibold">{t('publicBooking.meetingWith', { name: slotsData.consultantName })}</p>
+            <Button asChild variant="link"><a href={`mailto:info@startupleiria.com?subject=${encodeURIComponent(t('publicBooking.otherConsultant'))}`}>{t('publicBooking.otherConsultant')}</a></Button>
+          </div>
+        )}
         {step === 'program_select' && (
           <Card>
             <CardHeader>

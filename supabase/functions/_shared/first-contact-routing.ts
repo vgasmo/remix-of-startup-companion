@@ -30,6 +30,7 @@ export interface ResolveInput {
   token: string;                 // raw token from the public URL, or 'demo'
   selectedProgramId?: string | null; // 'global', UUID, null/undefined
   advanceRoundRobin?: boolean;   // false = só consultar (get_slots): mostra o consultor que a marcação vai usar
+  expectedConsultantId?: string;
 }
 
 export class NoRouteError extends Error {
@@ -116,6 +117,7 @@ export async function resolveFirstContactRoute({
   token,
   selectedProgramId,
   advanceRoundRobin = true,
+  expectedConsultantId,
 }: ResolveInput): Promise<ResolvedRoute> {
   const trace: Record<string, unknown> = { token_is_demo: token === 'demo', selected_program_id: selectedProgramId ?? null };
 
@@ -160,6 +162,9 @@ export async function resolveFirstContactRoute({
   // 3. If the link has a fixed owner, that consultant serves the booking
   //    (regardless of routing rules). This is the "fixed_owner" mode of the plan.
   if (link?.owner_consultant_id) {
+    if (expectedConsultantId && expectedConsultantId !== link.owner_consultant_id) {
+      throw new NoRouteError('consultant_changed', trace);
+    }
     const profile = await loadProfile(supabase, link.owner_consultant_id);
     if (!profile || !ACTIVE_ACCOUNT_STATUSES.has(profile.account_status)) {
       throw new NoRouteError('link_owner_inactive', trace);
@@ -214,7 +219,14 @@ export async function resolveFirstContactRoute({
 
   if (!chosen) throw new NoRouteError('no_active_routing', trace);
 
+  if (expectedConsultantId) {
+    const preview = await pickConsultantForRouting(supabase, chosen, false);
+    if (preview !== expectedConsultantId) throw new NoRouteError('consultant_changed', trace);
+  }
   const consultantId = await pickConsultantForRouting(supabase, chosen, advanceRoundRobin);
+  if (expectedConsultantId && consultantId !== expectedConsultantId) {
+    throw new NoRouteError('consultant_changed', trace);
+  }
   if (!consultantId) throw new NoRouteError('routing_has_no_consultants', { ...trace, routing_id: chosen.id });
 
   const profile = await loadProfile(supabase, consultantId);

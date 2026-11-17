@@ -620,6 +620,7 @@ serve(async (req) => {
           status: 'ok',
           slots,
           consultantName,
+          consultantId,
           programId,
           programName,
           graphEnabled: true,

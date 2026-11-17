@@ -339,6 +339,10 @@ serve(async (req) => {
     }
 
     const { token, slot, contact, recording_consent } = validation.data;
+    const expectedConsultantId = (rawBody as { expected_consultant_id?: unknown }).expected_consultant_id;
+    if (expectedConsultantId !== undefined && (typeof expectedConsultantId !== 'string' || !/^[0-9a-f-]{36}$/i.test(expectedConsultantId))) {
+      return corsJsonResponse({ error: 'invalid_consultant' }, req, 400);
+    }
 
     // O servidor não confia no cliente: só aceita os horários que a página oferece (dias úteis, futuros, até 14 dias)
     if (!isOfferedSlot(slot.date, slot.time)) {
@@ -418,6 +422,7 @@ serve(async (req) => {
         supabase,
         token,
         selectedProgramId,
+        expectedConsultantId: typeof expectedConsultantId === 'string' ? expectedConsultantId : undefined,
       });
       consultantId = resolved.consultantId;
       consultantEmail = resolved.consultantEmail;
@@ -433,6 +438,9 @@ serve(async (req) => {
         trace: resolved.decisionTrace,
       };
     } catch (e) {
+      if (e instanceof NoRouteError && e.reason === 'consultant_changed') {
+        return corsJsonResponse({ error: 'consultant_changed' }, req, 409);
+      }
       if (e instanceof NoRouteError) {
         console.warn('First-contact booking NO_ROUTE:', e.reason, e.trace);
         // Best-effort staff alert so backoffice notices routing gaps.

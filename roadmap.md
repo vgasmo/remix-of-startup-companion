@@ -1,3 +1,6 @@
+## Clareza das marcações públicas — 17 Nov 2026
+- [x] Mostrar consultor antes/depois da marcação, recusar troca silenciosa pelo resolvedor e oferecer pedido de cancelamento por email, sem afirmar cancelamento automático. 355 Vitest, 3 Deno e i18n passaram; funções publicadas; nome e link alternativo verificados com respostas simuladas a 1280/390px, build OK. Reunião reportada intacta; frontend não publicado, cancelamento real/entrega de email não executados.
+
 ## Reconciliação das 20 leads e INC-2026-005 — 17 Nov 2026
 - [x] Investigar em leitura e propor correção individual: docs/CRM-20-LEADS-INC-2026-005-REVIEW.md.
 - [ ] Aplicar reconciliação dos 21 casos — aguarda aprovação das propostas, confirmação de identidades/programas/etapas e prova ou confirmação de ausência de assinatura de Brisas do Lis; não inferir assinaturas nem preços históricos.

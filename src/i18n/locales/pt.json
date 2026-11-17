@@ -7671,6 +7671,13 @@
     }
   },
   "publicBooking": {
+    "meetingWith": "Reunião com {{name}}",
+    "otherConsultant": "Pedir reunião com outro consultor",
+    "consultantChanged": "O consultor disponível mudou. Confirme o nome e escolha novamente o horário antes de marcar.",
+    "requestCancellation": "Pedir cancelamento por email",
+    "cancelSubject": "Pedido de cancelamento de reunião",
+    "cancelBody": "Peço o cancelamento da reunião de {{date}} às {{time}} com {{consultant}}.\nNome: {{name}}\nEmail da marcação: {{email}}",
+    "cancelPending": "A reunião só fica cancelada após confirmação da equipa; fazer outra marcação não cancela esta.",
     "backToBook": "Voltar ao Founders Book",
     "backToSite": "Voltar ao site",
     "bookFirstMeeting": "Marcar Primeira Reunião",
