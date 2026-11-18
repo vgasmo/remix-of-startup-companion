@@ -44,6 +44,7 @@ export default function SharedDataroom() {
   const [error, setError] = useState<{ message: string; code?: string } | null>(null);
   const [dataroom, setDataroom] = useState<DataroomData | null>(null);
   const [items, setItems] = useState<DataroomItem[]>([]);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDataroom = async () => {
@@ -80,7 +81,14 @@ export default function SharedDataroom() {
 
   const handleDownload = async (documentId: string) => {
     // Open the tab synchronously so pop-up blockers allow it, then point it at the short-lived link.
-    const win = window.open('', '_blank', 'noopener');
+    setDownloadError(null);
+    const win = window.open('', '_blank');
+    if (!win) {
+      setDownloadError(t('dataroom.downloadFailed'));
+      return;
+    }
+    // Keep the usable handle without giving the destination access to this page.
+    win.opener = null;
     try {
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dataroom-get-by-token`,
@@ -93,14 +101,14 @@ export default function SharedDataroom() {
       const data = await response.json();
       const safe = response.ok && data.download_url ? sanitizeUrl(data.download_url) : null;
       if (!safe) {
-        win?.close();
-        setError({ message: data.error || t('dataroom.downloadFailed'), code: data.code });
+        win.close();
+        setDownloadError(t('dataroom.downloadFailed'));
         return;
       }
-      if (win) win.location.href = safe; else window.location.href = safe;
+      win.location.href = safe;
     } catch {
-      win?.close();
-      setError({ message: t('dataroom.downloadFailed') });
+      win.close();
+      setDownloadError(t('dataroom.downloadFailed'));
     }
   };
 
@@ -159,6 +167,7 @@ export default function SharedDataroom() {
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-6 py-8">
+        {downloadError && <p role="alert" className="mb-4 text-sm text-destructive">{downloadError}</p>}
         {items.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
@@ -190,7 +199,7 @@ export default function SharedDataroom() {
                             {item.document.mime_type?.split('/')[1]?.toUpperCase() || 'FILE'}
                           </Badge>
                           {dataroom?.allow_download && item.document.downloadable && (
-                            <Button variant="outline" size="sm" className="ml-2" onClick={() => handleDownload(item.document!.id)}>
+                            <Button variant="outline" size="sm" className="ml-2" onClick={() => { if (item.document) void handleDownload(item.document.id); }}>
                               <Download className="h-4 w-4 mr-2" />
                               {t('dataroom.download')}
                             </Button>
