@@ -11,6 +11,7 @@ import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { resolveFirstContactRoute, NoRouteError, deriveBookingIdempotencyKey } from '../_shared/first-contact-routing.ts';
 import { lisbonWallClockToDate } from '../_shared/lisbonTime.ts';
 import { isOfferedSlot } from '../_shared/publicBookingSlot.ts';
+import { verifiedAvailabilityView, calendarBlocksAreFree } from '../_shared/calendarAvailability.ts';
 
 // Input validation constants
 const MAX_NAME_LENGTH = 200;
@@ -230,9 +231,9 @@ async function consultantSlotIsFree(
       }),
     });
     if (!res.ok) return null;
-    const view: string | undefined = (await res.json()).value?.[0]?.availabilityView;
-    if (!view) return null;
-    return /^0+$/.test(view);
+    const view = verifiedAvailabilityView((await res.json()).value?.[0], 2);
+    if (view === null) return null;
+    return calendarBlocksAreFree(view, 0, 2);
   } catch (e) {
     console.warn('consultantSlotIsFree failed:', e instanceof Error ? e.message : e);
     return null;
@@ -504,18 +505,21 @@ serve(async (req) => {
 
     // Voltar a confirmar o calendário do consultor que vai mesmo receber a reunião (com round-robin pode não ser o
     // que o visitante viu). Um reenvio da mesma marcação (idempotente) salta esta verificação: o evento já é dele.
-    const { data: sameBooking } = await supabase
+    const { data: sameBooking, error: sameBookingError } = await supabase
       .from('funnel_items')
       .select('id')
       .eq('metadata_json->>idempotency_key', idempotencyKey)
       .limit(1)
       .maybeSingle();
+    if (sameBookingError || !consultantEmail) {
+      return corsJsonResponse({ success: false, error: 'Não foi possível confirmar a disponibilidade. Tente novamente.', reason: 'availability_check_failed' }, req, 503);
+    }
     if (!sameBooking && consultantEmail) {
       const free = await consultantSlotIsFree(supabase, consultantEmail, slot);
       if (free === false) {
         return corsJsonResponse({ success: false, error: 'slot_taken', message: 'Este horário acabou de ser reservado. Escolha outro.' }, req, 409);
       }
-      if (free === null && strictCalendarValidation) {
+      if (free === null) {
         return corsJsonResponse({ success: false, error: 'Não foi possível confirmar a disponibilidade. Tente novamente.', reason: 'availability_check_failed' }, req, 503);
       }
     }

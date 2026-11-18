@@ -9,6 +9,7 @@ import { addDays, format } from "https://esm.sh/date-fns@3.6.0";
 import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
 import { resolveFirstContactRoute, listFirstContactConsultants, NoRouteError } from '../_shared/first-contact-routing.ts';
 import { lisbonWallClockToDate } from '../_shared/lisbonTime.ts';
+import { verifiedAvailabilityView, calendarBlocksAreFree } from '../_shared/calendarAvailability.ts';
 
 interface TimeSlot {
   date: string;
@@ -108,7 +109,8 @@ async function getFreeBusySchedule(
   }
 
   const data = await response.json();
-  return data.value?.[0] || null;
+  const view = verifiedAvailabilityView(data.value?.[0], 18);
+  return view === null ? null : { availabilityView: view };
 }
 
 // Generate time slots from availability view
@@ -121,14 +123,7 @@ function generateSlotsFromAvailability(date: string, availabilityView: string): 
     const [hour, minute] = time.split(':').map(Number);
     const slotStartIndex = (hour - workStart) * 2 + (minute === 30 ? 1 : 0);
     
-    let isAvailable = true;
-    for (let i = 0; i < 2 && slotStartIndex + i < availabilityView.length; i++) {
-      const status = availabilityView[slotStartIndex + i];
-      if (status !== '0') {
-        isAvailable = false;
-        break;
-      }
-    }
+    const isAvailable = calendarBlocksAreFree(availabilityView, slotStartIndex, 2);
     
     slots.push({ date, time, available: isAvailable });
   }

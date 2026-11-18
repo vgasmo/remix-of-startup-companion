@@ -65,9 +65,10 @@ export function useUpsertIntakeRoute() {
           })
           .eq('id', route.id)
           .select()
-          .single();
+          .maybeSingle();
         
         if (error) throw error;
+        if (!data) throw new Error(t('errors.noPermission'));
         return data;
       } else {
         const { data, error } = await supabase

@@ -103,6 +103,8 @@
 - [ ] Correções da auditoria CRM/contratos — aguarda decisão do utilizador (prioridades, assinatura manual, dados INC-2026-004)
 
 ## RC13 Lote 4
+- [x] Reforçar validação de calendário; sexta-feira 20/11 às 10h bloqueada no site publicado, 11 testes passaram; causa histórica não confirmada.
+- [x] Corrigir gravação sem linhas afetadas e controlos de encaminhamento: recusa explícita, seleção preservada, leitura de consultores mantida; 2 testes e navegador autenticado com gravação interceptada passaram. Gravação real não executada.
 - [x] Fase 1 cores
 - [x] Fase 2 cantos/sombras
 - [x] Fase 3 PageHeader + EmptyState (páginas principais)

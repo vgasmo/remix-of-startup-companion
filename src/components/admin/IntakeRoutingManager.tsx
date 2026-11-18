@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useIntakeRouting, useUpsertIntakeRoute, useConsultants, type IntakeRoute } from '@/hooks/useIntakeRouting';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getIntlLocale } from '@/lib/dateUtils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface BookingLink {
   id: string;
@@ -44,6 +45,7 @@ interface RoutingEditorProps {
 
 function RoutingEditor({ route, consultants, scope, programId, programName, onSaved }: RoutingEditorProps) {
   const { t } = useTranslation();
+  const { isAdmin } = useAuth();
   const upsertRoute = useUpsertIntakeRoute();
   
   const [mode, setMode] = useState<'single' | 'round_robin'>('single');
@@ -88,12 +90,14 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
   };
   
   const handleSave = async () => {
+    if (!isAdmin) return;
     if (active && selectedConsultants.length === 0) {
       notify.error(t('admin.pleaseSelectAtLeastOne'));
       return;
     }
     
-    await upsertRoute.mutateAsync({
+    try {
+      await upsertRoute.mutateAsync({
       id: route?.id,
       scope,
       program_id: programId || null,
@@ -103,7 +107,10 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
     });
     
     setHasChanges(false);
-    onSaved();
+      onSaved();
+    } catch {
+      // The mutation displays the error; preserve the unsaved selection.
+    }
   };
   
   return (
@@ -120,13 +127,13 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
               : t('admin.intakeRouting.activeOffDesc', 'Regra desativada — novas marcações irão usar a regra global.')}
           </p>
         </div>
-        <Switch checked={active} onCheckedChange={handleActiveChange} />
+        <Switch checked={active} onCheckedChange={handleActiveChange} disabled={!isAdmin} />
       </div>
 
       {/* Mode Selection */}
       <div className="space-y-3">
         <Label>{t('admin.intakeRouting.routingMode', 'Modo de Encaminhamento')}</Label>
-        <RadioGroup value={mode} onValueChange={(v) => handleModeChange(v as 'single' | 'round_robin')}>
+        <RadioGroup disabled={!isAdmin} value={mode} onValueChange={(v) => handleModeChange(v as 'single' | 'round_robin')}>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="single" id={`single-${scope}-${programId || 'global'}`} />
             <Label htmlFor={`single-${scope}-${programId || 'global'}`} className="flex items-center gap-2 cursor-pointer">
@@ -166,9 +173,10 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
                   ? 'border-primary bg-primary/5'
                   : 'hover:bg-muted/50'
               }`}
-              {...clickableProps(() => handleConsultantToggle(consultant.id))}
+              {...clickableProps(() => handleConsultantToggle(consultant.id), { disabled: !isAdmin })}
             >
               <Checkbox
+                disabled={!isAdmin}
                 checked={selectedConsultants.includes(consultant.id)}
                 onCheckedChange={() => handleConsultantToggle(consultant.id)}
               />
@@ -207,7 +215,7 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
       {/* Save Button */}
       <Button
         onClick={handleSave}
-        disabled={upsertRoute.isPending || !hasChanges || (active && selectedConsultants.length === 0)} loading={upsertRoute.isPending}
+        disabled={!isAdmin || upsertRoute.isPending || !hasChanges || (active && selectedConsultants.length === 0)} loading={upsertRoute.isPending}
       >
         {upsertRoute.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
         {t('common.saveChanges', 'Guardar Alterações')}
@@ -218,6 +226,7 @@ function RoutingEditor({ route, consultants, scope, programId, programName, onSa
 
 export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingManagerProps) {
   const { t } = useTranslation();
+  const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const { data: routes, isLoading: loadingRoutes } = useIntakeRouting();
   const { data: consultants, isLoading: loadingConsultants } = useConsultants();
@@ -400,7 +409,7 @@ export function IntakeRoutingManager({ showBookingLinks = true }: IntakeRoutingM
         </CardContent>
       </Card>
       
-      {showBookingLinks && (
+      {showBookingLinks && isAdmin && (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
