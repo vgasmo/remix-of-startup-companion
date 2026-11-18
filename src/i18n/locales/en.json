@@ -7673,6 +7673,10 @@
   "publicBooking": {
     "meetingWith": "Meeting with {{name}}",
     "otherConsultant": "Request a meeting with another consultant",
+    "chooseConsultant": "Choose another consultant",
+    "loadingConsultants": "Loading consultants…",
+    "consultantsUnavailable": "Could not load consultants. Please try again.",
+    "noOtherConsultants": "No other consultants are available for this programme.",
     "consultantChanged": "The available consultant has changed. Confirm the name and choose a time again before booking.",
     "requestCancellation": "Request cancellation by email",
     "requestRescheduling": "Request rescheduling by email",

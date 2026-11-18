@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -61,6 +62,8 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
   const [bookingHasInvite, setBookingHasInvite] = useState<boolean>(false);
   const [bookedConsultantName, setBookedConsultantName] = useState<string | null>(null);
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(null);
+  const [selectedConsultantId, setSelectedConsultantId] = useState<string | null>(null);
+  const [consultantMenuOpen, setConsultantMenuOpen] = useState(false);
   const [selectedProgramName, setSelectedProgramName] = useState<string | null>(null);
   const [pitchFile, setPitchFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -119,14 +122,27 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
   const tokenData = tokenResult?.tokenData ?? null;
   const routingOptions = tokenResult?.routingOptions ?? [];
 
+  const { data: consultants = [], isLoading: consultantsLoading, error: consultantsError } = useQuery({
+    queryKey: ['public-consultants', token, selectedProgramId],
+    queryFn: async (): Promise<Array<{ id: string; name: string }>> => {
+      const { data, error } = await supabase.functions.invoke('public-get-availability', {
+        body: { token, action: 'get_consultants', program_id: selectedProgramId },
+      });
+      if (error) throw error;
+      return data?.consultants ?? [];
+    },
+    enabled: !!tokenData && consultantMenuOpen,
+    retry: false,
+  });
+
   // Fetch available slots - now depends on selectedProgramId
   const { data: slotsData, isLoading: slotsLoading, refetch: refetchSlots } = useQuery({
-    queryKey: ['public-slots', token, selectedProgramId],
+    queryKey: ['public-slots', token, selectedProgramId, selectedConsultantId],
     queryFn: async () => {
       if (!token) return { slots: [], consultantId: null, consultantName: null, programName: null, unavailable: false };
 
       const { data, error } = await supabase.functions.invoke('public-get-availability', {
-        body: { token, action: 'get_slots', program_id: selectedProgramId },
+        body: { token, action: 'get_slots', program_id: selectedProgramId, consultant_id: selectedConsultantId ?? undefined },
       });
 
       // Fail-closed: server returns 503 { status: "unavailable", reason } when
@@ -174,6 +190,7 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
           slot: selectedSlot,
           program_id: selectedProgramId,
           expected_consultant_id: slotsData?.consultantId ?? undefined,
+          consultant_id: selectedConsultantId ?? undefined,
           contact: {
             ...formData,
             ...(pitchDeckPath ? { pitch_deck_path: pitchDeckPath } : {}),
@@ -324,6 +341,7 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
   const handleProgramSelect = (programId: string, programName: string) => {
     setSelectedProgramId(programId);
     setSelectedProgramName(programName);
+    setSelectedConsultantId(null);
     setSelectedSlot(null);
   };
 
@@ -498,6 +516,7 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
                   onClick={() => {
                     setSelectedProgramId(null);
                     setSelectedProgramName(null);
+                    setSelectedConsultantId(null);
                     setSelectedSlot(null);
                     setStep('program_select');
                   }}
@@ -513,7 +532,22 @@ export default function PublicBooking({ tokenOverride, canonicalMode = false }: 
         {(step === 'slots' || step === 'form') && slotsData?.consultantName && (
           <div className="text-center space-y-2">
             <p className="text-lg font-semibold">{t('publicBooking.meetingWith', { name: slotsData.consultantName })}</p>
-            <Button asChild variant="link"><a href={`mailto:info@startupleiria.com?subject=${encodeURIComponent(t('publicBooking.otherConsultant'))}`}>{t('publicBooking.otherConsultant')}</a></Button>
+            <DropdownMenu open={consultantMenuOpen} onOpenChange={setConsultantMenuOpen}>
+              <DropdownMenuTrigger asChild><Button variant="link" className="whitespace-normal h-auto">{t('publicBooking.otherConsultant')}</Button></DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="w-72 max-w-[calc(100vw-2rem)] max-h-80 overflow-y-auto">
+                <DropdownMenuLabel>{t('publicBooking.chooseConsultant')}</DropdownMenuLabel>
+                {consultantsLoading ? <DropdownMenuItem disabled>{t('publicBooking.loadingConsultants')}</DropdownMenuItem>
+                  : consultantsError ? <DropdownMenuItem disabled className="whitespace-normal">{t('publicBooking.consultantsUnavailable')}</DropdownMenuItem>
+                  : consultants.filter(c => c.id !== slotsData.consultantId).length === 0 ? <DropdownMenuItem disabled className="whitespace-normal">{t('publicBooking.noOtherConsultants')}</DropdownMenuItem>
+                  : consultants.filter(c => c.id !== slotsData.consultantId).map(consultant => (
+                    <DropdownMenuItem key={consultant.id} className="whitespace-normal" onSelect={() => {
+                      setSelectedConsultantId(consultant.id);
+                      setSelectedSlot(null);
+                      setStep('slots');
+                    }}>{consultant.name}</DropdownMenuItem>
+                  ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
         {step === 'program_select' && (

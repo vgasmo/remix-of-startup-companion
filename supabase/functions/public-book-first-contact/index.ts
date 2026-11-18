@@ -340,6 +340,10 @@ serve(async (req) => {
 
     const { token, slot, contact, recording_consent } = validation.data;
     const expectedConsultantId = (rawBody as { expected_consultant_id?: unknown }).expected_consultant_id;
+    const selectedConsultantId = (rawBody as { consultant_id?: unknown }).consultant_id;
+    if (selectedConsultantId !== undefined && (typeof selectedConsultantId !== 'string' || !/^[0-9a-f-]{36}$/i.test(selectedConsultantId))) {
+      return corsJsonResponse({ error: 'invalid_consultant' }, req, 400);
+    }
     if (expectedConsultantId !== undefined && (typeof expectedConsultantId !== 'string' || !/^[0-9a-f-]{36}$/i.test(expectedConsultantId))) {
       return corsJsonResponse({ error: 'invalid_consultant' }, req, 400);
     }
@@ -423,6 +427,7 @@ serve(async (req) => {
         token,
         selectedProgramId,
         expectedConsultantId: typeof expectedConsultantId === 'string' ? expectedConsultantId : undefined,
+        selectedConsultantId: typeof selectedConsultantId === 'string' ? selectedConsultantId : undefined,
       });
       consultantId = resolved.consultantId;
       consultantEmail = resolved.consultantEmail;

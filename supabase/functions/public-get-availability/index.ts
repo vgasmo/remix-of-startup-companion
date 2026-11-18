@@ -7,7 +7,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { addDays, format } from "https://esm.sh/date-fns@3.6.0";
 import { handleCorsOptions, corsJsonResponse } from '../_shared/cors.ts';
-import { resolveFirstContactRoute, NoRouteError } from '../_shared/first-contact-routing.ts';
+import { resolveFirstContactRoute, listFirstContactConsultants, NoRouteError } from '../_shared/first-contact-routing.ts';
 import { lisbonWallClockToDate } from '../_shared/lisbonTime.ts';
 
 interface TimeSlot {
@@ -159,7 +159,7 @@ serve(async (req) => {
   }
 
   try {
-    let body: { token?: unknown; action?: unknown; program_id?: unknown };
+    let body: { token?: unknown; action?: unknown; program_id?: unknown; consultant_id?: unknown };
     try {
       body = await req.json();
     } catch {
@@ -172,8 +172,11 @@ serve(async (req) => {
       return corsJsonResponse({ error: "Invalid or missing token" }, req, 400);
     }
 
-    if (action !== undefined && action !== 'validate' && action !== 'get_slots' && action !== 'upload_url') {
+    if (action !== undefined && action !== 'validate' && action !== 'get_slots' && action !== 'get_consultants' && action !== 'upload_url') {
       return corsJsonResponse({ error: "Invalid action" }, req, 400);
+    }
+    if (body.consultant_id !== undefined && (typeof body.consultant_id !== 'string' || !/^[0-9a-f-]{36}$/i.test(body.consultant_id))) {
+      return corsJsonResponse({ error: 'invalid_consultant' }, req, 400);
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -457,6 +460,16 @@ serve(async (req) => {
       }, req);
     }
 
+    if (action === 'get_consultants') {
+      try {
+        const consultants = await listFirstContactConsultants({ supabase, token, selectedProgramId: typeof selectedProgramId === 'string' ? selectedProgramId : null });
+        return corsJsonResponse({ consultants }, req);
+      } catch (e) {
+        if (e instanceof NoRouteError) return corsJsonResponse({ error: e.reason }, req, 503);
+        throw e;
+      }
+    }
+
     if (action === "get_slots") {
       const slots: TimeSlot[] = [];
       const now = new Date();
@@ -471,6 +484,7 @@ serve(async (req) => {
           token,
           selectedProgramId: typeof selectedProgramId === 'string' ? selectedProgramId : null,
           advanceRoundRobin: false,
+          selectedConsultantId: typeof body.consultant_id === 'string' ? body.consultant_id : undefined,
         });
         consultantEmail = resolved.consultantEmail;
         consultantName = resolved.consultantName;

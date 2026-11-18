@@ -31,6 +31,7 @@ export interface ResolveInput {
   selectedProgramId?: string | null; // 'global', UUID, null/undefined
   advanceRoundRobin?: boolean;   // false = só consultar (get_slots): mostra o consultor que a marcação vai usar
   expectedConsultantId?: string;
+  selectedConsultantId?: string;
 }
 
 export class NoRouteError extends Error {
@@ -118,6 +119,7 @@ export async function resolveFirstContactRoute({
   selectedProgramId,
   advanceRoundRobin = true,
   expectedConsultantId,
+  selectedConsultantId,
 }: ResolveInput): Promise<ResolvedRoute> {
   const trace: Record<string, unknown> = { token_is_demo: token === 'demo', selected_program_id: selectedProgramId ?? null };
 
@@ -162,6 +164,9 @@ export async function resolveFirstContactRoute({
   // 3. If the link has a fixed owner, that consultant serves the booking
   //    (regardless of routing rules). This is the "fixed_owner" mode of the plan.
   if (link?.owner_consultant_id) {
+    if (selectedConsultantId && selectedConsultantId !== link.owner_consultant_id) {
+      throw new NoRouteError('consultant_not_available', trace);
+    }
     if (expectedConsultantId && expectedConsultantId !== link.owner_consultant_id) {
       throw new NoRouteError('consultant_changed', trace);
     }
@@ -219,11 +224,14 @@ export async function resolveFirstContactRoute({
 
   if (!chosen) throw new NoRouteError('no_active_routing', trace);
 
-  if (expectedConsultantId) {
+  if (selectedConsultantId && !chosen.consultant_ids.includes(selectedConsultantId)) {
+    throw new NoRouteError('consultant_not_available', trace);
+  }
+  if (expectedConsultantId && !selectedConsultantId) {
     const preview = await pickConsultantForRouting(supabase, chosen, false);
     if (preview !== expectedConsultantId) throw new NoRouteError('consultant_changed', trace);
   }
-  const consultantId = await pickConsultantForRouting(supabase, chosen, advanceRoundRobin);
+  const consultantId = selectedConsultantId ?? await pickConsultantForRouting(supabase, chosen, advanceRoundRobin);
   if (expectedConsultantId && consultantId !== expectedConsultantId) {
     throw new NoRouteError('consultant_changed', trace);
   }
@@ -252,6 +260,23 @@ export async function resolveFirstContactRoute({
     linkOwnerConsultantId: null,
     decisionTrace: { ...trace, resolution: 'routing', routing_id: chosen.id, routing_mode: chosen.mode },
   };
+}
+
+/** Public names only, constrained to the same authorized route as booking. */
+export async function listFirstContactConsultants(input: ResolveInput): Promise<Array<{ id: string; name: string }>> {
+  const route = await resolveFirstContactRoute({ ...input, selectedConsultantId: undefined, expectedConsultantId: undefined, advanceRoundRobin: false });
+  let ids = [route.consultantId];
+  if (!route.linkOwnerConsultantId) {
+    const { data, error } = await input.supabase.from('intake_routing').select('consultant_ids').eq('id', route.routingId).eq('active', true).maybeSingle();
+    if (error || !data) throw new NoRouteError('no_active_routing', {});
+    ids = data.consultant_ids ?? [];
+  }
+  if (!ids.length) return [];
+  const { data, error } = await input.supabase.from('profiles').select('id, full_name, account_status').in('id', ids);
+  if (error) throw new NoRouteError('consultant_lookup_failed', {});
+  return (data ?? []).filter((p: { full_name: string; account_status: string }) => p.full_name && ACTIVE_ACCOUNT_STATUSES.has(p.account_status))
+    .map((p: { id: string; full_name: string }) => ({ id: p.id, name: p.full_name }))
+    .sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name, 'pt'));
 }
 
 /**

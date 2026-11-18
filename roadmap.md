@@ -1,3 +1,7 @@
+## Escolha pública de consultor — 18 Nov 2026
+- [x] Substituir o email geral por menu de consultores autorizados e horários da escolha. 355 Vitest, 7 Deno, i18n, ESLint e build OK; funções publicadas; menu real verificado em desktop/mobile (só Luís Colaço configurado), troca e horários verificados com dados simulados. Nenhuma reunião/email criado; frontend ainda não publicado.
+- [ ] Disponibilizar outros consultores no menu — aguarda indicação de quais devem receber marcações públicas; não alargar a configuração existente sem autorização.
+
 ## Clareza das marcações públicas — 17 Nov 2026
 - [x] Mostrar consultor antes/depois da marcação, recusar troca silenciosa pelo resolvedor e oferecer pedido de cancelamento por email, sem afirmar cancelamento automático. 355 Vitest, 3 Deno e i18n passaram; funções publicadas; nome e link alternativo verificados com respostas simuladas a 1280/390px, build OK. Reunião reportada intacta; frontend não publicado, cancelamento real/entrega de email não executados.
 
