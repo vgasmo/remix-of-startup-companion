@@ -43,6 +43,13 @@ export function orIlike(columns: string[], term: string): string {
   return columns.map((c) => `${c}.ilike.${quoted}`).join(',');
 }
 
+// Phone numbers are stored with spaces/prefixes ("+351 912 345 678"); match typed digits loosely.
+export function phoneFilter(column: string, term: string): string | null {
+  const digits = term.replace(/\D/g, '');
+  if (digits.length < 6 || digits.length < term.replace(/[\s+().-]/g, '').length) return null;
+  return `${column}.ilike.%${digits.split('').join('%')}%`;
+}
+
 // Helper: Build FTS query from search term
 function buildTsQuery(searchTerm: string): string {
   return searchTerm.split(' ').filter(Boolean).map(w => `${w}:*`).join(' & ');
@@ -441,8 +448,8 @@ export function useGlobalSearch(filters: SearchFilters) {
         searchPromises.push((async () => {
           const { data: exactData, error: exactError } = await supabase
             .from('funnel_items')
-            .select('id, organization_name, contact_name, contact_email, stage, updated_at')
-            .or(orIlike(['organization_name', 'contact_name', 'contact_email'], searchTerm))
+            .select('id, organization_name, contact_name, contact_email, contact_phone, stage, updated_at')
+            .or([orIlike(['organization_name', 'contact_name', 'contact_email'], searchTerm), phoneFilter('contact_phone', searchTerm)].filter(Boolean).join(','))
             .limit(20);
           if (exactError) throw exactError;
 
@@ -462,7 +469,7 @@ export function useGlobalSearch(filters: SearchFilters) {
             id: l.id,
             workspace_id: '',
             title: l.organization_name || l.contact_name || 'Lead',
-            snippet: `${l.contact_name || ''} ${l.contact_email ? `• ${l.contact_email}` : ''} • ${l.stage || ''}`.trim(),
+            snippet: `${l.contact_name || ''} ${l.contact_email ? `• ${l.contact_email}` : ''} ${l.contact_phone ? `• ${l.contact_phone}` : ''} • ${l.stage || ''}`.trim(),
             updated_at: l.updated_at,
             url: `/crm?open=${l.id}`,
           }));
@@ -474,8 +481,8 @@ export function useGlobalSearch(filters: SearchFilters) {
         searchPromises.push((async () => {
           const { data, error } = await supabase
             .from('profiles_safe')
-            .select('id, full_name, email')
-            .or(orIlike(['full_name', 'email'], searchTerm))
+            .select('id, full_name, email, phone')
+            .or([orIlike(['full_name', 'email'], searchTerm), phoneFilter('phone', searchTerm)].filter(Boolean).join(','))
             .limit(15);
           if (error) logger.warn('[useGlobalSearch] people search failed', { error: String(error) });
           return (data || []).map((p: any) => ({
@@ -483,7 +490,7 @@ export function useGlobalSearch(filters: SearchFilters) {
             id: p.id,
             workspace_id: '',
             title: p.full_name || p.email || 'Person',
-            snippet: p.email || '',
+            snippet: [p.email, p.phone].filter(Boolean).join(' • '),
             updated_at: new Date().toISOString(),
             url: isStaff ? `/profile/${p.id}` : `/mentors?mentor=${p.id}`,
           }));
