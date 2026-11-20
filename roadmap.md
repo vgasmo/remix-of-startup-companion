@@ -1,3 +1,7 @@
+## Responsável e programa CRM/Hub — 20 Nov 2026
+- [ ] Confirmar e corrigir falha de edição de responsável/programa e sincronização com o Hub, sem reconciliar dados históricos automaticamente.
+- [ ] Alinhar CareSense Portugal com Verelise e Programa Base, conforme confirmação do utilizador.
+
 ## Escolha pública de consultor — 18 Nov 2026
 - [x] Substituir o email geral por menu de consultores autorizados e horários da escolha. 355 Vitest, 7 Deno, i18n, ESLint e build OK; funções publicadas; menu real verificado em desktop/mobile (só Luís Colaço configurado), troca e horários verificados com dados simulados. Nenhuma reunião/email criado; frontend ainda não publicado.
 - [ ] Disponibilizar outros consultores no menu — aguarda indicação de quais devem receber marcações públicas; não alargar a configuração existente sem autorização.

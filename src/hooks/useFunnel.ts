@@ -207,12 +207,13 @@ export function useUpdateFunnelItem() {
       await queryClient.cancelQueries({ queryKey: ['funnel-items'] });
       await queryClient.cancelQueries({ queryKey: ['crm-pipeline'] });
 
-      const previousFunnelItems = queryClient.getQueryData(['funnel-items']);
-      const previousPipeline = queryClient.getQueryData(['crm-pipeline']);
+      const previousFunnelItems = queryClient.getQueriesData({ queryKey: ['funnel-items'] });
+      const previousPipeline = queryClient.getQueriesData({ queryKey: ['crm-pipeline'] });
 
       // Patch funnel-items cache
-      queryClient.setQueriesData<FunnelItem[]>({ queryKey: ['funnel-items'] }, (old) => {
+      queryClient.setQueriesData<FunnelItem[] | FunnelItem>({ queryKey: ['funnel-items'] }, (old) => {
         if (!old) return old;
+        if (!Array.isArray(old)) return old.id === id ? { ...old, ...updates } : old;
         return old.map((item) => (item.id === id ? { ...item, ...updates } : item));
       });
 
@@ -222,7 +223,10 @@ export function useUpdateFunnelItem() {
         if (Array.isArray(old)) {
           return old.map((item: any) => (item?.id === id ? { ...item, ...updates } : item));
         }
-        return old;
+        return Object.fromEntries(Object.entries(old).map(([stage, items]) => [
+          stage,
+          Array.isArray(items) ? items.map((item) => item?.id === id ? { ...item, ...updates } : item) : items,
+        ]));
       });
 
       return { previousFunnelItems, previousPipeline };
@@ -230,10 +234,10 @@ export function useUpdateFunnelItem() {
     onError: (e: Error, _vars, context) => {
       // Rollback on error
       if (context?.previousFunnelItems) {
-        queryClient.setQueryData(['funnel-items'], context.previousFunnelItems);
+        context.previousFunnelItems.forEach(([key, value]) => queryClient.setQueryData(key, value));
       }
       if (context?.previousPipeline) {
-        queryClient.setQueryData(['crm-pipeline'], context.previousPipeline);
+        context.previousPipeline.forEach(([key, value]) => queryClient.setQueryData(key, value));
       }
       notify.error(e.message);
     },
@@ -246,6 +250,9 @@ export function useUpdateFunnelItem() {
       queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
       queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
       queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
+      queryClient.invalidateQueries({ queryKey: ['workspace-owner'] });
+      queryClient.invalidateQueries({ queryKey: ['workspace'] });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
     },
   });
 }

@@ -80,6 +80,9 @@ export function useUpdateWorkspaceOwner() {
     onSuccess: (_, params) => {
       queryClient.invalidateQueries({ queryKey: ['workspace-owner', params.workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      queryClient.invalidateQueries({ queryKey: ['funnel-items'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-pipeline'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-inbox'] });
       notify.success(t('workspace.workspaceUpdated'));
     },
     onError: (error: Error) => {

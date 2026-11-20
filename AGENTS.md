@@ -50,3 +50,4 @@
 - Public booking submissions carry the displayed consultant ID as an expectation, never an override; routing changes refuse the booking before CRM/provider writes, and cancellation email requests never claim actual cancellation.
 - Explicit public consultant choices are validated against the active intake route in the shared resolver; fixed-owner links remain fixed, and the public menu exposes only eligible names to prevent arbitrary recipient selection.
 - Public first-contact availability and submission share complete Graph schedule validation; calendar errors never permit a booking, regardless of optional flags.
+- CRM optimistic caches handle both single records and grouped/list queries with per-key rollback; linked CRM/Hub ownership and program edits synchronize transactionally under existing RLS, without historical backfills.
